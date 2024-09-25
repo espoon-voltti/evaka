@@ -71,6 +71,7 @@ import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
+import java.time.YearMonth
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -118,14 +119,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for child with a day long temporary placement`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(
             insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -151,7 +153,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for child with one day long part day temporary placement`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(
@@ -162,7 +165,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -186,14 +189,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for child with a three day long temporary placement`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
         db.transaction(
             insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -217,7 +221,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for child with a two day long temporary placement and a day long part day temporary placement`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
         db.transaction(
@@ -235,7 +240,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -269,7 +274,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for two children with temporary placements at the same time`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(
@@ -281,7 +287,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -315,7 +321,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for two children with part day temporary placements at the same time`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(
@@ -335,7 +342,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -369,7 +376,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for child with a two day long temporary placement that changes head of family during placement`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
         db.transaction(
             insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
@@ -390,7 +397,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices).sortedBy { it.headOfFamily == testAdult_2.id }
 
@@ -429,13 +436,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for child with a day long temporary placement that has no family configured`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(
             insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -444,7 +451,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for temporary placements does not pick non-temporary placements`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val temporaryPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
         db.transaction(
@@ -453,7 +461,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val nonTemporaryPeriod = FiniteDateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
         db.transaction(insertPlacement(testChild_1.id, nonTemporaryPeriod))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -479,7 +487,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation from two fee decision with same price results in one invoice row`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -511,7 +520,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -535,7 +544,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation from two fee decision with same price and same fee alterations results in one invoice row`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -576,7 +586,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -613,7 +623,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation from two fee decision with the second one having another child results in one invoice row for the first child`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
         val decision =
@@ -659,7 +670,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -694,7 +705,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation from two fee decisions makes sure the sum is at most the monthly fee`() {
         // January 2019 has 22 operational days which results in daily price being rounded up
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
             listOf(
@@ -735,7 +747,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -780,7 +792,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation from two fee decisions makes sure the sum is at least the monthly fee`() {
         // March 2019 has 21 operational days which results in daily price being rounded down
-        val period = FiniteDateRange(LocalDate.of(2019, 3, 1), LocalDate.of(2019, 3, 31))
+        val month = YearMonth.of(2019, 3)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
             listOf(
@@ -821,7 +834,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -866,7 +879,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation from two fee decisions with cleanly split daily prices does not result in a rounding row`() {
         // February 2019 has 20 operational days which results in daily price being split evenly
-        val period = FiniteDateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 2, 28))
+        val month = YearMonth.of(2019, 2)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
             listOf(
@@ -907,7 +921,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -941,7 +955,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation from two fee decision with the second one having changed fee for second child results in one invoice row for the first child`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
         val decision =
@@ -989,7 +1004,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1033,7 +1048,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation from fee decision with one fee alteration creates additional invoice row`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -1064,7 +1080,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1101,7 +1117,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation from fee decision with multiple fee alterations creates additional invoice rows`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -1138,7 +1155,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1189,7 +1206,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation from fee decision with a 95 percent discount fee alteration`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -1220,7 +1238,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1257,7 +1275,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `when two people have active fee decisions for the same child both are invoiced`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -1298,7 +1317,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1339,7 +1358,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `when a placement ends before the fee decision only the placement period is invoiced`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         val placementPeriod = period.copy(end = period.start.plusDays(7))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
@@ -1382,7 +1402,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1408,13 +1428,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with sick leave absences covering period`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays = datesBetween(period.start, period.end).map { it to AbsenceType.SICKLEAVE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1438,7 +1459,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `50 percent discount is generated with more than 11 sickleave absences`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(period.start, period.end)
@@ -1455,7 +1477,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1480,7 +1502,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `50 percent discount for sick leaves is applied after reducing force majeure absences`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 1 force majeure absence
         val forceMajeure = listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
@@ -1493,7 +1516,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), forceMajeure + sickLeave)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1523,7 +1546,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with some unknown absences`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(period.start, period.end)
@@ -1540,7 +1564,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1558,14 +1582,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with unknown absences covering period`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(period.start, period.end).map { it to AbsenceType.UNKNOWN_ABSENCE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1589,7 +1614,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with some parentleave absences`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4)).map {
@@ -1598,7 +1624,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1624,7 +1650,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with some parentleave and sickleave absences`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
@@ -1637,7 +1664,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1670,7 +1697,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `planned absences do not generate a discount on invoices`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(period.start, period.end.minusDays(1)).map {
@@ -1679,7 +1707,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1697,14 +1725,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `planned absences for the whole month generate a discount`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(period.start, period.end).map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1728,7 +1757,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with some parentleave absences for a too old child`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(period.start, LocalDate.of(2019, 1, 4)).map {
@@ -1737,7 +1767,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays, child = testChild_2)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -1777,12 +1807,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(periods, absenceDays)
 
-        db.transaction {
-            generator.createAndStoreAllDraftInvoices(
-                it,
-                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
-            )
-        }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, YearMonth.of(2019, 1)) }
 
         val result = db.read(getAllInvoices)
 
@@ -1847,12 +1872,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         initDataForAbsences(periods, absenceDays)
 
-        db.transaction {
-            generator.createAndStoreAllDraftInvoices(
-                it,
-                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
-            )
-        }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, YearMonth.of(2019, 1)) }
 
         val result = db.read(getAllInvoices)
 
@@ -1903,7 +1923,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days and 2 surplus days`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 15 operational days first
         // then planned absences
@@ -1919,7 +1940,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1944,7 +1965,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days, 2 surplus days and one refunded day`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 15 operational days first
         // then planned absences
@@ -1965,7 +1987,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -1996,7 +2018,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days, 2 surplus days and a fee alteration`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         val decision =
@@ -2036,7 +2059,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 2 more operational days
         insertAbsences(testChild_1.id, plannedAbsenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2073,7 +2096,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days, 1 absence and 2 surplus days`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 14 operational days first
         // then 1 other absence
@@ -2091,7 +2115,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2116,7 +2140,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days and 1 absence with unplanned absences not counting as surplus days`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 14 operational days first
         // then 1 other absence
@@ -2145,7 +2170,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 featureConfig,
             )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2163,7 +2188,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days, 2 fee decisions and 2 surplus days`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         val decisions =
@@ -2201,7 +2227,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .map { it to AbsenceType.PLANNED_ABSENCE },
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2234,7 +2260,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days and 15 days of absences - half price`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val otherAbsenceDays =
             datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
@@ -2250,7 +2277,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2274,7 +2301,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days and 14 days of absences - full price`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val otherAbsenceDays =
             datesBetween(period.start, LocalDate.of(2019, 1, 21)) // 14 operational days
@@ -2291,7 +2319,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2309,7 +2337,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days and 1 force majeure absence`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 1 force majeure absence
         val forceMajeureAbsenceDays = listOf(LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE)
@@ -2326,7 +2355,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2351,7 +2380,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with free and paid fee decisions with absences for all paid days`() {
         // 21 operational days
-        val period = FiniteDateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 31))
+        val month = YearMonth.of(2021, 12)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertPlacement(testChild_1.id, period))
@@ -2395,7 +2425,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2413,7 +2443,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `no invoice is generated for 100 percent relief fee decision`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 31))
+        val month = YearMonth.of(2019, 12)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertPlacement(testChild_1.id, period))
@@ -2447,7 +2478,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -2455,7 +2486,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with full month of force majeure absences`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(period.start, LocalDate.of(2019, 1, 31)).map {
@@ -2464,7 +2496,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -2489,7 +2521,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days and 15 days of force majeure absences`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val forceMajeureAbsenceDays =
             datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
@@ -2505,7 +2538,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2529,7 +2562,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days and full month of planned absences`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays =
             datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)).map {
@@ -2538,7 +2572,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2562,7 +2596,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days and only 14 days of attendances (rest are planned absences)`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 14 operational days, other are planned absences
         val absenceDays =
@@ -2572,7 +2607,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2591,7 +2626,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days, 2 decisions and only 14 days of attendances (rest are planned absences)`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         val decisions =
@@ -2645,7 +2681,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             },
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2669,7 +2705,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation when fee decision is valid only during weekend`() {
-        val period = FiniteDateRange(LocalDate.of(2020, 5, 1), LocalDate.of(2020, 5, 31))
+        val month = YearMonth.of(2020, 5)
+        val period = FiniteDateRange.ofMonth(month)
         val weekEnd = FiniteDateRange(LocalDate.of(2020, 5, 2), LocalDate.of(2020, 5, 3))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
@@ -2693,7 +2730,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -2701,7 +2738,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation when fee decision is valid only for two weeks in a round the clock unit`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         val placementPeriod = FiniteDateRange(LocalDate.of(2021, 1, 18), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
@@ -2725,7 +2763,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2742,7 +2780,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation when fee decision is valid only during last weekend of month in a round the clock unit`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         val placementPeriod = FiniteDateRange(LocalDate.of(2021, 1, 30), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
@@ -2769,7 +2808,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             shiftCare = ShiftCareType.FULL,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2786,7 +2825,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation when fee decision is valid for all but new year in a round the clock unit`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         val placementPeriod = FiniteDateRange(LocalDate.of(2021, 1, 2), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
@@ -2810,7 +2850,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2827,7 +2867,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation when fee decision is valid for all but new year and the first weekend in a round the clock unit`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         val placementPeriod = FiniteDateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
@@ -2851,7 +2892,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2868,7 +2909,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation when fee decision is valid for only for the week with epiphany in a round the clock unit`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         val placementPeriod = FiniteDateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 10))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
@@ -2895,7 +2937,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             shiftCare = ShiftCareType.FULL,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2913,7 +2955,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation for half a month`() {
         // 23 operational days
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
             listOf(
@@ -2939,7 +2982,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -2956,7 +2999,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation when is half a month in a round the clock unit and the rest in a regular unit`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
             listOf(
@@ -2999,7 +3043,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions, shiftCare = ShiftCareType.FULL)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3026,9 +3070,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation placement is to a round the clock unit and it changes in the middle of the month`() {
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         val firstPeriod = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 14))
         val secondPeriod = FiniteDateRange(LocalDate.of(2021, 1, 15), LocalDate.of(2021, 1, 31))
-        val period = firstPeriod.copy(end = secondPeriod.end)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
             listOf(
@@ -3071,7 +3116,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions, shiftCare = ShiftCareType.FULL)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3098,7 +3143,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for round the clock unit with a force majeure absence during the week`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -3126,7 +3172,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(LocalDate.of(2021, 1, 5) to AbsenceType.FORCE_MAJEURE),
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3148,7 +3194,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for round the clock unit with a force majeure absence during the weekend`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -3179,7 +3226,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(LocalDate.of(2021, 1, 31) to AbsenceType.FORCE_MAJEURE),
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3201,7 +3248,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation for round the clock unit with force majeure absences for the whole month`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val month = YearMonth.of(2021, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision =
             createFeeDecisionFixture(
@@ -3229,7 +3277,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             datesBetween(period.start, period.end).map { it to AbsenceType.FORCE_MAJEURE },
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3251,7 +3299,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation when fee decision is valid only during weekend and there are absences for the whole month`() {
-        val period = FiniteDateRange(LocalDate.of(2020, 5, 1), LocalDate.of(2020, 5, 31))
+        val month = YearMonth.of(2020, 5)
         val weekEnd = FiniteDateRange(LocalDate.of(2020, 5, 2), LocalDate.of(2020, 5, 3))
         val absenceDays =
             generateSequence(LocalDate.of(2020, 5, 1)) { date -> date.plusDays(1) }
@@ -3261,7 +3309,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(weekEnd), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3270,7 +3318,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2020 if child has been placed every month since Aug 2019 but not april or may`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 31)),
                 FiniteDateRange(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 30)),
@@ -3292,7 +3340,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `no free july 2021 if child has been placed every month since Aug 2019 but not april or may`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
+            YearMonth.of(2021, 7),
             listOf(
                 FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2020, 8, 31)),
                 FiniteDateRange(LocalDate.of(2020, 9, 1), LocalDate.of(2020, 9, 30)),
@@ -3313,7 +3361,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2020 if child has been placed every month since Aug 2019, also in april or may`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 31)),
                 FiniteDateRange(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 30)),
@@ -3336,7 +3384,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2020 if child has been placed every month since Sep 2019, also in april or may (freeJulyStartOnSeptember = true)`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 30)),
                 FiniteDateRange(LocalDate.of(2019, 10, 1), LocalDate.of(2019, 10, 31)),
@@ -3359,7 +3407,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2020 if child has been placed even for one day every month since Aug 2019`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 1)),
                 FiniteDateRange(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 1)),
@@ -3380,7 +3428,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2020 if child has been placed even for one day every month since Sep 2019 (freeJulyStartOnSeptember = true)`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 1)),
                 FiniteDateRange(LocalDate.of(2019, 10, 1), LocalDate.of(2019, 10, 1)),
@@ -3401,7 +3449,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2020 if child has been placed all the time`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))),
         )
         val result = db.read(getAllInvoices)
@@ -3411,7 +3459,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2021 if child has been placed all the time`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
+            YearMonth.of(2021, 7),
             listOf(FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))),
         )
         val result = db.read(getAllInvoices)
@@ -3421,7 +3469,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2021 if child has been placed in preparatory with daycare all the time`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
+            YearMonth.of(2021, 7),
             listOf(
                 PlacementType.PREPARATORY_DAYCARE to
                     FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))
@@ -3434,7 +3482,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `no free july 2020 if even one mandatory month has no placement`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 31)),
                 FiniteDateRange(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 30)),
@@ -3455,7 +3503,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `no free july 2020 if child has a mix of club and daycare placements`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(
                 PlacementType.CLUB to
                     FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
@@ -3471,7 +3519,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `no free july 2020 if child has a mix of preschool and preschool daycare placements`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            YearMonth.of(2020, 7),
             listOf(
                 PlacementType.PRESCHOOL to
                     FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
@@ -3487,7 +3535,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `free july 2020 applies only on july`() {
         initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
+            YearMonth.of(2020, 6),
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 31)),
                 FiniteDateRange(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 30)),
@@ -3509,10 +3557,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `plain preschool is not invoiced`() {
         assertFalse(PlacementType.PRESCHOOL.isInvoiced())
 
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(period, PlacementType.PRESCHOOL)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -3523,10 +3572,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `plain preparatory is not invoiced`() {
         assertFalse(PlacementType.PREPARATORY.isInvoiced())
 
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(period, PlacementType.PREPARATORY)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -3537,10 +3587,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `plain club is not invoiced`() {
         assertFalse(PlacementType.CLUB.isInvoiced())
 
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(period, PlacementType.CLUB)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -3549,14 +3600,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice codebtor is set when partner on decision is child's guardian`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(period, PlacementType.DAYCARE, partner = testAdult_2.id)
         db.transaction {
             it.insertGuardian(testAdult_1.id, testChild_1.id)
             it.insertGuardian(testAdult_2.id, testChild_1.id)
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -3567,11 +3619,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice codebtor is not set when partner on decision is not child's guardian`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(period, PlacementType.DAYCARE, partner = testAdult_2.id)
         db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -3582,7 +3635,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice codebtor is not set when partner on decision is not any child's guardian`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(
             period,
             PlacementType.DAYCARE,
@@ -3594,7 +3648,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertGuardian(testAdult_1.id, testChild_2.id)
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -3606,7 +3660,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with a fixed daily fee divisor`() {
         // Contains 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // Override to use 20 days instead when calculating a daily refund
         val featureConfig = featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
@@ -3628,7 +3683,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3653,7 +3708,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days for half a month with some planned absences`() {
         // 23 operational days
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
@@ -3690,7 +3746,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3707,7 +3763,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days for a partial month with all days as planned or other absences`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
@@ -3748,7 +3805,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 },
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3771,7 +3828,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days for a partial month with all days as planned absences or sick leaves (freeSickLeaveOnContractDays = false)`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
@@ -3814,7 +3872,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // freeSickLeaveOnContractDays = false
         // ==> 50 % discount because this case is considered a normal full month of absences
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3837,7 +3895,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days for a partial month with all days as planned absences or sick leaves (freeSickLeaveOnContractDays = true)`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
@@ -3890,7 +3949,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3914,7 +3973,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days for half a month with (useContractDaysAsDailyFeeDivisor = false)`() {
         // 23 operational days
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
@@ -3954,7 +4014,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 featureConfig,
             )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3972,7 +4032,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days for half a month with some planned absences with (useContractDaysAsDailyFeeDivisor = false)`() {
         // 23 operational days
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
@@ -4020,7 +4081,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4037,7 +4098,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days for a partial month with all days as planned or other absences with (useContractDaysAsDailyFeeDivisor = false)`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
@@ -4089,7 +4151,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4111,7 +4173,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days for a partial month with all days as planned absences or sick leaves with (useContractDaysAsDailyFeeDivisor = false)`() {
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
@@ -4165,7 +4228,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         // freeSickLeaveOnContractDays = false
         // ==> 50 % discount because this case is considered a normal full month of absences
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4187,7 +4250,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 15 contract days, 2 fee decisions and 2 surplus days with (useContractDaysAsDailyFeeDivisor = false)`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         val decisions =
@@ -4239,7 +4303,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4277,7 +4341,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with a fixed daily fee divisor for half a month`() {
         // 23 operational days
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         // Override to use 20 days instead when calculating a daily fee
         val featureConfig = featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
@@ -4316,7 +4381,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4334,7 +4399,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with daily fee divisor 20 for 21 days`() {
         // 23 operational days
-        val period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
+        val month = YearMonth.of(2021, 3)
+        val period = FiniteDateRange.ofMonth(month)
 
         // Override to use 20 days instead when calculating a daily fee
         val featureConfig = featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
@@ -4373,7 +4439,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4406,7 +4472,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         // 19 operational days
-        val period = FiniteDateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 4, 30))
+        val month = YearMonth.of(2022, 4)
+        val period = FiniteDateRange.ofMonth(month)
 
         initDataForAbsences(listOf(period), listOf())
 
@@ -4421,7 +4488,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4453,7 +4520,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         // 19 operational days
-        val period = FiniteDateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 4, 30))
+        val month = YearMonth.of(2022, 4)
+        val period = FiniteDateRange.ofMonth(month)
 
         val absenceDays = listOf(LocalDate.of(2022, 4, 1) to AbsenceType.FORCE_MAJEURE)
 
@@ -4470,7 +4538,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4501,7 +4569,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         // 19 operational days
-        val period = FiniteDateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 4, 30))
+        val month = YearMonth.of(2022, 4)
+        val period = FiniteDateRange.ofMonth(month)
 
         // All operation days are force majeure absences
         val absenceDays =
@@ -4527,7 +4596,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4550,7 +4619,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice corrections are applied to invoices when generation is done multiple times`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions =
             listOf(
@@ -4576,6 +4646,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevInvoiceCorrection(
+                    targetMonth = month,
                     headOfFamilyId = testAdult_1.id,
                     childId = testChild_1.id,
                     amount = 1,
@@ -4618,16 +4689,86 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
         assertResult(db.read(getAllInvoices))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
         assertResult(db.read(getAllInvoices))
+    }
+
+    @Test
+    fun `unapplied invoice correction is moved to the current month`() {
+        val month = YearMonth.of(2019, 1)
+        val previousMonth = month.minusMonths(1)
+
+        val period = FiniteDateRange.ofMonth(month)
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period,
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                        )
+                    ),
+                )
+            )
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
+        val correctionId =
+            db.transaction {
+                it.insert(
+                    DevInvoiceCorrection(
+                        targetMonth = previousMonth,
+                        headOfFamilyId = testAdult_1.id,
+                        childId = testChild_1.id,
+                        amount = 1,
+                        unitPrice = -28900,
+                        period =
+                            FiniteDateRange(LocalDate.of(2018, 12, 1), LocalDate.of(2018, 12, 31)),
+                        unitId = testDaycare.id,
+                        product = productProvider.mapToProduct(PlacementType.DAYCARE),
+                        description = "",
+                        note = "",
+                    )
+                )
+            }
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(0, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product,
+                )
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-28900, invoiceRow.unitPrice)
+                assertEquals(-28900, invoiceRow.price)
+                assertEquals(correctionId, invoiceRow.correctionId)
+            }
+        }
     }
 
     @Test
     fun `invoice generation with 15 contract days, 1 sick leave and 1 surplus day`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 14 operational days first
         // then 1 sickleave
@@ -4651,7 +4792,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4676,7 +4817,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 10 contract days, 10 sick leaves`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 10 sickleaves
         val sickleaveDays =
@@ -4729,7 +4871,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 featureConfig,
             )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4754,7 +4896,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 10 contract days, 11 sick leave and 2 surplus day`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 1 operational days first
         // then 11 sickleaves
@@ -4794,7 +4937,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays10,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4825,11 +4968,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days and 7 surplus days results in a monthly maximum invoice`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         // no planned absences
         initDataForAbsences(listOf(period), listOf(), serviceNeed = snDaycareContractDays15)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4855,7 +4999,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with 13 contract days and 1 surplus day in preschool daycare results in a monthly maximum invoice no greater than the preschool daycare maximum (maxContractDaySurplusThreshold = 13)`() {
         db.transaction { it.insertServiceNeedOption(snPreschoolDaycareContractDays13) }
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 14 attendance days
         // then 8 planned absences
@@ -4893,7 +5038,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -4924,7 +5069,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { it.insertServiceNeedOption(snPreschoolDaycareContractDays13) }
 
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 14 attendance days
         // then 8 planned absences
@@ -4977,7 +5123,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5002,7 +5148,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days and 7 surplus days with a sibling discount results in a monthly maximum invoice`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         val decision =
@@ -5027,7 +5174,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5052,7 +5199,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days and 7 surplus days with a fee alteration results in a monthly maximum invoice`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         val decision =
@@ -5089,7 +5237,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5126,7 +5274,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days and 1 surplus day with maximum contract surplus days of 16 results in a normal increase`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 15 operational days first
         // then planned absences
@@ -5158,7 +5307,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5183,7 +5332,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation with 15 contract days and 2 surplus days with maximum contract surplus days of 16 results in a monthly maximum invoice`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 15 operational days first
         // then planned absences
@@ -5214,7 +5364,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5238,7 +5388,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with part month fee decisions and surplus days results in a part month maximum invoice`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         // 20 operational days and no planned absences
@@ -5263,7 +5414,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5287,7 +5438,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with part month fee decision ending early and surplus days results in a part month maximum invoice with (useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16)`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         // 18 operational days and no planned absences
@@ -5328,7 +5480,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5352,7 +5504,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with part month fee decision starting late and surplus days results in a part month maximum invoice with (useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16)`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         // 18 operational days and no planned absences
@@ -5393,7 +5546,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5418,7 +5571,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation from two fee decisions with contract surplus days  (useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16)`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         val decision =
@@ -5465,7 +5619,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5490,7 +5644,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `invoice generation from two fee decisions with changing fees with contract surplus days (useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16)`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         val decisions =
@@ -5549,7 +5704,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5582,7 +5737,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `Force majeure and free absence types are free`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // 1 force majeure absence
         val forceMajeure = listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
@@ -5592,7 +5748,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), forceMajeure + free)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5616,7 +5772,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `Free absence type is treated as other absence if feature is disabled`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // free absences for the whole month
         val free = datesBetween(period.start, period.end).map { it to AbsenceType.FREE_ABSENCE }
@@ -5633,7 +5790,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5656,7 +5813,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `Free absence type is does not generate surplus days`() {
         // 22 operational days
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         // free absences for the whole month
         val free = datesBetween(period.start, period.end).map { it to AbsenceType.FREE_ABSENCE }
@@ -5673,7 +5831,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 featureConfig,
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -5695,7 +5853,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with Free logic`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
 
         initDataForAbsences(listOf(period), listOf())
 
@@ -5716,7 +5875,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 featureConfig,
             )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -5724,7 +5883,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `family with children split between two fridge parents is invoiced as one`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertChildParentRelation(testAdult_2.id, testChild_2.id, period))
         val decision =
@@ -5759,7 +5919,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
         val result = db.read(getAllInvoices)
 
@@ -5837,22 +5997,23 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun initFreeJulyTestData(
-        invoicingPeriod: FiniteDateRange,
+        invoicingMonth: YearMonth,
         placementPeriods: List<FiniteDateRange>,
         placementType: PlacementType = PlacementType.DAYCARE,
         freeJulyStartOnSeptember: Boolean = false,
     ) =
         initFreeJulyTestData(
-            invoicingPeriod,
+            invoicingMonth,
             placementPeriods.map { placementType to it },
             freeJulyStartOnSeptember,
         )
 
     private fun initFreeJulyTestData(
-        invoicingPeriod: FiniteDateRange,
+        invoicingMonth: YearMonth,
         placementPeriods: List<Pair<PlacementType, FiniteDateRange>>,
         freeJulyStartOnSeptember: Boolean = false,
     ) {
+        val invoicingPeriod = FiniteDateRange.ofMonth(invoicingMonth)
         val decision =
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -5892,7 +6053,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 draftInvoiceGenerator,
                 featureConfig.copy(freeJulyStartOnSeptember = freeJulyStartOnSeptember),
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, invoicingPeriod) }
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, invoicingMonth) }
     }
 
     private fun initDataForAbsences(

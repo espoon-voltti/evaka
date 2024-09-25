@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
+import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 
@@ -174,6 +175,9 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
         fun ofMonth(year: Int, month: Month): FiniteDateRange =
             ofMonth(LocalDate.of(year, month, 1))
 
+        fun ofMonth(yearMonth: YearMonth): FiniteDateRange =
+            ofMonth(LocalDate.of(yearMonth.year, yearMonth.month, 1))
+
         fun ofMonth(date: LocalDate): FiniteDateRange {
             val from = date.with(date.withDayOfMonth(1))
             val to = date.with(lastDayOfMonth())
@@ -231,6 +235,9 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
 
     companion object {
         fun ofMonth(year: Int, month: Month): DateRange = ofMonth(LocalDate.of(year, month, 1))
+
+        fun ofMonth(yearMonth: YearMonth): DateRange =
+            ofMonth(LocalDate.of(yearMonth.year, yearMonth.month, 1))
 
         fun ofMonth(date: LocalDate): DateRange {
             val from = date.with(date.withDayOfMonth(1))
