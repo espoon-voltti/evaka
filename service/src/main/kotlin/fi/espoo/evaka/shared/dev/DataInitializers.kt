@@ -758,7 +758,7 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
                 sql(
                     """
 INSERT INTO assistance_need_decision (
-  id, decision_number, child_id, validity_period, status, language, decision_made, sent_for_decision,
+  id, decision_number, child_id, validity_period, end_date_not_known, status, language, decision_made, sent_for_decision,
   selected_unit, pedagogical_motivation, structural_motivation_opt_smaller_group,
   structural_motivation_opt_special_group, structural_motivation_opt_small_group,
   structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
@@ -771,7 +771,7 @@ INSERT INTO assistance_need_decision (
   preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids, annulment_reason
 )
 VALUES (
-    ${bind(data.id)}, ${bind(data.decisionNumber)}, ${bind(childId)}, ${bind(data.validityPeriod)}, ${bind(data.status)},
+    ${bind(data.id)}, ${bind(data.decisionNumber)}, ${bind(childId)}, ${bind(data.validityPeriod)}, ${bind(data.endDateNotKnown)}, ${bind(data.status)},
     ${bind(data.language)}, ${bind(data.decisionMade)}, ${bind(data.sentForDecision)}, ${bind(data.selectedUnit)}, ${bind(data.pedagogicalMotivation)},
     ${bind(data.structuralMotivationOptions.smallerGroup)}, ${bind(data.structuralMotivationOptions.specialGroup)}, ${bind(data.structuralMotivationOptions.smallGroup)},
     ${bind(data.structuralMotivationOptions.groupAssistant)}, ${bind(data.structuralMotivationOptions.childAssistant)}, ${bind(data.structuralMotivationOptions.additionalStaff)},

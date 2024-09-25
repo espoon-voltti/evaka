@@ -26,7 +26,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
                 sql(
                     """
 INSERT INTO assistance_need_decision (
-  child_id, process_id, created_by, validity_period, status, language, decision_made, sent_for_decision,
+  child_id, process_id, created_by, validity_period, end_date_not_known, status, language, decision_made, sent_for_decision,
   selected_unit, pedagogical_motivation, structural_motivation_opt_smaller_group,
   structural_motivation_opt_special_group, structural_motivation_opt_small_group,
   structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
@@ -43,6 +43,7 @@ VALUES (
     ${bind(processId)},
     ${bind(user.id)},
     ${bind(data.validityPeriod)},
+    ${bind(data.endDateNotKnown)},
     ${bind(data.status)},
     ${bind(data.language)},
     ${bind(data.decisionMade)},
@@ -112,7 +113,7 @@ fun Database.Read.getAssistanceNeedDecisionById(
     createQuery {
             sql(
                 """
-SELECT ad.id, decision_number, child_id, concat(child.first_name, ' ', child.last_name) child_name, validity_period, status,
+SELECT ad.id, decision_number, child_id, concat(child.first_name, ' ', child.last_name) child_name, validity_period, end_date_not_known, status,
   ad.language, decision_made, sent_for_decision, pedagogical_motivation, structural_motivation_opt_smaller_group,
   structural_motivation_opt_special_group, structural_motivation_opt_small_group,
   structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
@@ -161,6 +162,7 @@ fun Database.Transaction.updateAssistanceNeedDecision(
 UPDATE assistance_need_decision
 SET 
     validity_period = ${bind(data.validityPeriod)}, 
+    end_date_not_known = ${bind(data.endDateNotKnown)},
     status = ${bind(data.status)},
     language = ${bind(data.language)},
     decision_made = ${bind(data.decisionMade)},

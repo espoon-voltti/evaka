@@ -164,9 +164,10 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
         formState?.preparedBy2 &&
           !formState.preparedBy2.title &&
           'preparator2Title',
-        // there must be an end date if ASSISTANCE_SERVICES_FOR_TIME is selected
+        // there must be an end date or end_date_not_known = TRUE if ASSISTANCE_SERVICES_FOR_TIME is selected
         formState?.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') &&
           formState?.validityPeriod.end === null &&
+          !formState.endDateNotKnown &&
           'endDate',
         // at least one assistance level must be selected
         formState?.assistanceLevels.length === 0 && 'futureLevelOfAssistance'
@@ -310,7 +311,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                           InputInfo
                         ][]
                       ).map(([field, value]) => (
-                        <li key={field}>
+                        <li key={field} data-qa={`validation-message-${field}`}>
                           {getFieldTranslation(
                             i18n.childInformation.assistanceNeedDecision,
                             field

@@ -232,7 +232,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
   )
 
   const renderAssistanceLevelMultiCheckbox = useCallback(
-    (level: AssistanceLevel, label: string) => (
+    (level: AssistanceLevel, label: string, dataQa: string) => (
       <Checkbox
         checked={formState.assistanceLevels.includes(level)}
         label={label}
@@ -243,6 +243,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
               : formState.assistanceLevels.filter((level2) => level !== level2)
           })
         }
+        data-qa={dataQa}
       />
     ),
     [formState, setFieldVal]
@@ -511,19 +512,23 @@ export default React.memo(function AssistanceNeedDecisionForm({
         <Label>{t.futureLevelOfAssistance}</Label>
         {renderAssistanceLevelMultiCheckbox(
           'SPECIAL_ASSISTANCE',
-          t.assistanceLevel.specialAssistance
+          t.assistanceLevel.specialAssistance,
+          'special-assistance'
         )}
         {renderAssistanceLevelMultiCheckbox(
           'ENHANCED_ASSISTANCE',
-          t.assistanceLevel.enhancedAssistance
+          t.assistanceLevel.enhancedAssistance,
+          'enchanced-assistance'
         )}
         {renderAssistanceLevelMultiCheckbox(
           'ASSISTANCE_SERVICES_FOR_TIME',
-          t.assistanceLevel.assistanceServicesForTime
+          t.assistanceLevel.assistanceServicesForTime,
+          'assistance-services-for-time'
         )}
         {renderAssistanceLevelMultiCheckbox(
           'ASSISTANCE_ENDS',
-          t.assistanceLevel.assistanceEnds
+          t.assistanceLevel.assistanceEnds,
+          'assistance-ends'
         )}
         {fieldInfos.assistanceLevels &&
           fieldInfos.assistanceLevels.status === 'warning' && (
@@ -556,6 +561,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
           info={fieldInfos.startDate}
           maxDate={formState.validityPeriod.end ?? undefined}
           required
+          data-qa="validity-start-date"
         />
       </FieldWithInfo>
 
@@ -573,6 +579,14 @@ export default React.memo(function AssistanceNeedDecisionForm({
             hideErrorsBeforeTouched={!fieldInfos.endDate}
             info={fieldInfos.endDate}
             minDate={formState.validityPeriod.start}
+            data-qa="validity-end-date"
+          />
+          <Gap size="xs" />
+          <Checkbox
+            label={t.endDateNotKnown}
+            checked={formState.endDateNotKnown}
+            onChange={(checked) => setFieldVal({ endDateNotKnown: checked })}
+            data-qa="end-date-not-known-checkbox"
           />
         </FixedSpaceColumn>
       )}

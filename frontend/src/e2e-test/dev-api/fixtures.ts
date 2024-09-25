@@ -596,6 +596,7 @@ export class Fixture {
       },
       servicesMotivation: null,
       validityPeriod: new DateRange(LocalDate.of(2019, 1, 2), null),
+      endDateNotKnown: false,
       status: 'DRAFT',
       structuralMotivationDescription: null,
       structuralMotivationOptions: {
@@ -659,6 +660,7 @@ export class Fixture {
       },
       servicesMotivation: 'Services motivation text',
       validityPeriod: new DateRange(LocalDate.of(2019, 1, 2), null),
+      endDateNotKnown: false,
       status: 'DRAFT',
       structuralMotivationDescription: 'Structural motivation description text',
       structuralMotivationOptions: {

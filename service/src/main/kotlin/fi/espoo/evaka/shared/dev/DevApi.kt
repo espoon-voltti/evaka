@@ -1933,6 +1933,7 @@ data class DevAssistanceNeedDecision(
     val decisionNumber: Long?,
     val childId: ChildId,
     val validityPeriod: DateRange,
+    val endDateNotKnown: Boolean,
     val status: AssistanceNeedDecisionStatus,
     val language: OfficialLanguage,
     val decisionMade: LocalDate?,

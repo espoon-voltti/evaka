@@ -1194,6 +1194,7 @@ export const fi = {
       disclaimer:
         'Varhaiskasvatuslain 15 e §:n mukaan tämä päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
       decisionNumber: 'Päätösnumero',
+      endDateNotKnown: 'Tukipalvelun päättymisajankohta ei tiedossa',
       statuses: {
         DRAFT: 'Luonnos',
         NEEDS_WORK: 'Korjattava',

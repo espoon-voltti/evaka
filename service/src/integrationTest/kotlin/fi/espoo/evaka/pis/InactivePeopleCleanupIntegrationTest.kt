@@ -452,6 +452,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     motivationForDecision = null,
                     unreadGuardianIds = null,
                     annulmentReason = "",
+                    endDateNotKnown = false,
                 ),
             )
         }

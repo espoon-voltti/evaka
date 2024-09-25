@@ -146,6 +146,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             otherRepresentativeDetails = null,
             assistanceLevels = setOf(AssistanceLevel.ENHANCED_ASSISTANCE),
             motivationForDecision = "Motivation for decision",
+            endDateNotKnown = false,
         )
 
     @BeforeEach
@@ -843,6 +844,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                             dateOfBirth = LocalDate.of(2012, 1, 4),
                         ),
                     annulmentReason = "",
+                    endDateNotKnown = false,
                 ),
             )
 
