@@ -54,3 +54,14 @@ data class ServiceApplication(
     val additionalInfo: String,
     @Nested("decision") val decision: ServiceApplicationDecision?,
 )
+
+data class UndecidedServiceApplicationSummary(
+    val id: ServiceApplicationId,
+    val sentAt: HelsinkiDateTime,
+    val childId: ChildId,
+    val childName: String,
+    val startDate: LocalDate,
+    val placementEndDate: LocalDate,
+    val currentNeed: String?,
+    val newNeed: String,
+)

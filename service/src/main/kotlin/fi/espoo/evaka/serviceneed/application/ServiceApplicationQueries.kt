@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneed.application
 
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -58,6 +59,36 @@ fun Database.Read.getServiceApplication(id: ServiceApplicationId): ServiceApplic
 
 fun Database.Read.getServiceApplicationsOfChild(childId: ChildId): List<ServiceApplication> =
     getServiceApplications(Predicate { where("$it.child_id = ${bind(childId)}") })
+
+fun Database.Read.getUndecidedServiceApplicationsByUnit(
+    unitId: DaycareId
+): List<UndecidedServiceApplicationSummary> =
+    createQuery {
+            sql(
+                """
+    SELECT
+        sa.id,
+        sa.sent_at,
+        sa.child_id,
+        ch.last_name || ' ' || ch.first_name AS child_name,
+        sa.start_date,
+        pl.end_date AS placement_end_date,
+        old_sno.name_fi AS current_need,
+        new_sno.name_fi AS new_need
+    FROM service_application sa
+    JOIN person ch ON ch.id = sa.child_id
+    JOIN placement pl ON pl.child_id = sa.child_id
+        AND between_start_and_end(daterange(pl.start_date, pl.end_date, '[]'), sa.start_date)
+    LEFT JOIN service_need sn ON sn.placement_id = pl.id 
+        AND between_start_and_end(daterange(sn.start_date, sn.end_date, '[]'), sa.start_date)
+    LEFT JOIN service_need_option old_sno ON old_sno.id = sn.option_id AND NOT old_sno.default_option
+    JOIN service_need_option new_sno ON new_sno.id = sa.service_need_option_id AND NOT new_sno.default_option
+    WHERE sa.decision_status IS NULL AND pl.unit_id = ${bind(unitId)}
+    ORDER BY sa.sent_at, sa.start_date
+"""
+            )
+        }
+        .toList()
 
 fun Database.Transaction.insertServiceApplication(
     sentAt: HelsinkiDateTime,

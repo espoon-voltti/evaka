@@ -815,7 +815,7 @@ export class ApplicationProcessPage {
 
   async waitUntilLoaded() {
     await this.page
-      .find('[data-qa="application-process-page"][data-isloading="false"]')
+      .find('[data-qa="daycare-applications"][data-isloading="false"]')
       .waitUntilVisible()
   }
 

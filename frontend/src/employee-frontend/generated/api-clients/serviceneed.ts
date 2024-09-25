@@ -14,11 +14,13 @@ import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedUpdateRequest } from 'lib-common/generated/api-types/serviceneed'
 import { UUID } from 'lib-common/types'
+import { UndecidedServiceApplicationSummary } from 'lib-common/generated/api-types/serviceneed'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { deserializeJsonServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { deserializeJsonServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import { deserializeJsonUndecidedServiceApplicationSummary } from 'lib-common/generated/api-types/serviceneed'
 import { uri } from 'lib-common/uri'
 
 
@@ -138,6 +140,26 @@ export async function getChildServiceApplications(
     params
   })
   return json.map(e => deserializeJsonEmployeeServiceApplication(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.getUndecidedServiceApplications
+*/
+export async function getUndecidedServiceApplications(
+  request: {
+    unitId: UUID
+  }
+): Promise<UndecidedServiceApplicationSummary[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId]
+  )
+  const { data: json } = await client.request<JsonOf<UndecidedServiceApplicationSummary[]>>({
+    url: uri`/employee/service-applications/undecided`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonUndecidedServiceApplicationSummary(e))
 }
 
 

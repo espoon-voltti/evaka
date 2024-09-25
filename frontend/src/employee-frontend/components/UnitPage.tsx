@@ -147,9 +147,12 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           ]
         : []),
       ...(unitInformation.isSuccess &&
-      unitInformation.value.permittedActions.includes(
+      (unitInformation.value.permittedActions.includes(
         'READ_APPLICATIONS_AND_PLACEMENT_PLANS'
-      )
+      ) ||
+        unitInformation.value.permittedActions.includes(
+          'READ_SERVICE_APPLICATIONS'
+        ))
         ? [
             {
               id: 'application-process',
