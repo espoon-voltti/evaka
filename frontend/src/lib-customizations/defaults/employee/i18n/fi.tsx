@@ -1533,8 +1533,8 @@ export const fi = {
         accept: 'Hyväksy',
         reject: 'Hylkää',
         confirmAcceptTitle: 'Hyväksytäänkö hakemus uudesta palveluntarpeesta?',
-        confirmAcceptText: (range: FiniteDateRange) =>
-          `Uusi palveluntarve luodaan ajalle ${range.format()}.`,
+        confirmAcceptText: (range: FiniteDateRange, placementChange: boolean) =>
+          `Uusi ${placementChange ? 'sijoitus ja ' : ''}palveluntarve luodaan ajalle ${range.format()}.`,
         shiftCareLabel: 'Ilta/vuorohoito',
         shiftCareCheckbox: 'Lapsella on oikeus ilta/vuorohoitoon',
         partWeekLabel: 'Osaviikkoisuus',

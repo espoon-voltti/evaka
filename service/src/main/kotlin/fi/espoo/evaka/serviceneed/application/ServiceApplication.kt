@@ -6,6 +6,7 @@ package fi.espoo.evaka.serviceneed.application
 
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -47,6 +48,7 @@ data class ServiceApplicationPlacement(
     @PropagateNull val id: PlacementId,
     val type: PlacementType,
     val endDate: LocalDate,
+    val unitId: DaycareId,
 )
 
 data class ServiceApplication(
@@ -73,3 +75,20 @@ data class UndecidedServiceApplicationSummary(
     val currentNeed: String?,
     val newNeed: String?,
 )
+
+fun isPlacementTypeChangeAllowed(old: PlacementType, new: PlacementType): Boolean {
+    if (old == new) return true
+
+    val set = setOf(old, new)
+    if (set == setOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME)) return true
+    if (
+        set ==
+            setOf(
+                PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            )
+    )
+        return true
+
+    return false
+}

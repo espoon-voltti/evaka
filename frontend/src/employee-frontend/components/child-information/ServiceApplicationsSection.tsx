@@ -197,7 +197,9 @@ const AcceptanceModal = React.memo(function AcceptanceModal({
           <InfoBox
             noMargin
             message={i18n.childInformation.serviceApplications.decision.confirmAcceptText(
-              range
+              range,
+              application.currentPlacement?.type !==
+                application.serviceNeedOption.validPlacementType
             )}
           />
         </div>

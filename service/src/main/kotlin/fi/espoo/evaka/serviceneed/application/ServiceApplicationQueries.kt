@@ -45,7 +45,8 @@ fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplicat
             sa.rejected_reason AS decision_rejected_reason,
             pl.id AS current_placement_id,
             pl.type AS current_placement_type,
-            pl.end_date AS current_placement_end_date
+            pl.end_date AS current_placement_end_date,
+            pl.unit_id AS current_placement_unit_id
         FROM service_application sa
         JOIN person pe ON pe.id = sa.person_id
         JOIN person ch ON ch.id = sa.child_id

@@ -88,6 +88,7 @@ export interface ServiceApplicationPlacement {
   endDate: LocalDate
   id: UUID
   type: PlacementType
+  unitId: UUID
 }
 
 /**
