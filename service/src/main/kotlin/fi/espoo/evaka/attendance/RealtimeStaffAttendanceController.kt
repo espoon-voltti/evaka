@@ -308,7 +308,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         )
     }
 
-    @GetMapping("/employee/staff-attendances/realtime/open-attendence")
+    @GetMapping("/employee/staff-attendances/realtime/open-attendance")
     fun getOpenGroupAttendance(
         db: Database,
         user: AuthenticatedUser.Employee,

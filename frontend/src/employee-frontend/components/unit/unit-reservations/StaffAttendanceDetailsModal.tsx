@@ -82,6 +82,7 @@ interface Props<
   onSave: (body: T[]) => void
   onSuccess: () => void
   onClose: () => void
+  unitId: string
 }
 
 export interface EditedAttendance {
@@ -119,7 +120,8 @@ function StaffAttendanceDetailsModal<
   validate,
   onSave,
   onSuccess,
-  onClose
+  onClose,
+  unitId
 }: Props<T>) {
   const { i18n } = useTranslation()
 
@@ -357,6 +359,9 @@ function StaffAttendanceDetailsModal<
     ? openAttendanceResult.value.openGroupAttendance
     : null
 
+  const openAttendanceInAnotherUnit =
+    !!openAttendance && openAttendance.unitId !== unitId
+
   return (
     <PlainModal margin="auto" data-qa="staff-attendance-details-modal">
       <Content>
@@ -488,7 +493,7 @@ function StaffAttendanceDetailsModal<
         )}
 
         {!arrivalWithoutDeparture &&
-          !!openAttendance &&
+          openAttendanceInAnotherUnit &&
           openAttendance.date.isEqualOrBefore(date) && (
             <FullGridWidth>
               <FixedSpaceRow

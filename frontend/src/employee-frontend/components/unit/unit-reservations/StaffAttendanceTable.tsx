@@ -325,6 +325,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       defaultGroupId={defaultGroupId}
       onClose={onClose}
       onSuccess={onSuccess}
+      unitId={unitId}
     />
   ) : (
     <StaffAttendanceDetailsModal
@@ -343,6 +344,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       defaultGroupId={defaultGroupId}
       onClose={onClose}
       onSuccess={onSuccess}
+      unitId={unitId}
     />
   )
 })
