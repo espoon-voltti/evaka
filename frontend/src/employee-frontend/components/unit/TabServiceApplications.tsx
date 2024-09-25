@@ -65,7 +65,7 @@ export default React.memo(function TabServiceApplications({ unitId }: Props) {
                   <Td data-qa="range">
                     {row.startDate.format()} - {row.placementEndDate.format()}
                   </Td>
-                  <Td data-qa="new-need">{row.newNeed ?? '-'}</Td>
+                  <Td data-qa="new-need">{row.newNeed}</Td>
                   <Td data-qa="current-need">{row.currentNeed ?? '-'}</Td>
                   <Td data-qa="sent-date">
                     {row.sentAt.toLocalDate().format()}

@@ -222,7 +222,7 @@ export interface UndecidedServiceApplicationSummary {
   childName: string
   currentNeed: string | null
   id: UUID
-  newNeed: string | null
+  newNeed: string
   placementEndDate: LocalDate
   sentAt: HelsinkiDateTime
   startDate: LocalDate

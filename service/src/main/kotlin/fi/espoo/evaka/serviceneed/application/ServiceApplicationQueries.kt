@@ -82,7 +82,7 @@ fun Database.Read.getUndecidedServiceApplicationsByUnit(
     LEFT JOIN service_need sn ON sn.placement_id = pl.id 
         AND between_start_and_end(daterange(sn.start_date, sn.end_date, '[]'), sa.start_date)
     LEFT JOIN service_need_option old_sno ON old_sno.id = sn.option_id AND NOT old_sno.default_option
-    LEFT JOIN service_need_option new_sno ON new_sno.id = sa.service_need_option_id AND NOT new_sno.default_option
+    JOIN service_need_option new_sno ON new_sno.id = sa.service_need_option_id AND NOT new_sno.default_option
     WHERE sa.decision_status IS NULL AND pl.unit_id = ${bind(unitId)}
     ORDER BY sa.sent_at, sa.start_date
 """

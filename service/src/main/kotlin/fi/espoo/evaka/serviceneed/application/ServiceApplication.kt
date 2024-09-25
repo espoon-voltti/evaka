@@ -63,5 +63,5 @@ data class UndecidedServiceApplicationSummary(
     val startDate: LocalDate,
     val placementEndDate: LocalDate,
     val currentNeed: String?,
-    val newNeed: String?,
+    val newNeed: String,
 )
