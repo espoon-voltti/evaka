@@ -2130,6 +2130,7 @@ const en: Translations = {
       incomeStatementForm: 'Income statement form',
       startDate: 'Valid as of',
       endDate: 'Valid until',
+      createdAt: 'Created',
       handled: 'Processed',
       openIncomeStatement: 'Open form',
       deleteConfirm: 'Do you want to delete the income statement?',
