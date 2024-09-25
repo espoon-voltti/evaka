@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
+import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
@@ -413,7 +414,7 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
                     u.provider_type,
                     u.enabled_pilot_features,
                     u.language,
-                    a.name AS area_name
+                    a.name AS area_name,
                     p.modified_at,
                     e.id AS modified_by_id,
                     e.name AS modified_by_name,
@@ -422,7 +423,7 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
                 JOIN daycare u ON p.unit_id = u.id
                 JOIN person c ON p.child_id = c.id
                 JOIN care_area a ON u.care_area_id = a.id
-                Left JOIN evaka_user e ON p.modified_by = e.id
+                LEFT JOIN evaka_user e ON p.modified_by = e.id
                 WHERE p.id = ${bind(id)}
                 """
             )
@@ -770,11 +771,13 @@ private val toDaycarePlacement: Row.() -> DaycarePlacement = {
         type = column("placement_type"),
         modifiedAt = column("modified_at"),
         modifiedBy =
-            EvakaUser(
-                EvakaUserId(column("modified_by_id")),
-                column("modified_by_name"),
-                EvakaUserType.valueOf(column("modified_by_type")),
-            ),
+            column<UUID?>("modified_by_id")?.let {
+                EvakaUser(
+                    EvakaUserId(column("modified_by_id")),
+                    column("modified_by_name"),
+                    EvakaUserType.valueOf(column("modified_by_type")),
+                )
+            },
     )
 }
 
