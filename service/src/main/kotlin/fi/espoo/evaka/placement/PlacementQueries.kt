@@ -773,9 +773,9 @@ private val toDaycarePlacement: Row.() -> DaycarePlacement = {
         modifiedBy =
             column<UUID?>("modified_by_id")?.let {
                 EvakaUser(
-                    EvakaUserId(column("modified_by_id")),
+                    column("modified_by_id"),
                     column("modified_by_name"),
-                    EvakaUserType.valueOf(column("modified_by_type")),
+                    column("modified_by_type"),
                 )
             },
     )
