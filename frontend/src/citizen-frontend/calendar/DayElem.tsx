@@ -98,6 +98,7 @@ export default React.memo(function DayElem({
       $highlight={highlight}
       onClick={handleClick}
       data-qa={`mobile-calendar-day-${calendarDay.date.formatIso()}`}
+      id={`calendar-day-${calendarDay.date.formatIso()}`}
     >
       <DayColumn
         spacing="xxs"

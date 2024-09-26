@@ -195,7 +195,12 @@ const CalendarPage = React.memo(function CalendarPage() {
                   date={modalState.date}
                   reservationsResponse={response}
                   selectDate={openDayModal}
-                  onClose={closeModal}
+                  onClose={() => {
+                    closeModal()
+                    findElementAndFocus(
+                      `calendar-day-${modalState.date.formatIso()}`
+                    )
+                  }}
                   openAbsenceModal={(date) => openAbsenceModal(date, true)}
                   events={events}
                   holidayPeriods={holidayPeriods}
@@ -466,6 +471,16 @@ function buildQueryString(modal: URLModalState): string {
     case 'discussion-reservations':
       return `modal=discussion-reservations${modal.selectedChildId ? '&selectedChildId=' + modal.selectedChildId : ''}${modal.selectedEventId ? '&selectedEventId=' + modal.selectedEventId : ''}`
   }
+}
+
+function findElementAndFocus(id: string): void {
+  const focusElement = () => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.focus()
+    }
+  }
+  requestAnimationFrame(focusElement)
 }
 
 const DesktopOnly = styled(Desktop)`
