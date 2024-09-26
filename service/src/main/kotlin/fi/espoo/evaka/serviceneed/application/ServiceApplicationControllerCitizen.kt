@@ -112,7 +112,7 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
 
                     tx.getServiceNeedOptions()
                         .filter {
-                            it.validPlacementType == placement.type &&
+                            isPlacementTypeChangeAllowed(placement.type, it.validPlacementType) &&
                                 !it.defaultOption &&
                                 DateRange(it.validFrom, it.validTo).includes(date)
                         }
@@ -178,7 +178,10 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                         tx.getServiceNeedOptions().none {
                             it.id == body.serviceNeedOptionId &&
                                 !it.defaultOption &&
-                                it.validPlacementType == placementType &&
+                                isPlacementTypeChangeAllowed(
+                                    placementType,
+                                    it.validPlacementType,
+                                ) &&
                                 DateRange(it.validFrom, it.validTo).includes(body.startDate)
                         }
                     )

@@ -7,16 +7,23 @@ package fi.espoo.evaka.serviceneed.application
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.AuditId.Companion.invoke
+import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
+import fi.espoo.evaka.placement.createPlacement
+import fi.espoo.evaka.placement.deleteFutureReservationsAndAbsencesOutsideValidPlacements
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.createServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.ServiceApplicationId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -30,7 +37,11 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/service-applications")
-class ServiceApplicationController(private val accessControl: AccessControl) {
+class ServiceApplicationController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val featureConfig: FeatureConfig,
+) {
     data class EmployeeServiceApplication(
         val data: ServiceApplication,
         val permittedActions: Set<Action.ServiceApplication>,
@@ -143,7 +154,12 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                                 "Child no longer has placement on requested start date"
                             )
 
-                    if (placement.type != application.serviceNeedOption.validPlacementType) {
+                    if (
+                        !isPlacementTypeChangeAllowed(
+                            placement.type,
+                            application.serviceNeedOption.validPlacementType,
+                        )
+                    ) {
                         throw BadRequest(
                             "Selected service need is not valid with child's placement type"
                         )
@@ -157,13 +173,46 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                         } else {
                             optionValidityEnd
                         }
+                    val range = FiniteDateRange(application.startDate, endDate)
+
+                    val placementId =
+                        if (placement.type != application.serviceNeedOption.validPlacementType) {
+                            // needs a new placement
+                            createPlacement(
+                                    tx,
+                                    childId = application.childId,
+                                    unitId = placement.unitId,
+                                    period = range,
+                                    type = application.serviceNeedOption.validPlacementType,
+                                    useFiveYearsOldDaycare =
+                                        featureConfig.fiveYearsOldDaycareEnabled,
+                                    placeGuarantee = false,
+                                )
+                                .also {
+                                    tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                                        application.childId,
+                                        now.toLocalDate(),
+                                    )
+                                    generateAbsencesFromIrregularDailyServiceTimes(
+                                        tx,
+                                        now,
+                                        application.childId,
+                                    )
+                                }
+                                .first {
+                                    FiniteDateRange(it.startDate, it.endDate)
+                                        .includes(application.startDate)
+                                }
+                                .id
+                        } else placement.id
+
                     val serviceNeedId =
                         createServiceNeed(
                             tx = tx,
                             user = user,
-                            placementId = placement.id,
-                            startDate = application.startDate,
-                            endDate = endDate,
+                            placementId = placementId,
+                            startDate = range.start,
+                            endDate = range.end,
                             optionId = application.serviceNeedOption.id,
                             shiftCare = body.shiftCareType,
                             partWeek = body.partWeek,
@@ -172,14 +221,25 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
 
                     tx.setServiceApplicationAccepted(id, now, user)
 
-                    application.childId to serviceNeedId
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                application.childId,
+                                range.asDateRange(),
+                            )
+                        ),
+                        runAt = now,
+                    )
+
+                    Triple(application.childId, serviceNeedId, placementId)
                 }
             }
-            .also { (childId, serviceNeedId) ->
+            .also { (childId, serviceNeedId, placementId) ->
                 Audit.ChildServiceApplicationAccept.log(
                     targetId = AuditId(id),
                     objectId = AuditId(serviceNeedId),
-                    meta = mapOf("childId" to childId),
+                    meta = mapOf("childId" to childId, "placementId" to placementId),
                 )
             }
     }

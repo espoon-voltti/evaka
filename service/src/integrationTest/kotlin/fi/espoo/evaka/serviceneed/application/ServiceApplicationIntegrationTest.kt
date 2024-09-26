@@ -7,6 +7,7 @@ package fi.espoo.evaka.serviceneed.application
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ChildId
@@ -34,6 +35,7 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snDaycarePartDay25
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -133,6 +135,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                     id = placement.id,
                                     type = placement.type,
                                     endDate = placement.endDate,
+                                    unitId = daycare.id,
                                 ),
                         ),
                     permittedActions = setOf(Action.Citizen.ServiceApplication.DELETE),
@@ -275,6 +278,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                     id = placement.id,
                                     type = placement.type,
                                     endDate = placement.endDate,
+                                    unitId = daycare.id,
                                 ),
                         ),
                     permittedActions =
@@ -370,6 +374,66 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             assertEquals(it.startDate, serviceNeed.startDate)
             assertEquals(it.endDate, serviceNeed.endDate)
             assertEquals(it.option.id, serviceNeed.optionId)
+        }
+    }
+
+    @Test
+    fun `citizen can change from part day daycare to full day or vice versa`() {
+        db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
+            tx.insert(
+                DevServiceApplication(
+                    childId = child.id,
+                    personId = adult.id,
+                    startDate = startDate,
+                    serviceNeedOptionId = snDaycarePartDay25.id,
+                    additionalInfo = "Sain potkut",
+                    sentAt = now.minusDays(1),
+                )
+            )
+        }
+
+        val application = getChildServiceApplicationsAsEmployee().first().data
+
+        acceptServiceApplication(
+            id = application.id,
+            body =
+                ServiceApplicationController.AcceptServiceApplicationBody(
+                    shiftCareType = ShiftCareType.NONE,
+                    partWeek = false,
+                ),
+        )
+
+        // placement was updated
+        val placements = db.read { it.getPlacementsForChild(child.id) }.sortedBy { it.startDate }
+        assertEquals(2, placements.size)
+        placements[0].let {
+            assertEquals(it.startDate, placement.startDate)
+            assertEquals(it.endDate, startDate.minusDays(1))
+            assertEquals(it.type, placement.type)
+            assertEquals(it.unitId, placement.unitId)
+        }
+        placements[1].let {
+            assertEquals(it.startDate, startDate)
+            assertEquals(it.endDate, placement.endDate)
+            assertEquals(it.type, snDaycarePartDay25.validPlacementType)
+            assertEquals(it.unitId, placement.unitId)
+        }
+
+        // service need was updated
+        val serviceNeeds = db.read { it.getServiceNeedsByChild(child.id) }.sortedBy { it.startDate }
+        assertEquals(2, serviceNeeds.size)
+        serviceNeeds[0].let {
+            assertEquals(it.startDate, serviceNeed.startDate)
+            assertEquals(it.endDate, startDate.minusDays(1))
+            assertEquals(it.option.id, serviceNeed.optionId)
+        }
+        serviceNeeds[1].let {
+            assertEquals(it.startDate, startDate)
+            assertEquals(it.endDate, placement.endDate)
+            assertEquals(it.option.id, snDaycarePartDay25.id)
+            assertEquals(it.shiftCare, ShiftCareType.NONE)
+            assertFalse(it.partWeek)
         }
     }
 
