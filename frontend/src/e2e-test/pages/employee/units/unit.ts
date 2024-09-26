@@ -806,11 +806,13 @@ class AclRow extends Element {
 export class ApplicationProcessPage {
   waitingConfirmation: WaitingConfirmationSection
   placementProposals: PlacementProposalsSection
+  serviceApplications: ServiceApplicationsSection
   constructor(private readonly page: Page) {
     this.waitingConfirmation = new WaitingConfirmationSection(
       page.findByDataQa('waiting-confirmation-section')
     )
     this.placementProposals = new PlacementProposalsSection(this.page)
+    this.serviceApplications = new ServiceApplicationsSection(this.page)
   }
 
   async waitUntilLoaded() {
@@ -848,6 +850,21 @@ class WaitingConfirmationSection extends Element {
       `[data-qa="placement-plan-row"][data-application-id="${applicationId}"][data-rejected=${rejected.toString()}]`
     ).waitUntilVisible()
   }
+}
+
+class ServiceApplicationsSection {
+  constructor(private readonly page: Page) {}
+
+  async assertApplicationCount(n: number) {
+    await this.page
+      .findByDataQa('service-applications-table')
+      .waitUntilVisible()
+    await this.page.findAllByDataQa('service-application-row').assertCount(n)
+  }
+  applicationRow = (n: number) =>
+    this.page.findAllByDataQa('service-application-row').nth(n)
+  applicationChildLink = (n: number) =>
+    this.applicationRow(n).findByDataQa('child-name')
 }
 
 class PlacementProposalsSection {

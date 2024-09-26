@@ -44,7 +44,7 @@ export default React.memo(function TabServiceApplications({ unitId }: Props) {
     >
       {renderResult(applications, (applications) => (
         <div>
-          <Table>
+          <Table data-qa="service-applications-table">
             <Thead>
               <Tr>
                 <Th>{i18n.unit.serviceApplications.child}</Th>

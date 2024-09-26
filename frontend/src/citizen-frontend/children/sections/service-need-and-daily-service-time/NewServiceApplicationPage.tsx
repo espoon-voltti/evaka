@@ -105,6 +105,7 @@ export default React.memo(function NewServiceApplicationPage() {
                   locale={lang}
                   hideErrorsBeforeTouched
                   info={startDate.inputInfo()}
+                  data-qa="start-date"
                 />
               </FixedSpaceColumn>
               {startDate.isValid() && (
@@ -119,6 +120,7 @@ export default React.memo(function NewServiceApplicationPage() {
                           <SelectF
                             bind={serviceNeed}
                             placeholder={i18n.common.select}
+                            data-qa="service-need-option"
                           />
                         </FixedSpaceColumn>
                       ) : (
@@ -140,7 +142,7 @@ export default React.memo(function NewServiceApplicationPage() {
               )}
               <FixedSpaceColumn spacing="s">
                 <Label>{i18n.children.serviceApplication.additionalInfo}</Label>
-                <InputFieldF bind={additionalInfo} />
+                <InputFieldF bind={additionalInfo} data-qa="additional-info" />
               </FixedSpaceColumn>
               <FixedSpaceRow>
                 <Button
@@ -163,6 +165,7 @@ export default React.memo(function NewServiceApplicationPage() {
                     }
                   })}
                   onSuccess={() => navigate(`/children/${childId}`)}
+                  data-qa="create-button"
                 />
               </FixedSpaceRow>
             </FixedSpaceColumn>

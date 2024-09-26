@@ -9,7 +9,8 @@ import {
   AsyncButton,
   Page,
   TextInput,
-  ElementCollection
+  ElementCollection,
+  Element
 } from '../../utils/page'
 
 import { EnvType } from './citizen-header'
@@ -17,12 +18,18 @@ import { EnvType } from './citizen-header'
 export class CitizenChildPage {
   #placements: ElementCollection
   #terminatedPlacements: ElementCollection
+  createServiceApplicationButton: Element
+  openApplicationInfoBox: Element
   constructor(
     private readonly page: Page,
     private readonly env: EnvType = 'desktop'
   ) {
     this.#placements = page.findAllByDataQa('placement')
     this.#terminatedPlacements = page.findAllByDataQa('terminated-placement')
+    this.createServiceApplicationButton = page.findByDataQa(
+      'create-service-application'
+    )
+    this.openApplicationInfoBox = page.findByDataQa('open-application-info-box')
   }
 
   async assertChildNameIsShown(name: string) {
@@ -170,4 +177,50 @@ export class CitizenChildPage {
 
   childDocumentLink = (documentId: UUID) =>
     this.childDocumentRow(documentId).findByDataQa('child-document-link')
+
+  assertServiceApplicationsCount = (n: number) =>
+    this.page.findAllByDataQa('service-application-row').assertCount(n)
+  serviceApplicationRow = (n: number) =>
+    this.page.findAllByDataQa('service-application-row').nth(n)
+  serviceApplicationSentDate = (n: number) =>
+    this.serviceApplicationRow(n).findByDataQa('application-sent-date')
+  serviceApplicationStartDate = (n: number) =>
+    this.serviceApplicationRow(n).findByDataQa('application-start-date')
+  serviceApplicationServiceNeed = (n: number) =>
+    this.serviceApplicationRow(n).findByDataQa(
+      'application-service-need-description'
+    )
+  serviceApplicationStatus = (n: number) =>
+    this.serviceApplicationRow(n).findByDataQa('application-status')
+  serviceApplicationCancelButton = (n: number) =>
+    this.serviceApplicationRow(n).findByDataQa('cancel-application')
+
+  async assertServiceApplicationDetails(
+    n: number,
+    additionalInfo: string,
+    status: string,
+    rejectedReason: string | null
+  ) {
+    {
+      await this.serviceApplicationRow(n).findByDataQa('open-details').click()
+      const modal = this.page.findByDataQa('service-application-modal')
+
+      await modal
+        .findByDataQa('additional-info')
+        .assertTextEquals(additionalInfo)
+      await modal
+        .findByDataQa('decision-status')
+        .assertText((text) => text.startsWith(status))
+
+      if (rejectedReason) {
+        await modal
+          .findByDataQa('rejected-reason')
+          .assertTextEquals(rejectedReason)
+      } else {
+        await modal.findByDataQa('rejected-reason').waitUntilHidden()
+      }
+
+      await modal.findByDataQa('close-btn').click()
+    }
+  }
 }
