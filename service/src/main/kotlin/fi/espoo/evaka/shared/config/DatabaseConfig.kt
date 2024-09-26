@@ -42,6 +42,7 @@ class DatabaseConfig {
                     ""
                 }
             )
+            .validateMigrationNaming(true)
             .dataSource(env.url, env.flywayUsername, env.flywayPassword.value)
             .locations(*env.flywayLocations.toTypedArray())
             .placeholders(
