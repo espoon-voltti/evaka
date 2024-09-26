@@ -251,23 +251,15 @@ WHERE id = ${bind(guardianId)}
         .exactlyOneOrNull<Boolean>()
 }
 
-fun Database.Read.getUnitApplicationNotifications(unitId: DaycareId): Int {
-    val applicationStatus =
-        listOf(
-            ApplicationStatus.WAITING_UNIT_CONFIRMATION,
-            ApplicationStatus.WAITING_MAILING,
-            ApplicationStatus.WAITING_CONFIRMATION,
-        )
-    val unitConfirmationStatus = PlacementPlanConfirmationStatus.REJECTED
-
+fun Database.Read.getWaitingUnitConfirmationApplicationsCount(unitId: DaycareId): Int {
     return createQuery {
             sql(
                 """
 SELECT COUNT(*)
 FROM placement_plan pp
 JOIN application a ON pp.application_id = a.id
-WHERE unit_id = ${bind(unitId)} AND a.status = ANY(${bind(applicationStatus)}::application_status_type[])
-AND pp.unit_confirmation_status != ${bind(unitConfirmationStatus)}::confirmation_status
+WHERE unit_id = ${bind(unitId)} AND a.status = ${bind(ApplicationStatus.WAITING_UNIT_CONFIRMATION)}
+AND pp.unit_confirmation_status != ${bind(PlacementPlanConfirmationStatus.REJECTED)}
 """
             )
         }

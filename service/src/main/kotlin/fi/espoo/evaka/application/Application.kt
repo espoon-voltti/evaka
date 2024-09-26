@@ -158,7 +158,7 @@ enum class ApplicationType : DatabaseEnum {
     override val sqlType: String = "application_type"
 }
 
-enum class ApplicationStatus {
+enum class ApplicationStatus : DatabaseEnum {
     CREATED,
     SENT,
     WAITING_PLACEMENT,
@@ -168,7 +168,9 @@ enum class ApplicationStatus {
     WAITING_CONFIRMATION,
     REJECTED,
     ACTIVE,
-    CANCELLED,
+    CANCELLED;
+
+    override val sqlType: String = "application_status_type"
 }
 
 enum class ApplicationOrigin : DatabaseEnum {
