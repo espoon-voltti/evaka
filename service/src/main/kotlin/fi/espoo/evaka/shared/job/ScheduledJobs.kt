@@ -201,10 +201,16 @@ enum class ScheduledJob(
         ScheduledJobs::databaseSanityChecks,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 45))),
     ),
+    /**
+     * Rotates the SFI messages REST password.
+     *
+     * If SFI messages is disabled or is still using the old SOAP interface, this job can be safely
+     * enabled but does nothing
+     */
     RotateSfiMessagesPassword(
         ScheduledJobs::rotateSfiMessagesPassword,
         ScheduledJobSettings(
-            enabled = false,
+            enabled = true,
             schedule = JobSchedule.cron("0 0 0 1 * *"), // first day of month
         ),
     ),
