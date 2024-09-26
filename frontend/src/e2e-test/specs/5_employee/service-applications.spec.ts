@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -14,6 +15,7 @@ import {
   testDaycare
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { CitizenNewServiceApplicationPage } from '../../pages/citizen/citizen-new-service-application'
@@ -22,7 +24,9 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
+let unitSupervisor: DevEmployee
 let serviceNeedOption1: ServiceNeedOption
+let serviceNeedOption2: ServiceNeedOption
 
 describe('Service applications', () => {
   beforeEach(async () => {
@@ -35,7 +39,7 @@ describe('Service applications', () => {
       nameSv: 'Kokopäiväinen alle 30h/vko (sv)',
       nameEn: 'Kokopäiväinen alle 30h/vko (en)'
     }).save()
-    await Fixture.serviceNeedOption({
+    serviceNeedOption2 = await Fixture.serviceNeedOption({
       validPlacementType: 'DAYCARE',
       defaultOption: false,
       nameFi: 'Kokopäiväinen yli 30h/vko',
@@ -43,6 +47,9 @@ describe('Service applications', () => {
       nameEn: 'Kokopäiväinen yli 30h/vko (en)'
     }).save()
     await Fixture.daycare(testDaycare).save()
+    unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
     await Fixture.family({
       guardian: testAdult,
       children: [testChild]
@@ -53,16 +60,20 @@ describe('Service applications', () => {
     const mockedTime1 = LocalDate.of(2022, 3, 1).toHelsinkiDateTime(
       LocalTime.of(8, 0)
     )
-    await Fixture.placement({
+    const placement = await Fixture.placement({
       childId: testChild.id,
       unitId: testDaycare.id,
       startDate: mockedTime1.toLocalDate().subMonths(1),
       endDate: mockedTime1.toLocalDate().addMonths(8),
       type: 'DAYCARE'
     }).save()
-    const unitSupervisor = await Fixture.employee()
-      .unitSupervisor(testDaycare.id)
-      .save()
+    const oldServiceNeed = await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      optionId: serviceNeedOption1.id,
+      confirmedBy: unitSupervisor.id
+    }).save()
 
     let citizenPage = await Page.open({ mockedTime: mockedTime1 })
 
@@ -80,7 +91,7 @@ describe('Service applications', () => {
     const startDate = mockedTime1.toLocalDate().addMonths(2).withDate(1)
     await citizenNewServiceApplicationPage.startDate.fill(startDate)
     await citizenNewServiceApplicationPage.serviceNeed.selectOption(
-      serviceNeedOption1.id
+      serviceNeedOption2.id
     )
     const additionalInfo = 'Sain uuden työn'
     await citizenNewServiceApplicationPage.additionalInfo.fill(additionalInfo)
@@ -99,7 +110,7 @@ describe('Service applications', () => {
       .assertTextEquals(startDate.format())
     await citizenChildPage
       .serviceApplicationServiceNeed(0)
-      .assertTextEquals(serviceNeedOption1.nameFi)
+      .assertTextEquals(serviceNeedOption2.nameFi)
     await citizenChildPage
       .serviceApplicationStatus(0)
       .assertTextEquals('Ehdotettu')
@@ -133,7 +144,7 @@ describe('Service applications', () => {
     await childServiceApplications.undecidedApplication.waitUntilVisible()
     await childServiceApplications.assertUndecidedApplication(
       startDate.format(),
-      serviceNeedOption1.nameFi,
+      serviceNeedOption2.nameFi,
       additionalInfo
     )
     await childServiceApplications.acceptApplication()
@@ -141,9 +152,29 @@ describe('Service applications', () => {
     await childServiceApplications.assertDecidedApplication(
       0,
       startDate.format(),
-      serviceNeedOption1.nameFi,
+      serviceNeedOption2.nameFi,
       'Hyväksytty',
       mockedTime2
+    )
+
+    await childInformationPage.waitUntilLoaded()
+    const placementsSection =
+      await childInformationPage.openCollapsible('placements')
+    await placementsSection.assertNthServiceNeedName(
+      0,
+      serviceNeedOption2.nameFi
+    )
+    await placementsSection.assertNthServiceNeedRange(
+      0,
+      new FiniteDateRange(startDate, placement.endDate)
+    )
+    await placementsSection.assertNthServiceNeedName(
+      1,
+      serviceNeedOption1.nameFi
+    )
+    await placementsSection.assertNthServiceNeedRange(
+      1,
+      new FiniteDateRange(oldServiceNeed.startDate, startDate.subDays(1))
     )
 
     await unitPage.navigateToUnit(testDaycare.id)
@@ -188,9 +219,6 @@ describe('Service applications', () => {
       endDate: mockedTime1.toLocalDate().addMonths(8),
       type: 'DAYCARE'
     }).save()
-    const unitSupervisor = await Fixture.employee()
-      .unitSupervisor(testDaycare.id)
-      .save()
 
     let citizenPage = await Page.open({ mockedTime: mockedTime1 })
 
@@ -208,7 +236,7 @@ describe('Service applications', () => {
     const startDate = mockedTime1.toLocalDate().addMonths(2).withDate(1)
     await citizenNewServiceApplicationPage.startDate.fill(startDate)
     await citizenNewServiceApplicationPage.serviceNeed.selectOption(
-      serviceNeedOption1.id
+      serviceNeedOption2.id
     )
     const additionalInfo = 'Ois kiva'
     await citizenNewServiceApplicationPage.additionalInfo.fill(additionalInfo)
@@ -243,7 +271,7 @@ describe('Service applications', () => {
     await childServiceApplications.assertDecidedApplication(
       0,
       startDate.format(),
-      serviceNeedOption1.nameFi,
+      serviceNeedOption2.nameFi,
       'Hylätty',
       mockedTime2
     )
@@ -286,9 +314,6 @@ describe('Service applications', () => {
       endDate: mockedTime1.toLocalDate().addMonths(8),
       type: 'DAYCARE'
     }).save()
-    const unitSupervisor = await Fixture.employee()
-      .unitSupervisor(testDaycare.id)
-      .save()
 
     const citizenPage = await Page.open({ mockedTime: mockedTime1 })
 
@@ -306,7 +331,7 @@ describe('Service applications', () => {
     const startDate = mockedTime1.toLocalDate().addMonths(2).withDate(1)
     await citizenNewServiceApplicationPage.startDate.fill(startDate)
     await citizenNewServiceApplicationPage.serviceNeed.selectOption(
-      serviceNeedOption1.id
+      serviceNeedOption2.id
     )
     const additionalInfo = 'Sain uuden työn'
     await citizenNewServiceApplicationPage.additionalInfo.fill(additionalInfo)

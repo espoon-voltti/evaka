@@ -8,6 +8,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.DatabaseEnum
@@ -42,6 +43,12 @@ data class ServiceApplicationDecision(
     val rejectedReason: String?,
 )
 
+data class ServiceApplicationPlacement(
+    @PropagateNull val id: PlacementId,
+    val type: PlacementType,
+    val endDate: LocalDate,
+)
+
 data class ServiceApplication(
     val id: ServiceApplicationId,
     val sentAt: HelsinkiDateTime,
@@ -53,6 +60,7 @@ data class ServiceApplication(
     @Nested("service_need_option") val serviceNeedOption: ServiceNeedOptionBasics,
     val additionalInfo: String,
     @Nested("decision") val decision: ServiceApplicationDecision?,
+    @Nested("current_placement") val currentPlacement: ServiceApplicationPlacement?,
 )
 
 data class UndecidedServiceApplicationSummary(

@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AcceptServiceApplicationBody } from 'lib-common/generated/api-types/serviceneed'
 import { EmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -112,12 +113,14 @@ export async function putServiceNeed(
 */
 export async function acceptServiceApplication(
   request: {
-    id: UUID
+    id: UUID,
+    body: AcceptServiceApplicationBody
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/service-applications/${request.id}/accept`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<AcceptServiceApplicationBody>
   })
   return json
 }

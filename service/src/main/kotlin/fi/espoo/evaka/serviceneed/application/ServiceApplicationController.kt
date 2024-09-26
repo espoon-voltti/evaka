@@ -7,7 +7,8 @@ package fi.espoo.evaka.serviceneed.application
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.AuditId.Companion.invoke
-import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.serviceneed.createServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.ServiceApplicationId
@@ -95,12 +96,18 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
             .also { Audit.UnitServiceApplicationsRead.log(targetId = AuditId(unitId)) }
     }
 
+    data class AcceptServiceApplicationBody(
+        val shiftCareType: ShiftCareType,
+        val partWeek: Boolean,
+    )
+
     @PutMapping("/{id}/accept")
     fun acceptServiceApplication(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ServiceApplicationId,
+        @RequestBody body: AcceptServiceApplicationBody,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -111,18 +118,68 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                         Action.ServiceApplication.ACCEPT,
                         id,
                     )
-                    val application =
-                        tx.getServiceApplication(id)?.also {
-                            validateApplicationForAccepting(tx, it)
-                        } ?: throw NotFound()
-                    tx.setServiceApplicationAccepted(id, clock.now(), user)
-                    application.childId
+                    val application = tx.getServiceApplication(id) ?: throw NotFound()
+
+                    if (application.decision != null) {
+                        throw Conflict("Application already decided")
+                    }
+
+                    if (!application.serviceNeedOption.validity.includes(application.startDate)) {
+                        throw BadRequest(
+                            "Selected service need is not valid on requested start date"
+                        )
+                    }
+
+                    if (
+                        application.serviceNeedOption.partWeek != null &&
+                            application.serviceNeedOption.partWeek != body.partWeek
+                    ) {
+                        throw BadRequest("Conflicting part week value")
+                    }
+
+                    val placement =
+                        application.currentPlacement
+                            ?: throw BadRequest(
+                                "Child no longer has placement on requested start date"
+                            )
+
+                    if (placement.type != application.serviceNeedOption.validPlacementType) {
+                        throw BadRequest(
+                            "Selected service need is not valid with child's placement type"
+                        )
+                    }
+
+                    val now = clock.now()
+                    val optionValidityEnd = application.serviceNeedOption.validity.end
+                    val endDate =
+                        if (optionValidityEnd == null || optionValidityEnd >= placement.endDate) {
+                            placement.endDate
+                        } else {
+                            optionValidityEnd
+                        }
+                    val serviceNeedId =
+                        createServiceNeed(
+                            tx = tx,
+                            user = user,
+                            placementId = placement.id,
+                            startDate = application.startDate,
+                            endDate = endDate,
+                            optionId = application.serviceNeedOption.id,
+                            shiftCare = body.shiftCareType,
+                            partWeek = body.partWeek,
+                            confirmedAt = now,
+                        )
+
+                    tx.setServiceApplicationAccepted(id, now, user)
+
+                    application.childId to serviceNeedId
                 }
             }
-            .also { childId ->
+            .also { (childId, serviceNeedId) ->
                 Audit.ChildServiceApplicationAccept.log(
                     targetId = AuditId(id),
-                    objectId = AuditId(childId),
+                    objectId = AuditId(serviceNeedId),
+                    meta = mapOf("childId" to childId),
                 )
             }
     }
@@ -161,28 +218,5 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                     objectId = AuditId(childId),
                 )
             }
-    }
-}
-
-private fun validateApplicationForAccepting(tx: Database.Read, application: ServiceApplication) {
-    if (application.decision != null) {
-        throw Conflict("Application already decided")
-    }
-
-    if (!application.serviceNeedOption.validity.includes(application.startDate)) {
-        throw BadRequest("Selected service need is not valid on requested start date")
-    }
-
-    val placement =
-        tx.getPlacementsForChildDuring(
-                application.childId,
-                application.startDate,
-                application.startDate,
-            )
-            .firstOrNull()
-            ?: throw BadRequest("Child no longer has placement on requested start date")
-
-    if (placement.type != application.serviceNeedOption.validPlacementType) {
-        throw BadRequest("Selected service need is not valid with child's placement type")
     }
 }

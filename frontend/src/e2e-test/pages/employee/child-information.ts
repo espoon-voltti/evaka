@@ -692,6 +692,8 @@ export class PlacementsSection extends Section {
   #placementRow = (id: string) => this.find(`[data-qa="placement-${id}"]`)
   #serviceNeedRow = (index: number) =>
     this.findAll('[data-qa="service-need-row"]').nth(index)
+  #serviceNeedRowRange = (index: number) =>
+    this.#serviceNeedRow(index).findByDataQa('service-need-range')
   #serviceNeedRowOptionName = (index: number) =>
     this.#serviceNeedRow(index).findByDataQa('service-need-name')
   #serviceNeedPartWeek = (index: number) =>
@@ -785,6 +787,10 @@ export class PlacementsSection extends Section {
     }
 
     await this.serviceNeedSaveButton.click()
+  }
+
+  async assertNthServiceNeedRange(index: number, range: FiniteDateRange) {
+    await this.#serviceNeedRowRange(index).assertTextEquals(range.format())
   }
 
   async assertNthServiceNeedName(index: number, optionName: string) {
