@@ -150,7 +150,7 @@ describe('Citizen child documents listing page', () => {
   test('Published vasu is in the list', async () => {
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
-    await childPage.openCollapsible('vasu')
+    await childPage.openCollapsible('child-documents')
     await childPage.childDocumentLink(documentIdVasu).click()
     expect(page.url.endsWith(`/child-documents/${documentIdVasu}`)).toBeTruthy()
     await page.find('h1').assertTextEquals('VASU 2023-2024')
@@ -159,7 +159,7 @@ describe('Citizen child documents listing page', () => {
   test('Published hojks is in the list', async () => {
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
-    await childPage.openCollapsible('vasu')
+    await childPage.openCollapsible('child-documents')
     await childPage.childDocumentLink(documentIdHojks).click()
     expect(
       page.url.endsWith(`/child-documents/${documentIdHojks}`)
@@ -170,7 +170,7 @@ describe('Citizen child documents listing page', () => {
   test('Published pedagogical report is in the list', async () => {
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
-    await childPage.openCollapsible('vasu')
+    await childPage.openCollapsible('child-documents')
     await childPage.childDocumentLink(documentIdPed).click()
     expect(page.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
     await page.find('h1').assertTextEquals('Pedagoginen selvitys')

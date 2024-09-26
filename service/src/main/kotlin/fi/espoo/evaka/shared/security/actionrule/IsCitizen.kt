@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceApplicationId
-import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -272,31 +271,6 @@ JOIN foster_parent fp ON pd.child_id = fp.child_id
 WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
             """
                     .trimIndent()
-            )
-        }
-
-    fun guardianOfChildOfVasu() =
-        rule<VasuDocumentId> { citizenId, _ ->
-            sql(
-                """
-SELECT id
-FROM curriculum_document cd
-JOIN guardian g ON cd.child_id = g.child_id
-WHERE g.guardian_id = ${bind(citizenId)}
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun fosterParentOfChildOfVasu() =
-        rule<VasuDocumentId> { citizenId, now ->
-            sql(
-                """
-SELECT cd.id
-FROM curriculum_document cd
-JOIN foster_parent fp ON cd.child_id = fp.child_id
-WHERE fp.parent_id = ${bind(citizenId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
-"""
             )
         }
 

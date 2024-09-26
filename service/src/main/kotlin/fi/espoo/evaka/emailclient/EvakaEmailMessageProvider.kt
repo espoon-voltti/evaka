@@ -365,10 +365,6 @@ $unsubscribeEn
         )
     }
 
-    override fun vasuNotification(language: Language, childId: ChildId): EmailContent {
-        return childDocumentNotification(language, childId)
-    }
-
     override fun pedagogicalDocumentNotification(
         language: Language,
         childId: ChildId,

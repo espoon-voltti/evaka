@@ -9,7 +9,6 @@ import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QuerySql
@@ -170,57 +169,6 @@ JOIN person ON person.id = child_document.child_id
 JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)} AND document_template.type = 'HOJKS'
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun inPlacementGroupOfChildOfVasuDocument() =
-        rule<VasuDocumentId> { user, now ->
-            sql(
-                """
-SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
-FROM curriculum_document
-JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = ${bind(user.id)}
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun inPlacementGroupOfDuplicateChildOfDaycareCurriculumDocument() =
-        rule<VasuDocumentId> { user, now ->
-            sql(
-                """
-SELECT cd.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
-FROM curriculum_document cd
-JOIN curriculum_template ct ON ct.id = cd.template_id
-JOIN person ON person.duplicate_of = cd.child_id
-JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.id
-JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = ${bind(user.id)} AND ct.type = 'DAYCARE' AND cd.created = (
-    SELECT max(curriculum_document.created)
-    FROM curriculum_document
-    JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
-    WHERE child_id = cd.child_id AND curriculum_template.type = ct.type
-)
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun inPlacementGroupOfDuplicateChildOfPreschoolCurriculumDocument() =
-        rule<VasuDocumentId> { user, now ->
-            sql(
-                """
-SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
-FROM curriculum_document
-JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
-JOIN person ON person.id = curriculum_document.child_id
-JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
-JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = ${bind(user.id)} AND curriculum_template.type = 'PRESCHOOL'
             """
                     .trimIndent()
             )

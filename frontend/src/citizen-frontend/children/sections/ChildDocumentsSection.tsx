@@ -38,12 +38,12 @@ import {
   unreadChildDocumentsCountQuery
 } from '../../child-documents/queries'
 
-const VasuTableContainer = styled.table`
+const DocumentsTableContainer = styled.table`
   width: 100%;
   border-collapse: collapse;
 `
 
-const VasuTr = styled.tr<{ unread?: boolean }>`
+const DocumentTr = styled.tr<{ unread?: boolean }>`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
 
   & td {
@@ -76,10 +76,10 @@ const ChildDocumentsTable = React.memo(function ChildDocumentsTable({
   summaries: ChildDocumentCitizenSummary[]
 }) {
   return (
-    <VasuTableContainer>
+    <DocumentsTableContainer>
       <tbody>
         {summaries.map((document) => (
-          <VasuTr
+          <DocumentTr
             key={document.id}
             data-qa={`child-document-${document.id}`}
             unread={document.unread}
@@ -98,10 +98,10 @@ const ChildDocumentsTable = React.memo(function ChildDocumentsTable({
             <StateTd>
               <ChildDocumentStateChip status={document.status} />
             </StateTd>
-          </VasuTr>
+          </DocumentTr>
         ))}
       </tbody>
-    </VasuTableContainer>
+    </DocumentsTableContainer>
   )
 })
 
@@ -147,7 +147,7 @@ export default React.memo(function ChildDocumentsSection({
       toggleOpen={() => setOpen(!open)}
       opaque
       countIndicator={unreadCount > 0 ? unreadCount : undefined}
-      data-qa="collapsible-vasu"
+      data-qa="collapsible-child-documents"
       contentPadding="zero"
       icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >

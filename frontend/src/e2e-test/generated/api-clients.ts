@@ -12,7 +12,6 @@ import { Caretaker } from './api-types'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import { ChildStickyNoteBody } from 'lib-common/generated/api-types/note'
 import { Citizen } from './api-types'
-import { CreateVasuTemplateBody } from './api-types'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { DaycareAclInsert } from './api-types'
 import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
@@ -92,7 +91,6 @@ import { PlacementPlan } from './api-types'
 import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingResponseReq } from 'lib-common/generated/api-types/pairing'
-import { PostVasuDocBody } from './api-types'
 import { ReservationInsert } from './api-types'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { SfiMessage } from './api-types'
@@ -1470,48 +1468,6 @@ export async function createVardaServiceNeed(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createVasuDocument
-*/
-export async function createVasuDocument(
-  request: {
-    body: PostVasuDocBody
-  }
-): Promise<UUID> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
-      url: uri`/vasu/doc`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<PostVasuDocBody>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createVasuTemplate
-*/
-export async function createVasuTemplate(
-  request: {
-    body: CreateVasuTemplateBody
-  }
-): Promise<UUID> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
-      url: uri`/vasu/template`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<CreateVasuTemplateBody>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.createVoucherValueDecisions
 */
 export async function createVoucherValueDecisions(
@@ -1559,22 +1515,6 @@ export async function deleteDaycareCostCenter(
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/daycare/${request.daycareId}/cost-center`.toString(),
-      method: 'DELETE'
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.deleteVasuTemplates
-*/
-export async function deleteVasuTemplates(): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/vasu/templates`.toString(),
       method: 'DELETE'
     })
     return json
@@ -2101,26 +2041,6 @@ export async function postReservationsRaw(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.publishVasuDocument
-*/
-export async function publishVasuDocument(
-  request: {
-    documentId: UUID
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/vasu/doc/publish/${request.documentId}`.toString(),
-      method: 'POST'
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.putDiets
 */
 export async function putDiets(
@@ -2189,26 +2109,6 @@ export async function resetServiceState(): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/reset-service-state`.toString(),
-      method: 'POST'
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.revokeSharingPermission
-*/
-export async function revokeSharingPermission(
-  request: {
-    docId: UUID
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/vasu/revokeSharingPermission/${request.docId}`.toString(),
       method: 'POST'
     })
     return json

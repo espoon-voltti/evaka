@@ -48,8 +48,6 @@ val generatedFiles =
                 generateEnum<Action.ServiceApplication>(),
                 generateEnum<Action.ServiceNeed>(),
                 generateEnum<Action.Unit>(),
-                generateEnum<Action.VasuDocument>(),
-                generateEnum<Action.VasuTemplate>(),
                 generateNamespace(
                     "Citizen",
                     generateEnum<Action.Citizen.Application>(),

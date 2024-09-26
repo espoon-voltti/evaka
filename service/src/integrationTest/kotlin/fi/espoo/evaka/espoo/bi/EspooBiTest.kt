@@ -83,14 +83,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
-import fi.espoo.evaka.vasu.CurriculumType
-import fi.espoo.evaka.vasu.getDefaultVasuContent
-import fi.espoo.evaka.vasu.getVasuTemplate
-import fi.espoo.evaka.vasu.insertVasuDocument
-import fi.espoo.evaka.vasu.insertVasuTemplate
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.Month
 import java.util.UUID
 import kotlin.test.assertTrue
@@ -232,28 +226,6 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getVoucherValueDecisions() {
         val id = db.transaction { it.insertTestVoucherValueDecision() }
         assertSingleRowContainingId(EspooBi.getVoucherValueDecisions, id)
-    }
-
-    @Test
-    fun getCurriculumTemplates() {
-        val id = db.transaction { it.insertTestCurriculumTemplate() }
-        assertSingleRowContainingId(EspooBi.getCurriculumTemplates, id)
-    }
-
-    @Test
-    fun getCurriculumDocuments() {
-        val id =
-            db.transaction {
-                it.insertTestCurriculumTemplate().let { templateId ->
-                    val template = it.getVasuTemplate(templateId)!!
-                    it.insertVasuDocument(
-                        HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(12, 0)),
-                        childId = it.insertTestChild(),
-                        template = template,
-                    )
-                }
-            }
-        assertSingleRowContainingId(EspooBi.getCurriculumDocuments, id)
     }
 
     @Test
@@ -605,13 +577,4 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         }
-
-    private fun Database.Transaction.insertTestCurriculumTemplate() =
-        insertVasuTemplate(
-            "Template",
-            valid = FiniteDateRange.ofMonth(2022, Month.JANUARY),
-            type = CurriculumType.DAYCARE,
-            language = OfficialLanguage.FI,
-            content = getDefaultVasuContent(OfficialLanguage.FI),
-        )
 }

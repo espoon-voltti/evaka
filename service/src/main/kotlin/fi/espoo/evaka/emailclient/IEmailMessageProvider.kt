@@ -90,8 +90,6 @@ interface IEmailMessageProvider {
 
     fun childDocumentNotification(language: Language, childId: ChildId): EmailContent
 
-    fun vasuNotification(language: Language, childId: ChildId): EmailContent
-
     fun pedagogicalDocumentNotification(language: Language, childId: ChildId): EmailContent
 
     fun incomeNotification(

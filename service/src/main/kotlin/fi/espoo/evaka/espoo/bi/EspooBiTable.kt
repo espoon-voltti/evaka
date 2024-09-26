@@ -27,8 +27,6 @@ enum class EspooBiTable(val fileName: String, val query: CsvQuery) {
         EspooBi.getAssistanceNeedVoucherCoefficients,
     ),
     Child("children", EspooBi.getChildren),
-    CurriculumDocument("curriculum_documents", EspooBi.getCurriculumDocuments),
-    CurriculumTemplate("curriculum_template", EspooBi.getCurriculumTemplates),
     DaycareAssistanceEntry("daycare_assistance_entries", EspooBi.getDaycareAssistanceEntries),
     Decision("decisions", EspooBi.getDecisions),
     FeeDecisionChild("fee_decision_children", EspooBi.getFeeDecisionChildren),

@@ -19,8 +19,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.vasu.CurriculumTemplateError
-import fi.espoo.evaka.vasu.VasuQuestion
 import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
@@ -38,7 +36,6 @@ val forceIncludes: Set<KType> =
         typeOf<SystemController.EmployeeUserResponse>(),
         typeOf<SystemController.PinLoginResponse>(),
         typeOf<MobileDeviceDetails>(),
-        typeOf<CurriculumTemplateError>(),
     )
 
 // these endpoint paths are deprecated, and API clients should not call them
@@ -177,17 +174,6 @@ val defaultMetadata =
                 serializePathVariable = null,
                 serializeRequestParam = null,
                 Imports.timeRange,
-            ),
-        VasuQuestion::class to
-            TsExternalTypeRef(
-                "VasuQuestion",
-                keyRepresentation = null,
-                deserializeJson = { json ->
-                    TsCode { "${ref(Imports.mapVasuQuestion)}(${inline(json)})" }
-                },
-                serializePathVariable = null,
-                serializeRequestParam = null,
-                Imports.vasuQuestion,
             ),
         MessageReceiver::class to
             TsExternalTypeRef(

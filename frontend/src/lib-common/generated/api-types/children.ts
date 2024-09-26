@@ -22,7 +22,6 @@ export interface ChildAndPermittedActions {
   duplicateOf: UUID | null
   firstName: string
   group: Group | null
-  hasCurriculums: boolean
   hasPedagogicalDocuments: boolean
   id: UUID
   imageId: UUID | null

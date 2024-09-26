@@ -21,7 +21,6 @@ export type QueryKeyPrefix =
   | 'pedagogicalDocuments'
   | 'personalDetails'
   | 'serviceNeedAndDailyServiceTime'
-  | 'vasuAndLeops'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

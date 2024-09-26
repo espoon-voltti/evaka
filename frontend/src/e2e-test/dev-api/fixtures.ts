@@ -93,7 +93,6 @@ import {
   createPreschoolTerm,
   createServiceNeedOption,
   createServiceNeeds,
-  createVasuTemplate,
   insertGuardians,
   postAttendances,
   postReservations,
@@ -103,7 +102,6 @@ import {
 } from '../generated/api-clients'
 import {
   Caretaker,
-  CreateVasuTemplateBody,
   DecisionRequest,
   DevAbsence,
   DevApplicationWithForm,
@@ -1175,21 +1173,6 @@ export class Fixture {
       ...initial
     })
   }
-
-  static vasuTemplate(
-    initial?: Partial<CreateVasuTemplateBody>
-  ): VasuTemplateBuilder {
-    return new VasuTemplateBuilder({
-      name: 'testipohja',
-      valid: new FiniteDateRange(
-        LocalDate.of(2020, 1, 1),
-        LocalDate.of(2200, 1, 1)
-      ),
-      type: 'DAYCARE',
-      language: 'FI',
-      ...initial
-    })
-  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1805,17 +1788,6 @@ export class ParentshipBuilder extends FixtureBuilder<DevParentship> {
   async save() {
     await createParentships({ body: [this.data] })
     return this.data
-  }
-}
-
-export class VasuTemplateBuilder extends FixtureBuilder<CreateVasuTemplateBody> {
-  async save() {
-    await createVasuTemplate({ body: this.data })
-    return this.data
-  }
-
-  async saveAndReturnId() {
-    return createVasuTemplate({ body: this.data })
   }
 }
 

@@ -321,7 +321,6 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 unit = null,
                 upcomingPlacementType = PlacementType.DAYCARE,
                 hasPedagogicalDocuments = false,
-                hasCurriculums = false,
                 permittedActions =
                     setOf(
                         Action.Citizen.Child.CREATE_ABSENCE,

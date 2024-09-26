@@ -18,7 +18,6 @@ export type QueryKeyPrefix =
   | 'reports'
   | 'timeline'
   | 'unit'
-  | 'vasu'
   | 'personProfile'
   | 'calendarEvent'
   | 'messaging'

@@ -176,10 +176,6 @@ sealed interface DatabaseTable {
 
     sealed class StaffOccupancyCoefficient : DatabaseTable
 
-    sealed class VasuDocument : DatabaseTable
-
-    sealed class VasuTemplate : DatabaseTable
-
     sealed class VoucherValueDecision : DatabaseTable
 }
 
@@ -347,10 +343,6 @@ typealias StaffAttendancePlanId = Id<DatabaseTable.StaffAttendancePlan>
 typealias StaffAttendanceRealtimeId = Id<DatabaseTable.StaffAttendanceRealtime>
 
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>
-
-typealias VasuDocumentId = Id<DatabaseTable.VasuDocument>
-
-typealias VasuTemplateId = Id<DatabaseTable.VasuTemplate>
 
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 

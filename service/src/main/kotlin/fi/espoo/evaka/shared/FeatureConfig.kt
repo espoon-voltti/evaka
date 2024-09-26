@@ -92,9 +92,6 @@ data class FeatureConfig(
      */
     val useContractDaysAsDailyFeeDivisor: Boolean,
 
-    /** Controls whether permission to share is required for curriculum documents */
-    val curriculumDocumentPermissionToShareRequired: Boolean,
-
     /**
      * Employees with given user roles to show as options for assistance decision makers.
      *

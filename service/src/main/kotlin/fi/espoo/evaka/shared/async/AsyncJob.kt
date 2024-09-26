@@ -36,7 +36,6 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
@@ -189,15 +188,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendVasuNotificationEmail(
-        val vasuDocumentId: VasuDocumentId,
-        val childId: ChildId,
-        val recipientId: PersonId,
-        val language: Language,
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class SendChildDocumentNotificationEmail(
         val documentId: ChildDocumentId,
         val childId: ChildId,
@@ -339,13 +329,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class MigrateVasuDocument(
-        val documentId: VasuDocumentId,
-        val processDefinitionNumber: String?,
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class SendJamixOrder(val customerNumber: Int, val customerId: Int, val date: LocalDate) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -464,7 +447,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendOutdatedIncomeNotificationEmail::class,
                     SendPedagogicalDocumentNotificationEmail::class,
                     SendPendingDecisionEmail::class,
-                    SendVasuNotificationEmail::class,
                     SendNewCustomerIncomeNotificationEmail::class,
                     SendNewFeeDecisionEmail::class,
                     SendNewVoucherValueDecisionEmail::class,
@@ -503,12 +485,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     ResetVardaChildOld::class,
                     DeleteVardaChildOld::class,
                 ),
-            )
-        val vasuMigration =
-            AsyncJobRunner.Pool(
-                AsyncJobPool.Id(AsyncJob::class, "vasuMigration"),
-                AsyncJobPool.Config(concurrency = 1),
-                setOf(MigrateVasuDocument::class),
             )
     }
 }

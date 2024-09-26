@@ -23,29 +23,16 @@ export default React.memo(function ChildDocumentsSection({
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { permittedActions, placements } = useContext(ChildContext)
+  const { permittedActions } = useContext(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
-
-  const hasVasuPermission = useMemo(
-    () =>
-      permittedActions.has('READ_VASU_DOCUMENT') &&
-      placements
-        .map((ps) =>
-          ps.placements.some((placement) =>
-            placement.daycare.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
-          )
-        )
-        .getOrElse(false),
-    [permittedActions, placements]
-  )
 
   const hasChildDocumentsPermission = useMemo(
     () => permittedActions.has('READ_CHILD_DOCUMENT'),
     [permittedActions]
   )
 
-  if (!hasVasuPermission && !hasChildDocumentsPermission) {
+  if (!hasChildDocumentsPermission) {
     return null
   }
 

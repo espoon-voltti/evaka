@@ -13,8 +13,6 @@ import { JsonOf } from 'lib-common/json'
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee/i18n/fi'
 import { sv } from './defaults/employee/i18n/sv'
-import { fi as vasuFI } from './defaults/employee/i18n/vasu/fi'
-import { sv as vasuSV } from './defaults/employee/i18n/vasu/sv'
 import type { EmployeeCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -69,19 +67,6 @@ export type Translations = typeof fi
 export const translations: { [K in Lang]: Translations } = {
   fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer),
   sv: mergeWith({}, sv, customizations.translations.sv, mergeCustomizer)
-}
-
-export type VasuLang = 'FI' | 'SV'
-export type VasuTranslations = typeof vasuFI
-
-export const vasuTranslations: { [K in VasuLang]: VasuTranslations } = {
-  FI: mergeWith(
-    {},
-    vasuFI,
-    customizations.vasuTranslations.FI,
-    mergeCustomizer
-  ),
-  SV: mergeWith(vasuSV, customizations.vasuTranslations.SV, mergeCustomizer)
 }
 
 export const applicationTypes: ApplicationType[] = (

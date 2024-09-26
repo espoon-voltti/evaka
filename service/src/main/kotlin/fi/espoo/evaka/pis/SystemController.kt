@@ -199,8 +199,6 @@ class SystemController(
                                 permittedGlobalActions.contains(
                                     Action.Global.DOCUMENT_TEMPLATES_PAGE
                                 ),
-                            vasuTemplates =
-                                permittedGlobalActions.contains(Action.Global.VASU_TEMPLATES_PAGE),
                             personalMobileDevice =
                                 permittedGlobalActions.contains(
                                     Action.Global.PERSONAL_MOBILE_DEVICE_PAGE
