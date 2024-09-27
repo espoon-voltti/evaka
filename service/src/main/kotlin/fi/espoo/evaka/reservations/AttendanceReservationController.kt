@@ -45,6 +45,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChild
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
@@ -496,6 +497,13 @@ class AttendanceReservationController(
                     val dailyServiceTimes = tx.getDailyServiceTimesForChildren(childIds)
                     val childMap = mutableMapOf<ChildId, ReservationChildInfo>()
 
+                    val isOperationalDateByChild =
+                        tx.getOperationalDatesForChildren(
+                                range = examinationDate.toFiniteDateRange(),
+                                children = childIds,
+                            )
+                            .mapValues { it.value.contains(examinationDate) }
+
                     val isHolidayPeriod = holidayPeriods.any { it.period.includes(examinationDate) }
                     val childReservationInfos =
                         dateRowsByChild.map { row ->
@@ -540,7 +548,9 @@ class AttendanceReservationController(
                                 absent =
                                     absences.containsAll(
                                         childRow.placementType.absenceCategories()
-                                    ),
+                                    ) ||
+                                        (isOperationalDateByChild[row.key] != true &&
+                                            reservations.isEmpty()),
                                 groupId = childRow.groupId,
                                 childId = childRow.childId,
                                 backupPlacement =
