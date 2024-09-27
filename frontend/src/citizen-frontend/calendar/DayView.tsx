@@ -424,6 +424,7 @@ const DayModal = React.memo(function DayModal({
         mobileFullScreen
         data-qa="calendar-dayview"
         zIndex={100}
+        onEscapeKey={onClose}
       >
         <CalendarModalBackground>
           <BottomFooterContainer>

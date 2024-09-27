@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ReactNode } from 'react'
-import FocusLock from 'react-focus-lock'
+import { FocusOn } from 'react-focus-on'
 import styled from 'styled-components'
 
 import { modalZIndex } from '../../layout/z-helpers'
@@ -15,18 +15,20 @@ interface Props extends ZIndexProp {
 interface ZIndexProp {
   onClick?: () => void
   zIndex?: number
+  onEscapeKey?: () => void
 }
 
 export default React.memo(function ModalBackground({
   onClick,
   zIndex,
+  onEscapeKey,
   children
 }: Props) {
   return (
-    <FocusLock>
+    <FocusOn onEscapeKey={onEscapeKey}>
       <BackgroundOverlay zIndex={zIndex} onClick={onClick} />
       <FormModalLifter zIndex={zIndex}>{children}</FormModalLifter>
-    </FocusLock>
+    </FocusOn>
   )
 })
 

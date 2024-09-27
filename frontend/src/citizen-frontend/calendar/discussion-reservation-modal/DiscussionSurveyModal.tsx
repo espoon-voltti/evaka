@@ -167,6 +167,7 @@ export default React.memo(function DiscussionSurveyModal({
         margin="auto"
         zIndex={100}
         data-qa="discussions-modal"
+        onEscapeKey={close}
       >
         <CalendarModalBackground>
           <div>
