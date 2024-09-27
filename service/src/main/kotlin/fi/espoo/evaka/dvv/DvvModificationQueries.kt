@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.dvv
 
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Transaction.storeDvvModificationToken(
@@ -53,6 +54,19 @@ WHERE token = ${bind(token)}
 fun Database.Transaction.deleteDvvModificationToken(token: String) {
     createUpdate { sql("DELETE FROM dvv_modification_token WHERE token = ${bind(token)}") }
         .execute()
+}
+
+fun Database.Read.getPersonIdsBySsns(ssns: List<String>): List<PersonId> {
+    return createQuery {
+            sql(
+                """
+SELECT id 
+FROM person
+WHERE social_security_number = ANY (${bind(ssns)})
+"""
+            )
+        }
+        .toList<PersonId>()
 }
 
 data class DvvModificationToken(
