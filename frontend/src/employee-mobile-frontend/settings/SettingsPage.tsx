@@ -17,6 +17,7 @@ import BottomNavbar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { toUnitOrGroup } from '../common/unit-or-group'
+import { MessageContextProvider } from '../messages/state'
 import { RememberContext } from '../remember'
 import { unitInfoQuery } from '../units/queries'
 
@@ -38,29 +39,34 @@ export const SettingsPage = React.memo(function SettingsPage({
   const { user: userResponse } = useContext(UserContext)
 
   return (
-    <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
-      {renderResult(combine(userResponse, unitInfoResponse), ([user, unit]) => (
-        <>
-          <TopBar
-            title={unit.name}
-            unitId={unitId}
-            onBack={
-              user && user.unitIds.length > 1
-                ? () => navigate('/units')
-                : undefined
-            }
-          />
-          <ContentArea
-            opaque={false}
-            paddingVertical="zero"
-            paddingHorizontal="s"
-          >
-            <H1>{i18n.common.settings}</H1>
-            <NotificationSettings unitId={unitId} />
-          </ContentArea>
-        </>
-      ))}
-      <BottomNavbar selected="settings" unitOrGroup={unitOrGroup} />
-    </ContentArea>
+    <MessageContextProvider unitOrGroup={unitOrGroup}>
+      <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
+        {renderResult(
+          combine(userResponse, unitInfoResponse),
+          ([user, unit]) => (
+            <>
+              <TopBar
+                title={unit.name}
+                unitId={unitId}
+                onBack={
+                  user && user.unitIds.length > 1
+                    ? () => navigate('/units')
+                    : undefined
+                }
+              />
+              <ContentArea
+                opaque={false}
+                paddingVertical="zero"
+                paddingHorizontal="s"
+              >
+                <H1>{i18n.common.settings}</H1>
+                <NotificationSettings unitId={unitId} />
+              </ContentArea>
+            </>
+          )
+        )}
+        <BottomNavbar selected="settings" unitOrGroup={unitOrGroup} />
+      </ContentArea>
+    </MessageContextProvider>
   )
 })
