@@ -324,6 +324,33 @@ export default class CitizenCalendarPage {
     const childImages = this.dayCell(date).findAllByDataQa('child-image')
     await childImages.assertCount(expectedCount)
   }
+
+  async getPageActiveElementDetails() {
+    return await this.page.page.evaluate(() => {
+      const activeElement = document.activeElement
+      let computedStyle: CSSStyleDeclaration = {} as CSSStyleDeclaration
+      if (activeElement) {
+        computedStyle = getComputedStyle(activeElement)
+      }
+      return {
+        id: activeElement?.id,
+        dataQa: activeElement?.getAttribute('data-qa'),
+        computedStyle
+      }
+    })
+  }
+
+  readonly desktopFocusColor = 'rgb(0, 71, 182)'
+  readonly mobileFocusColor = 'rgb(77, 127, 204)'
+
+  async assertDayIsFocusedAndStyled(dayId: string) {
+    const activeElement = await this.getPageActiveElementDetails()
+    expect(activeElement.id).toBe(dayId)
+    expect([this.desktopFocusColor, this.mobileFocusColor]).toContain(
+      activeElement.computedStyle.outlineColor
+    )
+    expect(activeElement.computedStyle.outlineWidth).toBe('2px')
+  }
 }
 
 type ReadOnlyDayState =
