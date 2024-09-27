@@ -293,7 +293,9 @@ SELECT
 FROM invoice_correction c
 LEFT JOIN invoice_row r ON c.id = r.correction_id
 LEFT JOIN invoice i ON r.invoice_id = i.id AND i.status != 'DRAFT'
-WHERE NOT c.applied_completely
+WHERE
+    NOT c.applied_completely AND
+    c.target_month IS NULL
 GROUP BY c.id
 HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
 """
