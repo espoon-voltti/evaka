@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested

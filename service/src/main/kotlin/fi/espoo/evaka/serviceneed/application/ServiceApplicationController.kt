@@ -187,6 +187,8 @@ class ServiceApplicationController(
                                     useFiveYearsOldDaycare =
                                         featureConfig.fiveYearsOldDaycareEnabled,
                                     placeGuarantee = false,
+                                    now = clock.now(),
+                                    userId = user.evakaUserId,
                                 )
                                 .also {
                                     tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
