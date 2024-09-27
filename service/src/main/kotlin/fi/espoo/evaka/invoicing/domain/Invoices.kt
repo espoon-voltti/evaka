@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.temporal.TemporalAdjusters
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -98,6 +99,8 @@ data class InvoiceDetailed(
     val account: Int = 3295
     val totalPrice
         get() = invoiceRowTotal(rows)
+
+    fun targetMonth(): YearMonth = YearMonth.of(periodStart.year, periodStart.month)
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

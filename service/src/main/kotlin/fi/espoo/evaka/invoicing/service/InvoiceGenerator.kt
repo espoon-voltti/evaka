@@ -63,6 +63,7 @@ class InvoiceGenerator(
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
+        tx.movePastUnappliedInvoiceCorrections(null, month)
         val invoiceCalculationData =
             tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, range) }
         val invoices = draftInvoiceGenerator.generateDraftInvoices(tx, invoiceCalculationData)
@@ -206,7 +207,7 @@ class InvoiceGenerator(
         areaIds: Map<DaycareId, AreaId>,
     ): List<Invoice> {
         val invoicePeriod = FiniteDateRange.ofMonth(targetMonth)
-        val corrections = getUninvoicedCorrections(tx)
+        val corrections = getCorrectionsForMonth(tx, targetMonth)
 
         val invoicesWithCorrections =
             corrections
@@ -330,13 +331,26 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
             }
     }
 
+    private fun getCorrectionsForMonth(
+        tx: Database.Read,
+        targetMonth: YearMonth,
+    ): Map<PersonId, List<InvoiceCorrection>> {
+        val result = mutableMapOf<PersonId, List<InvoiceCorrection>>()
+        result.putAll(getUninvoicedCorrections(tx))
+        tx.getInvoiceCorrectionsForMonth(targetMonth).forEach { correction ->
+            result[correction.headOfFamilyId] =
+                result.getOrDefault(correction.headOfFamilyId, emptyList()) + correction
+        }
+        return result.toMap()
+    }
+
     private data class InvoicedTotal(
         val amount: Int,
         val unitPrice: Int,
         val periodStart: LocalDate,
     )
 
-    private data class InvoiceCorrection(
+    data class InvoiceCorrection(
         val id: InvoiceCorrectionId,
         val headOfFamilyId: PersonId,
         val childId: ChildId,

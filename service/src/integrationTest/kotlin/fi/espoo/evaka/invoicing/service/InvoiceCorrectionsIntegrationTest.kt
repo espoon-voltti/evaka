@@ -31,6 +31,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.Month
+import java.time.YearMonth
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -556,9 +557,13 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         invoices: List<Invoice>,
         month: Month,
     ): List<Invoice> {
-        val period = FiniteDateRange.ofMonth(2020, month)
         return generator
-            .applyCorrections(this, invoices, period, mapOf(testDaycare.id to testArea.id))
+            .applyCorrections(
+                this,
+                invoices,
+                YearMonth.of(2020, month),
+                mapOf(testDaycare.id to testArea.id),
+            )
             .shuffled() // randomize order to expose assumptions
     }
 
