@@ -162,7 +162,11 @@ export default React.memo(function DaycareAclAdditionModal({
       pinCodeIsValid)
 
   return (
-    <PlainModal margin="auto" data-qa="add-daycare-acl-modal">
+    <PlainModal
+      margin="auto"
+      data-qa="add-daycare-acl-modal"
+      onEscapeKey={onClose}
+    >
       <Content>
         <Centered>
           <H1 noMargin>{i18n.unit.accessControl.addDaycareAclModal.title}</H1>

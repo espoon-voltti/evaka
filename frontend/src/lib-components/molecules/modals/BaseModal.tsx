@@ -229,13 +229,14 @@ type PlainModalProps = Pick<
   'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children'
 > & {
   margin: string
+  onEscapeKey?: () => void
 }
 
 export const PlainModal = React.memo(function PlainModal(
   props: PlainModalProps
 ) {
   return (
-    <ModalBackground>
+    <ModalBackground onEscapeKey={props.onEscapeKey}>
       <StaticallyPositionedModal
         className={props.className}
         zIndex={props.zIndex}

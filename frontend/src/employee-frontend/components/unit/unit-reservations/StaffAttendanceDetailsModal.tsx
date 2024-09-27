@@ -363,7 +363,11 @@ function StaffAttendanceDetailsModal<
     !!openAttendance && openAttendance.unitId !== unitId
 
   return (
-    <PlainModal margin="auto" data-qa="staff-attendance-details-modal">
+    <PlainModal
+      margin="auto"
+      data-qa="staff-attendance-details-modal"
+      onEscapeKey={onClose}
+    >
       <Content>
         <FixedSpaceRow alignItems="center">
           <H1 noMargin>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>

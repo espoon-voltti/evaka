@@ -160,7 +160,7 @@ export default React.memo(function AbsenceModal({
 
   return (
     <ModalAccessibilityWrapper>
-      <PlainModal mobileFullScreen margin="auto">
+      <PlainModal mobileFullScreen margin="auto" onEscapeKey={close}>
         <CalendarModalBackground>
           <BottomFooterContainer>
             <div>

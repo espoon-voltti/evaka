@@ -152,6 +152,7 @@ export default React.memo(function DiscussionReservationModal({
         mobileFullScreen
         margin="auto"
         data-qa="discussion-reservations-modal"
+        onEscapeKey={close}
       >
         <CalendarModalBackground>
           <BottomFooterContainer>

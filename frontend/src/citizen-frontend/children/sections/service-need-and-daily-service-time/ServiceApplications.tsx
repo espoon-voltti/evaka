@@ -315,6 +315,7 @@ const ServiceApplicationsDetails = React.memo(
           mobileFullScreen
           margin="auto"
           data-qa="service-application-modal"
+          onEscapeKey={onClose}
         >
           <CalendarModalBackground>
             <CalendarModalSection>

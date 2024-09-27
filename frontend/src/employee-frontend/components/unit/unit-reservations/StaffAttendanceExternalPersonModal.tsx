@@ -176,7 +176,11 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
   const hasStaffOccupancyEffect = useFormField(form, 'hasStaffOccupancyEffect')
 
   return (
-    <PlainModal margin="auto" data-qa="staff-attendance-add-person-modal">
+    <PlainModal
+      margin="auto"
+      data-qa="staff-attendance-add-person-modal"
+      onEscapeKey={onClose}
+    >
       <Content>
         <Centered>
           <IconWrapper>

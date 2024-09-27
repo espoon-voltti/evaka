@@ -193,7 +193,12 @@ export default React.memo(function ReservationModal({
 
   return (
     <ModalAccessibilityWrapper>
-      <PlainModal mobileFullScreen margin="auto" data-qa="reservation-modal">
+      <PlainModal
+        mobileFullScreen
+        margin="auto"
+        data-qa="reservation-modal"
+        onEscapeKey={onClose}
+      >
         <CalendarModalBackground>
           <BottomFooterContainer>
             <div>

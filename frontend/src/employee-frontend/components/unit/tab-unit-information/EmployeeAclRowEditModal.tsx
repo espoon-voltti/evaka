@@ -79,7 +79,11 @@ export default React.memo(function EmployeeAclRowEditModal({
   )
 
   return (
-    <PlainModal margin="auto" data-qa="employee-row-edit-person-modal">
+    <PlainModal
+      margin="auto"
+      data-qa="employee-row-edit-person-modal"
+      onEscapeKey={props.onClose}
+    >
       <Content>
         <Centered>
           <H1 noMargin>{i18n.unit.accessControl.editEmployeeRowModal.title}</H1>
