@@ -94,8 +94,9 @@ class DvvModificationsService(
                         }
                     }
 
+                    val personIds = db.read { it.getPersonIdsBySsns(ssnsToUpdateFromVtj.toList()) }
                     logger.info(
-                        "Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ"
+                        "Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ, of which existing persons are: $personIds"
                     )
 
                     db.transaction { tx ->
