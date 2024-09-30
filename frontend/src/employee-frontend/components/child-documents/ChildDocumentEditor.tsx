@@ -75,6 +75,10 @@ const ActionBar = styled.div`
   background-color: white;
   margin-top: ${defaultMargins.L};
   padding: ${defaultMargins.s} 0;
+
+  @media print {
+    position: relative;
+  }
 `
 
 const DocumentBasics = React.memo(function DocumentBasics({
