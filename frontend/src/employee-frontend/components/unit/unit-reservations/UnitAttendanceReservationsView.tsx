@@ -120,7 +120,6 @@ export default React.memo(function UnitAttendanceReservationsView({
       selectedGroup.type === 'group' && ids.includes(selectedGroup.id),
     [selectedGroup]
   )
-  const noFilter = useCallback(() => true, [])
 
   const combinedData = combine(childReservations, staffAttendances)
 
@@ -156,7 +155,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             externalAttendances={staffData.extraAttendances}
             reloadStaffAttendances={reloadStaffAttendances}
             groups={groups}
-            groupFilter={noFilter}
+            groupFilter={null}
             defaultGroup={null}
           />
         ) : (

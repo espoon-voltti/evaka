@@ -70,6 +70,8 @@ import {
   NameWrapper
 } from './attendance-elements'
 
+type GroupFilter = (ids: UUID[]) => boolean
+
 interface Props {
   unitId: UUID
   operationalDays: OperationalDay[]
@@ -77,7 +79,7 @@ interface Props {
   externalAttendances: ExternalAttendance[]
   reloadStaffAttendances: () => Promise<Result<unknown>>
   groups: DaycareGroup[]
-  groupFilter: (ids: UUID[]) => boolean
+  groupFilter: GroupFilter | null
   defaultGroup: UUID | null
 }
 
@@ -361,7 +363,7 @@ interface StaffRow {
 
 function getStaffRows(
   staffAttendances: EmployeeAttendance[],
-  groupFilter: (groupIds: UUID[]) => boolean,
+  groupFilter: GroupFilter | null,
   i18n: Translations
 ): StaffRow[] {
   return sortBy(
@@ -377,7 +379,7 @@ function getStaffRows(
           ),
           attendances: sortBy(
             entry.attendances.filter(
-              (a) => a.groupId && groupFilter([a.groupId])
+              (a) => !groupFilter || (a.groupId && groupFilter([a.groupId]))
             ),
             ({ departed }) => departed?.timestamp ?? Infinity
           ),
@@ -388,7 +390,10 @@ function getStaffRows(
         })
       )
       .filter(
-        (row) => groupFilter(row.employeeGroups) || row.attendances.length > 0
+        (row) =>
+          !groupFilter ||
+          groupFilter(row.employeeGroups) ||
+          row.attendances.length > 0
       ),
     (attendance) => attendance.name
   )
@@ -402,7 +407,7 @@ interface ExternalRow {
 
 function getExternalRows(
   externalAttendances: ExternalAttendance[],
-  groupFilter: (groupIds: UUID[]) => boolean
+  groupFilter: GroupFilter | null
 ): ExternalRow[] {
   return sortBy(
     Object.entries(groupBy(externalAttendances, (a) => a.name))
@@ -410,7 +415,7 @@ function getExternalRows(
         ([name, attendances]): ExternalRow => ({
           name,
           attendances: sortBy(
-            attendances.filter((a) => groupFilter([a.groupId])),
+            attendances.filter((a) => !groupFilter || groupFilter([a.groupId])),
             ({ departed }) => departed?.timestamp ?? Infinity
           ),
           allowedToEdit: true
@@ -424,7 +429,7 @@ function getExternalRows(
 function computePersonCountSums(
   staffRows: StaffRow[],
   externalRows: ExternalRow[],
-  groupFilter: (groupIds: UUID[]) => boolean
+  groupFilter: GroupFilter | null
 ): Record<string, number | undefined> {
   const employeeAttendanceDates = staffRows
     .flatMap(({ attendances, employeeId }) =>
@@ -449,13 +454,14 @@ function computePersonCountSums(
 
 function getUniqueAttendanceDates(
   attendances: Attendance[] | ExternalAttendance[],
-  groupFilter: (groupIds: UUID[]) => boolean
+  groupFilter: GroupFilter | null
 ): LocalDate[] {
   return uniqBy(
     attendances
       .filter(
         ({ type, groupId }) =>
-          groupId && groupFilter([groupId]) && presentInGroup(type)
+          !groupFilter ||
+          (groupId && groupFilter([groupId]) && presentInGroup(type))
       )
       // TODO: What if arrived and departed are > 1 day apart?
       .flatMap(({ departed, arrived }) =>
@@ -483,7 +489,7 @@ interface AttendanceRowProps extends BaseProps {
   operationalDays: OperationalDay[]
   attendances: Attendance[]
   plannedAttendances?: PlannedStaffAttendance[]
-  groupFilter: (ids: UUID[]) => boolean
+  groupFilter: GroupFilter | null
   openDetails: (date: LocalDate) => void
   allowedToEdit: boolean
 }
@@ -643,7 +649,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
 
 function getAttendancesForGroupAndDate(
   attendances: Attendance[],
-  groupFilter: (ids: UUID[]) => boolean,
+  groupFilter: GroupFilter | null,
   date: LocalDate
 ): { matchingAttendances: Attendance[]; hasHiddenAttendances: boolean } {
   const attendancesForDate = attendances.filter(
@@ -658,7 +664,8 @@ function getAttendancesForGroupAndDate(
 
   const presentAttendances = attendancesForDate.filter(
     ({ groupId, type }) =>
-      groupId && groupFilter([groupId]) && presentInGroup(type)
+      !groupFilter ||
+      (groupId && groupFilter([groupId]) && presentInGroup(type))
   )
   return {
     matchingAttendances: presentAttendances,
