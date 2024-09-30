@@ -95,6 +95,44 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `Report for unit without RESERVATIONS feature not available`() {
+        val daycareId = DaycareId(UUID.randomUUID())
+        val monday = holidayPeriod.period.start
+        db.transaction { tx ->
+            tx.insertServiceNeedOptions()
+            tx.insert(holidayPeriod)
+            tx.insert(admin)
+            tx.insert(unitSupervisorA)
+
+            val areaAId = tx.insert(DevCareArea(name = "Area A", shortName = "Area A"))
+            tx.insert(
+                DevDaycare(
+                    id = daycareId,
+                    name = "Daycare without RESERVATIONS",
+                    areaId = areaAId,
+                    openingDate = monday.minusDays(7),
+                    type = setOf(CareType.CENTRE),
+                    operationTimes =
+                        List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
+                            List(2) { null },
+                    enabledPilotFeatures = emptySet(),
+                )
+            )
+            tx.insertDaycareAclRow(daycareId, unitSupervisorA.id, UserRole.UNIT_SUPERVISOR)
+        }
+
+        assertThrows<Forbidden> {
+            holidayPeriodAttendanceReport.getHolidayPeriodAttendanceReport(
+                dbInstance(),
+                mockClock,
+                unitSupervisorA.user,
+                daycareId,
+                holidayPeriod.id,
+            )
+        }
+    }
+
+    @Test
     fun `Admin can see report results`() {
         val testUnitData = initTestUnitData(holidayPeriod.period.start)
         initTestPlacementData(holidayPeriod.period.start, testUnitData[0])
@@ -174,11 +212,14 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val expectedMonday =
             HolidayPeriodAttendanceReportRow(
-                absentCount = 3,
+                absentCount = 2,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
                 assistanceChildren = emptyList(),
-                noResponseChildren = emptyList(),
+                noResponseChildren =
+                    listOf(testData[1].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
                 date = holidayPeriod.period.start,
                 presentOccupancyCoefficient = 0.0,
             )
@@ -238,7 +279,10 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     listOf(testData[2].first).map {
                         ChildWithName(it.id, it.firstName, it.lastName)
                     },
-                assistanceChildren = emptyList(),
+                assistanceChildren =
+                    listOf(testData[2].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
                 noResponseChildren = emptyList(),
                 date = holidayPeriod.period.start.plusDays(4),
                 presentOccupancyCoefficient = 5.5,
@@ -274,11 +318,14 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val expectedMonday =
             HolidayPeriodAttendanceReportRow(
-                absentCount = 3,
+                absentCount = 2,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
                 assistanceChildren = emptyList(),
-                noResponseChildren = emptyList(),
+                noResponseChildren =
+                    listOf(testData[1].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
                 date = monday,
                 presentOccupancyCoefficient = 0.0,
             )
@@ -427,11 +474,14 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val expectedMonday =
             HolidayPeriodAttendanceReportRow(
-                absentCount = 4,
+                absentCount = 3,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
                 assistanceChildren = emptyList(),
-                noResponseChildren = emptyList(),
+                noResponseChildren =
+                    listOf(testData[1].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
                 date = monday,
                 presentOccupancyCoefficient = 0.0,
             )
@@ -488,7 +538,10 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     listOf(testData[2].first).map {
                         ChildWithName(it.id, it.firstName, it.lastName)
                     },
-                assistanceChildren = emptyList(),
+                assistanceChildren =
+                    listOf(testData[2].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
                 noResponseChildren = emptyList(),
                 date = monday.plusDays(4),
                 presentOccupancyCoefficient = 5.5,
@@ -640,7 +693,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             val placementB =
                 DevPlacement(
                     id = PlacementId(UUID.randomUUID()),
-                    type = PlacementType.DAYCARE,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChildBertil.id,
                     unitId = daycareId,
                     startDate = defaultPlacementDuration.start,
@@ -680,10 +733,10 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 )
             )
 
-            // Monday - everyone is absent
+            // Monday - everyone is absent, but Bertil has a missing absence category -> no response
 
             listOf(testChildAapo, testChildBertil, testChildCecil, testChildVille).forEach {
-                createOtherAbsence(monday, it.id, tx)
+                createOtherAbsence(monday, it.id, AbsenceCategory.BILLABLE, tx)
             }
 
             // Tuesday - everyone is present
@@ -692,21 +745,23 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 createNullReservation(tuesday, it.id, tx)
             }
 
-            // Wednesday - only Aapo has answered
+            // Wednesday - only Aapo present, 3 no responses
 
             createNullReservation(wednesday, testChildAapo.id, tx)
 
-            // Thursday - 2 present, 1 absent
+            // Thursday - 2 no response, 1 absent
 
             listOf(testChildAapo, testChildBertil).forEach {
                 createNullReservation(thursday, it.id, tx)
             }
-            createOtherAbsence(thursday, testChildCecil.id, tx)
+            createOtherAbsence(thursday, testChildCecil.id, AbsenceCategory.BILLABLE, tx)
 
-            // Friday - 1 present, 2 (+ bc Ville) absent
+            // Friday - Cecil present, 2 (+ bc Ville) absent
             listOf(testChildAapo, testChildBertil, testChildVille).forEach {
-                createOtherAbsence(friday, it.id, tx)
+                createOtherAbsence(friday, it.id, AbsenceCategory.BILLABLE, tx)
             }
+            createOtherAbsence(friday, testChildBertil.id, AbsenceCategory.NONBILLABLE, tx)
+
             createNullReservation(friday, testChildCecil.id, tx)
 
             // Saturday - 1 present
@@ -774,7 +829,12 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
         )
 
-    private fun createOtherAbsence(date: LocalDate, childId: PersonId, tx: Database.Transaction) =
+    private fun createOtherAbsence(
+        date: LocalDate,
+        childId: PersonId,
+        category: AbsenceCategory,
+        tx: Database.Transaction,
+    ) =
         tx.insert(
             DevAbsence(
                 id = AbsenceId(UUID.randomUUID()),
@@ -783,7 +843,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 AbsenceType.OTHER_ABSENCE,
                 HelsinkiDateTime.atStartOfDay(date),
                 EvakaUserId(admin.id.raw),
-                AbsenceCategory.BILLABLE,
+                category,
             )
         )
 
@@ -794,11 +854,13 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(expected.date, actual.date)
         assertEquals(expected.absentCount, actual.absentCount, "${actual.date}: absentCount")
         assertThat(actual.presentChildren)
+            .describedAs("${actual.date}: presentChildren")
             .containsExactlyInAnyOrderElementsOf(expected.presentChildren)
-            .withFailMessage("${actual.date}: presentChildren")
+
         assertThat(actual.assistanceChildren)
+            .describedAs("${actual.date}: assistanceChildren")
             .containsExactlyInAnyOrderElementsOf(expected.assistanceChildren)
-            .withFailMessage("${actual.date}: assistanceChildren")
+
         assertEquals(
             expected.presentOccupancyCoefficient,
             actual.presentOccupancyCoefficient,
@@ -810,7 +872,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             "${actual.date}: staffRequirement",
         )
         assertThat(actual.noResponseChildren)
-            .withFailMessage("${actual.date}: noResponseChildren")
+            .describedAs("${actual.date}: noResponseChildren")
             .containsExactlyInAnyOrderElementsOf(expected.noResponseChildren)
     }
 }

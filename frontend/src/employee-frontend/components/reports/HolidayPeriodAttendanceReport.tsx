@@ -63,7 +63,10 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
   const daycareOptions = useMemo(
     () =>
       units.map((d) => {
-        return orderBy(d, (item) => item.name)
+        return orderBy(
+          d.filter((u) => u.enabledPilotFeatures.includes('RESERVATIONS')),
+          (item) => item.name
+        )
       }),
     [units]
   )

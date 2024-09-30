@@ -74,7 +74,7 @@ beforeEach(async () => {
 
   await Fixture.absence({
     absenceType: 'OTHER_ABSENCE',
-    absenceCategory: 'NONBILLABLE',
+    absenceCategory: 'BILLABLE',
     date: mockedToday,
     childId: child.id
   }).save()
@@ -90,7 +90,7 @@ beforeEach(async () => {
   }).save()
   await Fixture.absence({
     absenceType: 'OTHER_ABSENCE',
-    absenceCategory: 'NONBILLABLE',
+    absenceCategory: 'BILLABLE',
     date: mockedToday.addDays(4),
     childId: child.id
   }).save()
@@ -113,7 +113,7 @@ describe('Holiday period attendance report', () => {
         date: 'Ma 09.09.2024',
         presentChildren: [],
         assistanceChildren: [],
-        coefficientSum: '0',
+        coefficientSum: '0,00',
         staffCount: '0',
         absenceCount: '1',
         noResponseChildren: []
@@ -122,7 +122,7 @@ describe('Holiday period attendance report', () => {
         date: 'Ti 10.09.2024',
         presentChildren: [childName],
         assistanceChildren: [childName],
-        coefficientSum: '4.38',
+        coefficientSum: '4,38',
         staffCount: '1',
         absenceCount: '0',
         noResponseChildren: []
@@ -131,7 +131,7 @@ describe('Holiday period attendance report', () => {
         date: 'Ke 11.09.2024',
         presentChildren: [],
         assistanceChildren: [],
-        coefficientSum: '0',
+        coefficientSum: '0,00',
         staffCount: '0',
         absenceCount: '0',
         noResponseChildren: [childName]
@@ -140,7 +140,7 @@ describe('Holiday period attendance report', () => {
         date: 'To 12.09.2024',
         presentChildren: [childName],
         assistanceChildren: [childName],
-        coefficientSum: '4.38',
+        coefficientSum: '4,38',
         staffCount: '1',
         absenceCount: '0',
         noResponseChildren: []
@@ -149,7 +149,7 @@ describe('Holiday period attendance report', () => {
         date: 'Pe 13.09.2024',
         presentChildren: [],
         assistanceChildren: [],
-        coefficientSum: '0',
+        coefficientSum: '0,00',
         staffCount: '0',
         absenceCount: '1',
         noResponseChildren: []

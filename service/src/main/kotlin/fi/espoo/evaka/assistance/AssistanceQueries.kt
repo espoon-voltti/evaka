@@ -30,10 +30,22 @@ fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
     createQuery { getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }) }
         .toList<AssistanceFactor>()
 
-fun Database.Read.getAssistanceFactorsForChildrenOverRange(childIds: Set<PersonId>, range: FiniteDateRange): List<AssistanceFactor> =
-    if (childIds.isEmpty()) emptyList() else
-    createQuery { getAssistanceFactors(Predicate { where("$it.child_id = ANY (${bind(childIds)}) AND $it.valid_during && ${bind(range)}") }) }
-        .toList<AssistanceFactor>()
+fun Database.Read.getAssistanceFactorsForChildrenOverRange(
+    childIds: Set<PersonId>,
+    range: FiniteDateRange,
+): List<AssistanceFactor> =
+    if (childIds.isEmpty()) emptyList()
+    else
+        createQuery {
+                getAssistanceFactors(
+                    Predicate {
+                        where(
+                            "$it.child_id = ANY (${bind(childIds)}) AND $it.valid_during && ${bind(range)}"
+                        )
+                    }
+                )
+            }
+            .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactorsByChildId(
     childId: ChildId,
