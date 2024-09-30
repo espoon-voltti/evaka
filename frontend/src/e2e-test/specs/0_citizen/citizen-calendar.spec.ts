@@ -184,4 +184,13 @@ describe.each(e)('Citizen calendar (%s)', (env) => {
 
     await dayView.close()
   })
+
+  test('After close, focus is set to the correct day and style', async () => {
+    const todayId = `calendar-day-${today.formatIso()}`
+    const dayView = await calendarPage.openDayView(today)
+
+    await dayView.close()
+
+    await calendarPage.assertDayIsFocusedAndStyled(todayId)
+  })
 })

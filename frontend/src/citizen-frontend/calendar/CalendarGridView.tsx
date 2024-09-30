@@ -526,6 +526,7 @@ const Day = React.memo(function Day({
       $selected={selected}
       onClick={onClick}
       data-qa={`desktop-calendar-day-${day.date.formatIso()}`}
+      id={`calendar-day-${day.date.formatIso()}`}
     >
       <DayCellHeader>
         <DayCellDate
