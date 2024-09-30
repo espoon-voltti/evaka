@@ -341,12 +341,12 @@ fun Database.Read.getDaycareEventsForGuardian(
     createQuery {
             sql(
                 """
-WITH child AS NOT MATERIALIZED (
+WITH child AS MATERIALIZED (
     SELECT g.child_id id FROM guardian g WHERE g.guardian_id = ${bind(guardianId)}
     UNION
     SELECT fp.child_id FROM foster_parent fp WHERE parent_id = ${bind(guardianId)} AND valid_during && ${bind(range)}
 ),
-child_placement AS NOT MATERIALIZED (
+child_placement AS MATERIALIZED (
     SELECT p.id, p.unit_id, p.child_id, placement_without_backup.range period, null backup_group_id
     FROM placement p
     LEFT JOIN LATERAL (
@@ -405,7 +405,7 @@ fun Database.Read.getDiscussionSurveysForGuardian(
     createQuery {
             sql(
                 """
-WITH children_of_guardian AS NOT MATERIALIZED (SELECT g.child_id id
+WITH children_of_guardian AS MATERIALIZED (SELECT g.child_id id
                                 FROM guardian g
                                 WHERE g.guardian_id = ${bind(guardianId)}
                                 UNION
@@ -413,7 +413,7 @@ WITH children_of_guardian AS NOT MATERIALIZED (SELECT g.child_id id
                                 FROM foster_parent fp
                                 WHERE parent_id = ${bind(guardianId)}
                                   AND valid_during && ${bind(range)}),
-     child_placement AS NOT MATERIALIZED (SELECT p.id,
+     child_placement AS MATERIALIZED (SELECT p.id,
                                                  p.unit_id,
                                                  p.child_id,
                                                  daterange(p.start_date, p.end_date, '[]') as period
