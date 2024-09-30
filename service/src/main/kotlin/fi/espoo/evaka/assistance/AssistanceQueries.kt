@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.QuerySql
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
@@ -27,6 +28,11 @@ WHERE ${predicate(predicate.forTable("assistance_factor"))}
 
 fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
     createQuery { getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }) }
+        .toList<AssistanceFactor>()
+
+fun Database.Read.getAssistanceFactorsForChildrenOverRange(childIds: Set<PersonId>, range: FiniteDateRange): List<AssistanceFactor> =
+    if (childIds.isEmpty()) emptyList() else
+    createQuery { getAssistanceFactors(Predicate { where("$it.child_id = ANY (${bind(childIds)}) AND $it.valid_during && ${bind(range)}") }) }
         .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactorsByChildId(

@@ -208,8 +208,11 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
           </Thead>
           <Tbody>
             {report.length > 0 ? (
-              report.map((row, rowIndex) => (
-                <DailyPeriodAttendanceRow row={row} key={rowIndex} />
+              report.map((row) => (
+                <DailyPeriodAttendanceRow
+                  row={row}
+                  key={row.date.formatIso()}
+                />
               ))
             ) : (
               <Tr>
@@ -263,7 +266,9 @@ const DailyPeriodAttendanceRow = React.memo(function DailyPeriodAttendanceRow(
       <Td data-qa="assistance-children-column">
         <ChildList list={row.assistanceChildren} showFull={isExpanded} />
       </Td>
-      <ShortTd data-qa="coefficient-sum-column">{row.coefficientSum}</ShortTd>
+      <ShortTd data-qa="coefficient-sum-column">
+        {row.coefficientSum.toFixed(2).replace('.', ',')}
+      </ShortTd>
       <ShortTd data-qa="staff-count-column">{row.requiredStaffCount}</ShortTd>
       <ShortTd data-qa="absence-count-column">{row.absentCount}</ShortTd>
       <Td data-qa="no-response-children-column">

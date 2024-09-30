@@ -2243,7 +2243,7 @@ sealed interface Action {
         ),
         READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
+            HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.RESERVATIONS).inUnit(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

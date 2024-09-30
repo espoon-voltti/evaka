@@ -122,7 +122,7 @@ describe('Holiday period attendance report', () => {
         date: 'Ti 10.09.2024',
         presentChildren: [childName],
         assistanceChildren: [childName],
-        coefficientSum: '4.375',
+        coefficientSum: '4.38',
         staffCount: '1',
         absenceCount: '0',
         noResponseChildren: []
@@ -140,7 +140,7 @@ describe('Holiday period attendance report', () => {
         date: 'To 12.09.2024',
         presentChildren: [childName],
         assistanceChildren: [childName],
-        coefficientSum: '4.375',
+        coefficientSum: '4.38',
         staffCount: '1',
         absenceCount: '0',
         noResponseChildren: []

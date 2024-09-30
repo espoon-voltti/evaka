@@ -335,7 +335,10 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     listOf(testData[2].first).map {
                         ChildWithName(it.id, it.firstName, it.lastName)
                     },
-                assistanceChildren = emptyList(),
+                assistanceChildren =
+                    listOf(testData[2].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
                 noResponseChildren = emptyList(),
                 date = monday.plusDays(4),
                 presentOccupancyCoefficient = 5.5,
@@ -528,7 +531,8 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         openingDate = monday.minusDays(7),
                         type = setOf(CareType.CENTRE),
                         operationTimes =
-                            List(7) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) },
+                            List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
+                                List(2) { null },
                         shiftCareOperationTimes =
                             List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
                         shiftCareOpenOnHolidays = true,
@@ -753,10 +757,6 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
         }
     }
 
-    data class HolidayPeriodPresenceReportTestData(
-        val testPlacementData: List<Pair<DevPerson, List<DevPlacement>>>
-    )
-
     private fun createNullReservation(
         date: LocalDate,
         childId: PersonId,
@@ -783,7 +783,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 AbsenceType.OTHER_ABSENCE,
                 HelsinkiDateTime.atStartOfDay(date),
                 EvakaUserId(admin.id.raw),
-                AbsenceCategory.NONBILLABLE,
+                AbsenceCategory.BILLABLE,
             )
         )
 
@@ -792,12 +792,25 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
         actual: HolidayPeriodAttendanceReportRow,
     ) {
         assertEquals(expected.date, actual.date)
-        assertEquals(expected.absentCount, actual.absentCount)
+        assertEquals(expected.absentCount, actual.absentCount, "${actual.date}: absentCount")
         assertThat(actual.presentChildren)
             .containsExactlyInAnyOrderElementsOf(expected.presentChildren)
-        assertEquals(expected.presentOccupancyCoefficient, actual.presentOccupancyCoefficient)
-        assertEquals(expected.requiredStaff, actual.requiredStaff)
+            .withFailMessage("${actual.date}: presentChildren")
+        assertThat(actual.assistanceChildren)
+            .containsExactlyInAnyOrderElementsOf(expected.assistanceChildren)
+            .withFailMessage("${actual.date}: assistanceChildren")
+        assertEquals(
+            expected.presentOccupancyCoefficient,
+            actual.presentOccupancyCoefficient,
+            "${actual.date}: coefficientSum",
+        )
+        assertEquals(
+            expected.requiredStaff,
+            actual.requiredStaff,
+            "${actual.date}: staffRequirement",
+        )
         assertThat(actual.noResponseChildren)
+            .withFailMessage("${actual.date}: noResponseChildren")
             .containsExactlyInAnyOrderElementsOf(expected.noResponseChildren)
     }
 }
