@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
+import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.placement.PlacementType
@@ -63,6 +64,8 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
+import fi.espoo.evaka.shared.InvoiceId
+import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.ParentshipId
@@ -80,6 +83,7 @@ import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
@@ -1216,6 +1220,57 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
+data class DevInvoice(
+    val id: InvoiceId = InvoiceId(UUID.randomUUID()),
+    val status: InvoiceStatus = InvoiceStatus.SENT,
+    val number: Int = Math.random().times(1000000).toInt(),
+    val invoiceDate: LocalDate = LocalDate.now(),
+    val dueDate: LocalDate = LocalDate.now(),
+    val periodStart: LocalDate,
+    val periodEnd: LocalDate,
+    val headOfFamily: PersonId,
+    val createdAt: HelsinkiDateTime? = HelsinkiDateTime.now(),
+    val sentAt: HelsinkiDateTime? = HelsinkiDateTime.now(),
+    val sentBy: EvakaUserId? = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val codebtor: PersonId? = null,
+    val areaId: AreaId,
+)
+
+data class DevInvoiceRow(
+    val id: InvoiceRowId = InvoiceRowId(UUID.randomUUID()),
+    val child: PersonId,
+    val amount: Int,
+    val unitPrice: Int,
+    val periodStart: LocalDate,
+    val periodEnd: LocalDate,
+    val product: ProductKey,
+    val unitId: DaycareId,
+    val correctionId: InvoiceCorrectionId? = null,
+    val idx: Int? = null,
+)
+
+fun Database.Transaction.insert(invoice: DevInvoice, rows: List<DevInvoiceRow>): InvoiceId {
+    execute {
+        sql(
+            """
+        INSERT INTO invoice (id, status, number, invoice_date, due_date, print_date, period_start, period_end, head_of_family, sent_at, sent_by, created_at, codebtor, area_id) 
+        VALUES (${bind(invoice.id)}, ${bind(invoice.status)}, ${bind(invoice.number)}, ${bind(invoice.invoiceDate)}, ${bind(invoice.dueDate)}, NULL, ${bind(invoice.periodStart)}, ${bind(invoice.periodEnd)}, ${bind(invoice.headOfFamily)}, ${bind(invoice.sentAt)}, ${bind(invoice.sentBy)}, ${bind(invoice.createdAt)}, ${bind(invoice.codebtor)}, ${bind(invoice.areaId)})
+    """
+        )
+    }
+    rows.forEachIndexed { idx, row ->
+        execute {
+            sql(
+                """
+            INSERT INTO invoice_row (id, invoice_id, child, amount, unit_price, price, period_start, period_end, product, saved_cost_center, saved_sub_cost_center, description, unit_id, correction_id, idx) 
+            VALUES (${bind(row.id)}, ${bind(invoice.id)}, ${bind(row.child)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.amount * row.unitPrice)}, ${bind(row.periodStart)}, ${bind(row.periodEnd)}, ${bind(row.product)}, NULL, NULL, NULL, ${bind(row.unitId)}, ${bind(row.correctionId)}, ${bind(row.idx ?: idx)})
+        """
+            )
+        }
+    }
+    return invoice.id
+}
+
 data class DevInvoiceCorrection(
     val id: InvoiceCorrectionId = InvoiceCorrectionId(UUID.randomUUID()),
     val headOfFamilyId: PersonId,
@@ -1227,14 +1282,29 @@ data class DevInvoiceCorrection(
     val unitPrice: Int,
     val description: String,
     val note: String,
-)
+    val appliedCompletely: Boolean = false,
+    val targetMonth: LocalDate? = null,
+) {
+    fun toDevInvoiceRow(idx: Int? = null) =
+        DevInvoiceRow(
+            child = childId,
+            amount = amount,
+            unitPrice = unitPrice,
+            periodStart = period.start,
+            periodEnd = period.end,
+            product = product,
+            unitId = unitId,
+            correctionId = id,
+            idx = idx,
+        )
+}
 
 fun Database.Transaction.insert(row: DevInvoiceCorrection): InvoiceCorrectionId =
     createUpdate {
             sql(
                 """
-INSERT INTO invoice_correction (id, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
-VALUES (${bind(row.id)}, ${bind(row.headOfFamilyId)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.product)}, ${bind(row.period)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.description)}, ${bind(row.note)})
+INSERT INTO invoice_correction (id, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note, applied_completely, target_month)
+VALUES (${bind(row.id)}, ${bind(row.headOfFamilyId)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.product)}, ${bind(row.period)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.description)}, ${bind(row.note)}, ${bind(row.appliedCompletely)}, ${bind(row.targetMonth)})
 RETURNING id
 """
             )

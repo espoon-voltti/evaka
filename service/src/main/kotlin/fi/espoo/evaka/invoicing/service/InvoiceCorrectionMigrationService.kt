@@ -34,12 +34,11 @@ fun migrateInvoiceCorrection(
                     """
         SELECT amount, unit_price 
         FROM invoice_correction
-        WHERE id = ${bind(invoiceCorrectionId)}
+        WHERE id = ${bind(invoiceCorrectionId)} AND target_month IS NULL 
     """
                 )
             }
-            .exactlyOne<Correction>()
-    val correctionTotal = correction.amount * correction.unitPrice
+            .exactlyOneOrNull<Correction>() ?: return // already migrated or not found
 
     data class InvoiceRow(
         val id: InvoiceRowId,
@@ -73,13 +72,15 @@ fun migrateInvoiceCorrection(
             )
             UPDATE invoice_row ir
             SET correction_id = inserted.id
+            FROM inserted
             WHERE ir.id = ${bind(row.id)}
         """
             )
         }
     }
 
-    val remainingCorrection = correctionTotal - invoiceRows.sumOf { it.unitPrice * it.amount }
+    val remainingCorrection =
+        (correction.amount * correction.unitPrice) - invoiceRows.sumOf { it.unitPrice * it.amount }
 
     if (remainingCorrection == 0) {
         tx.execute {
