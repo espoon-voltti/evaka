@@ -16,16 +16,18 @@ import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
+import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery {
             sql(
                 """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.id = ${bind(id)}
 """
@@ -52,7 +54,7 @@ fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
     return createQuery {
             sql(
                 """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.child_id = ${bind(childId)}
 """
@@ -69,7 +71,7 @@ fun Database.Read.getPlacementsForChildDuring(
     return createQuery {
             sql(
                 """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.child_id = ${bind(childId)}
 AND daterange(p.start_date, p.end_date, '[]') && daterange(${bind(start)}, ${bind(end)}, '[]')
@@ -83,7 +85,7 @@ fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildI
     return createQuery {
             sql(
                 """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.child_id = ${bind(childId)}
 AND daterange(p.start_date, p.end_date, '[]') @> ${bind(clock.today())}
@@ -129,21 +131,35 @@ fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) =
         }
         .exactlyOne<PlacementChildAndRange>()
 
-fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date: LocalDate) {
+fun Database.Transaction.updatePlacementStartDate(
+    placementId: PlacementId,
+    date: LocalDate,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+) {
     val placement = getPlacementChildAndRange(placementId)
 
     createUpdate {
-            sql("UPDATE placement SET start_date = ${bind(date)} WHERE id = ${bind(placementId)}")
+            sql(
+                "UPDATE placement SET start_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+            )
         }
         .execute()
 
     recreateBackupCares(placement.childId)
 }
 
-fun Database.Transaction.updatePlacementEndDate(placementId: PlacementId, date: LocalDate) {
+fun Database.Transaction.updatePlacementEndDate(
+    placementId: PlacementId,
+    date: LocalDate,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+) {
     val placement = getPlacementChildAndRange(placementId)
     createUpdate {
-            sql("UPDATE placement SET end_date = ${bind(date)} WHERE id = ${bind(placementId)}")
+            sql(
+                "UPDATE placement SET end_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+            )
         }
         .execute()
 
@@ -154,11 +170,13 @@ fun Database.Transaction.updatePlacementStartAndEndDate(
     placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ) {
     val placement = getPlacementChildAndRange(placementId)
     createUpdate {
             sql(
-                "UPDATE placement SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)} WHERE id = ${bind(placementId)}"
+                "UPDATE placement SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
             )
         }
         .execute()
@@ -166,9 +184,16 @@ fun Database.Transaction.updatePlacementStartAndEndDate(
     recreateBackupCares(placement.childId)
 }
 
-fun Database.Transaction.updatePlacementType(placementId: PlacementId, type: PlacementType) {
+fun Database.Transaction.updatePlacementType(
+    placementId: PlacementId,
+    type: PlacementType,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+) {
     createUpdate {
-            sql("UPDATE placement SET type = ${bind(type)} WHERE id = ${bind(placementId)}")
+            sql(
+                "UPDATE placement SET type = ${bind(type)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+            )
         }
         .execute()
 }
@@ -349,12 +374,17 @@ fun Database.Read.getDaycarePlacements(
                     LEFT JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
                     WHERE sn.id IS NULL
                 )
-            END AS missing_service_need_days
+            END AS missing_service_need_days,
+            pl.modified_at,
+            modified_by.id AS modified_by_id,
+            modified_by.name AS modified_by_name,
+            modified_by.type AS modified_by_type
         FROM placement pl
         JOIN daycare d on pl.unit_id = d.id
         JOIN person ch on pl.child_id = ch.id
         JOIN care_area a ON d.care_area_id = a.id
         LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
+        LEFT JOIN evaka_user modified_by ON pl.modified_by = modified_by.id
         WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
         AND (${bind(daycareId)}::uuid IS NULL OR pl.unit_id = ${bind(daycareId)})
         AND (${bind(childId)}::uuid IS NULL OR pl.child_id = ${bind(childId)})
@@ -383,11 +413,16 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
                     u.provider_type,
                     u.enabled_pilot_features,
                     u.language,
-                    a.name AS area_name
+                    a.name AS area_name,
+                    p.modified_at,
+                    e.id AS modified_by_id,
+                    e.name AS modified_by_name,
+                    e.type AS modified_by_type
                 FROM placement p
                 JOIN daycare u ON p.unit_id = u.id
                 JOIN person c ON p.child_id = c.id
                 JOIN care_area a ON u.care_area_id = a.id
+                LEFT JOIN evaka_user e ON p.modified_by = e.id
                 WHERE p.id = ${bind(id)}
                 """
             )
@@ -733,6 +768,15 @@ private val toDaycarePlacement: Row.() -> DaycarePlacement = {
         startDate = column("placement_start"),
         endDate = column("placement_end"),
         type = column("placement_type"),
+        modifiedAt = column("modified_at"),
+        modifiedBy =
+            column<UUID?>("modified_by_id")?.let {
+                EvakaUser(
+                    column("modified_by_id"),
+                    column("modified_by_name"),
+                    column("modified_by_type"),
+                )
+            },
     )
 }
 

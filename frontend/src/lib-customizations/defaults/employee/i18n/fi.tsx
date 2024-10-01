@@ -1433,6 +1433,8 @@ export const fi = {
       rowTitle: 'Sijoituspäätös voimassa',
       startDate: 'Aloituspäivämäärä',
       endDate: 'Päättymispäivämäärä',
+      modifiedAt: 'Muokattu',
+      modifiedBy: 'Muutoksentekijä',
       terminatedByGuardian: 'Huoltaja irtisanonut',
       terminated: 'Irtisanottu',
       area: 'Alue',

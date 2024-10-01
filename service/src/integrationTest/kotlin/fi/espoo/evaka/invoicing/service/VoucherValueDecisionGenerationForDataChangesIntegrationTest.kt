@@ -103,7 +103,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `start date moves earlier`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(5), day(20)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(5),
+                day(20),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
 
         assertDrafts(listOf(dateRange(5, 9) to false))
@@ -120,7 +128,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `start date moves later`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(15), day(20)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(15),
+                day(20),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
 
         assertDrafts(listOf(dateRange(10, 14) to true, dateRange(15, 20) to false))
@@ -137,7 +153,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `end date moves earlier`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(10), day(15)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(10),
+                day(15),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
 
         assertDrafts(listOf(dateRange(16, 20) to true))
@@ -149,7 +173,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `end date moves later`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(10), day(25)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(10),
+                day(25),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
 
         assertDrafts(listOf(dateRange(21, 25) to false))
@@ -166,7 +198,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `start date moves earlier and end date moves earlier`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(5), day(15)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(5),
+                day(15),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
 
         assertDrafts(listOf(dateRange(5, 9) to false, dateRange(16, 20) to true))
@@ -183,7 +223,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `start date moves earlier and end date moves later`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(5), day(25)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(5),
+                day(25),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
 
         assertDrafts(listOf(dateRange(5, 9) to false, dateRange(21, 25) to false))
@@ -201,7 +249,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `start date moves later and end date moves earlier`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(15), day(15)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(15),
+                day(15),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
 
         assertDrafts(
@@ -220,7 +276,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `start date moves later and end date moves later`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(15), day(25)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(15),
+                day(25),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
 
         assertDrafts(listOf(dateRange(10, 14) to true, dateRange(15, 25) to false))
@@ -238,7 +302,13 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
     @Test
     fun `break in placement on days 14-15`() {
         db.transaction { tx ->
-            tx.updatePlacementStartAndEndDate(placementId, day(10), day(13))
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(10),
+                day(13),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
             tx.insert(
                 DevPlacement(
                     id = PlacementId(UUID.randomUUID()),
@@ -275,7 +345,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `end date moves later then draft is ignored`() {
-        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(10), day(25)) }
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placementId,
+                day(10),
+                day(25),
+                now.now(),
+                testDecisionMaker_2.evakaUserId,
+            )
+        }
         generate()
         assertDrafts(listOf(dateRange(21, 25) to false))
 

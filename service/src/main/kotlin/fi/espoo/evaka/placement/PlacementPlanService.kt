@@ -15,6 +15,7 @@ import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 import java.time.Month
@@ -253,6 +255,8 @@ class PlacementPlanService(
         unitId: DaycareId,
         type: PlacementType,
         extent: PlacementPlanExtent,
+        now: HelsinkiDateTime,
+        userId: EvakaUserId,
     ) {
         val childId = application.childId
         val placementTypePeriods = getPlacementTypePeriods(tx, childId, unitId, type, extent)
@@ -266,6 +270,8 @@ class PlacementPlanService(
             serviceNeed = serviceNeed,
             cancelPlacementsAfterClub = true,
             placeGuarantee = false,
+            now,
+            userId,
         )
 
         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(childId, clock.today())
@@ -316,6 +322,8 @@ class PlacementPlanService(
                 terminationRequestedBy = null,
                 terminationRequestedDate = null,
                 placeGuarantee = false,
+                modifiedAt = null,
+                modifiedBy = null,
             )
         }
     }

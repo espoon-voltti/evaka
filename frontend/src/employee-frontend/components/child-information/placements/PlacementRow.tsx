@@ -399,6 +399,22 @@ export default React.memo(function PlacementRow({
             />
           </WarningRow>
         )}
+        {placement.modifiedAt && (
+          <DataRow>
+            <DataLabel>{i18n.childInformation.placements.modifiedAt}</DataLabel>
+            <DataValue data-qa="placement-modified-at">
+              {placement.modifiedAt.format()}
+            </DataValue>
+          </DataRow>
+        )}
+        {placement.modifiedBy && (
+          <DataRow>
+            <DataLabel>{i18n.childInformation.placements.modifiedBy}</DataLabel>
+            <DataValue data-qa="placement-modified-by">
+              {placement.modifiedBy.name}
+            </DataValue>
+          </DataRow>
+        )}
         {placement.terminationRequestedDate && (
           <DataRow>
             <DataLabel>

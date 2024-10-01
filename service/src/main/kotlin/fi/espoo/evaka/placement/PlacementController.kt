@@ -179,6 +179,8 @@ class PlacementController(
                             type = body.type,
                             useFiveYearsOldDaycare = useFiveYearsOldDaycare,
                             placeGuarantee = body.placeGuarantee,
+                            now = clock.now(),
+                            userId = user.evakaUserId,
                         )
                         .also {
                             tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
@@ -244,6 +246,8 @@ class PlacementController(
                         body.endDate,
                         aclAuth,
                         useFiveYearsOldDaycare,
+                        clock.now(),
+                        user.evakaUserId,
                     )
 
                 tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(

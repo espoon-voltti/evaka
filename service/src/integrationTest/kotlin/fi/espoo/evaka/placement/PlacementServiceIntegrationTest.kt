@@ -30,6 +30,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -55,6 +56,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     final val month = 1
     val placementStart = LocalDate.of(year, month, 10)
     val placementEnd = LocalDate.of(year, month, 20)
+
+    val now = HelsinkiDateTime.of(LocalDateTime.now())
 
     lateinit var oldPlacement: Placement
     lateinit var groupId1: GroupId
@@ -132,6 +135,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -159,6 +164,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     PlacementType.PRESCHOOL,
                     useFiveYearsOldDaycare = true,
                     placeGuarantee = false,
+                    now = now,
+                    userId = testDecisionMaker_1.evakaUserId,
                 )
             }
 
@@ -187,6 +194,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -219,6 +228,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -235,6 +246,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = newStart,
                 endDate = newPlacement.endDate,
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = testDecisionMaker_1.evakaUserId,
             )
         }
 
@@ -269,6 +282,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -306,6 +321,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -351,6 +368,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -381,6 +400,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -418,6 +439,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -448,6 +471,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -478,6 +503,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -515,6 +542,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL_DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -531,6 +560,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PREPARATORY,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -577,6 +608,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -624,6 +657,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -657,6 +692,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -697,6 +734,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -757,6 +796,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -819,6 +860,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -848,6 +891,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -858,11 +903,18 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 19),
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = testDecisionMaker_1.evakaUserId,
             )
         }
 
         val updated = db.read { it.getPlacement(oldPlacement.id) }
-        val expected = oldPlacement.copy(endDate = LocalDate.of(year, month, 19))
+        val expected =
+            oldPlacement.copy(
+                endDate = LocalDate.of(year, month, 19),
+                modifiedAt = now,
+                modifiedBy = testDecisionMaker_1.evakaUserId,
+            )
         assertEquals(expected, updated)
     }
 
@@ -881,6 +933,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -913,6 +967,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 15),
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = testDecisionMaker_1.evakaUserId,
             )
         }
 
@@ -956,6 +1012,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -991,6 +1049,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 PlacementType.PRESCHOOL_DAYCARE,
                 useFiveYearsOldDaycare = true,
                 placeGuarantee = false,
+                now = now,
+                userId = testDecisionMaker_1.evakaUserId,
             )
         }
 
@@ -1040,6 +1100,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -1050,11 +1112,18 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 21),
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = testDecisionMaker_1.evakaUserId,
             )
         }
 
         val updated = db.read { it.getPlacement(oldPlacement.id) }
-        val expected = oldPlacement.copy(endDate = LocalDate.of(year, month, 21))
+        val expected =
+            oldPlacement.copy(
+                endDate = LocalDate.of(year, month, 21),
+                modifiedAt = now,
+                modifiedBy = testDecisionMaker_1.evakaUserId,
+            )
         assertEquals(expected, updated)
     }
 
@@ -1073,6 +1142,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = testDecisionMaker_1.evakaUserId,
                     )
                 }
                 .first()
@@ -1083,6 +1154,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = oldPlacement.startDate,
                     endDate = oldPlacement.startDate.minusDays(1),
                     useFiveYearsOldDaycare = true,
+                    now = now,
+                    userId = testDecisionMaker_1.evakaUserId,
                 )
             }
         }
@@ -1202,6 +1275,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     terminatedBy = null,
                     terminationRequestedDate = null,
                     placeGuarantee = false,
+                    modifiedAt = null,
+                    modifiedBy = null,
                 )
             ),
             placements,
@@ -1366,6 +1441,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     terminatedBy = null,
                     terminationRequestedDate = null,
                     placeGuarantee = false,
+                    modifiedAt = null,
+                    modifiedBy = null,
                 )
             ),
             placements,
