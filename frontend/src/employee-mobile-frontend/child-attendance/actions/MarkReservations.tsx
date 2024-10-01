@@ -47,7 +47,6 @@ import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
@@ -310,10 +309,13 @@ const ReservationsView = ({
         : maxDate,
     null
   )
-  const laterAbsences =
-    maxDate !== null
-      ? absences.filter((absence) => absence.date.isAfter(maxDate))
-      : absences
+  const laterAbsences = useMemo(
+    () =>
+      maxDate !== null
+        ? absences.filter((absence) => absence.date.isAfter(maxDate))
+        : absences,
+    [absences, maxDate]
+  )
 
   return (
     <>
@@ -339,21 +341,7 @@ const ReservationsView = ({
         <>
           <HorizontalLine slim dashed />
           <Label primary>{i18n.absences.laterAbsence}</Label>
-          {groupAbsencesByDateRange(laterAbsences).map((absenceRange) => {
-            if (absenceRange.durationInDays() > 1) {
-              return (
-                <div key={absenceRange.start.format()} data-qa="absence-row">
-                  {`${absenceRange.start.format()} - ${absenceRange.end.format()}`}
-                </div>
-              )
-            } else {
-              return (
-                <div key={absenceRange.start.format()} data-qa="absence-row">
-                  {absenceRange.start.format()}
-                </div>
-              )
-            }
-          })}
+          <AbsenceRanges absences={laterAbsences} />
         </>
       ) : null}
       <HorizontalLine slim />
@@ -364,7 +352,7 @@ const ReservationsView = ({
           spacing={defaultMargins.zero}
           gap={defaultMargins.s}
         >
-          <LegacyButton
+          <Button
             text={
               i18n.attendances.actions.confirmedRangeReservations
                 .markReservations
@@ -372,7 +360,7 @@ const ReservationsView = ({
             onClick={onEditReservations}
             data-qa="edit"
           />
-          <LegacyButton
+          <Button
             primary
             text={
               i18n.attendances.actions.confirmedRangeReservations
@@ -386,6 +374,29 @@ const ReservationsView = ({
     </>
   )
 }
+
+const AbsenceRanges = React.memo(function AbsenceRanges({
+  absences
+}: {
+  absences: Absence[]
+}) {
+  const absenceRanges = useMemo(
+    () => groupAbsencesByDateRange(absences),
+    [absences]
+  )
+
+  return (
+    <>
+      {absenceRanges.map((absenceRange) => (
+        <div key={absenceRange.start.format()} data-qa="absence-row">
+          {absenceRange.durationInDays() > 1
+            ? absenceRange.format()
+            : absenceRange.start.format()}
+        </div>
+      ))}
+    </>
+  )
+})
 
 const ReservationView = ({
   reservation
@@ -465,7 +476,7 @@ const ReservationsEdit = ({
           spacing={defaultMargins.zero}
           gap={defaultMargins.s}
         >
-          <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
+          <Button text={i18n.common.cancel} onClick={onCancel} />
           <MutateButton
             primary
             text={i18n.common.confirm}
