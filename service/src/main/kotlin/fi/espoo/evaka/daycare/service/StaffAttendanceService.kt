@@ -60,6 +60,19 @@ class StaffAttendanceService {
             tx.upsertStaffAttendance(staffAttendance)
         }
     }
+
+    fun clearStaffAttendance(db: Database.Connection, groupId: GroupId, date: LocalDate) {
+        db.transaction { tx ->
+            val countOther = tx.getCountOtherForDate(groupId, date)
+            if (countOther > 0) {
+                tx.upsertStaffAttendance(
+                    StaffAttendanceUpdate(groupId, date, count = 0.0, countOther)
+                )
+            } else {
+                tx.deleteStaffAttendance(groupId, date)
+            }
+        }
+    }
 }
 
 data class GroupStaffAttendance(
@@ -197,4 +210,30 @@ WHERE dg.daycare_id = ${bind(unitId)}
         groups = groupAttendances,
         updated = updated,
     )
+}
+
+fun Database.Read.getCountOtherForDate(groupId: GroupId, date: LocalDate): Double =
+    createQuery {
+            sql(
+                """
+SELECT count_other
+FROM staff_attendance
+WHERE group_id = ${bind(groupId)}
+AND date = ${bind(date)}
+"""
+            )
+        }
+        .exactlyOneOrNull() ?: 0.0
+
+fun Database.Transaction.deleteStaffAttendance(groupId: GroupId, date: LocalDate) {
+    createUpdate {
+            sql(
+                """
+DELETE FROM staff_attendance
+WHERE group_id = ${bind(groupId)}
+AND date = ${bind(date)}
+"""
+            )
+        }
+        .updateNoneOrOne()
 }

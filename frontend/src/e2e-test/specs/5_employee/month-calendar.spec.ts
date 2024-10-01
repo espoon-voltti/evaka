@@ -234,7 +234,7 @@ describe('Employee - Unit month calendar', () => {
     )
   })
 
-  test('User can add a staff attendance', async () => {
+  test('User can edit staff attendances', async () => {
     await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
 
@@ -243,13 +243,26 @@ describe('Employee - Unit month calendar', () => {
     )
     const monthCalendarPage = await groupSection.openMonthCalendar()
 
-    await monthCalendarPage.fillStaffAttendance(0, 3)
+    // Add new attendance
+    await monthCalendarPage.fillStaffAttendance(0, '3')
 
     // Change to another page and back to reload data
     await unitPage.openGroupsPage()
     await groupSection.openMonthCalendar()
 
-    await monthCalendarPage.assertStaffAttendance(0, 3)
+    await monthCalendarPage.assertStaffAttendance(0, '3')
+
+    // Clear attendance
+    await monthCalendarPage.fillStaffAttendance(0, '')
+    await unitPage.openGroupsPage()
+    await groupSection.openMonthCalendar()
+    await monthCalendarPage.assertStaffAttendance(0, '')
+
+    // 0 is preserved
+    await monthCalendarPage.fillStaffAttendance(0, '0')
+    await unitPage.openGroupsPage()
+    await groupSection.openMonthCalendar()
+    await monthCalendarPage.assertStaffAttendance(0, '0')
   })
 
   describe('Holiday period reservations', () => {
