@@ -136,7 +136,10 @@ export const fi = {
     fullDayHint: 'Poissaolomerkintä tehdään koko päivälle',
     confirmDelete: 'Haluatko poistaa tämän poissaolon?',
     futureAbsence: 'Tulevat poissaolot',
-    laterAbsence: 'Myöhemmät poissaolot'
+    laterAbsence: {
+      closed: 'Näytä myöhemmät poissaolot',
+      open: 'Piilota myöhemmät poissaolot'
+    }
   },
   attendances: {
     views: {

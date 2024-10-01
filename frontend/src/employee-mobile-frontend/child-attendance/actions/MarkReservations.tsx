@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled, { useTheme } from 'styled-components'
 
 import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/AttendanceDailyServiceTimes'
 import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
@@ -21,6 +23,7 @@ import {
 } from 'lib-common/form/form'
 import {
   BoundForm,
+  useBoolean,
   useForm,
   useFormElems,
   useFormField,
@@ -54,7 +57,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faPlus, faTrash } from 'lib-icons'
+import { faPlus, faTrash, faAngleDown, faAngleUp } from 'lib-icons'
 
 import { routes } from '../../App'
 import { renderResult } from '../../async-rendering'
@@ -297,6 +300,7 @@ const ReservationsView = ({
   onMarkAbsence: () => void
 }) => {
   const { i18n, lang } = useTranslation()
+  const { colors } = useTheme()
 
   const minDatesByWeek = useMemo(
     () => getMinDatesByWeek(reservations),
@@ -316,6 +320,8 @@ const ReservationsView = ({
         : absences,
     [absences, maxDate]
   )
+  const [laterAbsencesVisible, { toggle: toggleLaterAbsencesVisible }] =
+    useBoolean(false)
 
   return (
     <>
@@ -340,8 +346,18 @@ const ReservationsView = ({
       {laterAbsences.length > 0 ? (
         <>
           <HorizontalLine slim dashed />
-          <Label primary>{i18n.absences.laterAbsence}</Label>
-          <AbsenceRanges absences={laterAbsences} />
+          <LaterAbsencesLabel primary onClick={toggleLaterAbsencesVisible}>
+            {laterAbsencesVisible
+              ? i18n.absences.laterAbsence.open
+              : i18n.absences.laterAbsence.closed}
+            <FontAwesomeIcon
+              icon={laterAbsencesVisible ? faAngleUp : faAngleDown}
+              color={colors.main.m2}
+            />
+          </LaterAbsencesLabel>
+          {laterAbsencesVisible ? (
+            <AbsenceRanges absences={laterAbsences} />
+          ) : null}
         </>
       ) : null}
       <HorizontalLine slim />
@@ -374,6 +390,16 @@ const ReservationsView = ({
     </>
   )
 }
+
+const LaterAbsencesLabel = styled(Label)`
+  display: flex;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+
+  &:hover {
+    cursor: pointer;
+  }
+`
 
 const AbsenceRanges = React.memo(function AbsenceRanges({
   absences
