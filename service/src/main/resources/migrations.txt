@@ -438,3 +438,4 @@ V439__income_statement_and_income_indexes.sql
 V440__rename_curriculum_tables_to_backup.sql
 V441__placement_modification_user_and_timestamp.sql
 V442__assistance_need_decision_no_end_date.sql
+V443__calendar_event_indexes.sql
