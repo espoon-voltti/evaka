@@ -120,6 +120,22 @@ describe('Assistance Need Decisions - Edit page', () => {
     await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
   })
 
+  test('Shows info that validity period end date is not mandatory for assistance services for time being', async () => {
+    await assistanceNeedDecisionEditPage.validityEndDateInput.waitUntilHidden()
+    await assistanceNeedDecisionEditPage.toggleAssistanceServicesForTime()
+    await assistanceNeedDecisionEditPage.validityEndDateInput.waitUntilVisible()
+    await assistanceNeedDecisionEditPage.clickPreviewButton()
+    await assistanceNeedDecisionEditPage.assertValidationMessageShown(
+      'endDate',
+      true
+    )
+    await assistanceNeedDecisionEditPage.validityEndDateNotKnownCheckbox.click()
+    await assistanceNeedDecisionEditPage.assertValidationMessageShown(
+      'endDate',
+      false
+    )
+  })
+
   test('Info header shows correct information', async () => {
     await assistanceNeedDecisionEditPage.assertDecisionStatus('Luonnos')
     await assistanceNeedDecisionEditPage.assertDecisionNumber(

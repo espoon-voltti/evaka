@@ -100,6 +100,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
             otherRepresentativeDetails = null,
             assistanceLevels = setOf(AssistanceLevel.ENHANCED_ASSISTANCE),
             motivationForDecision = "Motivation for decision",
+            endDateNotKnown = false,
         )
 
     @BeforeEach

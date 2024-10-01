@@ -88,6 +88,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         motivationForDecision = null,
                         unreadGuardianIds = null,
                         annulmentReason = "",
+                        endDateNotKnown = false,
                     ),
                 )
             }
@@ -144,6 +145,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         motivationForDecision = null,
                         unreadGuardianIds = null,
                         annulmentReason = "",
+                        endDateNotKnown = false,
                     ),
                 )
             }

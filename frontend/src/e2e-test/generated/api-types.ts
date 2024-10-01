@@ -204,6 +204,7 @@ export interface DevAssistanceNeedDecision {
   decisionMade: LocalDate | null
   decisionMaker: AssistanceNeedDecisionEmployee | null
   decisionNumber: number | null
+  endDateNotKnown: boolean
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null

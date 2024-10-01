@@ -3,12 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import { Page, TextInput, Combobox, Element } from '../../../utils/page'
+import {
+  Page,
+  TextInput,
+  Combobox,
+  Element,
+  Checkbox
+} from '../../../utils/page'
 
 export default class AssistanceNeedDecisionEditPage {
   #decisionMakerSelect: Element
   pedagogicalMotivationInput: TextInput
   guardiansHeardOnInput: TextInput
+  validityEndDateInput: TextInput
+  validityEndDateNotKnownCheckbox: Checkbox
   constructor(private readonly page: Page) {
     this.#decisionMakerSelect = page.findByDataQa('decision-maker-select')
     this.pedagogicalMotivationInput = new TextInput(
@@ -16,6 +24,12 @@ export default class AssistanceNeedDecisionEditPage {
     )
     this.guardiansHeardOnInput = new TextInput(
       page.findByDataQa('guardians-heard-on')
+    )
+    this.validityEndDateInput = new TextInput(
+      page.findByDataQa('validity-end-date')
+    )
+    this.validityEndDateNotKnownCheckbox = new Checkbox(
+      page.findByDataQa('end-date-not-known-checkbox')
     )
   }
 
@@ -73,6 +87,26 @@ export default class AssistanceNeedDecisionEditPage {
 
   async fillPreparator(name: string, title: string): Promise<void> {
     await this.fillEmployee('prepared-by-1', name, title)
+  }
+
+  async toggleAssistanceServicesForTime(): Promise<void> {
+    await new Checkbox(
+      this.page.findByDataQa('assistance-services-for-time')
+    ).toggle()
+  }
+
+  async assertValidationMessageShown(
+    messageId: string,
+    visible: boolean
+  ): Promise<void> {
+    if (visible)
+      await this.page
+        .findByDataQa(`validation-message-${messageId}`)
+        .waitUntilVisible()
+    else
+      await this.page
+        .findByDataQa(`validation-message-${messageId}`)
+        .waitUntilHidden()
   }
 
   private async fillEmployee(

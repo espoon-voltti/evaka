@@ -328,6 +328,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         motivationForDecision = null,
                         unreadGuardianIds = null,
                         annulmentReason = "",
+                        endDateNotKnown = false,
                     ),
                 )
             }
