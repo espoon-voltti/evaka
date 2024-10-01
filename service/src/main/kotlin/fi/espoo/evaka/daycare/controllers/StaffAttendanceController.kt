@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -101,9 +100,6 @@ class StaffAttendanceController(
         @RequestBody staffAttendance: StaffAttendanceUpdate,
         @PathVariable groupId: GroupId,
     ) {
-        if (staffAttendance.count == null) {
-            throw BadRequest("Count can't be null")
-        }
         db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(
@@ -114,10 +110,14 @@ class StaffAttendanceController(
                     groupId,
                 )
             }
-            staffAttendanceService.upsertStaffAttendance(
-                dbc,
-                staffAttendance.copy(groupId = groupId),
-            )
+            if (staffAttendance.count == null) {
+                staffAttendanceService.clearStaffAttendance(dbc, groupId, staffAttendance.date)
+            } else {
+                staffAttendanceService.upsertStaffAttendance(
+                    dbc,
+                    staffAttendance.copy(groupId = groupId),
+                )
+            }
         }
         Audit.StaffAttendanceUpdate.log(targetId = AuditId(groupId))
     }

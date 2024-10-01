@@ -138,17 +138,17 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     }
   }
 
-  async fillStaffAttendance(n: number, staffCount: number) {
+  async fillStaffAttendance(n: number, staffCount: string) {
     const cell = this.#staffAttendanceCells.nth(n)
-    await new TextInput(cell.find('input')).fill(staffCount.toString())
+    await new TextInput(cell.find('input')).fill(staffCount)
 
     // Wait until saved
     await waitUntilEqual(() => cell.getAttribute('data-state'), 'clean')
   }
 
-  async assertStaffAttendance(n: number, staffCount: number) {
+  async assertStaffAttendance(n: number, staffCount: string) {
     const input = new TextInput(this.#staffAttendanceCells.nth(n).find('input'))
-    await input.assertValueEquals(staffCount.toString())
+    await input.assertValueEquals(staffCount)
   }
 }
 

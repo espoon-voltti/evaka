@@ -58,7 +58,7 @@ export default React.memo(function StaffAttendance({
   }, [groupId, selectedDate])
 
   const updateAttendance = useCallback(
-    (date: LocalDate, count: number) =>
+    (date: LocalDate, count: number | null) =>
       upsertStaffAttendanceResult({
         groupId,
         body: {
@@ -85,7 +85,7 @@ interface StaffAttendanceRowProps {
   days: GroupMonthCalendarDay[]
   emptyCols: number[]
   groupAttendances: Result<StaffAttendanceForDates>
-  updateAttendance: (date: LocalDate, count: number) => Promise<unknown>
+  updateAttendance: (date: LocalDate, count: number | null) => Promise<unknown>
 }
 
 const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
@@ -177,7 +177,7 @@ const InactiveCellContainer = styled.div`
 interface StaffAttendanceCellProps {
   date: LocalDate
   initialCount: number | undefined
-  updateAttendance: (date: LocalDate, count: number) => Promise<unknown>
+  updateAttendance: (date: LocalDate, count: number | null) => Promise<unknown>
 }
 
 const StaffAttendanceCell = React.memo(function StaffAttendanceCell({
@@ -200,7 +200,7 @@ const StaffAttendanceCell = React.memo(function StaffAttendanceCell({
 
   const save = useCallback(
     async (value: string) => {
-      const numberValue = stringToNumber(value)
+      const numberValue = value === '' ? null : stringToNumber(value)
       if (numberValue !== undefined) {
         await updateAttendance(date, numberValue)
       }
