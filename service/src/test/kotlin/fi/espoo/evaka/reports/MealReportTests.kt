@@ -218,6 +218,68 @@ class MealReportTests {
     }
 
     @Test
+    fun `mealReportData should return no meals during preschool term break times for preschool type placements`() {
+        val testDate = LocalDate.of(2023, 5, 10)
+        val childInfo =
+            listOf(
+                MealReportChildInfo(
+                    placementType = PlacementType.PRESCHOOL, // Preschool type placement
+                    firstName = "Alice",
+                    lastName = "Johnson",
+                    reservations = listOf(), // No specific reservations
+                    absences = null, // No absences
+                    dietInfo = null,
+                    mealTextureInfo = null,
+                    dailyPreschoolTime = TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 30)),
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
+                            snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
+                            supper = null,
+                            eveningSnack = null,
+                        ),
+                )
+            )
+        val preschoolTerms =
+            listOf(
+                PreschoolTerm(
+                    finnishPreschool =
+                        FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+                    id = PreschoolTermId(UUID.randomUUID()),
+                    extendedTerm =
+                        FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+                    swedishPreschool =
+                        FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+                    termBreaks =
+                        DateSet.of(
+                            listOf(FiniteDateRange(testDate.minusDays(2), testDate.plusDays(2)))
+                        ),
+                    applicationPeriod =
+                        FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
+                )
+            )
+
+        val report =
+            mealReportData(
+                children = childInfo,
+                date = testDate,
+                preschoolTerms = preschoolTerms,
+                DefaultMealTypeMapper,
+            )
+
+        val expectedMealTypes = emptySet<MealType>()
+        val actualMealTypes = report.map { it.mealType }.toSet()
+
+        assertEquals(
+            expectedMealTypes,
+            actualMealTypes,
+            "Expected no meals during preschool term break times for preschool type placements",
+        )
+    }
+
+    @Test
     fun `mealReportData should provide individual rows for meals when child has special diet`() {
         val testDate = LocalDate.of(2023, 5, 10)
         val glutenFreeDiet = SpecialDiet(id = 101, abbreviation = "G")

@@ -117,6 +117,14 @@ fun mealReportData(
     val mealInfoMap =
         children
             .flatMap { childInfo ->
+                // Check if the placement type is PRESCHOOL and date is within a term break
+                val isPreschoolTermBreak =
+                    childInfo.placementType == PlacementType.PRESCHOOL &&
+                        preschoolTerms.any { term -> term.termBreaks.includes(date) }
+
+                if (isPreschoolTermBreak) {
+                    return emptyList()
+                }
                 val fixedScheduleRange =
                     childInfo.placementType.fixedScheduleOnlyRange(
                         date,
