@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.*
 import fi.espoo.evaka.mealintegration.MealType
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.reservations.ChildData
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -52,8 +53,7 @@ data class MealInfo(
 )
 
 private fun childMeals(
-    fixedScheduleRange: TimeRange?,
-    reservations: List<TimeRange>,
+    presentTimeRanges: List<TimeRange>,
     absent: Boolean,
     mealtimes: DaycareMealtimes,
     usePreschoolMealTypes: Boolean,
@@ -62,10 +62,6 @@ private fun childMeals(
     if (absent) {
         return emptySet()
     }
-    // list of time ranges when child will be present according to fixed schedule or reservation
-    // times
-    val presentTimeRanges =
-        if (fixedScheduleRange != null) listOf(fixedScheduleRange) else reservations
     // if we don't have data about when child will be present, default to breakfast + lunch + snack
     if (presentTimeRanges.isEmpty()) {
         return setOf(
@@ -117,30 +113,32 @@ fun mealReportData(
     val mealInfoMap =
         children
             .flatMap { childInfo ->
-                // Check if the placement type is PRESCHOOL and date is within a term break
-                val isPreschoolTermBreak =
-                    childInfo.placementType == PlacementType.PRESCHOOL &&
-                        preschoolTerms.any { term -> term.termBreaks.includes(date) }
-
-                if (isPreschoolTermBreak) {
-                    return emptyList()
-                }
-                val fixedScheduleRange =
-                    childInfo.placementType.fixedScheduleOnlyRange(
-                        date,
-                        childInfo.dailyPreschoolTime,
-                        childInfo.dailyPreparatoryTime,
-                        preschoolTerms,
-                    )
-                val absent =
+                val absenceRecord =
                     childInfo.absences?.size == childInfo.placementType.absenceCategories().size
                 val usePreschoolMealTypes =
                     preschoolPlacementTypes.contains(childInfo.placementType)
 
+                val scheduleType =
+                    childInfo.placementType.scheduleType(date, emptyList(), preschoolTerms)
+                val effectivelyAbsent =
+                    if (scheduleType == ScheduleType.TERM_BREAK) true else absenceRecord
+
+                // list of time ranges when child will be present according to fixed schedule or
+                // reservation times
+                val presentTimeRanges =
+                    if (scheduleType == ScheduleType.FIXED_SCHEDULE)
+                        listOf(
+                                childInfo.placementType.fixedScheduleRange(
+                                    childInfo.dailyPreschoolTime,
+                                    childInfo.dailyPreparatoryTime,
+                                )
+                            )
+                            .filterNotNull()
+                    else childInfo.reservations ?: emptyList()
+
                 childMeals(
-                        fixedScheduleRange,
-                        childInfo.reservations ?: emptyList(),
-                        absent,
+                        presentTimeRanges,
+                        effectivelyAbsent,
                         childInfo.mealTimes,
                         usePreschoolMealTypes,
                     )
