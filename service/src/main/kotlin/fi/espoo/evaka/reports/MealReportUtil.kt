@@ -127,13 +127,12 @@ fun mealReportData(
                 // reservation times
                 val presentTimeRanges =
                     if (scheduleType == ScheduleType.FIXED_SCHEDULE)
-                        listOf(
-                                childInfo.placementType.fixedScheduleRange(
-                                    childInfo.dailyPreschoolTime,
-                                    childInfo.dailyPreparatoryTime,
-                                )
+                        listOfNotNull(
+                            childInfo.placementType.fixedScheduleRange(
+                                childInfo.dailyPreschoolTime,
+                                childInfo.dailyPreparatoryTime,
                             )
-                            .filterNotNull()
+                        )
                     else childInfo.reservations ?: emptyList()
 
                 childMeals(
