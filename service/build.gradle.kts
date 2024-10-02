@@ -152,6 +152,7 @@ dependencies {
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
 
+    testImplementation("io.kotest:kotest-property")
     testImplementation("net.bytebuddy:byte-buddy")
     testImplementation("net.logstash.logback:logstash-logback-encoder")
     testImplementation("org.jetbrains:annotations")
