@@ -1400,7 +1400,78 @@ class AttendanceReservationsControllerIntegrationTest :
     }
 
     @Test
-    fun `should not include children on their non-operational days unless service need is intermittent`() {
+    fun `daily confirmed child reservation for unit works with shift care children`() {
+        val range =
+            FiniteDateRange(
+                LocalDate.of(2024, 5, 20), // Mon
+                LocalDate.of(2024, 5, 26), // Sun
+            )
+        val daycareId =
+            db.transaction { tx ->
+                val areaId = tx.insert(DevCareArea(shortName = "area"))
+                val daycareId =
+                    tx.insert(
+                        DevDaycare(
+                            areaId = areaId,
+                            // mon-fri
+                            operationTimes =
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                            // mon-sat
+                            shiftCareOperationTimes =
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null),
+                        )
+                    )
+                tx.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF)
+                daycareId
+            }
+        val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = daycareId)) }
+        val mobileDeviceId = insertMobileDevice(daycareId)
+        val normalChild =
+            db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.NONE) }
+        val shiftCareChild =
+            db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.FULL) }
+        val intermittentShiftCareChild =
+            db.transaction {
+                insertChildData(it, range, daycareId, groupId, ShiftCareType.INTERMITTENT)
+            }
+
+        range.dates().take(5).forEach { date ->
+            getConfirmedChildReservationsForDay(date, daycareId, mobileDeviceId, clock).also { res
+                ->
+                assertEquals(
+                    setOf(normalChild, shiftCareChild, intermittentShiftCareChild),
+                    res.childReservations.filterNot { it.absent }.map { it.childId }.toSet(),
+                )
+            }
+        }
+        getConfirmedChildReservationsForDay(
+                range.dates().toList()[5],
+                daycareId,
+                mobileDeviceId,
+                clock,
+            )
+            .also { res ->
+                assertEquals(
+                    setOf(shiftCareChild, intermittentShiftCareChild),
+                    res.childReservations.filterNot { it.absent }.map { it.childId }.toSet(),
+                )
+            }
+        getConfirmedChildReservationsForDay(
+                range.dates().toList()[6],
+                daycareId,
+                mobileDeviceId,
+                clock,
+            )
+            .also { res ->
+                assertEquals(
+                    emptySet(),
+                    res.childReservations.filterNot { it.absent }.map { it.childId }.toSet(),
+                )
+            }
+    }
+
+    @Test
+    fun `getAttendanceReservations should not include children on their non-operational days unless service need is intermittent`() {
         val range =
             FiniteDateRange(
                 LocalDate.of(2024, 5, 20), // Mon
