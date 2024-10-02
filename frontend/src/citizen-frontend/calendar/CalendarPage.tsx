@@ -6,6 +6,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { focusElementOnNextFrame } from 'citizen-frontend/utils/focus'
 import { combine, isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -197,7 +198,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   selectDate={openDayModal}
                   onClose={() => {
                     closeModal()
-                    findElementAndFocus(
+                    focusElementOnNextFrame(
                       `calendar-day-${modalState.date.formatIso()}`
                     )
                   }}
@@ -471,16 +472,6 @@ function buildQueryString(modal: URLModalState): string {
     case 'discussion-reservations':
       return `modal=discussion-reservations${modal.selectedChildId ? '&selectedChildId=' + modal.selectedChildId : ''}${modal.selectedEventId ? '&selectedEventId=' + modal.selectedEventId : ''}`
   }
-}
-
-function findElementAndFocus(id: string): void {
-  const focusElement = () => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.focus()
-    }
-  }
-  requestAnimationFrame(focusElement)
 }
 
 const DesktopOnly = styled(Desktop)`

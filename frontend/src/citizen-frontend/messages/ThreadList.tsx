@@ -77,6 +77,7 @@ export default React.memo(function ThreadList({
               onClick={() => setEditorVisible(true)}
               primary
               data-qa="new-message-btn"
+              id="new-message-btn"
               disabled={!newMessageButtonEnabled}
             />
           </HeaderContainer>

@@ -88,6 +88,7 @@ export interface ButtonProps extends BaseProps {
   primary?: boolean
   disabled?: boolean
   type?: 'submit' | 'button'
+  id?: string
 }
 
 /**
@@ -100,6 +101,7 @@ export const LegacyButton = React.memo(function LegacyButton({
   primary = false,
   disabled = false,
   type = 'button',
+  id,
   ...props
 }: ButtonProps) {
   const handleOnClick = useThrottledEventHandler(onClick)
@@ -110,6 +112,7 @@ export const LegacyButton = React.memo(function LegacyButton({
       onClick={handleOnClick}
       disabled={disabled}
       type={type}
+      id={id}
     >
       {'children' in props ? props.children : props.text}
     </StyledButton>
