@@ -83,6 +83,7 @@ fun getTestDataSource(): TestDataSource =
                                         .getPlugin(PostgreSQLConfigurationExtension::class.java)
                                         .isTransactionalLock = false
                                 }
+                                .validateMigrationNaming(true)
                                 .dataSource(
                                     PGSimpleDataSource().apply {
                                         setUrl("jdbc:postgresql://localhost:5432/evaka_it")
