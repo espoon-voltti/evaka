@@ -67,6 +67,11 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
             createQuery {
                     sql(
                         """
+WITH allplacements as (
+    SELECT child_id, unit_id, start_date, end_date FROM placement
+    UNION
+    SELECT child_id, unit_id, start_date, end_date FROM backup_care
+)
 select a.id                                                          as area_id,
        a.name                                                        as area_name,
        d.id                                                          as daycare_id,
@@ -96,9 +101,9 @@ from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') 
                                   tsrange(ca.date + ${bind(mealTimes.snackTime.start)}, ca.date + ${bind(mealTimes.snackTime.end)})),
                     0) as snackCount
     from child_attendance ca
-             join placement pl on ca.child_id = pl.child_id and
-                                  daterange(pl.start_date, pl.end_date, '[]') @> ca.date and
-                                  pl.unit_id = ca.unit_id
+             join allplacements ap on ca.child_id = ap.child_id and
+                                  daterange(ap.start_date, ap.end_date, '[]') @> ca.date and
+                                  ap.unit_id = ca.unit_id
              join daycare d on ca.unit_id = d.id
              join person p on ca.child_id = p.id
     where 'FAMILY' = ANY (d.type)

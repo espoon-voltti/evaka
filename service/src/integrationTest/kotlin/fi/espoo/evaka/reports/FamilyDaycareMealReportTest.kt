@@ -397,13 +397,13 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `Report won't calculate backup care attendances`() {
+    fun `Report calculates backup care attendances`() {
         val examinationDay = LocalDate.of(2022, 12, 8)
         val mockToday = MockEvakaClock(HelsinkiDateTime.of(examinationDay, LocalTime.of(12, 15)))
         val testData = initTestData(examinationDay)
 
         val previousAttendanceDay = examinationDay.minusDays(3)
-        val childPId =
+        val (childPId, backupDaycareId) =
             db.transaction { tx ->
                 val childPId =
                     tx.insert(
@@ -453,7 +453,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     HelsinkiDateTime.of(examinationDay, LocalTime.of(16, 0)),
                 )
 
-                childPId
+                Pair(childPId, backupDaycareId)
             }
         val reportAll =
             familyDaycareMealReport.getFamilyDaycareMealReport(
@@ -466,9 +466,9 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
 
         val expectedResult =
             FamilyDaycareMealReport.FamilyDaycareMealReportResult(
-                breakfastCount = 2,
-                lunchCount = 3,
-                snackCount = 3,
+                breakfastCount = 3,
+                lunchCount = 4,
+                snackCount = 4,
                 areaResults =
                     listOf(
                         FamilyDaycareMealReport.FamilyDaycareMealAreaResult(
@@ -503,11 +503,30 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         FamilyDaycareMealReport.FamilyDaycareMealAreaResult(
                             areaName = "Area B",
                             areaId = testData.areaBId,
-                            breakfastCount = 1,
-                            lunchCount = 2,
-                            snackCount = 2,
+                            breakfastCount = 2,
+                            lunchCount = 3,
+                            snackCount = 3,
                             daycareResults =
                                 listOf(
+                                    FamilyDaycareMealReport.FamilyDaycareMealDaycareResult(
+                                        daycareName = "Backup Daycare",
+                                        daycareId = backupDaycareId,
+                                        breakfastCount = 1,
+                                        lunchCount = 1,
+                                        snackCount = 1,
+                                        childResults =
+                                        listOf(
+                                            FamilyDaycareMealReport
+                                                .FamilyDaycareMealChildResult(
+                                                    childId = childPId,
+                                                    firstName = "Peter",
+                                                    lastName = "Placer",
+                                                    breakfastCount = 1,
+                                                    lunchCount = 1,
+                                                    snackCount = 1,
+                                                ),
+                                        ),
+                                    ),
                                     FamilyDaycareMealReport.FamilyDaycareMealDaycareResult(
                                         daycareName = "Family Daycare B",
                                         daycareId = testData.daycareBId,
