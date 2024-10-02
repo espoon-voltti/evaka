@@ -17,10 +17,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.YearMonth
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,9 +30,6 @@ class InvoiceCorrectionMigrationServiceIntegrationTest : PureJdbiTest(resetDbBef
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
     private val product = productProvider.mapToProduct(PlacementType.DAYCARE)
-
-    private val now = HelsinkiDateTime.of(LocalDate.of(2021, 6, 1), LocalTime.of(12, 0))
-    private val clock = MockEvakaClock(now)
 
     private fun insertBaseData() {
         db.transaction { tx ->
@@ -91,7 +85,8 @@ class InvoiceCorrectionMigrationServiceIntegrationTest : PureJdbiTest(resetDbBef
         }
 
         // when
-        db.transaction { tx -> migrateInvoiceCorrection(tx, clock, correction.id) }
+        val nextMonth = YearMonth.of(2021, 7)
+        db.transaction { tx -> migrateInvoiceCorrections(tx, nextMonth) }
 
         // then
         val corrections = db.read { it.getAllInvoiceCorrections() }
@@ -116,7 +111,7 @@ class InvoiceCorrectionMigrationServiceIntegrationTest : PureJdbiTest(resetDbBef
     }
 
     @Test
-    fun `migrateInvoiceCorrection splits correction and assigns target months`() {
+    fun `migrateInvoiceCorrection splits correction and assigns target months and remaining correction retains amount if does not divide evenly`() {
         // given
         insertBaseData()
         val correctionReasonPeriod =
@@ -178,7 +173,7 @@ class InvoiceCorrectionMigrationServiceIntegrationTest : PureJdbiTest(resetDbBef
         val invoice2CorrectionRow =
             correction.toDevInvoiceRow(idx = 1).copy(amount = 1, unitPrice = -150)
 
-        // correction left = 10 * 200 - 3 * 200 - 1 * 150 = 1250
+        // correction left = 10 * 200 - 3 * 200 - 1 * 150 = 1250 = 10 * 125
 
         db.transaction { tx ->
             tx.insert(correction)
@@ -187,7 +182,7 @@ class InvoiceCorrectionMigrationServiceIntegrationTest : PureJdbiTest(resetDbBef
         }
 
         // when
-        db.transaction { tx -> migrateInvoiceCorrection(tx, clock, correction.id) }
+        db.transaction { tx -> migrateInvoiceCorrections(tx, nextMonth) }
 
         // then
         val corrections = db.read { it.getAllInvoiceCorrections() }
@@ -211,8 +206,8 @@ class InvoiceCorrectionMigrationServiceIntegrationTest : PureJdbiTest(resetDbBef
                     id = corrections[2].id,
                     targetMonth = nextMonth,
                     appliedCompletely = false,
-                    amount = 1,
-                    unitPrice = -1250,
+                    amount = 10,
+                    unitPrice = -125,
                 ),
             ),
             corrections,
@@ -230,7 +225,7 @@ class InvoiceCorrectionMigrationServiceIntegrationTest : PureJdbiTest(resetDbBef
     }
 
     @Test
-    fun `migrateInvoiceCorrection retains unit price when it divides evenly`() {
+    fun `migrateInvoiceCorrections retains unit price when it divides evenly`() {
         // given
         insertBaseData()
         val correctionReasonPeriod =
@@ -279,7 +274,7 @@ class InvoiceCorrectionMigrationServiceIntegrationTest : PureJdbiTest(resetDbBef
         }
 
         // when
-        db.transaction { tx -> migrateInvoiceCorrection(tx, clock, correction.id) }
+        db.transaction { tx -> migrateInvoiceCorrections(tx, nextMonth) }
 
         // then
         val corrections = db.read { it.getAllInvoiceCorrections() }
