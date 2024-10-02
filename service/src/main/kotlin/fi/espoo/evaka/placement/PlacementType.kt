@@ -139,42 +139,6 @@ enum class PlacementType : DatabaseEnum {
             PREPARATORY_DAYCARE_ONLY -> dailyPreparatoryTime
         }
 
-    fun fixedScheduleOnlyRange(
-        date: LocalDate,
-        dailyPreschoolTime: TimeRange?,
-        dailyPreparatoryTime: TimeRange?,
-        preschoolTerms: List<PreschoolTerm>,
-    ): TimeRange? =
-        when (this) {
-            CLUB,
-            DAYCARE,
-            DAYCARE_PART_TIME,
-            DAYCARE_FIVE_YEAR_OLDS,
-            DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-            TEMPORARY_DAYCARE,
-            TEMPORARY_DAYCARE_PART_DAY,
-            SCHOOL_SHIFT_CARE,
-            PRESCHOOL_DAYCARE,
-            PRESCHOOL_CLUB,
-            PRESCHOOL_DAYCARE_ONLY,
-            PREPARATORY_DAYCARE,
-            PREPARATORY_DAYCARE_ONLY -> null
-            PRESCHOOL ->
-                if (
-                    preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) } ==
-                        ScheduleType.FIXED_SCHEDULE
-                )
-                    dailyPreschoolTime
-                else null
-            PREPARATORY ->
-                if (
-                    preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) } ==
-                        ScheduleType.FIXED_SCHEDULE
-                )
-                    dailyPreparatoryTime
-                else null
-        }
-
     override val sqlType: String = "placement_type"
 
     companion object {
