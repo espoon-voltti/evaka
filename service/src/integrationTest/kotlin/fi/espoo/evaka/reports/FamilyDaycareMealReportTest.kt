@@ -515,17 +515,17 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                         lunchCount = 1,
                                         snackCount = 1,
                                         childResults =
-                                        listOf(
-                                            FamilyDaycareMealReport
-                                                .FamilyDaycareMealChildResult(
-                                                    childId = childPId,
-                                                    firstName = "Peter",
-                                                    lastName = "Placer",
-                                                    breakfastCount = 1,
-                                                    lunchCount = 1,
-                                                    snackCount = 1,
-                                                ),
-                                        ),
+                                            listOf(
+                                                FamilyDaycareMealReport
+                                                    .FamilyDaycareMealChildResult(
+                                                        childId = childPId,
+                                                        firstName = "Peter",
+                                                        lastName = "Placer",
+                                                        breakfastCount = 1,
+                                                        lunchCount = 1,
+                                                        snackCount = 1,
+                                                    )
+                                            ),
                                     ),
                                     FamilyDaycareMealReport.FamilyDaycareMealDaycareResult(
                                         daycareName = "Family Daycare B",
@@ -554,7 +554,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         snackCount = 1,
                                                     ),
                                             ),
-                                    )
+                                    ),
                                 ),
                         ),
                     ),
