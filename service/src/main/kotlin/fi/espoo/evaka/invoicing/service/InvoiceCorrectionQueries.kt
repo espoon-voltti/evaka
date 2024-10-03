@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.YearMonth
+import kotlin.math.abs
 
 private fun Database.Read.getInvoiceCorrections(where: Predicate): List<InvoiceCorrection> =
     createQuery {
@@ -31,9 +32,7 @@ SELECT
     description,
     note
 FROM invoice_correction
-WHERE
-    target_month IS NOT NULL AND
-    ${predicate(where.forTable("invoice_correction"))}
+WHERE ${predicate(where.forTable("invoice_correction"))}
 """
             )
         }
@@ -46,6 +45,15 @@ fun Database.Read.getInvoiceCorrectionsByIds(
     ids: Set<InvoiceCorrectionId>
 ): List<InvoiceCorrection> =
     getInvoiceCorrections(Predicate { where("$it.id = ANY(${bind(ids)})") })
+
+fun Database.Read.getInvoiceCorrectionsForHeadOfFamily(
+    personId: PersonId
+): List<InvoiceCorrection> =
+    getInvoiceCorrections(where = Predicate { where("$it.head_of_family_id = ${bind(personId)}") })
+        .sortedWith(
+            compareByDescending<InvoiceCorrection> { it.targetMonth }
+                .thenByDescending { abs(it.amount * it.unitPrice) }
+        )
 
 fun Database.Transaction.movePastUnappliedInvoiceCorrections(
     headOfFamilyIds: Set<PersonId>?,

@@ -6,12 +6,12 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.invoicing.domain.InvoiceStatus
+import fi.espoo.evaka.invoicing.service.InvoiceCorrection
 import fi.espoo.evaka.invoicing.service.ProductKey
+import fi.espoo.evaka.invoicing.service.getInvoiceCorrectionsForHeadOfFamily
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
-import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -50,30 +50,7 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                         Action.Person.READ_INVOICE_CORRECTIONS,
                         personId,
                     )
-                    val invoiceCorrections =
-                        tx.createQuery {
-                                sql(
-                                    """
-SELECT c.id, c.head_of_family_id, c.child_id, c.unit_id, c.product, c.period, c.amount, c.unit_price, c.description, c.note,
-    i.id AS invoice_id,
-    i.status AS invoice_status
-FROM invoice_correction c
-LEFT JOIN LATERAL (
-    SELECT i.id, i.status
-    FROM invoice_row r
-    JOIN invoice i ON r.invoice_id = i.id
-    WHERE c.id = r.correction_id
-    ORDER BY CASE WHEN i.status = 'DRAFT'::invoice_status THEN 2 ELSE 1 END ASC, i.period_start DESC
-    LIMIT 1
-) i ON true
-WHERE
-    c.head_of_family_id = ${bind(personId)} AND
-    c.target_month IS NULL AND
-    NOT applied_completely
-"""
-                                )
-                            }
-                            .toList<InvoiceCorrection>()
+                    val invoiceCorrections = tx.getInvoiceCorrectionsForHeadOfFamily(personId)
                     val permittedActions =
                         accessControl.getPermittedActions<
                             InvoiceCorrectionId,
@@ -216,21 +193,6 @@ RETURNING id
         Audit.InvoiceCorrectionsNoteUpdate.log(targetId = AuditId(id))
     }
 }
-
-data class InvoiceCorrection(
-    val id: InvoiceCorrectionId,
-    val headOfFamilyId: PersonId,
-    val childId: ChildId,
-    val unitId: DaycareId,
-    val product: ProductKey,
-    val period: FiniteDateRange,
-    val amount: Int,
-    val unitPrice: Int,
-    val description: String,
-    val note: String,
-    val invoiceId: InvoiceId?,
-    val invoiceStatus: InvoiceStatus?,
-)
 
 data class NewInvoiceCorrection(
     val headOfFamilyId: PersonId,
