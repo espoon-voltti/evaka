@@ -4,7 +4,7 @@
 
 import autosize from 'autosize'
 import classNames from 'classnames'
-import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { BoundFormState } from 'lib-common/form/hooks'
@@ -34,7 +34,6 @@ interface TextAreaInputProps extends BaseProps {
   'aria-describedby'?: string
   hideErrorsBeforeTouched?: boolean
   required?: boolean
-  inputRef?: RefObject<HTMLTextAreaElement>
   wrapperClassName?: string
 }
 
@@ -56,8 +55,7 @@ const TextArea = React.memo(function TextArea({
   className,
   'aria-describedby': ariaId,
   hideErrorsBeforeTouched,
-  required,
-  inputRef
+  required
 }: TextAreaInputProps) {
   const [touched, setTouched] = useState(false)
 
@@ -97,7 +95,6 @@ const TextArea = React.memo(function TextArea({
         id={id}
         aria-describedby={ariaId}
         required={required ?? false}
-        ref={inputRef}
         rows={rows}
       />
       {!!infoText && (
