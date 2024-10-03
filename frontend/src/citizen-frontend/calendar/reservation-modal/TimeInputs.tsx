@@ -22,6 +22,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
+import { focusElementOnNextFrame } from '../../utils/focus'
 import TimeRangeInput from '../TimeRangeInput'
 
 import {
@@ -106,6 +107,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
           <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
           <RightCell>
             <IconOnlyButton
+              id={dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined}
               data-qa={
                 dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
               }
@@ -115,6 +117,9 @@ const ReservationTimes = React.memo(function ReservationTimes({
                   branch: 'timeRanges',
                   state: [emptyTimeRange(validTimeRange)]
                 })
+                if (dataQaPrefix) {
+                  focusElementOnNextFrame(`${dataQaPrefix}-absent-button`)
+                }
               }}
               aria-label={i18n.calendar.absentDisable}
             />
@@ -325,11 +330,17 @@ const TimeRanges = React.memo(function TimeRanges({
           <FixedSpaceRow>
             {onAbsent !== undefined ? (
               <IconOnlyButton
+                id={dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined}
                 data-qa={
                   dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
                 }
                 icon={faUserMinus}
-                onClick={onAbsent}
+                onClick={() => {
+                  onAbsent()
+                  if (dataQaPrefix) {
+                    focusElementOnNextFrame(`${dataQaPrefix}-absent-button`)
+                  }
+                }}
                 aria-label={i18n.calendar.absentEnable}
               />
             ) : null}
