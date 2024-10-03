@@ -25,6 +25,7 @@ interface TextAreaInputProps extends BaseProps {
   maxLength?: number
   type?: string
   autoFocus?: boolean
+  preventAutoFocusScroll?: boolean
   placeholder?: string
   info?: InputInfo
   align?: 'left' | 'right'
@@ -48,6 +49,7 @@ const TextArea = React.memo(function TextArea({
   maxLength,
   type,
   autoFocus,
+  preventAutoFocusScroll,
   placeholder,
   info,
   id,
@@ -90,6 +92,7 @@ const TextArea = React.memo(function TextArea({
         maxLength={maxLength}
         type={type}
         autoFocus={autoFocus}
+        preventAutoFocusScroll={preventAutoFocusScroll}
         className={classNames(className, infoStatus)}
         data-qa={dataQa}
         id={id}
@@ -136,11 +139,18 @@ export const TextAreaF = React.memo(function TextAreaF({
   )
 })
 
+interface TextAreaAutosizeProps extends React.HTMLProps<HTMLTextAreaElement> {
+  preventAutoFocusScroll?: boolean
+}
+
 const TextareaAutosize = React.memo(function TextAreaAutosize({
   rows = 1,
   ...props
-}: React.HTMLProps<HTMLTextAreaElement>) {
+}: TextAreaAutosizeProps) {
   const textarea = useRef<HTMLTextAreaElement | null>(null)
+  const { autoFocus, preventAutoFocusScroll, ...textAreaProps } = props
+  const isNonScrollingAutoFocus = autoFocus && preventAutoFocusScroll
+  const isScollingAutoFocus = autoFocus && !preventAutoFocusScroll
 
   useEffect(() => {
     const el = textarea.current
@@ -156,8 +166,19 @@ const TextareaAutosize = React.memo(function TextAreaAutosize({
     if (textarea.current) autosize.update(textarea.current)
   })
 
+  useEffect(() => {
+    if (isNonScrollingAutoFocus) {
+      textarea.current?.focus({ preventScroll: true })
+    }
+  }, [isNonScrollingAutoFocus])
+
   return (
-    <textarea {...props} rows={rows} ref={textarea}>
+    <textarea
+      {...textAreaProps}
+      rows={rows}
+      ref={textarea}
+      autoFocus={isScollingAutoFocus}
+    >
       {props.children}
     </textarea>
   )

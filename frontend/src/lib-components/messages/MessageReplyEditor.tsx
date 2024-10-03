@@ -102,6 +102,7 @@ function MessageReplyEditor<T, R>({
           onChange={(value) => onUpdateContent(value)}
           data-qa="message-reply-content"
           autoFocus
+          preventAutoFocusScroll={true}
         />
       </EditorRow>
       <EditorRow>
