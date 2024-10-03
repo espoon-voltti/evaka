@@ -1277,7 +1277,7 @@ fun Database.Transaction.insert(invoice: DevInvoice, rows: List<DevInvoiceRow>):
 
 data class DevInvoiceCorrection(
     val id: InvoiceCorrectionId = InvoiceCorrectionId(UUID.randomUUID()),
-    val targetMonth: YearMonth? = null,
+    val targetMonth: YearMonth,
     val headOfFamilyId: PersonId,
     val childId: ChildId,
     val unitId: DaycareId,
@@ -1287,28 +1287,14 @@ data class DevInvoiceCorrection(
     val unitPrice: Int,
     val description: String,
     val note: String,
-    val appliedCompletely: Boolean = false,
-) {
-    fun toDevInvoiceRow(idx: Int? = null) =
-        DevInvoiceRow(
-            child = childId,
-            amount = amount,
-            unitPrice = unitPrice,
-            periodStart = period.start,
-            periodEnd = period.end,
-            product = product,
-            unitId = unitId,
-            correctionId = id,
-            idx = idx,
-        )
-}
+)
 
 fun Database.Transaction.insert(row: DevInvoiceCorrection): InvoiceCorrectionId =
     createUpdate {
             sql(
                 """
-INSERT INTO invoice_correction (id, target_month, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note, applied_completely)
-VALUES (${bind(row.id)}, ${bind(row.targetMonth)}, ${bind(row.headOfFamilyId)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.product)}, ${bind(row.period)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.description)}, ${bind(row.note)}, ${bind(row.appliedCompletely)})
+INSERT INTO invoice_correction (id, target_month, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
+VALUES (${bind(row.id)}, ${bind(row.targetMonth)}, ${bind(row.headOfFamilyId)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.product)}, ${bind(row.period)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.description)}, ${bind(row.note)})
 RETURNING id
 """
             )
