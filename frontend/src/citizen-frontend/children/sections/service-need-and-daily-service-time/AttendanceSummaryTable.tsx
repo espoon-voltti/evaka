@@ -10,9 +10,9 @@ import { combine, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceSummary } from 'lib-common/generated/api-types/children'
 import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
-import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import YearMonth from 'lib-common/year-month'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -35,19 +35,15 @@ export default React.memo(function AttendanceSummaryTable({
   serviceNeedsResponse
 }: AttendanceSummaryTableProps) {
   const t = useTranslation()
-  const [attendanceSummaryDate, setAttendanceSummaryDate] = useState(() =>
-    LocalDate.todayInHelsinkiTz().startOfMonth()
+  const [attendanceSummaryMonth, setAttendanceSummaryMonth] = useState(() =>
+    YearMonth.todayInHelsinkiTz()
   )
   const attendanceSummaryRange = useMemo(
-    () =>
-      new FiniteDateRange(
-        attendanceSummaryDate.startOfMonth(),
-        attendanceSummaryDate.lastDayOfMonth()
-      ),
-    [attendanceSummaryDate]
+    () => FiniteDateRange.ofMonth(attendanceSummaryMonth),
+    [attendanceSummaryMonth]
   )
   const attendanceSummaryResponse = useQueryResult(
-    attendanceSummaryQuery({ childId, yearMonth: attendanceSummaryDate })
+    attendanceSummaryQuery({ childId, yearMonth: attendanceSummaryMonth })
   )
 
   return (
@@ -58,15 +54,18 @@ export default React.memo(function AttendanceSummaryTable({
           <IconOnlyButton
             icon={faChevronLeft}
             onClick={() =>
-              setAttendanceSummaryDate(attendanceSummaryDate.subMonths(1))
+              setAttendanceSummaryMonth(attendanceSummaryMonth.subMonths(1))
             }
             aria-label={t.calendar.previousMonth}
           />
-          <div>{attendanceSummaryDate.formatExotic('MM / yyyy')}</div>
+          <div>
+            {attendanceSummaryMonth.month.toString().padStart(2, '0')} /{' '}
+            {attendanceSummaryMonth.year}
+          </div>
           <IconOnlyButton
             icon={faChevronRight}
             onClick={() =>
-              setAttendanceSummaryDate(attendanceSummaryDate.addMonths(1))
+              setAttendanceSummaryMonth(attendanceSummaryMonth.addMonths(1))
             }
             aria-label={t.calendar.nextMonth}
           />
