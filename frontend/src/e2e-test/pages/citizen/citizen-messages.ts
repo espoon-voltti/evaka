@@ -85,6 +85,10 @@ export default class CitizenMessagesPage {
       .assertTextEquals(content)
   }
 
+  async assertNewMessageButtonIsFocused() {
+    await this.newMessageButton.assertFocused(true)
+  }
+
   async assertAriaLiveExistsAndIncludesNotification() {
     await this.page
       .findByDataQa('notification-container')
