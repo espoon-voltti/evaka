@@ -181,6 +181,16 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `weakly authenticated user cannot create an application`() {
+        assertThrows<Forbidden> {
+            createServiceApplication(
+                serviceNeedOptionId = snDaycareFullDay35.id,
+                authLevel = CitizenAuthLevel.WEAK,
+            )
+        }
+    }
+
+    @Test
     fun `guardian cannot create two applications for same child at once`() {
         val child2 = DevPerson()
         db.transaction { tx ->
@@ -442,10 +452,11 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         childId: ChildId = child.id,
         additionalInfo: String = "",
         requestedDate: LocalDate = startDate,
+        authLevel: CitizenAuthLevel = CitizenAuthLevel.STRONG,
     ) =
         citizenController.createServiceApplication(
             dbInstance(),
-            adult.user(CitizenAuthLevel.STRONG),
+            adult.user(authLevel),
             clock,
             ServiceApplicationControllerCitizen.ServiceApplicationCreateRequest(
                 childId = childId,

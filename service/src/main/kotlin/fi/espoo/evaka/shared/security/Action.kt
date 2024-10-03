@@ -444,8 +444,8 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             CREATE_SERVICE_APPLICATION(
-                IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
+                IsCitizen(allowWeakLogin = false).guardianOfChild(),
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             READ_SERVICE_APPLICATIONS(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
