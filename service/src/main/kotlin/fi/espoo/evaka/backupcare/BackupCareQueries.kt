@@ -56,16 +56,14 @@ SELECT
   '[]' AS service_needs,
   days_in_range(daterange(backup_care.start_date, backup_care.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_service_need AS missingServiceNeedDays
 FROM backup_care
-JOIN (
+JOIN LATERAL (
   SELECT
-    bc.id,
     coalesce(sum(days_in_range(daterange(bc.start_date, bc.end_date, '[]') * daterange('2020-03-01', NULL) * daterange(sn.start_date, sn.end_date, '[]'))), 0) AS days_with_service_need
   FROM backup_care bc
   LEFT JOIN placement pl ON bc.child_id = pl.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(pl.start_date, pl.end_date, '[]')
   LEFT JOIN service_need sn ON pl.id = sn.placement_id
-  GROUP BY bc.id
-) AS service_need_stats
-USING (id)
+  WHERE bc.id = backup_care.id
+) AS service_need_stats ON true
 JOIN person
 ON person.id = child_id
 LEFT JOIN daycare_group
