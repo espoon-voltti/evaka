@@ -22,17 +22,22 @@ WITH applied_corrections AS (
     LEFT JOIN updated_invoice_rows ir ON ir.correction_id = ac.new_correction_id
     WHERE ic.target_month IS NULL
     GROUP BY ic.id
+), first_uninvoiced_month AS (
+    -- Invoices of month N are sent in month N+1, so the invoice date of the last sent invoice is the first uninvoiced month.
+    SELECT date_trunc('month', MAX(invoice_date)) AS month
+    FROM invoice
+    WHERE status = 'SENT'
 )
 UPDATE invoice_correction ic
 SET
     amount = CASE WHEN rc.remaining_correction % ic.unit_price = 0 THEN rc.remaining_correction / ic.unit_price ELSE ic.amount END,
     unit_price = CASE WHEN rc.remaining_correction % ic.unit_price = 0 THEN ic.unit_price ELSE rc.remaining_correction / ic.amount END,
-    target_month = date_trunc('month', now()) + interval '1 month',
+    target_month = (SELECT month FROM first_uninvoiced_month),
     applied_completely = FALSE
 FROM remaining_corrections rc
 WHERE ic.id = rc.id AND rc.remaining_correction != 0;
 
-DELETE FROM invoice_correction WHERE target_month IS NULL;
+DELETE FROM invoice_correction WHERE target_month IS NULL AND applied_completely;
 
 ALTER TABLE invoice_correction
     DROP COLUMN applied_completely,
