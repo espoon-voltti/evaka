@@ -8,6 +8,7 @@ import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import YearMonth from '../../year-month'
 import { Action } from '../action'
 import { CareType } from './daycare'
 import { IncomeAttachment } from './attachment'
@@ -523,7 +524,7 @@ export interface InvoiceCodes {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrection
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceCorrection
 */
 export interface InvoiceCorrection {
   amount: number
@@ -531,11 +532,10 @@ export interface InvoiceCorrection {
   description: string
   headOfFamilyId: UUID
   id: UUID
-  invoiceId: UUID | null
-  invoiceStatus: InvoiceStatus | null
   note: string
   period: FiniteDateRange
   product: string
+  targetMonth: YearMonth
   unitId: UUID
   unitPrice: number
 }
@@ -1305,7 +1305,8 @@ export function deserializeJsonInvoice(json: JsonOf<Invoice>): Invoice {
 export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>): InvoiceCorrection {
   return {
     ...json,
-    period: FiniteDateRange.parseJson(json.period)
+    period: FiniteDateRange.parseJson(json.period),
+    targetMonth: YearMonth.parseIso(json.targetMonth)
   }
 }
 

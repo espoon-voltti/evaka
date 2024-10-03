@@ -13,12 +13,14 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
 import {
+  InvoiceCorrection,
   InvoiceCorrectionWithPermittedActions,
   InvoiceDaycare,
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
+import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -26,7 +28,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -288,6 +290,7 @@ const ChildSection = React.memo(function ChildSection({
       <Table>
         <Thead>
           <Tr>
+            <Th>{i18n.invoiceCorrections.targetMonth}</Th>
             <Th>{i18n.invoice.form.rows.product}</Th>
             <Th>{i18n.invoice.form.rows.description}</Th>
             <Th>{i18n.invoice.form.rows.unitId}</Th>
@@ -295,47 +298,16 @@ const ChildSection = React.memo(function ChildSection({
             <Th>{i18n.invoice.form.rows.amount}</Th>
             <Th align="right">{i18n.invoice.form.rows.unitPrice}</Th>
             <Th align="right">{i18n.invoice.form.rows.price}</Th>
-            <Th>{i18n.personProfile.invoiceCorrections.invoiceStatusHeader}</Th>
             <Th />
           </Tr>
         </Thead>
         <Tbody>
-          {corrections.map(({ data: correction, permittedActions }) => (
-            <InvoiceRowSectionRow
+          {corrections.map(({ data: correction }) => (
+            <InvoiceCorrectionRow
               key={correction.id}
-              row={{
-                ...correction,
-                periodStart: correction.period.start,
-                periodEnd: correction.period.end,
-                savedCostCenter: null,
-                price: correction.amount * correction.unitPrice
-              }}
+              row={correction}
               products={products}
-              unitIds={unitIds}
-              unitDetails={unitDetails}
-              remove={
-                permittedActions.includes('DELETE') &&
-                correction.invoiceStatus &&
-                correction.invoiceStatus !== 'DRAFT'
-                  ? undefined
-                  : () => deleteCorrection(correction.id)
-              }
-              addNote={() => editNote(correction.id, correction.note)}
-              status={
-                correction.invoiceId ? (
-                  <Link to={`/finance/invoices/${correction.invoiceId}`}>
-                    {i18n.personProfile.invoiceCorrections.invoiceStatus(
-                      correction.invoiceStatus
-                    )}
-                  </Link>
-                ) : (
-                  <span>
-                    {i18n.personProfile.invoiceCorrections.invoiceStatus(
-                      correction.invoiceStatus
-                    )}
-                  </span>
-                )
-              }
+              units={unitDetails}
             />
           ))}
           {editState?.childId === child.id && (
@@ -378,6 +350,37 @@ const ChildSection = React.memo(function ChildSection({
         )}
       </FlexRow>
     </FixedSpaceColumn>
+  )
+})
+
+const InvoiceCorrectionRow = React.memo(function InvoiceCorrectionRow({
+  row,
+  units,
+  products
+}: {
+  row: InvoiceCorrection
+  units: Record<string, InvoiceDaycare | undefined>
+  products: ProductWithName[]
+}) {
+  const productName = useMemo(
+    () => products.find((p) => p.key === row.product)?.nameFi,
+    [products, row.product]
+  )
+
+  return (
+    <Tr>
+      <Td>
+        {row.targetMonth.month.toString().padStart(2, '0')} /{' '}
+        {row.targetMonth.year}
+      </Td>
+      <Td>{productName}</Td>
+      <Td>{row.description}</Td>
+      <Td>{units[row.unitId]?.name ?? ''}</Td>
+      <Td>{row.period.format()}</Td>
+      <Td>{row.amount}</Td>
+      <Td align="right">{formatCents(row.unitPrice)}</Td>
+      <Td align="right">{formatCents(row.amount * row.unitPrice)}</Td>
+    </Tr>
   )
 })
 
