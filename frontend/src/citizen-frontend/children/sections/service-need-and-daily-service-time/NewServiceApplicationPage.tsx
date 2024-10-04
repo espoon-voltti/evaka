@@ -23,6 +23,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, Label } from 'lib-components/typography'
@@ -100,6 +101,7 @@ export default React.memo(function NewServiceApplicationPage() {
             <FixedSpaceColumn spacing="m">
               <FixedSpaceColumn spacing="s">
                 <Label>{i18n.children.serviceApplication.startDate} *</Label>
+                <div>{i18n.children.serviceApplication.startDateInfo}</div>
                 <DatePickerF
                   bind={startDate}
                   locale={lang}
@@ -107,6 +109,16 @@ export default React.memo(function NewServiceApplicationPage() {
                   info={startDate.inputInfo()}
                   data-qa="start-date"
                 />
+                {startDate.isValid() && startDate.value().getDate() !== 1 && (
+                  <AlertBox
+                    message={
+                      i18n.children.serviceApplication
+                        .startDateOnlyFirstDayWarning
+                    }
+                    noMargin
+                    thin
+                  />
+                )}
               </FixedSpaceColumn>
               {startDate.isValid() && (
                 <div>
@@ -114,9 +126,15 @@ export default React.memo(function NewServiceApplicationPage() {
                     <div>
                       {options.length > 0 ? (
                         <FixedSpaceColumn spacing="s">
-                          <Label>
-                            {i18n.children.serviceApplication.serviceNeed} *
-                          </Label>
+                          <ExpandingInfo
+                            info={
+                              i18n.children.serviceApplication.serviceNeedInfo
+                            }
+                          >
+                            <Label>
+                              {i18n.children.serviceApplication.serviceNeed} *
+                            </Label>
+                          </ExpandingInfo>
                           <SelectF
                             bind={serviceNeed}
                             placeholder={i18n.common.select}
@@ -141,7 +159,13 @@ export default React.memo(function NewServiceApplicationPage() {
                 </div>
               )}
               <FixedSpaceColumn spacing="s">
-                <Label>{i18n.children.serviceApplication.additionalInfo}</Label>
+                <ExpandingInfo
+                  info={i18n.children.serviceApplication.additionalInfoInfo}
+                >
+                  <Label>
+                    {i18n.children.serviceApplication.additionalInfo}
+                  </Label>
+                </ExpandingInfo>
                 <InputFieldF bind={additionalInfo} data-qa="additional-info" />
               </FixedSpaceColumn>
               <FixedSpaceRow>
