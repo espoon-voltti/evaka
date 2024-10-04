@@ -267,6 +267,10 @@ class SfiMessagesSoapClient(
         }
     }
 
+    override fun rotatePassword() {
+        // not supported or needed with the SOAP client
+    }
+
     private inline fun <reified T> WebServiceTemplate.marshalSendAndReceiveAsType(request: Any): T =
         marshalSendAndReceive(request).let {
             it as? T

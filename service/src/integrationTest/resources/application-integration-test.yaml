@@ -116,6 +116,8 @@ logging:
         evaka.messaging: debug
     org:
       springframework:
+        boot:
+          autoconfigure: ERROR
         ws:
           client:
             MessageTracing:

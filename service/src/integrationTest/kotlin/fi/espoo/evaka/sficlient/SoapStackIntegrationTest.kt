@@ -134,7 +134,7 @@ class SoapStackIntegrationTest {
             restEnabled = false,
             restAddress = null,
             restUsername = null,
-            restPassword = null,
+            restPasswordSsmName = null,
         )
 
     @BeforeAll

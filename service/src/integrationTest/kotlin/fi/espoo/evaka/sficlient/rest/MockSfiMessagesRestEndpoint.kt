@@ -37,11 +37,30 @@ class MockSfiMessagesRestEndpoint {
     )
     fun getAccessToken(@RequestBody body: AccessTokenRequestBody): ResponseEntity<Any> =
         lock.withLock {
-            if (body.username == USERNAME && body.password == PASSWORD) {
+            if (body.username == USERNAME && body.password == password) {
                 val token = UUID.randomUUID().toString()
                 tokens.add(token)
                 ResponseEntity.ok(AccessTokenResponse(access_token = token, token_type = "bearer"))
             } else ResponseEntity.badRequest().body(ApiError("Invalid credentials"))
+        }
+
+    @PostMapping("/v1/change-password")
+    fun changePassword(
+        @RequestHeader("Authorization") authorization: String?,
+        @RequestBody body: ChangePasswordRequestBody,
+    ): ResponseEntity<Any> =
+        lock.withLock {
+            val accessToken = authorization?.removePrefix("Bearer ")
+            if (!tokens.contains(accessToken)) {
+                ResponseEntity.status(401).body(ApiError("Invalid token"))
+            } else if (body.accessToken != accessToken) {
+                ResponseEntity.status(400).body(ApiError("Invalid token in body"))
+            } else if (body.currentPassword != password) {
+                ResponseEntity.status(400).body(ApiError("Invalid password"))
+            } else {
+                password = body.newPassword
+                ResponseEntity.ok(null)
+            }
         }
 
     @PostMapping(
@@ -86,7 +105,7 @@ class MockSfiMessagesRestEndpoint {
 
     companion object {
         const val USERNAME = "test-user"
-        const val PASSWORD = "test-password"
+        const val DEFAULT_PASSWORD = "test-password"
 
         private val lock = ReentrantLock()
 
@@ -95,6 +114,7 @@ class MockSfiMessagesRestEndpoint {
         private val messages =
             mutableMapOf<ExternalId, Pair<MessageId, NewMessageFromClientOrganisation>>()
         private var nextMessageId: MessageId = 1L
+        private var password: String = DEFAULT_PASSWORD
 
         fun reset() =
             lock.withLock {
@@ -102,9 +122,12 @@ class MockSfiMessagesRestEndpoint {
                 files.clear()
                 messages.clear()
                 nextMessageId = 1L
+                password = DEFAULT_PASSWORD
             }
 
         fun clearTokens() = lock.withLock { tokens.clear() }
+
+        fun getCurrentPassword() = lock.withLock { password }
 
         fun getCapturedFiles() = lock.withLock { files.toMap() }
 

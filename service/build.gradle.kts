@@ -119,6 +119,7 @@ dependencies {
 
     // AWS SDK
     implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:ssm")
     implementation("software.amazon.awssdk:sts")
     implementation("software.amazon.awssdk:ses")
 
