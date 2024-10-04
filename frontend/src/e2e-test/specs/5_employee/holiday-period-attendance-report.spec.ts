@@ -164,5 +164,5 @@ const navigateToReport = async (page: Page, user: DevEmployee) => {
   await employeeLogin(page, user)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')
-  return await new ReportsPage(page).openHolidayPeriodAttendanceReport()
+  return new ReportsPage(page).openHolidayPeriodAttendanceReport()
 }

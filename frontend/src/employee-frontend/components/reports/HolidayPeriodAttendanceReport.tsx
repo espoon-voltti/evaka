@@ -7,6 +7,7 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
+import { useBoolean } from 'lib-common/form/hooks'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { ChildWithName } from 'lib-common/generated/api-types/reports'
@@ -157,7 +158,7 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
         periodId: period.id
       })
     )
-    const [expandingInfo, setExpandingInfo] = useState<boolean>(false)
+    const [expandingInfo, infoExpansion] = useBoolean(false)
 
     const sortedReportResult = useMemo(
       () =>
@@ -181,7 +182,7 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
         {expandingInfo && (
           <ExpandingInfoBox
             info={i18n.reports.holidayPeriodAttendance.occupancyColumnInfo}
-            close={() => setExpandingInfo(false)}
+            close={() => infoExpansion.off()}
           />
         )}
         <TableScrollable>
@@ -196,7 +197,7 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
               <ShortTh>
                 {i18n.reports.holidayPeriodAttendance.occupancyColumn}
                 <InfoButton
-                  onClick={() => setExpandingInfo(true)}
+                  onClick={() => infoExpansion.on()}
                   aria-label={i18n.common.openExpandingInfo}
                 />
               </ShortTh>
@@ -246,7 +247,7 @@ type StatRowProps = { row: ReportDisplayRow }
 const DailyPeriodAttendanceRow = React.memo(function DailyPeriodAttendanceRow(
   props: StatRowProps
 ) {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false)
+  const [isExpanded, expansion] = useBoolean(false)
   const { lang, i18n } = useTranslation()
   const { row } = props
   return (
@@ -255,7 +256,7 @@ const DailyPeriodAttendanceRow = React.memo(function DailyPeriodAttendanceRow(
         <Button
           text=""
           aria-label={i18n.reports.holidayPeriodAttendance.showMoreButton}
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={() => expansion.toggle()}
           icon={isExpanded ? faChevronDown : faChevronRight}
           appearance="link"
         />

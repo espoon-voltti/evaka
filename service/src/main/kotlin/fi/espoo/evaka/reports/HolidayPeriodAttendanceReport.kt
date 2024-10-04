@@ -94,42 +94,33 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                             unit.id,
                             holidayPeriod.period,
                         )
-                    val directlyPlacedChildDataByChild =
-                        directlyPlacedChildData.map { it.child.id }.toSet()
+                    val directlyPlacedChildren = directlyPlacedChildData.map { it.child.id }.toSet()
 
                     // outgoing backup children
-                    val backupCareOutgoing =
+                    val backupCareOutgoingDataByChild =
                         tx.getReservationBackupPlacements(
-                            directlyPlacedChildDataByChild,
+                            directlyPlacedChildren,
                             holidayPeriod.period,
                         )
 
-                    // full absence data
+                    // all period absence data
                     val fullAbsenceDataByDate =
-                        tx.getAbsences(
-                                Predicate {
-                                    where(
-                                        "between_start_and_end(${bind(holidayPeriod.period)}, $it.date) AND $it.child_id = ANY (${bind(directlyPlacedChildDataByChild + backupChildrenInUnit)})"
-                                    )
-                                }
-                            )
-                            .groupBy { r -> r.date }
+                        tx.getAbsencesForChildrenOverRange(
+                            directlyPlacedChildren + backupChildrenInUnit,
+                            holidayPeriod.period,
+                        )
 
-                    // full reservation data
+                    // all period reservation data
                     val fullReservationDataByDateAndChild =
-                        tx.getReservations(
-                                Predicate {
-                                    where(
-                                        "between_start_and_end(${bind(holidayPeriod.period)}, $it.date) AND $it.child_id = ANY (${bind(directlyPlacedChildDataByChild + backupChildrenInUnit)})"
-                                    )
-                                }
-                            )
-                            .groupBy { Pair(it.date, it.childId) }
+                        tx.getReservationsForChildrenOverRange(
+                            directlyPlacedChildren + backupChildrenInUnit,
+                            holidayPeriod.period,
+                        )
 
-                    // full assistance factor data
+                    // all period assistance factor data
                     val assistanceFactorsByChild =
                         tx.getAssistanceFactorsForChildrenOverRange(
-                                directlyPlacedChildDataByChild + backupChildrenInUnit,
+                                directlyPlacedChildren + backupChildrenInUnit,
                                 holidayPeriod.period,
                             )
                             .groupBy { it.childId }
@@ -137,7 +128,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                     val operationDaysByChild =
                         tx.getOperationalDatesForChildren(
                             holidayPeriod.period,
-                            directlyPlacedChildDataByChild + backupChildrenInUnit,
+                            directlyPlacedChildren + backupChildrenInUnit,
                         )
 
                     // collect daily report values
@@ -145,9 +136,8 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         val dailyDirectlyPlacedData =
                             directlyPlacedChildData.filter { sn ->
                                 sn.validity.includes(date) &&
-                                    (backupCareOutgoing[sn.child.id] ?: emptyList()).none {
-                                        it.range.includes(date)
-                                    }
+                                    (backupCareOutgoingDataByChild[sn.child.id] ?: emptyList())
+                                        .none { it.range.includes(date) }
                             }
                         val dailyBackupPlacedData =
                             backupCareIncoming
@@ -282,6 +272,32 @@ private data class ChildServiceNeedOccupancyInfo(
     val validity: FiniteDateRange,
     val shiftCareType: ShiftCareType,
 )
+
+private fun Database.Read.getAbsencesForChildrenOverRange(
+    childIds: Set<PersonId>,
+    range: FiniteDateRange,
+) =
+    getAbsences(
+            Predicate {
+                where(
+                    "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY (${bind(childIds)})"
+                )
+            }
+        )
+        .groupBy { r -> r.date }
+
+private fun Database.Read.getReservationsForChildrenOverRange(
+    childIds: Set<PersonId>,
+    range: FiniteDateRange,
+) =
+    getReservations(
+            Predicate {
+                where(
+                    "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY (${bind(childIds)})"
+                )
+            }
+        )
+        .groupBy { Pair(it.date, it.childId) }
 
 private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForUnit(
     daycareId: DaycareId,
