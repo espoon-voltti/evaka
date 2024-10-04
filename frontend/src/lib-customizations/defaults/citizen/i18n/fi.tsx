@@ -500,7 +500,8 @@ export default {
       warningUsedServiceExceeded: 'Läsnäoloja sopimuksen ylittävä määrä:',
       warningPlannedServiceExceeded:
         'Läsnäoloja suunniteltu sopimuksen ylittävä määrä:'
-    }
+    },
+    childSelectionMissingError: 'Valitse vähintään yksi lapsi'
   },
   messages: {
     inboxTitle: 'Viestit',

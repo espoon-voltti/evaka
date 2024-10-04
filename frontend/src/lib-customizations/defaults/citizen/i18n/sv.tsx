@@ -494,7 +494,8 @@ const sv: Translations = {
       hours: 'h',
       warningUsedServiceExceeded: 'Närvaro utöver vad som anges i avtalet:',
       warningPlannedServiceExceeded: 'Planerad närvaro utöver kontraktet:'
-    }
+    },
+    childSelectionMissingError: 'Välj minst ett barn'
   },
   messages: {
     inboxTitle: 'Inkorg',
