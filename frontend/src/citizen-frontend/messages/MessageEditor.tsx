@@ -409,7 +409,7 @@ const Container = styled.div`
   max-width: 680px;
   height: 100%;
   max-height: 700px;
-  position: absolute;
+  position: fixed;
   z-index: 100;
   right: 0;
   bottom: 0;
