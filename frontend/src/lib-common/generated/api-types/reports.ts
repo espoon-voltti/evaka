@@ -215,6 +215,15 @@ export interface ChildPreschoolAbsenceRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.ChildWithName
+*/
+export interface ChildWithName {
+  firstName: string
+  id: UUID
+  lastName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.ChildrenInDifferentAddressReportRow
 */
 export interface ChildrenInDifferentAddressReportRow {
@@ -418,6 +427,19 @@ export interface FuturePreschoolersReportRow {
   options: string[]
   unitId: UUID
   unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.HolidayPeriodAttendanceReportRow
+*/
+export interface HolidayPeriodAttendanceReportRow {
+  absentCount: number
+  assistanceChildren: ChildWithName[]
+  date: LocalDate
+  noResponseChildren: ChildWithName[]
+  presentChildren: ChildWithName[]
+  presentOccupancyCoefficient: number
+  requiredStaff: number
 }
 
 /**
@@ -752,6 +774,7 @@ export type Report =
   | 'EXCEEDED_SERVICE_NEEDS'
   | 'FAMILY_CONFLICT'
   | 'FAMILY_DAYCARE_MEAL_REPORT'
+  | 'HOLIDAY_PERIOD_ATTENDANCE'
   | 'INVOICE'
   | 'MANUAL_DUPLICATION'
   | 'MISSING_HEAD_OF_FAMILY'
@@ -1033,6 +1056,14 @@ export function deserializeJsonFuturePreschoolersReportRow(json: JsonOf<FuturePr
   return {
     ...json,
     childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
+  }
+}
+
+
+export function deserializeJsonHolidayPeriodAttendanceReportRow(json: JsonOf<HolidayPeriodAttendanceReportRow>): HolidayPeriodAttendanceReportRow {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
   }
 }
 

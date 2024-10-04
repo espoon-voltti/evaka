@@ -29,6 +29,7 @@ import { FamilyContactReportRow } from 'lib-common/generated/api-types/reports'
 import { FamilyDaycareMealReportResult } from 'lib-common/generated/api-types/reports'
 import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { FuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
+import { HolidayPeriodAttendanceReportRow } from 'lib-common/generated/api-types/reports'
 import { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -70,6 +71,7 @@ import { deserializeJsonChildAttendanceReportRow } from 'lib-common/generated/ap
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonHolidayPeriodAttendanceReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
@@ -484,6 +486,28 @@ export async function getFuturePreschoolersUnitsReport(): Promise<PreschoolUnits
     method: 'GET'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.HolidayPeriodAttendanceReport.getHolidayPeriodAttendanceReport
+*/
+export async function getHolidayPeriodAttendanceReport(
+  request: {
+    unitId: UUID,
+    periodId: UUID
+  }
+): Promise<HolidayPeriodAttendanceReportRow[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['periodId', request.periodId]
+  )
+  const { data: json } = await client.request<JsonOf<HolidayPeriodAttendanceReportRow[]>>({
+    url: uri`/employee/reports/holiday-period-attendance`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonHolidayPeriodAttendanceReportRow(e))
 }
 
 

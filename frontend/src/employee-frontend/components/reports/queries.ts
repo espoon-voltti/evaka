@@ -15,6 +15,7 @@ import {
   getFuturePreschoolersReport,
   getFuturePreschoolersSourceUnitsReport,
   getFuturePreschoolersUnitsReport,
+  getHolidayPeriodAttendanceReport,
   getMealReportByUnit,
   getMissingHeadOfFamilyReport,
   getNonSsnChildrenReportRows,
@@ -82,7 +83,10 @@ const queryKeys = createQueryKeys('reports', {
   preschoolAbsenceReport: (filters: Arg0<typeof getPreschoolAbsenceReport>) => [
     'preschoolAbsenceReport',
     filters
-  ]
+  ],
+  holidayPeriodAttendanceReport: (
+    filters: Arg0<typeof getHolidayPeriodAttendanceReport>
+  ) => ['holidayPeriodPresenceReport', filters]
 })
 
 export const attendanceReservationReportByChildQuery = query({
@@ -198,4 +202,9 @@ export const mealReportByUnitQuery = query({
 export const preschoolAbsenceReportQuery = query({
   api: getPreschoolAbsenceReport,
   queryKey: queryKeys.preschoolAbsenceReport
+})
+
+export const holidayPeriodAttendanceReportQuery = query({
+  api: getHolidayPeriodAttendanceReport,
+  queryKey: queryKeys.holidayPeriodAttendanceReport
 })

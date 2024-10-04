@@ -4122,6 +4122,25 @@ export const fi = {
           placeholder: 'Valitse esiopetuskausi'
         }
       }
+    },
+    holidayPeriodAttendance: {
+      title: 'Lomakyselyraportti',
+      description: 'Yksikön läsnäolojen päivätason seuranta lomakyselyn aikana',
+      periodFilter: 'Lomakysely',
+      periodFilterPlaceholder: 'Valitse lomakysely',
+      unitFilter: 'Yksikkö',
+      fetchButton: 'Hae',
+      dateColumn: 'Päivä',
+      presentColumn: 'Paikalla',
+      assistanceColumn: 'Paikallaolevista tukitoimelliset',
+      occupancyColumn: 'Paikalla yhteensä (kerroin)',
+      occupancyColumnInfo:
+        'Kertoimeen lasketaan kaikkien paikallaolevien lasten kerroin yhteensä. Kertoimeen vaikuttaa esimerkiksi lapsen ikä ja tuen tarve.',
+      staffColumn: 'Hlö. kunnan tarve',
+      absentColumn: 'Poissa',
+      noResponseColumn: 'Ei vastannut',
+      moreText: 'lisää',
+      showMoreButton: 'Näytä lisää'
     }
   },
   unitEditor: {

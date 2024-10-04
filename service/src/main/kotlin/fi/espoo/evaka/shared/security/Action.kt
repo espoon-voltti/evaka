@@ -285,7 +285,11 @@ sealed interface Action {
         READ_UNIT_FEATURES(HasGlobalRole(ADMIN)),
         CREATE_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
         READ_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
-        READ_HOLIDAY_PERIODS(HasGlobalRole(ADMIN), IsCitizen(allowWeakLogin = true).any()),
+        READ_HOLIDAY_PERIODS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
+            IsCitizen(allowWeakLogin = true).any(),
+        ),
         DELETE_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
         UPDATE_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
         READ_HOLIDAY_QUESTIONNAIRE(HasGlobalRole(ADMIN)),
@@ -2236,6 +2240,10 @@ sealed interface Action {
         READ_PRESCHOOL_ABSENCE_REPORT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
+        ),
+        READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.RESERVATIONS).inUnit(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

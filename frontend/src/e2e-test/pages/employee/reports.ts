@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import assert from 'assert'
+
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 
@@ -62,6 +64,11 @@ export default class ReportsPage {
   async openPreschoolAbsenceReport() {
     await this.page.findByDataQa('report-preschool-absence').click()
     return new PreschoolAbsenceReport(this.page)
+  }
+
+  async openHolidayPeriodAttendanceReport() {
+    await this.page.findByDataQa('report-holiday-period-attendance').click()
+    return new HolidayPeriodAttendanceReport(this.page)
   }
 
   async openVardaErrorsReport() {
@@ -584,6 +591,76 @@ export class PreschoolAbsenceReport {
           .assertTextEquals(data.UNKNOWN_ABSENCE)
       })
     )
+  }
+}
+
+export class HolidayPeriodAttendanceReport {
+  constructor(private page: Page) {}
+
+  async selectUnit(unitName: string) {
+    const unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
+    await unitSelector.fillAndSelectFirst(unitName)
+  }
+
+  async selectPeriod(periodRange: string) {
+    const unitSelector = new Combobox(this.page.findByDataQa('period-select'))
+    await unitSelector.fillAndSelectFirst(periodRange)
+  }
+
+  async assertRows(
+    expected: {
+      date: string
+      presentChildren: string[]
+      assistanceChildren: string[]
+      coefficientSum: string
+      staffCount: string
+      absenceCount: string
+      noResponseChildren: string[]
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('holiday-period-attendance-row')
+    await rows.assertCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+
+        await row.findByDataQa('date-column').assertTextEquals(data.date)
+
+        const presentChildren = row
+          .findByDataQa('present-children-column')
+          .findAllByDataQa('child-name')
+
+        await this.assertChildNames(presentChildren, data.presentChildren)
+        const assistanceChildren = row
+          .findByDataQa('assistance-children-column')
+          .findAllByDataQa('child-name')
+        await this.assertChildNames(assistanceChildren, data.assistanceChildren)
+
+        await row
+          .findByDataQa('coefficient-sum-column')
+          .assertTextEquals(data.coefficientSum)
+        await row
+          .findByDataQa('staff-count-column')
+          .assertTextEquals(data.staffCount)
+        await row
+          .findByDataQa('absence-count-column')
+          .assertTextEquals(data.absenceCount)
+
+        const noResponseChildren = row
+          .findByDataQa('no-response-children-column')
+          .findAllByDataQa('child-name')
+        await this.assertChildNames(noResponseChildren, data.noResponseChildren)
+      })
+    )
+  }
+
+  private async assertChildNames(children: ElementCollection, names: string[]) {
+    const childCount = await children.count()
+    assert(childCount === names.length)
+    for (let i = 0; i < childCount; i++) {
+      const child = children.nth(i)
+      await child.assertTextEquals(`${i + 1}. ${names[i]}`)
+    }
   }
 }
 
