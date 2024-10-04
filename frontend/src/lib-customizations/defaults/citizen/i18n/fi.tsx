@@ -428,6 +428,10 @@ export default {
       },
       start: 'Alkaa',
       end: 'Päättyy',
+      secondTimeRange: {
+        start: 'Toisen aikavälin alku',
+        end: 'Toisen aikavälin loppu'
+      },
       present: 'Läsnä',
       absent: 'Poissa',
       reservationClosed: 'Ilmoittautuminen päättynyt',

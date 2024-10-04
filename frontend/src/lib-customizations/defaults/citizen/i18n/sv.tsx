@@ -424,6 +424,10 @@ const sv: Translations = {
       },
       start: 'Börjar',
       end: 'Slutar',
+      secondTimeRange: {
+        start: 'Toisen aikavälin alku (sv)',
+        end: 'Toisen aikavälin loppu (sv)'
+      },
       present: 'Närvarande',
       absent: 'Frånvarande',
       reservationClosed: 'Registreringen är stängd',

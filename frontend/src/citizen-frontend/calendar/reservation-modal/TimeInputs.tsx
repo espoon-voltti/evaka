@@ -269,6 +269,8 @@ interface LimitedLocalTimeRangeProps {
   bind: BoundForm<LimitedLocalTimeRangeField>
   hideErrorsBeforeTouched?: boolean
   dataQaPrefix?: string
+  ariaDescribedbyStart?: string
+  ariaDescribedbyEnd?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
@@ -276,6 +278,8 @@ const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
   bind,
   hideErrorsBeforeTouched,
   dataQaPrefix,
+  ariaDescribedbyStart,
+  ariaDescribedbyEnd,
   onFocus
 }: LimitedLocalTimeRangeProps) {
   const value = useFormField(bind, 'value')
@@ -284,6 +288,8 @@ const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
       bind={value}
       hideErrorsBeforeTouched={hideErrorsBeforeTouched}
       dataQaPrefix={dataQaPrefix}
+      ariaDescribedbyStart={ariaDescribedbyStart}
+      ariaDescribedbyEnd={ariaDescribedbyEnd}
       onFocus={onFocus}
     />
   )
@@ -350,12 +356,15 @@ const TimeRanges = React.memo(function TimeRanges({
                 data-qa={
                   dataQaPrefix ? `${dataQaPrefix}-add-res-button` : undefined
                 }
-                onClick={() =>
+                onClick={() => {
                   bind.update((prev) =>
                     // use same valid range times as first reservation
                     [prev[0], emptyTimeRange(prev[0].validRange)]
                   )
-                }
+                  if (dataQaPrefix) {
+                    focusElementOnNextFrame(`${dataQaPrefix}-time-1-start`)
+                  }
+                }}
                 aria-label={i18n.common.add}
               />
             ) : null}
@@ -370,6 +379,12 @@ const TimeRanges = React.memo(function TimeRanges({
               bind={secondTimeRange}
               hideErrorsBeforeTouched={!showAllErrors}
               dataQaPrefix={dataQaPrefix ? `${dataQaPrefix}-time-1` : undefined}
+              ariaDescribedbyStart={
+                i18n.calendar.reservationModal.secondTimeRange.start
+              }
+              ariaDescribedbyEnd={
+                i18n.calendar.reservationModal.secondTimeRange.end
+              }
               onFocus={onFocus}
             />
           </MiddleCell>
