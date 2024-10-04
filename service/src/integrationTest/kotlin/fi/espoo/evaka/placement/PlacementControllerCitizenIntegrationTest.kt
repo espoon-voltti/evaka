@@ -1063,7 +1063,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     private fun getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {
         return placementController
-            .getPlacements(dbInstance(), admin.user, clock, childId = childId)
+            .getChildPlacements(dbInstance(), admin.user, clock, childId = childId)
             .placements
             .toList()
             .flatMap { it.groupPlacements }

@@ -32,14 +32,12 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -50,37 +48,22 @@ class PlacementController(
 ) {
     private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
 
-    @GetMapping("/employee/placements")
-    fun getPlacements(
+    @GetMapping("/employee/children/{childId}/placements")
+    fun getChildPlacements(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam daycareId: DaycareId? = null,
-        @RequestParam childId: ChildId? = null,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null,
+        @PathVariable childId: ChildId,
     ): PlacementResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    when {
-                        daycareId != null ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.Unit.READ_PLACEMENT,
-                                daycareId,
-                            )
-                        childId != null ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.Child.READ_PLACEMENT,
-                                childId,
-                            )
-                        else -> throw BadRequest("daycareId or childId is required")
-                    }
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_PLACEMENT,
+                        childId,
+                    )
 
                     val authorizedDaycares =
                         tx.getDaycares(
@@ -96,7 +79,12 @@ class PlacementController(
                             .map { it.id }
                             .toSet()
 
-                    tx.getDetailedDaycarePlacements(daycareId, childId, from, to)
+                    tx.getDetailedDaycarePlacements(
+                            daycareId = null,
+                            childId,
+                            startDate = null,
+                            endDate = null,
+                        )
                         .map { placement ->
                             // TODO: is some info only hidden on frontend?
                             if (!authorizedDaycares.contains(placement.daycare.id)) {
@@ -134,9 +122,8 @@ class PlacementController(
             }
             .also {
                 Audit.PlacementSearch.log(
-                    targetId = daycareId?.let(AuditId::invoke) ?: childId?.let(AuditId::invoke),
-                    meta =
-                        mapOf("startDate" to from, "endDate" to to, "count" to it.placements.size),
+                    targetId = AuditId(childId),
+                    meta = mapOf("count" to it.placements.size),
                 )
             }
     }

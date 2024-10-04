@@ -507,7 +507,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     private fun getServiceNeeds(childId: ChildId, placementId: PlacementId): List<ServiceNeed> =
         placementController
-            .getPlacements(dbInstance(), unitSupervisor, clock, childId = childId)
+            .getChildPlacements(dbInstance(), unitSupervisor, clock, childId = childId)
             .placements
             .first { it.id == placementId }
             .serviceNeeds
