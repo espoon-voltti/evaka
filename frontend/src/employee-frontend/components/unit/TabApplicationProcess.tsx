@@ -9,6 +9,7 @@ import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
@@ -36,12 +37,13 @@ export default React.memo(function TabApplicationProcess({ unitId }: Props) {
       {permittedActions.includes('READ_APPLICATIONS_AND_PLACEMENT_PLANS') && (
         <DaycareApplications unitId={unitId} />
       )}
-      {permittedActions.includes('READ_SERVICE_APPLICATIONS') && (
-        <>
-          <Gap size="m" />
-          <TabServiceApplications unitId={unitId} />
-        </>
-      )}
+      {featureFlags.serviceApplications &&
+        permittedActions.includes('READ_SERVICE_APPLICATIONS') && (
+          <>
+            <Gap size="m" />
+            <TabServiceApplications unitId={unitId} />
+          </>
+        )}
     </div>
   ))
 })
