@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled, { useTheme } from 'styled-components'
 
 import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/AttendanceDailyServiceTimes'
 import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
@@ -21,6 +23,7 @@ import {
 } from 'lib-common/form/form'
 import {
   BoundForm,
+  useBoolean,
   useForm,
   useFormElems,
   useFormField,
@@ -47,7 +50,6 @@ import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
@@ -55,7 +57,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faPlus, faTrash } from 'lib-icons'
+import { faPlus, faTrash, faAngleDown, faAngleUp } from 'lib-icons'
 
 import { routes } from '../../App'
 import { renderResult } from '../../async-rendering'
@@ -298,6 +300,7 @@ const ReservationsView = ({
   onMarkAbsence: () => void
 }) => {
   const { i18n, lang } = useTranslation()
+  const { colors } = useTheme()
 
   const minDatesByWeek = useMemo(
     () => getMinDatesByWeek(reservations),
@@ -310,10 +313,15 @@ const ReservationsView = ({
         : maxDate,
     null
   )
-  const laterAbsences =
-    maxDate !== null
-      ? absences.filter((absence) => absence.date.isAfter(maxDate))
-      : absences
+  const laterAbsences = useMemo(
+    () =>
+      maxDate !== null
+        ? absences.filter((absence) => absence.date.isAfter(maxDate))
+        : absences,
+    [absences, maxDate]
+  )
+  const [laterAbsencesVisible, { toggle: toggleLaterAbsencesVisible }] =
+    useBoolean(false)
 
   return (
     <>
@@ -338,22 +346,18 @@ const ReservationsView = ({
       {laterAbsences.length > 0 ? (
         <>
           <HorizontalLine slim dashed />
-          <Label primary>{i18n.absences.laterAbsence}</Label>
-          {groupAbsencesByDateRange(laterAbsences).map((absenceRange) => {
-            if (absenceRange.durationInDays() > 1) {
-              return (
-                <div key={absenceRange.start.format()} data-qa="absence-row">
-                  {`${absenceRange.start.format()} - ${absenceRange.end.format()}`}
-                </div>
-              )
-            } else {
-              return (
-                <div key={absenceRange.start.format()} data-qa="absence-row">
-                  {absenceRange.start.format()}
-                </div>
-              )
-            }
-          })}
+          <LaterAbsencesLabel primary onClick={toggleLaterAbsencesVisible}>
+            {laterAbsencesVisible
+              ? i18n.absences.laterAbsence.open
+              : i18n.absences.laterAbsence.closed}
+            <FontAwesomeIcon
+              icon={laterAbsencesVisible ? faAngleUp : faAngleDown}
+              color={colors.main.m2}
+            />
+          </LaterAbsencesLabel>
+          {laterAbsencesVisible ? (
+            <AbsenceRanges absences={laterAbsences} />
+          ) : null}
         </>
       ) : null}
       <HorizontalLine slim />
@@ -364,7 +368,7 @@ const ReservationsView = ({
           spacing={defaultMargins.zero}
           gap={defaultMargins.s}
         >
-          <LegacyButton
+          <Button
             text={
               i18n.attendances.actions.confirmedRangeReservations
                 .markReservations
@@ -372,7 +376,7 @@ const ReservationsView = ({
             onClick={onEditReservations}
             data-qa="edit"
           />
-          <LegacyButton
+          <Button
             primary
             text={
               i18n.attendances.actions.confirmedRangeReservations
@@ -386,6 +390,39 @@ const ReservationsView = ({
     </>
   )
 }
+
+const LaterAbsencesLabel = styled(Label)`
+  display: flex;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+
+  &:hover {
+    cursor: pointer;
+  }
+`
+
+const AbsenceRanges = React.memo(function AbsenceRanges({
+  absences
+}: {
+  absences: Absence[]
+}) {
+  const absenceRanges = useMemo(
+    () => groupAbsencesByDateRange(absences),
+    [absences]
+  )
+
+  return (
+    <>
+      {absenceRanges.map((absenceRange) => (
+        <div key={absenceRange.start.format()} data-qa="absence-row">
+          {absenceRange.durationInDays() > 1
+            ? absenceRange.format()
+            : absenceRange.start.format()}
+        </div>
+      ))}
+    </>
+  )
+})
 
 const ReservationView = ({
   reservation
@@ -465,7 +502,7 @@ const ReservationsEdit = ({
           spacing={defaultMargins.zero}
           gap={defaultMargins.s}
         >
-          <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
+          <Button text={i18n.common.cancel} onClick={onCancel} />
           <MutateButton
             primary
             text={i18n.common.confirm}
