@@ -221,6 +221,7 @@ const ChildSection = React.memo(function ChildSection({
             <Th>{i18n.invoice.form.rows.amount}</Th>
             <Th align="right">{i18n.invoice.form.rows.unitPrice}</Th>
             <Th align="right">{i18n.invoice.form.rows.price}</Th>
+            <Th>{i18n.personProfile.invoiceCorrections.invoiceStatusHeader}</Th>
             <Th />
           </Tr>
         </Thead>
@@ -274,6 +275,10 @@ const InvoiceCorrectionRowReadView = React.memo(
 
     const [noteEditorOpen, { on: openNote, off: closeNote }] = useBoolean(false)
 
+    const statusText = i18n.personProfile.invoiceCorrections.invoiceStatus(
+      correction.invoice?.status ?? null
+    )
+
     return (
       <>
         {noteEditorOpen && (
@@ -297,6 +302,15 @@ const InvoiceCorrectionRowReadView = React.memo(
           <Td align="right">{formatCents(correction.unitPrice, true)}</Td>
           <Td align="right">
             {formatCents(correction.amount * correction.unitPrice, true)}
+          </Td>
+          <Td>
+            {correction.invoice ? (
+              <Link to={`/finance/invoices/${correction.invoice.id}`}>
+                {statusText}
+              </Link>
+            ) : (
+              <div>{statusText}</div>
+            )}
           </Td>
           <Td>
             <FixedSpaceRow>
