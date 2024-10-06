@@ -314,20 +314,24 @@ const InvoiceCorrectionRowReadView = React.memo(
           </Td>
           <Td>
             <FixedSpaceRow>
-              {permittedActions.includes('DELETE') && (
-                <ConfirmedMutation
-                  buttonStyle="ICON"
-                  icon={faTrash}
-                  buttonAltText={i18n.common.remove}
-                  confirmationTitle={i18n.invoiceCorrections.deleteConfirmTitle}
-                  confirmLabel={i18n.common.remove}
-                  mutation={deleteInvoiceCorrectionMutation}
-                  onClick={() => ({
-                    id: correction.id,
-                    personId: correction.headOfFamilyId
-                  })}
-                />
-              )}
+              {permittedActions.includes('DELETE') &&
+                (correction.invoice === null ||
+                  correction.invoice.status === 'DRAFT') && (
+                  <ConfirmedMutation
+                    buttonStyle="ICON"
+                    icon={faTrash}
+                    buttonAltText={i18n.common.remove}
+                    confirmationTitle={
+                      i18n.invoiceCorrections.deleteConfirmTitle
+                    }
+                    confirmLabel={i18n.common.remove}
+                    mutation={deleteInvoiceCorrectionMutation}
+                    onClick={() => ({
+                      id: correction.id,
+                      personId: correction.headOfFamilyId
+                    })}
+                  />
+                )}
               <Tooltip tooltip={correction.note} data-qa="note-tooltip">
                 <IconOnlyButton
                   icon={
