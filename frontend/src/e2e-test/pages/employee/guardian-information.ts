@@ -589,11 +589,8 @@ class InvoicesSection extends Section {
 }
 
 class InvoiceCorrectionsSection extends Section {
-  invoiceCorrectionRows = this.findAll(
-    '[data-qa="invoice-details-invoice-row"]'
-  )
+  invoiceCorrectionRows = this.findAllByDataQa('invoice-details-invoice-row')
   createInvoiceCorrectionButton = this.findByDataQa('create-invoice-correction')
-  saveButton = this.findByDataQa('save-invoice-correction')
 
   lastRow() {
     return new InvoiceCorrectionRow(this, this.invoiceCorrectionRows.last())
@@ -601,7 +598,7 @@ class InvoiceCorrectionsSection extends Section {
 
   async addNewInvoiceCorrection() {
     await this.createInvoiceCorrectionButton.click()
-    return new InvoiceCorrectionRowEdit(this, this.invoiceCorrectionRows.last())
+    return new InvoiceCorrectionModal(this)
   }
 }
 
@@ -624,48 +621,43 @@ class InvoiceCorrectionRow extends Element {
   noteIcon = this.findByDataQa('note-icon')
   noteTooltip = this.findByDataQa('note-tooltip')
   deleteButton = this.findByDataQa('delete-invoice-row-button')
-}
 
-class InvoiceCorrectionRowEdit extends Element {
-  constructor(
-    public parent: Element,
-    self: Element
-  ) {
-    super(self)
+  async editNote() {
+    await this.noteIcon.click()
+    return new InvoiceCorrectionNoteModal(this.parent)
   }
 
+  async deleteRow() {
+    await this.deleteButton.click()
+    await this.parent.findByDataQa('modal-okBtn').click()
+  }
+}
+
+class InvoiceCorrectionModal extends Modal {
   productSelect = new Select(this.findByDataQa('select-product'))
-  unitSelect = new Combobox(this.findByDataQa('input-unit'))
+  unitSelect = new Select(this.findByDataQa('input-unit'))
   description = new TextInput(this.findByDataQa('input-description'))
-  startDate = new DatePickerDeprecated(
-    this.findByDataQa('date-range-input-start-date')
+  startDate = new DatePicker(
+    this.findByDataQa('date-range-input').findByDataQa('start-date')
   )
-  endDate = new DatePickerDeprecated(
-    this.findByDataQa('date-range-input-end-date')
+  endDate = new DatePicker(
+    this.findByDataQa('date-range-input').findByDataQa('end-date')
   )
   amount = new TextInput(this.findByDataQa('input-amount'))
   price = new TextInput(this.findByDataQa('input-price'))
   totalPrice = this.findByDataQa('total-price')
+  note = new TextInput(this.findByDataQa('input-note'))
 
   async clickAndAssertUnitVisibility(
     expectedUnitName: string,
     visible: boolean
   ) {
-    await this.unitSelect.click()
-    if (visible) {
-      await this.unitSelect.findText(expectedUnitName).waitUntilVisible()
-    } else {
-      await this.unitSelect.findText(expectedUnitName).waitUntilHidden()
-    }
-  }
-
-  async addNote() {
-    await this.findByDataQa('add-note').click()
-    return new NoteModal(this.parent.findByDataQa('modal'))
+    const options = await this.unitSelect.allOptions
+    expect(options.includes(expectedUnitName)).toBe(visible)
   }
 }
 
-class NoteModal extends Modal {
+class InvoiceCorrectionNoteModal extends Modal {
   note = new TextInput(this.findByDataQa('note-textarea'))
 }
 
