@@ -1697,10 +1697,10 @@ export const fi = {
       invoiceStatusHeader: 'Tila',
       invoiceStatus: (status: InvoiceStatus | null) =>
         status === 'DRAFT'
-          ? 'Seuraavalla luonnoksella'
+          ? 'Laskuluonnoksella'
           : status
-            ? 'Laskulla osittain'
-            : 'Ei vielä laskulla'
+            ? 'Laskulla'
+            : 'Ei laskulla'
     },
     voucherValueDecisions: {
       title: 'Päämiehen arvopäätökset',

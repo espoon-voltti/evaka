@@ -532,6 +532,7 @@ export interface InvoiceCorrection {
   description: string
   headOfFamilyId: UUID
   id: UUID
+  invoice: InvoiceWithCorrection | null
   note: string
   period: FiniteDateRange
   product: string
@@ -718,6 +719,14 @@ export interface InvoiceSummary {
 export interface InvoiceSummaryResponse {
   data: InvoiceSummary
   permittedActions: Action.Invoice[]
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceWithCorrection
+*/
+export interface InvoiceWithCorrection {
+  id: UUID
+  status: InvoiceStatus
 }
 
 /**

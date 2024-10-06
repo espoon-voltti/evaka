@@ -21,7 +21,7 @@ private fun Database.Read.getInvoiceCorrections(where: Predicate): List<InvoiceC
             sql(
                 """
 SELECT
-    id,
+    invoice_correction.id,
     target_month,
     head_of_family_id,
     child_id,
@@ -31,8 +31,17 @@ SELECT
     amount,
     unit_price,
     description,
-    note
+    note,
+    invoice.id AS invoice_id,
+    invoice.status AS invoice_status
 FROM invoice_correction
+LEFT JOIN LATERAL (
+    SELECT i.id, i.status
+    FROM invoice i
+    JOIN invoice_row ir ON ir.invoice_id = i.id
+    WHERE ir.correction_id = invoice_correction.id
+    LIMIT 1
+) invoice ON true
 WHERE ${predicate(where.forTable("invoice_correction"))}
 """
             )

@@ -6,15 +6,21 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
+import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.YearMonth
 import java.util.UUID
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
+
+data class InvoiceWithCorrection(@PropagateNull val id: InvoiceId, val status: InvoiceStatus)
 
 data class InvoiceCorrection(
     val id: InvoiceCorrectionId,
@@ -28,6 +34,7 @@ data class InvoiceCorrection(
     val unitPrice: Int,
     val description: String,
     val note: String,
+    @Nested("invoice") val invoice: InvoiceWithCorrection?, // should later be a list?
 ) {
     fun toInvoiceRow() =
         InvoiceRow(
