@@ -141,10 +141,8 @@ log_format json_access escape=json
     '"traceId":"$request_id",'
     '"type":"app-requests-received",'
     '"userIdHash":"",'
-{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
-    '"dd.trace_id":"$opentracing_context_x_datadog_trace_id",'
-    '"dd.span_id":"$opentracing_context_x_datadog_parent_id",'
-{{ end }}
+    '"dd.trace_id":"$otel_trace_id",'
+    '"dd.span_id":"$otel_span_id",'
     '"version":1'
   '}';
 
@@ -273,6 +271,9 @@ server {
   }
 
   location /api/application {
+{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
+    otel_trace on;
+{{ end }}
     access_log /var/log/nginx/access.log json_access;
 
     include     proxy_params;
@@ -285,6 +286,9 @@ server {
   }
 
   location /api/internal {
+{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
+    otel_trace on;
+{{ end }}
     access_log /var/log/nginx/access.log json_access;
 
     include     proxy_params;
@@ -303,6 +307,9 @@ server {
 
   # Direct all CPS reports to internal endpoint /api/csp/csp-report
   location /api/csp {
+{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
+    otel_trace on;
+{{ end }}
     access_log /var/log/nginx/access.log json_access;
 
     include     proxy_params;
@@ -350,6 +357,9 @@ server {
     allow all;
   }
   location /auth/realms/ {
+{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
+    otel_trace on;
+{{ end }}
     access_log /var/log/nginx/access.log json_access;
 
     include keycloak-proxy.conf;
