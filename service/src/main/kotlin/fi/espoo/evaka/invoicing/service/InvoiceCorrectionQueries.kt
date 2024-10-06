@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.invoicing.data.getFirstUninvoicedMonth
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
@@ -82,7 +83,7 @@ WHERE
 }
 
 data class InvoiceCorrectionInsert(
-    val targetMonth: YearMonth,
+    val targetMonth: YearMonth?,
     val headOfFamilyId: PersonId,
     val childId: ChildId,
     val unitId: DaycareId,
@@ -94,13 +95,24 @@ data class InvoiceCorrectionInsert(
     val note: String,
 )
 
-fun Database.Transaction.insertInvoiceCorrections(corrections: Iterable<InvoiceCorrectionInsert>) =
-    executeBatch(corrections) {
-        sql(
-            """
+fun Database.Transaction.insertInvoiceCorrection(
+    correction: InvoiceCorrectionInsert
+): InvoiceCorrectionId = insertInvoiceCorrections(listOf(correction)).first()
+
+fun Database.Transaction.insertInvoiceCorrections(
+    corrections: Iterable<InvoiceCorrectionInsert>
+): List<InvoiceCorrectionId> {
+    val defaultTargetMonth =
+        if (corrections.any { it.targetMonth == null }) {
+            getFirstUninvoicedMonth()
+        } else null // not needed
+
+    return prepareBatch(corrections) {
+            sql(
+                """
 INSERT INTO invoice_correction (target_month, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
 VALUES (
-    ${bind { it.targetMonth }},
+    ${bind { it.targetMonth ?: defaultTargetMonth }},
     ${bind { it.headOfFamilyId }},
     ${bind { it.childId }},
     ${bind { it.unitId }},
@@ -111,9 +123,13 @@ VALUES (
     ${bind { it.description }},
     ${bind { it.note }}
 )
+RETURNING id
 """
-        )
-    }
+            )
+        }
+        .executeAndReturn()
+        .toList()
+}
 
 data class InvoiceCorrectionUpdate(
     val id: InvoiceCorrectionId,
