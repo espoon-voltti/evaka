@@ -22,12 +22,12 @@ import { IncomeTypeOptions } from 'lib-common/generated/api-types/invoicing'
 import { IncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCodes } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceCorrectionInsert } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCorrectionWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
 import { InvoicePayload } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { NewInvoiceCorrection } from 'lib-common/generated/api-types/invoicing'
 import { NoteUpdateBody } from 'lib-common/generated/api-types/invoicing'
 import { PagedFeeDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
 import { PagedInvoiceSummaryResponses } from 'lib-common/generated/api-types/invoicing'
@@ -704,13 +704,13 @@ export async function sendInvoicesByDate(
 */
 export async function createInvoiceCorrection(
   request: {
-    body: NewInvoiceCorrection
+    body: InvoiceCorrectionInsert
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoice-corrections`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<NewInvoiceCorrection>
+    data: request.body satisfies JsonCompatible<InvoiceCorrectionInsert>
   })
   return json
 }

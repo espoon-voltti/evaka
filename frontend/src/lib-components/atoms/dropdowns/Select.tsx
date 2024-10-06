@@ -8,7 +8,8 @@ import React, {
   ChangeEvent,
   FocusEventHandler,
   useCallback,
-  useMemo
+  useMemo,
+  useState
 } from 'react'
 import styled from 'styled-components'
 
@@ -79,6 +80,7 @@ interface RawProps {
   placeholder?: string
   name?: string
   onFocus?: FocusEventHandler<HTMLSelectElement>
+  onBlur?: () => void
   fullWidth?: boolean
   'data-qa'?: string
 }
@@ -92,6 +94,7 @@ const RawSelect = React.memo(function RawSelect({
   placeholder,
   name,
   onFocus,
+  onBlur,
   fullWidth,
   'data-qa': dataQa
 }: RawProps) {
@@ -111,6 +114,7 @@ const RawSelect = React.memo(function RawSelect({
           onChange={handleChange}
           disabled={disabled}
           onFocus={onFocus}
+          onBlur={onBlur}
         >
           {placeholder !== undefined && <option value="">{placeholder}</option>}
           {options.map((item) => (
@@ -162,12 +166,14 @@ interface SelectFProps<T> {
   placeholder?: string
   name?: string
   onFocus?: FocusEventHandler<HTMLSelectElement>
+  hideErrorsBeforeTouched?: boolean
   fullWidth?: boolean
   'data-qa'?: string
 }
 
 function SelectFC<T>({
   bind: { state, update, inputInfo },
+  hideErrorsBeforeTouched,
   ...props
 }: SelectFProps<T>) {
   const { domValue, options } = state
@@ -187,9 +193,13 @@ function SelectFC<T>({
     [update]
   )
 
+  const [touched, setTouched] = useState(false)
+
   const info = inputInfo()
-  const infoText = info?.text
-  const infoStatus = info?.status
+  const hideError =
+    hideErrorsBeforeTouched && !touched && info?.status === 'warning'
+  const infoText = hideError ? undefined : info?.text
+  const infoStatus = hideError ? undefined : info?.status
 
   return (
     <>
@@ -198,6 +208,7 @@ function SelectFC<T>({
         options={rawOptions}
         value={domValue}
         onChange={onChange}
+        onBlur={() => setTouched(true)}
       />
       {!!infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>

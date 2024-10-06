@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
+import java.time.YearMonth
 
 // language=SQL
 val invoiceQueryBase =
@@ -486,6 +487,21 @@ fun Database.Transaction.insertInvoices(
             }
     )
 }
+
+/*
+ * Invoices of month N are sent in month N+1, so the invoice date of the last sent invoice is the first uninvoiced month.
+ * */
+fun Database.Read.getFirstUninvoicedMonth(): YearMonth =
+    createQuery {
+            sql(
+                """
+    SELECT date_trunc('month', MAX(invoice_date)) AS month
+    FROM invoice
+    WHERE status = 'SENT'
+"""
+            )
+        }
+        .exactlyOneOrNull<YearMonth>() ?: YearMonth.now().plusMonths(1)
 
 private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoice>) {
     executeBatch(invoices) {
