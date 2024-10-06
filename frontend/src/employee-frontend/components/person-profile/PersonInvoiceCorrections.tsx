@@ -3,14 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import uniqBy from 'lodash/uniqBy'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { formatPersonName } from 'employee-frontend/utils'
-import { combine, Result, Success, wrapResult } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
+import { combine } from 'lib-common/api'
+import { localDate, localDateRange } from 'lib-common/form/fields'
+import {
+  object,
+  oneOf,
+  required,
+  transformed,
+  value
+} from 'lib-common/form/form'
+import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import { Action } from 'lib-common/generated/action'
 import {
   InvoiceCorrection,
@@ -19,70 +27,59 @@ import {
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import LocalDate from 'lib-common/local-date'
-import { formatCents } from 'lib-common/money'
+import { formatCents, parseCents } from 'lib-common/money'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
-import TextArea from 'lib-components/atoms/form/TextArea'
-import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import TextArea, { TextAreaF } from 'lib-components/atoms/form/TextArea'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, H4, P } from 'lib-components/typography'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import { H2, H4, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faCommentAlt, fasCommentAltLines, faTrash } from 'lib-icons'
 
-import {
-  createInvoiceCorrection,
-  deleteInvoiceCorrection,
-  getInvoiceCodes,
-  getPersonInvoiceCorrections,
-  updateInvoiceCorrectionNote
-} from '../../generated/api-clients/invoicing'
-import { Translations, useTranslation } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { renderResult } from '../async-rendering'
-import { FlexRow } from '../common/styled/containers'
-import InvoiceRowSectionRow from '../invoice/InvoiceRowsSectionRow'
+import { invoiceCodesQuery } from '../invoices/queries'
 
-const createInvoiceCorrectionResult = wrapResult(createInvoiceCorrection)
-const deleteInvoiceCorrectionResult = wrapResult(deleteInvoiceCorrection)
-const getInvoiceCodesResult = wrapResult(getInvoiceCodes)
-const getPersonInvoiceCorrectionsResult = wrapResult(
-  getPersonInvoiceCorrections
-)
-const updateInvoiceCorrectionNoteResult = wrapResult(
-  updateInvoiceCorrectionNote
-)
+import {
+  createInvoiceCorrectionMutation,
+  deleteInvoiceCorrectionMutation,
+  invoiceCorrectionsQuery,
+  updateInvoiceCorrectionNoteMutation
+} from './queries'
 
-interface Props {
-  id: string
-  open: boolean
+interface EditTarget {
+  childId: UUID
+  correctionId: UUID | null // null for new
 }
 
 export default React.memo(function PersonInvoiceCorrections({
   id,
   open: startOpen
-}: Props) {
+}: {
+  id: string
+  open: boolean
+}) {
   const { i18n } = useTranslation()
   const { fridgeChildren, permittedActions } = useContext(PersonContext)
   const [open, setOpen] = useState(startOpen)
-  const [invoiceCodes] = useApiState(getInvoiceCodesResult, [])
-  const [corrections, reloadCorrections] = useApiState(
-    () => getPersonInvoiceCorrectionsResult({ personId: id }),
-    [id]
-  )
-  const { editState, updateState, cancelEditing, addNewRow } =
-    useCorrectionEditState(id)
-  const [noteModalState, setNoteModalState] = useState<{
-    id: UUID
-    note: string
-  }>()
+  const invoiceCodes = useQueryResult(invoiceCodesQuery())
+  const corrections = useQueryResult(invoiceCorrectionsQuery({ personId: id }))
+
+  const [editTarget, setEditTarget] = useState<EditTarget | null>(null)
 
   const children = useMemo(
     () =>
@@ -125,64 +122,6 @@ export default React.memo(function PersonInvoiceCorrections({
     [invoiceCodes]
   )
 
-  const save = useMemo(() => {
-    if (!editState) return undefined
-
-    const unitId = editState.unitId
-    if (!unitId) return undefined
-    if (editState.periodStart.isAfter(editState.periodEnd)) return undefined
-
-    return () =>
-      createInvoiceCorrectionResult({
-        body: {
-          ...editState,
-          headOfFamilyId: id,
-          unitId,
-          period: new FiniteDateRange(
-            editState.periodStart,
-            editState.periodEnd
-          )
-        }
-      })
-  }, [id, editState])
-
-  const onSaveSuccess = useCallback(() => {
-    cancelEditing()
-    void reloadCorrections()
-  }, [cancelEditing, reloadCorrections])
-
-  const deleteCorrection = useCallback(
-    (id: UUID) =>
-      void deleteInvoiceCorrectionResult({ id }).then(reloadCorrections),
-    [reloadCorrections]
-  )
-
-  const editNote = useCallback(
-    (id: UUID, note: string) => setNoteModalState({ id, note }),
-    []
-  )
-
-  const saveNote = useCallback(() => {
-    if (!noteModalState) return
-    if (noteModalState.id === 'new') {
-      updateState({ note: noteModalState.note })
-      setNoteModalState(undefined)
-      return
-    } else {
-      return updateInvoiceCorrectionNoteResult({
-        id: noteModalState.id,
-        body: { note: noteModalState.note }
-      })
-    }
-  }, [noteModalState, updateState])
-
-  const onNoteUpdateSuccess = useCallback(() => {
-    setNoteModalState(undefined)
-    if (noteModalState && noteModalState.id !== 'new') {
-      void reloadCorrections()
-    }
-  }, [noteModalState, reloadCorrections])
-
   return (
     <CollapsibleContentArea
       title={<H2>{i18n.personProfile.invoiceCorrections.title}</H2>}
@@ -202,91 +141,75 @@ export default React.memo(function PersonInvoiceCorrections({
               children.map((child) => (
                 <ChildSection
                   key={child.id}
-                  permittedActions={permittedActions}
-                  i18n={i18n}
+                  personId={id}
+                  permittedPersonActions={permittedActions}
                   child={child}
                   corrections={groupedCorrections[child.id] ?? []}
                   products={products}
                   unitIds={unitIds}
                   unitDetails={unitDetails}
-                  editState={editState}
-                  updateState={updateState}
-                  cancelEditing={cancelEditing}
-                  save={save}
-                  onSaveSuccess={onSaveSuccess}
-                  addNewRow={addNewRow}
-                  deleteCorrection={deleteCorrection}
-                  editNote={editNote}
+                  editTarget={editTarget}
+                  onStartCreate={() =>
+                    setEditTarget({ childId: child.id, correctionId: null })
+                  }
+                  onStartEdit={(correctionId) =>
+                    setEditTarget({ childId: child.id, correctionId })
+                  }
+                  onEditorCancel={() => setEditTarget(null)}
                 />
               ))
             )}
           </FixedSpaceColumn>
         )
       )}
-      {noteModalState ? (
-        <AsyncFormModal
-          title={i18n.personProfile.invoiceCorrections.noteModalTitle}
-          resolveAction={saveNote}
-          resolveLabel={i18n.common.save}
-          onSuccess={onNoteUpdateSuccess}
-          rejectAction={() => setNoteModalState(undefined)}
-          rejectLabel={i18n.common.cancel}
-        >
-          <P noMargin centered>
-            {i18n.personProfile.invoiceCorrections.noteModalInfo}
-          </P>
-          <Gap size="s" />
-          <TextArea
-            value={noteModalState.note}
-            onChange={(note) =>
-              setNoteModalState((previous) => previous && { ...previous, note })
-            }
-            data-qa="note-textarea"
-          />
-        </AsyncFormModal>
-      ) : null}
     </CollapsibleContentArea>
   )
 })
 
 const ChildSection = React.memo(function ChildSection({
-  permittedActions,
-  i18n,
+  personId,
+  permittedPersonActions,
   child,
   corrections,
   products,
-  unitIds,
   unitDetails,
-  editState,
-  updateState,
-  cancelEditing,
-  save,
-  onSaveSuccess,
-  addNewRow,
-  deleteCorrection,
-  editNote
+  editTarget,
+  onStartCreate,
+  onEditorCancel
 }: {
-  permittedActions: Set<Action.Person>
-  i18n: Translations
+  personId: UUID
+  permittedPersonActions: Set<Action.Person>
   child: PersonJSON
   corrections: InvoiceCorrectionWithPermittedActions[]
   products: ProductWithName[]
   unitIds: UUID[]
   unitDetails: Record<UUID, InvoiceDaycare>
-  editState: InvoiceCorrectionForm | undefined
-  updateState: UpdateState
-  cancelEditing: () => void
-  save: (() => Promise<Result<void>>) | undefined
-  onSaveSuccess: () => void
-  addNewRow: (childId: UUID) => void
-  deleteCorrection: (id: UUID) => void
-  editNote: (id: UUID, note: string) => void
+  editTarget: EditTarget | null
+  onStartCreate: () => void
+  onStartEdit: (correctionId: UUID) => void
+  onEditorCancel: () => void
 }) {
+  const { i18n } = useTranslation()
+  const editorOpen = editTarget !== null
+  const editingThisChild = editTarget?.childId === child.id
+
   return (
     <FixedSpaceColumn spacing="s">
-      <ChildNameLink to={`/child-information/${child.id}`}>
-        <H4 noMargin>{formatPersonName(child, i18n)}</H4>
-      </ChildNameLink>
+      <FixedSpaceRow justifyContent="space-between" alignItems="center">
+        <ChildNameLink to={`/child-information/${child.id}`}>
+          <H4 noMargin>{formatPersonName(child, i18n)}</H4>
+        </ChildNameLink>
+
+        {permittedPersonActions.has('CREATE_INVOICE_CORRECTION') && (
+          <AddButton
+            onClick={onStartCreate}
+            text={i18n.invoiceCorrections.addRow}
+            disabled={editorOpen}
+            data-qa="create-invoice-correction"
+          />
+        )}
+      </FixedSpaceRow>
+
       <Table>
         <Thead>
           <Tr>
@@ -302,85 +225,344 @@ const ChildSection = React.memo(function ChildSection({
           </Tr>
         </Thead>
         <Tbody>
-          {corrections.map(({ data: correction }) => (
-            <InvoiceCorrectionRow
-              key={correction.id}
-              row={correction}
+          {editingThisChild && (
+            <InvoiceCorrectionEditModal
+              personId={personId}
+              childId={child.id}
+              row={
+                editTarget?.correctionId
+                  ? corrections.find(
+                      (c) => c.data.id === editTarget.correctionId
+                    )?.data ?? null
+                  : null
+              }
+              products={products}
+              units={unitDetails}
+              onEditorClose={onEditorCancel}
+            />
+          )}
+          {corrections.map((row) => (
+            <InvoiceCorrectionRowReadView
+              key={row.data.id}
+              row={row}
               products={products}
               units={unitDetails}
             />
           ))}
-          {editState?.childId === child.id && (
-            <InvoiceRowSectionRow
-              row={editState}
-              products={products}
-              unitIds={unitIds}
-              unitDetails={unitDetails}
-              update={updateState}
-              addNote={() => editNote(editState.id, editState.note)}
-              status={<span />}
-            />
-          )}
         </Tbody>
       </Table>
-      <FlexRow justifyContent="space-between">
-        {permittedActions.has('CREATE_INVOICE_CORRECTION') && (
-          <AddButton
-            onClick={() => addNewRow(child.id)}
-            text={i18n.invoiceCorrections.addRow}
-            disabled={!!editState}
-            data-qa="create-invoice-correction"
-          />
-        )}
-        {editState?.childId === child.id && (
-          <FixedSpaceRow spacing="L">
-            <Button
-              appearance="inline"
-              text={i18n.common.cancel}
-              onClick={cancelEditing}
-            />
-            <InlineAsyncButton
-              text={i18n.common.save}
-              onClick={save ?? (() => Promise.resolve(Success.of()))}
-              onSuccess={onSaveSuccess}
-              disabled={!save}
-              data-qa="save-invoice-correction"
-            />
-          </FixedSpaceRow>
-        )}
-      </FlexRow>
     </FixedSpaceColumn>
   )
 })
 
-const InvoiceCorrectionRow = React.memo(function InvoiceCorrectionRow({
-  row,
-  units,
-  products
+const InvoiceCorrectionRowReadView = React.memo(
+  function InvoiceCorrectionRowReadView({
+    row: { data: correction, permittedActions },
+    units,
+    products
+  }: {
+    row: InvoiceCorrectionWithPermittedActions
+    units: Record<string, InvoiceDaycare | undefined>
+    products: ProductWithName[]
+  }) {
+    const { i18n } = useTranslation()
+
+    const productName = useMemo(
+      () => products.find((p) => p.key === correction.product)?.nameFi,
+      [products, correction.product]
+    )
+
+    const [noteEditorOpen, { on: openNote, off: closeNote }] = useBoolean(false)
+
+    return (
+      <>
+        {noteEditorOpen && (
+          <NoteQuickEditor
+            initialValue={correction.note}
+            correctionId={correction.id}
+            personId={correction.headOfFamilyId}
+            closeNote={closeNote}
+          />
+        )}
+        <Tr>
+          <Td>
+            {correction.targetMonth.month.toString().padStart(2, '0')} /{' '}
+            {correction.targetMonth.year}
+          </Td>
+          <Td>{productName}</Td>
+          <Td>{correction.description}</Td>
+          <Td>{units[correction.unitId]?.name ?? ''}</Td>
+          <Td>{correction.period.format()}</Td>
+          <Td align="right">{correction.amount}</Td>
+          <Td align="right">{formatCents(correction.unitPrice, true)}</Td>
+          <Td align="right">
+            {formatCents(correction.amount * correction.unitPrice, true)}
+          </Td>
+          <Td>
+            <FixedSpaceRow>
+              {permittedActions.includes('DELETE') && (
+                <ConfirmedMutation
+                  buttonStyle="ICON"
+                  icon={faTrash}
+                  buttonAltText={i18n.common.remove}
+                  confirmationTitle={i18n.invoiceCorrections.deleteConfirmTitle}
+                  confirmLabel={i18n.common.remove}
+                  mutation={deleteInvoiceCorrectionMutation}
+                  onClick={() => ({
+                    id: correction.id,
+                    personId: correction.headOfFamilyId
+                  })}
+                />
+              )}
+              <Tooltip tooltip={correction.note} data-qa="note-tooltip">
+                <IconOnlyButton
+                  icon={
+                    correction.note.trim() ? fasCommentAltLines : faCommentAlt
+                  }
+                  onClick={openNote}
+                  aria-label={i18n.common.addNew}
+                  data-qa="add-note"
+                />
+              </Tooltip>
+            </FixedSpaceRow>
+          </Td>
+        </Tr>
+      </>
+    )
+  }
+)
+
+const correctionForm = object({
+  targetMonth: localDate(),
+  product: required(oneOf<string>()),
+  description: required(value<string>()),
+  unit: required(oneOf<string>()),
+  period: required(localDateRange()),
+  amount: transformed(value<string>(), (value) => {
+    if (value.trim() === '') return ValidationError.of('required')
+
+    if (!/^[0-9]+$/.test(value)) return ValidationError.of('format')
+
+    const parsed = parseInt(value)
+    if (isNaN(parsed) || parsed < 1) return ValidationError.of('generic')
+
+    return ValidationSuccess.of(parsed)
+  }),
+  unitPrice: transformed(value<string>(), (value) => {
+    const cents = parseCents(value)
+    if (cents === undefined) return ValidationError.of('format')
+    if (cents === 0) return ValidationError.of('required')
+
+    return ValidationSuccess.of(cents)
+  }),
+  note: required(value<string>())
+})
+
+const InvoiceCorrectionEditModal = React.memo(
+  function InvoiceCorrectionEditModal({
+    personId,
+    childId,
+    row,
+    units,
+    products,
+    onEditorClose
+  }: {
+    personId: UUID
+    childId: UUID
+    row: InvoiceCorrection | null
+    units: Record<string, InvoiceDaycare | undefined>
+    products: ProductWithName[]
+    onEditorClose: () => void
+  }) {
+    const { i18n, lang } = useTranslation()
+    const creatingNew = row === null
+
+    const form = useForm(
+      correctionForm,
+      () => ({
+        targetMonth: row
+          ? localDate.fromDate(row.targetMonth.atDay(1))
+          : localDate.empty(),
+        product: {
+          domValue: row?.product ?? '',
+          options: products.map((p) => ({
+            value: p.key,
+            domValue: p.key,
+            label: p.nameFi
+          }))
+        },
+        description: row?.description ?? '',
+        unit: {
+          domValue: row?.unitId ?? '',
+          options: Object.entries(units).map(([id, unit]) => ({
+            value: id,
+            domValue: id,
+            label: unit?.name ?? ''
+          }))
+        },
+        period: row
+          ? localDateRange.fromRange(row.period)
+          : localDateRange.empty(),
+        amount: row?.amount?.toFixed(0) ?? '',
+        unitPrice: row?.unitPrice?.toFixed(2) ?? '',
+        note: row?.note ?? ''
+      }),
+      i18n.validationErrors
+    )
+
+    const {
+      targetMonth,
+      product,
+      description,
+      unit,
+      period,
+      amount,
+      unitPrice,
+      note
+    } = useFormFields(form)
+
+    const month = targetMonth.value()?.getYearMonth() ?? null
+
+    return (
+      <MutateFormModal
+        title={
+          creatingNew
+            ? i18n.invoiceCorrections.addTitle
+            : i18n.invoiceCorrections.editTitle
+        }
+        resolveMutation={createInvoiceCorrectionMutation}
+        resolveDisabled={!form.isValid()}
+        resolveAction={() => ({
+          body: {
+            headOfFamilyId: personId,
+            childId,
+            targetMonth: null, // backend fills for now
+            product: product.value(),
+            description: description.value(),
+            unitId: unit.value(),
+            period: period.value(),
+            amount: amount.value(),
+            unitPrice: unitPrice.value(),
+            note: note.value()
+          }
+        })}
+        resolveLabel={i18n.common.save}
+        onSuccess={onEditorClose}
+        rejectAction={onEditorClose}
+        rejectLabel={i18n.common.cancel}
+      >
+        <FixedSpaceColumn spacing="m">
+          <FixedSpaceColumn spacing="xs">
+            <Label>{i18n.invoiceCorrections.targetMonth} *</Label>
+            <div>{month?.format() ?? 'Seuraava laskutuskausi'}</div>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing="xs">
+            <Label>{i18n.invoice.form.rows.product} *</Label>
+            <SelectF
+              bind={product}
+              disabled={!creatingNew}
+              placeholder={i18n.common.select}
+              hideErrorsBeforeTouched
+            />
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing="xs">
+            <Label>{i18n.invoice.form.rows.description}</Label>
+            <InputFieldF
+              bind={description}
+              readonly={!creatingNew}
+              hideErrorsBeforeTouched
+            />
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing="xs">
+            <Label>{i18n.invoice.form.rows.unitId} *</Label>
+            <SelectF
+              bind={unit}
+              disabled={!creatingNew}
+              placeholder={i18n.common.select}
+              hideErrorsBeforeTouched
+            />
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing="xs">
+            <Label>{i18n.invoice.form.rows.daterange} *</Label>
+            <DateRangePickerF
+              bind={period}
+              locale={lang}
+              hideErrorsBeforeTouched
+            />
+          </FixedSpaceColumn>
+          <FixedSpaceRow>
+            <AmountColumn spacing="xs">
+              <Label>{i18n.invoice.form.rows.amount} *</Label>
+              <InputFieldF
+                bind={amount}
+                readonly={!creatingNew}
+                type="numeric"
+                step={1}
+                hideErrorsBeforeTouched
+              />
+            </AmountColumn>
+            <OperatorColumn>x</OperatorColumn>
+            <UnitPriceColumn spacing="xs">
+              <Label>{i18n.invoice.form.rows.unitPrice} *</Label>
+              <InputFieldF
+                bind={unitPrice}
+                readonly={!creatingNew}
+                hideErrorsBeforeTouched
+                symbol="€"
+              />
+            </UnitPriceColumn>
+            <OperatorColumn>=</OperatorColumn>
+            <FixedSpaceColumn spacing="xs">
+              <Label>{i18n.invoice.form.rows.price}</Label>
+              <SumDiv>
+                {amount.isValid() && unitPrice.isValid()
+                  ? `${formatCents(amount.value() * unitPrice.value())} €`
+                  : ''}
+              </SumDiv>
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+          <FixedSpaceColumn spacing="xs">
+            <Label>
+              {i18n.personProfile.invoiceCorrections.noteModalTitle}
+            </Label>
+            <TextAreaF bind={note} hideErrorsBeforeTouched />
+          </FixedSpaceColumn>
+        </FixedSpaceColumn>
+      </MutateFormModal>
+    )
+  }
+)
+
+const NoteQuickEditor = React.memo(function NoteQuickEditor({
+  initialValue,
+  correctionId,
+  personId,
+  closeNote
 }: {
-  row: InvoiceCorrection
-  units: Record<string, InvoiceDaycare | undefined>
-  products: ProductWithName[]
+  initialValue: string
+  correctionId: UUID
+  personId: UUID
+  closeNote: () => void
 }) {
-  const productName = useMemo(
-    () => products.find((p) => p.key === row.product)?.nameFi,
-    [products, row.product]
-  )
+  const { i18n } = useTranslation()
+  const [note, setNote] = useState(initialValue)
 
   return (
-    <Tr>
-      <Td>
-        {row.targetMonth.month.toString().padStart(2, '0')} /{' '}
-        {row.targetMonth.year}
-      </Td>
-      <Td>{productName}</Td>
-      <Td>{row.description}</Td>
-      <Td>{units[row.unitId]?.name ?? ''}</Td>
-      <Td>{row.period.format()}</Td>
-      <Td>{row.amount}</Td>
-      <Td align="right">{formatCents(row.unitPrice)}</Td>
-      <Td align="right">{formatCents(row.amount * row.unitPrice)}</Td>
-    </Tr>
+    <MutateFormModal
+      title={i18n.personProfile.invoiceCorrections.noteModalTitle}
+      resolveMutation={updateInvoiceCorrectionNoteMutation}
+      resolveAction={() => ({ id: correctionId, personId, body: { note } })}
+      resolveLabel={i18n.common.save}
+      onSuccess={closeNote}
+      rejectAction={closeNote}
+      rejectLabel={i18n.common.cancel}
+    >
+      <P noMargin centered>
+        {i18n.personProfile.invoiceCorrections.noteModalInfo}
+      </P>
+      <Gap size="s" />
+      <TextArea value={note} onChange={setNote} data-qa="note-textarea" />
+    </MutateFormModal>
   )
 })
 
@@ -392,69 +574,18 @@ const ChildNameLink = styled(Link)`
   }
 `
 
-function useCorrectionEditState(headOfChildId: UUID) {
-  const [state, setState] = useState<InvoiceCorrectionForm>()
+const AmountColumn = styled(FixedSpaceColumn)`
+  width: 80px;
+`
 
-  const cancelEditing = useCallback(() => setState(undefined), [])
+const UnitPriceColumn = styled(FixedSpaceColumn)`
+  width: 120px;
+`
 
-  const addNewRow = useCallback(
-    (childId: UUID) =>
-      setState({
-        id: 'new',
-        headOfChildId,
-        childId,
-        unitId: null,
-        product: 'DAYCARE',
-        periodStart: LocalDate.todayInSystemTz().subMonths(1).startOfMonth(),
-        periodEnd: LocalDate.todayInSystemTz().startOfMonth().subDays(1),
-        amount: 0,
-        unitPrice: 0,
-        price: 0,
-        description: '',
-        note: '',
-        savedCostCenter: null
-      }),
-    [headOfChildId]
-  )
+const OperatorColumn = styled.div`
+  padding-top: 36px;
+`
 
-  const updateState: UpdateState = useCallback(
-    (values) =>
-      setState((previous) =>
-        previous
-          ? {
-              ...previous,
-              ...values
-            }
-          : undefined
-      ),
-    []
-  )
-
-  return {
-    editState: state,
-    updateState,
-    cancelEditing,
-    addNewRow
-  }
-}
-
-interface InvoiceCorrectionForm {
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  id: 'new' | UUID
-  headOfChildId: UUID
-  childId: UUID
-  unitId: UUID | null
-  product: string
-  periodStart: LocalDate
-  periodEnd: LocalDate
-  amount: number
-  unitPrice: number
-  price: number
-  description: string
-  note: string
-  savedCostCenter: null
-}
-
-type UpdateState = UpdateStateFn<
-  Exclude<InvoiceCorrectionForm, 'id' | 'headOfChildId' | 'childId'>
->
+const SumDiv = styled.div`
+  padding-top: 8px;
+`

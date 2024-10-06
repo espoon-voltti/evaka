@@ -18,6 +18,10 @@ export default class YearMonth {
     return `${this.year.toString().padStart(4, '0')}-${this.month.toString().padStart(2, '0')}`
   }
 
+  format(): string {
+    return `${this.month.toString().padStart(2, '0')}/${this.year.toString().padStart(4, '0')}`
+  }
+
   atDay(day: number): LocalDate {
     return LocalDate.of(this.year, this.month, day)
   }
@@ -57,6 +61,10 @@ export default class YearMonth {
       throw new Error('Invalid ISO year-month')
     }
     return new YearMonth(parseInt(match[1]), parseInt(match[2]))
+  }
+
+  static ofDate(date: LocalDate): YearMonth {
+    return new YearMonth(date.year, date.month)
   }
 
   static todayInHelsinkiTz(): YearMonth {

@@ -541,6 +541,22 @@ export interface InvoiceCorrection {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceCorrectionInsert
+*/
+export interface InvoiceCorrectionInsert {
+  amount: number
+  childId: UUID
+  description: string
+  headOfFamilyId: UUID
+  note: string
+  period: FiniteDateRange
+  product: string
+  targetMonth: YearMonth | null
+  unitId: UUID
+  unitPrice: number
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.InvoiceCorrectionWithPermittedActions
 */
 export interface InvoiceCorrectionWithPermittedActions {
@@ -702,21 +718,6 @@ export interface InvoiceSummary {
 export interface InvoiceSummaryResponse {
   data: InvoiceSummary
   permittedActions: Action.Invoice[]
-}
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.NewInvoiceCorrection
-*/
-export interface NewInvoiceCorrection {
-  amount: number
-  childId: UUID
-  description: string
-  headOfFamilyId: UUID
-  note: string
-  period: FiniteDateRange
-  product: string
-  unitId: UUID
-  unitPrice: number
 }
 
 /**
@@ -1311,6 +1312,15 @@ export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>
 }
 
 
+export function deserializeJsonInvoiceCorrectionInsert(json: JsonOf<InvoiceCorrectionInsert>): InvoiceCorrectionInsert {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period),
+    targetMonth: (json.targetMonth != null) ? YearMonth.parseIso(json.targetMonth) : null
+  }
+}
+
+
 export function deserializeJsonInvoiceCorrectionWithPermittedActions(json: JsonOf<InvoiceCorrectionWithPermittedActions>): InvoiceCorrectionWithPermittedActions {
   return {
     ...json,
@@ -1398,14 +1408,6 @@ export function deserializeJsonInvoiceSummaryResponse(json: JsonOf<InvoiceSummar
   return {
     ...json,
     data: deserializeJsonInvoiceSummary(json.data)
-  }
-}
-
-
-export function deserializeJsonNewInvoiceCorrection(json: JsonOf<NewInvoiceCorrection>): NewInvoiceCorrection {
-  return {
-    ...json,
-    period: FiniteDateRange.parseJson(json.period)
   }
 }
 

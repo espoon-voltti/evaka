@@ -2772,7 +2772,10 @@ export const fi = {
   invoiceCorrections: {
     noChildren: 'Henkilö ei ole yhdenkään lapsen päämies',
     targetMonth: 'Laskutuskausi',
-    addRow: 'Lisää korjausrivi'
+    addRow: 'Lisää korjausrivi',
+    addTitle: 'Uusi korjausrivi',
+    editTitle: 'Muokkaa korjausriviä',
+    deleteConfirmTitle: 'Poistetaanko korjausrivi?'
   },
   financeDecisions: {
     handlerSelectModal: {
