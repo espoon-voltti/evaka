@@ -26,7 +26,7 @@
     "connect-redis": "^7.1.0",
     "cookie-parser": "^1.4.6",
     "date-fns": "^4.1.0",
-    "dd-trace": "^5.22.0",
+    "dd-trace": "^5.23.1",
     "express": "^4.20.0",
     "express-basic-auth": "^1.2.1",
     "express-http-proxy": "^2.1.1",
