@@ -2771,7 +2771,9 @@ export const fi = {
   },
   invoiceCorrections: {
     noChildren: 'Henkilö ei ole yhdenkään lapsen päämies',
-    targetMonth: 'Laskutuskausi',
+    targetMonth: 'Korjataan laskutuskaudella',
+    nextTargetMonth: 'Seuraava laskutuskausi',
+    range: 'Syyn ajanjakso',
     addRow: 'Lisää korjausrivi',
     addTitle: 'Uusi korjausrivi',
     editTitle: 'Muokkaa korjausriviä',
