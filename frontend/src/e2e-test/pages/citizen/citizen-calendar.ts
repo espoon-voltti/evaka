@@ -644,7 +644,7 @@ class AbsencesModal {
   }
 
   async toggleChildren(children: { id: string }[]) {
-    for await (const child of children) {
+    for (const child of children) {
       await this.#childCheckbox(child.id).click()
     }
   }
