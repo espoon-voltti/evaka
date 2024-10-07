@@ -492,8 +492,7 @@ class DaycareController(
                         unitId,
                     )
                     val groups = tx.getDaycareGroups(unitId, from, to)
-                    val placements =
-                        tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
+                    val placements = tx.getDetailedDaycarePlacements(unitId, null, period).toList()
                     val backupCares = tx.getBackupCaresForDaycare(unitId, period)
                     val missingGroupPlacements =
                         if (

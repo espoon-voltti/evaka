@@ -744,7 +744,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val (_, _, data) =
             http
-                .get("/employee/children/${childId}/placements")
+                .get("/employee/children/$childId/placements")
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 

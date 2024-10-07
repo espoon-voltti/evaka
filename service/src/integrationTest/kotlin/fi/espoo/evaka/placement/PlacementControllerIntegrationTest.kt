@@ -104,7 +104,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `get placements works with childId and without dates`() {
         val (_, res, result) =
             http
-                .get("/employee/children/${childId}/placements")
+                .get("/employee/children/$childId/placements")
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -900,7 +900,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, _, result) =
             http
-                .get("/employee/children/${childId}/placements")
+                .get("/employee/children/$childId/placements")
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -938,7 +938,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, res, result) =
             http
-                .get("/employee/children/${childId}/placements")
+                .get("/employee/children/$childId/placements")
                 .asUser(unitSupervisor)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -1274,7 +1274,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         daycareId: DaycareId,
     ): List<DaycareGroupPlacement> {
         return http
-            .get("/employee/children/${childId}/placements")
+            .get("/employee/children/$childId/placements")
             .asUser(serviceWorker)
             .responseObject<PlacementResponse>(jsonMapper)
             .third

@@ -79,12 +79,7 @@ class PlacementController(
                             .map { it.id }
                             .toSet()
 
-                    tx.getDetailedDaycarePlacements(
-                            daycareId = null,
-                            childId,
-                            startDate = null,
-                            endDate = null,
-                        )
+                    tx.getDetailedDaycarePlacements(daycareId = null, childId, range = null)
                         .map { placement ->
                             // TODO: is some info only hidden on frontend?
                             if (!authorizedDaycares.contains(placement.daycare.id)) {

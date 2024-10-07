@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -347,6 +348,12 @@ fun Database.Read.getDaycarePlacements(
     startDate: LocalDate?,
     endDate: LocalDate?,
 ): List<DaycarePlacementDetails> {
+    val placementPredicate =
+        Predicate.allNotNull(
+            if (daycareId != null) Predicate { where("$it.unit_id = ${bind(daycareId)}") }
+            else null,
+            if (childId != null) Predicate { where("$it.child_id = ${bind(childId)}") } else null,
+        )
     return createQuery {
             sql(
                 """
@@ -368,27 +375,27 @@ fun Database.Read.getDaycarePlacements(
             ch.date_of_birth as child_date_of_birth,
             CASE
                 WHEN (SELECT every(default_option) FROM service_need_option WHERE valid_placement_type = pl.type) THEN 0
-                ELSE (
-                    SELECT count(*)
-                    FROM generate_series(greatest(pl.start_date, '2020-03-01'::date), pl.end_date, '1 day') t
-                    LEFT JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
-                    WHERE sn.id IS NULL
-                )
+                ELSE days_in_range(daterange(pl.start_date, pl.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_service_need
             END AS missing_service_need_days,
             pl.modified_at,
             modified_by.id AS modified_by_id,
             modified_by.name AS modified_by_name,
             modified_by.type AS modified_by_type
         FROM placement pl
+        JOIN LATERAL (
+          SELECT
+            coalesce(sum(days_in_range(daterange(pl.start_date, pl.end_date, '[]') * daterange('2020-03-01', NULL) * daterange(sn.start_date, sn.end_date, '[]'))), 0) AS days_with_service_need
+          FROM service_need sn
+          WHERE sn.placement_id = pl.id
+        ) AS service_need_stats ON true
         JOIN daycare d on pl.unit_id = d.id
         JOIN person ch on pl.child_id = ch.id
         JOIN care_area a ON d.care_area_id = a.id
         LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
         LEFT JOIN evaka_user modified_by ON pl.modified_by = modified_by.id
         WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
-        AND (${bind(daycareId)}::uuid IS NULL OR pl.unit_id = ${bind(daycareId)})
-        AND (${bind(childId)}::uuid IS NULL OR pl.child_id = ${bind(childId)})
-        """
+        AND ${predicate(placementPredicate.forTable("pl"))}
+"""
             )
         }
         .toList<DaycarePlacementDetails>()
