@@ -32,7 +32,7 @@ UPDATE invoice_correction ic
 SET
     amount = CASE WHEN rc.remaining_correction % ic.unit_price = 0 THEN rc.remaining_correction / ic.unit_price ELSE ic.amount END,
     unit_price = CASE WHEN rc.remaining_correction % ic.unit_price = 0 THEN ic.unit_price ELSE rc.remaining_correction / ic.amount END,
-    target_month = (SELECT month FROM first_uninvoiced_month),
+    target_month = coalesce((SELECT month FROM first_uninvoiced_month), date_trunc('month', now()) + interval '1 month'),
     applied_completely = FALSE
 FROM remaining_corrections rc
 WHERE ic.id = rc.id AND rc.remaining_correction != 0;
