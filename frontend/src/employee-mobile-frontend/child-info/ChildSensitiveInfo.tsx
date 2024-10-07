@@ -6,9 +6,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
+import { Result, Success } from 'lib-common/api'
 import { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
-import { getAge } from 'lib-common/utils/local-date'
-import Title from 'lib-components/atoms/Title'
+import { Arg0 } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
@@ -16,7 +17,10 @@ import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPhone } from 'lib-icons'
 
+import { mapPinLoginRequiredError, PinLoginRequired } from '../auth/api'
+import { renderPinRequiringResult } from '../auth/renderPinRequiringResult'
 import { useTranslation } from '../common/i18n'
+import { getSensitiveInfo } from '../generated/api-clients/sensitive'
 
 const Key = styled.span`
   font-weight: ${fontWeights.semibold};
@@ -27,10 +31,6 @@ const Key = styled.span`
 const KeyValue = styled.div`
   display: flex;
   flex-direction: column;
-`
-
-const Divider = styled.div`
-  border-bottom: 1px solid #d8d8d8;
 `
 
 const Phone = styled.div`
@@ -61,155 +61,70 @@ const renderKeyValue = (
   ) : null
 
 interface Props {
-  child: ChildSensitiveInformation
+  childId: string
+  unitId: string
 }
 
-export default React.memo(function ChildSensitiveInfo({ child }: Props) {
+export default React.memo(function ChildSensitiveInfo({
+  childId,
+  unitId
+}: Props) {
   const { i18n } = useTranslation()
+
+  const getSensitiveInfoResult = (
+    req: Arg0<typeof getSensitiveInfo>
+  ): Promise<Result<ChildSensitiveInformation | PinLoginRequired>> =>
+    getSensitiveInfo(req)
+      .then((v) => Success.of(v))
+      .catch(mapPinLoginRequiredError)
+
+  const [childSensitiveResult] = useApiState(
+    () => getSensitiveInfoResult({ childId }),
+    [childId]
+  )
+
   return (
-    <FixedSpaceColumn spacing="m">
-      <ContentArea shadow opaque paddingHorizontal="s" paddingVertical="xs">
-        <FixedSpaceColumn alignItems="center" spacing="m">
-          <Title noMargin>{i18n.childInfo.header}</Title>
-        </FixedSpaceColumn>
-      </ContentArea>
-
-      <ContentArea shadow opaque>
-        <CollapsibleSection fitted title={i18n.childInfo.personalInfoHeader}>
-          <Gap size="s" />
-          <FixedSpaceColumn>
-            <KeyValue>
-              <Key>{i18n.childInfo.childName}</Key>
-              <span data-qa="child-info-name">{`${child.firstName} ${child.lastName}`}</span>
-            </KeyValue>
-
-            {renderKeyValue(
-              i18n.childInfo.preferredName,
-              child.preferredName,
-              'child-info-preferred-name'
-            )}
-
-            {renderKeyValue(
-              i18n.childInfo.dateOfBirth,
-              `${child.dateOfBirth.format()}, ${getAge(child.dateOfBirth)}${
-                i18n.common.yearsShort
-              }.`,
-              'child-info-dob'
-            )}
-
-            {renderKeyValue(
-              i18n.childInfo.address,
-              child.childAddress,
-              'child-info-child-address'
-            )}
-
-            {renderKeyValue(
-              i18n.childInfo.type,
-              child.placementType
-                ? i18n.common.placement[child.placementType]
-                : '-',
-              'child-info-placement-type'
-            )}
-          </FixedSpaceColumn>
-        </CollapsibleSection>
-      </ContentArea>
-
-      <ContentArea shadow opaque>
-        <CollapsibleSection fitted title={i18n.childInfo.allergiesHeader}>
-          <Gap size="s" />
-          <FixedSpaceColumn>
-            {renderKeyValue(
-              i18n.childInfo.additionalInfo,
-              child.additionalInfo,
-              'child-info-additional-info'
-            )}
-
-            {renderKeyValue(
-              i18n.childInfo.allergies,
-              child.allergies,
-              'child-info-allergies'
-            )}
-
-            {renderKeyValue(i18n.childInfo.diet, child.diet, 'child-info-diet')}
-
-            {renderKeyValue(
-              i18n.childInfo.medication,
-              child.medication,
-              'child-info-medication'
-            )}
-          </FixedSpaceColumn>
-        </CollapsibleSection>
-      </ContentArea>
-
-      <ContentArea shadow opaque>
-        <CollapsibleSection fitted title={i18n.childInfo.contactInfoHeader}>
-          <Gap size="s" />
-          <FixedSpaceColumn>
-            {child.contacts.map((contact, index) => (
-              <div key={contact.id}>
-                <Title size={4} noMargin>{`${i18n.childInfo.contact} ${
-                  index + 1
-                }`}</Title>
-                <Gap size="s" />
-                <FixedSpaceColumn>
-                  <KeyValue>
-                    <Key>{i18n.childInfo.name}</Key>
-                    <span data-qa={`child-info-contact${index + 1}-name`}>{`${
-                      contact.firstName || ''
-                    } ${contact.lastName || ''}`}</span>
-                  </KeyValue>
-
-                  {renderKeyValue(
-                    i18n.childInfo.phone,
-                    contact.phone,
-                    `child-info-contact${index + 1}-phone`,
-                    true
-                  )}
-
-                  {renderKeyValue(
-                    i18n.childInfo.backupPhone,
-                    contact.backupPhone,
-                    `child-info-contact${index + 1}-backup-phone`,
-                    true
-                  )}
-
-                  {renderKeyValue(
-                    i18n.childInfo.email,
-                    contact.email,
-                    `child-info-contact${index + 1}-email`
-                  )}
-
-                  {index !== child.contacts.length - 1 && <Divider />}
-                </FixedSpaceColumn>
-              </div>
-            ))}
-          </FixedSpaceColumn>
-
-          {child.backupPickups?.map((backupPickup, index) => (
-            <div key={backupPickup.id}>
-              <Title size={4}>
-                {`${i18n.childInfo.backupPickup} ${index + 1}`}
-              </Title>
+    <>
+      {renderPinRequiringResult(childSensitiveResult, unitId, (child) => (
+        <>
+          <ContentArea shadow opaque>
+            <CollapsibleSection fitted title={i18n.childInfo.allergiesHeader}>
+              <Gap size="s" />
               <FixedSpaceColumn>
                 {renderKeyValue(
-                  i18n.childInfo.backupPickupName,
-                  backupPickup.firstName,
-                  `child-info-backup-pickup${index + 1}-name`
+                  i18n.childInfo.address,
+                  child.childAddress,
+                  'child-info-child-address'
                 )}
 
                 {renderKeyValue(
-                  i18n.childInfo.phone,
-                  backupPickup.phone,
-                  `child-info-backup-pickup${index + 1}-phone`,
-                  true
+                  i18n.childInfo.additionalInfo,
+                  child.additionalInfo,
+                  'child-info-additional-info'
                 )}
 
-                <Divider />
+                {renderKeyValue(
+                  i18n.childInfo.allergies,
+                  child.allergies,
+                  'child-info-allergies'
+                )}
+
+                {renderKeyValue(
+                  i18n.childInfo.diet,
+                  child.diet,
+                  'child-info-diet'
+                )}
+
+                {renderKeyValue(
+                  i18n.childInfo.medication,
+                  child.medication,
+                  'child-info-medication'
+                )}
               </FixedSpaceColumn>
-            </div>
-          ))}
-        </CollapsibleSection>
-      </ContentArea>
-    </FixedSpaceColumn>
+            </CollapsibleSection>
+          </ContentArea>
+        </>
+      ))}
+    </>
   )
 })

@@ -113,8 +113,6 @@ class ChildAttendanceController(
             }
     }
 
-    // TODO
-
     data class ChildAttendanceStatusResponse(
         val absences: List<ChildAbsence>,
         val attendances: List<AttendanceTimes>,
