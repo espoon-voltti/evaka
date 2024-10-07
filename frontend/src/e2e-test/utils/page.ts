@@ -276,6 +276,13 @@ export class Element {
   async evaluate<R>(fn: (el: HTMLElement | SVGElement) => R): Promise<R> {
     return this.locator.evaluate(fn)
   }
+
+  get focused(): Promise<boolean> {
+    return this.locator.evaluate((el) => el === document.activeElement)
+  }
+  async assertFocused(focused: boolean): Promise<void> {
+    await waitUntilEqual(() => this.focused, focused)
+  }
 }
 
 export class TextInput extends Element {

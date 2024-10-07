@@ -10,6 +10,7 @@ import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
 import { useTranslation } from 'citizen-frontend/localization'
+import { focusElementAfterDelay } from 'citizen-frontend/utils/focus'
 import { combine } from 'lib-common/api'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -150,9 +151,13 @@ export default React.memo(function MessagesPage() {
                           i18n.messages.messageEditor.messageSentNotification,
                         dataQa: 'message-sent-notification'
                       })
+                      focusElementAfterDelay('new-message-btn')
                     }}
                     onFailure={() => setDisplaySendError(true)}
-                    onClose={() => changeEditorVisibility(false)}
+                    onClose={() => {
+                      changeEditorVisibility(false)
+                      focusElementAfterDelay('new-message-btn')
+                    }}
                     displaySendError={displaySendError}
                   />
                 )

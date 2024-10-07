@@ -417,6 +417,7 @@ describe('Sending and receiving messages', () => {
         )
         await citizenMessagesPage.assertAriaLiveExistsAndIncludesNotification()
         await citizenMessagesPage.assertTimedNotification('Viesti lähetetty')
+        await citizenMessagesPage.assertNewMessageButtonIsFocused()
       })
 
       test('Citizen with shift care child can send attachments', async () => {
