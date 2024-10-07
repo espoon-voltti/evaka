@@ -97,7 +97,6 @@ function MultiSelect<T>({
         isMulti
         isSearchable={true}
         hideSelectedOptions={false}
-        backspaceRemovesValue={false}
         closeMenuOnSelect={closeMenuOnSelect ?? false}
         noOptionsMessage={() => (
           <span data-qa="no-options">{noOptionsMessage ?? 'Ei tuloksia'}</span>
