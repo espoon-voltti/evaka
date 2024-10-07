@@ -109,7 +109,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
     <StaffAttendanceTr>
       <StaffAttendanceTd>{i18n.absences.table.staffRow}</StaffAttendanceTd>
       <Td />
-      {days.map(({ date, children }) => {
+      {days.map(({ date, children, isOperationDay }) => {
         const staffCount = groupAttendances
           .map(({ attendances }) => attendances[date.toString()])
           .map((attendance) => attendance?.count)
@@ -121,6 +121,8 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
               <DisabledCell />
             ) : !isActive(date) ? (
               <InactiveCell />
+            ) : !isOperationDay ? (
+              <div />
             ) : (
               <StaffAttendanceCell
                 date={date}
