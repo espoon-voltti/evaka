@@ -273,10 +273,7 @@ const ApplicationsList = React.memo(function Applications({
           <AgeIndicatorChip
             age={startDateOrDueDate.differenceInYears(application.dateOfBirth)}
           />
-          <span>
-            {application.socialSecurityNumber ||
-              application.dateOfBirth.format()}
-          </span>
+          <span>{application.dateOfBirth.format()}</span>
         </FixedSpaceRow>
       )
     )

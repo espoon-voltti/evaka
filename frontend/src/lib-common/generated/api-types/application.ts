@@ -286,7 +286,6 @@ export interface ApplicationSummary {
   serviceNeed: ServiceNeedOption | null
   serviceWorkerNote: string
   siblingBasis: boolean
-  socialSecurityNumber: string | null
   startDate: LocalDate | null
   status: ApplicationStatus
   transferApplication: boolean
