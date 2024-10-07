@@ -30,11 +30,11 @@ import {
   getParentships,
   getPersonGuardians
 } from '../generated/api-clients/pis'
-import { getPlacements } from '../generated/api-clients/placement'
+import { getChildPlacements } from '../generated/api-clients/placement'
 
 const getChildResult = wrapResult(getChild)
 const getPersonGuardiansResult = wrapResult(getPersonGuardians)
-const getPlacementsResult = wrapResult(getPlacements)
+const getChildPlacementsResult = wrapResult(getChildPlacements)
 const getParentshipsResult = wrapResult(getParentships)
 
 export interface ChildState {
@@ -144,11 +144,8 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [placements, loadPlacements] = useApiState(
     async () =>
       permittedActions.has('READ_PLACEMENT')
-        ? await getPlacementsResult({
-            childId: id,
-            daycareId: null,
-            from: null,
-            to: null
+        ? await getChildPlacementsResult({
+            childId: id
           })
         : Loading.of<PlacementResponse>(),
     [id, permittedActions]

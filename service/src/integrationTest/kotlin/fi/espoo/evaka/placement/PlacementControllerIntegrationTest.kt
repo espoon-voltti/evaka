@@ -43,6 +43,7 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -100,77 +101,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     @Test
-    fun `get placements works with daycareId and without dates`() {
-        val (_, res, result) =
-            http
-                .get("/employee/placements?daycareId=$daycareId")
-                .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
-
-        Assertions.assertThat(res.statusCode).isEqualTo(200)
-
-        val placements = result.get().placements.toList()
-        Assertions.assertThat(placements).hasSize(1)
-
-        val placement = placements[0]
-        Assertions.assertThat(placement.daycare.id).isEqualTo(daycareId)
-        Assertions.assertThat(placement.daycare.name).isEqualTo(testDaycare.name)
-        Assertions.assertThat(placement.child.id).isEqualTo(childId)
-        Assertions.assertThat(placement.startDate).isEqualTo(placementStart)
-        Assertions.assertThat(placement.endDate).isEqualTo(placementEnd)
-        Assertions.assertThat(placement.groupPlacements).hasSize(1)
-
-        val placeholder = placement.groupPlacements.first()
-        Assertions.assertThat(placeholder.startDate).isEqualTo(placementStart)
-        Assertions.assertThat(placeholder.endDate).isEqualTo(placementEnd)
-        Assertions.assertThat(placeholder.groupId).isNull()
-    }
-
-    @Test
-    fun `get placements works with with daycareId and matching dates`() {
-        val (_, res, result) =
-            http
-                .get(
-                    "/employee/placements?daycareId=$daycareId&from=$placementStart&to=${placementStart.plusDays(900)}"
-                )
-                .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
-
-        Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get().placements).hasSize(1)
-    }
-
-    @Test
-    fun `get placements works with with daycareId and non-matching dates`() {
-        val (_, res, result) =
-            http
-                .get(
-                    "/employee/placements?daycareId=$daycareId&from=${placementStart.minusDays(900)}&to=${placementEnd.minusDays(300)}"
-                )
-                .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
-
-        Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get().placements).hasSize(0)
-    }
-
-    @Test
-    fun `get placements returns an empty list if daycare is not found`() {
-        val (_, res, result) =
-            http
-                .get("/employee/placements?daycareId=${UUID.randomUUID()}")
-                .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
-
-        Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get().placements).isEqualTo(setOf<PlacementResponse>())
-    }
-
-    @Test
     fun `get placements works with childId and without dates`() {
         val (_, res, result) =
             http
-                .get("/employee/placements?childId=$childId")
+                .get("/employee/children/$childId/placements")
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -185,41 +119,6 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         Assertions.assertThat(placement.child.id).isEqualTo(childId)
         Assertions.assertThat(placement.startDate).isEqualTo(placementStart)
         Assertions.assertThat(placement.endDate).isEqualTo(placementEnd)
-    }
-
-    @Test
-    fun `get placements works with with childId and matching dates`() {
-        val (_, res, result) =
-            http
-                .get(
-                    "/employee/placements?childId=$childId&from=$placementStart&to=${placementStart.plusDays(900)}"
-                )
-                .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
-
-        Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get().placements).hasSize(1)
-    }
-
-    @Test
-    fun `get placements works with with childId and non-matching dates`() {
-        val (_, res, result) =
-            http
-                .get(
-                    "/employee/placements?childId=$childId&from=${placementStart.minusDays(900)}&to=${placementStart.minusDays(300)}"
-                )
-                .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
-
-        Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get().placements).hasSize(0)
-    }
-
-    @Test
-    fun `get placements throws BadRequest if daycare id and child id is not given`() {
-        val (_, res, _) = http.get("/employee/placements").asUser(serviceWorker).response()
-
-        Assertions.assertThat(res.statusCode).isEqualTo(400)
     }
 
     @Test
@@ -1001,11 +900,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, _, result) =
             http
-                .get("/employee/placements?daycareId=$daycareId")
-                .asUser(unitSupervisor)
+                .get("/employee/children/$childId/placements")
+                .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
-        val groupPlacementsAfter = result.get().placements.toList()[0].groupPlacements
+        val groupPlacementsAfter =
+            result.get().placements.single { it.daycare.id == daycareId }.groupPlacements
         Assertions.assertThat(groupPlacementsAfter).hasSize(1)
         Assertions.assertThat(groupPlacementsAfter.first().groupId).isNull()
     }
@@ -1038,18 +938,18 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, res, result) =
             http
-                .get("/employee/placements?childId=$childId")
+                .get("/employee/children/$childId/placements")
                 .asUser(unitSupervisor)
                 .responseObject<PlacementResponse>(jsonMapper)
 
-        org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
+        assertEquals(200, res.statusCode)
 
         val placements = result.get().placements.toList()
         val allowed = placements.find { it.id == allowedId }!!
         val restricted = placements.find { it.id == restrictedId }!!
 
-        org.junit.jupiter.api.Assertions.assertFalse(allowed.isRestrictedFromUser)
-        org.junit.jupiter.api.Assertions.assertTrue(restricted.isRestrictedFromUser)
+        assertFalse(allowed.isRestrictedFromUser)
+        assertTrue(restricted.isRestrictedFromUser)
     }
 
     @Test
@@ -1374,13 +1274,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         daycareId: DaycareId,
     ): List<DaycareGroupPlacement> {
         return http
-            .get("/employee/placements?childId=$childId&daycareId=$daycareId")
+            .get("/employee/children/$childId/placements")
             .asUser(serviceWorker)
             .responseObject<PlacementResponse>(jsonMapper)
             .third
             .get()
             .placements
-            .toList()
+            .filter { it.daycare.id == daycareId }
             .first { it.id == testPlacement.id }
             .groupPlacements
             .filter { it.id != null }

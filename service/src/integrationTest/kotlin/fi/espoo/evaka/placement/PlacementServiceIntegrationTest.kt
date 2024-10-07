@@ -1171,8 +1171,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     it.getDetailedDaycarePlacements(
                         daycareId = unitId,
                         childId = childId,
-                        startDate = null,
-                        endDate = null,
+                        range = null,
                     )
                 }
                 .also { assertEquals(1, it.size) }
@@ -1198,8 +1197,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     it.getDetailedDaycarePlacements(
                         daycareId = unitId,
                         childId = childId,
-                        startDate = null,
-                        endDate = null,
+                        range = null,
                     )
                 }
                 .also { assertEquals(1, it.size) }
@@ -1232,7 +1230,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val placements = db.read { it.getDetailedDaycarePlacements(daycare2.id, null, null, null) }
+        val placements = db.read { it.getDetailedDaycarePlacements(daycare2.id, null, null) }
 
         assertEquals(
             setOf(
@@ -1334,7 +1332,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
         }
 
-        val placements = db.read { it.getDetailedDaycarePlacements(daycare2.id, null, null, null) }
+        val placements = db.read { it.getDetailedDaycarePlacements(daycare2.id, null, null) }
 
         assertEquals(
             setOf(

@@ -510,12 +510,11 @@ WHERE ch.id = ANY(${bind(childIds)})
 fun Database.Read.getDetailedDaycarePlacements(
     daycareId: DaycareId?,
     childId: ChildId?,
-    startDate: LocalDate?,
-    endDate: LocalDate?,
+    range: FiniteDateRange?,
 ): Set<DaycarePlacementWithDetails> {
-    val daycarePlacements = getDaycarePlacements(daycareId, childId, startDate, endDate)
-    val minDate = daycarePlacements.map { it.startDate }.minOrNull() ?: return emptySet()
-    val maxDate = daycarePlacements.map { it.endDate }.maxOrNull() ?: endDate
+    val daycarePlacements = getDaycarePlacements(daycareId, childId, range?.start, range?.end)
+    val minDate = daycarePlacements.minOfOrNull { it.startDate } ?: return emptySet()
+    val maxDate = daycarePlacements.maxOfOrNull { it.endDate } ?: range?.end
 
     val groupPlacements =
         when {
