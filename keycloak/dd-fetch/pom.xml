@@ -13,7 +13,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <artifactId>datadog-agent-downloader</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
-        <datadog.version>1.39.0</datadog.version>
+        <datadog.version>1.40.1</datadog.version>
     </properties>
 
     <dependencies>
