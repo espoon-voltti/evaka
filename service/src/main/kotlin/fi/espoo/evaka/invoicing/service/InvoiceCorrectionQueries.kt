@@ -69,7 +69,6 @@ fun Database.Transaction.movePastUnappliedInvoiceCorrections(
     headOfFamilyIds: Set<PersonId>?,
     targetMonth: YearMonth,
 ) {
-    val firstOfMonth = targetMonth.atDay(1)
     val headOfFamilyPredicate =
         if (headOfFamilyIds != null) {
             PredicateSql { where("head_of_family_id = ANY (${bind(headOfFamilyIds)})") }
@@ -81,9 +80,9 @@ fun Database.Transaction.movePastUnappliedInvoiceCorrections(
         sql(
             """
 UPDATE invoice_correction
-SET target_month = ${bind(firstOfMonth)}
+SET target_month = ${bind(targetMonth)}
 WHERE
-    target_month < ${bind(firstOfMonth)} AND
+    target_month < ${bind(targetMonth)} AND
     ${predicate(headOfFamilyPredicate)} AND
     NOT EXISTS (SELECT FROM invoice_row WHERE correction_id = invoice_correction.id)
 """
