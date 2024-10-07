@@ -29,7 +29,6 @@ import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
 import mu.KotlinLogging
 import org.apache.commons.text.StringEscapeUtils
-import org.apache.http.conn.ssl.NoopHostnameVerifier
 import org.apache.wss4j.common.crypto.Merlin
 import org.apache.wss4j.dom.WSConstants
 import org.apache.wss4j.dom.handler.WSHandlerConstants
@@ -79,7 +78,7 @@ class SfiMessagesSoapClient(
                     // Via API has no public DNS so there is no CN/alt name to verify against.
                     //     - VIA API has known IPs which should be set to /etc/hosts and then the
                     // NoopVerifier should be removed
-                    setHostnameVerifier(NoopHostnameVerifier())
+                    setHostnameVerifier { _, _ -> true }
                 }
             )
 

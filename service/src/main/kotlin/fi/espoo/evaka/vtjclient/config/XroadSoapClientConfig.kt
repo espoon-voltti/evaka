@@ -12,7 +12,6 @@ import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.voltti.logging.MdcKey
 import jakarta.xml.bind.helpers.DefaultValidationEventHandler
 import mu.KotlinLogging
-import org.apache.http.conn.ssl.NoopHostnameVerifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -102,7 +101,7 @@ class XroadSoapClientConfig {
             // The trust store must only contain end-entity certificates (no CA certificates)
             // TODO: Either keep using single certs or fix the certs and host names for security
             // servers
-            setHostnameVerifier(NoopHostnameVerifier())
+            setHostnameVerifier { _, _ -> true }
         }
 
     @Bean
@@ -120,7 +119,7 @@ class XroadSoapClientConfig {
             // The trust store must only contain end-entity certificates (no CA certificates)
             // TODO: Either keep using single certs or fix the certs and host names for security
             // servers
-            setHostnameVerifier(NoopHostnameVerifier())
+            setHostnameVerifier { _, _ -> true }
         }
 
     @Bean

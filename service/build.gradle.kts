@@ -83,6 +83,7 @@ dependencies {
     implementation("org.springframework.ws:spring-ws-security") {
         exclude("org.bouncycastle", "bcpkix-jdk15on")
         exclude("org.bouncycastle", "bcprov-jdk15on")
+        exclude("org.opensaml")
     }
     implementation("org.springframework.ws:spring-ws-support") {
         exclude("org.eclipse.angus", "angus-mail")
@@ -167,6 +168,7 @@ dependencies {
     integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") {
         exclude("org.bouncycastle", "bcpkix-jdk15on")
         exclude("org.bouncycastle", "bcprov-jdk15on")
+        exclude("org.opensaml")
     }
 
     implementation(project(":sficlient"))
