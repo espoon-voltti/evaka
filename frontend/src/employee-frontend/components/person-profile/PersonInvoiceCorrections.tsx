@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import uniqBy from 'lodash/uniqBy'
 import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -193,6 +194,23 @@ const ChildSection = React.memo(function ChildSection({
   const editorOpen = editTarget !== null
   const editingThisChild = editTarget?.childId === child.id
 
+  const sortedCorrections = useMemo(
+    () =>
+      orderBy(
+        corrections,
+        [
+          (c) => c.data.targetMonth.year,
+          (c) => c.data.targetMonth.month,
+          (c) => c.data.period.start.toSystemTzDate(),
+          (c) => c.data.period.end.toSystemTzDate(),
+          (c) => c.data.product,
+          (c) => c.data.amount * c.data.unitPrice
+        ],
+        ['desc', 'desc', 'desc', 'desc', 'asc', 'asc']
+      ),
+    [corrections]
+  )
+
   return (
     <FixedSpaceColumn spacing="s">
       <FixedSpaceRow justifyContent="space-between" alignItems="center">
@@ -214,10 +232,10 @@ const ChildSection = React.memo(function ChildSection({
         <Thead>
           <Tr>
             <Th>{i18n.invoiceCorrections.targetMonth}</Th>
+            <Th>{i18n.invoiceCorrections.range}</Th>
             <Th>{i18n.invoice.form.rows.product}</Th>
             <Th>{i18n.invoice.form.rows.description}</Th>
             <Th>{i18n.invoice.form.rows.unitId}</Th>
-            <Th>{i18n.invoice.form.rows.daterange}</Th>
             <Th>{i18n.invoice.form.rows.amount}</Th>
             <Th align="right">{i18n.invoice.form.rows.unitPrice}</Th>
             <Th align="right">{i18n.invoice.form.rows.price}</Th>
@@ -242,7 +260,7 @@ const ChildSection = React.memo(function ChildSection({
               onEditorClose={onEditorCancel}
             />
           )}
-          {corrections.map((row) => (
+          {sortedCorrections.map((row) => (
             <InvoiceCorrectionRowReadView
               key={row.data.id}
               row={row}
@@ -294,10 +312,10 @@ const InvoiceCorrectionRowReadView = React.memo(
             {correction.targetMonth.month.toString().padStart(2, '0')} /{' '}
             {correction.targetMonth.year}
           </Td>
+          <Td data-qa="period">{correction.period.format()}</Td>
           <Td data-qa="product">{productName}</Td>
           <Td data-qa="description">{correction.description}</Td>
           <Td data-qa="unit">{units[correction.unitId]?.name ?? ''}</Td>
-          <Td data-qa="period">{correction.period.format()}</Td>
           <Td data-qa="amount" align="right">
             {correction.amount}
           </Td>
@@ -315,7 +333,7 @@ const InvoiceCorrectionRowReadView = React.memo(
                 {statusText}
               </Link>
             ) : (
-              <div>{statusText}</div>
+              <OneLine>{statusText}</OneLine>
             )}
           </Td>
           <Td>
@@ -479,7 +497,18 @@ const InvoiceCorrectionEditModal = React.memo(
         <FixedSpaceColumn spacing="m">
           <FixedSpaceColumn spacing="xs">
             <Label>{i18n.invoiceCorrections.targetMonth} *</Label>
-            <div>{month?.format() ?? 'Seuraava laskutuskausi'}</div>
+            <div>
+              {month?.format() ?? i18n.invoiceCorrections.nextTargetMonth}
+            </div>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing="xs">
+            <Label>{i18n.invoiceCorrections.range} *</Label>
+            <DateRangePickerF
+              bind={period}
+              locale={lang}
+              hideErrorsBeforeTouched
+              data-qa="date-range-input"
+            />
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">
             <Label>{i18n.invoice.form.rows.product} *</Label>
@@ -509,15 +538,6 @@ const InvoiceCorrectionEditModal = React.memo(
               placeholder={i18n.common.select}
               hideErrorsBeforeTouched
               data-qa="input-unit"
-            />
-          </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
-            <Label>{i18n.invoice.form.rows.daterange} *</Label>
-            <DateRangePickerF
-              bind={period}
-              locale={lang}
-              hideErrorsBeforeTouched
-              data-qa="date-range-input"
             />
           </FixedSpaceColumn>
           <FixedSpaceRow>
