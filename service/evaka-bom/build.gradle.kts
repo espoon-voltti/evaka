@@ -54,7 +54,7 @@ dependencies {
         api("org.apache.santuario:xmlsec:4.0.0")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.17.0"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.18.0"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     api(platform("io.netty:netty-bom:4.1.108.Final")) // only needed for CVE fix
     api(platform("io.opentelemetry:opentelemetry-bom:1.42.0"))
