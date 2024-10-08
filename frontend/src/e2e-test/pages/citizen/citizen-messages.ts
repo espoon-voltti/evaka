@@ -79,10 +79,8 @@ export default class CitizenMessagesPage {
     await this.#inboxEmpty.waitUntilVisible()
   }
 
-  async assertTimedNotification(content: string) {
-    await this.page
-      .findByDataQa('message-sent-notification')
-      .assertTextEquals(content)
+  async assertTimedNotification(dataQa: string, content: string) {
+    await this.page.findByDataQa(dataQa).assertTextEquals(content)
   }
 
   async assertNewMessageButtonIsFocused() {
