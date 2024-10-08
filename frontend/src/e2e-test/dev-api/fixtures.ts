@@ -38,6 +38,7 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -1015,7 +1016,7 @@ export class Fixture {
       id: uuidv4(),
       date: LocalDate.of(2020, 1, 1),
       childId: null,
-      modifiedBy: systemInternalUser,
+      modifiedBy: systemInternalUser.id,
       modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
       start: LocalTime.of(8, 0),
       end: LocalTime.of(8, 30),
@@ -1041,7 +1042,7 @@ export class Fixture {
       date: LocalDate.todayInHelsinkiTz(),
       absenceType: 'OTHER_ABSENCE',
       modifiedAt: HelsinkiDateTime.now(),
-      modifiedBy: systemInternalUser,
+      modifiedBy: systemInternalUser.id,
       absenceCategory: 'BILLABLE',
       questionnaireId: null,
       ...initial
@@ -1160,6 +1161,8 @@ export class Fixture {
         LocalDate.todayInSystemTz()
       ),
       coefficient: 1.0,
+      modifiedAt: HelsinkiDateTime.now(),
+      modifiedBy: null,
       ...initial
     })
   }
@@ -3087,4 +3090,14 @@ export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
 
 export const nullUUID = '00000000-0000-0000-0000-000000000000'
 
-export const systemInternalUser = nullUUID
+export const systemInternalUser: EvakaUser = {
+  id: nullUUID,
+  name: 'eVaka',
+  type: 'SYSTEM'
+}
+
+export const employeeToEvakaUser = (employee: DevEmployee): EvakaUser => ({
+  id: employee.id,
+  name: employee.firstName + ' ' + employee.lastName,
+  type: 'EMPLOYEE'
+})

@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ClubTermId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PreschoolTermId
@@ -46,6 +47,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -736,3 +739,10 @@ fun DevPerson.toPersonDetailed() =
 
 fun DevEmployee.toEmployeeWithName() =
     EmployeeWithName(id = this.id, firstName = this.firstName, lastName = this.lastName)
+
+fun DevEmployee.toEvakaUser() =
+    EvakaUser(
+        id = EvakaUserId(this.id.raw),
+        name = this.firstName + " " + this.lastName,
+        type = EvakaUserType.EMPLOYEE,
+    )

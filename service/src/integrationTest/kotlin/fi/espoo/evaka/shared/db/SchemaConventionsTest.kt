@@ -450,6 +450,11 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'modified_by' column should be 'uuid' and NOT NULL`() {
         val permittedViolations =
             setOf(
+                Column(
+                    ColumnRef("assistance_need_voucher_coefficient", "modified_by"),
+                    "uuid",
+                    nullable = true,
+                ),
                 Column(ColumnRef("fridge_partner", "modified_by"), "uuid", nullable = true),
                 Column(
                     ColumnRef("holiday_questionnaire_answer", "modified_by"),

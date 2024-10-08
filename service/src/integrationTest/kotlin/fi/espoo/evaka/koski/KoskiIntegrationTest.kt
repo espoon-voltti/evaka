@@ -15,7 +15,6 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAbsence
@@ -34,6 +33,7 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toEvakaUser
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -401,7 +401,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(intensifiedSupport, specialSupport, level1, level2).forEach {
                 tx.insert(
                     DevPreschoolAssistance(
-                        modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        modifiedBy = testDecisionMaker_1.toEvakaUser(),
                         childId = testChild_1.id,
                         validDuring = it.period,
                         level = it.level,
@@ -442,7 +442,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             otherAssistanceMeasures.forEach {
                 tx.insert(
                     DevOtherAssistanceMeasure(
-                        modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        modifiedBy = testDecisionMaker_1.toEvakaUser(),
                         childId = testChild_1.id,
                         validDuring = it,
                         type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,

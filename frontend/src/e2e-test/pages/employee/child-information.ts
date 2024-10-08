@@ -1123,6 +1123,16 @@ export class AssistanceSection extends Section {
     }
   }
 
+  async assistanceNeedVoucherCoefficientModified(nth: number) {
+    const row = this.page
+      .findByDataQa('table-of-assistance-need-voucher-coefficients')
+      .findAllByDataQa('table-assistance-need-voucher-coefficient')
+      .nth(nth)
+
+    return await row.findByDataQa('assistance-need-voucher-coefficient-status')
+      .text
+  }
+
   readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
 }
 

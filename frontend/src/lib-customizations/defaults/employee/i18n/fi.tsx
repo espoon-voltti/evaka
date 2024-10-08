@@ -706,12 +706,15 @@ export const fi = {
     },
     assistance: {
       title: 'Tuen tarve ja tukitoimet',
+      unknown: 'Ei tiedossa',
       fields: {
-        validDuring: 'Voimassaoloaika',
-        status: 'Tila',
         capacityFactor: 'Kerroin',
+        lastModified: 'Viimeksi muokattu',
+        lastModifiedBy: (name: string) => `Muokkaaja ${name}.`,
         level: 'Taso',
-        otherAssistanceMeasureType: 'Toimi'
+        otherAssistanceMeasureType: 'Toimi',
+        status: 'Tila',
+        validDuring: 'Voimassaoloaika'
       },
       validationErrors: {
         overlap:
@@ -1311,16 +1314,18 @@ export const fi = {
       )
     },
     assistanceNeedVoucherCoefficient: {
-      sectionTitle: 'Palvelusetelikerroin',
-      voucherCoefficient: 'Palvelusetelikerroin',
+      actions: 'Toiminnat',
       create: 'Aseta uusi palvelusetelikerroin',
+      deleteModal: {
+        title: 'Poistetaanko palvelusetelikerroin?',
+        description:
+          'Haluatko varmasti poistaa palvelusetelikertoimen? Asiakkaalle ei luoda uutta arvopäätöstä, vaikka kertoimen poistaisi, vaan sinun tulee tehdä uusi takautuva arvopäätös.',
+        delete: 'Poista kerroin'
+      },
+      factor: 'Kerroin',
       form: {
-        title: 'Aseta uusi palvelusetelikerroin',
-        editTitle: 'Muokkaa palvelusetelikerrointa',
-        titleInfo:
-          'Valitse palvelusetelikertoimen voimassaolopäivämäärät tuen tarpeen päätöksen mukaisesti.',
         coefficient: 'Palvelusetelikerroin (luku)',
-        validityPeriod: 'Palvelusetelikerroin voimassa',
+        editTitle: 'Muokkaa palvelusetelikerrointa',
         errors: {
           previousOverlap:
             'Aiempi päällekkäinen palvelusetelikerroin katkaistaan automaattisesti.',
@@ -1329,14 +1334,19 @@ export const fi = {
           fullOverlap:
             'Edellinen päällekkäinen palvelusetelikerroin poistetaan automaattisesti.',
           coefficientRange: 'Kerroin tulee olla välillä 1-10'
-        }
+        },
+        title: 'Aseta uusi palvelusetelikerroin',
+        titleInfo:
+          'Valitse palvelusetelikertoimen voimassaolopäivämäärät tuen tarpeen päätöksen mukaisesti.',
+        validityPeriod: 'Palvelusetelikerroin voimassa'
       },
-      deleteModal: {
-        title: 'Poistetaanko palvelusetelikerroin?',
-        description:
-          'Haluatko varmasti poistaa palvelusetelikertoimen? Asiakkaalle ei luoda uutta arvopäätöstä, vaikka kertoimen poistaisi, vaan sinun tulee tehdä uusi takautuva arvopäätös.',
-        delete: 'Poista kerroin'
-      }
+      lastModified: 'Viimeksi muokattu',
+      lastModifiedBy: (name: string) => `Muokkaaja ${name}.`,
+      sectionTitle: 'Palvelusetelikerroin',
+      status: 'Tila',
+      unknown: 'Ei tiedossa',
+      validityPeriod: 'Voimassaoloaika',
+      voucherCoefficient: 'Palvelusetelikerroin'
     },
     application: {
       title: 'Hakemukset',

@@ -11,6 +11,7 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
+  employeeToEvakaUser,
   testDaycare,
   testDaycareGroup,
   familyWithTwoGuardians,
@@ -347,7 +348,7 @@ describe('Child Information assistance functionality for employees', () => {
         LocalDate.todayInSystemTz().subDays(2),
         LocalDate.todayInSystemTz().subDays(2)
       ),
-      modifiedBy: unitSupervisor.id
+      modifiedBy: employeeToEvakaUser(unitSupervisor)
     }).save()
 
     // Shown because overlaps preschool placement
@@ -358,7 +359,7 @@ describe('Child Information assistance functionality for employees', () => {
         LocalDate.todayInSystemTz().subDays(1),
         LocalDate.todayInSystemTz()
       ),
-      modifiedBy: unitSupervisor.id
+      modifiedBy: employeeToEvakaUser(unitSupervisor)
     }).save()
 
     await Fixture.assistanceFactor({
@@ -368,7 +369,7 @@ describe('Child Information assistance functionality for employees', () => {
         LocalDate.todayInSystemTz().addDays(1),
         LocalDate.todayInSystemTz().addDays(1)
       ),
-      modifiedBy: unitSupervisor.id
+      modifiedBy: employeeToEvakaUser(unitSupervisor)
     }).save()
 
     await logUserIn(unitSupervisor)
@@ -390,7 +391,7 @@ describe('Child Information assistance functionality for employees', () => {
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz().addDays(1)
       ),
-      modifiedBy: unitSupervisor.id
+      modifiedBy: employeeToEvakaUser(unitSupervisor)
     }).save()
 
     await logUserIn(unitSupervisor)
@@ -405,7 +406,7 @@ describe('Child Information assistance functionality for employees', () => {
         LocalDate.todayInSystemTz().subDays(1),
         LocalDate.todayInSystemTz()
       ),
-      modifiedBy: admin.id
+      modifiedBy: employeeToEvakaUser(admin)
     }).save()
 
     await logUserIn(admin)
@@ -424,7 +425,7 @@ describe('Child Information assistance functionality for employees', () => {
         LocalDate.todayInSystemTz().subDays(1),
         LocalDate.todayInSystemTz()
       ),
-      modifiedBy: specialEducationTeacher.id
+      modifiedBy: employeeToEvakaUser(specialEducationTeacher)
     }).save()
 
     await Fixture.assistanceFactor({
@@ -433,7 +434,7 @@ describe('Child Information assistance functionality for employees', () => {
         LocalDate.todayInSystemTz().addDays(1),
         LocalDate.todayInSystemTz().addDays(2)
       ),
-      modifiedBy: specialEducationTeacher.id
+      modifiedBy: employeeToEvakaUser(specialEducationTeacher)
     }).save()
 
     await logUserIn(specialEducationTeacher)
@@ -587,7 +588,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
     await waitUntilEqual(
       async () => await assistance.assistanceNeedVoucherCoefficients(0),
       {
-        coefficient: 'Palvelusetelikerroin 4,3',
+        coefficient: '4,3',
         validityPeriod: '04.02.2021 – 01.09.2021',
         status: 'ENDED',
         actionCount: 2
@@ -607,7 +608,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
     await waitUntilEqual(
       async () => await assistance.assistanceNeedVoucherCoefficients(0),
       {
-        coefficient: 'Palvelusetelikerroin 1,2',
+        coefficient: '1,2',
         validityPeriod: '16.06.2021 – 05.10.2021',
         status: 'ENDED',
         actionCount: 2
@@ -617,7 +618,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
     await waitUntilEqual(
       async () => await assistance.assistanceNeedVoucherCoefficients(1),
       {
-        coefficient: 'Palvelusetelikerroin 4,3',
+        coefficient: '4,3',
         validityPeriod: '04.02.2021 – 15.06.2021',
         status: 'ENDED',
         actionCount: 2
@@ -648,11 +649,17 @@ describe('Child assistance need voucher coefficients for employees', () => {
     await waitUntilEqual(
       async () => await assistance.assistanceNeedVoucherCoefficients(0),
       {
-        coefficient: 'Palvelusetelikerroin 9,8',
+        coefficient: '9,8',
         validityPeriod: '10.02.2021 – 21.11.2021',
         status: 'ENDED',
         actionCount: 2
       }
+    )
+
+    await waitUntilEqual(
+      async () =>
+        !!(await assistance.assistanceNeedVoucherCoefficientModified(0)),
+      true
     )
   })
 
@@ -668,7 +675,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
     await waitUntilEqual(
       async () => await assistance.assistanceNeedVoucherCoefficients(0),
       {
-        coefficient: 'Palvelusetelikerroin 1,9',
+        coefficient: '1,9',
         validityPeriod: '29.11.2021 – 30.12.2021',
         status: 'ENDED',
         actionCount: 2
@@ -690,7 +697,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
     await waitUntilEqual(
       async () => await assistance.assistanceNeedVoucherCoefficients(0),
       {
-        coefficient: 'Palvelusetelikerroin 9,8',
+        coefficient: '9,8',
         validityPeriod: '20.08.2021 – 24.11.2021',
         status: 'ENDED',
         actionCount: 2
@@ -700,7 +707,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
     await waitUntilEqual(
       async () => await assistance.assistanceNeedVoucherCoefficients(1),
       {
-        coefficient: 'Palvelusetelikerroin 4,3',
+        coefficient: '4,3',
         validityPeriod: '04.02.2021 – 19.08.2021',
         status: 'ENDED',
         actionCount: 2

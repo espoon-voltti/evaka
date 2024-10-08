@@ -929,7 +929,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: systemInternalUser
+      modifiedBy: systemInternalUser.id
     }).save()
 
     const calendarPage = await openCalendarPage(env)
@@ -951,7 +951,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: systemInternalUser,
+      modifiedBy: systemInternalUser.id,
       absenceType: 'FREE_ABSENCE'
     }).save()
 

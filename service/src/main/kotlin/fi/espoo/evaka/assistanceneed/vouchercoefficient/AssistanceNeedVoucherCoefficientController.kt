@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -48,19 +49,27 @@ class AssistanceNeedVoucherCoefficientController(
                         Action.Child.CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT,
                         childId,
                     )
-                    adjustExistingCoefficients(tx, childId, body.validityPeriod, null)
-                    tx.insertAssistanceNeedVoucherCoefficient(childId, body).also {
-                        asyncJobRunner.plan(
-                            tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    childId,
-                                    body.validityPeriod.asDateRange(),
-                                )
-                            ),
-                            runAt = clock.now(),
-                        )
-                    }
+                    adjustExistingCoefficients(
+                        tx = tx,
+                        user = user,
+                        now = clock.now(),
+                        childId = childId,
+                        range = body.validityPeriod,
+                        ignoreCoefficientId = null,
+                    )
+                    tx.insertAssistanceNeedVoucherCoefficient(user, clock.now(), childId, body)
+                        .also {
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.GenerateFinanceDecisions.forChild(
+                                        childId,
+                                        body.validityPeriod.asDateRange(),
+                                    )
+                                ),
+                                runAt = clock.now(),
+                            )
+                        }
                 }
             }
             .also { coefficient ->
@@ -122,24 +131,37 @@ class AssistanceNeedVoucherCoefficientController(
                         id,
                     )
                     val existing = tx.getAssistanceNeedVoucherCoefficientById(id)
-                    adjustExistingCoefficients(tx, existing.childId, body.validityPeriod, id)
+                    adjustExistingCoefficients(
+                        tx = tx,
+                        user = user,
+                        now = clock.now(),
+                        childId = existing.childId,
+                        range = body.validityPeriod,
+                        ignoreCoefficientId = id,
+                    )
 
                     val combinedRange =
                         DateSet.of(existing.validityPeriod, body.validityPeriod)
                             .spanningRange()!!
                             .asDateRange()
-                    tx.updateAssistanceNeedVoucherCoefficient(id = id, data = body).also {
-                        asyncJobRunner.plan(
-                            tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    existing.childId,
-                                    combinedRange,
-                                )
-                            ),
-                            runAt = clock.now(),
+                    tx.updateAssistanceNeedVoucherCoefficient(
+                            user = user,
+                            now = clock.now(),
+                            id = id,
+                            data = body,
                         )
-                    }
+                        .also {
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.GenerateFinanceDecisions.forChild(
+                                        existing.childId,
+                                        combinedRange,
+                                    )
+                                ),
+                                runAt = clock.now(),
+                            )
+                        }
                 }
             }
             .also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = AuditId(id)) }
@@ -184,6 +206,8 @@ class AssistanceNeedVoucherCoefficientController(
 
     private fun adjustExistingCoefficients(
         tx: Database.Transaction,
+        user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         childId: ChildId,
         range: FiniteDateRange,
         ignoreCoefficientId: AssistanceNeedVoucherCoefficientId?,
@@ -201,6 +225,8 @@ class AssistanceNeedVoucherCoefficientController(
                     tx.deleteAssistanceNeedVoucherCoefficient(it.id)
                 } else {
                     tx.updateAssistanceNeedVoucherCoefficient(
+                        user = user,
+                        now = now,
                         id = it.id,
                         data =
                             AssistanceNeedVoucherCoefficientRequest(

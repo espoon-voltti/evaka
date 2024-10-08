@@ -8,6 +8,7 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { Action } from '../action'
 import { AssistanceActionResponse } from './assistanceaction'
+import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 import { deserializeJsonAssistanceActionResponse } from './assistanceaction'
@@ -20,7 +21,7 @@ export interface AssistanceFactor {
   childId: UUID
   id: UUID
   modified: HelsinkiDateTime
-  modifiedBy: string
+  modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
 
@@ -59,7 +60,7 @@ export interface DaycareAssistance {
   id: UUID
   level: DaycareAssistanceLevel
   modified: HelsinkiDateTime
-  modifiedBy: string
+  modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
 
@@ -98,7 +99,7 @@ export interface OtherAssistanceMeasure {
   childId: UUID
   id: UUID
   modified: HelsinkiDateTime
-  modifiedBy: string
+  modifiedBy: EvakaUser
   type: OtherAssistanceMeasureType
   validDuring: FiniteDateRange
 }
@@ -141,7 +142,7 @@ export interface PreschoolAssistance {
   id: UUID
   level: PreschoolAssistanceLevel
   modified: HelsinkiDateTime
-  modifiedBy: string
+  modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
 

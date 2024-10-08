@@ -13,6 +13,8 @@ import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.user.EvakaUser
+import org.jdbi.v3.core.mapper.Nested
 
 data class AssistanceFactor(
     val id: AssistanceFactorId,
@@ -20,7 +22,7 @@ data class AssistanceFactor(
     val validDuring: FiniteDateRange,
     val capacityFactor: Double,
     val modified: HelsinkiDateTime,
-    val modifiedBy: String,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class AssistanceFactorUpdate(val validDuring: FiniteDateRange, val capacityFactor: Double)
@@ -41,7 +43,7 @@ data class DaycareAssistance(
     val validDuring: FiniteDateRange,
     val level: DaycareAssistanceLevel,
     val modified: HelsinkiDateTime,
-    val modifiedBy: String,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class DaycareAssistanceUpdate(
@@ -65,7 +67,7 @@ data class PreschoolAssistance(
     val validDuring: FiniteDateRange,
     val level: PreschoolAssistanceLevel,
     val modified: HelsinkiDateTime,
-    val modifiedBy: String,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class PreschoolAssistanceUpdate(
@@ -91,7 +93,7 @@ data class OtherAssistanceMeasure(
     val validDuring: FiniteDateRange,
     val type: OtherAssistanceMeasureType,
     val modified: HelsinkiDateTime,
-    val modifiedBy: String,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class OtherAssistanceMeasureUpdate(
