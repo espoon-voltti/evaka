@@ -4,17 +4,17 @@ SPDX-FileCopyrightText: 2017-2020 City of Espoo
 SPDX-License-Identifier: LGPL-2.1-or-later
 -->
 
-# eVaka – ERP for early childhood education
+# eVaka® – ERP for early childhood education
 
 [![REUSE status](https://api.reuse.software/badge/github.com/espoon-voltti/evaka)](https://api.reuse.software/info/github.com/espoon-voltti/evaka)
 
 <!-- This project is registered with the REUSE API: https://api.reuse.software/ -->
 
-This is eVaka – an ERP system developed for early childhood education in
+This is eVaka® – an ERP system developed for early childhood education in
 Finland. It is a web application developed using modern technologies and
 designed to be deployed in cloud environment.
 
-**Caution:** eVaka is currently under very active development. At this
+**Caution:** eVaka® is currently under very active development. At this
 point, it is not yet adviced to start developing or running your custom
 solution based on this project. Most likely, the project will evolve
 considerably before reaching more stable phase. Please refer to
@@ -44,8 +44,8 @@ The applications consists of several sub-projects:
 and a few other important directories:
 
 - [`bin`](bin/) – Helper shell scripts
-- [`docs`](docs/) – General eVaka documentation
-- [`service/evaka-bom`](service/evaka-bom/) – Shared BOM for eVaka Gradle projects, for
+- [`docs`](docs/) – General eVaka® documentation
+- [`service/evaka-bom`](service/evaka-bom/) – Shared BOM for eVaka® Gradle projects, for
   easier dependency updates and control
 
 ## Contributing
@@ -95,7 +95,7 @@ please contact us by email at [tietoturva@espoo.fi](tietoturva@espoo.fi)
 
 ## License
 
-eVaka is published under **LGPL-2.1-or-later** license. Please refer to
+eVaka® is published under **LGPL-2.1-or-later** license. Please refer to
 [LICENSE](LICENSE) for further details.
 
 ### Bulk-licensing
@@ -160,5 +160,5 @@ for more details on the linter.
 
 ## Contact information
 
-eVaka is developed in the [City of Espoo](https://www.espoo.fi), Finland.
+eVaka® is developed in the [City of Espoo](https://www.espoo.fi), Finland.
 You can contact the development team at [voltti@espoo.fi](voltti@espoo.fi).
