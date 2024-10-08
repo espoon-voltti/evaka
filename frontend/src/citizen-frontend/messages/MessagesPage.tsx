@@ -133,7 +133,13 @@ export default React.memo(function MessagesPage() {
                     accountId={messageAccount.accountId}
                     closeThread={() => selectThread(undefined)}
                     thread={selectedThread}
-                    onThreadDeleted={() => onSelectedThreadDeleted()}
+                    onThreadDeleted={() => {
+                      onSelectedThreadDeleted()
+                      addTimedNotification({
+                        children: i18n.messages.confirmDelete.success,
+                        dataQa: 'thread-deleted-notification'
+                      })
+                    }}
                     ref={threadView}
                   />
                 ) : (
