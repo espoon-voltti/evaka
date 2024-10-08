@@ -18,8 +18,8 @@ export interface Props {
   hideErrorsBeforeTouched?: boolean
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
   dataQaPrefix?: string
-  ariaDescribedbyStart?: string
-  ariaDescribedbyEnd?: string
+  ariaDescriptionStart?: string
+  ariaDescriptionEnd?: string
 }
 
 export default React.memo(function TimeRangeInputF({
@@ -27,8 +27,8 @@ export default React.memo(function TimeRangeInputF({
   hideErrorsBeforeTouched,
   onFocus,
   dataQaPrefix,
-  ariaDescribedbyStart,
-  ariaDescribedbyEnd
+  ariaDescriptionStart,
+  ariaDescriptionEnd
 }: Props) {
   const i18n = useTranslation()
   const [touched, setTouched] = useState([false, false])
@@ -50,7 +50,7 @@ export default React.memo(function TimeRangeInputF({
           onBlur={() => setTouched(([_, t]) => [true, t])}
           data-qa={dataQaPrefix ? `${dataQaPrefix}-start` : undefined}
           id={dataQaPrefix ? `${dataQaPrefix}-start` : undefined}
-          aria-describedby={ariaDescribedbyStart}
+          aria-description={ariaDescriptionStart}
         />
         <span>–</span>
         <TimeInputF
@@ -62,7 +62,7 @@ export default React.memo(function TimeRangeInputF({
           onBlur={() => setTouched(([t, _]) => [t, true])}
           data-qa={dataQaPrefix ? `${dataQaPrefix}-end` : undefined}
           id={dataQaPrefix ? `${dataQaPrefix}-end` : undefined}
-          aria-describedby={ariaDescribedbyEnd}
+          aria-description={ariaDescriptionEnd}
         />
       </TimeRangeWrapper>
       {inputInfo !== undefined && (!hideErrorsBeforeTouched || bothTouched) ? (

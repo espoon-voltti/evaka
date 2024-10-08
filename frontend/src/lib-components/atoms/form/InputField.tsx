@@ -206,6 +206,7 @@ export interface InputProps extends BaseProps {
   'data-qa'?: string
   name?: string
   'aria-describedby'?: string
+  'aria-description'?: string
   hideErrorsBeforeTouched?: boolean
   required?: boolean
   autoFocus?: boolean

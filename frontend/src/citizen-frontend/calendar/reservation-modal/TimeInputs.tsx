@@ -269,8 +269,8 @@ interface LimitedLocalTimeRangeProps {
   bind: BoundForm<LimitedLocalTimeRangeField>
   hideErrorsBeforeTouched?: boolean
   dataQaPrefix?: string
-  ariaDescribedbyStart?: string
-  ariaDescribedbyEnd?: string
+  ariaDescriptionStart?: string
+  ariaDescriptionEnd?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
@@ -278,8 +278,8 @@ const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
   bind,
   hideErrorsBeforeTouched,
   dataQaPrefix,
-  ariaDescribedbyStart,
-  ariaDescribedbyEnd,
+  ariaDescriptionStart,
+  ariaDescriptionEnd,
   onFocus
 }: LimitedLocalTimeRangeProps) {
   const value = useFormField(bind, 'value')
@@ -288,8 +288,8 @@ const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
       bind={value}
       hideErrorsBeforeTouched={hideErrorsBeforeTouched}
       dataQaPrefix={dataQaPrefix}
-      ariaDescribedbyStart={ariaDescribedbyStart}
-      ariaDescribedbyEnd={ariaDescribedbyEnd}
+      ariaDescriptionStart={ariaDescriptionStart}
+      ariaDescriptionEnd={ariaDescriptionEnd}
       onFocus={onFocus}
     />
   )
@@ -379,10 +379,10 @@ const TimeRanges = React.memo(function TimeRanges({
               bind={secondTimeRange}
               hideErrorsBeforeTouched={!showAllErrors}
               dataQaPrefix={dataQaPrefix ? `${dataQaPrefix}-time-1` : undefined}
-              ariaDescribedbyStart={
+              ariaDescriptionStart={
                 i18n.calendar.reservationModal.secondTimeRange.start
               }
-              ariaDescribedbyEnd={
+              ariaDescriptionEnd={
                 i18n.calendar.reservationModal.secondTimeRange.end
               }
               onFocus={onFocus}
