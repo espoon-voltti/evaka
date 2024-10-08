@@ -35,9 +35,14 @@ export function scrollToRef(
 
 export function scrollRefIntoView(
   ref: MutableRefObject<HTMLElement | null>,
-  timeout = 0
+  timeout = 0,
+  blockPosition: ScrollLogicalPosition = 'start'
 ) {
-  scrollIntoViewWithTimeout(() => ref.current ?? undefined, timeout)
+  scrollIntoViewWithTimeout(
+    () => ref.current ?? undefined,
+    timeout,
+    blockPosition
+  )
 }
 
 export function scrollIntoViewSoftKeyboard(
@@ -78,13 +83,14 @@ function scrollWithTimeout(
 
 function scrollIntoViewWithTimeout(
   getElement: () => HTMLElement | undefined,
-  timeout = 0
+  timeout = 0,
+  blockPosition: ScrollLogicalPosition
 ) {
   if (isAutomatedTest) return
 
   withTimeout(() => {
     const elem = getElement()
-    if (elem) elem.scrollIntoView({ behavior: 'smooth' })
+    if (elem) elem.scrollIntoView({ behavior: 'smooth', block: blockPosition })
   }, timeout)
 }
 

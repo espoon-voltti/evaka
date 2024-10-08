@@ -129,9 +129,16 @@ export const MessageContainer = styled.li`
   }
 `
 
-export const ReplyEditorContainer = styled.div`
+const StyledReplyEditorContainer = styled.div`
   ${messageContainerStyles}
 `
+
+const ReplyEditorContainer = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(function ReplyEditorContainer(props, ref) {
+  return <StyledReplyEditorContainer ref={ref} {...props} />
+})
 
 const formatMessageAccountName = (
   account: MessageAccount,
@@ -230,10 +237,10 @@ export default React.memo(function ThreadView({
   const hideReplyEditor = useReplyEditorVisible.off
   useEffect(() => hideReplyEditor(), [hideReplyEditor, threadId])
 
-  const autoScrollRef = useRef<HTMLSpanElement>(null)
+  const autoScrollRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    scrollRefIntoView(autoScrollRef)
-  }, [messages, replyEditorVisible])
+    scrollRefIntoView(autoScrollRef, undefined, 'end')
+  }, [replyEditorVisible])
 
   const titleRowRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -301,7 +308,7 @@ export default React.memo(function ThreadView({
         ))}
       </MessageList>
       {replyEditorVisible ? (
-        <ReplyEditorContainer>
+        <ReplyEditorContainer ref={autoScrollRef}>
           <MessageReplyEditor
             mutation={replyToThreadMutation}
             onSubmit={() => ({
@@ -366,7 +373,6 @@ export default React.memo(function ThreadView({
           </>
         )
       )}
-      {replyEditorVisible && <span ref={autoScrollRef} />}
       {confirmDelete && (
         <ConfirmDeleteThread
           threadId={threadId}
