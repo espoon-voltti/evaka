@@ -53,4 +53,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        ]]></notes>
         <cve>CVE-2024-1597</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Misidentification: Glassfish JAXB library != GlassFish Java EE server
+       ]]></notes>
+        <cve>CVE-2024-9329</cve>
+    </suppress>
 </suppressions>
