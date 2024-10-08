@@ -433,6 +433,7 @@ export default {
       reservationClosed: 'Ilmoittautuminen päättynyt',
       reservationClosedInfo:
         'Jos haluat ilmoittaa läsnäoloajan tälle päivälle, ota yhteyttä henkilökuntaan',
+      saveSuccess: 'Tallennus onnistui',
       saveErrors: {
         failure: 'Tallennus epäonnistui',
         NON_RESERVABLE_DAYS: 'Joitain valittuja päiviä ei voida varata'

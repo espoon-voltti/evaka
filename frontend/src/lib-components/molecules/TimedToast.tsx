@@ -22,6 +22,7 @@ export interface Props {
   children?: React.ReactNode
   'aria-label'?: string
   'data-qa'?: string
+  id?: string
   closeLabel: string
 }
 
@@ -33,6 +34,7 @@ export default React.memo(function TimedToast({
   children,
   'aria-label': ariaLabel,
   'data-qa': dataQa,
+  id,
   closeLabel
 }: Props) {
   const { colors } = useTheme()
@@ -80,6 +82,8 @@ export default React.memo(function TimedToast({
             onMouseOver={() => {
               stopTimer()
             }}
+            id={id}
+            tabIndex={-1}
           >
             {children}
           </ToastContent>

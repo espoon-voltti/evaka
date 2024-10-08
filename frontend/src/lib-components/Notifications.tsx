@@ -31,7 +31,7 @@ interface NotificationsState {
   notifications: Record<string, Notification>
   addNotification: (n: Notification, customId?: string) => void
   removeNotification: (id: string) => void
-  addTimedNotification: (n: TimedNotification) => void
+  addTimedNotification: (n: TimedNotification, customId?: string) => void
   removeTimedNotification: (id: string) => void
 }
 
@@ -48,6 +48,7 @@ interface TimedNotification {
   children: React.ReactNode | React.ReactNode[]
   ariaLabel?: string
   dataQa?: string
+  id?: string
 }
 
 export const NotificationsContext = createContext<NotificationsState>({
@@ -83,10 +84,10 @@ export const NotificationsContextProvider = React.memo(
     }, [])
 
     const addTimedNotification = useCallback(
-      (timedNotification: TimedNotification) =>
+      (timedNotification: TimedNotification, customId?: string) =>
         setTimedNotifications((timedNotifications) => ({
           ...timedNotifications,
-          [(idCounter++).toString(10)]: timedNotification
+          [customId ?? (idCounter++).toString(10)]: timedNotification
         })),
       []
     )
