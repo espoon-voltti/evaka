@@ -9,6 +9,7 @@ import LocalDate from './local-date'
 import LocalTime from './local-time'
 import TimeInterval from './time-interval'
 import TimeRange from './time-range'
+import YearMonth from './year-month'
 
 export type JsonOf<T> = T extends string | number | boolean | null | undefined
   ? T
@@ -28,19 +29,21 @@ export type JsonOf<T> = T extends string | number | boolean | null | undefined
                 ? { start: JsonOf<LocalTime>; end: JsonOf<LocalTime> | null }
                 : T extends TimeRange
                   ? { start: JsonOf<LocalTime>; end: JsonOf<LocalTime> }
-                  : T extends Map<string, infer U>
-                    ? { [key: string]: JsonOf<U> }
-                    : T extends Set<infer U>
-                      ? JsonOf<U>[]
-                      : T extends [infer A, infer B]
-                        ? [JsonOf<A>, JsonOf<B>]
-                        : T extends [infer A, infer B, infer C]
-                          ? [JsonOf<A>, JsonOf<B>, JsonOf<C>]
-                          : T extends (infer U)[]
-                            ? JsonOf<U>[]
-                            : T extends object
-                              ? { [P in keyof T]: JsonOf<T[P]> }
-                              : never
+                  : T extends YearMonth
+                    ? string
+                    : T extends Map<string, infer U>
+                      ? { [key: string]: JsonOf<U> }
+                      : T extends Set<infer U>
+                        ? JsonOf<U>[]
+                        : T extends [infer A, infer B]
+                          ? [JsonOf<A>, JsonOf<B>]
+                          : T extends [infer A, infer B, infer C]
+                            ? [JsonOf<A>, JsonOf<B>, JsonOf<C>]
+                            : T extends (infer U)[]
+                              ? JsonOf<U>[]
+                              : T extends object
+                                ? { [P in keyof T]: JsonOf<T[P]> }
+                                : never
 
 /**
  * Type operator to check if the given type can be converted to reasonable JSON without extra code.

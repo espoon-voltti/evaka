@@ -1683,10 +1683,10 @@ export const fi = {
       invoiceStatusHeader: 'Tila',
       invoiceStatus: (status: InvoiceStatus | null) =>
         status === 'DRAFT'
-          ? 'Seuraavalla luonnoksella'
+          ? 'Laskuluonnoksella'
           : status
-            ? 'Laskulla osittain'
-            : 'Ei vielä laskulla'
+            ? 'Laskulla'
+            : 'Ei laskulla'
     },
     voucherValueDecisions: {
       title: 'Päämiehen arvopäätökset',
@@ -2755,7 +2755,13 @@ export const fi = {
   },
   invoiceCorrections: {
     noChildren: 'Henkilö ei ole yhdenkään lapsen päämies',
-    addRow: 'Lisää korjausrivi'
+    targetMonth: 'Korjataan laskutuskaudella',
+    nextTargetMonth: 'Seuraava laskutuskausi',
+    range: 'Syyn ajanjakso',
+    addRow: 'Lisää korjausrivi',
+    addTitle: 'Uusi korjausrivi',
+    editTitle: 'Muokkaa korjausriviä',
+    deleteConfirmTitle: 'Poistetaanko korjausrivi?'
   },
   financeDecisions: {
     handlerSelectModal: {

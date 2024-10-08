@@ -24,11 +24,11 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
+import java.time.YearMonth
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -129,9 +129,11 @@ class InvoiceController(
                     clock,
                     Action.Global.CREATE_DRAFT_INVOICES,
                 )
-                val lastMonth =
-                    FiniteDateRange.ofMonth(clock.today().withDayOfMonth(1).minusMonths(1))
-                generator.createAndStoreAllDraftInvoices(it, lastMonth)
+                val firstOfLastMonth = clock.today().withDayOfMonth(1).minusMonths(1)
+                generator.createAndStoreAllDraftInvoices(
+                    it,
+                    YearMonth.of(firstOfLastMonth.year, firstOfLastMonth.month),
+                )
             }
         }
         Audit.InvoicesCreate.log()
@@ -171,7 +173,14 @@ class InvoiceController(
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(it, user, clock, Action.Invoice.SEND, invoiceIds)
-                service.sendInvoices(it, user, clock, invoiceIds, invoiceDate, dueDate)
+                service.sendInvoices(
+                    it,
+                    user.evakaUserId,
+                    clock.now(),
+                    invoiceIds,
+                    invoiceDate,
+                    dueDate,
+                )
             }
         }
         Audit.InvoicesSend.log(
@@ -193,8 +202,8 @@ class InvoiceController(
                 accessControl.requirePermissionFor(tx, user, clock, Action.Invoice.SEND, invoiceIds)
                 service.sendInvoices(
                     tx,
-                    user,
-                    clock,
+                    user.evakaUserId,
+                    clock.now(),
                     invoiceIds,
                     payload.invoiceDate,
                     payload.dueDate,

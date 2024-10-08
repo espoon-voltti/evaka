@@ -4,7 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
-import LocalDate from 'lib-common/local-date'
+import YearMonth from 'lib-common/year-month'
 import { AttendanceSummary } from 'lib-common/generated/api-types/children'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { DailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
@@ -23,11 +23,11 @@ import { uri } from 'lib-common/uri'
 export async function getChildAttendanceSummary(
   request: {
     childId: UUID,
-    yearMonth: LocalDate
+    yearMonth: YearMonth
   }
 ): Promise<AttendanceSummary> {
   const { data: json } = await client.request<JsonOf<AttendanceSummary>>({
-    url: uri`/citizen/children/${request.childId}/attendance-summary/${request.yearMonth.formatExotic('yyyy-MM')}`.toString(),
+    url: uri`/citizen/children/${request.childId}/attendance-summary/${request.yearMonth.formatIso()}`.toString(),
     method: 'GET'
   })
   return json

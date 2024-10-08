@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
@@ -398,6 +399,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         val nextPreschoolTerm: PreschoolTermId,
     ) : AsyncJob
 
+    data class InvoiceCorrectionMigration(val invoiceCorrectionId: InvoiceCorrectionId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -429,6 +434,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     UploadToKoski::class,
                     VTJRefresh::class,
                     PlacementTool::class,
+                    InvoiceCorrectionMigration::class,
                 ),
             )
         val email =
