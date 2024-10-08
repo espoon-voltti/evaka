@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
+import { NotificationsContext } from 'lib-components/Notifications'
 import { OnEnterView } from 'lib-components/OnEnterView'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -49,6 +50,7 @@ export default React.memo(function ThreadList({
   const t = useTranslation()
   const { selectedThread, threads, loadMoreThreads, hasMoreThreads } =
     useContext(MessageContext)
+  const { addTimedNotification } = useContext(NotificationsContext)
   const [confirmDelete, setConfirmDelete] = useState<UUID>()
 
   return (
@@ -137,6 +139,10 @@ export default React.memo(function ThreadList({
             onClose={() => setConfirmDelete(undefined)}
             onSuccess={() => {
               setConfirmDelete(undefined)
+              addTimedNotification({
+                children: t.messages.confirmDelete.success,
+                dataQa: 'thread-deleted-notification'
+              })
             }}
           />
         ) : null}
