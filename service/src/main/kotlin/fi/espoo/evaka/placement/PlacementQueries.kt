@@ -375,7 +375,7 @@ fun Database.Read.getDaycarePlacements(
             ch.date_of_birth as child_date_of_birth,
             CASE
                 WHEN (SELECT every(default_option) FROM service_need_option WHERE valid_placement_type = pl.type) THEN 0
-                ELSE days_in_range(daterange(pl.start_date, pl.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_service_need
+                ELSE coalesce(days_in_range(daterange(pl.start_date, pl.end_date, '[]') * daterange('2020-03-01', NULL)), 0) - days_with_service_need
             END AS missing_service_need_days,
             pl.modified_at,
             modified_by.id AS modified_by_id,

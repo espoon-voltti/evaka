@@ -54,7 +54,7 @@ SELECT
   daterange(backup_care.start_date, backup_care.end_date, '[]') AS period,
   placement.units AS from_units,
   '[]' AS service_needs,
-  days_in_range(daterange(backup_care.start_date, backup_care.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_service_need AS missingServiceNeedDays
+  coalesce(days_in_range(daterange(backup_care.start_date, backup_care.end_date, '[]') * daterange('2020-03-01', NULL)), 0) - days_with_service_need AS missingServiceNeedDays
 FROM backup_care
 JOIN LATERAL (
   SELECT
