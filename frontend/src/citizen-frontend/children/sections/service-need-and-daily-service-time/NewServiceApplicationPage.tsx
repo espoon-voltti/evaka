@@ -99,9 +99,11 @@ export default React.memo(function NewServiceApplicationPage() {
             <H1 noMargin>{i18n.children.serviceApplication.createTitle}</H1>
             <Gap />
             <FixedSpaceColumn spacing="m">
-              <FixedSpaceColumn spacing="s">
+              <div>
                 <Label>{i18n.children.serviceApplication.startDate} *</Label>
+                <Gap size="s" />
                 <div>{i18n.children.serviceApplication.startDateInfo}</div>
+                <Gap size="s" />
                 <DatePickerF
                   bind={startDate}
                   locale={lang}
@@ -109,17 +111,23 @@ export default React.memo(function NewServiceApplicationPage() {
                   info={startDate.inputInfo()}
                   data-qa="start-date"
                 />
-                {startDate.isValid() && startDate.value().getDate() !== 1 && (
-                  <AlertBox
-                    message={
-                      i18n.children.serviceApplication
-                        .startDateOnlyFirstDayWarning
-                    }
-                    noMargin
-                    thin
-                  />
-                )}
-              </FixedSpaceColumn>
+                <Gap size="s" />
+                <div aria-live="polite">
+                  {startDate.isValid() && startDate.value().getDate() !== 1 && (
+                    <>
+                      <Gap size="s" />
+                      <AlertBox
+                        message={
+                          i18n.children.serviceApplication
+                            .startDateOnlyFirstDayWarning
+                        }
+                        noMargin
+                        thin
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
               {startDate.isValid() && (
                 <div>
                   {renderResult(optionsResult, (options) => (
