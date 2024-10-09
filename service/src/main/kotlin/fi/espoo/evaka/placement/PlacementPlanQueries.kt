@@ -11,8 +11,10 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementPlanId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 
@@ -22,12 +24,16 @@ fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId
     }
 }
 
-fun Database.Transaction.softDeletePlacementPlanIfUnused(applicationId: ApplicationId) {
+fun Database.Transaction.softDeletePlacementPlanIfUnused(
+    user: AuthenticatedUser,
+    now: HelsinkiDateTime,
+    applicationId: ApplicationId,
+) {
     createUpdate {
             sql(
                 """
 UPDATE placement_plan
-SET deleted = true
+SET deleted = true, modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE application_id = ${bind(applicationId)}
 AND NOT EXISTS (
   SELECT 1
@@ -42,6 +48,8 @@ AND NOT EXISTS (
 }
 
 fun Database.Transaction.createPlacementPlan(
+    user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     applicationId: ApplicationId,
     type: PlacementType,
     plan: DaycarePlacementPlan,
@@ -49,15 +57,26 @@ fun Database.Transaction.createPlacementPlan(
     createUpdate {
             sql(
                 """
-INSERT INTO placement_plan (type, unit_id, application_id, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date)
-VALUES (
+INSERT INTO placement_plan (
+    type,
+    unit_id,
+    application_id,
+    start_date,
+    end_date,
+    preschool_daycare_start_date,
+    preschool_daycare_end_date,
+    modified_at,
+    modified_by 
+) VALUES (
     ${bind(type)},
     ${bind(plan.unitId)},
     ${bind(applicationId)},
     ${bind(plan.period.start)},
     ${bind(plan.period.end)},
     ${bind(plan.preschoolDaycarePeriod?.start)},
-    ${bind(plan.preschoolDaycarePeriod?.end)}
+    ${bind(plan.preschoolDaycarePeriod?.end)},
+    ${bind(now)},
+    ${bind(user.evakaUserId)}
 )
 RETURNING id"""
             )
@@ -75,12 +94,26 @@ fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan?
         val endDate: LocalDate,
         val preschoolDaycareStartDate: LocalDate?,
         val preschoolDaycareEndDate: LocalDate?,
+        val modifiedAt: HelsinkiDateTime?,
+        @Nested("modified_by") val modifiedBy: EvakaUser?,
     )
     return createQuery {
             sql(
                 """
-SELECT id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date
-FROM placement_plan
+SELECT
+    p.id,
+    p.unit_id,
+    p.application_id,
+    p.type,
+    p.start_date,
+    p.end_date,
+    p.preschool_daycare_start_date,
+    p.preschool_daycare_end_date,
+    p.modified_at,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
+FROM placement_plan p LEFT JOIN evaka_user e ON p.modified_by = e.id
 WHERE application_id = ${bind(applicationId)} AND deleted = false
     """
             )
@@ -101,6 +134,8 @@ WHERE application_id = ${bind(applicationId)} AND deleted = false
                     } else {
                         null
                     },
+                modifiedAt = it.modifiedAt,
+                modifiedBy = it.modifiedBy,
             )
         }
 }
@@ -144,6 +179,8 @@ fun Database.Read.getPlacementPlans(
         val unitRejectReason: PlacementPlanRejectReason?,
         val unitRejectOtherReason: String?,
         val rejectedByCitizen: Boolean,
+        val modifiedAt: HelsinkiDateTime?,
+        @Nested("modified_by") val modifiedBy: EvakaUser?,
     )
 
     return createQuery {
@@ -152,10 +189,12 @@ fun Database.Read.getPlacementPlans(
 SELECT
     pp.id, pp.unit_id, pp.application_id, pp.type, pp.start_date, pp.end_date, pp.preschool_daycare_start_date, pp.preschool_daycare_end_date,
     pp.unit_confirmation_status, pp.unit_reject_reason, pp.unit_reject_other_reason,
-    p.id as child_id, p.first_name, p.last_name, p.date_of_birth, d.resolved IS NOT NULL AS rejected_by_citizen
+    p.id as child_id, p.first_name, p.last_name, p.date_of_birth, d.resolved IS NOT NULL AS rejected_by_citizen,
+    pp.modified_at, e.id AS modified_by_id, e.name AS modified_by_name, e.type AS modified_by_type
 FROM placement_plan pp
 LEFT JOIN application a ON pp.application_id = a.id
 LEFT JOIN person p ON a.child_id = p.id
+LEFT JOIN evaka_user e ON pp.modified_by = e.id
 LEFT JOIN LATERAL (
  SELECT min(d.resolved) AS resolved
  FROM decision d
@@ -203,11 +242,15 @@ WHERE
                 unitRejectReason = it.unitRejectReason,
                 unitRejectOtherReason = it.unitRejectOtherReason,
                 rejectedByCitizen = it.rejectedByCitizen,
+                modifiedAt = it.modifiedAt,
+                modifiedBy = it.modifiedBy,
             )
         }
 }
 
 fun Database.Transaction.updatePlacementPlanUnitConfirmation(
+    user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     applicationId: ApplicationId,
     status: PlacementPlanConfirmationStatus,
     rejectReason: PlacementPlanRejectReason?,
@@ -217,7 +260,11 @@ fun Database.Transaction.updatePlacementPlanUnitConfirmation(
             sql(
                 """
 UPDATE placement_plan
-SET unit_confirmation_status = ${bind(status)}, unit_reject_reason = ${bind(rejectReason)}, unit_reject_other_reason = ${bind(rejectOtherReason)}
+SET unit_confirmation_status = ${bind(status)},
+    unit_reject_reason = ${bind(rejectReason)},
+    unit_reject_other_reason = ${bind(rejectOtherReason)},
+    modified_at = ${bind(now)},
+    modified_by = ${bind(user.evakaUserId)}
 WHERE application_id = ${bind(applicationId)} AND deleted = false
 """
             )

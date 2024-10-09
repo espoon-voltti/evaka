@@ -10,7 +10,10 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
 
 data class PlacementPlan(
     val id: PlacementPlanId,
@@ -19,6 +22,8 @@ data class PlacementPlan(
     val type: PlacementType,
     val period: FiniteDateRange,
     val preschoolDaycarePeriod: FiniteDateRange?,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser?,
 )
 
 sealed interface PlacementPlanExtent {
@@ -51,6 +56,8 @@ data class PlacementPlanDetails(
     val unitRejectReason: PlacementPlanRejectReason? = null,
     val unitRejectOtherReason: String? = null,
     val rejectedByCitizen: Boolean = false,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser?,
 )
 
 data class PlacementPlanChild(
