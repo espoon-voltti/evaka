@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevParentship
@@ -85,7 +86,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     @Autowired
     private lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
-    val clock = MockEvakaClock(2021, 1, 1, 15, 0)
+    private val employee = DevEmployee()
+    private val clock = MockEvakaClock(2021, 1, 1, 15, 0)
 
     @BeforeEach
     fun beforeEach() {
@@ -104,6 +106,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             tx.insert(feeThresholds)
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOptionVoucherValues()
+            tx.insert(employee)
         }
     }
 
@@ -1421,6 +1424,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     ) {
         db.transaction { tx ->
             tx.insertAssistanceNeedVoucherCoefficient(
+                employee.user,
+                clock.now(),
                 childId,
                 AssistanceNeedVoucherCoefficientRequest(coefficient, period),
             )

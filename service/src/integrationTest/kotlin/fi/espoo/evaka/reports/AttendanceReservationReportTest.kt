@@ -42,6 +42,8 @@ import fi.espoo.evaka.testChild_8
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
@@ -371,7 +373,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevAssistanceFactor(
                     childId = testChild_1.id,
-                    modifiedBy = admin.evakaUserId,
+                    modifiedBy = EvakaUser(admin.evakaUserId, "Test Name", EvakaUserType.EMPLOYEE),
                     validDuring = date.toFiniteDateRange(),
                     capacityFactor = 5.0,
                 )

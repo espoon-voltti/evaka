@@ -9,6 +9,7 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
 import { OfficialLanguage } from './shared'
 import { UUID } from '../../types'
@@ -371,6 +372,8 @@ export interface AssistanceNeedVoucherCoefficient {
   childId: UUID
   coefficient: number
   id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser | null
   validityPeriod: FiniteDateRange
 }
 
@@ -624,6 +627,7 @@ export function deserializeJsonAssistanceNeedPreschoolDecisionResponse(json: Jso
 export function deserializeJsonAssistanceNeedVoucherCoefficient(json: JsonOf<AssistanceNeedVoucherCoefficient>): AssistanceNeedVoucherCoefficient {
   return {
     ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validityPeriod: FiniteDateRange.parseJson(json.validityPeriod)
   }
 }

@@ -8,6 +8,7 @@ import { Success } from 'lib-common/api'
 import { AssistanceFactorResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { formatDecimal } from 'lib-common/utils/number'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../../state/i18n'
@@ -25,7 +26,10 @@ interface Props {
 }
 
 export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
-  assistanceFactor: { data, permittedActions },
+  assistanceFactor: {
+    data: { capacityFactor, childId, id, modified, modifiedBy, validDuring },
+    permittedActions
+  },
   onEdit
 }: Props) {
   const { i18n } = useTranslation()
@@ -37,26 +41,37 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
 
   return (
     <Tr data-qa="assistance-factor-row">
-      <Td data-qa="capacity-factor">{formatDecimal(data.capacityFactor)}</Td>
-      <Td data-qa="valid-during">{data.validDuring.format()}</Td>
+      <Td data-qa="capacity-factor">{formatDecimal(capacityFactor)}</Td>
+      <Td data-qa="valid-during">{validDuring.format()}</Td>
       <Td>
         <StatusLabel
           status={getStatusLabelByDateRange({
-            startDate: data.validDuring.start,
-            endDate: data.validDuring.end
+            startDate: validDuring.start,
+            endDate: validDuring.end
           })}
         />
       </Td>
+      <Td data-qa="modified-by">
+        {modified ? (
+          <Tooltip
+            tooltip={
+              modifiedBy ? t.fields.lastModifiedBy(modifiedBy.name) : null
+            }
+            position="left"
+          >
+            {modified.format()}
+          </Tooltip>
+        ) : (
+          t.unknown
+        )}
+      </Td>
       <Td>
-        {uiMode === `remove-assistance-factor-${data.id}` && (
+        {uiMode === `remove-assistance-factor-${id}` && (
           <DeleteConfirmation
             title={t.assistanceFactor.removeConfirmation}
-            range={data.validDuring.asDateRange()}
+            range={validDuring.asDateRange()}
             onSubmit={() =>
-              deleteAssistanceFactor({
-                id: data.id,
-                childId: data.childId
-              }).then(() => Success.of())
+              deleteAssistanceFactor({ id, childId }).then(() => Success.of())
             }
           />
         )}
@@ -65,7 +80,7 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
           dataQaDelete="delete"
           onEdit={onEdit}
           editable={permittedActions.includes('UPDATE')}
-          onDelete={() => toggleUiMode(`remove-assistance-factor-${data.id}`)}
+          onDelete={() => toggleUiMode(`remove-assistance-factor-${id}`)}
           deletable={permittedActions.includes('DELETE')}
         />
       </Td>

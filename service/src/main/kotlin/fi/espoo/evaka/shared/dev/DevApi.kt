@@ -200,6 +200,8 @@ import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import fi.espoo.evaka.specialdiet.resetSpecialDietsNotContainedWithin
 import fi.espoo.evaka.specialdiet.setSpecialDiets
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
@@ -1999,6 +2001,13 @@ data class DevAssistanceNeedVoucherCoefficient(
     val validityPeriod: FiniteDateRange =
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val coefficient: BigDecimal = BigDecimal(1.0),
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUser? =
+        EvakaUser(
+            id = AuthenticatedUser.SystemInternalUser.evakaUserId,
+            name = "eVaka",
+            type = EvakaUserType.EMPLOYEE,
+        ),
 )
 
 data class DevPlacement(
@@ -2349,7 +2358,12 @@ data class DevAssistanceFactor(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val capacityFactor: Double = 1.0,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedBy: EvakaUser =
+        EvakaUser(
+            id = AuthenticatedUser.SystemInternalUser.evakaUserId,
+            name = "eVaka",
+            type = EvakaUserType.EMPLOYEE,
+        ),
 )
 
 data class DevDaycareAssistance(
@@ -2359,7 +2373,12 @@ data class DevDaycareAssistance(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val level: DaycareAssistanceLevel = DaycareAssistanceLevel.GENERAL_SUPPORT,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedBy: EvakaUser =
+        EvakaUser(
+            id = AuthenticatedUser.SystemInternalUser.evakaUserId,
+            name = "eVaka",
+            type = EvakaUserType.EMPLOYEE,
+        ),
 )
 
 data class DevPreschoolAssistance(
@@ -2369,7 +2388,12 @@ data class DevPreschoolAssistance(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val level: PreschoolAssistanceLevel = PreschoolAssistanceLevel.INTENSIFIED_SUPPORT,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedBy: EvakaUser =
+        EvakaUser(
+            id = AuthenticatedUser.SystemInternalUser.evakaUserId,
+            name = "eVaka",
+            type = EvakaUserType.EMPLOYEE,
+        ),
 )
 
 data class DevOtherAssistanceMeasure(
@@ -2379,7 +2403,12 @@ data class DevOtherAssistanceMeasure(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val type: OtherAssistanceMeasureType,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedBy: EvakaUser =
+        EvakaUser(
+            id = AuthenticatedUser.SystemInternalUser.evakaUserId,
+            name = "eVaka",
+            type = EvakaUserType.EMPLOYEE,
+        ),
 )
 
 data class DevVardaOrganizerChild(

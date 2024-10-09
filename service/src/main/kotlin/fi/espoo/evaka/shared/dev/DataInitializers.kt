@@ -1387,7 +1387,7 @@ fun Database.Transaction.insert(row: DevAssistanceFactor): AssistanceFactorId =
             sql(
                 """
 INSERT INTO assistance_factor (id, child_id, valid_during, capacity_factor, modified, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.capacityFactor)}, ${bind(row.modified)}, ${bind(row.modifiedBy)})
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.capacityFactor)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
 """
             )
         }
@@ -1399,7 +1399,7 @@ fun Database.Transaction.insert(row: DevDaycareAssistance): DaycareAssistanceId 
             sql(
                 """
 INSERT INTO daycare_assistance (id, child_id, valid_during, level, modified, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.level)}, ${bind(row.modified)}, ${bind(row.modifiedBy)})
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.level)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
 """
             )
         }
@@ -1411,7 +1411,7 @@ fun Database.Transaction.insert(row: DevPreschoolAssistance): PreschoolAssistanc
             sql(
                 """
 INSERT INTO preschool_assistance (id, child_id, valid_during, level, modified, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.level)}, ${bind(row.modified)}, ${bind(row.modifiedBy)})
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.level)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
 """
             )
         }
@@ -1423,7 +1423,7 @@ fun Database.Transaction.insert(row: DevOtherAssistanceMeasure): OtherAssistance
             sql(
                 """
 INSERT INTO other_assistance_measure (id, child_id, valid_during, type, modified, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.type)}, ${bind(row.modified)}, ${bind(row.modifiedBy)})
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.type)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
 """
             )
         }
@@ -1517,8 +1517,8 @@ fun Database.Transaction.insert(
     createUpdate {
             sql(
                 """     
-INSERT INTO assistance_need_voucher_coefficient(id, child_id, validity_period, coefficient)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bind(row.coefficient)})   
+INSERT INTO assistance_need_voucher_coefficient(id, child_id, validity_period, coefficient, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bind(row.coefficient)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy?.id)})
 """
             )
         }

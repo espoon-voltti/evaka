@@ -31,6 +31,7 @@ import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -256,7 +257,12 @@ class ScheduledJobs(
         db: Database.Connection,
         clock: EvakaClock,
     ) {
-        db.transaction { tx -> tx.endOutdatedAssistanceNeedVoucherCoefficients(clock.today()) }
+        db.transaction { tx ->
+            tx.endOutdatedAssistanceNeedVoucherCoefficients(
+                user = AuthenticatedUser.SystemInternalUser,
+                now = clock.now(),
+            )
+        }
     }
 
     fun endActiveDaycareAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {

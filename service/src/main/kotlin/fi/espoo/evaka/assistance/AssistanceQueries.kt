@@ -16,12 +16,25 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
+private val assistanceSelectFields =
+    """
+    a.id,
+    a.child_id,
+    a.valid_during,
+    a.capacity_factor,
+    a.modified,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
+"""
+
 private fun getAssistanceFactors(predicate: Predicate) = QuerySql {
     sql(
         """
-SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
-FROM assistance_factor
-WHERE ${predicate(predicate.forTable("assistance_factor"))}
+SELECT $assistanceSelectFields
+FROM assistance_factor a
+LEFT JOIN evaka_user e ON a.modified_by = e.id
+WHERE ${predicate(predicate.forTable("a"))}
 """
     )
 }
@@ -54,9 +67,10 @@ fun Database.Read.getAssistanceFactorsByChildId(
     createQuery {
             sql(
                 """
-SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
-FROM assistance_factor
-WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("assistance_factor"))}
+SELECT $assistanceSelectFields
+FROM assistance_factor a
+LEFT JOIN evaka_user e ON a.modified_by = e.id
+WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("a"))}
 """
             )
         }
@@ -109,8 +123,10 @@ fun Database.Transaction.deleteAssistanceFactor(id: AssistanceFactorId): Assista
     createUpdate {
             sql(
                 """
-DELETE FROM assistance_factor WHERE id = ${bind(id)}
-RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
+WITH a AS (
+    DELETE FROM assistance_factor WHERE id = ${bind(id)}
+    RETURNING id, child_id, valid_during, capacity_factor, modified, modified_by
+) SELECT $assistanceSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
 """
             )
         }
@@ -148,9 +164,10 @@ fun Database.Read.getDaycareAssistanceByChildId(
     createQuery {
             sql(
                 """
-SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
-FROM daycare_assistance
-WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("daycare_assistance"))}
+SELECT d.id, d.child_id, d.valid_during, d.level, d.modified, e.id AS modified_by_id, e.name AS modified_by_name, e.type AS modified_by_type
+FROM daycare_assistance d
+LEFT JOIN evaka_user e ON d.modified_by = e.id
+WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("d"))}
 """
             )
         }
@@ -198,12 +215,25 @@ WHERE id = ${bind(id)}
 fun Database.Transaction.deleteDaycareAssistance(id: DaycareAssistanceId) =
     createUpdate { sql("DELETE FROM daycare_assistance WHERE id = ${bind(id)}") }.execute()
 
+private val preschoolAssistanceSelectFields =
+    """
+    p.id,
+    p.child_id,
+    p.valid_during,
+    p.level,
+    p.modified,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
+"""
+
 fun Database.Read.getPreschoolAssistances(child: ChildId): List<PreschoolAssistance> =
     createQuery {
             sql(
                 """
-SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
-FROM preschool_assistance
+SELECT $preschoolAssistanceSelectFields
+FROM preschool_assistance p
+LEFT JOIN evaka_user e ON p.modified_by = e.id
 WHERE child_id = ${bind(child)}
 """
             )
@@ -217,9 +247,10 @@ fun Database.Read.getPreschoolAssistanceByChildId(
     createQuery {
             sql(
                 """
-SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
-FROM preschool_assistance
-WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("preschool_assistance"))}
+SELECT $preschoolAssistanceSelectFields
+FROM preschool_assistance p
+LEFT JOIN evaka_user e ON p.modified_by = e.id
+WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("p"))}
 """
             )
         }
@@ -267,12 +298,25 @@ WHERE id = ${bind(id)}
 fun Database.Transaction.deletePreschoolAssistance(id: PreschoolAssistanceId) =
     createUpdate { sql("DELETE FROM preschool_assistance WHERE id = ${bind(id)}") }.execute()
 
+private val otherAssistanceSelectFields =
+    """
+    o.id,
+    o.child_id,
+    o.valid_during,
+    o.type,
+    o.modified,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
+"""
+
 fun Database.Read.getOtherAssistanceMeasures(child: ChildId): List<OtherAssistanceMeasure> =
     createQuery {
             sql(
                 """
-SELECT id, child_id, valid_during, type, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
-FROM other_assistance_measure
+SELECT $otherAssistanceSelectFields
+FROM other_assistance_measure o
+LEFT JOIN evaka_user e ON o.modified_by = e.id
 WHERE child_id = ${bind(child)}
 """
             )
@@ -286,9 +330,10 @@ fun Database.Read.getOtherAssistanceMeasuresByChildId(
     createQuery {
             sql(
                 """
-SELECT id, child_id, valid_during, type, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
-FROM other_assistance_measure
-WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("other_assistance_measure"))}
+SELECT $otherAssistanceSelectFields
+FROM other_assistance_measure o
+LEFT JOIN evaka_user e ON o.modified_by = e.id
+WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("o"))}
 """
             )
         }

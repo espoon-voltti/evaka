@@ -35,6 +35,7 @@ import { DocumentContent } from 'lib-common/generated/api-types/document'
 import { DocumentStatus } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { DocumentType } from 'lib-common/generated/api-types/document'
+import { EvakaUser } from 'lib-common/generated/api-types/user'
 import { FeeAlterationWithEffect } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionThresholds } from 'lib-common/generated/api-types/invoicing'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
@@ -189,7 +190,7 @@ export interface DevAssistanceFactor {
   childId: UUID
   id: UUID
   modified: HelsinkiDateTime
-  modifiedBy: UUID
+  modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
 
@@ -250,6 +251,8 @@ export interface DevAssistanceNeedVoucherCoefficient {
   childId: UUID
   coefficient: number
   id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser | null
   validityPeriod: FiniteDateRange
 }
 
@@ -467,7 +470,7 @@ export interface DevDaycareAssistance {
   id: UUID
   level: DaycareAssistanceLevel
   modified: HelsinkiDateTime
-  modifiedBy: UUID
+  modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
 
@@ -643,7 +646,7 @@ export interface DevOtherAssistanceMeasure {
   childId: UUID
   id: UUID
   modified: HelsinkiDateTime
-  modifiedBy: UUID
+  modifiedBy: EvakaUser
   type: OtherAssistanceMeasureType
   validDuring: FiniteDateRange
 }
@@ -772,7 +775,7 @@ export interface DevPreschoolAssistance {
   id: UUID
   level: PreschoolAssistanceLevel
   modified: HelsinkiDateTime
-  modifiedBy: UUID
+  modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
 
@@ -1159,6 +1162,7 @@ export function deserializeJsonDevAssistanceNeedPreschoolDecision(json: JsonOf<D
 export function deserializeJsonDevAssistanceNeedVoucherCoefficient(json: JsonOf<DevAssistanceNeedVoucherCoefficient>): DevAssistanceNeedVoucherCoefficient {
   return {
     ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validityPeriod: FiniteDateRange.parseJson(json.validityPeriod)
   }
 }

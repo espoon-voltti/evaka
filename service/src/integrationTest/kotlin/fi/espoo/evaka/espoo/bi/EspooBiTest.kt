@@ -82,6 +82,7 @@ import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -91,6 +92,8 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val clock = MockEvakaClock(2024, 1, 2, 3, 4)
+
     @Test
     fun getAreas() {
         val id = db.transaction { it.insertTestArea() }
@@ -280,7 +283,11 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getAssistanceNeedVoucherCoefficients() {
         val id =
             db.transaction {
+                val employee = DevEmployee()
+                it.insert(employee)
                 it.insertAssistanceNeedVoucherCoefficient(
+                        user = employee.user,
+                        now = clock.now(),
                         childId = it.insertTestChild(),
                         AssistanceNeedVoucherCoefficientRequest(
                             coefficient = 2.0,

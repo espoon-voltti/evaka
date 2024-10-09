@@ -11,6 +11,7 @@ import { Action } from 'lib-common/generated/action'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -48,50 +49,32 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
   const { toggleUiMode, uiMode, clearUiMode } = useContext(UIContext)
 
   const { i18n } = useTranslation()
+  const t = i18n.childInformation.assistanceNeedVoucherCoefficient
+
+  const { coefficient, id, modifiedAt, modifiedBy, validityPeriod } =
+    voucherCoefficient
 
   const isUpdating =
     uiMode === 'modify-assistance-need-voucher-coefficient' &&
-    activeCoefficient?.id === voucherCoefficient.id
+    activeCoefficient?.id === id
 
   return (
     <>
-      <Tr
-        key={voucherCoefficient.id}
-        data-qa="table-assistance-need-voucher-coefficient"
-      >
+      <Tr key={id} data-qa="table-assistance-need-voucher-coefficient">
         <Td
           minimalWidth
           topBorder
           data-qa="assistance-need-voucher-coefficient-coefficient"
         >
           {isUpdating ? (
-            <ExpandingInfo
-              info={
-                <div>
-                  {
-                    i18n.childInformation.assistanceNeedVoucherCoefficient.form
-                      .titleInfo
-                  }
-                </div>
-              }
-              width="full"
-            >
-              <LabelLike>
-                {
-                  i18n.childInformation.assistanceNeedVoucherCoefficient.form
-                    .editTitle
-                }
-              </LabelLike>
+            <ExpandingInfo info={<div>{t.form.titleInfo}</div>} width="full">
+              <LabelLike>{t.form.editTitle}</LabelLike>
             </ExpandingInfo>
           ) : (
             <LabelLike>
-              {
-                i18n.childInformation.assistanceNeedVoucherCoefficient
-                  .voucherCoefficient
-              }{' '}
               {Intl.NumberFormat('fi-FI', {
                 minimumFractionDigits: 1
-              }).format(voucherCoefficient.coefficient)}
+              }).format(coefficient)}
             </LabelLike>
           )}
         </Td>
@@ -102,9 +85,24 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
         >
           {!isUpdating && (
             <div>
-              {voucherCoefficient.validityPeriod.start.format()} –{' '}
-              {voucherCoefficient.validityPeriod.end.format()}
+              {validityPeriod.start.format()} – {validityPeriod.end.format()}
             </div>
+          )}
+        </Td>
+        <Td
+          maximalWidth
+          topBorder
+          data-qa="assistance-need-voucher-coefficient-modified"
+        >
+          {!isUpdating && modifiedAt ? (
+            <Tooltip
+              tooltip={modifiedBy ? t.lastModifiedBy(modifiedBy.name) : null}
+              position="left"
+            >
+              {modifiedAt.format()}
+            </Tooltip>
+          ) : (
+            t.unknown
           )}
         </Td>
         <Td
@@ -141,13 +139,9 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
         <Td minimalWidth topBorder>
           <TimeBasedStatusChip
             status={
-              voucherCoefficient.validityPeriod.start.isAfter(
-                LocalDate.todayInHelsinkiTz()
-              )
+              validityPeriod.start.isAfter(LocalDate.todayInHelsinkiTz())
                 ? 'UPCOMING'
-                : voucherCoefficient.validityPeriod.end.isBefore(
-                      LocalDate.todayInHelsinkiTz()
-                    )
+                : validityPeriod.end.isBefore(LocalDate.todayInHelsinkiTz())
                   ? 'ENDED'
                   : 'ACTIVE'
             }

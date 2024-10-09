@@ -15,7 +15,7 @@ import { scrollToRef } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { Table, Tbody } from 'lib-components/layout/Table'
+import { Table, Tbody, Thead, Th, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
@@ -57,6 +57,8 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
 
   const [activeCoefficient, setActiveCoefficient] =
     useState<AssistanceNeedVoucherCoefficient>()
+
+  const t = i18n.childInformation.assistanceNeedVoucherCoefficient
 
   return (
     <div ref={refSectionTop}>
@@ -111,6 +113,15 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
           )}
           {coefficients.length === 0 ? null : (
             <Table data-qa="table-of-assistance-need-voucher-coefficients">
+              <Thead>
+                <Tr>
+                  <Th style={{ width: '20%' }}>{t.factor}</Th>
+                  <Th style={{ width: '30%' }}>{t.validityPeriod}</Th>
+                  <Th style={{ width: '15%' }}>{t.lastModified}</Th>
+                  <Th style={{ width: '15%' }}>{t.actions}</Th>
+                  <Th style={{ width: '20%' }}>{t.status}</Th>
+                </Tr>
+              </Thead>
               <Tbody>
                 {orderBy(
                   coefficients,
