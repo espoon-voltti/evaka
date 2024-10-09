@@ -2326,11 +2326,18 @@ const en: Translations = {
     },
     serviceApplication: {
       title: 'Palveluntarpeen muutoshakemukset',
-      empty: 'Ei hakemuksia',
       sentAt: 'Lähetetty',
       startDate: 'Ehdotettu aloituspäivä',
+      startDateInfo:
+        'Valitse päivä, jolloin haluaisit uuden palveluntarpeen alkavan. Pääsääntöisesti palveluntarvetta voi vaihtaa vain kuukauden alusta.',
+      startDateOnlyFirstDayWarning:
+        'Palveluntarve voi vaihtua keskellä kuuta vain erikoistapauksissa. Valitse kuun ensimmäinen päivä tai perustele tarve lisätiedoissa.',
       serviceNeed: 'Ehdotettu palveluntarve',
+      serviceNeedInfo:
+        'Voit valita näistä palveluntarpeista. Jos haluat vaihtaa johonkin muuhun palveluntarpeesen, ota yhteys henkilökuntaan.',
       additionalInfo: 'Lisätiedot',
+      additionalInfoInfo:
+        'Kirjoita tähän lisätietoja esim. miksi vaihdat palveluntarvetta',
       cancelApplication: 'Peru hakemus',
       status: 'Tila',
       decision: {
@@ -2344,6 +2351,8 @@ const en: Translations = {
       openApplicationInfo:
         'Olet ehdottanut lapselle uutta palveluntarvetta. Ehdotuksesi on yksikön johtajalla hyväksyttävänä.',
       createButton: 'Ehdota muutosta palveluntarpeeseen',
+      createInfo:
+        'Tästä voit ehdottaa muutosta lapsesi palveluntarpeeseen. Varhaiskasvatusyksikön johtaja hyväksyy tai hylkää ehdotuksesi. Tarkempaa lisätietoa palveluntarpeen muuttamisesta voit kysyä lapsesi yksiköstä.',
       createTitle: 'Palveluntarpeen muutoshakemus',
       send: 'Lähetä',
       noSuitablePlacementMessage:

@@ -32,7 +32,7 @@ import {
   ModalHeader,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
-import { H1, H2, Label } from 'lib-components/typography'
+import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faLockAlt } from 'lib-icons'
@@ -70,25 +70,42 @@ export default React.memo(function ServiceApplications({
   )
 
   return (
-    <FixedSpaceColumn>
-      {hasOpenApplication && (
-        <>
-          <InfoBox
-            message={i18n.children.serviceApplication.openApplicationInfo}
-            noMargin
-            data-qa="open-application-info-box"
-          />
-          <Gap size="s" />
-        </>
-      )}
+    <>
       {detailsView && (
         <ServiceApplicationsDetails
           application={detailsView}
           onClose={() => setDetailsView(null)}
         />
       )}
-      {applications.length > 0 ? (
+
+      {hasOpenApplication ? (
+        <InfoBox
+          message={i18n.children.serviceApplication.openApplicationInfo}
+          noMargin
+          data-qa="open-application-info-box"
+        />
+      ) : canCreate ? (
+        <>
+          <div>
+            <P>{i18n.children.serviceApplication.createInfo}</P>
+          </div>
+          <AddButton
+            icon={weakAuth ? faLockAlt : undefined}
+            text={i18n.children.serviceApplication.createButton}
+            onClick={() => navigate(`/children/${childId}/service-application`)}
+            data-qa="create-service-application"
+          />
+        </>
+      ) : (
+        <InfoBox
+          message={i18n.children.serviceApplication.noSuitablePlacementMessage}
+          noMargin
+        />
+      )}
+
+      {applications.length > 0 && (
         <div>
+          <Gap size="m" />
           <TabletAndDesktop>
             <ServiceApplicationsTable
               applications={applications}
@@ -102,26 +119,8 @@ export default React.memo(function ServiceApplications({
             />
           </MobileOnly>
         </div>
-      ) : (
-        <div>{i18n.children.serviceApplication.empty}</div>
       )}
-      {!hasOpenApplication &&
-        (canCreate ? (
-          <AddButton
-            icon={weakAuth ? faLockAlt : undefined}
-            text={i18n.children.serviceApplication.createButton}
-            onClick={() => navigate(`/children/${childId}/service-application`)}
-            data-qa="create-service-application"
-          />
-        ) : (
-          <InfoBox
-            message={
-              i18n.children.serviceApplication.noSuitablePlacementMessage
-            }
-            noMargin
-          />
-        ))}
-    </FixedSpaceColumn>
+    </>
   )
 })
 
