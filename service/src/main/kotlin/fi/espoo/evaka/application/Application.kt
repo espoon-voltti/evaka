@@ -42,7 +42,6 @@ data class ApplicationSummary(
     val id: ApplicationId,
     val firstName: String,
     val lastName: String,
-    val socialSecurityNumber: String? = null,
     val dateOfBirth: LocalDate? = null,
     val type: ApplicationType,
     val placementType: PlacementType,
