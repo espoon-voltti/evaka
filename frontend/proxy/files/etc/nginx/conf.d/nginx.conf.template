@@ -141,6 +141,7 @@ log_format json_access escape=json
     '"traceId":"$request_id",'
     '"type":"app-requests-received",'
     '"userIdHash":"",'
+    '"awsTraceId":"$http_x_amzn_trace_id",'
 {{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
     '"dd.trace_id":"$opentracing_context_x_datadog_trace_id",'
     '"dd.span_id":"$opentracing_context_x_datadog_parent_id",'
