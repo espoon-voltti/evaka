@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -28,7 +34,7 @@ import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
 import RedactedThreadView from './RedactedThreadView'
 import ThreadList from './ThreadList'
-import ThreadView from './ThreadView'
+import ThreadView, { ThreadViewApi } from './ThreadView'
 import { receiversQuery, sendMessageMutation } from './queries'
 import { isRegularThread, MessageContext } from './state'
 
@@ -80,15 +86,21 @@ export default React.memo(function MessagesPage() {
     setSelectedThread(params.threadId)
   }, [setSelectedThread, params.threadId])
 
+  const threadView = useRef<ThreadViewApi>(null)
+
   const selectThread = useCallback(
     (threadId: UUID | undefined) => {
       if (!threadId) {
         navigate('/messages')
       } else {
-        navigate(`/messages/${threadId}`)
+        if (params.threadId !== threadId) {
+          navigate(`/messages/${threadId}`)
+        } else {
+          threadView.current?.focusThreadTitle()
+        }
       }
     },
-    [navigate]
+    [navigate, params.threadId]
   )
 
   const onSelectedThreadDeleted = useCallback(() => {
@@ -122,6 +134,7 @@ export default React.memo(function MessagesPage() {
                     closeThread={() => selectThread(undefined)}
                     thread={selectedThread}
                     onThreadDeleted={() => onSelectedThreadDeleted()}
+                    ref={threadView}
                   />
                 ) : (
                   <RedactedThreadView
