@@ -11,27 +11,34 @@ import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.sensitive.ChildBasicInformation
+*/
+export interface ChildBasicInformation {
+  backupPickups: ContactInfo[]
+  contacts: ContactInfo[]
+  dateOfBirth: LocalDate
+  firstName: string
+  id: UUID
+  lastName: string
+  placementType: PlacementType | null
+  preferredName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.sensitive.ChildSensitiveInformation
 */
 export interface ChildSensitiveInformation {
   additionalInfo: string
   allergies: string
-  backupPickups: ContactInfo[]
   childAddress: string
-  contacts: ContactInfo[]
-  dateOfBirth: LocalDate
   diet: string
-  firstName: string
   id: UUID
-  lastName: string
   medication: string
-  placementType: PlacementType | null
-  preferredName: string
   ssn: string
 }
 
 
-export function deserializeJsonChildSensitiveInformation(json: JsonOf<ChildSensitiveInformation>): ChildSensitiveInformation {
+export function deserializeJsonChildBasicInformation(json: JsonOf<ChildBasicInformation>): ChildBasicInformation {
   return {
     ...json,
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth)

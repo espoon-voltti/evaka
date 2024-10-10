@@ -44,7 +44,7 @@ import {
   childrenQuery
 } from './child-attendance/queries'
 import AttendanceChildPage from './child-info/AttendanceChildPage'
-import ChildSensitiveInfoPage from './child-info/ChildSensitiveInfoPage'
+import ChildSensitiveInfoPage from './child-info/ChildInfoPage'
 import ChildNotes from './child-notes/ChildNotes'
 import { I18nContextProvider, useTranslation } from './common/i18n'
 import { ServiceWorkerContextProvider } from './common/service-worker'

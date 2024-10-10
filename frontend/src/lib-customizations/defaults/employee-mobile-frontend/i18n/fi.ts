@@ -361,7 +361,8 @@ export const fi = {
         disclaimer:
           'Kuvan tallennuksessa on lyhyt viive, jonka aikana kuva ei näy. Kuva alkaa näkyä viimeistään noin minuutti tallennuksen jälkeen.'
       }
-    }
+    },
+    showSensitiveInfo: 'Näytä arkaluontoiset tiedot'
   },
   staff: {
     title: 'Henkilökunnan määrä tänään',

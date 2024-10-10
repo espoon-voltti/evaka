@@ -9,19 +9,23 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import java.time.LocalDate
 
-data class ChildSensitiveInformation(
+data class ChildBasicInformation(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
     val preferredName: String,
     val dateOfBirth: LocalDate,
+    val placementType: PlacementType?,
+    val contacts: List<ContactInfo>,
+    val backupPickups: List<ContactInfo>,
+)
+
+data class ChildSensitiveInformation(
+    val id: ChildId,
     val ssn: String,
     val childAddress: String,
-    val placementType: PlacementType?,
     val allergies: String,
     val diet: String,
     val medication: String,
     val additionalInfo: String,
-    val contacts: List<ContactInfo>,
-    val backupPickups: List<ContactInfo>,
 )

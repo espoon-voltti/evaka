@@ -25,17 +25,20 @@ export default class MobileChildPage {
   saveNoteButton: Element
   goBack: Element
   goBackFromSensitivePage: Element
-  sensitiveInfo: {
+  basicInfo: {
     name: Element
-    allergies: Element
-    diet: Element
-    medication: Element
     contactName: (n: number) => Element
     contactPhone: (n: number) => Element
     contactEmail: (n: number) => Element
     backupPickupName: (n: number) => Element
     backupPickupPhone: (n: number) => Element
   }
+  sensitiveInfo: {
+    allergies: Element
+    diet: Element
+    medication: Element
+  }
+  showSensitiveInfoButton: Element
   attendance: {
     arrivalTimes: ElementCollection
     departureTimes: ElementCollection
@@ -59,11 +62,8 @@ export default class MobileChildPage {
     this.saveNoteButton = page.findByDataQa('create-daily-note-btn')
     this.goBack = page.findByDataQa('back-btn')
     this.goBackFromSensitivePage = page.findByDataQa('go-back')
-    this.sensitiveInfo = {
+    this.basicInfo = {
       name: page.findByDataQa('child-info-name'),
-      allergies: page.findByDataQa('child-info-allergies'),
-      diet: page.findByDataQa('child-info-diet'),
-      medication: page.findByDataQa('child-info-medication'),
       contactName: (n: number) =>
         page.findByDataQa(`child-info-contact${n + 1}-name`),
       contactPhone: (n: number) =>
@@ -75,6 +75,16 @@ export default class MobileChildPage {
       backupPickupPhone: (n: number) =>
         page.findByDataQa(`child-info-backup-pickup${n + 1}-phone`)
     }
+
+    this.sensitiveInfo = {
+      allergies: page.findByDataQa('child-info-allergies'),
+      diet: page.findByDataQa('child-info-diet'),
+      medication: page.findByDataQa('child-info-medication')
+    }
+
+    this.showSensitiveInfoButton = page.findByDataQa(
+      'show-sensitive-info-button'
+    )
     this.attendance = {
       arrivalTimes: page.findAllByDataQa('arrival-time'),
       departureTimes: page.findAllByDataQa('departure-time')
@@ -85,12 +95,8 @@ export default class MobileChildPage {
     await this.childName.waitUntilVisible()
   }
 
-  async assertSensitiveInfoIsShown(name: string) {
-    await this.sensitiveInfo.name.assertTextEquals(name)
-  }
-
-  async assertSensitiveInfo(
-    additionalInfo: DevChild,
+  async assertBasicInfoIsShown(
+    name: string,
     contacts: {
       firstName: string
       lastName: string
@@ -102,6 +108,32 @@ export default class MobileChildPage {
       phone: string
     }[]
   ) {
+    await this.basicInfo.name.assertTextEquals(name)
+    for (let i = 0; i < contacts.length; i++) {
+      const contact = contacts[i]
+      await this.basicInfo
+        .contactName(i)
+        .assertTextEquals(`${contact.firstName} ${contact.lastName}`)
+      if (contact.phone) {
+        await this.basicInfo.contactPhone(i).assertTextEquals(contact.phone)
+      }
+      if (contact.email) {
+        await this.basicInfo.contactEmail(i).assertTextEquals(contact.email)
+      }
+    }
+
+    for (let i = 0; i < backupPickups.length; i++) {
+      const backupPickup = backupPickups[i]
+      await this.basicInfo
+        .backupPickupName(i)
+        .assertTextEquals(backupPickup.name)
+      await this.basicInfo
+        .backupPickupPhone(i)
+        .assertTextEquals(backupPickup.phone)
+    }
+  }
+
+  async assertSensitiveInfo(additionalInfo: DevChild) {
     await this.sensitiveInfo.allergies.assertTextEquals(
       additionalInfo.allergies ?? 'should be defined'
     )
@@ -111,29 +143,6 @@ export default class MobileChildPage {
     await this.sensitiveInfo.medication.assertTextEquals(
       additionalInfo.medication ?? 'should be defined'
     )
-
-    for (let i = 0; i < contacts.length; i++) {
-      const contact = contacts[i]
-      await this.sensitiveInfo
-        .contactName(i)
-        .assertTextEquals(`${contact.firstName} ${contact.lastName}`)
-      if (contact.phone) {
-        await this.sensitiveInfo.contactPhone(i).assertTextEquals(contact.phone)
-      }
-      if (contact.email) {
-        await this.sensitiveInfo.contactEmail(i).assertTextEquals(contact.email)
-      }
-    }
-
-    for (let i = 0; i < backupPickups.length; i++) {
-      const backupPickup = backupPickups[i]
-      await this.sensitiveInfo
-        .backupPickupName(i)
-        .assertTextEquals(backupPickup.name)
-      await this.sensitiveInfo
-        .backupPickupPhone(i)
-        .assertTextEquals(backupPickup.phone)
-    }
   }
 
   async openNotes() {
