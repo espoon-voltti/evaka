@@ -425,8 +425,8 @@ const sv: Translations = {
       start: 'Börjar',
       end: 'Slutar',
       secondTimeRange: {
-        start: 'Toisen aikavälin alku (sv)',
-        end: 'Toisen aikavälin loppu (sv)'
+        start: 'Andra tidsintervall start',
+        end: 'Andra tidsintervall slut'
       },
       present: 'Närvarande',
       absent: 'Frånvarande',
