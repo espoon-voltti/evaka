@@ -56,6 +56,7 @@ Sanitized default appender logback configuration provided for import
             "path": "%mdc{path}",
             "queryString": "%mdc{queryString}",
             "userIdHash": "%mdc{userIdHash}",
+            "secondaryUserIdHash": "%mdc{secondaryUserIdHash}",
             "spanId": "%mdc{spanId}",
             "traceId": "%mdc{traceId}",
             "version": 1

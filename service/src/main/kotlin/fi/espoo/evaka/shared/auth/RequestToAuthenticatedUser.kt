@@ -40,11 +40,15 @@ class RequestToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
                 Span.current().setAttribute(Tracing.enduserIdHash, user.rawIdHash)
                 MdcKey.USER_ID.set(user.rawId().toString())
                 MdcKey.USER_ID_HASH.set(user.rawIdHash.toString())
+                (user as? AuthenticatedUser.MobileDevice)?.employeeIdHash?.let { employeeIdHash ->
+                    MdcKey.SECONDARY_USER_ID_HASH.set(employeeIdHash.toString())
+                }
             }
         }
         try {
             chain.doFilter(request, response)
         } finally {
+            MdcKey.SECONDARY_USER_ID_HASH.unset()
             MdcKey.USER_ID_HASH.unset()
             MdcKey.USER_ID.unset()
         }

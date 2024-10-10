@@ -68,6 +68,9 @@ sealed class AuthenticatedUser {
         override fun rawId(): UUID = id.raw
 
         override val type = AuthenticatedUserType.mobile
+
+        val employeeIdHash: HashCode?
+            get() = employeeId?.let { Hashing.sha256().hashString(it.toString(), Charsets.UTF_8) }
     }
 
     object Integration : AuthenticatedUser() {
