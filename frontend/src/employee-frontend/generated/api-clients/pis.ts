@@ -20,6 +20,7 @@ import { FamilyContactUpdate } from 'lib-common/generated/api-types/pis'
 import { FamilyOverview } from 'lib-common/generated/api-types/pis'
 import { FosterParentRelationship } from 'lib-common/generated/api-types/pis'
 import { GetOrCreatePersonBySsnRequest } from 'lib-common/generated/api-types/pis'
+import { GuardiansResponse } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MergeRequest } from 'lib-common/generated/api-types/pis'
@@ -51,6 +52,7 @@ import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonEmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFamilyOverview } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFosterParentRelationship } from 'lib-common/generated/api-types/pis'
+import { deserializeJsonGuardiansResponse } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPagedEmployeesWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonParentship } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
@@ -792,22 +794,6 @@ export async function getPerson(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.getPersonBlockedGuardians
-*/
-export async function getPersonBlockedGuardians(
-  request: {
-    personId: UUID
-  }
-): Promise<PersonJSON[]> {
-  const { data: json } = await client.request<JsonOf<PersonJSON[]>>({
-    url: uri`/employee/person/blocked-guardians/${request.personId}`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonPersonJSON(e))
-}
-
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.getPersonDependants
 */
 export async function getPersonDependants(
@@ -830,12 +816,12 @@ export async function getPersonGuardians(
   request: {
     personId: UUID
   }
-): Promise<PersonJSON[]> {
-  const { data: json } = await client.request<JsonOf<PersonJSON[]>>({
+): Promise<GuardiansResponse> {
+  const { data: json } = await client.request<JsonOf<GuardiansResponse>>({
     url: uri`/employee/person/guardians/${request.personId}`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonPersonJSON(e))
+  return deserializeJsonGuardiansResponse(json)
 }
 
 

@@ -255,55 +255,52 @@ class PersonController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: ChildId,
-    ): List<PersonJSON> {
-        return db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Child.READ_GUARDIANS,
-                        personId,
-                    )
-                    personService.getGuardians(it, user, personId)
-                }
-            }
-            .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
-            .also {
-                Audit.PersonGuardianRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
-    }
-
-    @GetMapping("/blocked-guardians/{personId}")
-    fun getPersonBlockedGuardians(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable(value = "personId") personId: ChildId,
-    ): List<PersonJSON> {
+    ): GuardiansResponse {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Child.READ_BLOCKED_GUARDIANS,
+                        Action.Child.READ_GUARDIANS,
                         personId,
                     )
-                    tx.getBlockedGuardians(personId).mapNotNull { tx.getPersonById(it) }
+                    val fetchBlockedGuardians =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Child.READ_BLOCKED_GUARDIANS,
+                            personId,
+                        )
+                    GuardiansResponse(
+                        guardians =
+                            personService.getGuardians(tx, user, personId).map(PersonJSON::from),
+                        blockedGuardians =
+                            if (fetchBlockedGuardians)
+                                tx.getBlockedGuardians(personId)
+                                    .mapNotNull { tx.getPersonById(it) }
+                                    .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
+                            else null,
+                    )
                 }
             }
-            .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
-                Audit.PersonBlockedGuardiansRead.log(
+                Audit.PersonGuardianRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
+                    meta =
+                        mapOf(
+                            "count" to it.guardians.size,
+                            "blockedCount" to it.blockedGuardians?.size,
+                        ),
                 )
             }
     }
+
+    data class GuardiansResponse(
+        val guardians: List<PersonJSON>,
+        val blockedGuardians: List<PersonJSON>?, // null if permission check prevented fetching them
+    )
 
     @PostMapping("/search")
     fun searchPerson(

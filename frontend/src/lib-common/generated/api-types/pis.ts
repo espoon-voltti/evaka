@@ -318,6 +318,14 @@ export interface GetOrCreatePersonBySsnRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.GuardiansResponse
+*/
+export interface GuardiansResponse {
+  blockedGuardians: PersonJSON[] | null
+  guardians: PersonJSON[]
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.MergeRequest
 */
 export interface MergeRequest {
@@ -726,6 +734,15 @@ export function deserializeJsonFosterParentRelationship(json: JsonOf<FosterParen
     child: deserializeJsonPersonSummary(json.child),
     parent: deserializeJsonPersonSummary(json.parent),
     validDuring: DateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonGuardiansResponse(json: JsonOf<GuardiansResponse>): GuardiansResponse {
+  return {
+    ...json,
+    blockedGuardians: (json.blockedGuardians != null) ? json.blockedGuardians.map(e => deserializeJsonPersonJSON(e)) : null,
+    guardians: json.guardians.map(e => deserializeJsonPersonJSON(e))
   }
 }
 
