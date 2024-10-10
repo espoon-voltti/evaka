@@ -649,34 +649,41 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
 
         val ongoingGroup = DevDaycareGroup(daycareId = daycare.id, name = "A")
-        val endedYesterdayGroup =
+        val untilYesterdayGroup =
             DevDaycareGroup(daycareId = daycare.id, name = "B", endDate = today.minusDays(1))
-        val endedTodayGroup = DevDaycareGroup(daycareId = daycare.id, name = "C", endDate = today)
-        val endingTomorrowGroup =
+        val untilTodayGroup = DevDaycareGroup(daycareId = daycare.id, name = "C", endDate = today)
+        val untilTomorrowGroup =
             DevDaycareGroup(daycareId = daycare.id, name = "D", endDate = today.plusDays(1))
 
-        val (groupMessageAccountOngoing, groupMessageAccountEndingTomorrow) =
+        val (
+            groupMessageAccountOngoing,
+            groupMessageAccountUntilToday,
+            groupMessageAccountUntilTomorrow) =
             db.transaction { tx ->
                 tx.insert(area)
                 tx.insert(daycare)
 
                 tx.insert(ongoingGroup)
-                tx.insert(endedYesterdayGroup)
-                tx.insert(endedTodayGroup)
-                tx.insert(endingTomorrowGroup)
+                tx.insert(untilYesterdayGroup)
+                tx.insert(untilTodayGroup)
+                tx.insert(untilTomorrowGroup)
 
                 val groupMessageAccountOngoing =
                     tx.createDaycareGroupMessageAccount(ongoingGroup.id)
-                val groupMessageAccountEndedYesterday =
-                    tx.createDaycareGroupMessageAccount(endedYesterdayGroup.id)
-                val groupMessageAccountEndedToday =
-                    tx.createDaycareGroupMessageAccount(endedTodayGroup.id)
-                val groupMessageAccountEndingTomorrow =
-                    tx.createDaycareGroupMessageAccount(endingTomorrowGroup.id)
+                val groupMessageAccountUntilYesterday =
+                    tx.createDaycareGroupMessageAccount(untilYesterdayGroup.id)
+                val groupMessageAccountUntilToday =
+                    tx.createDaycareGroupMessageAccount(untilTodayGroup.id)
+                val groupMessageAccountUntilTomorrow =
+                    tx.createDaycareGroupMessageAccount(untilTomorrowGroup.id)
 
                 tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
 
-                Pair(groupMessageAccountOngoing, groupMessageAccountEndingTomorrow)
+                Triple(
+                    groupMessageAccountOngoing,
+                    groupMessageAccountUntilToday,
+                    groupMessageAccountUntilTomorrow,
+                )
             }
 
         val recipients =
@@ -689,7 +696,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
 
         assertEquals(
-            setOf(groupMessageAccountOngoing, groupMessageAccountEndingTomorrow),
+            setOf(
+                groupMessageAccountOngoing,
+                groupMessageAccountUntilToday,
+                groupMessageAccountUntilTomorrow,
+            ),
             recipients,
         )
     }
