@@ -34,6 +34,7 @@ interface RowWithPrice {
 data class Invoice(
     val id: InvoiceId,
     val status: InvoiceStatus,
+    val revisionNumber: Int,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val dueDate: LocalDate = getDueDate(periodEnd),
@@ -132,6 +133,7 @@ data class InvoiceRowDetailed(
 data class InvoiceSummary(
     val id: InvoiceId,
     val status: InvoiceStatus,
+    val revisionNumber: Int,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val headOfFamily: PersonDetailed,

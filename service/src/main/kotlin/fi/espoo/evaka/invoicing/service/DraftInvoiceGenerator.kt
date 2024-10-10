@@ -396,6 +396,7 @@ class DraftInvoiceGenerator(
         return Invoice(
             id = InvoiceId(UUID.randomUUID()),
             status = InvoiceStatus.DRAFT,
+            revisionNumber = 0,
             periodStart = invoicePeriod.start,
             periodEnd = invoicePeriod.end,
             areaId = areaId,

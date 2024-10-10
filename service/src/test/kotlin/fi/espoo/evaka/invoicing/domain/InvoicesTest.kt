@@ -19,6 +19,7 @@ class InvoicesTest {
             Invoice(
                 id = InvoiceId(UUID.randomUUID()),
                 status = InvoiceStatus.DRAFT,
+                revisionNumber = 0,
                 periodStart = LocalDate.of(2019, 1, 1),
                 periodEnd = LocalDate.of(2019, 1, 31),
                 areaId = AreaId(UUID.randomUUID()),
@@ -36,6 +37,7 @@ class InvoicesTest {
             Invoice(
                 id = InvoiceId(UUID.randomUUID()),
                 status = InvoiceStatus.DRAFT,
+                revisionNumber = 0,
                 periodStart = LocalDate.of(2019, 7, 1),
                 periodEnd = LocalDate.of(2019, 7, 31),
                 areaId = AreaId(UUID.randomUUID()),
@@ -53,6 +55,7 @@ class InvoicesTest {
             Invoice(
                 id = InvoiceId(UUID.randomUUID()),
                 status = InvoiceStatus.DRAFT,
+                revisionNumber = 0,
                 periodStart = LocalDate.of(2019, 5, 1),
                 periodEnd = LocalDate.of(2019, 5, 31),
                 areaId = AreaId(UUID.randomUUID()),
@@ -70,6 +73,7 @@ class InvoicesTest {
             Invoice(
                 id = InvoiceId(UUID.randomUUID()),
                 status = InvoiceStatus.DRAFT,
+                revisionNumber = 0,
                 periodStart = LocalDate.of(2019, 1, 1),
                 periodEnd = LocalDate.of(2019, 1, 31),
                 areaId = AreaId(UUID.randomUUID()),

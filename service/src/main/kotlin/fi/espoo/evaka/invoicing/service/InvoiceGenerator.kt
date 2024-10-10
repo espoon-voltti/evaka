@@ -211,6 +211,7 @@ class InvoiceGenerator(
                             ?: Invoice(
                                 id = InvoiceId(UUID.randomUUID()),
                                 status = InvoiceStatus.DRAFT,
+                                revisionNumber = 0,
                                 periodStart = targetMonth.atDay(1),
                                 periodEnd = targetMonth.atEndOfMonth(),
                                 areaId =

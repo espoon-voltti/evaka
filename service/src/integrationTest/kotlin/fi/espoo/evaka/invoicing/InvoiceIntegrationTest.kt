@@ -836,6 +836,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         InvoiceSummary(
             id = invoice.id,
             status = invoice.status,
+            revisionNumber = invoice.revisionNumber,
             periodStart = invoice.periodStart,
             periodEnd = invoice.periodEnd,
             headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),

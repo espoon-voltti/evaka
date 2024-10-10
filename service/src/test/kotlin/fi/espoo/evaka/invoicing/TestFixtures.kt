@@ -323,6 +323,7 @@ fun createInvoiceFixture(
     Invoice(
         id = InvoiceId(UUID.randomUUID()),
         status = status,
+        revisionNumber = 0,
         number = number,
         areaId = areaId,
         headOfFamily = headOfFamilyId,
