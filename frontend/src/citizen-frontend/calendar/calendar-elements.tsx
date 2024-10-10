@@ -26,7 +26,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Light } from 'lib-components/typography'
+import { Italic } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import { Translations, useTranslation } from '../localization'
@@ -36,13 +36,11 @@ import RoundChildImages, { ChildImageData } from './RoundChildImages'
 export const Reservations = React.memo(function Reservations({
   data,
   childImages,
-  backgroundHighlight,
-  isReservable
+  backgroundHighlight
 }: {
   data: ReservationResponseDay
   childImages: ChildImageData[]
-  backgroundHighlight: 'nonEditableAbsence' | 'holidayPeriod' | undefined
-  isReservable: boolean
+  backgroundHighlight: BackgroundHighlightType
 }) {
   const i18n = useTranslation()
   const showAttendanceWarning = data.children.some(
@@ -61,7 +59,7 @@ export const Reservations = React.memo(function Reservations({
     [data.children, i18n]
   )
 
-  return data.children.length === 0 && data.holiday && !isReservable ? (
+  return data.children.length === 0 && data.holiday ? (
     <Holiday />
   ) : (
     <div>
@@ -111,12 +109,12 @@ export const Reservations = React.memo(function Reservations({
 
 export const Holiday = React.memo(function Holiday() {
   const i18n = useTranslation()
-  return <Light data-qa="holiday">{i18n.calendar.holiday}</Light>
+  return <Italic data-qa="holiday">{i18n.calendar.holiday}</Italic>
 })
 
 const GroupedElementText = styled.div<{
   $type: DailyChildGroupElementType
-  $backgroundHighlight: 'nonEditableAbsence' | 'holidayPeriod' | undefined
+  $backgroundHighlight: BackgroundHighlightType
   $clamp?: boolean
 }>`
   word-break: break-word;
@@ -131,7 +129,8 @@ const GroupedElementText = styled.div<{
 
   ${(p) =>
     p.$type === 'missingReservation' &&
-    p.$backgroundHighlight !== 'holidayPeriod'
+    p.$backgroundHighlight !== 'holidayPeriod' &&
+    p.$backgroundHighlight !== 'past'
       ? `color: ${p.theme.colors.accents.a2orangeDark};`
       : undefined}
 `
@@ -145,6 +144,13 @@ type DailyChildGroupElementType =
   | 'missingReservation'
   | 'absentFree'
   | 'absentPlanned'
+
+export type BackgroundHighlightType =
+  | 'nonEditableAbsence'
+  | 'holidayPeriod'
+  | 'holiday'
+  | 'past'
+  | undefined
 
 interface DailyChildGroupElement {
   type: DailyChildGroupElementType
