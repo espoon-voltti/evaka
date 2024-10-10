@@ -426,6 +426,10 @@ const en: Translations = {
       },
       start: 'Start',
       end: 'End',
+      secondTimeRange: {
+        start: 'Second time range start',
+        end: 'Second time range end'
+      },
       present: 'Present',
       absent: 'Absent',
       reservationClosed: 'Reservation closed',

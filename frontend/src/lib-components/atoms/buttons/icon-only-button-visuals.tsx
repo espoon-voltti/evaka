@@ -19,6 +19,10 @@ type PredefinedColor = 'default' | 'gray' | 'white'
  */
 export type BaseIconOnlyButtonVisualProps = {
   /**
+   * ID of the button
+   */
+  id?: string
+  /**
    * Icon to be displayed in the button
    */
   icon: IconDefinition
@@ -43,6 +47,7 @@ export type BaseIconOnlyButtonVisualProps = {
 
 export const renderBaseIconOnlyButton = (
   {
+    id,
     icon,
     type = 'button',
     disabled,
@@ -58,6 +63,7 @@ export const renderBaseIconOnlyButton = (
   children: (icon: IconDefinition, size: IconSize) => React.ReactNode
 ) => (
   <StyledButton
+    id={id}
     type={type}
     disabled={disabled}
     className={classNames(className, { disabled })}

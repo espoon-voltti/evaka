@@ -23,6 +23,7 @@ export interface TimeInputProps
     | 'readonly'
     | 'inputRef'
     | 'aria-describedby'
+    | 'aria-description'
     | 'data-qa'
   > {
   size?: 'wide' | 'normal' | 'narrow'

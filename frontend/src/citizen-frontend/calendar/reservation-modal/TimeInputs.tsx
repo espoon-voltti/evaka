@@ -22,6 +22,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
+import { focusElementOnNextFrame } from '../../utils/focus'
 import TimeRangeInput from '../TimeRangeInput'
 
 import {
@@ -106,6 +107,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
           <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
           <RightCell>
             <IconOnlyButton
+              id={dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined}
               data-qa={
                 dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
               }
@@ -115,6 +117,9 @@ const ReservationTimes = React.memo(function ReservationTimes({
                   branch: 'timeRanges',
                   state: [emptyTimeRange(validTimeRange)]
                 })
+                if (dataQaPrefix) {
+                  focusElementOnNextFrame(`${dataQaPrefix}-absent-button`)
+                }
               }}
               aria-label={i18n.calendar.absentDisable}
             />
@@ -264,6 +269,8 @@ interface LimitedLocalTimeRangeProps {
   bind: BoundForm<LimitedLocalTimeRangeField>
   hideErrorsBeforeTouched?: boolean
   dataQaPrefix?: string
+  ariaDescriptionStart?: string
+  ariaDescriptionEnd?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
@@ -271,6 +278,8 @@ const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
   bind,
   hideErrorsBeforeTouched,
   dataQaPrefix,
+  ariaDescriptionStart,
+  ariaDescriptionEnd,
   onFocus
 }: LimitedLocalTimeRangeProps) {
   const value = useFormField(bind, 'value')
@@ -279,6 +288,8 @@ const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
       bind={value}
       hideErrorsBeforeTouched={hideErrorsBeforeTouched}
       dataQaPrefix={dataQaPrefix}
+      ariaDescriptionStart={ariaDescriptionStart}
+      ariaDescriptionEnd={ariaDescriptionEnd}
       onFocus={onFocus}
     />
   )
@@ -325,11 +336,17 @@ const TimeRanges = React.memo(function TimeRanges({
           <FixedSpaceRow>
             {onAbsent !== undefined ? (
               <IconOnlyButton
+                id={dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined}
                 data-qa={
                   dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
                 }
                 icon={faUserMinus}
-                onClick={onAbsent}
+                onClick={() => {
+                  onAbsent()
+                  if (dataQaPrefix) {
+                    focusElementOnNextFrame(`${dataQaPrefix}-absent-button`)
+                  }
+                }}
                 aria-label={i18n.calendar.absentEnable}
               />
             ) : null}
@@ -339,12 +356,15 @@ const TimeRanges = React.memo(function TimeRanges({
                 data-qa={
                   dataQaPrefix ? `${dataQaPrefix}-add-res-button` : undefined
                 }
-                onClick={() =>
+                onClick={() => {
                   bind.update((prev) =>
                     // use same valid range times as first reservation
                     [prev[0], emptyTimeRange(prev[0].validRange)]
                   )
-                }
+                  if (dataQaPrefix) {
+                    focusElementOnNextFrame(`${dataQaPrefix}-time-1-start`)
+                  }
+                }}
                 aria-label={i18n.common.add}
               />
             ) : null}
@@ -359,6 +379,12 @@ const TimeRanges = React.memo(function TimeRanges({
               bind={secondTimeRange}
               hideErrorsBeforeTouched={!showAllErrors}
               dataQaPrefix={dataQaPrefix ? `${dataQaPrefix}-time-1` : undefined}
+              ariaDescriptionStart={
+                i18n.calendar.reservationModal.secondTimeRange.start
+              }
+              ariaDescriptionEnd={
+                i18n.calendar.reservationModal.secondTimeRange.end
+              }
               onFocus={onFocus}
             />
           </MiddleCell>
