@@ -9,7 +9,8 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef
+  useRef,
+  useState
 } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
@@ -23,6 +24,7 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -30,11 +32,18 @@ import {
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { fontWeights, H2 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
-import { faComment } from 'lib-icons'
-import { faCalendar, faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
+import {
+  faCalendar,
+  faCalendarPlus,
+  faChevronLeft,
+  faChevronRight,
+  faComment,
+  faTreePalm,
+  faUserMinus
+} from 'lib-icons'
 
 import { useUser } from '../auth/state'
 import { useLang, useTranslation } from '../localization'
@@ -44,12 +53,11 @@ import {
   CalendarEventCount,
   CalendarEventCountContainer
 } from './CalendarEventCount'
-import { HistoryOverlay } from './HistoryOverlay'
 import { getSummaryForMonth, InlineWarningIcon } from './MonthElem'
 import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
-import { Reservations } from './calendar-elements'
+import { BackgroundHighlightType, Reservations } from './calendar-elements'
 import { useSummaryInfo } from './hooks'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'
@@ -111,7 +119,7 @@ export function countEventsForDay(
   }
 }
 
-export default React.memo(function CalendarGridView({
+export default React.memo(function CalendarMonthView({
   childData,
   calendarDays,
   onCreateReservationClicked,
@@ -131,6 +139,10 @@ export default React.memo(function CalendarGridView({
     [calendarDays]
   )
   const todayRef = useRef<HTMLButtonElement>(null)
+
+  // Based on the initial data fetch, index 1 represents the current month
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState(1)
+  const selectedMonthData = calendarMonths[selectedMonthIndex]
 
   useEffect(() => {
     const top = todayRef.current?.getBoundingClientRect().top
@@ -160,9 +172,28 @@ export default React.memo(function CalendarGridView({
 
   const childImages = useMemo(() => getChildImages(childData), [childData])
 
+  const childSummaries = getSummaryForMonth(
+    childData,
+    selectedMonthData.year,
+    selectedMonthData.month
+  )
+  const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
+    useSummaryInfo(childSummaries)
+
+  const prevMonth = useCallback(() => {
+    setSelectedMonthIndex((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : prevIndex
+    )
+  }, [])
+  const nextMonth = useCallback(() => {
+    setSelectedMonthIndex((prevIndex) =>
+      prevIndex < calendarMonths.length - 1 ? prevIndex + 1 : prevIndex
+    )
+  }, [calendarMonths.length])
+
   return (
     <>
-      <StickyBottomBar>
+      <StickyTopBar>
         <ButtonContainer>
           {questionnaireAvailable && (
             <LegacyInlineButton
@@ -203,25 +234,36 @@ export default React.memo(function CalendarGridView({
             data-qa="open-reservations-modal"
           />
         </ButtonContainer>
-      </StickyBottomBar>
+      </StickyTopBar>
       <Container>
-        {calendarMonths.map(({ month, year, weeks }) => (
-          <Month
-            key={`${month}${year}`}
-            year={year}
-            month={month}
-            weeks={weeks}
-            holidayPeriods={holidayPeriods}
-            todayRef={todayRef}
-            selectedDate={selectedDate}
-            selectDate={selectDate}
-            includeWeekends={includeWeekends}
-            dayIsReservable={dayIsReservable}
-            childImages={childImages}
-            events={events}
-            childSummaries={getSummaryForMonth(childData, year, month)}
-          />
-        ))}
+        <MonthPicker
+          childSummaries={childSummaries}
+          selectedMonthData={selectedMonthData}
+          currentIndex={selectedMonthIndex}
+          monthDataLength={calendarMonths.length}
+          prevMonth={prevMonth}
+          nextMonth={nextMonth}
+          toggleSummaryInfo={toggleSummaryInfo}
+          summaryInfoOpen={summaryInfoOpen}
+          displayAlert={displayAlert}
+        />
+        <Month
+          key={`${selectedMonthData?.month}${selectedMonthData?.year}`}
+          year={selectedMonthData.year}
+          month={selectedMonthData.month}
+          weeks={selectedMonthData.weeks}
+          holidayPeriods={holidayPeriods}
+          todayRef={todayRef}
+          selectedDate={selectedDate}
+          selectDate={selectDate}
+          includeWeekends={includeWeekends}
+          dayIsReservable={dayIsReservable}
+          childImages={childImages}
+          events={events}
+          childSummaries={childSummaries}
+          toggleSummaryInfo={toggleSummaryInfo}
+          summaryInfoOpen={childSummaries.length > 0 ? summaryInfoOpen : false}
+        />
       </Container>
     </>
   )
@@ -332,7 +374,9 @@ const Month = React.memo(function Month({
   dayIsReservable,
   childImages,
   events,
-  childSummaries
+  childSummaries,
+  summaryInfoOpen,
+  toggleSummaryInfo
 }: {
   year: number
   month: number
@@ -346,26 +390,13 @@ const Month = React.memo(function Month({
   childImages: ChildImageData[]
   events: CitizenCalendarEvent[]
   childSummaries: MonthlyTimeSummary[]
+  summaryInfoOpen: boolean
+  toggleSummaryInfo: () => void
 }) {
   const i18n = useTranslation()
 
-  const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
-    useSummaryInfo(childSummaries)
   return (
     <ContentArea opaque={false} key={`${month}${year}`}>
-      <MonthTitle>
-        {`${i18n.common.datetime.months[month - 1]} ${year}`}
-        {childSummaries.length > 0 && (
-          <InlineInfoButton
-            onClick={toggleSummaryInfo}
-            aria-label={i18n.common.openExpandingInfo}
-            margin="zero"
-            data-qa={`monthly-summary-info-button-${month}-${year}`}
-            open={summaryInfoOpen}
-          />
-        )}
-        {displayAlert && <InlineWarningIcon />}
-      </MonthTitle>
       {summaryInfoOpen && (
         <MonthSummaryInfoBox
           info={
@@ -440,7 +471,7 @@ const Week = React.memo(function Week({
           day={d}
           holidayPeriods={holidayPeriods}
           todayRef={todayRef}
-          dateType={dateType(year, month, d.date)}
+          dateType={dateType(d.date)}
           selected={selectedDate !== undefined && d.date.isEqual(selectedDate)}
           selectDate={selectDate}
           dayIsReservable={dayIsReservable}
@@ -452,10 +483,9 @@ const Week = React.memo(function Week({
   )
 })
 
-type DateType = 'past' | 'today' | 'future' | 'otherMonth'
+type DateType = 'past' | 'today' | 'future'
 
-function dateType(year: number, month: number, date: LocalDate): DateType {
-  if (date.year !== year || date.month !== month) return 'otherMonth'
+function dateType(date: LocalDate): DateType {
   const today = LocalDate.todayInSystemTz()
   return date.isBefore(today) ? 'past' : date.isToday() ? 'today' : 'future'
 }
@@ -492,13 +522,17 @@ const Day = React.memo(function Day({
   )
   const highlight = useMemo(
     () =>
-      day.children.length > 0 &&
-      day.children.every((c) => c.absence && !c.absence.editable)
-        ? 'nonEditableAbsence'
-        : holidayPeriods.some((p) => p.includes(day.date))
-          ? 'holidayPeriod'
-          : undefined,
-    [day.children, day.date, holidayPeriods]
+      dateType === 'past'
+        ? 'past'
+        : day.holiday
+          ? 'holiday'
+          : day.children.length > 0 &&
+              day.children.every((c) => c.absence && !c.absence.editable)
+            ? 'nonEditableAbsence'
+            : holidayPeriods.some((p) => p.includes(day.date))
+              ? 'holidayPeriod'
+              : undefined,
+    [day.children, day.date, day.holiday, holidayPeriods, dateType]
   )
   const onClick = useCallback(
     () => selectDate(day.date),
@@ -513,10 +547,6 @@ const Day = React.memo(function Day({
   const theme = useTheme()
 
   const i18n = useTranslation()
-
-  if (dateType === 'otherMonth') {
-    return <InactiveCell />
-  }
 
   return (
     <DayCell
@@ -554,19 +584,74 @@ const Day = React.memo(function Day({
           backgroundHighlight={highlight}
         />
       </div>
-      {dateType === 'past' && <HistoryOverlay />}
     </DayCell>
   )
 })
 
-const StickyBottomBar = styled.div`
-  position: fixed;
-  bottom: 0;
+const MonthPicker = React.memo(function MonthPicker({
+  childSummaries,
+  selectedMonthData,
+  currentIndex,
+  monthDataLength,
+  prevMonth,
+  nextMonth,
+  toggleSummaryInfo,
+  summaryInfoOpen,
+  displayAlert
+}: {
+  childSummaries: MonthlyTimeSummary[]
+  selectedMonthData: MonthlyData
+  currentIndex: number
+  monthDataLength: number
+  prevMonth: () => void
+  nextMonth: () => void
+  toggleSummaryInfo: () => void
+  summaryInfoOpen: boolean
+  displayAlert: boolean
+}) {
+  const i18n = useTranslation()
+  return (
+    <MonthPickerContainer>
+      <MonthTitle>
+        {`${i18n.common.datetime.months[selectedMonthData.month - 1]} ${selectedMonthData.year}`}
+        {childSummaries.length > 0 && (
+          <InlineInfoButton
+            onClick={toggleSummaryInfo}
+            aria-label={i18n.common.openExpandingInfo}
+            margin="zero"
+            data-qa={`monthly-summary-info-button-${selectedMonthData.month}-${selectedMonthData.year}`}
+            open={summaryInfoOpen}
+          />
+        )}
+        {displayAlert && <InlineWarningIcon />}
+      </MonthTitle>
+      <Gap size="s" horizontal />
+      <IconOnlyButton
+        icon={faChevronLeft}
+        onClick={prevMonth}
+        disabled={currentIndex === 0}
+        aria-label={i18n.calendar.previousMonth}
+      />
+      <Gap size="s" horizontal />
+      <IconOnlyButton
+        icon={faChevronRight}
+        onClick={nextMonth}
+        disabled={currentIndex === monthDataLength - 1}
+        aria-label={i18n.calendar.nextMonth}
+      />
+    </MonthPickerContainer>
+  )
+})
+
+const StickyTopBar = styled.div`
+  position: sticky;
+  top: 0;
   z-index: 2;
   width: 100%;
   height: 80px;
   background: ${(p) => p.theme.colors.grayscale.g0};
   box-shadow: 0 -4px 8px 2px #0000000a;
+  margin-bottom: ${defaultMargins.L};
 `
 
 const ButtonContainer = styled(Container)`
@@ -612,11 +697,12 @@ const MonthTitle = styled(H2).attrs({ noMargin: true })`
   color: ${(p) => p.theme.colors.main.m1};
   align-items: center;
   display: flex;
+  min-width: 240px;
 `
 
 const DayCell = styled.button<{
   $today: boolean
-  $highlight: 'nonEditableAbsence' | 'holidayPeriod' | undefined
+  $highlight: BackgroundHighlightType
   $selected: boolean
 }>`
   display: flex;
@@ -627,11 +713,13 @@ const DayCell = styled.button<{
   min-height: 150px;
   padding: ${defaultMargins.s};
   background-color: ${(p) =>
-    p.$highlight === 'nonEditableAbsence'
+    p.$highlight === 'nonEditableAbsence' || p.$highlight === 'holiday'
       ? p.theme.colors.grayscale.g15
       : p.$highlight === 'holidayPeriod'
         ? p.theme.colors.accents.a10powder
-        : p.theme.colors.grayscale.g0};
+        : p.$highlight === 'past'
+          ? p.theme.colors.grayscale.g4
+          : p.theme.colors.grayscale.g0};
   border: none;
   outline: 1px solid ${colors.grayscale.g15};
   cursor: pointer;
@@ -680,11 +768,16 @@ const DayCellDate = styled.div<{ inactive: boolean; holiday: boolean }>`
   font-size: 1.25rem;
 `
 
-const InactiveCell = styled.div`
-  background-color: transparent;
-`
-
 const MonthSummaryInfoBox = styled(ExpandingInfoBox)`
   margin: ${defaultMargins.s} 0 ${defaultMargins.xs};
   width: 100%;
+`
+
+const MonthPickerContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding-left: ${defaultMargins.L};
+  padding-right: ${defaultMargins.L};
 `
