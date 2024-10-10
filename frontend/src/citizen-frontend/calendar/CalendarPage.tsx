@@ -6,10 +6,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import {
-  focusElementAfterDelay,
-  focusElementOnNextFrame
-} from 'citizen-frontend/utils/focus'
+import { focusElementOnNextFrame } from 'citizen-frontend/utils/focus'
 import { combine, isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -136,15 +133,9 @@ const CalendarPage = React.memo(function CalendarPage() {
   const i18n = useTranslation()
   const onSuccess = useCallback(() => {
     closeModal()
-    const notificationId = 'save-success'
-    addTimedNotification(
-      {
-        children: i18n.calendar.reservationModal.saveSuccess,
-        id: notificationId
-      },
-      notificationId
-    )
-    focusElementAfterDelay(notificationId)
+    addTimedNotification({
+      children: i18n.calendar.reservationModal.saveSuccess
+    })
   }, [
     addTimedNotification,
     closeModal,
