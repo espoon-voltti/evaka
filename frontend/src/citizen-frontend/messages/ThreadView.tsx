@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState
 } from 'react'
@@ -212,177 +213,195 @@ interface Props {
   onThreadDeleted: () => void
 }
 
-export default React.memo(function ThreadView({
-  accountId,
-  thread: {
-    id: threadId,
-    messages,
-    title,
-    messageType,
-    urgent,
-    sensitive,
-    children
-  },
-  closeThread,
-  onThreadDeleted
-}: Props) {
-  const i18n = useTranslation()
-  const { setReplyContent, getReplyContent } = useContext(MessageContext)
-  const { addTimedNotification } = useContext(NotificationsContext)
+export interface ThreadViewApi {
+  focusThreadTitle: () => void
+}
 
-  const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
-  const [replyEditorVisible, useReplyEditorVisible] = useBoolean(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+export default React.memo(
+  React.forwardRef<ThreadViewApi, Props>(function ThreadView(
+    {
+      accountId,
+      thread: {
+        id: threadId,
+        messages,
+        title,
+        messageType,
+        urgent,
+        sensitive,
+        children
+      },
+      closeThread,
+      onThreadDeleted
+    }: Props,
+    ref
+  ) {
+    const i18n = useTranslation()
+    const { setReplyContent, getReplyContent } = useContext(MessageContext)
+    const { addTimedNotification } = useContext(NotificationsContext)
 
-  const hideReplyEditor = useReplyEditorVisible.off
-  useEffect(() => hideReplyEditor(), [hideReplyEditor, threadId])
+    const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
+    const [replyEditorVisible, useReplyEditorVisible] = useBoolean(false)
+    const [confirmDelete, setConfirmDelete] = useState(false)
 
-  const autoScrollRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    scrollRefIntoView(autoScrollRef, undefined, 'end')
-  }, [replyEditorVisible])
+    const hideReplyEditor = useReplyEditorVisible.off
+    useEffect(() => hideReplyEditor(), [hideReplyEditor, threadId])
 
-  const titleRowRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    titleRowRef.current?.focus()
-  }, [threadId])
+    const autoScrollRef = useRef<HTMLDivElement>(null)
+    useEffect(() => {
+      scrollRefIntoView(autoScrollRef, undefined, 'end')
+    }, [replyEditorVisible])
 
-  const lastMessageRef = useRef<HTMLLIElement>(null)
+    const titleRowRef = useRef<HTMLDivElement>(null)
 
-  const onUpdateContent = useCallback(
-    (content: string) => setReplyContent(threadId, content),
-    [setReplyContent, threadId]
-  )
+    const focusThreadTitle = () => {
+      titleRowRef.current?.focus()
+    }
 
-  const onDiscard = useCallback(() => {
-    setReplyContent(threadId, '')
-    hideReplyEditor()
-  }, [setReplyContent, hideReplyEditor, threadId])
+    useEffect(() => {
+      focusThreadTitle()
+    }, [threadId])
 
-  const replyContent = getReplyContent(threadId)
-  const sendEnabled =
-    !!replyContent &&
-    recipients.some((r) => r.selected && isPrimaryRecipient(r))
+    useImperativeHandle(ref, () => ({
+      focusThreadTitle
+    }))
 
-  return (
-    <ThreadContainer data-qa="thread-reader">
-      <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
-        <FixedSpaceFlexWrap>
-          <MessageCharacteristics type={messageType} urgent={urgent} />
-          {children.length > 0 ? (
+    const lastMessageRef = useRef<HTMLLIElement>(null)
+
+    const onUpdateContent = useCallback(
+      (content: string) => setReplyContent(threadId, content),
+      [setReplyContent, threadId]
+    )
+
+    const onDiscard = useCallback(() => {
+      setReplyContent(threadId, '')
+      hideReplyEditor()
+    }, [setReplyContent, hideReplyEditor, threadId])
+
+    const replyContent = getReplyContent(threadId)
+    const sendEnabled =
+      !!replyContent &&
+      recipients.some((r) => r.selected && isPrimaryRecipient(r))
+
+    return (
+      <ThreadContainer data-qa="thread-reader">
+        <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
+          <FixedSpaceFlexWrap>
+            <MessageCharacteristics type={messageType} urgent={urgent} />
+            {children.length > 0 ? (
+              <>
+                <ScreenReaderOnly>
+                  {i18n.messages.thread.children}:
+                </ScreenReaderOnly>
+                {children.map((child) => (
+                  <StaticChip
+                    key={child.childId}
+                    color={theme.colors.main.m2}
+                    translate="no"
+                  >
+                    {formatFirstName(child) || ''}
+                  </StaticChip>
+                ))}
+              </>
+            ) : null}
+          </FixedSpaceFlexWrap>
+          <H2 noMargin data-qa="thread-reader-title">
+            <ScreenReaderOnly>{i18n.messages.thread.title}:</ScreenReaderOnly>
+            {title}
+            {sensitive && ` (${i18n.messages.sensitive})`}
+          </H2>
+          <ScreenReaderButton
+            data-qa="jump-to-end"
+            onClick={() => lastMessageRef.current?.focus()}
+            text={i18n.messages.thread.jumpToLastMessage}
+          />
+        </ThreadTitleRow>
+        <Gap size="s" />
+        <MessageList>
+          {messages.map((message, i) => (
+            <SingleMessage
+              key={message.id}
+              message={message}
+              ref={i === messages.length - 1 ? lastMessageRef : undefined}
+            />
+          ))}
+        </MessageList>
+        {replyEditorVisible ? (
+          <ReplyEditorContainer ref={autoScrollRef}>
+            <MessageReplyEditor
+              mutation={replyToThreadMutation}
+              onSubmit={() => ({
+                messageId: messages.slice(-1)[0].id,
+                body: {
+                  content: replyContent,
+                  recipientAccountIds: recipients
+                    .filter((r) => r.selected)
+                    .map((r) => r.id)
+                }
+              })}
+              onUpdateContent={onUpdateContent}
+              onDiscard={onDiscard}
+              onSuccess={() => {
+                hideReplyEditor()
+                addTimedNotification({
+                  children: i18n.messages.messageEditor.messageSentNotification,
+                  dataQa: 'message-sent-notification'
+                })
+              }}
+              recipients={recipients}
+              onToggleRecipient={onToggleRecipient}
+              replyContent={replyContent}
+              sendEnabled={sendEnabled}
+              messageThreadSensitive={sensitive}
+            />
+          </ReplyEditorContainer>
+        ) : (
+          messages.length > 0 && (
             <>
-              <ScreenReaderOnly>
-                {i18n.messages.thread.children}:
-              </ScreenReaderOnly>
-              {children.map((child) => (
-                <StaticChip
-                  key={child.childId}
-                  color={theme.colors.main.m2}
-                  translate="no"
-                >
-                  {formatFirstName(child) || ''}
-                </StaticChip>
-              ))}
-            </>
-          ) : null}
-        </FixedSpaceFlexWrap>
-        <H2 noMargin data-qa="thread-reader-title">
-          <ScreenReaderOnly>{i18n.messages.thread.title}:</ScreenReaderOnly>
-          {title}
-          {sensitive && ` (${i18n.messages.sensitive})`}
-        </H2>
-        <ScreenReaderButton
-          data-qa="jump-to-end"
-          onClick={() => lastMessageRef.current?.focus()}
-          text={i18n.messages.thread.jumpToLastMessage}
-        />
-      </ThreadTitleRow>
-      <Gap size="s" />
-      <MessageList>
-        {messages.map((message, i) => (
-          <SingleMessage
-            key={message.id}
-            message={message}
-            ref={i === messages.length - 1 ? lastMessageRef : undefined}
-          />
-        ))}
-      </MessageList>
-      {replyEditorVisible ? (
-        <ReplyEditorContainer ref={autoScrollRef}>
-          <MessageReplyEditor
-            mutation={replyToThreadMutation}
-            onSubmit={() => ({
-              messageId: messages.slice(-1)[0].id,
-              body: {
-                content: replyContent,
-                recipientAccountIds: recipients
-                  .filter((r) => r.selected)
-                  .map((r) => r.id)
-              }
-            })}
-            onUpdateContent={onUpdateContent}
-            onDiscard={onDiscard}
-            onSuccess={() => {
-              hideReplyEditor()
-              addTimedNotification({
-                children: i18n.messages.messageEditor.messageSentNotification,
-                dataQa: 'message-sent-notification'
-              })
-            }}
-            recipients={recipients}
-            onToggleRecipient={onToggleRecipient}
-            replyContent={replyContent}
-            sendEnabled={sendEnabled}
-            messageThreadSensitive={sensitive}
-          />
-        </ReplyEditorContainer>
-      ) : (
-        messages.length > 0 && (
-          <>
-            <Gap size="s" />
-            <ActionRow justifyContent="space-between">
-              {messageType === 'MESSAGE' ? (
-                <ReplyToThreadButton
-                  appearance="inline"
-                  icon={faReply}
-                  onClick={useReplyEditorVisible.on}
-                  data-qa="message-reply-editor-btn"
-                  text={i18n.messages.thread.reply}
+              <Gap size="s" />
+              <ActionRow justifyContent="space-between">
+                {messageType === 'MESSAGE' ? (
+                  <ReplyToThreadButton
+                    appearance="inline"
+                    icon={faReply}
+                    onClick={useReplyEditorVisible.on}
+                    data-qa="message-reply-editor-btn"
+                    text={i18n.messages.thread.reply}
+                  />
+                ) : (
+                  <div />
+                )}
+                <ScreenReaderButton
+                  onClick={focusThreadTitle}
+                  text={i18n.messages.thread.jumpToBeginning}
                 />
-              ) : (
-                <div />
-              )}
-              <ScreenReaderButton
-                onClick={() => titleRowRef.current?.focus()}
-                text={i18n.messages.thread.jumpToBeginning}
-              />
-              <ScreenReaderButton
-                onClick={closeThread}
-                text={i18n.messages.thread.close}
-              />
-              <Button
-                appearance="inline"
-                icon={faTrash}
-                data-qa="delete-thread-btn"
-                className="delete-btn"
-                onClick={() => setConfirmDelete(true)}
-                text={i18n.messages.deleteThread}
-              />
-            </ActionRow>
-            <Gap size="m" />
-          </>
-        )
-      )}
-      {confirmDelete && (
-        <ConfirmDeleteThread
-          threadId={threadId}
-          onClose={() => setConfirmDelete(false)}
-          onSuccess={() => {
-            setConfirmDelete(false)
-            onThreadDeleted()
-          }}
-        />
-      )}
-    </ThreadContainer>
-  )
-})
+                <ScreenReaderButton
+                  onClick={closeThread}
+                  text={i18n.messages.thread.close}
+                />
+                <Button
+                  appearance="inline"
+                  icon={faTrash}
+                  data-qa="delete-thread-btn"
+                  className="delete-btn"
+                  onClick={() => setConfirmDelete(true)}
+                  text={i18n.messages.deleteThread}
+                />
+              </ActionRow>
+              <Gap size="m" />
+            </>
+          )
+        )}
+        {confirmDelete && (
+          <ConfirmDeleteThread
+            threadId={threadId}
+            onClose={() => setConfirmDelete(false)}
+            onSuccess={() => {
+              setConfirmDelete(false)
+              onThreadDeleted()
+            }}
+          />
+        )}
+      </ThreadContainer>
+    )
+  })
+)
