@@ -43,6 +43,7 @@ const en: Translations = {
     save: 'Save',
     discard: 'Discard',
     saveConfirmation: 'Do you want to save changes?',
+    saveSuccess: 'Saved',
     confirm: 'Confirm',
     delete: 'Remove',
     edit: 'Edit',
@@ -431,7 +432,6 @@ const en: Translations = {
       reservationClosed: 'Reservation closed',
       reservationClosedInfo:
         'Please contact staff if you want to add an attendance for this day',
-      saveSuccess: 'Save success',
       saveErrors: {
         failure: 'Could not save',
         NON_RESERVABLE_DAYS: 'Some of the selected days cannot be reserved'

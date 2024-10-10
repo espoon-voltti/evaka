@@ -134,13 +134,9 @@ const CalendarPage = React.memo(function CalendarPage() {
   const onSuccess = useCallback(() => {
     closeModal()
     addTimedNotification({
-      children: i18n.calendar.reservationModal.saveSuccess
+      children: i18n.common.saveSuccess
     })
-  }, [
-    addTimedNotification,
-    closeModal,
-    i18n.calendar.reservationModal.saveSuccess
-  ])
+  }, [addTimedNotification, closeModal, i18n.common.saveSuccess])
 
   if (!user || !user.accessibleFeatures.reservations) return null
 

@@ -154,9 +154,9 @@ export default React.memo(function DayView({
   const onSuccess = useCallback(() => {
     edit.off()
     addTimedNotification({
-      children: i18n.calendar.reservationModal.saveSuccess
+      children: i18n.common.saveSuccess
     })
-  }, [addTimedNotification, edit, i18n.calendar.reservationModal.saveSuccess])
+  }, [addTimedNotification, edit, i18n.common.saveSuccess])
 
   return modalData === undefined ? (
     <DayModal

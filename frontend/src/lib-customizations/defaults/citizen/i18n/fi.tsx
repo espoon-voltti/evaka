@@ -40,6 +40,7 @@ export default {
     save: 'Tallenna',
     discard: 'Älä tallenna',
     saveConfirmation: 'Haluatko tallentaa muutokset?',
+    saveSuccess: 'Tallennettu',
     confirm: 'Vahvista',
     delete: 'Poista',
     edit: 'Muokkaa',
@@ -433,7 +434,6 @@ export default {
       reservationClosed: 'Ilmoittautuminen päättynyt',
       reservationClosedInfo:
         'Jos haluat ilmoittaa läsnäoloajan tälle päivälle, ota yhteyttä henkilökuntaan',
-      saveSuccess: 'Tallennus onnistui',
       saveErrors: {
         failure: 'Tallennus epäonnistui',
         NON_RESERVABLE_DAYS: 'Joitain valittuja päiviä ei voida varata'
