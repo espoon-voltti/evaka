@@ -498,7 +498,8 @@ const en: Translations = {
       warningUsedServiceExceeded: 'Attendance in excess of the contract:',
       warningPlannedServiceExceeded:
         'Attendance planned in excess of the contract:'
-    }
+    },
+    childSelectionMissingError: 'Choose at least one child'
   },
   messages: {
     inboxTitle: 'Inbox',

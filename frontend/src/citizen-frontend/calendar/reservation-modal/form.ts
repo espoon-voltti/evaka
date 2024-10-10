@@ -7,7 +7,6 @@ import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  string,
   localTimeRange,
   localDateRange,
   FieldType
@@ -226,11 +225,17 @@ export function toDailyReservationRequest(
   }
 }
 
+const nonEmptyUUIDArrayValidator = (value: UUID[]) =>
+  value && value.length > 0 ? undefined : ('required' as const)
+
+export const validatedUUIDArray = mapped(
+  validated(array(value<UUID>()), nonEmptyUUIDArrayValidator),
+  (output) => output
+)
+
 export const reservationForm = mapped(
   object({
-    selectedChildren: validated(array(string()), (value) =>
-      value.length > 0 ? undefined : 'required'
-    ),
+    selectedChildren: validatedUUIDArray,
     dateRange: required(localDateRange()),
     repetition: required(oneOf<Repetition>()),
     times: timesUnion
