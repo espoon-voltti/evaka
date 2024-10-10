@@ -54,7 +54,8 @@ enum class InvoiceStatus : DatabaseEnum {
     DRAFT,
     WAITING_FOR_SENDING,
     SENT,
-    CANCELED;
+    DRAFT_REPLACEMENT,
+    REPLACED;
 
     override val sqlType: String = "invoice_status"
 }

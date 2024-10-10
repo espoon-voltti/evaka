@@ -692,7 +692,8 @@ export type InvoiceStatus =
   | 'DRAFT'
   | 'WAITING_FOR_SENDING'
   | 'SENT'
-  | 'CANCELED'
+  | 'DRAFT_REPLACEMENT'
+  | 'REPLACED'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceSummary
