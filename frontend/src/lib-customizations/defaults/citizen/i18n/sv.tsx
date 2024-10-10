@@ -41,6 +41,7 @@ const sv: Translations = {
     save: 'Spara',
     discard: 'Spar inte',
     saveConfirmation: 'Vill du spara ändringar?',
+    saveSuccess: 'Sparat',
     confirm: 'Bekräfta',
     delete: 'Ta bort',
     edit: 'Redigera',

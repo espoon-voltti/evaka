@@ -40,6 +40,7 @@ export default {
     save: 'Tallenna',
     discard: 'Älä tallenna',
     saveConfirmation: 'Haluatko tallentaa muutokset?',
+    saveSuccess: 'Tallennettu',
     confirm: 'Vahvista',
     delete: 'Poista',
     edit: 'Muokkaa',

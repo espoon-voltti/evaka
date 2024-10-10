@@ -43,6 +43,7 @@ const en: Translations = {
     save: 'Save',
     discard: 'Discard',
     saveConfirmation: 'Do you want to save changes?',
+    saveSuccess: 'Saved',
     confirm: 'Confirm',
     delete: 'Remove',
     edit: 'Edit',
