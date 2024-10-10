@@ -233,7 +233,8 @@ export const fi = {
       dailyNotes: 'Muistiinpanot',
       addNew: 'Lisää uusi',
       labels: {
-        note: 'Päivän tapahtumia',
+        stickyNote: 'Huomioitavaa lähipäivinä',
+        note: 'Tänään koettua ja opittua',
         feedingNote: 'Lapsi söi tänään',
         sleepingNote: 'Lapsi nukkui tänään',
         reminderNote: 'Muistettavia asioita',

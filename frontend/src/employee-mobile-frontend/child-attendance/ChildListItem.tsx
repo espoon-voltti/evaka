@@ -17,6 +17,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Bold, InformationText } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
+import { fasExclamation } from 'lib-icons'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
 
 import { routes } from '../App'
@@ -136,10 +137,8 @@ export default React.memo(function ChildListItem({
   const today = LocalDate.todayInSystemTz()
   const childAge = today.differenceInYears(child.dateOfBirth)
 
-  const hasActiveNote = useMemo(
-    () =>
-      !!child.dailyNote ||
-      child.stickyNotes.some((n) => n.expires.isEqualOrAfter(today)),
+  const hasActiveStickyNote = useMemo(
+    () => child.stickyNotes.some((n) => n.expires.isEqualOrAfter(today)),
     [child, today]
   )
 
@@ -156,6 +155,13 @@ export default React.memo(function ChildListItem({
               size="XL"
             />
           )}
+          <IconPlacementBox>
+            <RoundIconOnTop
+              content={`${childAge}v`}
+              color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
+              size="m"
+            />
+          </IconPlacementBox>
         </IconBox>
         <ChildBoxInfo onClick={onClick}>
           <NameRow>
@@ -175,7 +181,24 @@ export default React.memo(function ChildListItem({
               )}
             </LeftDetailsDiv>
             <FixedSpaceRowWithLeftMargin alignItems="center">
-              {hasActiveNote && (
+              {hasActiveStickyNote && (
+                <Link
+                  to={
+                    routes.childNotes(
+                      toUnitOrGroup(unitId, child.groupId),
+                      child.id
+                    ).value
+                  }
+                  data-qa="link-child-daycare-daily-note"
+                >
+                  <RoundIcon
+                    content={fasExclamation}
+                    color={colors.accents.a5orangeLight}
+                    size="m"
+                  />
+                </Link>
+              )}
+              {child.dailyNote && (
                 <Link
                   to={
                     routes.childNotes(
@@ -209,13 +232,6 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               ) : null}
-              <AgeRoundIcon
-                content={`${childAge}v`}
-                color={
-                  childAge < 3 ? colors.accents.a6turquoise : colors.main.m1
-                }
-                size="m"
-              />
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
         </ChildBoxInfo>
@@ -269,7 +285,17 @@ const LeftDetailsDiv = styled.div`
     }
   }
 `
-const AgeRoundIcon = styled(RoundIcon)`
+
+const RoundIconOnTop = styled(RoundIcon)`
+  position: absolute;
+  left: 40px;
+  top: -20px;
+  z-index: 2;
+`
+const IconPlacementBox = styled.div`
+  position: relative;
+  width: 0;
+  height: 0;
   &.m {
     font-size: 14px;
   }
