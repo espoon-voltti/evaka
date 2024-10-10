@@ -257,6 +257,11 @@ interface BaseFeatureFlags {
    * Not ready for production!
    */
   serviceApplications?: boolean
+
+  /**
+   * Display a single month in the calendar view instead of multiple scrollable months
+   */
+  calendarMonthView?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
