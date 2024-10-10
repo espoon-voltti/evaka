@@ -112,7 +112,7 @@ class MessageService(
             tx.getMessageAccountsForRecipients(sender, recipients, filters, now.toLocalDate())
         if (messageRecipients.isEmpty()) return null
 
-        val staffCopyRecipients = tx.getStaffCopyRecipients(sender, recipients)
+        val staffCopyRecipients = tx.getStaffCopyRecipients(sender, recipients, now.toLocalDate())
 
         val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId?>>> =
             if (type == MessageType.BULLETIN) {
