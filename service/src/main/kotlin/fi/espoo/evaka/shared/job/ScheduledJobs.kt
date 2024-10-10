@@ -19,6 +19,7 @@ import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
+import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.NewCustomerIncomeNotification
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.jamix.JamixService
@@ -220,6 +221,10 @@ enum class ScheduledJob(
         ScheduledJobs::cleanTitaniaErrors,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 40))),
     ),
+    GenerateReplacementInvoices(
+        ScheduledJobs::generateReplacementDraftInvoices,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(4, 15))),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -233,6 +238,7 @@ class ScheduledJobs(
     private val vardaEnv: VardaEnv,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
+    private val invoiceGenerator: InvoiceGenerator,
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
     private val missingHolidayReservationsReminders: MissingHolidayReservationsReminders,
@@ -480,4 +486,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun cleanTitaniaErrors(db: Database.Connection, clock: EvakaClock) =
         db.transaction { it.cleanTitaniaErrors(clock.now()) }
+
+    fun generateReplacementDraftInvoices(db: Database.Connection, clock: EvakaClock) =
+        invoiceGenerator.createAllReplacementDraftInvoices(db, clock.today())
 }

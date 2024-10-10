@@ -2726,13 +2726,15 @@ export const fi = {
       DRAFT: 'Luonnos',
       WAITING_FOR_SENDING: 'Siirretään manuaalisesti',
       SENT: 'Siirretty',
-      CANCELED: 'Peruutettu'
+      REPLACEMENT_DRAFT: 'Oikaisuluonnos',
+      REPLACED: 'Oikaistu'
     },
     title: {
       DRAFT: 'Laskuluonnos',
       WAITING_FOR_SENDING: 'Siirtoa odottava lasku',
       SENT: 'Siirretty lasku',
-      CANCELED: 'Peruutettu lasku'
+      REPLACEMENT_DRAFT: 'Oikaisulaskuluonnos',
+      REPLACED: 'Oikaistu lasku'
     },
     form: {
       nav: {

@@ -1243,6 +1243,8 @@ data class DevInvoice(
     val sentBy: EvakaUserId? = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val codebtor: PersonId? = null,
     val areaId: AreaId,
+    val revisionNumber: Int = 0,
+    val replacedInvoiceId: InvoiceId? = null,
     val rows: List<DevInvoiceRow> = emptyList(),
 )
 
@@ -1264,8 +1266,8 @@ fun Database.Transaction.insert(invoice: DevInvoice): InvoiceId {
     execute {
         sql(
             """
-INSERT INTO invoice (id, status, number, invoice_date, due_date, print_date, period_start, period_end, head_of_family, sent_at, sent_by, created_at, codebtor, area_id) 
-VALUES (${bind(invoice.id)}, ${bind(invoice.status)}, ${bind(invoice.number)}, ${bind(invoice.invoiceDate)}, ${bind(invoice.dueDate)}, NULL, ${bind(invoice.periodStart)}, ${bind(invoice.periodEnd)}, ${bind(invoice.headOfFamilyId)}, ${bind(invoice.sentAt)}, ${bind(invoice.sentBy)}, ${bind(invoice.createdAt)}, ${bind(invoice.codebtor)}, ${bind(invoice.areaId)})
+INSERT INTO invoice (id, status, revision_number, number, invoice_date, due_date, print_date, period_start, period_end, head_of_family, sent_at, sent_by, created_at, codebtor, area_id) 
+VALUES (${bind(invoice.id)}, ${bind(invoice.status)}, ${bind(invoice.revisionNumber)}, ${bind(invoice.number)}, ${bind(invoice.invoiceDate)}, ${bind(invoice.dueDate)}, NULL, ${bind(invoice.periodStart)}, ${bind(invoice.periodEnd)}, ${bind(invoice.headOfFamilyId)}, ${bind(invoice.sentAt)}, ${bind(invoice.sentBy)}, ${bind(invoice.createdAt)}, ${bind(invoice.codebtor)}, ${bind(invoice.areaId)})
 """
         )
     }

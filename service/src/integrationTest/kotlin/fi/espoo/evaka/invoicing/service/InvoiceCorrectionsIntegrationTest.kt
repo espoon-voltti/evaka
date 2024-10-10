@@ -4,18 +4,15 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.invoicing.data.insertDraftInvoices
 import fi.espoo.evaka.invoicing.domain.DraftInvoice
 import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
-import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
-import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -24,27 +21,21 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.Month
 import java.time.YearMonth
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
-class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+class InvoiceCorrectionsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var generator: InvoiceGenerator
+    @Autowired private lateinit var invoiceService: InvoiceService
+
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
-    private val featureConfig: FeatureConfig = testFeatureConfig
-    private val draftInvoiceGenerator: DraftInvoiceGenerator =
-        DraftInvoiceGenerator(productProvider, featureConfig)
-    private val generator: InvoiceGenerator =
-        InvoiceGenerator(draftInvoiceGenerator, featureConfig, DefaultInvoiceGenerationLogic)
-    private val invoiceService =
-        InvoiceService(
-            InvoiceIntegrationClient.MockClient(defaultJsonMapperBuilder().build()),
-            TestInvoiceProductProvider(),
-            featureConfig,
-        )
-    private val clock = RealEvakaClock()
+
+    private val clock = MockEvakaClock(2024, 10, 1, 12, 0)
 
     val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
     val area = DevCareArea()
@@ -415,7 +406,9 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         month: YearMonth,
     ): List<DraftInvoice> =
         db.read { tx ->
-            generator.applyCorrections(tx, invoices, month, mapOf(daycare.id to area.id)).shuffled()
+            generator
+                .applyUnappliedCorrections(tx, month, invoices, mapOf(daycare.id to area.id))
+                .shuffled()
         }
 
     private fun createTestInvoice(total: Int, month: YearMonth): DraftInvoice =
@@ -441,7 +434,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
     private fun insertAndSendInvoice(invoice: DraftInvoice) {
         db.transaction { tx ->
-            val invoiceId = tx.insertDraftInvoices(listOf(invoice)).single()
+            val invoiceId = tx.insertDraftInvoices(listOf(invoice), InvoiceStatus.DRAFT).single()
             invoiceService.sendInvoices(
                 tx,
                 employee.evakaUserId,

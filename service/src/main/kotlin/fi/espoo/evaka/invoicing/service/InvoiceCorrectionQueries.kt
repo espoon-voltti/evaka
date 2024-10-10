@@ -49,6 +49,9 @@ WHERE ${predicate(where.forTable("invoice_correction"))}
 fun Database.Read.getUnappliedInvoiceCorrections(): List<InvoiceCorrection> =
     getInvoiceCorrections(Predicate { where("$it.target_month IS NULL") })
 
+fun Database.Read.getInvoiceCorrectionsForMonth(month: YearMonth): List<InvoiceCorrection> =
+    getInvoiceCorrections(Predicate { where("$it.target_month = ${bind(month)}") })
+
 fun Database.Read.getInvoiceCorrectionsByIds(
     ids: Set<InvoiceCorrectionId>
 ): List<InvoiceCorrection> =

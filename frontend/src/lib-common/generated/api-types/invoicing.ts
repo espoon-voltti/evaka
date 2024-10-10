@@ -570,6 +570,8 @@ export interface InvoiceDetailed {
   periodEnd: LocalDate
   periodStart: LocalDate
   relatedFeeDecisions: RelatedFeeDecision[]
+  replacedInvoiceId: UUID | null
+  revisionNumber: number
   rows: InvoiceRowDetailed[]
   sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
@@ -645,7 +647,8 @@ export type InvoiceStatus =
   | 'DRAFT'
   | 'WAITING_FOR_SENDING'
   | 'SENT'
-  | 'CANCELED'
+  | 'REPLACEMENT_DRAFT'
+  | 'REPLACED'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceSummary
@@ -657,6 +660,7 @@ export interface InvoiceSummary {
   id: UUID
   periodEnd: LocalDate
   periodStart: LocalDate
+  revisionNumber: number
   sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
   status: InvoiceStatus

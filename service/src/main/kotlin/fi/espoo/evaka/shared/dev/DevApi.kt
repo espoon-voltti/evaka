@@ -78,6 +78,7 @@ import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
@@ -2467,7 +2468,7 @@ data class DevFeeDecision(
     val partnerId: PersonId? = null,
     val partnerIncome: DecisionIncome? = null,
     val familySize: Int = 2,
-    val feeThresholds: FeeThresholds = feeThresholds2020,
+    val feeThresholds: FeeDecisionThresholds = feeThresholds2020.getFeeDecisionThresholds(2),
     val decisionNumber: Long? = null,
     val documentKey: String? = null,
     val approvedAt: HelsinkiDateTime? = null,

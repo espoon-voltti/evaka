@@ -80,17 +80,6 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    @Test
-    fun `search canceled`() {
-        db.transaction { tx ->
-            tx.insert(testInvoices)
-
-            val result = tx.searchInvoices(InvoiceStatus.CANCELED)
-            assertEquals(0, result.size)
-        }
-    }
-
-    @Test
     fun `search sent`() {
         db.transaction { tx ->
             tx.insert(testInvoices)

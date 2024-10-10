@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -34,7 +34,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -72,12 +71,12 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
-    private val featureConfig: FeatureConfig = testFeatureConfig
 
     private fun invoiceGenerator(
         featureConfig: FeatureConfig = this.featureConfig,
@@ -86,10 +85,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         InvoiceGenerator(
             DraftInvoiceGenerator(productProvider, featureConfig),
             featureConfig,
+            evakaEnv,
             invoiceGenerationLogicChooser,
         )
 
-    private val generator: InvoiceGenerator = invoiceGenerator()
+    private lateinit var generator: InvoiceGenerator
+
+    @BeforeAll
+    fun init() {
+        generator = invoiceGenerator()
+    }
 
     @BeforeEach
     fun beforeEach() {

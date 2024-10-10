@@ -12,6 +12,7 @@ import java.net.URI
 import java.security.KeyStore
 import java.time.Duration
 import java.time.LocalDate
+import java.time.YearMonth
 import java.util.Locale
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
@@ -38,6 +39,7 @@ data class EvakaEnv(
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
     val plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean,
     val personAddressEnvelopeWindowPosition: Rectangle,
+    val replacementInvoicesStart: YearMonth?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -69,6 +71,10 @@ data class EvakaEnv(
                     env.lookup<String?>("evaka.person_address_envelope_window_position")?.let {
                         Rectangle.fromString(it)
                     } ?: Rectangle.iPostWindowPosition,
+                replacementInvoicesStart =
+                    env.lookup<String?>("evaka.replacement_invoices_start")?.let {
+                        YearMonth.parse(it)
+                    },
             )
         }
     }

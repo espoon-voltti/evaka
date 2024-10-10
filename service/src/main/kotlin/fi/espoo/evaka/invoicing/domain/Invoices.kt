@@ -34,7 +34,8 @@ enum class InvoiceStatus : DatabaseEnum {
     DRAFT,
     WAITING_FOR_SENDING,
     SENT,
-    CANCELED;
+    REPLACEMENT_DRAFT,
+    REPLACED;
 
     override val sqlType: String = "invoice_status"
 }
@@ -58,6 +59,8 @@ data class InvoiceDetailed(
     val sentBy: EvakaUserId?,
     val sentAt: HelsinkiDateTime?,
     @Json val relatedFeeDecisions: List<RelatedFeeDecision>,
+    val revisionNumber: Int,
+    val replacedInvoiceId: InvoiceId?,
 ) {
     val account: Int = 3295
     val totalPrice
@@ -101,6 +104,7 @@ data class InvoiceSummary(
     val sentBy: EvakaUserId?,
     val sentAt: HelsinkiDateTime?,
     val createdAt: HelsinkiDateTime?,
+    val revisionNumber: Int,
 )
 
 fun getDueDate(periodEnd: LocalDate): LocalDate {
@@ -123,6 +127,8 @@ data class DraftInvoice(
     val headOfFamily: PersonId,
     val codebtor: PersonId?,
     val rows: List<DraftInvoiceRow>,
+    val revisionNumber: Int = 0,
+    val replacedInvoiceId: InvoiceId? = null,
 ) {
     val totalPrice
         get() = invoiceRowTotal(rows)

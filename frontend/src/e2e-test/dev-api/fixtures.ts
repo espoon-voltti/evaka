@@ -3045,6 +3045,8 @@ export const invoiceFixture = (
   sentAt: null,
   sentBy: null,
   createdAt: null,
+  replacedInvoiceId: null,
+  revisionNumber: 0,
   rows: [
     {
       id: uuidv4(),

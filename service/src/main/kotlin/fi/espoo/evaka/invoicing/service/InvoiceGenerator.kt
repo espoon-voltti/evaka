@@ -4,10 +4,12 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceType
-import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
+import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
+import fi.espoo.evaka.invoicing.data.getSentInvoicesOfMonth
 import fi.espoo.evaka.invoicing.data.insertDraftInvoices
 import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
@@ -35,16 +37,20 @@ import fi.espoo.evaka.shared.withSpan
 import io.opentelemetry.api.trace.Tracer
 import java.time.DayOfWeek
 import java.time.Duration
+import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
 import kotlin.math.abs
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Component
 
+private val logger = mu.KotlinLogging.logger {}
+
 @Component
 class InvoiceGenerator(
     private val draftInvoiceGenerator: DraftInvoiceGenerator,
     private val featureConfig: FeatureConfig,
+    private val env: EvakaEnv,
     private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser,
     private val tracer: Tracer = noopTracer(),
 ) {
@@ -53,14 +59,18 @@ class InvoiceGenerator(
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
         val invoiceCalculationData =
-            tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, month) }
+            tracer.withSpan("calculateInvoiceData") {
+                calculateInvoiceData(tx, month, excludeAlreadyInvoiced = true)
+            }
         val invoices = draftInvoiceGenerator.generateDraftInvoices(invoiceCalculationData)
+
         val invoicesWithCorrections =
             tracer.withSpan("applyCorrections") {
-                applyCorrections(tx, invoices, month, invoiceCalculationData.areaIds)
+                applyUnappliedCorrections(tx, month, invoices, invoiceCalculationData.areaIds)
             }
-        tx.deleteDraftInvoicesByDateRange(FiniteDateRange.ofMonth(month))
+        tx.deleteDraftInvoices(month, InvoiceStatus.DRAFT)
         tx.insertDraftInvoices(
+            status = InvoiceStatus.DRAFT,
             invoices = invoicesWithCorrections,
             relatedFeeDecisions =
                 invoicesWithCorrections.associate { invoice ->
@@ -72,9 +82,103 @@ class InvoiceGenerator(
         )
     }
 
+    fun createAllReplacementDraftInvoices(dbc: Database.Connection, today: LocalDate) {
+        val replacementInvoicesStart = env.replacementInvoicesStart
+        if (replacementInvoicesStart == null) {
+            logger.info("Replacement invoices are not enabled")
+            return
+        }
+
+        val monthsToGenerate = 12L
+        val latestMonth = YearMonth.of(today.year, today.month).minusMonths(1)
+        val earliestMonth =
+            maxOf(replacementInvoicesStart, latestMonth.minusMonths(monthsToGenerate - 1))
+
+        var month = earliestMonth
+        while (month <= latestMonth) {
+            try {
+                dbc.transaction { tx -> createReplacementDraftInvoices(tx, month) }
+            } catch (e: Exception) {
+                logger.error("Failed to create replacement draft invoices for $month", e)
+            }
+            month = month.plusMonths(1)
+        }
+    }
+
+    fun createReplacementDraftInvoices(tx: Database.Transaction, month: YearMonth) {
+        tx.setStatementTimeout(Duration.ofMinutes(10))
+        tx.setLockTimeout(Duration.ofSeconds(15))
+        tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
+
+        val invoiceCalculationData =
+            tracer.withSpan("calculateInvoiceData") {
+                calculateInvoiceData(tx, month, excludeAlreadyInvoiced = false)
+            }
+        val invoices = draftInvoiceGenerator.generateDraftInvoices(invoiceCalculationData)
+
+        val invoicesWithCorrections =
+            tracer.withSpan("applyCorrections") {
+                applyCorrectionsForMonth(tx, month, invoices, invoiceCalculationData.areaIds)
+            }
+        val headsOfFamilyWithInvoices = invoicesWithCorrections.map { it.headOfFamily }.toSet()
+        val sentInvoices = tx.getSentInvoicesOfMonth(month).associateBy { it.headOfFamily.id }
+
+        val newOrReplacedInvoices =
+            invoicesWithCorrections.mapNotNull { invoice ->
+                val sentInvoice = sentInvoices[invoice.headOfFamily]
+                if (sentInvoice == null) {
+                    // No corresponding sent invoice -> add a new replacement draft. Revision number
+                    // starts from 1 to distinguish replacement invoices (manual processing) from
+                    // normal invoices (sent through invoice integration).
+                    invoice.copy(revisionNumber = 1)
+                } else if (invoice.totalPrice != sentInvoice.totalPrice) {
+                    // The corresponding sent invoice has a different price -> replace it
+                    invoice.copy(
+                        replacedInvoiceId = sentInvoice.id,
+                        revisionNumber = sentInvoice.revisionNumber + 1,
+                    )
+                } else {
+                    // Price didn't change, no need to replace
+                    null
+                }
+            }
+        val zeroInvoices =
+            // Sent invoices that don't have a corresponding draft invoice -> add a zero-priced
+            // replacement draft
+            sentInvoices.values
+                .filterNot { headsOfFamilyWithInvoices.contains(it.headOfFamily.id) }
+                .map { sentInvoice ->
+                    DraftInvoice(
+                        periodStart = month.atDay(1),
+                        periodEnd = month.atEndOfMonth(),
+                        areaId = sentInvoice.areaId,
+                        headOfFamily = sentInvoice.headOfFamily.id,
+                        codebtor = null,
+                        rows = listOf(),
+                        revisionNumber = sentInvoice.revisionNumber + 1,
+                        replacedInvoiceId = sentInvoice.id,
+                    )
+                }
+        val draftsToInsert = newOrReplacedInvoices + zeroInvoices
+
+        tx.deleteDraftInvoices(month, InvoiceStatus.REPLACEMENT_DRAFT)
+        tx.insertDraftInvoices(
+            status = InvoiceStatus.REPLACEMENT_DRAFT,
+            invoices = draftsToInsert,
+            relatedFeeDecisions =
+                draftsToInsert.associate { invoice ->
+                    invoice.headOfFamily to
+                        invoiceCalculationData.decisions
+                            .getOrDefault(invoice.headOfFamily, emptyList())
+                            .map { it.id }
+                },
+        )
+    }
+
     fun calculateInvoiceData(
         tx: Database.Read,
         month: YearMonth,
+        excludeAlreadyInvoiced: Boolean,
     ): DraftInvoiceGenerator.InvoiceGeneratorInput {
         val range = FiniteDateRange.ofMonth(month)
 
@@ -87,7 +191,12 @@ class InvoiceGenerator(
         val effectiveDecisions = tx.getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
         val permanentPlacements = tx.getInvoiceablePlacements(range, PlacementType.invoiced)
         val temporaryPlacements = tx.getInvoiceableTemporaryPlacements(range)
-        val invoicedHeadsOfFamily = tx.getInvoicedHeadsOfFamily(range)
+        val invoicedHeadsOfFamily =
+            if (excludeAlreadyInvoiced) {
+                tx.getInvoicedHeadsOfFamily(range)
+            } else {
+                emptySet()
+            }
 
         val unhandledDecisions =
             effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
@@ -180,14 +289,33 @@ class InvoiceGenerator(
         }
     }
 
-    fun applyCorrections(
+    fun applyUnappliedCorrections(
         tx: Database.Read,
-        invoices: List<DraftInvoice>,
         targetMonth: YearMonth,
+        invoices: List<DraftInvoice>,
         areaIds: Map<DaycareId, AreaId>,
     ): List<DraftInvoice> {
-        val corrections = tx.getUnappliedInvoiceCorrections().groupBy { it.headOfFamilyId }
+        val unappliedCorrections = tx.getUnappliedInvoiceCorrections().groupBy { it.headOfFamilyId }
+        return applyCorrections(targetMonth, invoices, unappliedCorrections, areaIds)
+    }
 
+    fun applyCorrectionsForMonth(
+        tx: Database.Read,
+        targetMonth: YearMonth,
+        invoices: List<DraftInvoice>,
+        areaIds: Map<DaycareId, AreaId>,
+    ): List<DraftInvoice> {
+        val correctionsForMonth =
+            tx.getInvoiceCorrectionsForMonth(targetMonth).groupBy { it.headOfFamilyId }
+        return applyCorrections(targetMonth, invoices, correctionsForMonth, areaIds)
+    }
+
+    private fun applyCorrections(
+        targetMonth: YearMonth,
+        invoices: List<DraftInvoice>,
+        corrections: Map<PersonId, List<InvoiceCorrection>>,
+        areaIds: Map<DaycareId, AreaId>,
+    ): List<DraftInvoice> {
         val invoicesWithCorrections =
             corrections
                 .map { (headOfFamily, headOfFamilyCorrections) ->

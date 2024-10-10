@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
+import java.time.YearMonth
 
 fun invoiceDetailedQuery(where: Predicate = Predicate.alwaysTrue()) = QuerySql {
     sql(
@@ -43,6 +44,8 @@ fun invoiceDetailedQuery(where: Predicate = Predicate.alwaysTrue()) = QuerySql {
         invoice.number,
         invoice.sent_by,
         invoice.sent_at,
+        invoice.revision_number,
+        invoice.replaced_invoice_id,
     
         head.id as head_id,
         head.date_of_birth as head_date_of_birth,
@@ -158,6 +161,26 @@ fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
         .exactlyOneOrNull()
 }
 
+fun Database.Read.getSentInvoicesOfMonth(month: YearMonth): List<InvoiceDetailed> {
+    val periodStart = month.atDay(1)
+    val periodEnd = month.atEndOfMonth()
+    val statuses = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
+    return createQuery {
+            invoiceDetailedQuery(
+                Predicate {
+                    where(
+                        """
+                            $it.period_start = ${bind(periodStart)} AND
+                            $it.period_end = ${bind(periodEnd)} AND
+                            $it.status = ANY (${bind(statuses)})
+                            """
+                    )
+                }
+            )
+        }
+        .toList()
+}
+
 fun Database.Read.getInvoiceIdsByDates(
     range: FiniteDateRange,
     areas: List<String>,
@@ -255,6 +278,7 @@ SELECT
     invoice.sent_at,
     invoice.sent_by,
     invoice.created_at,
+    invoice.revision_number,
     jsonb_build_object(
         'id', invoice.head_of_family,
         'dateOfBirth', head.date_of_birth,
@@ -386,18 +410,11 @@ WHERE id = ${bind { it.id }}
     }
 }
 
-fun Database.Transaction.deleteDraftInvoicesByDateRange(range: FiniteDateRange) {
-
-    createUpdate {
-            sql(
-                """
-                DELETE FROM invoice
-                WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status
-                AND daterange(period_start, period_end, '[]') && ${bind(range)}
-                """
-            )
-        }
-        .execute()
+fun Database.Transaction.deleteDraftInvoices(month: YearMonth, status: InvoiceStatus) {
+    require(status == InvoiceStatus.DRAFT || status == InvoiceStatus.REPLACEMENT_DRAFT)
+    execute {
+        sql("DELETE FROM invoice WHERE status = ${bind(status)} AND period_start = ${bind(month)}")
+    }
 }
 
 fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
@@ -406,9 +423,13 @@ fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
 
 fun Database.Transaction.insertDraftInvoices(
     invoices: List<DraftInvoice>,
+    status: InvoiceStatus,
     relatedFeeDecisions: Map<PersonId, List<FeeDecisionId>> = emptyMap(),
 ): List<InvoiceId> {
-    val invoiceIds = insertInvoicesWithoutRows(invoices)
+    // Only allow inserting drafts
+    require(status == InvoiceStatus.DRAFT || status == InvoiceStatus.REPLACEMENT_DRAFT)
+
+    val invoiceIds = insertInvoicesWithoutRows(status, invoices)
     check(invoiceIds.size == invoices.size)
 
     insertInvoiceRows(
@@ -425,7 +446,8 @@ fun Database.Transaction.insertDraftInvoices(
 }
 
 private fun Database.Transaction.insertInvoicesWithoutRows(
-    invoices: List<DraftInvoice>
+    status: InvoiceStatus,
+    invoices: List<DraftInvoice>,
 ): List<InvoiceId> =
     prepareBatch(invoices) {
             sql(
@@ -438,16 +460,20 @@ INSERT INTO invoice (
     invoice_date,
     area_id,
     head_of_family,
-    codebtor
+    codebtor,
+    revision_number,
+    replaced_invoice_id
 ) VALUES (
-    'DRAFT',
+    ${bind(status)},
     ${bind { it.periodStart }},
     ${bind { it.periodEnd }},
     ${bind { it.dueDate }},
     ${bind { it.invoiceDate }},
     ${bind { it.areaId }},
     ${bind { it.headOfFamily }},
-    ${bind { it.codebtor }}
+    ${bind { it.codebtor }},
+    ${bind { it.revisionNumber }},
+    ${bind { it.replacedInvoiceId }}
 ) RETURNING id
 """
             )

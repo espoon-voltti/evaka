@@ -178,6 +178,8 @@ class EspooInvoiceIntegrationClientTest {
         InvoiceDetailed(
             id = InvoiceId(UUID.randomUUID()),
             status = InvoiceStatus.DRAFT,
+            revisionNumber = 0,
+            replacedInvoiceId = null,
             periodStart = LocalDate.of(2020, 1, 1),
             periodEnd = LocalDate.of(2020, 1, 31),
             dueDate = LocalDate.of(2020, 2, 28),
