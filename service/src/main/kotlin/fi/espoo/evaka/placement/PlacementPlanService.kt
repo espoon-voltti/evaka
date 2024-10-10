@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
@@ -165,14 +166,18 @@ class PlacementPlanService(
 
     fun softDeleteUnusedPlacementPlanByApplication(
         tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
         applicationId: ApplicationId,
-    ) = tx.softDeletePlacementPlanIfUnused(applicationId)
+    ) = tx.softDeletePlacementPlanIfUnused(user, clock.now(), applicationId)
 
     fun createPlacementPlan(
         tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
         application: ApplicationDetails,
         placementPlan: DaycarePlacementPlan,
-    ) = tx.createPlacementPlan(application.id, application.derivePlacementType(), placementPlan)
+    ) = tx.createPlacementPlan(user, clock.now(), application.id, application.derivePlacementType(), placementPlan)
 
     fun getPlacementTypePeriods(
         tx: Database.Read,

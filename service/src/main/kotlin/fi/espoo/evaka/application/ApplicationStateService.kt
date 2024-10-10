@@ -536,7 +536,7 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_PLACEMENT)
 
         val placementPlanId =
-            placementPlanService.createPlacementPlan(tx, application, placementPlan)
+            placementPlanService.createPlacementPlan(tx, user, clock, application, placementPlan)
         createDecisionDrafts(tx, user, application)
 
         personService.getGuardians(tx, user, application.childId)
@@ -667,13 +667,15 @@ class ApplicationStateService(
             }
 
             tx.updatePlacementPlanUnitConfirmation(
+                user,
+                clock.now(),
                 applicationId,
                 status,
                 rejectReason,
                 rejectOtherReason,
             )
         } else {
-            tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
+            tx.updatePlacementPlanUnitConfirmation(user, clock.now(), applicationId, status, null, null)
         }
         Audit.PlacementPlanRespond.log(
             targetId = AuditId(applicationId),
@@ -840,7 +842,7 @@ class ApplicationStateService(
             user.evakaUserId,
         )
 
-        placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
+        placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, user, clock, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, ACTIVE)
@@ -911,7 +913,7 @@ class ApplicationStateService(
             }
         alsoReject?.let { tx.markDecisionRejected(user, clock, it.id) }
 
-        placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
+        placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, user, clock, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, REJECTED)

@@ -16,7 +16,9 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId>) {
     execute {
@@ -94,7 +96,7 @@ fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan?
         val endDate: LocalDate,
         val preschoolDaycareStartDate: LocalDate?,
         val preschoolDaycareEndDate: LocalDate?,
-        val modifiedAt: HelsinkiDateTime?,
+        val modifiedAt: HelsinkiDateTime,
         @Nested("modified_by") val modifiedBy: EvakaUser?,
     )
     return createQuery {
@@ -179,7 +181,7 @@ fun Database.Read.getPlacementPlans(
         val unitRejectReason: PlacementPlanRejectReason?,
         val unitRejectOtherReason: String?,
         val rejectedByCitizen: Boolean,
-        val modifiedAt: HelsinkiDateTime?,
+        val modifiedAt: HelsinkiDateTime,
         @Nested("modified_by") val modifiedBy: EvakaUser?,
     )
 

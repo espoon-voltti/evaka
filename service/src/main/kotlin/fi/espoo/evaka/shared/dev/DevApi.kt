@@ -728,11 +728,13 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/placement-plan/{applicationId}")
     fun createPlacementPlan(
         db: Database,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody placementPlan: PlacementPlan,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
+                val user = AuthenticatedUser.SystemInternalUser
                 val application =
                     tx.fetchApplicationDetails(applicationId)
                         ?: throw NotFound("application $applicationId not found")
@@ -748,6 +750,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
                 placementPlanService.createPlacementPlan(
                     tx,
+                    user,
+                    clock,
                     application,
                     DaycarePlacementPlan(
                         placementPlan.unitId,

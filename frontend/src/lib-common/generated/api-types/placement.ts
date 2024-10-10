@@ -198,6 +198,8 @@ export interface PlacementPlanDetails {
   applicationId: UUID
   child: PlacementPlanChild
   id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser | null
   period: FiniteDateRange
   preschoolDaycarePeriod: FiniteDateRange | null
   rejectedByCitizen: boolean
@@ -459,6 +461,7 @@ export function deserializeJsonPlacementPlanDetails(json: JsonOf<PlacementPlanDe
   return {
     ...json,
     child: deserializeJsonPlacementPlanChild(json.child),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     period: FiniteDateRange.parseJson(json.period),
     preschoolDaycarePeriod: (json.preschoolDaycarePeriod != null) ? FiniteDateRange.parseJson(json.preschoolDaycarePeriod) : null
   }
