@@ -551,7 +551,8 @@ const sv: Translations = {
       title: 'Vill du verkligen radera meddelandetråden?',
       text: 'Meddelanden kan inte återställas efter radering.',
       cancel: 'Radera inte',
-      confirm: 'Radera tråden'
+      confirm: 'Radera tråden',
+      success: 'Meddelandetråden raderad'
     },
     sensitive: 'Känslig diskussiontråd',
     strongAuthRequired: 'För att kunna läsa krävs stark identifikation',

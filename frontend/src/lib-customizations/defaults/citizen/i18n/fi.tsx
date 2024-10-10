@@ -557,7 +557,8 @@ export default {
       title: 'Haluatko varmasti poistaa viestiketjun?',
       text: 'Viestejä ei poistamisen jälkeen saa enää palautettua takaisin.',
       cancel: 'Älä poista',
-      confirm: 'Poista viestiketju'
+      confirm: 'Poista viestiketju',
+      success: 'Viestiketju poistettu'
     },
     sensitive: 'Arkaluontoinen viestiketju',
     strongAuthRequired: 'Lukeminen vaatii vahvan tunnistautuminen',
