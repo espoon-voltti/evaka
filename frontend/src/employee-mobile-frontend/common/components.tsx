@@ -101,10 +101,6 @@ export const CustomTitle = styled(Title)`
   text-align: center;
 `
 
-export const DailyNotes = styled.div`
-  display: flex;
-`
-
 export const BackButtonInline = styled(LegacyInlineButton)`
   color: ${colors.main.m1};
   margin-top: ${defaultMargins.s};

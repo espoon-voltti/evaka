@@ -21,7 +21,6 @@ import {
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -29,8 +28,6 @@ import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
 import { groupNotesQuery } from '../../child-notes/queries'
@@ -38,7 +35,7 @@ import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, TimeWrapper, WideMutateButton } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
-import DailyNote from '../DailyNote'
+import ChildNotesSummary from '../ChildNotesSummary'
 import {
   attendanceStatusesQuery,
   childrenQuery,
@@ -158,27 +155,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
             )}
           </ContentArea>
           <Gap size="s" />
-          <ContentArea
-            shadow
-            opaque={true}
-            paddingHorizontal="s"
-            paddingVertical="s"
-            blue
-          >
-            <DailyNotes>
-              <span>
-                <RoundIcon
-                  content={farStickyNote}
-                  color={colors.main.m1}
-                  size="m"
-                />
-              </span>
-              <DailyNote
-                child={child ? child : undefined}
-                groupNotes={groupNotes}
-              />
-            </DailyNotes>
-          </ContentArea>
+          <ChildNotesSummary child={child} groupNotes={groupNotes} />
         </>
       ))}
     </TallContentArea>
@@ -188,10 +165,6 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
 const TitleNoMargin = styled(Title)`
   margin-top: 0;
   margin-bottom: 0;
-`
-
-const DailyNotes = styled.div`
-  display: flex;
 `
 
 const JustifyContainer = styled.div`
