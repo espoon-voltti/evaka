@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
-import java.time.YearMonth
 import org.springframework.stereotype.Component
 
 data class InvoiceDaycare(val id: DaycareId, val name: String, val costCenter: String?)
@@ -73,13 +72,6 @@ class InvoiceService(
             sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id }
         )
         updateCorrectionsOfInvoices(tx, invoices)
-
-        // If any corrections didn't "fit" to these invoices, move them to next month right away
-        val invoiceMonth = YearMonth.from(invoices.maxOf { it.periodStart })
-        tx.movePastUnappliedInvoiceCorrections(
-            invoices.map { it.headOfFamily.id }.toSet(),
-            invoiceMonth.plusMonths(1),
-        )
     }
 
     fun getInvoiceIds(

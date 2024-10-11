@@ -4649,7 +4649,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevInvoiceCorrection(
-                    targetMonth = month,
+                    targetMonth = null,
                     headOfFamilyId = testAdult_1.id,
                     childId = testChild_1.id,
                     amount = 1,
@@ -4699,9 +4699,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `unapplied invoice correction is moved to the current month`() {
+    fun `unapplied invoice correction is applied to the next draft invoice`() {
         val month = YearMonth.of(2019, 1)
-        val previousMonth = month.minusMonths(1)
 
         val period = FiniteDateRange.ofMonth(month)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
@@ -4730,7 +4729,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction {
                 it.insert(
                     DevInvoiceCorrection(
-                        targetMonth = previousMonth,
+                        targetMonth = null,
                         headOfFamilyId = testAdult_1.id,
                         childId = testChild_1.id,
                         amount = 1,

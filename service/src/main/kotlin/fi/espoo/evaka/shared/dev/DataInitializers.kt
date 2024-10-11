@@ -1277,7 +1277,7 @@ fun Database.Transaction.insert(invoice: DevInvoice, rows: List<DevInvoiceRow>):
 
 data class DevInvoiceCorrection(
     val id: InvoiceCorrectionId = InvoiceCorrectionId(UUID.randomUUID()),
-    val targetMonth: YearMonth,
+    val targetMonth: YearMonth?,
     val headOfFamilyId: PersonId,
     val childId: ChildId,
     val unitId: DaycareId,

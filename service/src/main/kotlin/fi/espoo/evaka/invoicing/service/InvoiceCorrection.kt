@@ -24,7 +24,7 @@ data class InvoiceWithCorrection(@PropagateNull val id: InvoiceId, val status: I
 
 data class InvoiceCorrection(
     val id: InvoiceCorrectionId,
-    val targetMonth: YearMonth,
+    val targetMonth: YearMonth?,
     val headOfFamilyId: PersonId,
     val childId: ChildId,
     val unitId: DaycareId,
@@ -52,7 +52,6 @@ data class InvoiceCorrection(
 
     fun toInsert() =
         InvoiceCorrectionInsert(
-            targetMonth = targetMonth,
             headOfFamilyId = headOfFamilyId,
             childId = childId,
             unitId = unitId,
@@ -94,18 +93,18 @@ fun generateInvoiceCorrectionChanges(
             val appliedTotal = row.amount * row.unitPrice
             val outstandingTotal = total - appliedTotal
 
-            if (outstandingTotal == 0) {
-                // Correction is fully applied
-                return@mapNotNull null
-            }
-
             val assignedInvoiceCorrection =
                 InvoiceCorrectionUpdate(
                     id = correction.id,
+                    targetMonth = targetMonth,
                     amount = row.amount,
                     unitPrice = row.unitPrice,
                 )
 
+            if (outstandingTotal == 0) {
+                // Correction is fully applied
+                return@mapNotNull assignedInvoiceCorrection to null
+            }
             val (remainingAmount, remainingUnitPrice) =
                 if (
                     row.unitPrice == correction.unitPrice &&
@@ -117,15 +116,10 @@ fun generateInvoiceCorrectionChanges(
                     correction.amount to (outstandingTotal / correction.amount)
                 }
             val remainingCorrection =
-                correction
-                    .copy(
-                        targetMonth = targetMonth.plusMonths(1),
-                        amount = remainingAmount,
-                        unitPrice = remainingUnitPrice,
-                    )
-                    .toInsert()
+                correction.copy(amount = remainingAmount, unitPrice = remainingUnitPrice).toInsert()
 
             assignedInvoiceCorrection to remainingCorrection
         }
         .unzip()
+        .let { (updates, inserts) -> updates to inserts.filterNotNull() }
 }
