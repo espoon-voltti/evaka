@@ -44,127 +44,121 @@ export default React.memo(function ChildNotesSummary({
   return (
     <FixedSpaceColumn spacing="m">
       {hasStickyNotes && (
-        <ContentArea
-          shadow
-          opaque={true}
-          paddingHorizontal="s"
-          paddingVertical="s"
-          blue
+        <NoteSection
+          icon={fasExclamation}
+          iconColor={colors.accents.a5orangeLight}
+          title={i18n.attendances.notes.childStickyNotes}
         >
-          <FixedSpaceRow>
-            <span>
-              <RoundIcon
-                content={fasExclamation}
-                color={colors.accents.a5orangeLight}
-                size="m"
-              />
-            </span>
-            <FixedSpaceColumn spacing="s">
-              <H2 noMargin>{i18n.attendances.notes.childStickyNotes}</H2>
-              {child.stickyNotes.map((gn) => (
-                <P key={gn.id} noMargin>
-                  {gn.note}
-                </P>
-              ))}
-            </FixedSpaceColumn>
-          </FixedSpaceRow>
-        </ContentArea>
+          {child.stickyNotes.map((gn) => (
+            <P key={gn.id} noMargin>
+              {gn.note}
+            </P>
+          ))}
+        </NoteSection>
       )}
 
       {child.dailyNote && (
-        <ContentArea
-          shadow
-          opaque={true}
-          paddingHorizontal="s"
-          paddingVertical="s"
-          blue
+        <NoteSection
+          icon={farStickyNote}
+          iconColor={colors.accents.a9pink}
+          title={i18n.attendances.notes.note}
         >
-          <FixedSpaceRow>
-            <span>
-              <RoundIcon
-                content={farStickyNote}
-                color={colors.accents.a9pink}
-                size="m"
-              />
-            </span>
-            <FixedSpaceColumn spacing="s">
-              <H2 noMargin>{i18n.attendances.notes.note}</H2>
-              {!!child.dailyNote.note && <span>{child.dailyNote.note}</span>}
-              {child.dailyNote.feedingNote && (
-                <FixedSpaceColumn spacing="xxs">
-                  <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
-                  <span>
-                    {
-                      i18n.attendances.notes.feedingValues[
-                        child.dailyNote.feedingNote
-                      ]
-                    }
-                  </span>
-                </FixedSpaceColumn>
-              )}
-              {child.dailyNote.sleepingNote && (
-                <FixedSpaceColumn spacing="xxs">
-                  <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
-                  <span>
-                    {
-                      i18n.attendances.notes.sleepingValues[
-                        child.dailyNote.sleepingNote
-                      ]
-                    }
-                    {child.dailyNote.sleepingMinutes
-                      ? child.dailyNote.sleepingMinutes / 60 >= 1
-                        ? `. ${Math.floor(
-                            child.dailyNote.sleepingMinutes / 60
-                          )}h ${Math.round(
-                            child.dailyNote.sleepingMinutes % 60
-                          )}min.`
-                        : `${Math.round(child.dailyNote.sleepingMinutes % 60)}min.`
-                      : ''}
-                  </span>
-                </FixedSpaceColumn>
-              )}
-              {(!!child.dailyNote.reminderNote ||
-                child.dailyNote.reminders.length > 0) && (
-                <FixedSpaceColumn spacing="xxs">
-                  <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
-                  <span>
-                    {child.dailyNote.reminders.map((reminder) => (
-                      <span
-                        key={reminder}
-                      >{`${i18n.attendances.notes.reminders[reminder]}. `}</span>
-                    ))}{' '}
-                    {child.dailyNote.reminderNote}
-                  </span>
-                </FixedSpaceColumn>
-              )}
+          {!!child.dailyNote.note && <span>{child.dailyNote.note}</span>}
+          {child.dailyNote.feedingNote && (
+            <FixedSpaceColumn spacing="xxs">
+              <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
+              <span>
+                {
+                  i18n.attendances.notes.feedingValues[
+                    child.dailyNote.feedingNote
+                  ]
+                }
+              </span>
             </FixedSpaceColumn>
-          </FixedSpaceRow>
-        </ContentArea>
+          )}
+          {child.dailyNote.sleepingNote && (
+            <FixedSpaceColumn spacing="xxs">
+              <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
+              <span>
+                {
+                  i18n.attendances.notes.sleepingValues[
+                    child.dailyNote.sleepingNote
+                  ]
+                }
+                {child.dailyNote.sleepingMinutes
+                  ? child.dailyNote.sleepingMinutes / 60 >= 1
+                    ? `. ${Math.floor(
+                        child.dailyNote.sleepingMinutes / 60
+                      )}h ${Math.round(
+                        child.dailyNote.sleepingMinutes % 60
+                      )}min.`
+                    : `${Math.round(child.dailyNote.sleepingMinutes % 60)}min.`
+                  : ''}
+              </span>
+            </FixedSpaceColumn>
+          )}
+          {(!!child.dailyNote.reminderNote ||
+            child.dailyNote.reminders.length > 0) && (
+            <FixedSpaceColumn spacing="xxs">
+              <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
+              <span>
+                {child.dailyNote.reminders.map((reminder) => (
+                  <span
+                    key={reminder}
+                  >{`${i18n.attendances.notes.reminders[reminder]}. `}</span>
+                ))}{' '}
+                {child.dailyNote.reminderNote}
+              </span>
+            </FixedSpaceColumn>
+          )}
+        </NoteSection>
       )}
 
       {hasGroupNotes && (
-        <ContentArea
-          shadow
-          opaque={true}
-          paddingHorizontal="s"
-          paddingVertical="s"
-          blue
+        <NoteSection
+          icon={farUsers}
+          iconColor={colors.main.m4}
+          title={i18n.attendances.notes.groupNote}
         >
-          <FixedSpaceRow>
-            <span>
-              <RoundIcon content={farUsers} color={colors.main.m4} size="m" />
-            </span>
-            <FixedSpaceColumn spacing="s">
-              <H2 noMargin>{i18n.attendances.notes.groupNote}</H2>
-              {activeGroupNotes.map((gn) => (
-                <p key={gn.id} data-qa="group-note">
-                  {gn.note}
-                </p>
-              ))}
-            </FixedSpaceColumn>
-          </FixedSpaceRow>
-        </ContentArea>
+          {activeGroupNotes.map((gn) => (
+            <p key={gn.id} data-qa="group-note">
+              {gn.note}
+            </p>
+          ))}
+        </NoteSection>
       )}
     </FixedSpaceColumn>
+  )
+})
+
+const NoteSection = React.memo(function NoteSection({
+  icon,
+  iconColor,
+  title,
+  children
+}: {
+  icon: IconDefinition
+  iconColor: string
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <ContentArea
+      shadow
+      opaque={true}
+      paddingHorizontal="s"
+      paddingVertical="s"
+      blue
+    >
+      <FixedSpaceRow>
+        <span>
+          <RoundIcon content={icon} color={iconColor} size="m" />
+        </span>
+        <FixedSpaceColumn spacing="s">
+          <H2 noMargin>{title}</H2>
+          {children}
+        </FixedSpaceColumn>
+      </FixedSpaceRow>
+    </ContentArea>
   )
 })
