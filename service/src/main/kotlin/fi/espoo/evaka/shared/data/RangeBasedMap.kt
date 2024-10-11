@@ -100,6 +100,9 @@ abstract class RangeBasedMap<
     /** Returns true if the map is empty. */
     fun isEmpty(): Boolean = this.entries.isEmpty()
 
+    /** Returns true if the map is not empty. */
+    fun isNotEmpty(): Boolean = this.entries.isNotEmpty()
+
     /**
      * Returns a new map with the given range set to the given value. Any existing values
      * overlapping in any way with the given range are *overwritten*.
