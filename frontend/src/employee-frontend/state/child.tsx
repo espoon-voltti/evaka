@@ -171,7 +171,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [guardians, reloadGuardians] = useApiState(
     async () =>
       permittedActions.has('READ_GUARDIANS')
-        ? await getPersonGuardiansResult({ personId: id })
+        ? (await getPersonGuardiansResult({ personId: id })).map(
+            ({ guardians }) => guardians
+          )
         : Loading.of<PersonJSON[]>(),
     [id, permittedActions]
   )
