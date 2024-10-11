@@ -19,6 +19,7 @@ import {
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -52,11 +53,11 @@ import {
 } from './CalendarModal'
 import ChildSelector from './ChildSelector'
 import { postAbsencesMutation } from './queries'
-import { validatedUUIDArray } from './reservation-modal/form'
+import { nonEmptyArray } from './reservation-modal/form'
 
 const absenceForm = mapped(
   object({
-    selectedChildren: validatedUUIDArray,
+    selectedChildren: nonEmptyArray<UUID>(),
     range: required(localDateRange()),
     absenceType: required(value<AbsenceType | undefined>())
   }),

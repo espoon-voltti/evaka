@@ -6,9 +6,10 @@ import React, { useMemo } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import { BoundForm, useBoolean } from 'lib-common/form/hooks'
+import { BoundFormState, useBoolean } from 'lib-common/form/hooks'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatFirstName } from 'lib-common/names'
+import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { StatusIcon } from 'lib-components/atoms/StatusIcon'
 import {
@@ -20,11 +21,9 @@ import { fasExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { validatedUUIDArray } from './reservation-modal/form'
-
 interface ChildSelectorProps {
   childItems: ReservationChild[]
-  bind: BoundForm<typeof validatedUUIDArray>
+  bind: BoundFormState<UUID[]>
 }
 
 export default React.memo(function ChildSelector({
@@ -41,7 +40,7 @@ export default React.memo(function ChildSelector({
 
   return (
     <FixedSpaceColumn>
-      <FixedSpaceFlexWrap>
+      <FixedSpaceFlexWrap id="child-chip-container">
         {childItems.map((child) => (
           <div key={child.id} data-qa="relevant-child">
             <SelectionChip
@@ -60,6 +59,17 @@ export default React.memo(function ChildSelector({
                     ? [...prev, child.id]
                     : prev.filter((id) => id !== child.id)
                 )
+              }}
+              onBlur={(e) => {
+                const chipGroupContainer = document.getElementById(
+                  'child-chip-container'
+                )
+                if (
+                  chipGroupContainer &&
+                  !chipGroupContainer.contains(e.relatedTarget)
+                ) {
+                  childSelectionMarker.on()
+                }
               }}
               data-qa={`child-${child.id}`}
             />

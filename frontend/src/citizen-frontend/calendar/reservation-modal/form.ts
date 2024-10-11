@@ -225,17 +225,14 @@ export function toDailyReservationRequest(
   }
 }
 
-const nonEmptyUUIDArrayValidator = (value: UUID[]) =>
-  value && value.length > 0 ? undefined : ('required' as const)
-
-export const validatedUUIDArray = mapped(
-  validated(array(value<UUID>()), nonEmptyUUIDArrayValidator),
-  (output) => output
-)
+export const nonEmptyArray = <T>() =>
+  validated(array(value<T>()), (arr) =>
+    arr.length > 0 ? undefined : ('required' as const)
+  )
 
 export const reservationForm = mapped(
   object({
-    selectedChildren: validatedUUIDArray,
+    selectedChildren: nonEmptyArray<UUID>(),
     dateRange: required(localDateRange()),
     repetition: required(oneOf<Repetition>()),
     times: timesUnion

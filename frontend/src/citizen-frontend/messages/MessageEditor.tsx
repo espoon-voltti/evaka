@@ -217,7 +217,10 @@ export default React.memo(function MessageEditor({
                 <label>
                   <Bold>{required(i18n.messages.messageEditor.children)}</Bold>
                   <FixedSpaceColumn>
-                    <FixedSpaceFlexWrap horizontalSpacing="xs">
+                    <FixedSpaceFlexWrap
+                      horizontalSpacing="xs"
+                      id="child-chip-container"
+                    >
                       {children_
                         .filter((child) => childIds.includes(child.id))
                         .map((child) => (
@@ -252,6 +255,18 @@ export default React.memo(function MessageEditor({
                                   children,
                                   recipients
                                 }))
+                              }}
+                              onBlur={(e) => {
+                                const chipGroupContainer =
+                                  document.getElementById(
+                                    'child-chip-container'
+                                  )
+                                if (
+                                  chipGroupContainer &&
+                                  !chipGroupContainer.contains(e.relatedTarget)
+                                ) {
+                                  childSelectionMarker.on()
+                                }
                               }}
                               data-qa={`child-${child.id}`}
                             />
