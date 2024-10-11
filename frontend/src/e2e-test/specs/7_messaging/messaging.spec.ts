@@ -416,7 +416,10 @@ describe('Sending and receiving messages', () => {
           false
         )
         await citizenMessagesPage.assertAriaLiveExistsAndIncludesNotification()
-        await citizenMessagesPage.assertTimedNotification('Viesti lähetetty')
+        await citizenMessagesPage.assertTimedNotification(
+          'message-sent-notification',
+          'Viesti lähetetty'
+        )
         await citizenMessagesPage.assertNewMessageButtonIsFocused()
       })
 
@@ -655,7 +658,10 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await citizenMessagesPage.assertAriaLiveExistsAndIncludesNotification()
-        await citizenMessagesPage.assertTimedNotification('Viesti lähetetty')
+        await citizenMessagesPage.assertTimedNotification(
+          'message-sent-notification',
+          'Viesti lähetetty'
+        )
       })
 
       describe('Messages can be deleted / archived', () => {
@@ -674,6 +680,25 @@ describe('Sending and receiving messages', () => {
           await citizenMessagesPage.deleteFirstThread()
           await citizenMessagesPage.confirmThreadDeletion()
           await citizenMessagesPage.assertInboxIsEmpty()
+        })
+        test('Citizen deletes a message thread and receives a notification on success', async () => {
+          await openSupervisorPage(mockedDateAt10)
+          await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+          const messagesPage = new MessagesPage(unitSupervisorPage)
+          const messageEditor = await messagesPage.openMessageEditor()
+          await messageEditor.sendNewMessage(defaultMessage)
+          await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+          await openCitizen(mockedDateAt11)
+          await citizenPage.goto(config.enduserMessagesUrl)
+          const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+          await citizenMessagesPage.assertThreadContent(defaultMessage)
+          await citizenMessagesPage.deleteFirstThread()
+          await citizenMessagesPage.confirmThreadDeletion()
+          await citizenMessagesPage.assertTimedNotification(
+            'thread-deleted-notification',
+            'Viestiketju poistettu'
+          )
         })
       })
     }

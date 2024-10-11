@@ -555,7 +555,8 @@ const en: Translations = {
       title: 'Do you really want to delete the message thread?',
       text: 'The messages cannot be recovered after deleting.',
       cancel: 'Do not delete',
-      confirm: 'Delete thread'
+      confirm: 'Delete thread',
+      success: 'Message thread deleted'
     },
     sensitive: 'Sensitive message thread',
     strongAuthRequired: 'Reading requires strong authentication',
