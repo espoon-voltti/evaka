@@ -172,7 +172,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(100_00, secondInvoice.rows.first().unitPrice)
         assertEquals(2, secondInvoice.rows.last().amount)
         assertEquals(-40_00, secondInvoice.rows.last().unitPrice)
-        assertEquals(getCorrectionForMonth(secondMonth).id, secondInvoice.rows.last().correctionId)
+        assertEquals(getUnappliedCorrection().id, secondInvoice.rows.last().correctionId)
 
         insertAndSendInvoice(secondInvoice)
 
@@ -184,7 +184,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(100_00, thirdInvoice.rows.first().unitPrice)
         assertEquals(1, thirdInvoice.rows.last().amount)
         assertEquals(-40_00, thirdInvoice.rows.last().unitPrice)
-        assertEquals(getCorrectionForMonth(thirdMonth).id, thirdInvoice.rows.last().correctionId)
+        assertEquals(getUnappliedCorrection().id, thirdInvoice.rows.last().correctionId)
 
         insertAndSendInvoice(thirdInvoice)
     }
@@ -213,7 +213,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(100_00, secondInvoice.rows.first().unitPrice)
         assertEquals(1, secondInvoice.rows.last().amount)
         assertEquals(-100_00, secondInvoice.rows.last().unitPrice)
-        assertEquals(getCorrectionForMonth(secondMonth).id, secondInvoice.rows.last().correctionId)
+        assertEquals(getUnappliedCorrection().id, secondInvoice.rows.last().correctionId)
 
         insertAndSendInvoice(secondInvoice)
 
@@ -225,7 +225,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(100_00, thirdInvoice.rows.first().unitPrice)
         assertEquals(1, thirdInvoice.rows.last().amount)
         assertEquals(-50_00, thirdInvoice.rows.last().unitPrice)
-        assertEquals(getCorrectionForMonth(thirdMonth).id, thirdInvoice.rows.last().correctionId)
+        assertEquals(getUnappliedCorrection().id, thirdInvoice.rows.last().correctionId)
 
         insertAndSendInvoice(thirdInvoice)
     }
@@ -274,7 +274,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(100_00, secondInvoice.rows.first().unitPrice)
         assertEquals(1, secondInvoice.rows.last().amount)
         assertEquals(-50_00, secondInvoice.rows.last().unitPrice)
-        assertEquals(getCorrectionForMonth(secondMonth).id, secondInvoice.rows.last().correctionId)
+        assertEquals(getUnappliedCorrection().id, secondInvoice.rows.last().correctionId)
 
         insertAndSendInvoice(secondInvoice)
     }
@@ -326,7 +326,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(30_00, secondInvoice.rows.first().unitPrice)
         assertEquals(3, secondInvoice.rows.last().amount)
         assertEquals(-10_00, secondInvoice.rows.last().unitPrice)
-        val secondCorrection = getCorrectionForMonth(secondMonth)
+        val secondCorrection = getUnappliedCorrection()
         assertEquals(secondCorrection.id, secondInvoice.rows.last().correctionId)
 
         insertAndSendInvoice(secondInvoice)
@@ -339,7 +339,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(100_00, thirdInvoice.rows.first().unitPrice)
         assertEquals(2, thirdInvoice.rows.last().amount)
         assertEquals(-40_00, thirdInvoice.rows.last().unitPrice)
-        assertEquals(getCorrectionForMonth(thirdMonth).id, thirdInvoice.rows.last().correctionId)
+        assertEquals(getUnappliedCorrection().id, thirdInvoice.rows.last().correctionId)
 
         insertAndSendInvoice(thirdInvoice)
 
@@ -351,7 +351,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(100_00, fourthInvoice.rows.first().unitPrice)
         assertEquals(1, fourthInvoice.rows.last().amount)
         assertEquals(-40_00, fourthInvoice.rows.last().unitPrice)
-        assertEquals(getCorrectionForMonth(fourthMonth).id, fourthInvoice.rows.last().correctionId)
+        assertEquals(getUnappliedCorrection().id, fourthInvoice.rows.last().correctionId)
 
         insertAndSendInvoice(fourthInvoice)
     }
@@ -363,7 +363,8 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         val invoice = applyCorrections(createTestInvoice(100_00, month), month)
         insertAndSendInvoice(invoice)
 
-        val correction = getCorrectionForMonth(month)
+        val correction =
+            db.read { tx -> tx.getInvoiceCorrectionsByIds(setOf(correctionId)).single() }
         assertEquals(correctionId, correction.id)
         assertEquals(1, correction.amount)
         assertEquals(-50_00, correction.unitPrice)
@@ -376,9 +377,9 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         val invoice = applyCorrections(createTestInvoice(100_00, month), month)
         insertAndSendInvoice(invoice)
 
-        val nextMonthCorrection = getCorrectionForMonth(month.plusMonths(1))
-        assertEquals(1, nextMonthCorrection.amount)
-        assertEquals(-100_00, nextMonthCorrection.unitPrice)
+        val unappliedCorrection = getUnappliedCorrection()
+        assertEquals(1, unappliedCorrection.amount)
+        assertEquals(-100_00, unappliedCorrection.unitPrice)
     }
 
     @Test
@@ -455,7 +456,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             it.insert(
                 DevInvoiceCorrection(
                     headOfFamilyId = adult.id,
-                    targetMonth = month,
+                    targetMonth = null,
                     childId = child.id,
                     amount = amount,
                     unitPrice = unitPrice,
@@ -468,6 +469,5 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             )
         }
 
-    private fun getCorrectionForMonth(month: YearMonth) =
-        db.read { it.getInvoiceCorrectionsForMonth(month) }.single()
+    private fun getUnappliedCorrection() = db.read { it.getUnappliedInvoiceCorrections() }.single()
 }

@@ -4,14 +4,12 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.invoicing.data.getFirstUninvoicedMonth
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.YearMonth
 import kotlin.math.abs
@@ -48,8 +46,8 @@ WHERE ${predicate(where.forTable("invoice_correction"))}
         }
         .toList()
 
-fun Database.Read.getInvoiceCorrectionsForMonth(month: YearMonth): List<InvoiceCorrection> =
-    getInvoiceCorrections(Predicate { where("$it.target_month = ${bind(month)}") })
+fun Database.Read.getUnappliedInvoiceCorrections(): List<InvoiceCorrection> =
+    getInvoiceCorrections(Predicate { where("$it.target_month IS NULL") })
 
 fun Database.Read.getInvoiceCorrectionsByIds(
     ids: Set<InvoiceCorrectionId>
@@ -65,33 +63,7 @@ fun Database.Read.getInvoiceCorrectionsForHeadOfFamily(
                 .thenByDescending { abs(it.amount * it.unitPrice) }
         )
 
-fun Database.Transaction.movePastUnappliedInvoiceCorrections(
-    headOfFamilyIds: Set<PersonId>?,
-    targetMonth: YearMonth,
-) {
-    val headOfFamilyPredicate =
-        if (headOfFamilyIds != null) {
-            PredicateSql { where("head_of_family_id = ANY (${bind(headOfFamilyIds)})") }
-        } else {
-            PredicateSql.alwaysTrue()
-        }
-
-    execute {
-        sql(
-            """
-UPDATE invoice_correction
-SET target_month = ${bind(targetMonth)}
-WHERE
-    target_month < ${bind(targetMonth)} AND
-    ${predicate(headOfFamilyPredicate)} AND
-    NOT EXISTS (SELECT FROM invoice_row WHERE correction_id = invoice_correction.id)
-"""
-        )
-    }
-}
-
 data class InvoiceCorrectionInsert(
-    val targetMonth: YearMonth?,
     val headOfFamilyId: PersonId,
     val childId: ChildId,
     val unitId: DaycareId,
@@ -110,17 +82,11 @@ fun Database.Transaction.insertInvoiceCorrection(
 fun Database.Transaction.insertInvoiceCorrections(
     corrections: Iterable<InvoiceCorrectionInsert>
 ): List<InvoiceCorrectionId> {
-    val defaultTargetMonth =
-        if (corrections.any { it.targetMonth == null }) {
-            getFirstUninvoicedMonth()
-        } else null // not needed
-
     return prepareBatch(corrections) {
             sql(
                 """
-INSERT INTO invoice_correction (target_month, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
+INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
 VALUES (
-    ${bind { it.targetMonth ?: defaultTargetMonth }},
     ${bind { it.headOfFamilyId }},
     ${bind { it.childId }},
     ${bind { it.unitId }},
@@ -141,6 +107,7 @@ RETURNING id
 
 data class InvoiceCorrectionUpdate(
     val id: InvoiceCorrectionId,
+    val targetMonth: YearMonth,
     val amount: Int,
     val unitPrice: Int,
 )
@@ -150,7 +117,7 @@ fun Database.Transaction.updateInvoiceCorrections(items: Iterable<InvoiceCorrect
         sql(
             """
 UPDATE invoice_correction
-SET amount = ${bind { it.amount }}, unit_price = ${bind { it.unitPrice }}
+SET target_month = ${bind { it.targetMonth }}, amount = ${bind { it.amount }}, unit_price = ${bind { it.unitPrice }}
 WHERE id = ${bind { it.id }}
 """
         )

@@ -59,7 +59,6 @@ class InvoiceGenerator(
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
-        tx.movePastUnappliedInvoiceCorrections(null, month)
         val invoiceCalculationData =
             tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, range) }
         val invoices = draftInvoiceGenerator.generateDraftInvoices(tx, invoiceCalculationData)
@@ -202,9 +201,7 @@ class InvoiceGenerator(
         targetMonth: YearMonth,
         areaIds: Map<DaycareId, AreaId>,
     ): List<Invoice> {
-        val invoicePeriod = FiniteDateRange.ofMonth(targetMonth)
-        val corrections =
-            tx.getInvoiceCorrectionsForMonth(targetMonth).groupBy { it.headOfFamilyId }
+        val corrections = tx.getUnappliedInvoiceCorrections().groupBy { it.headOfFamilyId }
 
         val invoicesWithCorrections =
             corrections
@@ -214,8 +211,8 @@ class InvoiceGenerator(
                             ?: Invoice(
                                 id = InvoiceId(UUID.randomUUID()),
                                 status = InvoiceStatus.DRAFT,
-                                periodStart = invoicePeriod.start,
-                                periodEnd = invoicePeriod.end,
+                                periodStart = targetMonth.atDay(1),
+                                periodEnd = targetMonth.atEndOfMonth(),
                                 areaId =
                                     headOfFamilyCorrections.first().unitId.let {
                                         areaIds[it] ?: error("No areaId found for unit $it")

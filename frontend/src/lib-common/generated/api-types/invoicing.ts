@@ -536,7 +536,7 @@ export interface InvoiceCorrection {
   note: string
   period: FiniteDateRange
   product: string
-  targetMonth: YearMonth
+  targetMonth: YearMonth | null
   unitId: UUID
   unitPrice: number
 }
@@ -552,7 +552,6 @@ export interface InvoiceCorrectionInsert {
   note: string
   period: FiniteDateRange
   product: string
-  targetMonth: YearMonth | null
   unitId: UUID
   unitPrice: number
 }
@@ -1316,7 +1315,7 @@ export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>
   return {
     ...json,
     period: FiniteDateRange.parseJson(json.period),
-    targetMonth: YearMonth.parseIso(json.targetMonth)
+    targetMonth: (json.targetMonth != null) ? YearMonth.parseIso(json.targetMonth) : null
   }
 }
 
@@ -1324,8 +1323,7 @@ export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>
 export function deserializeJsonInvoiceCorrectionInsert(json: JsonOf<InvoiceCorrectionInsert>): InvoiceCorrectionInsert {
   return {
     ...json,
-    period: FiniteDateRange.parseJson(json.period),
-    targetMonth: (json.targetMonth != null) ? YearMonth.parseIso(json.targetMonth) : null
+    period: FiniteDateRange.parseJson(json.period)
   }
 }
 

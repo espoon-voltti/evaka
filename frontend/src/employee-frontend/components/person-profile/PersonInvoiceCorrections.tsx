@@ -199,8 +199,9 @@ const ChildSection = React.memo(function ChildSection({
       orderBy(
         corrections,
         [
-          (c) => c.data.targetMonth.year,
-          (c) => c.data.targetMonth.month,
+          // orderBy puts undefineds first in desc ordering, so unapplied corrections are first in the list
+          (c) => c.data.targetMonth?.year,
+          (c) => c.data.targetMonth?.month,
           (c) => c.data.period.start.toSystemTzDate(),
           (c) => c.data.period.end.toSystemTzDate(),
           (c) => c.data.product,
@@ -309,8 +310,9 @@ const InvoiceCorrectionRowReadView = React.memo(
         )}
         <Tr data-qa="invoice-details-invoice-row">
           <Td data-qa="target-month">
-            {correction.targetMonth.month.toString().padStart(2, '0')} /{' '}
-            {correction.targetMonth.year}
+            {correction.targetMonth === null
+              ? i18n.invoiceCorrections.nextTargetMonth
+              : `${correction.targetMonth.month.toString().padStart(2, '0')} / ${correction.targetMonth.year}`}
           </Td>
           <Td data-qa="period">{correction.period.format()}</Td>
           <Td data-qa="product">{productName}</Td>
@@ -423,9 +425,10 @@ const InvoiceCorrectionEditModal = React.memo(
     const form = useForm(
       correctionForm,
       () => ({
-        targetMonth: row
-          ? localDate.fromDate(row.targetMonth.atDay(1))
-          : localDate.empty(),
+        targetMonth:
+          row && row.targetMonth
+            ? localDate.fromDate(row.targetMonth.atDay(1))
+            : localDate.empty(),
         product: {
           domValue: row?.product ?? '',
           options: products.map((p) => ({
@@ -479,7 +482,6 @@ const InvoiceCorrectionEditModal = React.memo(
           body: {
             headOfFamilyId: personId,
             childId,
-            targetMonth: null, // backend fills for now
             product: product.value(),
             description: description.value(),
             unitId: unit.value(),
