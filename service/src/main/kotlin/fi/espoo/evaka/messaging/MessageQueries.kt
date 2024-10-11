@@ -1319,7 +1319,7 @@ JOIN daycare u ON u.id = acl.daycare_id
 JOIN daycare_group g ON u.id = g.daycare_id
 JOIN message_account receiver_acc ON g.id = receiver_acc.daycare_group_id
 WHERE sender_acc.id = ${bind(senderId)}
-AND (g.end_date IS NULL OR g.end_date > ${bind(date)})
+AND (g.end_date IS NULL OR g.end_date >= ${bind(date)})
 AND (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g.id = ANY(${bind(groupIds)}))
 """
             )
