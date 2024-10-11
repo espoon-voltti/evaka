@@ -38,10 +38,9 @@ abstract class RangeBasedMap<
      * never extend outside the given range.
      */
     fun intersectRanges(range: Range): Sequence<Range> =
-        entries
+        RangeBasedSet.partition(entries, range, adjacentBelongToCenter = false) { it.first }
+            .center
             .asSequence()
-            .dropWhile { !it.first.overlaps(range) }
-            .takeWhile { it.first.overlaps(range) }
             .mapNotNull { it.first.intersection(range) }
 
     /**
@@ -58,10 +57,9 @@ abstract class RangeBasedMap<
      * Duplicates are possible if the same value exists in multiple ranges in the original map.
      */
     fun intersectValues(range: Range): Sequence<T> =
-        this.entries
+        RangeBasedSet.partition(entries, range, adjacentBelongToCenter = false) { it.first }
+            .center
             .asSequence()
-            .dropWhile { !it.first.overlaps(range) }
-            .takeWhile { it.first.overlaps(range) }
             .map { it.second }
 
     /** Returns a sequence of all entries in the map, sorted by range in ascending order. */
@@ -75,10 +73,9 @@ abstract class RangeBasedMap<
      * returned that continues outside the given clamp range.
      */
     fun intersectEntries(range: Range): Sequence<Pair<Range, T>> =
-        this.entries
+        RangeBasedSet.partition(entries, range, adjacentBelongToCenter = false) { it.first }
+            .center
             .asSequence()
-            .dropWhile { !it.first.overlaps(range) }
-            .takeWhile { it.first.overlaps(range) }
             .mapNotNull { Pair(it.first.intersection(range) ?: return@mapNotNull null, it.second) }
 
     /**
@@ -236,10 +233,12 @@ abstract class RangeBasedMap<
      * about whether one or more values can be found for the whole range.
      */
     fun contains(range: Range): Boolean =
-        this.entries.fold(emptyList<Range>()) { acc, entry ->
-            entry.first.intersection(range)?.let { overlap -> RangeBasedSet.add(acc, overlap) }
-                ?: acc
-        } == listOf(range)
+        RangeBasedSet.partition(this.entries, range, adjacentBelongToCenter = false) { it.first }
+            .center
+            .fold(emptyList<Range>()) { acc, entry ->
+                entry.first.intersection(range)?.let { overlap -> RangeBasedSet.add(acc, overlap) }
+                    ?: acc
+            } == listOf(range)
 
     /** Converts a raw sorted list of entries to a concrete `RangeBasedMap` subclass object. */
     protected abstract fun List<Pair<Range, T>>.toThis(): This
@@ -247,8 +246,17 @@ abstract class RangeBasedMap<
     /** Constructs a range from endpoints. */
     protected abstract fun range(start: Point, end: Point): Range
 
+    /** Constructs the smallest range that includes the given point. */
+    protected abstract fun range(point: Point): Range
+
     /** Gets value at given point or null if not exists */
-    fun getValue(at: Point): T? = entries().find { it.first.includes(at) }?.second
+    fun getValue(at: Point): T? =
+        RangeBasedSet.partition(this.entries, range(at), adjacentBelongToCenter = false) {
+                it.first
+            }
+            .center
+            .find { it.first.includes(at) }
+            ?.second
 
     companion object {
         /**
@@ -266,7 +274,7 @@ abstract class RangeBasedMap<
          * also guaranteed to be sorted.
          */
         fun <T, Point : Comparable<Point>, Range : BoundedRange<Point, Range>> update(
-            entries: List<Pair<Range, T>>,
+            sortedEntries: List<Pair<Range, T>>,
             range: Range,
             newValue: T,
             resolve: (range: Range, old: T, new: T) -> T,
@@ -278,10 +286,10 @@ abstract class RangeBasedMap<
                     this.first.merge(other.first) to this.second
                 else null
 
-            fun append(entry: Pair<Range, T>) =
+            fun append(entry: Pair<Range, T>) {
                 when (val last = result.lastOrNull()) {
                     null -> result.add(entry)
-                    else -> {
+                    else ->
                         when (val merged = last.tryMerge(entry)) {
                             null -> result.add(entry)
                             else -> {
@@ -289,32 +297,35 @@ abstract class RangeBasedMap<
                                 result.add(merged)
                             }
                         }
-                    }
+                }
+            }
+
+            val p =
+                RangeBasedSet.partition(sortedEntries, range, adjacentBelongToCenter = false) {
+                    it.first
                 }
 
+            result += p.left
             var newRange: Range? = range
-            for ((oldRange, oldValue) in entries) {
+            for ((oldRange, oldValue) in p.center) {
                 if (newRange == null) {
                     // Nothing new to update anymore, but we need to retain remaining old ranges
                     append(oldRange to oldValue)
                     continue
                 }
                 when (val relation = oldRange.relationTo(newRange)) {
-                    is BoundedRange.Relation.LeftTo -> {
-                        // Old ranges to the left are not affected by update
-                        append(oldRange to oldValue)
-                    }
+                    is BoundedRange.Relation.LeftTo -> append(oldRange to oldValue)
                     is BoundedRange.Relation.Overlap -> {
                         // Any remainder on the left side can just be added as is
                         relation.left?.let {
                             append(it.range to if (it.isFirst) oldValue else newValue)
                         }
                         // Overlap needs to be resolved and then added. The `append` function
-                        // handles all merging of adjacent same-value ranges, so we don't need to
-                        // handle that here
+                        // handles all merging of adjacent same-value ranges, so we don't need
+                        // to handle that here
                         append(relation.overlap to resolve(relation.overlap, oldValue, newValue))
-                        // Right side needs to be looked at more carefully, because we need to do
-                        // very different things depending on where any remainder comes from, if
+                        // Right side needs to be looked at more carefully, because we need to
+                        // do very different things depending on where any remainder comes from, if
                         // there is any
                         newRange =
                             relation.right?.let { remainder ->
@@ -325,14 +336,15 @@ abstract class RangeBasedMap<
                                     null
                                 } else {
                                     // Remainder comes from the new range, and the overlap was
-                                    // resolved so use the remainder as the new range from now on
+                                    // resolved so use the remainder as the new range from now
+                                    // on
                                     remainder.range
                                 }
                             }
                     }
                     is BoundedRange.Relation.RightTo -> {
-                        // If the old range is to the right of the new range, we are guaranteed to
-                        // never see more overlaps
+                        // If the old range is to the right of the new range, we are guaranteed
+                        // to never see more overlaps
                         append(newRange to newValue)
                         append(oldRange to oldValue)
                         newRange = null
@@ -342,6 +354,11 @@ abstract class RangeBasedMap<
             // If we didn't consume the new range completely while processing overlaps, the new
             // range is guaranteed to the right of all previously appended ranges
             newRange?.let { append(it to newValue) }
+
+            // The first entry may be adjacent and merge-able, so it needs special handling
+            p.right.firstOrNull()?.let { append(it) }
+            // add the remaining without merging
+            result += p.right.asSequence().drop(1)
             return result
         }
 
@@ -353,18 +370,27 @@ abstract class RangeBasedMap<
          * the returned list is also guaranteed to be sorted.
          */
         fun <T, Point : Comparable<Point>, Range : BoundedRange<Point, Range>> remove(
-            entries: List<Pair<Range, T>>,
+            sortedEntries: List<Pair<Range, T>>,
             range: Range,
-        ): List<Pair<Range, T>> =
-            entries
-                .partition { it.first.overlaps(range) }
-                .let { (conflicts, unchanged) ->
-                    val result = unchanged.toMutableList()
-                    for (conflict in conflicts) {
-                        result.addAll(conflict.first.subtract(range).map { it to conflict.second })
-                    }
-                    result.sortBy { it.first.start }
-                    result
+        ): List<Pair<Range, T>> {
+            val p =
+                RangeBasedSet.partition(sortedEntries, range, adjacentBelongToCenter = false) {
+                    it.first
                 }
+            val result = mutableListOf<Pair<Range, T>>()
+            result += p.left
+            if (p.center.isNotEmpty())
+                result +=
+                    p.center.first().let { (firstRange, firstValue) ->
+                        (firstRange - range).map { it to firstValue }
+                    }
+            if (p.center.size > 1)
+                result +=
+                    p.center.last().let { (lastRange, lastValue) ->
+                        (lastRange - range).map { it to lastValue }
+                    }
+            result += p.right
+            return result
+        }
     }
 }

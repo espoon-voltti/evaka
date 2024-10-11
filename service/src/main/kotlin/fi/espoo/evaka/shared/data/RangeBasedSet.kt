@@ -30,7 +30,7 @@ abstract class RangeBasedSet<
      * range.
      */
     fun intersectRanges(range: Range): Sequence<Range> =
-        partition(this.ranges, range, adjacentBelongToCenter = false)
+        partition(this.ranges, range, adjacentBelongToCenter = false) { it }
             .center
             .asSequence()
             .mapNotNull { it.intersection(range) }
@@ -114,9 +114,9 @@ abstract class RangeBasedSet<
 
     /** Returns true if the given range is fully contained by the set. */
     fun contains(range: Range): Boolean =
-        partition(this.ranges, range, adjacentBelongToCenter = false).center.any {
-            it.contains(range)
-        }
+        partition(this.ranges, range, adjacentBelongToCenter = false) { it }
+            .center
+            .any { it.contains(range) }
 
     /** Returns true if any of the ranges includes the given point. */
     fun includes(point: Point): Boolean = contains(range(point))
@@ -161,7 +161,7 @@ abstract class RangeBasedSet<
         private fun <T> List<T>.sliceView(range: IntRange): List<T> =
             if (range.isEmpty()) emptyList() else subList(range.first, range.last + 1)
 
-        private data class Partition<T>(val left: List<T>, val center: List<T>, val right: List<T>)
+        data class Partition<T>(val left: List<T>, val center: List<T>, val right: List<T>)
 
         /**
          * Partitions a sorted list of ranges into left/center/right list views depending on
@@ -187,16 +187,17 @@ abstract class RangeBasedSet<
          * - center: {[5, 6]}
          * - right: {[9, 10]}
          */
-        private fun <Point : Comparable<Point>, Range : BoundedRange<Point, Range>> partition(
-            sortedList: List<Range>,
+        fun <T, Point : Comparable<Point>, Range : BoundedRange<Point, Range>> partition(
+            sortedList: List<T>,
             range: Range,
             adjacentBelongToCenter: Boolean,
-        ): Partition<Range> {
+            getRange: (T) -> Range,
+        ): Partition<T> {
             // Find the smallest index of the position that does *not* belong to the left list
             val leftIdx =
                 sortedList
                     .binarySearch {
-                        when (val relation = it.relationTo(range)) {
+                        when (val relation = getRange(it).relationTo(range)) {
                             is BoundedRange.Relation.LeftTo ->
                                 if (adjacentBelongToCenter && relation.gap == null) 1 else -1
                             else -> 1
@@ -211,7 +212,7 @@ abstract class RangeBasedSet<
             val rightIdx =
                 sortedList
                     .binarySearch(fromIndex = leftIdx) {
-                        when (val relation = it.relationTo(range)) {
+                        when (val relation = getRange(it).relationTo(range)) {
                             is BoundedRange.Relation.RightTo ->
                                 if (adjacentBelongToCenter && relation.gap == null) -1 else 1
                             else -> -1
@@ -246,7 +247,7 @@ abstract class RangeBasedSet<
             sortedRanges: List<Range>,
             range: Range,
         ): List<Range> {
-            val p = partition(sortedRanges, range, adjacentBelongToCenter = true)
+            val p = partition(sortedRanges, range, adjacentBelongToCenter = true) { it }
             val result = mutableListOf<Range>()
             result += p.left
             result +=
@@ -267,7 +268,7 @@ abstract class RangeBasedSet<
             sortedRanges: List<Range>,
             range: Range,
         ): List<Range> {
-            val p = partition(sortedRanges, range, adjacentBelongToCenter = false)
+            val p = partition(sortedRanges, range, adjacentBelongToCenter = false) { it }
             val result = mutableListOf<Range>()
             result += p.left
             if (p.center.isNotEmpty()) result += p.center.first() - range
