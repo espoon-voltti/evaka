@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
@@ -39,7 +38,6 @@ import fi.espoo.evaka.shared.withSpan
 import io.opentelemetry.api.trace.Tracer
 import java.time.DayOfWeek
 import java.time.Duration
-import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
 import java.util.UUID
@@ -95,7 +93,7 @@ class InvoiceGenerator(
             effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
         val areaIds = tx.getAreaIds()
 
-        val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
+        val absences = tx.getBillableAbsencesInRange(range)
 
         val freeChildren =
             if (
@@ -148,7 +146,7 @@ class InvoiceGenerator(
             operationalDaysByChild = operationalDaysByChild,
             businessDays = businessDays,
             feeThresholds = feeThresholds,
-            absences = allAbsences,
+            absences = absences,
             freeChildren = freeChildren,
             codebtors = codebtors,
             defaultServiceNeedOptions = defaultServiceNeedOptions,
@@ -164,7 +162,7 @@ class InvoiceGenerator(
         val operationalDaysByChild: Map<ChildId, DateSet>,
         val businessDays: DateSet,
         val feeThresholds: FeeThresholds,
-        val absences: List<AbsenceStub> = listOf(),
+        val absences: Map<AbsenceType, Map<ChildId, DateSet>>,
         val freeChildren: Set<ChildId> = setOf(),
         val codebtors: Map<PersonId, PersonId?> = mapOf(),
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
@@ -299,28 +297,29 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonI
         .toSet<PersonId>()
 }
 
-data class AbsenceStub(
-    val childId: ChildId,
-    val date: LocalDate,
-    val category: AbsenceCategory,
-    val absenceType: AbsenceType,
-)
-
-fun Database.Read.getAbsenceStubs(
-    spanningRange: FiniteDateRange,
-    categories: Collection<AbsenceCategory>,
-): List<AbsenceStub> {
+fun Database.Read.getBillableAbsencesInRange(
+    range: FiniteDateRange
+): Map<AbsenceType, Map<ChildId, DateSet>> {
     return createQuery {
             sql(
                 """
-SELECT child_id, date, category, absence_type
+SELECT absence_type, child_id, range_agg(daterange(date, date, '[]')) AS dates
 FROM absence
-WHERE between_start_and_end(${bind(spanningRange)}, date)
-AND category = ANY(${bind(categories)})
+WHERE between_start_and_end(${bind(range)}, date)
+AND category = 'BILLABLE'
+GROUP BY child_id, absence_type
 """
             )
         }
-        .toList<AbsenceStub>()
+        .toList {
+            Triple(
+                column<AbsenceType>("absence_type"),
+                column<ChildId>("child_id"),
+                column<DateSet>("dates"),
+            )
+        }
+        .groupBy({ it.first }, { it.second to it.third })
+        .mapValues { (_, values) -> values.associateBy({ it.first }, { it.second }) }
 }
 
 data class PlacementStub(
