@@ -5,6 +5,7 @@
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
+import { sendJamixOrders } from '../../generated/api-clients/jamix'
 import {
   getAttendanceReservationReportByChild,
   getChildAttendanceReport,
@@ -207,4 +208,9 @@ export const preschoolAbsenceReportQuery = query({
 export const holidayPeriodAttendanceReportQuery = query({
   api: getHolidayPeriodAttendanceReport,
   queryKey: queryKeys.holidayPeriodAttendanceReport
+})
+
+export const sendJamixOrdersMutation = mutation({
+  api: sendJamixOrders,
+  invalidateQueryKeys: () => []
 })
