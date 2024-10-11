@@ -137,20 +137,12 @@ data class MessageThreadData(
 data class CalendarEventNotificationData(val title: HtmlSafe<String>, val period: FiniteDateRange)
 
 data class DiscussionTimeReminderData(
-    val title: HtmlSafe<String>,
-    val firstName: HtmlSafe<String>,
-    val lastName: HtmlSafe<String>,
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,
-    val childId: ChildId,
 )
 
-data class DiscussionSurveyReservationNotificationData(
-    val title: HtmlSafe<String>,
-    val childName: HtmlSafe<String>,
-    val calendarEventTime: CalendarEventTime,
-)
+data class DiscussionSurveyReservationNotificationData(val calendarEventTime: CalendarEventTime)
 
 data class DiscussionSurveyCreationNotificationData(
     val eventTitle: HtmlSafe<String>,

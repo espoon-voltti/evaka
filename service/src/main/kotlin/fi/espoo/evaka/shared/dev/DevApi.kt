@@ -1551,8 +1551,6 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                     emailMessageProvider.discussionSurveyReservationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
-                            childName = HtmlSafe("Terttu Testaaja"),
-                            title = HtmlSafe("Testikeskustelun otsikko"),
                             calendarEventTime =
                                 CalendarEventTime(
                                     id = CalendarEventTimeId(UUID.randomUUID()),
@@ -1560,15 +1558,13 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                     startTime = LocalTime.of(12, 20),
                                     endTime = LocalTime.of(12, 50),
                                     childId = null,
-                                ),
+                                )
                         ),
                     )
                 EmailMessageType.discussionTimeCancellation ->
                     emailMessageProvider.discussionSurveyReservationCancellationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
-                            childName = HtmlSafe("Terttu Testaaja"),
-                            title = HtmlSafe("Testikeskustelun otsikko"),
                             calendarEventTime =
                                 CalendarEventTime(
                                     id = CalendarEventTimeId(UUID.randomUUID()),
@@ -1576,7 +1572,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                     startTime = LocalTime.of(12, 20),
                                     endTime = LocalTime.of(12, 50),
                                     childId = null,
-                                ),
+                                )
                         ),
                     )
                 EmailMessageType.discussionTimeReservationReminder ->
@@ -1584,12 +1580,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                         Language.fi,
                         DiscussionTimeReminderData(
                             date = LocalDate.now(),
-                            firstName = HtmlSafe("Terttu"),
-                            lastName = HtmlSafe("Testaaja"),
                             startTime = LocalTime.of(12, 20),
                             endTime = LocalTime.of(12, 50),
-                            childId = PersonId(UUID.randomUUID()),
-                            title = HtmlSafe("VASU-keskustelut 2029 syksy"),
                         ),
                     )
                 EmailMessageType.discussionSurveyCreation ->
