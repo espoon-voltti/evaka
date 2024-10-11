@@ -424,6 +424,10 @@ const sv: Translations = {
       },
       start: 'Börjar',
       end: 'Slutar',
+      secondTimeRange: {
+        start: 'Andra tidsintervall start',
+        end: 'Andra tidsintervall slut'
+      },
       present: 'Närvarande',
       absent: 'Frånvarande',
       reservationClosed: 'Registreringen är stängd',
