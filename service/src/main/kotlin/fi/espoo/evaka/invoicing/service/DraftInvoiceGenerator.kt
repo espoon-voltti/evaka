@@ -334,12 +334,14 @@ class DraftInvoiceGenerator(
                             absences = ChildAbsences(data.absences, child.id, childOperationalDays),
                         )
 
+                    val invoiceRows = mutableListOf<InvoiceRow>()
+                    var invoiceRowSum = 0
                     separatePeriods
                         .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
-                        .fold(listOf<InvoiceRow>()) { accumulatedRows, (period, rowStub) ->
-                            accumulatedRows +
+                        .forEach { (period, rowStub) ->
+                            val rows =
                                 toInvoiceRows(
-                                    accumulatedRows,
+                                    invoiceRowSum,
                                     period,
                                     rowStub,
                                     dailyFeeDivisor,
@@ -357,7 +359,10 @@ class DraftInvoiceGenerator(
                                     getChildFullMonthAbsence(child.id),
                                     getInvoiceMaxFee,
                                 )
+                            invoiceRowSum += rows.sumOf { it.price }
+                            invoiceRows += rows
                         }
+                    invoiceRows
                 }
                 .let { rows -> applyRoundingRows(rows, data.decisions, data.invoicePeriod) }
                 .filter { row -> row.price != 0 }
@@ -483,7 +488,7 @@ class DraftInvoiceGenerator(
     }
 
     private fun toInvoiceRows(
-        accumulatedRows: List<InvoiceRow>,
+        accumulatedSum: Int,
         period: FiniteDateRange,
         invoiceRowStub: InvoiceRowStub,
         dailyFeeDivisor: Int,
@@ -513,7 +518,7 @@ class DraftInvoiceGenerator(
                 )
             else ->
                 toPermanentPlacementInvoiceRows(
-                    accumulatedRows,
+                    accumulatedSum,
                     period,
                     invoiceRowStub.child,
                     invoiceRowStub.placement.type,
@@ -572,7 +577,7 @@ class DraftInvoiceGenerator(
     }
 
     private fun toPermanentPlacementInvoiceRows(
-        accumulatedRows: List<InvoiceRow>,
+        accumulatedSum: Int,
         period: FiniteDateRange,
         child: ChildWithDateOfBirth,
         placementType: PlacementType,
@@ -644,11 +649,10 @@ class DraftInvoiceGenerator(
         val withDailyModifiers =
             initialRows +
                 surplusContractDays(
-                    accumulatedRows,
+                    accumulatedSum + initialRows.sumOf { it.price },
                     period,
                     child,
                     finalPrice,
-                    initialRows.sumOf { it.price },
                     unitId,
                     contractDaysPerMonth,
                     attendanceDates,
@@ -707,11 +711,10 @@ class DraftInvoiceGenerator(
     private val plannedAbsenceTypes = setOf(AbsenceType.PLANNED_ABSENCE, AbsenceType.FREE_ABSENCE)
 
     private fun surplusContractDays(
-        accumulatedRows: List<InvoiceRow>,
+        accumulatedSum: Int,
         period: FiniteDateRange,
         child: ChildWithDateOfBirth,
         monthlyPrice: Int,
-        invoiceRowSum: Int,
         unitId: DaycareId,
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
@@ -750,15 +753,13 @@ class DraftInvoiceGenerator(
                         .contains(placementType),
                 )
 
-            val accumulatedInvoiceRowSum = accumulatedRows.sumOf { it.price } + invoiceRowSum
             val (amount, unitPrice) =
                 when {
                     // surplus days increase takes invoice row sum above max price threshold
-                    accumulatedInvoiceRowSum + totalAddition > maxPrice ->
-                        1 to (maxPrice - accumulatedInvoiceRowSum)
+                    accumulatedSum + totalAddition > maxPrice -> 1 to (maxPrice - accumulatedSum)
                     // total attendances days is over the max contract day surplus threshold
                     (featureConfig.maxContractDaySurplusThreshold ?: Int.MAX_VALUE) <
-                        attendanceDays -> 1 to (maxPrice - accumulatedInvoiceRowSum)
+                        attendanceDays -> 1 to (maxPrice - accumulatedSum)
                     else -> surplusAttendanceDays to surplusDailyPrice
                 }
             // it is possible that the max fee is not over the already accumulated invoice total so
