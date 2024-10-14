@@ -4,26 +4,24 @@
 
 import React, { useContext, useState } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { MealReportData } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2 } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
 import { faFileExport } from 'lib-icons'
 
-import { sendJamixOrders } from '../../generated/api-clients/jamix'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
@@ -32,9 +30,7 @@ import { unitsQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-import { mealReportByUnitQuery } from './queries'
-
-const sendJamixOrdersResult = wrapResult(sendJamixOrders)
+import { mealReportByUnitQuery, sendJamixOrdersMutation } from './queries'
 
 function getWeekDates(date: LocalDate) {
   return Array.from({ length: 7 }, (_, i) => date.startOfWeek().addDays(i))
@@ -150,12 +146,17 @@ const MealReportData = ({
             permittedGlobalActions.includes('SEND_JAMIX_ORDERS') &&
             date.isEqualOrAfter(LocalDate.todayInHelsinkiTz().addDays(2)) &&
             tableData.length > 0 && (
-              <AsyncButton
-                text={i18n.reports.meals.jamixSend.button}
+              <ConfirmedMutation
+                buttonStyle="INLINE"
+                buttonText={i18n.reports.meals.jamixSend.button}
                 icon={faFileExport}
-                appearance="inline"
-                onClick={async () => sendJamixOrdersResult({ unitId, date })}
+                mutation={sendJamixOrdersMutation}
+                onClick={() => ({ unitId, date })}
                 onSuccess={() => undefined}
+                confirmationTitle={
+                  i18n.reports.meals.jamixSend.confirmationTitle
+                }
+                confirmLabel={i18n.common.send}
               />
             )}
           <ReportDownload
