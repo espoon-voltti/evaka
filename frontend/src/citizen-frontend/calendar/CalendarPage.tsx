@@ -135,7 +135,8 @@ const CalendarPage = React.memo(function CalendarPage() {
       {renderResult(
         combine(data, events, holidayPeriods),
         ([response, events, holidayPeriods]) => {
-          const discussionSurveys = events.filter(
+          //check whether user has any discussion surveys in open/editable state
+          const showDiscussions = events.some(
             (e) =>
               e.eventType === 'DISCUSSION_SURVEY' &&
               Object.values(e.timesByChild).some((times) =>
@@ -164,6 +165,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                     dayIsReservable={dayIsReservable}
                     dayIsHolidayPeriod={dayIsHolidayPeriod}
                     events={events}
+                    showDiscussionAction={showDiscussions}
                   />
                 </ContentArea>
               </RenderOnlyOn>
@@ -188,7 +190,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   includeWeekends={true}
                   dayIsReservable={dayIsReservable}
                   events={events}
-                  isDiscussionActionVisible={discussionSurveys.length > 0}
+                  isDiscussionActionVisible={showDiscussions}
                 />
               </RenderOnlyOn>
               {modalState?.type === 'day' && (
@@ -214,7 +216,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   openDiscussionReservations={openDiscussionSurveyModal}
                   openAbsences={(date) => openAbsenceModal(date, false)}
                   openHolidays={openHolidayModal}
-                  isDiscussionActionVisible={discussionSurveys.length > 0}
+                  isDiscussionActionVisible={showDiscussions}
                 />
               )}
               {modalState?.type === 'reservations' && (

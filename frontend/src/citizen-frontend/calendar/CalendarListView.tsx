@@ -31,6 +31,7 @@ export interface Props {
   dayIsReservable: (date: LocalDate) => boolean
   dayIsHolidayPeriod: (date: LocalDate) => boolean
   events: CitizenCalendarEvent[]
+  showDiscussionAction: boolean
 }
 
 export default React.memo(function CalendarListView({
@@ -40,7 +41,8 @@ export default React.memo(function CalendarListView({
   onHoverButtonClick,
   selectDate,
   dayIsReservable,
-  events
+  events,
+  showDiscussionAction
 }: Props) {
   const i18n = useTranslation()
   const months = useMemo(() => groupByMonth(calendarDays), [calendarDays])
@@ -73,7 +75,9 @@ export default React.memo(function CalendarListView({
         data-qa="open-calendar-actions-modal"
       >
         <Icon icon={faPlus} />
-        {i18n.calendar.newReservationOrAbsence}
+        {showDiscussionAction
+          ? i18n.calendar.newReservationOrAbsenceOrDiscussion
+          : i18n.calendar.newReservationOrAbsence}
       </HoverButton>
     </>
   )

@@ -14,6 +14,7 @@ import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags, Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faInfo } from 'lib-icons'
@@ -177,6 +178,7 @@ export default React.memo(function CalendarNotifications({
           children: (
             <>
               {i18n.calendar.discussionTimeReservation.surveyToastMessage}
+              <Gap size="xs" />
               <Button
                 appearance="link"
                 text={

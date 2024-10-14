@@ -359,6 +359,7 @@ const en: Translations = {
       'Contact staff if you want to change the absence',
     intermittentShiftCareNotification: 'Shift care',
     newReservationOrAbsence: 'Attendances / Absences',
+    newReservationOrAbsenceOrDiscussion: 'Attendances / Absences / Discussions',
     newHoliday: 'Holiday questionnaire',
     newAbsence: 'Register absences',
     newReservationBtn: 'Register attendances',
