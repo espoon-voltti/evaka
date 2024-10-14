@@ -24,7 +24,6 @@ import {
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -36,23 +35,16 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
-import { farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
 import { groupNotesQuery } from '../../child-notes/queries'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
-import {
-  Actions,
-  CustomTitle,
-  DailyNotes,
-  TimeWrapper
-} from '../../common/components'
+import { Actions, CustomTitle, TimeWrapper } from '../../common/components'
 import { Translations, useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import { formatCategory } from '../../types'
-import DailyNote from '../DailyNote'
+import ChildNotesSummary from '../ChildNotesSummary'
 import {
   attendanceStatusesQuery,
   childExpectedAbsencesOnDepartureQuery,
@@ -315,28 +307,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
           </ContentArea>
 
           <Gap size="s" />
-
-          <ContentArea
-            shadow
-            opaque={true}
-            paddingHorizontal="s"
-            paddingVertical="s"
-            blue
-          >
-            <DailyNotes>
-              <span>
-                <RoundIcon
-                  content={farStickyNote}
-                  color={colors.main.m1}
-                  size="m"
-                />
-              </span>
-              <DailyNote
-                child={child ? child : undefined}
-                groupNotes={groupNotes}
-              />
-            </DailyNotes>
-          </ContentArea>
+          <ChildNotesSummary child={child} groupNotes={groupNotes} />
         </>
       ))}
     </TallContentArea>

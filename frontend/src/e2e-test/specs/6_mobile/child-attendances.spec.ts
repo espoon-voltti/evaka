@@ -550,6 +550,6 @@ describe('Notes on child departure page', () => {
     await listPage.presentChildrenTab.click()
     await listPage.selectChild(child1)
     await childPage.markDepartedLink.click()
-    await waitUntilEqual(() => childAttendancePage.groupNote.count(), 2)
+    await waitUntilEqual(() => childAttendancePage.groupNotes.count(), 2)
   })
 })

@@ -18,6 +18,7 @@ import {
   DevDaycareGroup,
   DevPerson
 } from '../../generated/api-types'
+import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
@@ -28,6 +29,7 @@ let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let notePage: MobileNotePage
+let attendancePage: ChildAttendancePage
 
 describe('Child and group notes', () => {
   let child: DevPerson
@@ -65,16 +67,17 @@ describe('Child and group notes', () => {
     await childPage.openNotes()
 
     notePage = new MobileNotePage(page)
+    attendancePage = new ChildAttendancePage(page)
   })
 
   test('Child daily note can be created and deleted', async () => {
     const childDailyNote: ChildDailyNoteBody = {
-      note: 'Testiviesti',
+      note: 'Näki painajaisia',
       feedingNote: 'MEDIUM',
       sleepingMinutes: 65,
       sleepingNote: 'NONE',
       reminders: ['DIAPERS'],
-      reminderNote: 'Näki painajaisia'
+      reminderNote: 'Huomenna metsäretki'
     }
 
     await notePage.fillNote(childDailyNote)
@@ -82,6 +85,11 @@ describe('Child and group notes', () => {
     await childPage.notesExistsBubble.waitUntilVisible()
     await childPage.openNotes()
     await notePage.assertNote(childDailyNote)
+
+    await page.goto(config.mobileUrl)
+    await listPage.selectChild(child.id)
+    await childPage.markPresentLink.click()
+    await attendancePage.dailyNote.assertTextEquals(childDailyNote.note)
 
     await page.goto(config.mobileUrl)
     await listPage.openChildNotes(child.id)
@@ -95,6 +103,12 @@ describe('Child and group notes', () => {
     await notePage.selectTab('group')
     await notePage.typeAndSaveStickyNote(groupNote)
     await notePage.assertStickyNote(groupNote)
+
+    await page.goto(config.mobileUrl)
+    await listPage.selectChild(child.id)
+    await childPage.markPresentLink.click()
+    await attendancePage.groupNotes.assertCount(1)
+    await attendancePage.groupNotes.nth(0).assertTextEquals(groupNote)
   })
 
   test('Sticky notes can be created, edited and deleted', async () => {
@@ -121,6 +135,12 @@ describe('Child and group notes', () => {
 
     await notePage.removeStickyNote(0)
     await notePage.assertStickyNote('Foobar', 0)
+
+    await page.goto(config.mobileUrl)
+    await listPage.selectChild(child.id)
+    await childPage.markPresentLink.click()
+    await attendancePage.stickyNotes.assertCount(1)
+    await attendancePage.stickyNotes.nth(0).assertTextEquals('Foobar')
   })
 })
 
@@ -173,28 +193,6 @@ describe('Child and group notes (backup care)', () => {
     await childPage.openNotes()
 
     notePage = new MobileNotePage(page)
-  })
-
-  test('Child daily note can be created and deleted', async () => {
-    const childDailyNote: ChildDailyNoteBody = {
-      note: 'Testiviesti',
-      feedingNote: 'MEDIUM',
-      sleepingMinutes: 65,
-      sleepingNote: 'NONE',
-      reminders: ['DIAPERS'],
-      reminderNote: 'Näki painajaisia'
-    }
-
-    await notePage.fillNote(childDailyNote)
-    await notePage.saveChildDailyNote()
-    await childPage.notesExistsBubble.waitUntilVisible()
-    await childPage.openNotes()
-    await notePage.assertNote(childDailyNote)
-
-    await page.goto(config.mobileUrl)
-    await listPage.openChildNotes(child.id)
-    await notePage.deleteChildDailyNote()
-    await listPage.assertChildNoteDoesntExist(child.id)
   })
 
   test('Child group note can be created', async () => {

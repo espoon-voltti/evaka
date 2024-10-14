@@ -18,7 +18,9 @@ export default class ChildAttendancePage {
   #markAbsentButton: Element
   #childStatusLabel: Element
   #setTimeInput: TextInput
-  groupNote: ElementCollection
+  stickyNotes: ElementCollection
+  dailyNote: Element
+  groupNotes: ElementCollection
   setTimeInfo: Element
   #noChildrenIndicator: Element
   constructor(private readonly page: Page) {
@@ -29,7 +31,9 @@ export default class ChildAttendancePage {
     this.#markAbsentButton = page.findByDataQa('mark-absent-btn')
     this.#childStatusLabel = page.findByDataQa('child-status')
     this.#setTimeInput = new TextInput(page.findByDataQa('set-time'))
-    this.groupNote = page.findAllByDataQa('group-note')
+    this.stickyNotes = page.findAllByDataQa('sticky-note')
+    this.dailyNote = page.findByDataQa('daily-note')
+    this.groupNotes = page.findAllByDataQa('group-note')
     this.setTimeInfo = page.findByDataQa('set-time-info')
     this.#noChildrenIndicator = page
       .findAll('[data-qa="no-children-indicator"]')
