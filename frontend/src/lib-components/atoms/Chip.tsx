@@ -51,6 +51,7 @@ type SelectionChipProps = {
   text: string
   selected: boolean
   onChange: (selected: boolean) => void
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
   disabled?: boolean
   'data-qa'?: string
   hideIcon?: boolean
@@ -65,6 +66,7 @@ export const SelectionChip = React.memo(function SelectionChip({
   text,
   selected,
   onChange,
+  onBlur,
   disabled,
   'data-qa': dataQa,
   hideIcon = false,
@@ -89,6 +91,7 @@ export const SelectionChip = React.memo(function SelectionChip({
       onKeyUp={(ev) => ev.key === 'Enter' && onClick(ev)}
       data-qa={dataQa}
       tabIndex={0}
+      onBlur={onBlur}
     >
       <SelectionChipInnerWrapper
         className={classNames({ checked: selected, disabled })}

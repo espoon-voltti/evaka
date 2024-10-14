@@ -7,9 +7,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
+import { ErrorMessageBox } from 'citizen-frontend/calendar/ChildSelector'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Failure, Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
+import { useBoolean } from 'lib-common/form/hooks'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import {
   AccountType,
@@ -26,7 +28,10 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { desktopMin } from 'lib-components/breakpoints'
-import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceFlexWrap
+} from 'lib-components/layout/flex-helpers'
 import { ToggleableRecipient } from 'lib-components/messages/ToggleableRecipient'
 import FileUpload, {
   initialUploadStatus,
@@ -97,6 +102,8 @@ export default React.memo(function MessageEditor({
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [uploadStatus, setUploadStatus] =
     useState<UploadStatus>(initialUploadStatus)
+
+  const [isChildSelectionTouched, setChildSelectionTouched] = useBoolean(false)
 
   const handleAttachmentUpload = useCallback(
     async (file: File, onUploadProgress: (percentage: number) => void) =>
@@ -179,6 +186,8 @@ export default React.memo(function MessageEditor({
 
   const required = (text: string) => `${text}*`
 
+  const chipGroupContainerRef = React.useRef<HTMLDivElement>(null)
+
   return (
     <ModalAccessibilityWrapper>
       <FocusLock>
@@ -209,46 +218,69 @@ export default React.memo(function MessageEditor({
               <>
                 <label>
                   <Bold>{required(i18n.messages.messageEditor.children)}</Bold>
-                  <FixedSpaceFlexWrap horizontalSpacing="xs">
-                    {children_
-                      .filter((child) => childIds.includes(child.id))
-                      .map((child) => (
-                        <div key={child.id} data-qa="relevant-child">
-                          <SelectionChip
-                            key={child.id}
-                            text={`${formatFirstName(child)}${
-                              duplicateChildInfo[child.id] !== undefined
-                                ? ` ${duplicateChildInfo[child.id]}`
-                                : ''
-                            }`}
-                            translate="no"
-                            selected={message.children.includes(child.id)}
-                            onChange={(selected) => {
-                              const children = selected
-                                ? [...message.children, child.id]
-                                : message.children.filter(
-                                    (id) => id !== child.id
+                  <FixedSpaceColumn>
+                    <FixedSpaceFlexWrap
+                      horizontalSpacing="xs"
+                      ref={chipGroupContainerRef}
+                    >
+                      {children_
+                        .filter((child) => childIds.includes(child.id))
+                        .map((child) => (
+                          <div key={child.id} data-qa="relevant-child">
+                            <SelectionChip
+                              key={child.id}
+                              text={`${formatFirstName(child)}${
+                                duplicateChildInfo[child.id] !== undefined
+                                  ? ` ${duplicateChildInfo[child.id]}`
+                                  : ''
+                              }`}
+                              translate="no"
+                              selected={message.children.includes(child.id)}
+                              onChange={(selected) => {
+                                setChildSelectionTouched.on()
+                                const children = selected
+                                  ? [...message.children, child.id]
+                                  : message.children.filter(
+                                      (id) => id !== child.id
+                                    )
+                                const recipients = message.recipients.filter(
+                                  (accountId) =>
+                                    children.every(
+                                      (childId) =>
+                                        receiverOptions.childrenToMessageAccounts[
+                                          childId
+                                        ]?.includes(accountId) ?? false
+                                    )
+                                )
+                                setMessage((message) => ({
+                                  ...message,
+                                  children,
+                                  recipients
+                                }))
+                              }}
+                              onBlur={(e) => {
+                                const focusTargetOutsideThisSelector =
+                                  chipGroupContainerRef.current &&
+                                  !chipGroupContainerRef.current.contains(
+                                    e.relatedTarget
                                   )
-                              const recipients = message.recipients.filter(
-                                (accountId) =>
-                                  children.every(
-                                    (childId) =>
-                                      receiverOptions.childrenToMessageAccounts[
-                                        childId
-                                      ]?.includes(accountId) ?? false
-                                  )
-                              )
-                              setMessage((message) => ({
-                                ...message,
-                                children,
-                                recipients
-                              }))
-                            }}
-                            data-qa={`child-${child.id}`}
-                          />
-                        </div>
-                      ))}
-                  </FixedSpaceFlexWrap>
+
+                                if (focusTargetOutsideThisSelector) {
+                                  setChildSelectionTouched.on()
+                                }
+                              }}
+                              data-qa={`child-${child.id}`}
+                            />
+                          </div>
+                        ))}
+                    </FixedSpaceFlexWrap>
+                    {isChildSelectionTouched &&
+                      message.children.length === 0 && (
+                        <ErrorMessageBox
+                          text={i18n.calendar.childSelectionMissingError}
+                        />
+                      )}
+                  </FixedSpaceColumn>
                 </label>
                 <Gap size="s" />
               </>

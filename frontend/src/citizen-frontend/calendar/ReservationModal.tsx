@@ -6,16 +6,13 @@ import isEqual from 'lodash/isEqual'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Failure } from 'lib-common/api'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { combine } from 'lib-common/form/types'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { formatFirstName } from 'lib-common/names'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
-import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
@@ -23,7 +20,6 @@ import {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
-import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
@@ -46,6 +42,7 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from './CalendarModal'
+import ChildSelector from './ChildSelector'
 import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 import {
@@ -170,8 +167,6 @@ export default React.memo(function ReservationModal({
     [i18n, setSaveError]
   )
 
-  const duplicateChildInfo = getDuplicateChildInfo(availableChildren, i18n)
-
   const anyShiftCare = useMemo(
     () => calendarDays.some((d) => d.children.some((c) => c.shiftCare)),
     [calendarDays]
@@ -220,32 +215,12 @@ export default React.memo(function ReservationModal({
               <CalendarModalSection>
                 <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
                 <Gap size="xs" />
-                <FixedSpaceFlexWrap>
-                  {availableChildren
-                    .filter((child) => child.upcomingPlacementType !== null)
-                    .map((child) => (
-                      <div key={child.id} data-qa="relevant-child">
-                        <SelectionChip
-                          key={child.id}
-                          text={`${formatFirstName(child)}${
-                            duplicateChildInfo[child.id] !== undefined
-                              ? ` ${duplicateChildInfo[child.id]}`
-                              : ''
-                          }`}
-                          translate="no"
-                          selected={selectedChildren.state.includes(child.id)}
-                          onChange={(selected) => {
-                            selectedChildren.update((prev) =>
-                              selected
-                                ? [...prev, child.id]
-                                : prev.filter((id) => id !== child.id)
-                            )
-                          }}
-                          data-qa={`child-${child.id}`}
-                        />
-                      </div>
-                    ))}
-                </FixedSpaceFlexWrap>
+                <ChildSelector
+                  bind={selectedChildren}
+                  childItems={reservationsResponse.children.filter(
+                    (child) => child.upcomingPlacementType !== null
+                  )}
+                />
               </CalendarModalSection>
 
               <Gap size="xxs" sizeOnMobile="s" />

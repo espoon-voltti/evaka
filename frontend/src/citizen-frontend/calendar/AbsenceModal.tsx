@@ -5,11 +5,10 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { localDateRange } from 'lib-common/form/fields'
-import { array, mapped, object, required, value } from 'lib-common/form/form'
+import { mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
@@ -20,7 +19,6 @@ import {
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
@@ -53,11 +51,13 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from './CalendarModal'
+import ChildSelector from './ChildSelector'
 import { postAbsencesMutation } from './queries'
+import { nonEmptyArray } from './reservation-modal/form'
 
 const absenceForm = mapped(
   object({
-    selectedChildren: array(value<UUID>()),
+    selectedChildren: nonEmptyArray<UUID>(),
     range: required(localDateRange()),
     absenceType: required(value<AbsenceType | undefined>())
   }),
@@ -131,11 +131,6 @@ export default React.memo(function AbsenceModal({
 
   const [showAllErrors, useShowAllErrors] = useBoolean(false)
 
-  const duplicateChildInfo = getDuplicateChildInfo(
-    reservationsResponse.children,
-    i18n
-  )
-
   const absencesWarning =
     range.isValid() &&
     range
@@ -180,32 +175,12 @@ export default React.memo(function AbsenceModal({
               <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.selectedChildren}</H2>
                 <Gap size="xs" />
-                <FixedSpaceFlexWrap>
-                  {reservationsResponse.children
-                    .filter((child) => child.upcomingPlacementType !== null)
-                    .map((child) => (
-                      <div key={child.id} data-qa="relevant-child">
-                        <SelectionChip
-                          key={child.id}
-                          text={`${formatFirstName(child)}${
-                            duplicateChildInfo[child.id] !== undefined
-                              ? ` ${duplicateChildInfo[child.id]}`
-                              : ''
-                          }`}
-                          translate="no"
-                          selected={selectedChildren.state.includes(child.id)}
-                          onChange={(selected) =>
-                            selectedChildren.update((prev) =>
-                              selected
-                                ? [...prev, child.id]
-                                : prev.filter((id) => id !== child.id)
-                            )
-                          }
-                          data-qa={`child-${child.id}`}
-                        />
-                      </div>
-                    ))}
-                </FixedSpaceFlexWrap>
+                <ChildSelector
+                  bind={selectedChildren}
+                  childItems={reservationsResponse.children.filter(
+                    (child) => child.upcomingPlacementType !== null
+                  )}
+                />
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <LineContainer>
