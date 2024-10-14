@@ -216,7 +216,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             ?: return@read ProcessMetadataResponse(null)
                     val applicationDocument = tx.getApplicationDocumentMetadata(applicationId)
                     val decisionDocuments =
-                        tx.getDecisionIdsByApplication(applicationId).map {
+                        tx.getSentDecisionIdsByApplication(applicationId).map {
                             it to tx.getApplicationDecisionDocumentMetadata(it)
                         }
 
@@ -354,7 +354,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .exactlyOne()
 
-    private fun Database.Read.getDecisionIdsByApplication(
+    private fun Database.Read.getSentDecisionIdsByApplication(
         applicationId: ApplicationId
     ): List<DecisionId> =
         createQuery {
@@ -363,7 +363,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         SELECT d.id
         FROM application a
         JOIN decision d ON a.id = d.application_id
-        WHERE a.id = ${bind(applicationId)}
+        WHERE a.id = ${bind(applicationId)} AND d.sent_date IS NOT NULL   
     """
                 )
             }
@@ -392,7 +392,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 WHEN d.type = 'PRESCHOOL_CLUB'
                 THEN 'Päätös esiopetuksen kerhosta'
             END AS name,
-            d.created AS created_at,
+            coalesce(d.sent_date at time zone 'europe/helsinki', d.created) AS created_at,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
