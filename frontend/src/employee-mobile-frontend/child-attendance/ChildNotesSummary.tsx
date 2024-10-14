@@ -50,7 +50,7 @@ export default React.memo(function ChildNotesSummary({
           title={i18n.attendances.notes.childStickyNotes}
         >
           {child.stickyNotes.map((gn) => (
-            <P key={gn.id} noMargin>
+            <P key={gn.id} noMargin data-qa="sticky-note">
               {gn.note}
             </P>
           ))}
@@ -63,7 +63,9 @@ export default React.memo(function ChildNotesSummary({
           iconColor={colors.accents.a9pink}
           title={i18n.attendances.notes.note}
         >
-          {!!child.dailyNote.note && <span>{child.dailyNote.note}</span>}
+          {!!child.dailyNote.note && (
+            <span data-qa="daily-note">{child.dailyNote.note}</span>
+          )}
           {child.dailyNote.feedingNote && (
             <FixedSpaceColumn spacing="xxs">
               <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
@@ -121,9 +123,9 @@ export default React.memo(function ChildNotesSummary({
           title={i18n.attendances.notes.groupNote}
         >
           {activeGroupNotes.map((gn) => (
-            <p key={gn.id} data-qa="group-note">
+            <P key={gn.id} noMargin data-qa="group-note">
               {gn.note}
-            </p>
+            </P>
           ))}
         </NoteSection>
       )}
