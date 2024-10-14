@@ -13,11 +13,9 @@ import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
-import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -77,7 +75,10 @@ class InvoiceGenerator(
         )
     }
 
-    fun calculateInvoiceData(tx: Database.Read, range: FiniteDateRange): InvoiceCalculationData {
+    fun calculateInvoiceData(
+        tx: Database.Read,
+        range: FiniteDateRange,
+    ): DraftInvoiceGenerator.InvoiceCalculationData {
         val feeThresholds =
             tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
                 ?: error(
@@ -137,11 +138,11 @@ class InvoiceGenerator(
                 .filter { it.defaultOption }
                 .associateBy { it.validPlacementType }
 
-        return InvoiceCalculationData(
+        return DraftInvoiceGenerator.InvoiceCalculationData(
             decisions = unhandledDecisions,
             permanentPlacements = permanentPlacements,
             temporaryPlacements = temporaryPlacements,
-            period = range,
+            invoicePeriod = range,
             areaIds = areaIds,
             operationalDaysByChild = operationalDaysByChild,
             businessDays = businessDays,
@@ -152,21 +153,6 @@ class InvoiceGenerator(
             defaultServiceNeedOptions = defaultServiceNeedOptions,
         )
     }
-
-    data class InvoiceCalculationData(
-        val decisions: Map<PersonId, List<FeeDecision>>,
-        val permanentPlacements: Map<ChildId, List<Pair<FiniteDateRange, PlacementStub>>>,
-        val temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
-        val period: FiniteDateRange,
-        val areaIds: Map<DaycareId, AreaId>,
-        val operationalDaysByChild: Map<ChildId, DateSet>,
-        val businessDays: DateSet,
-        val feeThresholds: FeeThresholds,
-        val absences: Map<AbsenceType, Map<ChildId, DateSet>>,
-        val freeChildren: Set<ChildId> = setOf(),
-        val codebtors: Map<PersonId, PersonId?> = mapOf(),
-        val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
-    )
 
     private fun getInvoiceCodebtor(
         tx: Database.Read,
