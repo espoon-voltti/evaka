@@ -104,9 +104,7 @@ class DraftInvoiceGenerator(
                         data.businessDays,
                         data.feeThresholds,
                         data.absences,
-                        getChildOperationalDays = { childId ->
-                            data.operationalDaysByChild[childId] ?: DateSet.empty()
-                        },
+                        data.operationalDaysByChild,
                         isFreeJulyChild = data.freeChildren::contains,
                         getDefaultServiceNeedOption = data.defaultServiceNeedOptions::get,
                     )
@@ -144,7 +142,7 @@ class DraftInvoiceGenerator(
         businessDays: DateSet,
         feeThresholds: FeeThresholds,
         absencesMap: Map<AbsenceType, Map<ChildId, DateSet>>,
-        getChildOperationalDays: (child: ChildId) -> DateSet,
+        operationalDaysByChild: Map<ChildId, DateSet>,
         isFreeJulyChild: (child: ChildId) -> Boolean,
         getDefaultServiceNeedOption: (placementType: PlacementType) -> ServiceNeedOption?,
     ): Invoice? {
@@ -160,10 +158,9 @@ class DraftInvoiceGenerator(
                 .mapValues { DateSet.of(it.value) }
 
         val getChildFullMonthAbsence = memoize { child: ChildId ->
-            val childOperationalDays =
-                getChildOperationalDays(child)
-                    .intersection(feeDecisionRangesByChild[child] ?: DateSet.empty())
-            getFullMonthAbsence(ChildAbsences(absencesMap, child, childOperationalDays))
+            getFullMonthAbsence(
+                ChildAbsences(absencesMap, child, operationalDaysByChild[child] ?: DateSet.empty())
+            )
         }
 
         val getInvoiceMaxFee: (ChildId, Boolean) -> Int = { childId, capMaxFeeAtDefault ->
@@ -325,7 +322,7 @@ class DraftInvoiceGenerator(
                             ?: featureConfig.dailyFeeDivisorOperationalDaysOverride
                             ?: businessDayCount
 
-                    val childOperationalDays = getChildOperationalDays(child.id)
+                    val childOperationalDays = operationalDaysByChild[child.id] ?: DateSet.empty()
 
                     val businessDaysWithoutDecision =
                         businessDays - (feeDecisionRangesByChild[child.id] ?: DateSet.empty())
@@ -357,7 +354,7 @@ class DraftInvoiceGenerator(
                                     ChildAbsences(
                                         absencesMap,
                                         rowStub.child.id,
-                                        getChildOperationalDays(rowStub.child.id),
+                                        childOperationalDays,
                                     ),
                                     getChildFullMonthAbsence(child.id),
                                     getInvoiceMaxFee,
