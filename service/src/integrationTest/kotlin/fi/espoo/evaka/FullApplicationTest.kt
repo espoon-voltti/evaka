@@ -13,6 +13,7 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.core.env.Environment
 
@@ -61,6 +63,8 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @Autowired protected lateinit var evakaEnv: EvakaEnv
 
     @Autowired protected lateinit var tracer: Tracer
+
+    @SpyBean protected lateinit var featureConfig: FeatureConfig
 
     protected lateinit var db: Database.Connection
 

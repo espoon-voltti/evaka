@@ -52,6 +52,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -311,6 +312,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val summary = applicationSummaries.first()
         assertEquals(summary.childId, child.id)
         assertEquals(summary.preferredUnitId, unit.id)
+        assertEquals(summary.status, ApplicationStatus.SENT)
 
         val messagingAccount = db.read { it.getCitizenMessageAccount(adult.id) }
         assertNotNull(messagingAccount)
@@ -371,10 +373,61 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val summary = applicationSummaries.first()
         assertEquals(summary.childId, child.id)
         assertEquals(summary.preferredUnitId, unit.id)
+        assertEquals(summary.status, ApplicationStatus.SENT)
 
         val application = db.read { it.fetchApplicationDetails(summary.applicationId) }
         assertNotNull(application)
         assert(application.allowOtherGuardianAccess)
+        assert(!application.hideFromGuardian)
+    }
+
+    @Test
+    fun `create application for waiting decision`() {
+        whenever(featureConfig.placementToolApplicationStatus)
+            .thenReturn(ApplicationStatus.WAITING_DECISION)
+        val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            partTimeServiceNeedOption.id,
+            serviceNeedOption.id,
+            preschoolTerm.id,
+        )
+
+        clock.tick()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries = db.read { it.fetchApplicationSummariesForGuardian(adult.id) }
+        assertEquals(1, applicationSummaries.size)
+
+        val summary = applicationSummaries.first()
+        assertEquals(summary.childId, child.id)
+        assertEquals(summary.preferredUnitId, unit.id)
+        assertEquals(summary.status, ApplicationStatus.WAITING_DECISION)
+
+        val application = db.read { it.fetchApplicationDetails(summary.applicationId) }
+        assertNotNull(application)
+        assert(application.allowOtherGuardianAccess)
+        assert(application.hideFromGuardian)
+
+        val messagingAccount = db.read { it.getCitizenMessageAccount(adult.id) }
+        assertNotNull(messagingAccount)
+        val messageCount =
+            db.read {
+                it.getUnreadMessagesCounts(
+                        accessCpontrol.requireAuthorizationFilter(
+                            it,
+                            AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    )
+                    .firstOrNull()
+                    ?.unreadCount ?: 0
+            }
+        assertEquals(0, messageCount)
     }
 
     @Test

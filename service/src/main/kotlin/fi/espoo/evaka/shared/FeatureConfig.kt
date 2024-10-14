@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared
 
+import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.shared.auth.UserRole
 import java.time.MonthDay
@@ -151,6 +152,9 @@ data class FeatureConfig(
 
     /** Default daycare end month-day for new placement plans */
     val daycarePlacementPlanEndMonthDay: MonthDay = MonthDay.of(7, 31),
+
+    /** Status of the applications created by placement tool */
+    val placementToolApplicationStatus: ApplicationStatus = ApplicationStatus.SENT,
 )
 
 enum class ArchiveProcessType {

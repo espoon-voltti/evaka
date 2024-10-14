@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -31,6 +32,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import java.io.InputStream
+import java.time.LocalDate
 import java.util.UUID
 import org.apache.commons.csv.CSVFormat
 import org.springframework.stereotype.Service
@@ -43,6 +45,7 @@ enum class PlacementToolCsvField(val fieldName: String) {
 
 @Service
 class PlacementToolService(
+    private val featureConfig: FeatureConfig,
     private val applicationStateService: ApplicationStateService,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -146,6 +149,7 @@ class PlacementToolService(
                             .firstOrNull()
                             ?.headOfChildId
                 } ?: guardianIds.first()
+            val desiredStatus = featureConfig.placementToolApplicationStatus
 
             val (_, applicationId) =
                 savePaperApplication(
@@ -159,7 +163,7 @@ class PlacementToolService(
                         guardianSsn = null,
                         type = ApplicationType.PRESCHOOL,
                         sentDate = clock.today(),
-                        hideFromGuardian = false,
+                        hideFromGuardian = desiredStatus > ApplicationStatus.SENT,
                         transferApplication = false,
                     ),
                     personService,
@@ -206,7 +210,31 @@ class PlacementToolService(
                 nextPreschoolTerm,
             )
 
-            applicationStateService.sendPlacementToolApplication(tx, user, clock, application)
+            if (desiredStatus >= ApplicationStatus.SENT) {
+                applicationStateService.sendPlacementToolApplication(tx, user, clock, application)
+            }
+            if (desiredStatus >= ApplicationStatus.WAITING_PLACEMENT) {
+                applicationStateService.moveToWaitingPlacement(tx, user, clock, application.id)
+            }
+            if (desiredStatus >= ApplicationStatus.WAITING_DECISION) {
+                val period = nextPreschoolTerm.finnishPreschool
+                applicationStateService.createPlacementPlan(
+                    tx,
+                    user,
+                    clock,
+                    application.id,
+                    DaycarePlacementPlan(
+                        data.preschoolId,
+                        period,
+                        period.copy(end = LocalDate.of(period.end.year, 7, 31)),
+                    ),
+                )
+            }
+            if (desiredStatus >= ApplicationStatus.WAITING_MAILING) {
+                throw UnsupportedOperationException(
+                    "Application status $desiredStatus is not supported"
+                )
+            }
         }
     }
 

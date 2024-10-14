@@ -342,31 +342,33 @@ class ApplicationStateService(
         val dueDate = application.sentDate
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
-        messageService.sendMessageAsEmployee(
-            tx,
-            user,
-            clock.now(),
-            sender = tx.getServiceWorkerAccountId()!!,
-            type = MessageType.MESSAGE,
-            msg =
-                NewMessageStub(
-                    title = messageProvider.getPlacementToolHeader(OfficialLanguage.FI),
-                    content = messageProvider.getPlacementToolContent(OfficialLanguage.FI),
-                    urgent = false,
-                    sensitive = false,
-                ),
-            recipients =
-                setOf(MessageRecipient(MessageRecipientType.CITIZEN, application.guardianId)),
-            recipientNames =
-                listOf(
-                    tx.getPersonById(application.guardianId)?.let {
-                        "${it.firstName} ${it.lastName}"
-                    } ?: ""
-                ),
-            attachments = setOf(),
-            relatedApplication = application.id,
-            filters = null,
-        )
+        if (!application.hideFromGuardian) {
+            messageService.sendMessageAsEmployee(
+                tx,
+                user,
+                clock.now(),
+                sender = tx.getServiceWorkerAccountId()!!,
+                type = MessageType.MESSAGE,
+                msg =
+                    NewMessageStub(
+                        title = messageProvider.getPlacementToolHeader(OfficialLanguage.FI),
+                        content = messageProvider.getPlacementToolContent(OfficialLanguage.FI),
+                        urgent = false,
+                        sensitive = false,
+                    ),
+                recipients =
+                    setOf(MessageRecipient(MessageRecipientType.CITIZEN, application.guardianId)),
+                recipientNames =
+                    listOf(
+                        tx.getPersonById(application.guardianId)?.let {
+                            "${it.firstName} ${it.lastName}"
+                        } ?: ""
+                    ),
+                attachments = setOf(),
+                relatedApplication = application.id,
+                filters = null,
+            )
+        }
 
         tx.updateApplicationStatus(application.id, SENT)
     }

@@ -22,7 +22,6 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -72,7 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var accessContol: AccessControl
-    @Autowired private lateinit var featureConfig: FeatureConfig
     private lateinit var reservationControllerCitizen: ReservationControllerCitizen
 
     // Monday
