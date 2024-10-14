@@ -398,6 +398,15 @@ sealed interface AsyncJob : AsyncJobPayload {
         val nextPreschoolTerm: PreschoolTermId,
     ) : AsyncJob
 
+    data class PlacementToolFromSSN(
+        override val user: AuthenticatedUser,
+        val ssn: String,
+        val preschoolId: DaycareId,
+        val partTimeServiceNeedOption: ServiceNeedOptionId,
+        val defaultServiceNeedOption: ServiceNeedOptionId,
+        val nextPreschoolTerm: PreschoolTermId,
+    ) : AsyncJob
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -429,6 +438,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     UploadToKoski::class,
                     VTJRefresh::class,
                     PlacementTool::class,
+                    PlacementToolFromSSN::class,
                 ),
             )
         val email =

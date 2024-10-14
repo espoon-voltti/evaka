@@ -10,8 +10,12 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
@@ -49,9 +53,11 @@ class PlacementToolService(
     private val applicationStateService: ApplicationStateService,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val fridgeFamilyService: FridgeFamilyService,
 ) {
     init {
         asyncJobRunner.registerHandler(::doCreatePlacementToolApplications)
+        asyncJobRunner.registerHandler(::createPlacementToolApplicationsFromSsn)
     }
 
     fun doCreatePlacementToolApplications(
@@ -104,19 +110,74 @@ class PlacementToolService(
         asyncJobRunner
             .plan(
                 tx,
-                placements.map { data ->
-                    AsyncJob.PlacementTool(
-                        user,
-                        data,
-                        partTimeServiceNeedOptionId,
-                        defaultServiceNeedOptionId,
-                        nextPreschoolTermId,
-                    )
+                placements.map { (childIdentifier, preschoolId) ->
+                    when {
+                        isValidSSN(childIdentifier) ->
+                            AsyncJob.PlacementToolFromSSN(
+                                user,
+                                childIdentifier,
+                                preschoolId,
+                                partTimeServiceNeedOptionId,
+                                defaultServiceNeedOptionId,
+                                nextPreschoolTermId,
+                            )
+                        else ->
+                            AsyncJob.PlacementTool(
+                                user,
+                                PlacementToolData(
+                                    ChildId(UUID.fromString(childIdentifier)),
+                                    preschoolId,
+                                ),
+                                partTimeServiceNeedOptionId,
+                                defaultServiceNeedOptionId,
+                                nextPreschoolTermId,
+                            )
+                    }
                 },
                 runAt = clock.now(),
                 retryCount = 1,
             )
             .also { Audit.PlacementTool.log(meta = mapOf("total" to placements.size)) }
+    }
+
+    fun createPlacementToolApplicationsFromSsn(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.PlacementToolFromSSN,
+    ) {
+        val childId =
+            db.read { tx -> tx.getPersonBySSN(msg.ssn)?.id }
+                ?: initFromVtj(db, msg.user, clock, msg.ssn)
+        db.transaction { tx ->
+            asyncJobRunner.plan(
+                tx,
+                listOf(
+                    AsyncJob.PlacementTool(
+                        msg.user,
+                        PlacementToolData(childId, msg.preschoolId),
+                        msg.partTimeServiceNeedOption,
+                        msg.defaultServiceNeedOption,
+                        msg.nextPreschoolTerm,
+                    )
+                ),
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+        }
+    }
+
+    private fun initFromVtj(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        ssn: String,
+    ): PersonId {
+        val child =
+            db.transaction { tx ->
+                personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
+            }
+        fridgeFamilyService.updateChildAndFamilyFromVtj(db, user, clock, child!!.id)
+        return child.id
     }
 
     fun createApplication(
@@ -305,7 +366,7 @@ class PlacementToolService(
     }
 }
 
-fun parsePlacementToolCsv(inputStream: InputStream): List<PlacementToolData> =
+fun parsePlacementToolCsv(inputStream: InputStream): Map<String, DaycareId> =
     CSVFormat.Builder.create(CSVFormat.DEFAULT)
         .setHeader()
         .apply { setIgnoreSurroundingSpaces(true) }
@@ -316,15 +377,11 @@ fun parsePlacementToolCsv(inputStream: InputStream): List<PlacementToolData> =
             row.get(PlacementToolCsvField.CHILD_ID.fieldName).isNotBlank() &&
                 row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName).isNotBlank()
         }
-        .map { row ->
-            PlacementToolData(
-                childId =
-                    ChildId(UUID.fromString(row.get(PlacementToolCsvField.CHILD_ID.fieldName))),
-                preschoolId =
-                    DaycareId(
-                        UUID.fromString(row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName))
-                    ),
-            )
+        .associate { row ->
+            row.get(PlacementToolCsvField.CHILD_ID.fieldName) to
+                DaycareId(
+                    UUID.fromString(row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName))
+                )
         }
 
 data class PlacementToolData(val childId: ChildId, val preschoolId: DaycareId)
