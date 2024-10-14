@@ -14,10 +14,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 
-fun Database.Read.getChildSensitiveInfo(
-    clock: EvakaClock,
-    childId: ChildId,
-): ChildSensitiveInformation? {
+fun Database.Read.getChildBasicInfo(clock: EvakaClock, childId: ChildId): ChildBasicInformation? {
     val person = getPersonById(childId) ?: return null
 
     val placementType = getCurrentPlacementForChild(clock, childId)?.let { it.type }
@@ -25,19 +22,13 @@ fun Database.Read.getChildSensitiveInfo(
     val backupPickups = getBackupPickupsForChild(childId)
     val familyContacts = fetchFamilyContacts(clock.today(), childId)
 
-    return ChildSensitiveInformation(
+    return ChildBasicInformation(
         id = person.id,
         firstName = person.firstName,
         lastName = person.lastName,
         preferredName = child?.additionalInformation?.preferredName ?: "",
         dateOfBirth = person.dateOfBirth,
-        ssn = person.identity.toString(),
-        childAddress = person.streetAddress,
         placementType = placementType,
-        allergies = child?.additionalInformation?.allergies ?: "",
-        diet = child?.additionalInformation?.diet ?: "",
-        medication = child?.additionalInformation?.medication ?: "",
-        additionalInfo = child?.additionalInformation?.additionalInfo ?: "",
         contacts =
             familyContacts
                 .filter { it.priority != null }
@@ -65,5 +56,20 @@ fun Database.Read.getChildSensitiveInfo(
                     priority = 1,
                 )
             },
+    )
+}
+
+fun Database.Read.getChildSensitiveInfo(childId: ChildId): ChildSensitiveInformation? {
+    val person = getPersonById(childId) ?: return null
+    val child = getChild(childId)
+
+    return ChildSensitiveInformation(
+        id = person.id,
+        ssn = person.identity.toString(),
+        childAddress = person.streetAddress,
+        allergies = child?.additionalInformation?.allergies ?: "",
+        diet = child?.additionalInformation?.diet ?: "",
+        medication = child?.additionalInformation?.medication ?: "",
+        additionalInfo = child?.additionalInformation?.additionalInfo ?: "",
     )
 }

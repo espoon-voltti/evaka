@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,7 +18,24 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildSensitiveInfoController(private val ac: AccessControl) {
+class ChildInfoController(private val ac: AccessControl) {
+
+    @GetMapping("/employee-mobile/children/{childId}/basic-info")
+    fun getBasicInfo(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+    ): ChildBasicInformation {
+        return db.connect { dbc ->
+                dbc.read {
+                    ac.requirePermissionFor(it, user, clock, Action.Child.READ_BASIC_INFO, childId)
+
+                    it.getChildBasicInfo(clock, childId) ?: throw NotFound("Child not found")
+                }
+            }
+            .also { Audit.ChildBasicInfoRead.log(targetId = AuditId(childId)) }
+    }
 
     @GetMapping("/employee-mobile/children/{childId}/sensitive-info")
     fun getSensitiveInfo(
@@ -37,7 +54,7 @@ class ChildSensitiveInfoController(private val ac: AccessControl) {
                         childId,
                     )
 
-                    it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found")
+                    it.getChildSensitiveInfo(childId) ?: throw NotFound("Child not found")
                 }
             }
             .also { Audit.ChildSensitiveInfoRead.log(targetId = AuditId(childId)) }

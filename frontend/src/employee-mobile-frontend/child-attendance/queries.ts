@@ -25,6 +25,7 @@ import {
   getReservationStatisticsForConfirmedDays,
   setConfirmedRangeReservations
 } from '../generated/api-clients/reservations'
+import { getBasicInfo } from '../generated/api-clients/sensitive'
 import { createQueryKeys } from '../query'
 
 import { getUnitChildren, uploadChildImage } from './api'
@@ -57,12 +58,21 @@ const queryKeys = createQueryKeys('childAttendance', {
   confirmedDaysReservationStatistics: (unitId: string) => [
     'confirmedDaysReservationStatistics',
     unitId
-  ]
+  ],
+  childBasicInfo: (childId: string) => ['childBasicInfo', childId]
 })
 
 export const childrenQuery = query({
   api: getUnitChildren,
   queryKey: queryKeys.children,
+  options: {
+    staleTime: 5 * 60 * 1000
+  }
+})
+
+export const childBasicInfoQuery = query({
+  api: getBasicInfo,
+  queryKey: ({ childId }) => queryKeys.childBasicInfo(childId),
   options: {
     staleTime: 5 * 60 * 1000
   }

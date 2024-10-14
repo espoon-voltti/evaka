@@ -1238,6 +1238,17 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChild(),
         ),
+        READ_BASIC_INFO(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                )
+                .inPlacementUnitOfChild(),
+            IsMobile(requirePinLogin = true).inPlacementUnitOfChild(),
+        ),
         READ_SENSITIVE_INFO(
             HasGlobalRole(ADMIN),
             HasUnitRole(
