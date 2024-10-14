@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PredicateSql
@@ -560,13 +559,9 @@ WHERE cet.id = ${bind(eventTimeId)}
         .exactlyOneOrNull<RawRow>()
         ?.let {
             DiscussionTimeReminderData(
-                title = HtmlSafe(it.title),
-                firstName = HtmlSafe(it.firstName),
-                lastName = HtmlSafe(it.lastName),
                 date = it.date,
                 startTime = it.startTime,
                 endTime = it.endTime,
-                childId = it.childId,
             )
         }
 }

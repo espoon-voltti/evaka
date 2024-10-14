@@ -187,11 +187,7 @@ class CalendarEventNotificationService(
             emailMessageProvider.discussionSurveyReservationNotification(
                 language = msg.language,
                 notificationDetails =
-                    DiscussionSurveyReservationNotificationData(
-                        title = HtmlSafe(msg.eventTitle),
-                        calendarEventTime = eventTime,
-                        childName = HtmlSafe("${child.firstName} ${child.lastName}"),
-                    ),
+                    DiscussionSurveyReservationNotificationData(calendarEventTime = eventTime),
             )
         Email.create(
                 db,
@@ -227,11 +223,7 @@ class CalendarEventNotificationService(
             emailMessageProvider.discussionSurveyReservationCancellationNotification(
                 language = msg.language,
                 notificationDetails =
-                    DiscussionSurveyReservationNotificationData(
-                        title = HtmlSafe(msg.eventTitle),
-                        calendarEventTime = eventTime,
-                        childName = HtmlSafe("${child.firstName} ${child.lastName}"),
-                    ),
+                    DiscussionSurveyReservationNotificationData(calendarEventTime = eventTime),
             )
         Email.create(
                 db,

@@ -1968,11 +1968,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             DiscussionTimeReminderData(
                 startTime = eventTimeForm.timeRange.start.inner,
                 endTime = eventTimeForm.timeRange.end.inner,
-                title = HtmlSafe(event.title),
                 date = eventTimeForm.date,
-                firstName = HtmlSafe(testChild_1.firstName),
-                lastName = HtmlSafe(testChild_1.lastName),
-                childId = testChild_1.id,
             )
 
         val reminderEmailContent =
@@ -2383,8 +2379,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                childName = HtmlSafe("${testChild_3.firstName} ${testChild_3.lastName}"),
-                title = HtmlSafe(event.title),
                 calendarEventTime =
                     CalendarEventTime(
                         id = calendarEventTimeForm.id,
@@ -2392,7 +2386,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
                         childId = reservationForm.childId,
-                    ),
+                    )
             )
 
         val reservationEmailContent =
@@ -2514,8 +2508,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                childName = HtmlSafe("${testChild_3.firstName} ${testChild_3.lastName}"),
-                title = HtmlSafe(event.title),
                 calendarEventTime =
                     CalendarEventTime(
                         id = calendarEventTimeForm.id,
@@ -2523,7 +2515,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
                         childId = reservationForm.childId,
-                    ),
+                    )
             )
 
         val reservationEmailContent =
@@ -2635,8 +2627,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                childName = HtmlSafe("${testChild_3.firstName} ${testChild_3.lastName}"),
-                title = HtmlSafe(event.title),
                 calendarEventTime =
                     CalendarEventTime(
                         id = calendarEventTimeForm.id,
@@ -2644,7 +2634,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
                         childId = reservationForm.childId,
-                    ),
+                    )
             )
 
         val cancellationEmailContent =
