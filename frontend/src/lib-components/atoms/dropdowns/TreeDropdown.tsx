@@ -189,7 +189,7 @@ const hasOnlyUncheckedChildren = (node: TreeNode): boolean =>
     (child) => !child.checked && hasOnlyUncheckedChildren(child)
   )
 
-function _TreeLevel<N extends TreeNode>({
+function TreeLevel_<N extends TreeNode>({
   node,
   onChange,
   defaultExpanded = false,
@@ -287,7 +287,7 @@ function _TreeLevel<N extends TreeNode>({
   )
 }
 
-const TreeLevel = React.memo(_TreeLevel) as typeof _TreeLevel
+const TreeLevel = React.memo(TreeLevel_) as typeof TreeLevel_
 
 function TreeDropdown<N extends TreeNode>({
   tree,
