@@ -32,15 +32,17 @@ export default React.memo(function ChildSelector({
 }: ChildSelectorProps) {
   const t = useTranslation()
 
-  const [isChildSelectionTouched, childSelectionMarker] = useBoolean(false)
+  const [isChildSelectionTouched, setChildSelectionTouched] = useBoolean(false)
   const duplicateChildInfo = useMemo(
     () => getDuplicateChildInfo(childItems, t),
     [childItems, t]
   )
 
+  const chipGroupContainerRef = React.useRef<HTMLDivElement>(null)
+
   return (
     <FixedSpaceColumn>
-      <FixedSpaceFlexWrap id="child-chip-container">
+      <FixedSpaceFlexWrap ref={chipGroupContainerRef}>
         {childItems.map((child) => (
           <div key={child.id} data-qa="relevant-child">
             <SelectionChip
@@ -53,7 +55,7 @@ export default React.memo(function ChildSelector({
               translate="no"
               selected={bind.state.includes(child.id)}
               onChange={(selected) => {
-                childSelectionMarker.on()
+                setChildSelectionTouched.on()
                 bind.update((prev) =>
                   selected
                     ? [...prev, child.id]
@@ -61,14 +63,12 @@ export default React.memo(function ChildSelector({
                 )
               }}
               onBlur={(e) => {
-                const chipGroupContainer = document.getElementById(
-                  'child-chip-container'
-                )
-                if (
-                  chipGroupContainer &&
-                  !chipGroupContainer.contains(e.relatedTarget)
-                ) {
-                  childSelectionMarker.on()
+                const focusTargetOutsideThisSelector =
+                  chipGroupContainerRef.current &&
+                  !chipGroupContainerRef.current.contains(e.relatedTarget)
+
+                if (focusTargetOutsideThisSelector) {
+                  setChildSelectionTouched.on()
                 }
               }}
               data-qa={`child-${child.id}`}

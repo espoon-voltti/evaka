@@ -103,7 +103,7 @@ export default React.memo(function MessageEditor({
   const [uploadStatus, setUploadStatus] =
     useState<UploadStatus>(initialUploadStatus)
 
-  const [isChildSelectionTouched, childSelectionMarker] = useBoolean(false)
+  const [isChildSelectionTouched, setChildSelectionTouched] = useBoolean(false)
 
   const handleAttachmentUpload = useCallback(
     async (file: File, onUploadProgress: (percentage: number) => void) =>
@@ -186,6 +186,8 @@ export default React.memo(function MessageEditor({
 
   const required = (text: string) => `${text}*`
 
+  const chipGroupContainerRef = React.useRef<HTMLDivElement>(null)
+
   return (
     <ModalAccessibilityWrapper>
       <FocusLock>
@@ -219,7 +221,7 @@ export default React.memo(function MessageEditor({
                   <FixedSpaceColumn>
                     <FixedSpaceFlexWrap
                       horizontalSpacing="xs"
-                      id="child-chip-container"
+                      ref={chipGroupContainerRef}
                     >
                       {children_
                         .filter((child) => childIds.includes(child.id))
@@ -235,7 +237,7 @@ export default React.memo(function MessageEditor({
                               translate="no"
                               selected={message.children.includes(child.id)}
                               onChange={(selected) => {
-                                childSelectionMarker.on()
+                                setChildSelectionTouched.on()
                                 const children = selected
                                   ? [...message.children, child.id]
                                   : message.children.filter(
@@ -257,15 +259,14 @@ export default React.memo(function MessageEditor({
                                 }))
                               }}
                               onBlur={(e) => {
-                                const chipGroupContainer =
-                                  document.getElementById(
-                                    'child-chip-container'
+                                const focusTargetOutsideThisSelector =
+                                  chipGroupContainerRef.current &&
+                                  !chipGroupContainerRef.current.contains(
+                                    e.relatedTarget
                                   )
-                                if (
-                                  chipGroupContainer &&
-                                  !chipGroupContainer.contains(e.relatedTarget)
-                                ) {
-                                  childSelectionMarker.on()
+
+                                if (focusTargetOutsideThisSelector) {
+                                  setChildSelectionTouched.on()
                                 }
                               }}
                               data-qa={`child-${child.id}`}
