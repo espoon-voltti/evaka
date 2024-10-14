@@ -410,6 +410,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `create application for waiting decision`() {
+        insertPersonData()
         whenever(featureConfig.placementToolApplicationStatus)
             .thenReturn(ApplicationStatus.WAITING_DECISION)
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
