@@ -7,10 +7,12 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
+import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.getCitizenMessageAccount
 import fi.espoo.evaka.messaging.getUnreadMessagesCounts
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.AreaId
@@ -44,7 +46,10 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
+import fi.espoo.evaka.vtjclient.service.persondetails.MockVtjPerson
 import java.math.BigDecimal
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.Test
@@ -53,8 +58,10 @@ import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockMultipartFile
 
 class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var controller: PlacementToolController
     @Autowired lateinit var service: PlacementToolService
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var scheduledJobs: ScheduledJobs
@@ -148,17 +155,6 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     name = "Test group 1",
                 )
             )
-            tx.insert(adult, DevPersonType.ADULT)
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insert(DevGuardian(adult.id, child.id))
-            tx.insert(
-                DevFridgeChild(
-                    childId = child.id,
-                    headOfChild = adult.id,
-                    startDate = child.dateOfBirth,
-                    endDate = child.dateOfBirth.plusYears(18),
-                )
-            )
             tx.insert(
                 fi.espoo.evaka.serviceneed.ServiceNeedOption(
                     id = serviceNeedOption.id,
@@ -211,14 +207,6 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validTo = null,
                 )
             )
-            tx.insertPlacement(
-                PlacementType.DAYCARE,
-                child.id,
-                unit.id,
-                currentPlacementStart,
-                currentPlacementEnd,
-                false,
-            )
             tx.insert(
                 DevPreschoolTerm(
                     preschoolTerm.id,
@@ -235,6 +223,30 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
+    private fun insertPersonData() {
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(adult.id, child.id))
+            tx.insert(
+                DevFridgeChild(
+                    childId = child.id,
+                    headOfChild = adult.id,
+                    startDate = child.dateOfBirth,
+                    endDate = child.dateOfBirth.plusYears(18),
+                )
+            )
+            tx.insertPlacement(
+                PlacementType.DAYCARE,
+                child.id,
+                unit.id,
+                currentPlacementStart,
+                currentPlacementEnd,
+                false,
+            )
+        }
+    }
+
     @Test
     fun `parse csv`() {
         val csv =
@@ -246,8 +258,21 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val data = parsePlacementToolCsv(csv.byteInputStream())
         assertEquals(1, data.size)
-        assertEquals(unit.id, data[0].preschoolId)
-        assertEquals(child.id, data[0].childId)
+        assertEquals(unit.id, data[child.id.raw.toString()])
+    }
+
+    @Test
+    fun `parse csv with ssn`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "${child.ssn!!}";"${unit.id}"
+        """
+                .trimIndent()
+
+        val data = parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(1, data.size)
+        assertEquals(unit.id, data[child.ssn!!])
     }
 
     @Test
@@ -291,6 +316,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `create application with one guardian`() {
+        insertPersonData()
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
         service.createApplication(
             db,
@@ -332,6 +358,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `create application with two guardians`() {
+        insertPersonData()
         val adult2 =
             DevPerson(
                 id = PersonId(UUID.randomUUID()),
@@ -379,6 +406,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `create application without proper child`() {
+        insertPersonData()
         val data = PlacementToolData(childId = ChildId(UUID.randomUUID()), preschoolId = unit.id)
         assertThrows<Exception> {
             service.createApplication(
@@ -395,6 +423,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `create application without proper unit`() {
+        insertPersonData()
         val data = PlacementToolData(childId = child.id, preschoolId = DaycareId(UUID.randomUUID()))
         assertThrows<Exception> {
             service.createApplication(
@@ -407,5 +436,43 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 preschoolTerm.id,
             )
         }
+    }
+
+    @Test
+    fun `create application from ssn`() {
+        MockPersonDetailsService.add(
+            MockVtjDataset(
+                persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
+                guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),
+            )
+        )
+        db.transaction { tx -> tx.insert(testFeeThresholds) }
+
+        controller.createPlacementToolApplications(
+            dbInstance(),
+            admin,
+            clock,
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.ssn!!};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            ),
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries =
+            db.read {
+                val person = it.getPersonBySSN(adult.ssn!!)
+                it.fetchApplicationSummariesForGuardian(person!!.id)
+            }
+        assertEquals(1, applicationSummaries.size)
+        val summary = applicationSummaries.first()
+        assertEquals(summary.preferredUnitId, unit.id)
+        val child = db.read { it.getPersonBySSN(child.ssn!!) }
+        assertEquals(summary.childId, child!!.id)
     }
 }

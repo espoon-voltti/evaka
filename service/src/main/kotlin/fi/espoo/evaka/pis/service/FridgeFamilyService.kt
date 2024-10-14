@@ -46,17 +46,26 @@ class FridgeFamilyService(
         if (age >= 18) {
             updateGuardianAndFamilyFromVtj(db, user, clock, personId)
         } else {
-            val currentGuardians =
-                db.read { tx -> tx.getDependantGuardians(personId) }.map { it.id }.toSet()
-            val updatedGuardians =
-                db.transaction { tx ->
-                        personService.getGuardians(tx, user, personId, forceRefresh = true)
-                    }
-                    .map { it.id }
-                    .toSet()
-            (currentGuardians + updatedGuardians).forEach { guardianId ->
-                updateGuardianAndFamilyFromVtj(db, user, clock, guardianId)
-            }
+            updateChildAndFamilyFromVtj(db, user, clock, personId)
+        }
+    }
+
+    fun updateChildAndFamilyFromVtj(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        personId: PersonId,
+    ) {
+        val currentGuardians =
+            db.read { tx -> tx.getDependantGuardians(personId) }.map { it.id }.toSet()
+        val updatedGuardians =
+            db.transaction { tx ->
+                    personService.getGuardians(tx, user, personId, forceRefresh = true)
+                }
+                .map { it.id }
+                .toSet()
+        (currentGuardians + updatedGuardians).forEach { guardianId ->
+            updateGuardianAndFamilyFromVtj(db, user, clock, guardianId)
         }
     }
 
