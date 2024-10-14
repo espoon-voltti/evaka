@@ -67,7 +67,7 @@
     "react-focus-on": "^3.9.4",
     "react-image-crop": "^11.0.6",
     "react-leaflet": "^4.2.1",
-    "react-router-dom": "^6.26.0",
+    "react-router-dom": "^6.27.0",
     "react-select": "^5.8.0",
     "seamless-scroll-polyfill": "2.3.4",
     "styled-components": "6.1.0",
