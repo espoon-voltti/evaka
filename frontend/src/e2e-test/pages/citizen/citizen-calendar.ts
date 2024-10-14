@@ -274,6 +274,16 @@ export default class CitizenCalendarPage {
     }
   }
 
+  async closeTimedToasts(): Promise<void> {
+    const toastCloseButtons = this.page.findAllByDataQa(
+      'timed-toast-close-button'
+    )
+    const count = await toastCloseButtons.count()
+    for (let i = 0; i < count; i++) {
+      await toastCloseButtons.nth(i).click()
+    }
+  }
+
   async assertHolidayCtaContent(content: string): Promise<void> {
     await this.#holidayCtas.nth(0).assertTextEquals(content)
   }

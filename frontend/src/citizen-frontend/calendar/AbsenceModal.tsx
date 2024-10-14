@@ -92,6 +92,7 @@ function initialFormState(
 interface Props {
   close: () => void
   onReturn: () => void
+  onSuccess: () => void
   reservationsResponse: ReservationsResponse
   initialDate: LocalDate | undefined
   holidayPeriods: HolidayPeriod[]
@@ -100,6 +101,7 @@ interface Props {
 export default React.memo(function AbsenceModal({
   close,
   onReturn,
+  onSuccess,
   reservationsResponse,
   initialDate,
   holidayPeriods
@@ -309,7 +311,7 @@ export default React.memo(function AbsenceModal({
                   }
                   return { body: form.value() }
                 }}
-                onSuccess={close}
+                onSuccess={onSuccess}
                 data-qa="modal-okBtn"
                 onFailure={(failure: Failure<unknown>) => {
                   setAttendanceAlreadyExistsError(

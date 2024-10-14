@@ -350,6 +350,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     })
     expect(absences.map((a) => a.category)).toEqual(['BILLABLE'])
 
+    await calendarPage.closeTimedToasts()
     await dayView.close()
     await calendarPage.assertDay(reservationDay, [
       { childIds: [children[0].id, children[2].id], text: 'Ilmoitus puuttuu' },
@@ -591,6 +592,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await editor.saveButton.click()
 
     await dayView.assertAbsence(testChild.id, 'Poissa')
+    await calendarPage.closeTimedToasts()
     await dayView.close()
 
     dayView = await calendarPage.openDayView(reservationDay)
