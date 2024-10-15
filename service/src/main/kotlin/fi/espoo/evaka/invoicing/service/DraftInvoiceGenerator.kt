@@ -938,8 +938,8 @@ class DraftInvoiceGenerator(
         val businessDays: DateSet,
         val feeThresholds: FeeThresholds,
         val absences: Map<AbsenceType, Map<ChildId, DateSet>>,
-        val freeChildren: Set<ChildId> = setOf(),
-        val codebtors: Map<PersonId, PersonId?> = mapOf(),
+        val freeChildren: Set<ChildId>,
+        val codebtors: Map<PersonId, PersonId?>,
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
     )
 
@@ -954,7 +954,7 @@ class DraftInvoiceGenerator(
         val businessDays: DateSet,
         val feeThresholds: FeeThresholds,
         val absences: Map<AbsenceType, Map<ChildId, DateSet>>,
-        val freeChildren: Set<ChildId> = setOf(),
+        val freeChildren: Set<ChildId>,
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
     )
 
