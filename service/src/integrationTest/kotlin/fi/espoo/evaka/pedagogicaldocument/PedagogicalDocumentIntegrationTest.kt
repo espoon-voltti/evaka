@@ -28,6 +28,8 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
@@ -42,8 +44,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var pedagogicalDocumentController: PedagogicalDocumentController
+
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
 
@@ -57,6 +62,8 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private val groupStaff = AuthenticatedUser.Employee(groupStaffId, setOf())
 
     private val guardian = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+
+    private val clock = MockEvakaClock(2024, 1, 3, 3, 7)
 
     val groupId = GroupId(UUID.randomUUID())
 
@@ -112,13 +119,13 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
     }
 
-    private fun createDocumentAsUser(childId: ChildId, user: AuthenticatedUser) =
-        http
-            .post("/employee/pedagogical-document")
-            .jsonBody("""{"childId": "$childId", "description": ""}""")
-            .asUser(user)
-            .responseString()
-            .third
+    private fun createDocumentAsUser(childId: ChildId, user: AuthenticatedUser.Employee) =
+        pedagogicalDocumentController.createPedagogicalDocument(
+            dbInstance(),
+            user,
+            clock,
+            PedagogicalDocumentPostBody(childId, ""),
+        )
 
     private fun getAttachmentAsUser(
         attachmentId: AttachmentId,
@@ -162,13 +169,13 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `creating new document`() {
         val result = createDocumentAsUser(testChild_1.id, employee)
 
-        assertNotNull(deserializePostResult(result.get()).id)
-        assertEquals(testChild_1.id, deserializePostResult(result.get()).childId)
+        assertNotNull(result.id)
+        assertEquals(testChild_1.id, result.childId)
     }
 
     @Test
     fun `updating document`() {
-        val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val id = createDocumentAsUser(testChild_1.id, employee).id
 
         val (_, _, result) =
             http
@@ -184,7 +191,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `find updated document`() {
-        val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val id = createDocumentAsUser(testChild_1.id, employee).id
 
         val testDescription = "foobar"
         http
@@ -206,8 +213,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `admin can read document with attachment`() {
         val res = createDocumentAsUser(testChild_1.id, employee)
 
-        val id = deserializePostResult(res.get()).id
-        val attachmentId = uploadAttachment(id)
+        val attachmentId = uploadAttachment(res.id)
 
         val parsed =
             deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
@@ -222,8 +228,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `supervisor can read pedagogical document and attachment by daycare`() {
         val res = createDocumentAsUser(testChild_1.id, employee)
 
-        val id = deserializePostResult(res.get()).id
-        val attachmentId = uploadAttachment(id)
+        val attachmentId = uploadAttachment(res.id)
 
         val result = getPedagogicalDocumentAsUser(testChild_1.id, supervisor).third
 
@@ -252,7 +257,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         createDocumentAsUser(testChild_2.id, employee)
 
-        val id = deserializePostResult(createDocumentAsUser(testChild_2.id, employee).get()).id
+        val id = createDocumentAsUser(testChild_2.id, employee).id
         val attachmentId = uploadAttachment(id)
 
         assertEquals(
@@ -266,8 +271,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `staff from daycare can read pedagogical document and attachment`() {
         val res = createDocumentAsUser(testChild_1.id, employee)
 
-        val id = deserializePostResult(res.get()).id
-        val attachmentId = uploadAttachment(id)
+        val attachmentId = uploadAttachment(res.id)
 
         val parsed =
             deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, staff).third.get())
@@ -285,8 +289,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `staff from group can read pedagogical document and attachment`() {
         val res = createDocumentAsUser(testChild_1.id, employee)
 
-        val id = deserializePostResult(res.get()).id
-        val attachmentId = uploadAttachment(id)
+        val attachmentId = uploadAttachment(res.id)
 
         val parsed =
             deserializeGetResult(
@@ -317,7 +320,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             it.insertEmployeeToDaycareGroupAcl(group2Id, staff2Id)
         }
 
-        val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val id = createDocumentAsUser(testChild_1.id, employee).id
         val attachmentId = uploadAttachment(id)
 
         assertEquals(403, getPedagogicalDocumentAsUser(testChild_1.id, staff2).second.statusCode)
@@ -336,7 +339,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             it.insertEmployeeToDaycareGroupAcl(group2Id, staff2Id)
         }
 
-        val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val id = createDocumentAsUser(testChild_1.id, employee).id
         val attachmentId = uploadAttachment(id)
 
         assertEquals(403, getPedagogicalDocumentAsUser(testChild_1.id, staff2).second.statusCode)
@@ -347,8 +350,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `guardian can read pedagogical document and attachment`() {
         val res = createDocumentAsUser(testChild_1.id, employee)
 
-        val id = deserializePostResult(res.get()).id
-        val attachmentId = uploadAttachment(id)
+        val attachmentId = uploadAttachment(res.id)
 
         val parsed =
             deserializeGetResultCitizen(
@@ -365,7 +367,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `guardian finds new document only when it has attachment or description`() {
-        val id1 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val id1 = createDocumentAsUser(testChild_1.id, employee).id
 
         assertEquals(
             emptyList(),
@@ -386,7 +388,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
         assertEquals(1, getUnreadCount(guardian).values.sum())
 
-        val id2 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val id2 = createDocumentAsUser(testChild_1.id, employee).id
 
         assertEquals(
             1,
@@ -415,7 +417,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `marking document read works`() {
-        val id1 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val id1 = createDocumentAsUser(testChild_1.id, employee).id
         val attachmentId = uploadAttachment(id1)
 
         http
@@ -435,7 +437,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `admin can delete read document with attachment`() {
-        val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val id = createDocumentAsUser(testChild_1.id, employee).id
         uploadAttachment(id)
 
         http.post("/employee/pedagogical-document/$id/mark-read").asUser(employee).responseString()
