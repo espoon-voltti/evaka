@@ -151,7 +151,7 @@ class PdfGenerationTest {
                     restrictedDetailsEnabled = false,
                 ),
             validFrom = LocalDate.of(2020, 1, 1),
-            validTo = null,
+            validTo = LocalDate.of(2020, 12, 31),
             financeDecisionHandlerFirstName = null,
             financeDecisionHandlerLastName = null,
             familySize = 3,

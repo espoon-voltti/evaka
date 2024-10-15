@@ -38,8 +38,8 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -207,7 +207,7 @@ class VoucherValueDecisionService(
                         it.headOfFamily.id,
                         it.partner?.id,
                         listOf(it.child.id),
-                        DateRange(it.validFrom, it.validTo),
+                        FiniteDateRange(it.validFrom, it.validTo),
                     )
             )
         } ?: error("No voucher value decision found with ID ($decisionId)")

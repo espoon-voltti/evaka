@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
@@ -488,7 +489,7 @@ WHERE decision.id = ${bind(id)}
                         it.headOfFamily.id,
                         it.partner?.id,
                         listOf(it.child.id),
-                        DateRange(it.validFrom, it.validTo),
+                        FiniteDateRange(it.validFrom, it.validTo),
                     )
             )
         }

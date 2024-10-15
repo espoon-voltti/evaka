@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
@@ -73,7 +73,7 @@ beforeEach(async () => {
     testChild2,
     testDaycare.id,
     null,
-    new DateRange(
+    new FiniteDateRange(
       LocalDate.todayInSystemTz().subMonths(1).withDate(1),
       LocalDate.todayInSystemTz().withDate(1).subDays(1)
     )

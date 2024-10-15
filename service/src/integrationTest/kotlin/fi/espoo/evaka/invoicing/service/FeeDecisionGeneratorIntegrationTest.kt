@@ -142,7 +142,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new placement does not create fee decisions when child is missing head of family`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -153,7 +153,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new placement to a net budgeted unit does not generate a fee decision`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycareNotInvoiced.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -165,7 +165,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `placing a child to a net budgeted unit and their sibling to a normal unit will result in only a single fee decision child`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycareNotInvoiced.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(
@@ -182,7 +182,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `child in a club does not affect fee decisions for siblings in any way`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, CLUB, testClub.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(
@@ -200,7 +200,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `child in a school shift care does not affect fee decisions for siblings in any way`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, SCHOOL_SHIFT_CARE, testClub.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(
@@ -218,7 +218,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new placement creates new fee decision when no existing decision`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -230,7 +230,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `regenerating overrides existing fee decision and preserves metadata`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -250,7 +250,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is not generated for child with a preschool placement`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -263,7 +263,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is not generated for child with a preparatory placement`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, PREPARATORY, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -276,7 +276,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision placement infers correct service need from a preschool daycare placement`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -307,16 +307,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertServiceNeed(
-            insertPlacement(
-                testChild_1.id,
-                placementPeriod.asDateRange(),
-                PRESCHOOL_CLUB,
-                testDaycare.id,
-            ),
+            insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_CLUB, testDaycare.id),
             placementPeriod,
             snPreschoolClub45.id,
         )
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod.asDateRange())
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
 
@@ -346,29 +341,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolClub45
         insertServiceNeed(
-            insertPlacement(
-                testChild_1.id,
-                placementPeriod.asDateRange(),
-                PRESCHOOL_CLUB,
-                testDaycare.id,
-            ),
+            insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_CLUB, testDaycare.id),
             placementPeriod,
             serviceNeed.id,
         )
         insertServiceNeed(
-            insertPlacement(
-                testChild_2.id,
-                placementPeriod.asDateRange(),
-                PRESCHOOL_CLUB,
-                testDaycare.id,
-            ),
+            insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_CLUB, testDaycare.id),
             placementPeriod,
             serviceNeed.id,
         )
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod.asDateRange(),
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -399,7 +384,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision placement infers correct service need from a preparatory daycare placement`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -416,7 +401,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `fee decision placement gets correct contract days`() {
         val start = LocalDate.of(2019, 1, 1)
         val end = LocalDate.of(2019, 12, 31)
-        val placementPeriod = DateRange(start, end)
+        val placementPeriod = FiniteDateRange(start, end)
         val placementId = insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertServiceNeed(placementId, FiniteDateRange(start, end), snDaycareContractDays15.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
@@ -431,7 +416,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision placement infers correct service need from a five year olds daycare placement`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE_FIVE_YEAR_OLDS, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -446,7 +431,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision placement infers correct service need from a part day five year olds daycare placement`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(
             testChild_1.id,
             placementPeriod,
@@ -466,7 +451,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new service need updates existing draft`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val placementId = insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -480,7 +465,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
 
         val serviceNeed = snDaycareFullDayPartWeek25
-        insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
+        insertServiceNeed(placementId, placementPeriod, serviceNeed.id)
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
 
         val updated = getAllFeeDecisions()
@@ -490,7 +475,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new service need that partially covers existing decision splits it`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val placementId = insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -522,7 +507,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         }
         updated[1].let { decision ->
-            assertEquals(serviceNeedPeriod.asDateRange(), decision.validDuring)
+            assertEquals(serviceNeedPeriod, decision.validDuring)
             assertEquals(serviceNeed.toFeeDecisionServiceNeed(), decision.children[0].serviceNeed)
         }
     }
@@ -532,7 +517,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val serviceNeedPeriod =
             FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snDaycareFullDay25to35
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val placementId = insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
         insertServiceNeed(placementId, serviceNeedPeriod, serviceNeed.id)
@@ -552,7 +537,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         }
         original[1].let { decision ->
-            assertEquals(serviceNeedPeriod.asDateRange(), decision.validDuring)
+            assertEquals(serviceNeedPeriod, decision.validDuring)
             assertEquals(serviceNeed.toFeeDecisionServiceNeed(), decision.children[0].serviceNeed)
         }
 
@@ -572,7 +557,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new fee decisions are not generated if children have no placements`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -583,7 +568,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new fee decisions are generated if children have no placements but there exists an sent decision for same head of family`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         db.transaction { tx ->
             tx.upsertFeeDecisions(
@@ -618,7 +603,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new empty fee decision is generated if head of family has no children but there exists an sent decision for same head of family`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         db.transaction { tx ->
             tx.upsertFeeDecisions(
                 listOf(
@@ -652,11 +637,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children in preschool with daycare with one default and one 45h service need`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolDaycare45
         val placementId =
             insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
-        insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
+        insertServiceNeed(placementId, placementPeriod, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertFamilyRelations(
             testAdult_1.id,
@@ -695,11 +680,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children in preschool with daycare with one default and one 36h service need`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolDaycarePartDay35to45
         val placementId =
             insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
-        insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
+        insertServiceNeed(placementId, placementPeriod, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertFamilyRelations(
             testAdult_1.id,
@@ -738,11 +723,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children in preschool with daycare with one default and one 35h service need`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolDaycarePartDay35
         val placementId =
             insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
-        insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
+        insertServiceNeed(placementId, placementPeriod, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertFamilyRelations(
             testAdult_1.id,
@@ -782,7 +767,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children with one having preschool without daycare`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL, testDaycare.id)
         insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertFamilyRelations(
@@ -815,11 +800,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children in preparatory with daycare with one default and one 50h service need`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreparatoryDaycare50
         val placementId =
             insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
-        insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
+        insertServiceNeed(placementId, placementPeriod, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertFamilyRelations(
             testAdult_1.id,
@@ -858,11 +843,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children in preparatory with daycare with one default and one 45h service need`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreparatoryDaycarePartDay40to50
         val placementId =
             insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
-        insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
+        insertServiceNeed(placementId, placementPeriod, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertFamilyRelations(
             testAdult_1.id,
@@ -901,11 +886,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children in preschool with daycare with one default and one 40h service need`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreparatoryDaycarePartDay40
         val placementId =
             insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
-        insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
+        insertServiceNeed(placementId, placementPeriod, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertFamilyRelations(
             testAdult_1.id,
@@ -944,7 +929,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children with one having preparatory without daycare`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, PREPARATORY, testDaycare.id)
         insertPlacement(testChild_2.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertFamilyRelations(
@@ -995,7 +980,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx -> listOf(twin1, twin2).forEach { tx.insert(it, DevPersonType.CHILD) } }
 
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(twin1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertPlacement(twin2.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(twin1.id, twin2.id), placementPeriod)
@@ -1019,7 +1004,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `Child income affects only that childs fees`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(
@@ -1029,10 +1014,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
 
         // Adult minimal income
-        insertIncome(testAdult_1.id, 310200, placementPeriod)
+        insertIncome(testAdult_1.id, 310200, placementPeriod.asDateRange())
 
         // Unlike other income, child income should affect only that child's fees
-        insertIncome(testChild_1.id, 600000, placementPeriod)
+        insertIncome(testChild_1.id, 600000, placementPeriod.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
 
@@ -1064,7 +1049,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `children over 18 years old are not included in families when determining base fee`() {
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val birthday = LocalDate.of(2001, 7, 1)
         val childTurning18Id =
             db.transaction { it.insert(DevPerson(dateOfBirth = birthday), DevPersonType.RAW_ROW) }
@@ -1075,7 +1060,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             listOf(testChild_1.id, childTurning18Id),
             placementPeriod,
         )
-        insertIncome(testAdult_1.id, 330000, placementPeriod)
+        insertIncome(testAdult_1.id, 330000, placementPeriod.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
 
@@ -1111,7 +1096,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new fee decisions are not generated if new draft would be equal to already existing sent decision`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
@@ -1146,7 +1131,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `head of family difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
@@ -1165,14 +1150,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `partner difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1, clock.now())
-        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1.asDateRange(), clock.now())
+        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2.asDateRange(), clock.now())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -1186,16 +1171,16 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `head of family & partner switch difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
-        insertIncome(testAdult_1.id, 10000, period)
-        insertIncome(testAdult_2.id, 20000, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
+        insertIncome(testAdult_1.id, 10000, period.asDateRange())
+        insertIncome(testAdult_2.id, 20000, period.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForChild(tx, testChild_1.id) }
 
@@ -1215,17 +1200,23 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             MockEvakaClock(HelsinkiDateTime.Companion.of(firstPeriod.start, LocalTime.of(0, 0)))
         insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod, clock.now())
         insertPartnership(testAdult_2.id, testAdult_1.id, secondPeriod, clock.now())
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), firstPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id),
+            firstPeriod.asFiniteDateRange()!!,
+        )
         insertFamilyRelations(
             testAdult_2.id,
             listOf(testChild_1.id),
-            secondPeriod.copy(end = LocalDate.of(2036, 2, 7)),
+            secondPeriod.copy(end = LocalDate.of(2036, 2, 7)).asFiniteDateRange()!!,
         )
 
-        val firstPlacementPeriod = DateRange(LocalDate.of(2021, 1, 11), LocalDate.of(2023, 1, 8))
+        val firstPlacementPeriod =
+            FiniteDateRange(LocalDate.of(2021, 1, 11), LocalDate.of(2023, 1, 8))
         insertPlacement(testChild_1.id, firstPlacementPeriod, DAYCARE, testDaycare.id)
 
-        val secondPlacementPeriod = DateRange(LocalDate.of(2023, 1, 9), LocalDate.of(2023, 7, 31))
+        val secondPlacementPeriod =
+            FiniteDateRange(LocalDate.of(2023, 1, 9), LocalDate.of(2023, 7, 31))
         insertPlacement(testChild_1.id, secondPlacementPeriod, DAYCARE, testDaycare.id)
 
         db.transaction { tx -> generator.generateNewDecisionsForChild(tx, testChild_1.id) }
@@ -1248,12 +1239,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `retroactive decisions are created after head of family changes`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
 
-        insertPartnership(testAdult_2.id, testAdult_1.id, period, clock.now())
+        insertPartnership(testAdult_2.id, testAdult_1.id, period.asDateRange(), clock.now())
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
@@ -1270,12 +1261,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `head of family income difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertIncome(testAdult_1.id, 10000, subPeriod2)
+        insertIncome(testAdult_1.id, 10000, subPeriod2.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -1289,14 +1280,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `partner income difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
-        insertIncome(testAdult_2.id, 10000, subPeriod2)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
+        insertIncome(testAdult_2.id, 10000, subPeriod2.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -1310,12 +1301,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `child income difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertIncome(testChild_1.id, 10000, subPeriod2)
+        insertIncome(testChild_1.id, 10000, subPeriod2.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -1329,7 +1320,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `family size difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1352,7 +1343,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `placement unit difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1375,7 +1366,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `placement type difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1401,9 +1392,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period.asDateRange())
-        val placementId =
-            insertPlacement(testChild_1.id, period.asDateRange(), DAYCARE, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        val placementId = insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertServiceNeed(placementId, subPeriod1, snDaycareFullDay35.id)
         insertServiceNeed(placementId, subPeriod2, snDaycareFullDayPartWeek25.id)
 
@@ -1417,12 +1407,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             .containsExactlyInAnyOrder(
                 Tuple(
-                    subPeriod1.asDateRange(),
+                    subPeriod1,
                     emptySet<FeeDecisionDifference>(),
                     listOf(snDaycareFullDay35.toFeeDecisionServiceNeed()),
                 ),
                 Tuple(
-                    subPeriod2.asDateRange(),
+                    subPeriod2,
                     setOf(FeeDecisionDifference.SERVICE_NEED),
                     listOf(snDaycareFullDayPartWeek25.toFeeDecisionServiceNeed()),
                 ),
@@ -1431,7 +1421,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `sibling discount difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
@@ -1467,12 +1457,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee alterations difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertFeeAlteration(testChild_1.id, 50.0, subPeriod2)
+        insertFeeAlteration(testChild_1.id, 50.0, subPeriod2.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -1486,7 +1476,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee thresholds difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1500,7 +1490,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .updateExactlyOne()
             tx.insert(
                 FeeThresholds(
-                    validDuring = subPeriod2.copy(end = null),
+                    validDuring = subPeriod2.asDateRange().copy(end = null),
                     minIncomeThreshold2 = 213600,
                     minIncomeThreshold3 = 275600,
                     minIncomeThreshold4 = 312900,
@@ -1541,14 +1531,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `difference with overlapping drafts`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
-        val subPeriod1 = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 30))
-        val subPeriod2 = DateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 12, 31))
-        val subPeriod3 = DateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 9, 1))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 30))
+        val subPeriod2 = FiniteDateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod3 = FiniteDateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 9, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE_PART_TIME, testDaycare.id)
-        insertIncome(testChild_1.id, 10000, subPeriod3)
+        insertIncome(testChild_1.id, 10000, subPeriod3.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -1580,7 +1570,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `difference between sent and draft`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1603,7 +1593,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `difference when drafts replaces sent`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1629,7 +1619,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `difference when gap between two drafts`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1648,7 +1638,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `difference when gap between sent and draft`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1671,7 +1661,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new fee decisions are not generated if new draft would be equal to already existing sent decisions that cover the period`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
@@ -1722,7 +1712,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new fee decisions are generated if new draft would be equal to already existing sent decision but a new draft that is valid before it is generated`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         val placementId = insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         val serviceNeed = snDaycareFullDayPartWeek25
@@ -1790,13 +1780,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `new fee decision is generated even if it is equal to existing sent decision from it's start but there is a existing draft before it`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         val placementId = insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         val olderPeriod = period.copy(end = period.start.plusDays(30))
         val serviceNeed = snDaycareFullDayPartWeek25
-        insertServiceNeed(placementId, olderPeriod.asFiniteDateRange()!!, serviceNeed.id)
-        val newerPeriod = period.copy(start = olderPeriod.end!!.plusDays(1))
+        insertServiceNeed(placementId, olderPeriod, serviceNeed.id)
+        val newerPeriod = period.copy(start = olderPeriod.end.plusDays(1))
         db.transaction { tx ->
             tx.upsertFeeDecisions(
                 listOf(
@@ -1881,7 +1871,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation works as expected with multiple children with partially overlapping placements`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id, testChild_3.id),
@@ -1984,9 +1974,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation works as expected with multiple children with distinct placements`() {
-        val period_1 = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        val period_2 = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        val period_3 = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31))
+        val period_1 = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period_2 = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period_3 = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31))
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id, testChild_3.id),
@@ -2052,9 +2042,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation works as expected with changing family compositions`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
-        val subPeriod_2 = period.copy(start = subPeriod_1.end!!.plusDays(1))
+        val subPeriod_2 = period.copy(start = subPeriod_1.end.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod_1)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), subPeriod_2)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
@@ -2100,12 +2090,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation works as expected with changing income`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
-        val subPeriod_2 = period.copy(start = subPeriod_1.end!!.plusDays(1))
+        val subPeriod_2 = period.copy(start = subPeriod_1.end.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertIncome(testAdult_1.id, 310200, subPeriod_1)
+        insertIncome(testAdult_1.id, 310200, subPeriod_1.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -2147,8 +2137,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation works as expected with removed income`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        val incomePeriod = period.copy(end = null)
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val incomePeriod = DateRange(period.start, null)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod)
@@ -2199,12 +2189,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation with multiple periods works as expected with removed income`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
-        val subPeriod_2 = period.copy(start = subPeriod_1.end!!.plusDays(1))
+        val subPeriod_2 = period.copy(start = subPeriod_1.end.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertIncome(testAdult_1.id, 310200, subPeriod_1)
+        insertIncome(testAdult_1.id, 310200, subPeriod_1.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -2268,8 +2258,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision family sizes and sibling discounts are formed correctly when fridge partners change`() {
-        val firstPeriod = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
-        val secondPeriod = DateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 12, 31))
+        val firstPeriod = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
+        val secondPeriod = FiniteDateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 12, 31))
         val wholePeriod = firstPeriod.copy(end = secondPeriod.end)
         val clock =
             MockEvakaClock(HelsinkiDateTime.Companion.of(wholePeriod.start, LocalTime.of(0, 0)))
@@ -2277,8 +2267,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_2.id, listOf(testChild_3.id), wholePeriod)
         insertFamilyRelations(testAdult_3.id, listOf(testChild_4.id), wholePeriod)
 
-        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod, clock.now())
-        insertPartnership(testAdult_1.id, testAdult_3.id, secondPeriod, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod.asDateRange(), clock.now())
+        insertPartnership(testAdult_1.id, testAdult_3.id, secondPeriod.asDateRange(), clock.now())
 
         insertPlacement(testChild_1.id, wholePeriod, DAYCARE, testDaycare.id)
         insertPlacement(testChild_3.id, wholePeriod, DAYCARE, testDaycare.id)
@@ -2347,21 +2337,21 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `when fridge partners are guardians of all children, only send one fee decision`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_8.id), period)
         insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_8.id))
         insertGuardianship(testAdult_2.id, listOf(testChild_1.id, testChild_2.id, testChild_8.id))
 
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
 
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_8.id, period, DAYCARE, testDaycare.id)
 
-        insertIncome(testAdult_1.id, 310200, period)
-        insertIncome(testAdult_2.id, 310200, period)
+        insertIncome(testAdult_1.id, 310200, period.asDateRange())
+        insertIncome(testAdult_2.id, 310200, period.asDateRange())
 
         db.transaction {
             generator.generateNewDecisionsForAdult(it, testAdult_1.id)
@@ -2385,22 +2375,22 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `when both fridge partners are not guardians of each child, only send one fee decision`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_3.id, testChild_4.id), period)
         insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_3.id))
         insertGuardianship(testAdult_2.id, listOf(testChild_2.id, testChild_3.id, testChild_4.id))
 
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
 
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_3.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_4.id, period, DAYCARE, testDaycare.id)
 
-        insertIncome(testAdult_1.id, 310200, period)
-        insertIncome(testAdult_2.id, 310200, period)
+        insertIncome(testAdult_1.id, 310200, period.asDateRange())
+        insertIncome(testAdult_2.id, 310200, period.asDateRange())
 
         db.transaction {
             generator.generateNewDecisionsForAdult(it, testAdult_1.id)
@@ -2436,7 +2426,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `require partnership for fridge family discounts`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_8.id), period)
         insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id))
@@ -2446,8 +2436,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_8.id, period, DAYCARE, testDaycare.id)
 
-        insertIncome(testAdult_1.id, 310200, period)
-        insertIncome(testAdult_2.id, 310200, period)
+        insertIncome(testAdult_1.id, 310200, period.asDateRange())
+        insertIncome(testAdult_2.id, 310200, period.asDateRange())
 
         db.transaction {
             generator.generateNewDecisionsForAdult(it, testAdult_1.id)
@@ -2491,15 +2481,15 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation works as expected with changing children`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
-        val subPeriod_2 = period.copy(start = subPeriod_1.end!!.plusDays(1))
+        val subPeriod_2 = period.copy(start = subPeriod_1.end.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2.asDateRange(), clock.now())
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertIncome(testAdult_1.id, 310200, period)
-        insertIncome(testAdult_2.id, 310200, period)
+        insertIncome(testAdult_1.id, 310200, period.asDateRange())
+        insertIncome(testAdult_2.id, 310200, period.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -2541,14 +2531,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation works as expected with a children that has missing income`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
-        val subPeriod_2 = period.copy(start = subPeriod_1.end!!.plusDays(1))
+        val subPeriod_2 = period.copy(start = subPeriod_1.end.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2.asDateRange(), clock.now())
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertIncome(testAdult_1.id, 310200, period)
+        insertIncome(testAdult_1.id, 310200, period.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -2590,10 +2580,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision generation works as expected with fee alterations`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertFeeAlteration(testChild_1.id, 50.0, period)
+        insertFeeAlteration(testChild_1.id, 50.0, period.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -2619,13 +2609,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `echa increase is applied only once with changing family compositions`() {
-        val firstPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        val secondPeriod = DateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 12, 31))
+        val firstPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val secondPeriod = FiniteDateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 12, 31))
         val combinedPeriod = firstPeriod.copy(end = secondPeriod.end)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), firstPeriod)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), secondPeriod)
         insertPlacement(testChild_1.id, combinedPeriod, DAYCARE, testDaycare.id)
-        insertEchaIncome(testAdult_1.id, combinedPeriod)
+        insertEchaIncome(testAdult_1.id, combinedPeriod.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -2669,7 +2659,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `active fee decisions are not updated on changed past placement end date`() {
-        val originalPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val originalPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val sentDecision =
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -2689,7 +2679,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(sentDecision)) }
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), originalPeriod)
-        val newPeriod = originalPeriod.copy(end = originalPeriod.end!!.minusDays(7))
+        val newPeriod = originalPeriod.copy(end = originalPeriod.end.minusDays(7))
         insertPlacement(testChild_1.id, newPeriod, DAYCARE, testDaycare.id)
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -2699,7 +2689,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEqualEnoughDecisions(sentDecision, decisions.first())
         decisions.last().let { decision ->
             assertEquals(FeeDecisionStatus.DRAFT, decision.status)
-            assertEquals(newPeriod.end!!.plusDays(1), decision.validFrom)
+            assertEquals(newPeriod.end.plusDays(1), decision.validFrom)
             assertEquals(originalPeriod.end, decision.validTo)
             assertEquals(0, decision.children.size)
         }
@@ -2707,7 +2697,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decisions are generated starting earliest on the global fee decision min date`() {
-        val period = DateRange(LocalDate.of(2014, 6, 1), LocalDate.of(2015, 6, 1))
+        val period = FiniteDateRange(LocalDate.of(2014, 6, 1), LocalDate.of(2015, 6, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_8.id), period)
         insertPlacement(testChild_8.id, period, DAYCARE, testDaycare.id)
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_8.id) }
@@ -2724,8 +2714,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `an empty draft is generated when a placement is moved to start later and a family update is triggered`() {
         val originalPlacementPeriod =
-            DateRange(LocalDate.now().minusWeeks(2), LocalDate.now().plusYears(1))
-        val familyPeriod = DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(17))
+            FiniteDateRange(LocalDate.now().minusWeeks(2), LocalDate.now().plusYears(1))
+        val familyPeriod =
+            FiniteDateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(17))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), familyPeriod)
         insertPlacement(
             testChild_1.id,
@@ -2777,8 +2768,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `zero euro fee decisions get an updated draft when fee thresholds change`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        insertIncome(adultId = testAdult_1.id, amount = 0, period = period)
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertIncome(adultId = testAdult_1.id, amount = 0, period = period.asDateRange())
         createFeeDecisionFixture(
                 status = FeeDecisionStatus.SENT,
                 decisionType = FeeDecisionType.NORMAL,
@@ -2836,7 +2827,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `decision is generated correctly from two identical and concurrent placements`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(
             testChild_1.id,
@@ -2871,12 +2862,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is generated for fridge family with two head of families with different children for placed child`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -2885,12 +2876,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is generated for fridge family with two head of families with different children for non placed child`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_2.id) }
@@ -2899,14 +2890,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `empty fee decisions are merged into one even if income changes mid decision`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertIncome(testAdult_1.id, 500000, period.copy(end = period.start.plusMonths(6)))
+        insertIncome(testAdult_1.id, 500000, DateRange(period.start, period.start.plusMonths(6)))
         insertIncome(
             testAdult_1.id,
             400000,
-            period.copy(start = period.start.plusMonths(6).plusDays(1)),
+            DateRange(period.start.plusMonths(6).plusDays(1), period.end),
         )
         val sentDecision =
             createFeeDecisionFixture(
@@ -2939,11 +2930,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `two separate sent fee decisions are not replaced by a new draft if the combined contents are the same`() {
-        val period1 = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 7, 31))
-        val period2 = DateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2020, 12, 31))
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period1 = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 7, 31))
+        val period2 = FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
@@ -2988,7 +2979,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `duplicate sent fee decision is not generated`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         val placementId = insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
@@ -3036,7 +3027,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `duplicate sent fee decision is not generated if there is a draft in the past`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock =
@@ -3082,7 +3073,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val admin = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN))
         val period = FiniteDateRange(LocalDate.of(2022, 3, 1), LocalDate.of(2022, 4, 30))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
-        insertPlacement(testChild_1.id, period.asDateRange(), DAYCARE, testDaycare.id)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         parentshipController.createParentship(
             dbInstance(),
             admin,
@@ -3192,8 +3183,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `a new fee decision is not generated if incomes change from NOT_AVAILABLE to INCOMPLETE`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        val incomePeriod = period.copy(end = null)
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val incomePeriod = DateRange(period.start, null)
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
@@ -3246,7 +3237,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun insertPlacement(
         childId: ChildId,
-        period: DateRange,
+        period: FiniteDateRange,
         type: fi.espoo.evaka.placement.PlacementType,
         daycareId: DaycareId,
     ): PlacementId {
@@ -3257,7 +3248,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = childId,
                     unitId = daycareId,
                     startDate = period.start,
-                    endDate = period.end!!,
+                    endDate = period.end,
                 )
             )
         }
@@ -3266,7 +3257,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun insertFamilyRelations(
         headOfFamilyId: PersonId,
         childIds: List<ChildId>,
-        period: DateRange,
+        period: FiniteDateRange,
     ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
@@ -3275,7 +3266,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = childId,
                         headOfChildId = headOfFamilyId,
                         startDate = period.start,
-                        endDate = period.end!!,
+                        endDate = period.end,
                     )
                 )
             }

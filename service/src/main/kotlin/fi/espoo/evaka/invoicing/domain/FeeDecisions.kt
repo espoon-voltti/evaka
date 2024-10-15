@@ -10,6 +10,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.math.BigDecimal
@@ -24,7 +25,7 @@ data class FeeDecision(
     override val id: FeeDecisionId,
     @Json val children: List<FeeDecisionChild>,
     override val headOfFamilyId: PersonId,
-    override val validDuring: DateRange,
+    override val validDuring: FiniteDateRange,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,
@@ -45,11 +46,11 @@ data class FeeDecision(
         get() = children.fold(0) { sum, child -> sum + child.finalFee }
 
     override val validFrom: LocalDate = validDuring.start
-    override val validTo: LocalDate? = validDuring.end
+    override val validTo: LocalDate = validDuring.end
 
     override fun withId(id: UUID) = this.copy(id = FeeDecisionId(id))
 
-    override fun withValidity(period: DateRange) = this.copy(validDuring = period)
+    override fun withValidity(period: FiniteDateRange) = this.copy(validDuring = period)
 
     override fun withCreated(created: HelsinkiDateTime) = this.copy(created = created)
 
@@ -187,7 +188,7 @@ private fun <T> decisionChildrenEquals(
 data class FeeDecisionDetailed(
     val id: FeeDecisionId,
     @Json val children: List<FeeDecisionChildDetailed>,
-    val validDuring: DateRange,
+    val validDuring: FiniteDateRange,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,
@@ -276,7 +277,7 @@ data class FeeDecisionChildDetailed(
 data class FeeDecisionSummary(
     val id: FeeDecisionId,
     @Json val children: List<PersonBasic>,
-    val validDuring: DateRange,
+    val validDuring: FiniteDateRange,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     @Nested("head") val headOfFamily: PersonBasic,

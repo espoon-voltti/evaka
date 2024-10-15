@@ -27,7 +27,7 @@ import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
@@ -73,7 +73,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testVoucherDaycare.id,
                     startDate = originalRange.start,
-                    endDate = originalRange.end!!,
+                    endDate = originalRange.end,
                 )
             )
             tx.insert(
@@ -81,7 +81,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = originalRange.start.minusYears(1),
-                    endDate = originalRange.end!!.plusYears(1),
+                    endDate = originalRange.end.plusYears(1),
                 )
             )
         }
@@ -315,7 +315,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testVoucherDaycare.id,
                     startDate = day(16),
-                    endDate = originalRange.end!!,
+                    endDate = originalRange.end,
                 )
             )
         }
@@ -372,7 +372,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                         childId = testChild_2.id,
                         headOfChildId = testAdult_1.id,
                         startDate = originalRange.start.minusYears(1),
-                        endDate = originalRange.end!!.plusYears(1),
+                        endDate = originalRange.end.plusYears(1),
                     )
                 )
             }
@@ -414,9 +414,9 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
 
-    private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
+    private fun dateRange(f: Int, t: Int) = FiniteDateRange(day(f), day(t))
 
-    private fun assertDrafts(expectedDrafts: List<Pair<DateRange, Boolean>>) {
+    private fun assertDrafts(expectedDrafts: List<Pair<FiniteDateRange, Boolean>>) {
         val decisions = getAllVoucherValueDecisions()
         assertEquals(
             expectedDrafts.size,
@@ -435,7 +435,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
     }
 
     private fun assertFinal(
-        expectedFinalState: List<Triple<VoucherValueDecisionStatus, DateRange, Boolean>>
+        expectedFinalState: List<Triple<VoucherValueDecisionStatus, FiniteDateRange, Boolean>>
     ) {
         val sent = getAllVoucherValueDecisions()
         assertEquals(expectedFinalState.size, sent.size)

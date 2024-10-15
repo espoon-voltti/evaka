@@ -9,6 +9,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.periodsCanMerge
 import java.time.LocalDate
 
@@ -121,7 +122,7 @@ fun <Decision : FinanceDecision<Decision>> existsActiveDuplicateThatWillRemainEf
         nonIdenticalDraftsOverlappingActive.minOfOrNull { it.validFrom.minusDays(1) }
             ?: activeDuplicate.validTo
 
-    if (activeValidUntil != null && activeValidUntil < activeDuplicate.validFrom) {
+    if (activeValidUntil < activeDuplicate.validFrom) {
         return false // active decision will be annulled
     }
 
@@ -142,7 +143,7 @@ fun <Decision : FinanceDecision<Decision>> mergeAdjacentIdenticalDrafts(
                     periodsCanMerge(prev.validDuring, next.validDuring) &&
                     prev.contentEquals(next)
             ) {
-                acc.dropLast(1) + prev.withValidity(DateRange(prev.validFrom, next.validTo))
+                acc.dropLast(1) + prev.withValidity(FiniteDateRange(prev.validFrom, next.validTo))
             } else {
                 acc + next
             }

@@ -447,3 +447,4 @@ V448__push_notification_new_absence_defaults.sql
 V449__pedagogical_document_modified_by.sql
 V450__titania_errors.sql
 V451__invoice_correction_target.sql
+V452__finance_decision_date_nullability.sql
