@@ -348,7 +348,7 @@ WHERE daycare_group.id = ${bind(groupId)}
 private fun placementsQuery(range: FiniteDateRange, groupId: GroupId) = QuerySql {
     sql(
         """
-SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') AS date_range
+SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') AS date_range, p.type
 FROM daycare_group_placement AS gp
 JOIN placement p ON gp.daycare_placement_id = p.id AND daterange(p.start_date, p.end_date, '[]') && daterange(gp.start_date, gp.end_date, '[]')
 WHERE daterange(p.start_date, p.end_date, '[]') && ${bind(range)}
@@ -357,7 +357,7 @@ AND gp.daycare_group_id = ${bind(groupId)}
 
 UNION ALL
 
-SELECT bc.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') AS date_range
+SELECT bc.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') AS date_range, p.type
 FROM backup_care bc
 JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
 WHERE daterange(p.start_date, p.end_date, '[]') && ${bind(range)}
@@ -594,6 +594,7 @@ between_start_and_end(${bind(dateRange)}, $it.date)
 AND EXISTS (
     SELECT FROM (${subquery(placementsQuery(dateRange, groupId))}) p
     WHERE $it.child_id = p.child_id AND between_start_and_end(p.date_range, $it.date)
+        AND p.type = ANY(${bind(PlacementType.requiringAttendanceReservations)})
 )
 """
             )

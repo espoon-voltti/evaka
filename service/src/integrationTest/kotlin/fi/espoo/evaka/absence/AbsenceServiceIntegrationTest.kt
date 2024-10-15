@@ -1810,6 +1810,35 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     }
 
     @Test
+    fun `attendance sums - attendances included only for days with reservation requirement`() {
+        insertGroupPlacement(
+            testChild_1.id,
+            placementPeriod = FiniteDateRange(placementStart, placementStart),
+            placementType = PlacementType.PRESCHOOL,
+        )
+        insertGroupPlacement(
+            testChild_1.id,
+            placementPeriod = FiniteDateRange(placementStart.plusDays(1), placementEnd),
+            placementType = PlacementType.PRESCHOOL_DAYCARE,
+        )
+        val attendances =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to
+                        HelsinkiDateTime.of(it, LocalTime.of(14, 0))
+                }
+                .take(2)
+                .toList()
+        insertAttendances(testChild_1.id, testDaycare.id, attendances)
+
+        val result =
+            db.read {
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+            }
+        assertEquals(listOf(6), result.children.map { it.attendanceTotalHours })
+    }
+
+    @Test
     fun `used service totals`() {
         db.transaction { tx -> tx.insertServiceNeedOption(snDaycareHours120) }
         insertGroupPlacement(testChild_1.id, serviceNeedOptionId = snDaycareHours120.id)
