@@ -2271,7 +2271,7 @@ const en: Translations = {
     placementTermination: {
       title: 'Terminating early childhood education agreement',
       description:
-        "When terminating your child's early childhood education agreement, please note that any transfer applications will be automatically withdrawn after your child's last day of attendance. If you later need early childhood education for your child, you must submit a new application.",
+        "When terminating your child's early childhood education agreement, please note that any transfer applications will be automatically withdrawn after your child's last day of attendance. If you later need early childhood education for your child, you must submit a new application. Please save all the documents you want to keep before the child’s last day of attendance. You can save pedagogic documents to your own files using the download function.",
       terminatedPlacements:
         "You have terminated your child's early childhood education agreement",
       until: (date: string) => `valid until ${date}`,

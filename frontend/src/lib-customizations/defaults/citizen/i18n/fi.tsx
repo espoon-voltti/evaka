@@ -2573,7 +2573,7 @@ export default {
     placementTermination: {
       title: 'Paikan irtisanominen',
       description:
-        'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella.',
+        'Irtisanoessasi paikkaa huomaathan, että mahdollinen siirtohakemus poistuu viimeisen läsnäolopäivän jälkeen. Jos tarvitset lapsellesi myöhemmin paikan, sinun tulee hakea sitä uudella hakemuksella. Tallennathan kaikki dokumentit, jotka haluat säilyttää, ennen lapsen viimeistä läsnäolopäivää. Voit tallentaa pedagogiset asiakirjat ja dokumentit omiin tiedostoihisi lataustoiminnolla.',
       terminatedPlacements: 'Olet irtisanonut paikan',
       invoicedDaycare: 'Maksullinen varhaiskasvatus',
       nonTerminatablePlacement:
