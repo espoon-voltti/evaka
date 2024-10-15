@@ -114,15 +114,6 @@ class DraftInvoiceGenerator(
         }
     }
 
-    private data class InvoiceRowStub(
-        val child: ChildWithDateOfBirth,
-        val placement: PlacementStub,
-        val priceBeforeFeeAlterations: Int,
-        val feeAlterations: List<Pair<FeeAlterationType, Int>>,
-        val finalPrice: Int,
-        val contractDaysPerMonth: Int?,
-    )
-
     private enum class FullMonthAbsenceType {
         SICK_LEAVE_FULL_MONTH,
         ABSENCE_FULL_MONTH,
@@ -223,7 +214,7 @@ class DraftInvoiceGenerator(
             }
         }
 
-        val rowStubs =
+        val rowDatas =
             data.placements
                 .groupBy { it.second.child }
                 .asSequence()
@@ -250,7 +241,15 @@ class DraftInvoiceGenerator(
                                     )
                                 listOf(
                                     relevantPeriod to
-                                        InvoiceRowStub(child, placement, fee, listOf(), fee, null)
+                                        InvoiceRowCalculationData(
+                                            child,
+                                            placement.unit,
+                                            placement.type,
+                                            fee,
+                                            listOf(),
+                                            fee,
+                                            null,
+                                        )
                                 )
                             }
                             else ->
@@ -266,16 +265,10 @@ class DraftInvoiceGenerator(
                                             maxOf(relevantPeriod.start, decisionPeriod.start),
                                             minOf(relevantPeriod.end, decisionPeriod.end),
                                         ) to
-                                            InvoiceRowStub(
-                                                ChildWithDateOfBirth(
-                                                    part.child.id,
-                                                    part.child.dateOfBirth,
-                                                ),
-                                                PlacementStub(
-                                                    part.child,
-                                                    part.placement.unitId,
-                                                    part.placement.type,
-                                                ),
+                                            InvoiceRowCalculationData(
+                                                part.child,
+                                                part.placement.unitId,
+                                                part.placement.type,
                                                 part.fee,
                                                 part.feeAlterations.map { feeAlteration ->
                                                     Pair(feeAlteration.type, feeAlteration.effect)
@@ -289,11 +282,11 @@ class DraftInvoiceGenerator(
                 }
 
         val rows =
-            rowStubs
-                .groupBy { (_, stub) -> stub.child }
-                .flatMap { (child, childStubs) ->
+            rowDatas
+                .groupBy { (_, rowData) -> rowData.child }
+                .flatMap { (child, rowDatas) ->
                     val separatePeriods =
-                        mergePeriods(childStubs.map { it.first to it.second }).map {
+                        mergePeriods(rowDatas.map { it.first to it.second }).map {
                             it.first to it.second
                         }
 
@@ -337,13 +330,13 @@ class DraftInvoiceGenerator(
                     val invoiceRows = mutableListOf<InvoiceRow>()
                     var invoiceRowSum = 0
                     separatePeriods
-                        .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
-                        .forEach { (period, rowStub) ->
+                        .filter { (_, rowData) -> rowData.finalPrice != 0 }
+                        .forEach { (period, rowData) ->
                             val rows =
                                 toInvoiceRows(
                                     invoiceRowSum,
                                     period,
-                                    rowStub,
+                                    rowData,
                                     dailyFeeDivisor,
                                     numRelevantOperationalDays =
                                         minOf(
@@ -353,7 +346,7 @@ class DraftInvoiceGenerator(
                                     attendanceDates,
                                     ChildAbsences(
                                         data.absences,
-                                        rowStub.child.id,
+                                        rowData.child.id,
                                         childOperationalDays,
                                     ),
                                     getChildFullMonthAbsence(child.id),
@@ -370,11 +363,11 @@ class DraftInvoiceGenerator(
         if (rows.isEmpty()) return null
 
         val areaId =
-            rowStubs
-                .maxByOrNull { (_, stub) -> stub.child.dateOfBirth }!!
-                .let { (_, stub) ->
-                    data.areaIds[stub.placement.unit]
-                        ?: error("Couldn't find areaId for daycare (${stub.placement.unit})")
+            rowDatas
+                .maxByOrNull { (_, rowData) -> rowData.child.dateOfBirth }!!
+                .let { (_, rowData) ->
+                    data.areaIds[rowData.placementUnitId]
+                        ?: error("Couldn't find areaId for daycare (${rowData.placementUnitId})")
                 }
 
         return Invoice(
@@ -490,7 +483,7 @@ class DraftInvoiceGenerator(
     private fun toInvoiceRows(
         accumulatedSum: Int,
         period: FiniteDateRange,
-        invoiceRowStub: InvoiceRowStub,
+        invoiceRowCalculationData: InvoiceRowCalculationData,
         dailyFeeDivisor: Int,
         numRelevantOperationalDays: Int,
         attendanceDates: List<LocalDate>,
@@ -499,17 +492,14 @@ class DraftInvoiceGenerator(
         getInvoiceMaxFee: (ChildId, Boolean) -> Int,
     ): List<InvoiceRow> {
         val refundAbsenceDates =
-            invoiceRowStub.placement.type != PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
+            invoiceRowCalculationData.placementType != PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
                 featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
-        return when (invoiceRowStub.placement.type) {
+        return when (invoiceRowCalculationData.placementType) {
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
                 toTemporaryPlacementInvoiceRows(
                     period,
-                    invoiceRowStub.child,
-                    invoiceRowStub.placement.type,
-                    invoiceRowStub.priceBeforeFeeAlterations,
-                    invoiceRowStub.placement.unit,
+                    invoiceRowCalculationData,
                     dailyFeeDivisor,
                     attendanceDates,
                     isDateRefunded =
@@ -520,16 +510,10 @@ class DraftInvoiceGenerator(
                 toPermanentPlacementInvoiceRows(
                     accumulatedSum,
                     period,
-                    invoiceRowStub.child,
-                    invoiceRowStub.placement.type,
-                    invoiceRowStub.priceBeforeFeeAlterations,
-                    invoiceRowStub.finalPrice,
-                    invoiceRowStub.placement.unit,
+                    invoiceRowCalculationData,
                     dailyFeeDivisor,
-                    invoiceRowStub.contractDaysPerMonth,
                     numRelevantOperationalDays,
                     attendanceDates,
-                    invoiceRowStub.feeAlterations,
                     absenceQueries,
                     fullMonthAbsenceType,
                     getInvoiceMaxFee,
@@ -542,10 +526,7 @@ class DraftInvoiceGenerator(
 
     private fun toTemporaryPlacementInvoiceRows(
         period: FiniteDateRange,
-        child: ChildWithDateOfBirth,
-        placementType: PlacementType,
-        price: Int,
-        unitId: DaycareId,
+        rowData: InvoiceRowCalculationData,
         dailyFeeDivisor: Int,
         attendanceDates: List<LocalDate>,
         isDateRefunded: (date: LocalDate) -> Boolean,
@@ -565,11 +546,11 @@ class DraftInvoiceGenerator(
                     id = InvoiceRowId(UUID.randomUUID()),
                     periodStart = period.start,
                     periodEnd = period.end,
-                    child = child.id,
+                    child = rowData.child.id,
                     amount = amount,
-                    unitPrice = price,
-                    unitId = unitId,
-                    product = productProvider.mapToProduct(placementType),
+                    unitPrice = rowData.priceBeforeFeeAlterations,
+                    unitId = rowData.placementUnitId,
+                    product = productProvider.mapToProduct(rowData.placementType),
                     correctionId = null,
                 )
             )
@@ -579,16 +560,10 @@ class DraftInvoiceGenerator(
     private fun toPermanentPlacementInvoiceRows(
         accumulatedSum: Int,
         period: FiniteDateRange,
-        child: ChildWithDateOfBirth,
-        placementType: PlacementType,
-        price: Int,
-        finalPrice: Int,
-        unitId: DaycareId,
+        rowData: InvoiceRowCalculationData,
         dailyFeeDivisor: Int,
-        contractDaysPerMonth: Int?,
         numRelevantOperationalDays: Int,
         attendanceDates: List<LocalDate>,
-        feeAlterations: List<Pair<FeeAlterationType, Int>>,
         absenceQueries: ChildAbsences,
         fullMonthAbsenceType: FullMonthAbsenceType,
         getInvoiceMaxFee: (ChildId, Boolean) -> Int,
@@ -606,7 +581,7 @@ class DraftInvoiceGenerator(
 
         val isFullMonth = periodAttendanceDates.size == numRelevantOperationalDays
 
-        val product = productProvider.mapToProduct(placementType)
+        val product = productProvider.mapToProduct(rowData.placementType)
         val (amount, unitPrice) =
             if (isFullMonth) {
                 Pair(1, { p: Int -> p })
@@ -621,25 +596,25 @@ class DraftInvoiceGenerator(
             listOf(
                 InvoiceRow(
                     id = InvoiceRowId(UUID.randomUUID()),
-                    child = child.id,
+                    child = rowData.child.id,
                     periodStart = period.start,
                     periodEnd = period.end,
                     amount = amount,
-                    unitPrice = unitPrice(price),
-                    unitId = unitId,
+                    unitPrice = unitPrice(rowData.priceBeforeFeeAlterations),
+                    unitId = rowData.placementUnitId,
                     product = product,
                     correctionId = null,
                 )
             ) +
-                feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
+                rowData.feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
                     InvoiceRow(
                         id = InvoiceRowId(UUID.randomUUID()),
                         periodStart = period.start,
                         periodEnd = period.end,
-                        child = child.id,
+                        child = rowData.child.id,
                         product =
                             productProvider.mapToFeeAlterationProduct(product, feeAlterationType),
-                        unitId = unitId,
+                        unitId = rowData.placementUnitId,
                         amount = amount,
                         unitPrice = unitPrice(feeAlterationEffect),
                         correctionId = null,
@@ -651,10 +626,7 @@ class DraftInvoiceGenerator(
                 surplusContractDays(
                     accumulatedSum + initialRows.sumOf { it.price },
                     period,
-                    child,
-                    finalPrice,
-                    unitId,
-                    contractDaysPerMonth,
+                    rowData,
                     attendanceDates,
                     absenceQueries,
                     fullMonthAbsenceType in
@@ -663,12 +635,11 @@ class DraftInvoiceGenerator(
                             FullMonthAbsenceType.ABSENCE_FULL_MONTH,
                         ),
                     getInvoiceMaxFee,
-                    placementType,
                 ) +
                 dailyAbsenceRefund(
                     period,
                     initialRows,
-                    child,
+                    rowData.child,
                     absenceQueries,
                     periodAttendanceDates,
                     numRelevantOperationalDays,
@@ -677,12 +648,12 @@ class DraftInvoiceGenerator(
                 ) { refundProduct, refundAmount, refundUnitPrice ->
                     InvoiceRow(
                         id = InvoiceRowId(UUID.randomUUID()),
-                        child = child.id,
+                        child = rowData.child.id,
                         periodStart = period.start,
                         periodEnd = period.end,
                         amount = refundAmount,
                         unitPrice = refundUnitPrice,
-                        unitId = unitId,
+                        unitId = rowData.placementUnitId,
                         product = refundProduct,
                         correctionId = null,
                     )
@@ -693,11 +664,11 @@ class DraftInvoiceGenerator(
                 absenceDiscount ->
                 InvoiceRow(
                     id = InvoiceRowId(UUID.randomUUID()),
-                    child = child.id,
+                    child = rowData.child.id,
                     periodStart = period.start,
                     periodEnd = period.end,
                     product = absenceProduct,
-                    unitId = unitId,
+                    unitId = rowData.placementUnitId,
                     amount = amount,
                     unitPrice =
                         BigDecimal(absenceDiscount)
@@ -713,17 +684,13 @@ class DraftInvoiceGenerator(
     private fun surplusContractDays(
         accumulatedSum: Int,
         period: FiniteDateRange,
-        child: ChildWithDateOfBirth,
-        monthlyPrice: Int,
-        unitId: DaycareId,
-        contractDaysPerMonth: Int?,
+        rowData: InvoiceRowCalculationData,
         attendanceDates: List<LocalDate>,
         absences: ChildAbsences,
         isAbsentFullMonth: Boolean,
         getInvoiceMaxFee: (ChildId, Boolean) -> Int,
-        placementType: PlacementType,
     ): List<InvoiceRow> {
-        if (contractDaysPerMonth == null || isAbsentFullMonth) return listOf()
+        if (rowData.contractDaysPerMonth == null || isAbsentFullMonth) return listOf()
 
         val untilEndOfPeriod = FiniteDateRange(LocalDate.MIN, period.end)
         val attendances =
@@ -741,16 +708,16 @@ class DraftInvoiceGenerator(
             }
         val attendanceDays = attendances + unplannedAbsenceSurplusDays
 
-        return if (contractDaysPerMonth < attendanceDays) {
-            val surplusAttendanceDays = attendanceDays - contractDaysPerMonth
+        return if (rowData.contractDaysPerMonth < attendanceDays) {
+            val surplusAttendanceDays = attendanceDays - rowData.contractDaysPerMonth
             val surplusDailyPrice =
-                calculateDailyPriceForInvoiceRow(monthlyPrice, contractDaysPerMonth)
+                calculateDailyPriceForInvoiceRow(rowData.finalPrice, rowData.contractDaysPerMonth)
             val totalAddition = surplusAttendanceDays * surplusDailyPrice
             val maxPrice =
                 getInvoiceMaxFee(
-                    child.id,
+                    rowData.child.id,
                     listOf(PlacementType.PREPARATORY_DAYCARE, PlacementType.PRESCHOOL_DAYCARE)
-                        .contains(placementType),
+                        .contains(rowData.placementType),
                 )
 
             val (amount, unitPrice) =
@@ -771,9 +738,9 @@ class DraftInvoiceGenerator(
                         id = InvoiceRowId(UUID.randomUUID()),
                         periodStart = period.start,
                         periodEnd = period.end,
-                        child = child.id,
+                        child = rowData.child.id,
                         product = productProvider.contractSurplusDay,
-                        unitId = unitId,
+                        unitId = rowData.placementUnitId,
                         amount = amount,
                         unitPrice = unitPrice,
                         correctionId = null,
@@ -956,6 +923,16 @@ class DraftInvoiceGenerator(
         val absences: Map<AbsenceType, Map<ChildId, DateSet>>,
         val freeChildren: Set<ChildId>,
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
+    )
+
+    private data class InvoiceRowCalculationData(
+        val child: ChildWithDateOfBirth,
+        val placementUnitId: DaycareId,
+        val placementType: PlacementType,
+        val priceBeforeFeeAlterations: Int,
+        val feeAlterations: List<Pair<FeeAlterationType, Int>>,
+        val finalPrice: Int,
+        val contractDaysPerMonth: Int?,
     )
 
     class ChildAbsences(
