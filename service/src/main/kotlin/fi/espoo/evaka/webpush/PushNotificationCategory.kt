@@ -9,7 +9,8 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 
 @ConstList("pushNotificationCategories")
 enum class PushNotificationCategory : DatabaseEnum {
-    RECEIVED_MESSAGE;
+    RECEIVED_MESSAGE,
+    NEW_ABSENCE;
 
     override val sqlType: String = "push_notification_category"
 }

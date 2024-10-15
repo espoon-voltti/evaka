@@ -1,12 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.messaging
+package fi.espoo.evaka.absence
 
+import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.MessageId
-import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -24,41 +23,37 @@ import fi.espoo.evaka.webpush.WebPushPayload
 import fi.espoo.evaka.webpush.deletePushSubscription
 import fi.espoo.voltti.logging.loggers.info
 import java.time.Duration
+import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
-class MessagePushNotifications(
+class AbsencePushNotifications(
     private val webPush: WebPush?,
     private val accessControl: AccessControl,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
-        asyncJobRunner.registerHandler { db, clock, job: AsyncJob.SendMessagePushNotification ->
-            send(db, clock, job.recipient, job.device)
+        asyncJobRunner.registerHandler { db, clock, job: AsyncJob.SendAbsencePushNotification ->
+            send(db, clock, job.absenceId, job.device)
         }
     }
 
     private val logger = KotlinLogging.logger {}
 
-    private fun getPendingPushNotifications() = QuerySql {
+    private fun getPendingPushNotifications(today: LocalDate) = QuerySql {
         sql(
             """
-SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name, sender.name AS sender_name
-FROM message_recipients mr
-JOIN message_account ma ON mr.recipient_id = ma.id
-JOIN message m ON mr.message_id = m.id
-JOIN message_account_view sender ON sender.id = m.sender_id
-JOIN message_thread mt ON m.thread_id = mt.id
-JOIN daycare_group dg ON ma.daycare_group_id = dg.id
+SELECT ab.id AS absence_id, md.id AS device, dg.id AS group_id, dg.name AS group_name
+FROM absence ab
+JOIN realized_placement_one(${bind(today)}) rpl ON ab.child_id = rpl.child_id
+JOIN daycare_group dg ON rpl.group_id = dg.id
 JOIN daycare d ON d.id = dg.daycare_id
 JOIN mobile_device_push_group mdpg ON mdpg.daycare_group = dg.id
 JOIN mobile_device md ON mdpg.device = md.id
-WHERE mr.read_at IS NULL
-AND ma.type = 'GROUP'
-AND mt.is_copy IS FALSE
+WHERE ab.date = ${bind(today)}
 AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
-AND 'RECEIVED_MESSAGE' = ANY(md.push_notification_categories)
+AND 'NEW_ABSENCE' = ANY(md.push_notification_categories)
 AND EXISTS (
     SELECT FROM mobile_device_push_subscription mdps
     WHERE mdps.device = md.id
@@ -82,46 +77,46 @@ END
 
     fun getAsyncJobs(
         tx: Database.Read,
-        messages: Collection<MessageId>,
-    ): List<AsyncJob.SendMessagePushNotification> =
+        today: LocalDate,
+        absenceIds: List<AbsenceId>,
+    ): List<AsyncJob.SendAbsencePushNotification> =
         tx.createQuery {
                 sql(
                     """
-SELECT recipient, device
-FROM (${subquery(getPendingPushNotifications())}) notification
-WHERE notification.message = ANY(${bind(messages)})
+SELECT absence_id, device
+FROM (${subquery(getPendingPushNotifications(today))}) notification
+WHERE notification.absence_id = ANY(${bind(absenceIds)})
 """
                 )
             }
-            .toList<AsyncJob.SendMessagePushNotification>()
+            .toList<AsyncJob.SendAbsencePushNotification>()
 
-    data class GroupMessageNotification(
+    data class AbsenceNotification(
         val groupId: GroupId,
         val groupName: String,
-        val senderName: String?,
         val endpoint: WebPushEndpoint,
     )
 
     private fun Database.Read.getNotification(
-        messageRecipient: MessageRecipientId,
+        today: LocalDate,
+        absenceId: AbsenceId,
         device: MobileDeviceId,
-    ): GroupMessageNotification? =
+    ): AbsenceNotification? =
         createQuery {
                 sql(
                     """
-SELECT group_id, group_name, sender_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
-FROM (${subquery(getPendingPushNotifications())}) notification
+SELECT group_id, group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
+FROM (${subquery(getPendingPushNotifications(today))}) notification
 JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
-WHERE notification.recipient = ${bind(messageRecipient)}
+WHERE notification.absence_id = ${bind(absenceId)}
 AND notification.device = ${bind(device)}
 """
                 )
             }
             .exactlyOneOrNull {
-                GroupMessageNotification(
+                AbsenceNotification(
                     groupId = column("group_id"),
                     groupName = column("group_name"),
-                    senderName = column("sender_name"),
                     WebPushEndpoint(
                         uri = column("endpoint"),
                         ecdhPublicKey =
@@ -134,14 +129,14 @@ AND notification.device = ${bind(device)}
     fun send(
         dbc: Database.Connection,
         clock: EvakaClock,
-        recipient: MessageRecipientId,
+        absenceId: AbsenceId,
         device: MobileDeviceId,
     ) {
         if (webPush == null) return
 
         val (vapidJwt, notification) =
             dbc.transaction { tx ->
-                tx.getNotification(recipient, device)
+                tx.getNotification(clock.today(), absenceId, device)
                     ?.takeIf {
                         accessControl.hasPermissionFor(
                             tx,
@@ -167,8 +162,7 @@ AND notification.device = ${bind(device)}
                     payloads =
                         listOf(
                             WebPushPayload.NotificationV1(
-                                title =
-                                    "Uusi viesti ryhmälle ${notification.groupName}${notification.senderName?.let { " ($it)"} ?: ""}"
+                                title = "${notification.groupName}: Uusi poissaolomerkintä"
                             )
                         ),
                 ),
