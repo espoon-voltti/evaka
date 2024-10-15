@@ -161,8 +161,7 @@ class PdfGenerator(
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
             "showValidTo" to
-                ((isReliefDecision && decision.validTo != null) ||
-                    (decision.validTo?.isBefore(LocalDate.now(europeHelsinki)) ?: false)),
+                (isReliefDecision || decision.validTo.isBefore(LocalDate.now(europeHelsinki))),
             "approverFirstName" to
                 (decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName),
             "approverLastName" to
@@ -272,9 +271,8 @@ class PdfGenerator(
                 "incomeMinThreshold" to formatCents(-1 * decision.feeThresholds.minIncomeThreshold),
                 "familySize" to decision.familySize,
                 "showValidTo" to
-                    ((isReliefDecision && decision.validDuring.end != null) ||
-                        (decision.validDuring.end?.isBefore(LocalDate.now(europeHelsinki))
-                            ?: false)),
+                    (isReliefDecision ||
+                        decision.validDuring.end.isBefore(LocalDate.now(europeHelsinki))),
                 "approverFirstName" to
                     (decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName),
                 "approverLastName" to

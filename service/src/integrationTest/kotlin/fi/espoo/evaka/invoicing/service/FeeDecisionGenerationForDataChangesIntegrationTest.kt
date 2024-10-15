@@ -26,7 +26,7 @@ import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
@@ -71,7 +71,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = originalRange.start,
-                    endDate = originalRange.end!!,
+                    endDate = originalRange.end,
                 )
             )
             tx.insert(
@@ -79,7 +79,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = originalRange.start.minusYears(1),
-                    endDate = originalRange.end!!.plusYears(1),
+                    endDate = originalRange.end.plusYears(1),
                 )
             )
         }
@@ -311,7 +311,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = day(16),
-                    endDate = originalRange.end!!,
+                    endDate = originalRange.end,
                 )
             )
         }
@@ -368,7 +368,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                         childId = testChild_2.id,
                         headOfChildId = testAdult_1.id,
                         startDate = originalRange.start.minusYears(1),
-                        endDate = originalRange.end!!.plusYears(1),
+                        endDate = originalRange.end.plusYears(1),
                     )
                 )
             }
@@ -410,9 +410,9 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
 
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
 
-    private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
+    private fun dateRange(f: Int, t: Int) = FiniteDateRange(day(f), day(t))
 
-    private fun assertDrafts(expectedDrafts: List<Pair<DateRange, Int>>) {
+    private fun assertDrafts(expectedDrafts: List<Pair<FiniteDateRange, Int>>) {
         val decisions = getAllFeeDecisions()
         assertEquals(
             expectedDrafts.size,
@@ -430,7 +430,9 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         }
     }
 
-    private fun assertFinal(expectedFinalState: List<Triple<FeeDecisionStatus, DateRange, Int>>) {
+    private fun assertFinal(
+        expectedFinalState: List<Triple<FeeDecisionStatus, FiniteDateRange, Int>>
+    ) {
         val sent = getAllFeeDecisions()
         assertEquals(expectedFinalState.size, sent.size)
         expectedFinalState.forEach { (status, range, children) ->

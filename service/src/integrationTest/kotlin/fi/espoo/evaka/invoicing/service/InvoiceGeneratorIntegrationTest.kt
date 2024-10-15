@@ -50,7 +50,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDaycareContractDays10
@@ -495,7 +494,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -552,7 +551,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -632,7 +631,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -714,7 +713,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.copy(end = period.start.plusDays(6)).asDateRange(),
+                    period.copy(end = period.start.plusDays(6)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -731,7 +730,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.copy(start = period.start.plusDays(7)).asDateRange(),
+                    period.copy(start = period.start.plusDays(7)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -801,7 +800,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.copy(end = period.start.plusDays(6)).asDateRange(),
+                    period.copy(end = period.start.plusDays(6)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -818,7 +817,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.copy(start = period.start.plusDays(7)).asDateRange(),
+                    period.copy(start = period.start.plusDays(7)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -888,7 +887,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.copy(end = period.start.plusDays(6)).asDateRange(),
+                    period.copy(end = period.start.plusDays(6)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -905,7 +904,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.copy(start = period.start.plusDays(7)).asDateRange(),
+                    period.copy(start = period.start.plusDays(7)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -964,7 +963,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -1056,7 +1055,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -1125,7 +1124,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -1214,7 +1213,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -1283,7 +1282,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -1367,7 +1366,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -1393,13 +1392,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             tx.upsertFeeDecisions(
                 listOf(
-                    decision.copy(
-                        validDuring = period.copy(end = period.start.plusDays(14)).asDateRange()
-                    ),
+                    decision.copy(validDuring = period.copy(end = period.start.plusDays(14))),
                     decision.copy(
                         id = FeeDecisionId(UUID.randomUUID()),
                         headOfFamilyId = testAdult_2.id,
-                        validDuring = period.copy(start = period.start.plusDays(15)).asDateRange(),
+                        validDuring = period.copy(start = period.start.plusDays(15)),
                     ),
                 )
             )
@@ -2029,7 +2026,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2204,7 +2201,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     createFeeDecisionFixture(
                         FeeDecisionStatus.SENT,
                         FeeDecisionType.NORMAL,
-                        range.asDateRange(),
+                        range,
                         testAdult_1.id,
                         listOf(
                             createFeeDecisionChildFixture(
@@ -2398,7 +2395,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     createFeeDecisionFixture(
                         FeeDecisionStatus.SENT,
                         FeeDecisionType.NORMAL,
-                        valid.asDateRange(),
+                        valid,
                         testAdult_1.id,
                         listOf(
                             createFeeDecisionChildFixture(
@@ -2456,7 +2453,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2639,7 +2636,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 11 attendance days
-                    DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 16)),
+                    FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 16)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -2658,7 +2655,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 3 attendance days
-                    DateRange(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31)),
+                    FiniteDateRange(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -2716,7 +2713,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                weekEnd.asDateRange(),
+                weekEnd,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2749,7 +2746,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                placementPeriod.asDateRange(),
+                placementPeriod,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2791,7 +2788,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                placementPeriod.asDateRange(),
+                placementPeriod,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2836,7 +2833,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                placementPeriod.asDateRange(),
+                placementPeriod,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2878,7 +2875,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                placementPeriod.asDateRange(),
+                placementPeriod,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2920,7 +2917,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                placementPeriod.asDateRange(),
+                placementPeriod,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -2967,7 +2964,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 10 days of daycare
-                    DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3010,7 +3007,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 14)),
+                    FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 14)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3028,7 +3025,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    DateRange(LocalDate.of(2021, 1, 15), LocalDate.of(2021, 1, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 1, 15), LocalDate.of(2021, 1, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3083,7 +3080,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    firstPeriod.asDateRange(),
+                    firstPeriod,
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3101,7 +3098,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    secondPeriod.asDateRange(),
+                    secondPeriod,
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3153,7 +3150,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -3204,7 +3201,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -3258,7 +3255,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -3721,7 +3718,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 12 operational days
-                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3776,7 +3773,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 3 operational days
-                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3841,7 +3838,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 3 operational days
-                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3908,7 +3905,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 3 operational days
-                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -3986,7 +3983,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 12 operational days
-                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -4045,7 +4042,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 12 operational days
-                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -4111,7 +4108,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 3 operational days
-                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -4186,7 +4183,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 3 operational days
-                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -4259,8 +4256,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val decisions =
             listOf(
-                    DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 22000,
-                    DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000,
+                    FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 22000,
+                    FiniteDateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000,
                 )
                 .map { (range, fee) ->
                     createFeeDecisionFixture(
@@ -4366,7 +4363,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 10 days of daycare
-                    DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -4424,7 +4421,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
                     // 21 days of daycare
-                    DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 29)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 29)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -4630,7 +4627,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.asDateRange(),
+                    period,
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -4709,7 +4706,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.asDateRange(),
+                    period,
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -5093,7 +5090,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -5158,7 +5155,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -5209,7 +5206,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -5399,7 +5396,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 29)),
+                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 29)),
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -5449,7 +5446,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 25)),
+                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 25)),
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -5515,7 +5512,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                DateRange(LocalDate.of(2019, 1, 8), LocalDate.of(2019, 1, 31)),
+                FiniteDateRange(LocalDate.of(2019, 1, 8), LocalDate.of(2019, 1, 31)),
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -5581,7 +5578,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -5597,12 +5594,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
-                decision.copy(
-                    validDuring = period.copy(end = LocalDate.of(2019, 1, 15)).asDateRange()
-                ),
+                decision.copy(validDuring = period.copy(end = LocalDate.of(2019, 1, 15))),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
-                    validDuring = period.copy(start = LocalDate.of(2019, 1, 16)).asDateRange(),
+                    validDuring = period.copy(start = LocalDate.of(2019, 1, 16)),
                 ),
             )
         )
@@ -5657,7 +5652,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.copy(end = LocalDate.of(2019, 1, 15)).asDateRange(),
+                    period.copy(end = LocalDate.of(2019, 1, 15)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -5674,7 +5669,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.copy(start = LocalDate.of(2019, 1, 16)).asDateRange(),
+                    period.copy(start = LocalDate.of(2019, 1, 16)),
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -5895,7 +5890,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 headOfFamilyId = testAdult_1.id,
                 partnerId = testAdult_2.id,
                 children =
@@ -5971,7 +5966,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                period.asDateRange(),
+                period,
                 testAdult_1.id,
                 children.map { child ->
                     createFeeDecisionChildFixture(
@@ -6022,7 +6017,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
                 FeeDecisionType.NORMAL,
-                invoicingPeriod.asDateRange(),
+                invoicingPeriod,
                 testAdult_1.id,
                 listOf(
                     createFeeDecisionChildFixture(
@@ -6073,7 +6068,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
                     FeeDecisionType.NORMAL,
-                    period.asDateRange(),
+                    period,
                     testAdult_1.id,
                     listOf(
                         createFeeDecisionChildFixture(
@@ -6163,7 +6158,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 childId = part.child.id,
                                 unitId = part.placement.unitId,
                                 startDate = decision.validFrom,
-                                endDate = decision.validTo!!,
+                                endDate = decision.validTo,
                             )
                         )
                         .also { placementId ->
@@ -6172,7 +6167,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     DevServiceNeed(
                                         placementId = placementId,
                                         startDate = decision.validFrom,
-                                        endDate = decision.validTo!!,
+                                        endDate = decision.validTo,
                                         optionId = part.serviceNeed.optionId!!,
                                         shiftCare = shiftCare,
                                         confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),

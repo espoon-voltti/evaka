@@ -145,9 +145,9 @@ export interface FeeDecision {
   sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
   totalFee: number
-  validDuring: DateRange
+  validDuring: FiniteDateRange
   validFrom: LocalDate
-  validTo: LocalDate | null
+  validTo: LocalDate
 }
 
 /**
@@ -214,7 +214,7 @@ export interface FeeDecisionDetailed {
   status: FeeDecisionStatus
   totalFee: number
   totalIncome: number | null
-  validDuring: DateRange
+  validDuring: FiniteDateRange
 }
 
 /**
@@ -292,7 +292,7 @@ export interface FeeDecisionSummary {
   id: UUID
   sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
-  validDuring: DateRange
+  validDuring: FiniteDateRange
 }
 
 /**
@@ -1036,7 +1036,7 @@ export interface VoucherValueDecisionDetailed {
   status: VoucherValueDecisionStatus
   totalIncome: number | null
   validFrom: LocalDate
-  validTo: LocalDate | null
+  validTo: LocalDate
   voucherValue: number
 }
 
@@ -1197,9 +1197,9 @@ export function deserializeJsonFeeDecision(json: JsonOf<FeeDecision>): FeeDecisi
     children: json.children.map(e => deserializeJsonFeeDecisionChild(e)),
     created: HelsinkiDateTime.parseIso(json.created),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    validDuring: DateRange.parseJson(json.validDuring),
+    validDuring: FiniteDateRange.parseJson(json.validDuring),
     validFrom: LocalDate.parseIso(json.validFrom),
-    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+    validTo: LocalDate.parseIso(json.validTo)
   }
 }
 
@@ -1229,7 +1229,7 @@ export function deserializeJsonFeeDecisionDetailed(json: JsonOf<FeeDecisionDetai
     headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
     partner: (json.partner != null) ? deserializeJsonPersonDetailed(json.partner) : null,
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    validDuring: DateRange.parseJson(json.validDuring)
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
   }
 }
 
@@ -1242,7 +1242,7 @@ export function deserializeJsonFeeDecisionSummary(json: JsonOf<FeeDecisionSummar
     created: HelsinkiDateTime.parseIso(json.created),
     headOfFamily: deserializeJsonPersonBasic(json.headOfFamily),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    validDuring: DateRange.parseJson(json.validDuring)
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
   }
 }
 
@@ -1552,7 +1552,7 @@ export function deserializeJsonVoucherValueDecisionDetailed(json: JsonOf<Voucher
     partner: (json.partner != null) ? deserializeJsonPersonDetailed(json.partner) : null,
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validFrom: LocalDate.parseIso(json.validFrom),
-    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+    validTo: LocalDate.parseIso(json.validTo)
   }
 }
 

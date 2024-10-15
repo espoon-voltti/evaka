@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.getHolidays
@@ -188,7 +187,7 @@ class InvoiceGenerator(
                         decision.headOfFamilyId,
                         decision.partnerId,
                         decision.children.map { it.child.id },
-                        decision.validDuring.intersection(dateRange)?.asDateRange()
+                        decision.validDuring.intersection(dateRange)
                             ?: error("Decision is not valid during invoice period $dateRange"),
                     )
                 }
@@ -371,11 +370,10 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
                 }
 
             val allPeriods =
-                families.map { (period, _) -> period } +
-                    relevantPlacements.map { it.first.asDateRange() }
+                families.map { (period, _) -> period } + relevantPlacements.map { it.first }
 
             val familyPlacementsSeries =
-                asDistinctPeriods(allPeriods, spanningPeriod.asDateRange()).mapNotNull { period ->
+                asDistinctPeriods(allPeriods, spanningPeriod).mapNotNull { period ->
                     val family = families.find { it.first.contains(period) }
 
                     family?.let { (_, children) ->
@@ -393,7 +391,7 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
 
             headOfFamily to
                 mergePeriods(familyPlacementsSeries).flatMap { (period, placements) ->
-                    placements.map { period.asFiniteDateRange(spanningPeriod.end) to it }
+                    placements.map { period to it }
                 }
         }
         .toMap()
@@ -402,12 +400,12 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
 internal fun toFamilyCompositions(
     relationships: List<Triple<FiniteDateRange, PersonId, ChildWithDateOfBirth>>,
     spanningPeriod: FiniteDateRange,
-): Map<PersonId, List<Pair<DateRange, List<ChildWithDateOfBirth>>>> {
+): Map<PersonId, List<Pair<FiniteDateRange, List<ChildWithDateOfBirth>>>> {
     return relationships
         .groupBy { (_, headOfFamily) -> headOfFamily }
         .mapValues { (_, value) -> value.map { it.first to it.third } }
         .mapValues { (_, children) ->
-            asDistinctPeriods(children.map { it.first.asDateRange() }, spanningPeriod.asDateRange())
+            asDistinctPeriods(children.map { it.first }, spanningPeriod)
                 .map { period ->
                     period to
                         children
