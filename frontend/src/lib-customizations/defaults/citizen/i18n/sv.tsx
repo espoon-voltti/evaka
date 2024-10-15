@@ -2519,7 +2519,7 @@ const sv: Translations = {
     placementTermination: {
       title: 'Uppsägning av plats',
       description:
-        'När du uppsäger platsen observera gärna att ansökan om förflyttning försvinner efter sista närvarodag. Om du senare behöver en plats för ditt barn, måste du ansöka om den med en ny ansökan.',
+        'När du uppsäger platsen observera gärna att ansökan om förflyttning försvinner efter sista närvarodag. Om du senare behöver en plats för ditt barn, måste du ansöka om den med en ny ansökan. Kom ihåg att spara alla dokument som du vill ha kvar före barnets sista närvarodag. Du kan spara de pedagogiska handlingarna och dokumenten bland dina egna filer genom att ladda ner dem.',
       terminatedPlacements: 'Du har sagt upp platsen',
       until: (date: string) => `giltig till ${date}`,
       choosePlacement: 'Välj platsen du vill säga upp',
