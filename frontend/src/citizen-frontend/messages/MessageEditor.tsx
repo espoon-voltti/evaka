@@ -386,6 +386,7 @@ export default React.memo(function MessageEditor({
                   }))
                 }
                 data-qa="input-content"
+                onKeyUp={() => console.log('MessageEditor keyup')}
               />
             </TextAreaLabel>
 

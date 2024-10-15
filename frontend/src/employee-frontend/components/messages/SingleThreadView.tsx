@@ -297,6 +297,7 @@ export function SingleThreadView({
                 onToggleRecipient={onToggleRecipient}
                 replyContent={replyContent}
                 sendEnabled={sendEnabled}
+                sessionKeepAlive={() => Promise.resolve()}
               />
             </MessageContainer>
           ) : (

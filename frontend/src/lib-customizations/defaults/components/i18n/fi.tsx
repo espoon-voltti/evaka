@@ -114,6 +114,13 @@ const components: Translations = {
     discard: 'Hylkää',
     messagePlaceholderSensitiveThread: undefined
   },
+  sessionTimeout: {
+    sessionExpiredTitle: 'Istuntosi on aikakatkaistu',
+    sessionExpiredMessage:
+      'Ole hyvä ja ota kirjaamasi viesti muistiin ja kirjaudu sisään uudelleen.',
+    goToLoginPage: 'Siirry kirjautumissivulle',
+    cancel: 'Peruuta'
+  },
   notifications: {
     close: 'Sulje'
   },

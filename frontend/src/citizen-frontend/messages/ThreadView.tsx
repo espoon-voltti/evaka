@@ -365,6 +365,19 @@ export default React.memo(
               replyContent={replyContent}
               sendEnabled={sendEnabled}
               messageThreadSensitive={sensitive}
+              sessionKeepAlive={async () => {
+                const response = await fetch(
+                  '/api/application/citizen/children',
+                  {
+                    method: 'GET',
+                    credentials: 'include'
+                  }
+                )
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`)
+                }
+                return Promise.resolve()
+              }}
             />
           </ReplyEditorContainer>
         ) : (

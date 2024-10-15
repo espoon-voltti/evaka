@@ -116,6 +116,13 @@ const components: Translations = {
     messagePlaceholder: undefined,
     messagePlaceholderSensitiveThread: undefined
   },
+  sessionTimeout: {
+    sessionExpiredTitle: 'Din session har gått ut',
+    sessionExpiredMessage:
+      'Vänligen notera eventuellt meddelande du har skrivit och logga in igen.',
+    goToLoginPage: 'Gå till inloggningssidan',
+    cancel: 'Avbryt'
+  },
   notifications: {
     close: 'Stäng'
   },
