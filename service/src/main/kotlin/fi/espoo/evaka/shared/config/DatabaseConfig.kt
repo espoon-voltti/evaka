@@ -9,6 +9,7 @@ import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 import org.flywaydb.core.Flyway
@@ -16,6 +17,8 @@ import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+
+val logger = mu.KotlinLogging.logger {}
 
 @Configuration
 class DatabaseConfig {
@@ -50,6 +53,10 @@ class DatabaseConfig {
             )
             .load()
             .run { migrate() }
+
+        logger.info { "Sleeping for 30 minutes to emulate a long database migration..." }
+        Thread.sleep(Duration.ofMinutes(30))
+
         return HikariDataSource(
             HikariConfig().apply {
                 connectionInitSql =
