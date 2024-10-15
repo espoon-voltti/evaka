@@ -40,7 +40,6 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -137,7 +136,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             status = FeeDecisionStatus.SENT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
-            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            period = FiniteDateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
             children =
                 listOf(
                     createFeeDecisionChildFixture(
@@ -154,7 +153,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             status = FeeDecisionStatus.SENT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_2.id,
-            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            period = FiniteDateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
             children =
                 listOf(
                     createFeeDecisionChildFixture(
@@ -171,7 +170,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             status = FeeDecisionStatus.SENT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_3.id, // Does not have SSN
-            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            period = FiniteDateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
             children =
                 listOf(
                     createFeeDecisionChildFixture(

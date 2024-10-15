@@ -179,15 +179,11 @@ data class TimelineFeeDecision(
 ) : WithRange
 
 private fun Database.Read.getFeeDecisions(personId: PersonId, range: FiniteDateRange) =
-    findFeeDecisionsForHeadOfFamily(
-            headOfFamilyId = personId,
-            period = range.asDateRange(),
-            status = null,
-        )
+    findFeeDecisionsForHeadOfFamily(headOfFamilyId = personId, period = range, status = null)
         .map {
             TimelineFeeDecision(
                 id = it.id,
-                range = it.validDuring,
+                range = it.validDuring.asDateRange(),
                 status = it.status,
                 totalFee = it.totalFee,
             )

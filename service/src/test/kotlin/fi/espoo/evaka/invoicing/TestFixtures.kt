@@ -162,7 +162,7 @@ val testDecision1 =
         status = FeeDecisionStatus.DRAFT,
         decisionNumber = 1010101010L,
         decisionType = FeeDecisionType.NORMAL,
-        validDuring = DateRange(testDecisionFrom, testDecisionTo),
+        validDuring = FiniteDateRange(testDecisionFrom, testDecisionTo),
         headOfFamilyId = PersonId(uuid3),
         partnerId = null,
         headOfFamilyIncome = null,
@@ -221,7 +221,7 @@ fun createFeeDecisionChildFixture(
 fun createFeeDecisionFixture(
     status: FeeDecisionStatus,
     decisionType: FeeDecisionType,
-    period: DateRange,
+    period: FiniteDateRange,
     headOfFamilyId: PersonId,
     children: List<FeeDecisionChild>,
     partnerId: PersonId? = null,
@@ -251,7 +251,7 @@ fun createFeeDecisionFixture(
 fun createVoucherValueDecisionFixture(
     status: VoucherValueDecisionStatus,
     validFrom: LocalDate,
-    validTo: LocalDate?,
+    validTo: LocalDate,
     headOfFamilyId: PersonId,
     childId: ChildId,
     dateOfBirth: LocalDate,

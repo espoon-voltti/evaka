@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   DecisionIncome,
   FeeDecision
@@ -44,7 +45,10 @@ let headOfFamily: DevPerson
 let partner: DevPerson
 let child: DevPerson
 
-const feeDecisionValidDuring = new DateRange(LocalDate.of(2023, 1, 1), null)
+const feeDecisionValidDuring = new FiniteDateRange(
+  LocalDate.of(2023, 1, 1),
+  LocalDate.of(2023, 12, 31)
+)
 const voucherValueDecisionValidDuring = new DateRange(
   LocalDate.of(2023, 2, 1),
   null

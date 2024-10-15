@@ -25,7 +25,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -61,8 +61,8 @@ import org.junit.jupiter.api.Test
 class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     val jsonMapper = defaultJsonMapperBuilder().build()
 
-    private val testPeriod = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
-    private val testPeriod2 = DateRange(LocalDate.of(2019, 5, 15), LocalDate.of(2019, 5, 31))
+    private val testPeriod = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
+    private val testPeriod2 = FiniteDateRange(LocalDate.of(2019, 5, 15), LocalDate.of(2019, 5, 31))
     private val testDecisions =
         listOf(
             createFeeDecisionFixture(
@@ -243,9 +243,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     testDecisions[0].copy(
                         id = FeeDecisionId(UUID.randomUUID()),
                         validDuring =
-                            DateRange(
+                            FiniteDateRange(
                                 testPeriod.start.minusYears(1),
-                                testPeriod.end!!.minusYears(1),
+                                testPeriod.end.minusYears(1),
                             ),
                     ),
                 )
@@ -280,7 +280,11 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val both = setOf(testDecisions[0].id, testDecisions[1].id)
         val sent = setOf(testDecisions[1].id)
 
-        fun find(headOfFamilyId: PersonId, period: DateRange?, status: List<FeeDecisionStatus>?) =
+        fun find(
+            headOfFamilyId: PersonId,
+            period: FiniteDateRange?,
+            status: List<FeeDecisionStatus>?,
+        ) =
             db.read { tx -> tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId, period, status) }
                 .map { it.id }
                 .toSet()
@@ -292,7 +296,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             both,
             find(
                 testAdult_1.id,
-                DateRange(LocalDate.of(2019, 5, 15), LocalDate.of(2019, 5, 15)),
+                FiniteDateRange(LocalDate.of(2019, 5, 15), LocalDate.of(2019, 5, 15)),
                 null,
             ),
         )
@@ -301,7 +305,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             sent,
             find(
                 testAdult_1.id,
-                DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 1)),
+                FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 1)),
                 null,
             ),
         )
@@ -310,7 +314,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             emptySet(),
             find(
                 testAdult_1.id,
-                DateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 1, 1)),
+                FiniteDateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 1, 1)),
                 null,
             ),
         )
@@ -333,7 +337,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             sent,
             find(
                 testAdult_1.id,
-                DateRange(LocalDate.of(2019, 5, 10), LocalDate.of(2019, 5, 15)),
+                FiniteDateRange(LocalDate.of(2019, 5, 10), LocalDate.of(2019, 5, 15)),
                 listOf(
                     FeeDecisionStatus.WAITING_FOR_SENDING,
                     FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
@@ -346,7 +350,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             emptySet(),
             find(
                 testAdult_1.id,
-                DateRange(LocalDate.of(2018, 5, 10), LocalDate.of(2019, 5, 15)),
+                FiniteDateRange(LocalDate.of(2018, 5, 10), LocalDate.of(2019, 5, 15)),
                 listOf(FeeDecisionStatus.ANNULLED),
             ),
         )
