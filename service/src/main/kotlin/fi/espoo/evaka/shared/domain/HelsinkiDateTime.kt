@@ -65,7 +65,7 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
 
     fun minusSeconds(seconds: Long): HelsinkiDateTime = update { it.minusSeconds(seconds) }
 
-    operator fun minus(duration: TemporalAmount): HelsinkiDateTime = update { it + duration }
+    operator fun minus(duration: TemporalAmount): HelsinkiDateTime = update { it - duration }
 
     fun plusYears(years: Long): HelsinkiDateTime = update { it.plusYears(years) }
 
