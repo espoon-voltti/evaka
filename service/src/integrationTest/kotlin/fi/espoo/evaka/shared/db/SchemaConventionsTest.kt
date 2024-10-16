@@ -556,6 +556,59 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         assertEquals(permittedViolations, violations)
     }
 
+    @Test
+    fun `every daterange and datemultirange column should have a constraint that limits its bound(s)`() {
+        val permittedViolations =
+            setOf(
+                ColumnRef("assistance_need_decision", "validity_period"),
+                ColumnRef("assistance_need_voucher_coefficient", "validity_period"),
+                ColumnRef("backup_curriculum_template", "valid"),
+                ColumnRef("calendar_event", "period"),
+                ColumnRef("daily_service_time", "validity_period"),
+                ColumnRef("daycare", "club_apply_period"),
+                ColumnRef("daycare", "daycare_apply_period"),
+                ColumnRef("daycare", "preschool_apply_period"),
+                ColumnRef("fee_decision", "valid_during"),
+                ColumnRef("fee_thresholds", "valid_during"),
+                ColumnRef("foster_parent", "valid_during"),
+                ColumnRef("holiday_period", "period"),
+                ColumnRef("holiday_period_questionnaire", "active"),
+                ColumnRef("holiday_period_questionnaire", "condition_continuous_placement"),
+                ColumnRef("holiday_questionnaire_answer", "fixed_period"),
+                ColumnRef("invoice_correction", "period"),
+                ColumnRef("payment", "period"),
+                ColumnRef("service_need_option_fee", "validity"),
+                ColumnRef("service_need_option_voucher_value", "validity"),
+                ColumnRef("voucher_value_report_decision", "realized_period"),
+            )
+
+        val dateRangeCheck = { columnName: String -> "CHECK ((NOT lower_inf($columnName)))" }
+        val finiteDateRangeCheck = { columnName: String ->
+            "CHECK ((NOT (lower_inf($columnName) OR upper_inf($columnName))))"
+        }
+
+        val violations =
+            columns
+                .filter { it.dataType == "daterange" || it.dataType == "datemultirange" }
+                .filterNot { column ->
+                    checkConstraints
+                        .filter { it.ref == column.ref }
+                        .any { constraint ->
+                            val columnName = column.ref.columnName
+                            if (column.dataType == "datemultirange") {
+                                // datemultirange maps to DateSet which must be finite
+                                constraint.checkClause == finiteDateRangeCheck(columnName)
+                            } else {
+                                constraint.checkClause == dateRangeCheck(columnName) ||
+                                    constraint.checkClause == finiteDateRangeCheck(columnName)
+                            }
+                        }
+                }
+                .map { it.ref }
+                .toSet()
+        assertEquals(permittedViolations, violations)
+    }
+
     data class ColumnRef(val tableName: String, val columnName: String) {
         fun toColumnsRef() = ColumnsRef(tableName, listOf(columnName))
     }
@@ -589,11 +642,19 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val definition: String,
     )
 
+    data class CheckConstraint(
+        @Nested val ref: ColumnRef,
+        val constraintName: String,
+        val checkClause: String,
+    )
+
     private lateinit var columns: List<Column>
 
     private lateinit var foreignKeys: List<ForeignKey>
 
     private lateinit var indices: List<Index>
+
+    private lateinit var checkConstraints: List<CheckConstraint>
 
     @BeforeAll
     override fun beforeAll() {
@@ -686,6 +747,22 @@ AND tbl_cls.relname != 'flyway_schema_history'
                         )
                     }
                     .toList<Index>()
+            checkConstraints =
+                tx.createQuery {
+                        sql(
+                            """
+SELECT
+    con.conrelid::regclass AS table_name,
+    a.attname AS column_name,
+    con.conname AS constraint_name,
+    pg_get_constraintdef(con.oid) AS check_clause
+FROM pg_constraint con
+JOIN pg_attribute a ON a.attnum = ANY(con.conkey) AND a.attrelid = con.conrelid
+WHERE con.contype = 'c'
+"""
+                        )
+                    }
+                    .toList<CheckConstraint>()
         }
     }
 }
