@@ -27,6 +27,7 @@ import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -34,8 +35,12 @@ import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.noopTracer
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
-import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
+import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
+import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
+import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
+import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
@@ -195,7 +200,7 @@ class SharedIntegrationTestConfig {
     fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
         EspooIncomeCoefficientMultiplierProvider()
 
-    @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
+    @Bean fun actionRuleMapping(): ActionRuleMapping = TestActionRuleMapping()
 
     @Bean
     fun titaniaEmployeeIdConverter(): TitaniaEmployeeIdConverter =
@@ -259,3 +264,22 @@ val testFeatureConfig =
                     ),
             ),
     )
+
+private class TestActionRuleMapping : ActionRuleMapping {
+    override fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule> =
+        action.defaultRules.asSequence()
+
+    override fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>> =
+        when (action) {
+            Action.Unit.READ_PRESCHOOL_APPLICATION_REPORT -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER) as ScopedActionRule<in T>
+                ) +
+                    sequenceOf(
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                    )
+            }
+            else -> action.defaultRules.asSequence()
+        }
+}

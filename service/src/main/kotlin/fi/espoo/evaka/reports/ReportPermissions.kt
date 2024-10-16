@@ -39,6 +39,7 @@ enum class Report {
     PLACEMENT_GUARANTEE,
     PLACEMENT_SKETCHING,
     PRESCHOOL_ABSENCES,
+    PRESCHOOL_APPLICATIONS,
     PRESENCE,
     RAW,
     SERVICE_NEED,
@@ -214,6 +215,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     Report.PRESCHOOL_ABSENCES.takeIf {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT
+                        )
+                    },
+                    Report.PRESCHOOL_APPLICATIONS.takeIf {
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_PRESCHOOL_APPLICATION_REPORT
                         )
                     },
                     Report.HOLIDAY_PERIOD_ATTENDANCE.takeIf {

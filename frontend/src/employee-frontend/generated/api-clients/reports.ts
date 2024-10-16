@@ -47,6 +47,7 @@ import { PlacementCountReportResult } from 'lib-common/generated/api-types/repor
 import { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { PreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { PreschoolUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
@@ -78,6 +79,7 @@ import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generate
 import { deserializeJsonNonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonPreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPresenceReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonRawReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonServiceVoucherReport } from 'lib-common/generated/api-types/reports'
@@ -799,6 +801,18 @@ export async function getPreschoolAbsenceReport(
     params
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.PreschoolApplicationReport.getPreschoolApplicationReport
+*/
+export async function getPreschoolApplicationReport(): Promise<PreschoolApplicationReportRow[]> {
+  const { data: json } = await client.request<JsonOf<PreschoolApplicationReportRow[]>>({
+    url: uri`/employee/reports/preschool-application`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonPreschoolApplicationReportRow(e))
 }
 
 

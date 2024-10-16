@@ -580,6 +580,20 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
+            reports.has('PRESCHOOL_APPLICATIONS')
+              ? {
+                  name: i18n.reports.preschoolApplications.title,
+                  item: (
+                    <Report
+                      data-qa="report-preschool-application"
+                      path="/reports/preschool-application"
+                      color={colors.main.m2}
+                      icon={faChild}
+                      i18n={i18n.reports.preschoolApplications}
+                    />
+                  )
+                }
+              : null,
             reports.has('FAMILY_DAYCARE_MEAL_REPORT')
               ? {
                   name: i18n.reports.familyDaycareMealCount.title,
