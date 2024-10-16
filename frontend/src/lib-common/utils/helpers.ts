@@ -47,6 +47,7 @@ declare global {
   interface EvakaWindowConfig {
     automatedTest?: boolean
     mockedTime?: Date | undefined
+    keep_session_alive_throttle_time?: number
   }
 }
 

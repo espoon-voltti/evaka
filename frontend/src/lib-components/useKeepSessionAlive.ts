@@ -14,7 +14,8 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<void>) {
             setShowSessionExpiredModal(true)
           }
         },
-        5000,
+        // Default to 10 minutes (1/3 of the session TTL) and allow overriding this in automated tests
+        window.evaka?.keep_session_alive_throttle_time ?? 600000,
         {
           leading: true,
           trailing: true

@@ -131,6 +131,9 @@ export default class CitizenMessagesPage {
   async openFirstThread() {
     await this.#threadListItem.click()
   }
+  async assertThreadMessagesEqual(messages: string[]) {
+    await this.#threadContent.assertTextsEqual(messages)
+  }
 
   async openFirstThreadReplyEditor() {
     await this.#threadListItem.click()
@@ -150,9 +153,18 @@ export default class CitizenMessagesPage {
   }
 
   async replyToFirstThread(content: string) {
+    await this.startReplyToFirstThread()
+    await this.#messageReplyContent.fill(content)
+    await this.sendReply()
+  }
+  async startReplyToFirstThread() {
     await this.#threadListItem.click()
     await this.#openReplyEditorButton.click()
-    await this.#messageReplyContent.fill(content)
+  }
+  getReplyContentElement() {
+    return this.#messageReplyContent
+  }
+  async sendReply() {
     await this.#sendReplyButton.click()
     // the editor is hidden after sending the reply
     await this.#sendReplyButton.waitUntilHidden()
