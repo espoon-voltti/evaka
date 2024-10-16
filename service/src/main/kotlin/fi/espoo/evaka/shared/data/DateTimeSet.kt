@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.data
 
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import java.time.Duration
 import java.util.Objects
 
 /**
@@ -21,7 +22,7 @@ class DateTimeSet private constructor(ranges: List<HelsinkiDateTimeRange>) :
         HelsinkiDateTimeRange(start, end)
 
     override fun range(point: HelsinkiDateTime): HelsinkiDateTimeRange =
-        HelsinkiDateTimeRange(point, point.plusSeconds(1))
+        HelsinkiDateTimeRange(point, point.plus(Duration.ofNanos(1000)))
 
     override fun equals(other: Any?): Boolean = other is DateTimeSet && this.ranges == other.ranges
 
