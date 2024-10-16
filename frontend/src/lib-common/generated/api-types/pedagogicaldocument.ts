@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
@@ -24,9 +25,11 @@ export interface PedagogicalDocument {
   attachments: Attachment[]
   childId: UUID
   created: HelsinkiDateTime
+  createdBy: EvakaUser
   description: string
   id: UUID
-  updated: HelsinkiDateTime
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
 }
 
 /**
@@ -54,7 +57,7 @@ export function deserializeJsonPedagogicalDocument(json: JsonOf<PedagogicalDocum
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 
