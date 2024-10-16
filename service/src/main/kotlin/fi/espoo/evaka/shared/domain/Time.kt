@@ -250,32 +250,6 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
 fun periodsCanMerge(first: FiniteDateRange, second: FiniteDateRange): Boolean =
     first.overlaps(second) || first.end.plusDays(1) == second.start
 
-private fun minimalCover(first: FiniteDateRange, second: FiniteDateRange): FiniteDateRange =
-    FiniteDateRange(minOf(first.start, second.start), maxOf(first.end, second.end))
-
-private fun <T> simpleEquals(a: T, b: T): Boolean = a == b
-
-fun <T> mergePeriods(
-    values: List<Pair<FiniteDateRange, T>>,
-    equals: (T, T) -> Boolean = ::simpleEquals,
-): List<Pair<FiniteDateRange, T>> {
-    return values
-        .sortedBy { (period, _) -> period.start }
-        .fold(listOf()) { periods, (period, value) ->
-            when {
-                periods.isEmpty() -> listOf(period to value)
-                else ->
-                    periods.last().let { (lastPeriod, lastValue) ->
-                        when {
-                            equals(lastValue, value) && periodsCanMerge(lastPeriod, period) ->
-                                periods.dropLast(1) + (minimalCover(lastPeriod, period) to value)
-                            else -> periods + (period to value)
-                        }
-                    }
-            }
-        }
-}
-
 fun asDistinctPeriods(
     periods: List<FiniteDateRange>,
     spanningPeriod: FiniteDateRange,

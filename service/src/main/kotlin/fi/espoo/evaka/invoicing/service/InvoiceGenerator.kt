@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -30,7 +31,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
-import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.withSpan
 import io.opentelemetry.api.trace.Tracer
@@ -375,9 +375,10 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
                 }
 
             headOfFamily to
-                mergePeriods(familyPlacementsSeries).flatMap { (period, placements) ->
-                    placements.map { period to it }
-                }
+                DateMap.of(familyPlacementsSeries)
+                    .entries()
+                    .flatMap { (period, placements) -> placements.map { period to it } }
+                    .toList()
         }
         .toMap()
 }
@@ -398,7 +399,7 @@ internal fun toFamilyCompositions(
                             .map { (_, child) -> child }
                             .sortedByDescending { it.dateOfBirth }
                 }
-                .let { mergePeriods(it) }
+                .let { DateMap.of(it).entries().toList() }
         }
 }
 
