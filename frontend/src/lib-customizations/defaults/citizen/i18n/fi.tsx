@@ -322,7 +322,7 @@ export default {
       PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
     },
     discussionTimeReservation: {
-      surveyModalButtonText: 'Siirry ajanvaraukseen',
+      surveyModalButtonText: 'Varaa keskusteluaika',
       reservationModalButtonText: 'Siirry varaamaan',
       surveyModalTitle: 'Ajanvaraus',
       surveyModalSubTitle: 'Keskusteluajat',
@@ -363,6 +363,7 @@ export default {
 
     intermittentShiftCareNotification: 'Ilta-/vuorohoito',
     newReservationOrAbsence: 'Läsnäolot / Poissaolot',
+    newReservationOrAbsenceOrDiscussion: 'Läsnäolot / Poissaolot / Keskustelut',
     newHoliday: 'Vastaa poissaolokyselyyn',
     newAbsence: 'Ilmoita poissaoloja',
     newReservationBtn: 'Ilmoita läsnäoloja',

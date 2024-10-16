@@ -358,6 +358,8 @@ const sv: Translations = {
     contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',
     intermittentShiftCareNotification: 'Kvälls-/skiftvård',
     newReservationOrAbsence: 'Närvaro / Frånvaro',
+    newReservationOrAbsenceOrDiscussion:
+      'Närvaro / Frånvaro / Diskussionstider',
     newHoliday: 'Besvara frånvaroenkäten',
     newAbsence: 'Anmäl frånvaro',
     newReservationBtn: 'Anmäl närvaro',

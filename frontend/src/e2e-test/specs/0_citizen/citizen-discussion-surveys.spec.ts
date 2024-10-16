@@ -228,7 +228,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
   test('Citizen sees discussions toast message', async () => {
     await waitUntilEqual(
       () => calendarPage.getActiveDiscussionsCtaContent(),
-      'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.\nSiirry ajanvaraukseen'
+      'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.\nVaraa keskusteluaika'
     )
   })
 
