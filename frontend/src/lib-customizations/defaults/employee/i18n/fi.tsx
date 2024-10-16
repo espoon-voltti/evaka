@@ -2379,6 +2379,8 @@ export const fi = {
           ),
           reservationModal: {
             reservationStatus: 'Varaustilanne',
+            removeReservation: 'Poista varaus',
+            removeDiscussionTime: 'Poista keskusteluaika',
             reserved: 'Varattu',
             unreserved: 'Vapaa',
             selectPlaceholder: 'Valitse',
