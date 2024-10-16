@@ -26,10 +26,10 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.Tracing
+import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.utils.memoize
 import fi.espoo.evaka.shared.withSpan
@@ -285,10 +285,7 @@ class DraftInvoiceGenerator(
             rowDatas
                 .groupBy { (_, rowData) -> rowData.child }
                 .flatMap { (child, rowDatas) ->
-                    val separatePeriods =
-                        mergePeriods(rowDatas.map { it.first to it.second }).map {
-                            it.first to it.second
-                        }
+                    val separatePeriods = DateMap.of(rowDatas).entries().toList()
 
                     val logic =
                         invoiceGenerationLogicChooser.logicForMonth(
