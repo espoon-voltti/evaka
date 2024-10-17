@@ -4,7 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
-import { EmailNotificationSettings } from 'lib-common/generated/api-types/pis'
+import { EmailMessageType } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
@@ -15,8 +15,8 @@ import { uri } from 'lib-common/uri'
 /**
 * Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.getNotificationSettings
 */
-export async function getNotificationSettings(): Promise<EmailNotificationSettings> {
-  const { data: json } = await client.request<JsonOf<EmailNotificationSettings>>({
+export async function getNotificationSettings(): Promise<EmailMessageType[]> {
+  const { data: json } = await client.request<JsonOf<EmailMessageType[]>>({
     url: uri`/citizen/personal-data/notification-settings`.toString(),
     method: 'GET'
   })
@@ -29,13 +29,13 @@ export async function getNotificationSettings(): Promise<EmailNotificationSettin
 */
 export async function updateNotificationSettings(
   request: {
-    body: EmailNotificationSettings
+    body: EmailMessageType[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/personal-data/notification-settings`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<EmailNotificationSettings>
+    data: request.body satisfies JsonCompatible<EmailMessageType[]>
   })
   return json
 }

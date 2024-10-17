@@ -2004,7 +2004,7 @@ export default {
       subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
       message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
       bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
-      bulletinFromSupervisor: 'eVakaan saapuneista yksikön tiedotteista',
+      bulletinFromSupervisor: 'TODO: eVakaan saapuneista yksikön tiedotteista',
       discussionTimeReservationConfirmation:
         'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
       discussionTimeReservationConfirmationInfo:
@@ -2022,6 +2022,8 @@ export default {
         'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
       outdatedIncomeWarning:
         'Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
+      newCustomerIncome:
+        'TODO: Muistutus uuden asiakkaan tulotietojen päivittämisestä',
       calendarEvent:
         'Muistutukset kalenteriin merkityistä uusista tapahtumista',
       decision: 'Saapuneista päätöksistä',
@@ -2034,7 +2036,9 @@ export default {
       missingAttendanceReservation:
         'Muistutukset puuttuvista läsnäoloilmoituksista',
       missingAttendanceReservationInfo:
-        'Muistutus lähetetään ennen läsnäoloilmoitusten määräaikaa, mikäli jollakin lapsistasi puuttuu läsnäoloilmoitus tai poissaolomerkintä seuraavalta kahdelta viikolta.'
+        'Muistutus lähetetään ennen läsnäoloilmoitusten määräaikaa, mikäli jollakin lapsistasi puuttuu läsnäoloilmoitus tai poissaolomerkintä seuraavalta kahdelta viikolta.',
+      missingHolidayAttendanceReservation:
+        'TODO: Muistutukset puuttuvista loma-ajan läsnäoloilmoituksista'
     }
   },
   income: {

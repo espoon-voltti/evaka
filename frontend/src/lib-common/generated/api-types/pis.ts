@@ -128,22 +128,27 @@ export interface DisableSsnRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.EmailNotificationSettings
+* Generated from fi.espoo.evaka.pis.EmailMessageType
 */
-export interface EmailNotificationSettings {
-  bulletin: boolean
-  bulletinFromSupervisor: boolean
-  calendarEvent: boolean
-  decision: boolean
-  discussionSurveyCreationNotification: boolean
-  discussionTimeReservationConfirmation: boolean
-  discussionTimeReservationReminder: boolean
-  document: boolean
-  informalDocument: boolean
-  message: boolean
-  missingAttendanceReservation: boolean
-  outdatedIncome: boolean
-}
+export const emailMessageTypes = [
+  'TRANSACTIONAL',
+  'MESSAGE_NOTIFICATION',
+  'BULLETIN_NOTIFICATION',
+  'BULLETIN_FROM_SUPERVISOR_NOTIFICATION',
+  'OUTDATED_INCOME_NOTIFICATION',
+  'NEW_CUSTOMER_INCOME_NOTIFICATION',
+  'CALENDAR_EVENT_NOTIFICATION',
+  'DECISION_NOTIFICATION',
+  'DOCUMENT_NOTIFICATION',
+  'INFORMAL_DOCUMENT_NOTIFICATION',
+  'MISSING_ATTENDANCE_RESERVATION_NOTIFICATION',
+  'MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION',
+  'DISCUSSION_TIME_RESERVATION_CONFIRMATION',
+  'DISCUSSION_SURVEY_CREATION_NOTIFICATION',
+  'DISCUSSION_TIME_RESERVATION_REMINDER'
+] as const
+
+export type EmailMessageType = typeof emailMessageTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.pis.Employee
