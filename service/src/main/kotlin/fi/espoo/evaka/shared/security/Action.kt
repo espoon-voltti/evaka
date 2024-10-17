@@ -2252,6 +2252,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
         ),
+        READ_PRESCHOOL_APPLICATION_REPORT,
         READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.RESERVATIONS).inUnit(),
