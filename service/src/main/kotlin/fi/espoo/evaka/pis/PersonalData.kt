@@ -21,8 +21,11 @@ enum class EmailMessageType {
     /** Notifications about new eVaka messages */
     MESSAGE_NOTIFICATION,
 
-    /** Notifications about new eVaka bulletins (tiedotteet) */
+    /** Notifications about new eVaka bulletins (yleiset tiedotteet) */
     BULLETIN_NOTIFICATION,
+
+    /** Notifications about new eVaka bulletins (tiedotteet) sent by unit supervisor */
+    BULLETIN_FROM_SUPERVISOR_NOTIFICATION,
 
     /** Reminders about expiring or missing income info */
     OUTDATED_INCOME_NOTIFICATION,
@@ -67,6 +70,7 @@ enum class EmailMessageType {
 data class EmailNotificationSettings(
     val message: Boolean,
     val bulletin: Boolean,
+    val bulletinFromSupervisor: Boolean,
     val outdatedIncome: Boolean,
     val calendarEvent: Boolean,
     val decision: Boolean,
@@ -82,6 +86,9 @@ data class EmailNotificationSettings(
             EmailMessageType.TRANSACTIONAL, // always enabled
             EmailMessageType.MESSAGE_NOTIFICATION.takeIf { message },
             EmailMessageType.BULLETIN_NOTIFICATION.takeIf { bulletin },
+            EmailMessageType.BULLETIN_FROM_SUPERVISOR_NOTIFICATION.takeIf {
+                bulletinFromSupervisor
+            },
             EmailMessageType.OUTDATED_INCOME_NOTIFICATION.takeIf { outdatedIncome },
             EmailMessageType.CALENDAR_EVENT_NOTIFICATION.takeIf { calendarEvent },
             EmailMessageType.DECISION_NOTIFICATION.takeIf { decision },
@@ -108,6 +115,7 @@ data class EmailNotificationSettings(
                 EmailNotificationSettings(
                     message = true,
                     bulletin = true,
+                    bulletinFromSupervisor = true,
                     outdatedIncome = true,
                     calendarEvent = true,
                     decision = true,
@@ -122,6 +130,9 @@ data class EmailNotificationSettings(
                 EmailNotificationSettings(
                     message = EmailMessageType.MESSAGE_NOTIFICATION in enabledNotificationTypes,
                     bulletin = EmailMessageType.BULLETIN_NOTIFICATION in enabledNotificationTypes,
+                    bulletinFromSupervisor =
+                        EmailMessageType.BULLETIN_FROM_SUPERVISOR_NOTIFICATION in
+                            enabledNotificationTypes,
                     outdatedIncome =
                         EmailMessageType.OUTDATED_INCOME_NOTIFICATION in enabledNotificationTypes,
                     calendarEvent =

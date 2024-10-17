@@ -2001,6 +2001,7 @@ const sv: Translations = {
       subtitle: 'Meddelande som skickas till e-posten',
       message: 'Meddelanden som personalen skickat i eVaka',
       bulletin: 'Bulletiner i eVaka',
+      bulletinFromSupervisor: 'TODO: eVakaan saapuneista yksikön tiedotteista',
       discussionTimeReservationConfirmation:
         'Bekräftelser på bokningar av diskussionstid i eVaka',
       discussionTimeReservationConfirmationInfo:

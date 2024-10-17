@@ -2004,6 +2004,7 @@ export default {
       subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
       message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
       bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
+      bulletinFromSupervisor: 'eVakaan saapuneista yksikön tiedotteista',
       discussionTimeReservationConfirmation:
         'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
       discussionTimeReservationConfirmationInfo:

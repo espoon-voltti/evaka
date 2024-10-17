@@ -1761,6 +1761,7 @@ const en: Translations = {
       subtitle: 'Email notifications',
       message: 'messages sent to eVaka by staff',
       bulletin: 'bulletins sent to eVaka',
+      bulletinFromSupervisor: 'TODO: eVakaan saapuneista yksikön tiedotteista',
       discussionTimeReservationConfirmation:
         'Confirmations of discussion time reservations in eVaka',
       discussionTimeReservationConfirmationInfo:

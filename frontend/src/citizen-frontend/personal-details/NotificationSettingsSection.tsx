@@ -28,6 +28,7 @@ import { updateNotificationSettingsMutation } from './queries'
 const notificationSettingsForm = object({
   message: boolean(),
   bulletin: boolean(),
+  bulletinFromSupervisor: boolean(),
   outdatedIncome: boolean(),
   calendarEvent: boolean(),
   decision: boolean(),
@@ -58,6 +59,7 @@ export default React.memo(
     const {
       message,
       bulletin,
+      bulletinFromSupervisor,
       outdatedIncome,
       calendarEvent,
       decision,
@@ -98,6 +100,13 @@ export default React.memo(
           label={t.personalDetails.notificationsSection.bulletin}
           disabled={!editing}
           data-qa="bulletin"
+        />
+        <Gap size="s" />
+        <CheckboxF
+          bind={bulletinFromSupervisor}
+          label={t.personalDetails.notificationsSection.bulletinFromSupervisor}
+          disabled={!editing}
+          data-qa="bulletin-from-supervisor"
         />
         <Gap size="s" />
         <ExpandingInfo
