@@ -1761,35 +1761,36 @@ const en: Translations = {
       subtitle: 'Email notifications',
       message: 'messages sent to eVaka by staff',
       bulletin: 'bulletins sent to eVaka',
-      discussionTimeReservationConfirmation:
-        'Confirmations of discussion time reservations in eVaka',
-      discussionTimeReservationConfirmationInfo:
-        'An email confirmation is sent on reservation or cancellation of discussion times',
-      discussionTimeReservationReminder:
-        'Reminders for reserved discussion times',
-      discussionTimeReservationReminderInfo:
-        'Reminder is sent before the reserved time',
-      discussionSurveyCreationNotification:
-        'Notification for new discussion surveys opened in eVakaan',
-      discussionSurveyCreationNotificationInfo:
-        'Notification is sent when a new discussion survey concerning your child has been created',
-      outdatedIncome: 'Reminders about updating your income information',
-      outdatedIncomeInfo:
+      income: 'Reminders about updating your income information',
+      incomeInfo:
         'If your family pays less than the maximum fee for early childhood education, you must update your income information regularly. If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
-      outdatedIncomeWarning:
+      incomeWarning:
         'If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
       calendarEvent: 'Reminders about new events marked in the calendar',
       decision: 'New decisions',
-      document: 'New documents',
+      document: 'New pedagogic documents',
       documentInfo:
         'Documents refer to official documents that are not decisions. These include early childhood education plans and pedagogic assessments.',
       informalDocument: "Other documents related to the child's everyday life",
       informalDocumentInfo:
         'These documents may include, for example, images of drawings made by the child.',
-      missingAttendanceReservation:
-        'Reminders of missing attendance reservations',
-      missingAttendanceReservationInfo:
-        'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.'
+      attendanceReservation: 'Reminders of missing attendance reservations',
+      attendanceReservationInfo:
+        'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.',
+      discussionTime: 'Keskusteluaikoihin liittyvät ilmoitukset',
+      discussionTimeInfo: (
+        <div>
+          <div>Saat ilmoituksen seuraavista asioista:</div>
+          <ul>
+            <li>
+              kun sinulta kysytään sopivia aikoja esimerkiksi lapsesi
+              varhaiskasvatussuunnitelmaa koskevaan keskusteluun
+            </li>
+            <li>varatuista ja perutuista keskustesteluajoistasi</li>
+            <li>muistutuksen ennen varattua keskusteluaikaa</li>
+          </ul>
+        </div>
+      )
     }
   },
   income: {

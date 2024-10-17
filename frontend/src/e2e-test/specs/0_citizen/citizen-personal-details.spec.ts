@@ -137,7 +137,7 @@ describe('Citizen notification settings', () => {
     await section.assertAllChecked(true)
     await section.startEditing.click()
     await section.checkboxes.message.uncheck()
-    await section.checkboxes.outdatedIncome.uncheck()
+    await section.checkboxes.income.uncheck()
     await section.checkboxes.decision.uncheck()
     await section.checkboxes.informalDocument.uncheck()
     await section.save.click()
@@ -145,20 +145,12 @@ describe('Citizen notification settings', () => {
 
     await section.checkboxes.message.waitUntilChecked(false)
     await section.checkboxes.bulletin.waitUntilChecked(true)
-    await section.checkboxes.outdatedIncome.waitUntilChecked(false)
+    await section.checkboxes.income.waitUntilChecked(false)
     await section.checkboxes.calendarEvent.waitUntilChecked(true)
     await section.checkboxes.decision.waitUntilChecked(false)
     await section.checkboxes.document.waitUntilChecked(true)
     await section.checkboxes.informalDocument.waitUntilChecked(false)
-    await section.checkboxes.missingAttendanceReservation.waitUntilChecked(true)
-    await section.checkboxes.discussionTimeReservationConfirmation.waitUntilChecked(
-      true
-    )
-    await section.checkboxes.discussionTimeReservationReminder.waitUntilChecked(
-      true
-    )
-    await section.checkboxes.discussionSurveyCreationNotificaiton.waitUntilChecked(
-      true
-    )
+    await section.checkboxes.attendanceReservation.waitUntilChecked(true)
+    await section.checkboxes.discussionTime.waitUntilChecked(true)
   })
 })

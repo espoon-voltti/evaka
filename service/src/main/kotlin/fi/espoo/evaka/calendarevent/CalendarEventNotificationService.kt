@@ -114,7 +114,7 @@ class CalendarEventNotificationService(
         Email.create(
                 db,
                 msg.recipientId,
-                EmailMessageType.DISCUSSION_SURVEY_CREATION_NOTIFICATION,
+                EmailMessageType.DISCUSSION_TIME_NOTIFICATION,
                 fromAddress,
                 content,
                 "${msg.recipientId}: ${msg.eventId}",
@@ -192,7 +192,7 @@ class CalendarEventNotificationService(
         Email.create(
                 db,
                 msg.recipientId,
-                EmailMessageType.DISCUSSION_TIME_RESERVATION_CONFIRMATION,
+                EmailMessageType.DISCUSSION_TIME_NOTIFICATION,
                 fromAddress,
                 content,
                 "${eventTime.id} - ${msg.recipientId}",
@@ -228,7 +228,7 @@ class CalendarEventNotificationService(
         Email.create(
                 db,
                 msg.recipientId,
-                EmailMessageType.DISCUSSION_TIME_RESERVATION_CONFIRMATION,
+                EmailMessageType.DISCUSSION_TIME_NOTIFICATION,
                 fromAddress,
                 content,
                 "${eventTime.id} - ${msg.recipientId}",
@@ -257,7 +257,7 @@ class CalendarEventNotificationService(
         Email.create(
                 db,
                 msg.recipientId,
-                EmailMessageType.DISCUSSION_TIME_RESERVATION_REMINDER,
+                EmailMessageType.DISCUSSION_TIME_NOTIFICATION,
                 emailEnv.sender(msg.recipientLanguage),
                 emailMessageProvider.discussionTimeReservationReminder(
                     msg.recipientLanguage,

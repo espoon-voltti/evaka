@@ -31,8 +31,8 @@ private constructor(
             content: EmailContent,
             traceId: String,
         ): Email? {
-            val (toAddress, enabledEmailTypes) =
-                dbc.read { tx -> tx.getEmailAddressAndEnabledTypes(personId) }
+            val (toAddress, disabledEmailTypes) =
+                dbc.read { tx -> tx.getEmailAddressAndDisabledTypes(personId) }
 
             if (toAddress == null) {
                 logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
@@ -46,9 +46,9 @@ private constructor(
                 return null
             }
 
-            if (emailType !in (enabledEmailTypes ?: EmailMessageType.entries)) {
+            if (emailType !in EmailMessageType.alwaysEnabled && emailType in disabledEmailTypes) {
                 logger.info {
-                    "Not sending email (traceId: $traceId): $emailType not enabled for person $personId"
+                    "Not sending email (traceId: $traceId): $emailType disabled for person $personId"
                 }
                 return null
             }
@@ -88,14 +88,14 @@ interface EmailClient {
 
 private data class EmailAndEnabledEmailTypes(
     val email: String?,
-    val enabledEmailTypes: List<EmailMessageType>?,
+    val disabledEmailTypes: Set<EmailMessageType>,
 )
 
-private fun Database.Read.getEmailAddressAndEnabledTypes(
+private fun Database.Read.getEmailAddressAndDisabledTypes(
     personId: PersonId
 ): EmailAndEnabledEmailTypes {
     return createQuery {
-            sql("""SELECT email, enabled_email_types FROM person WHERE id = ${bind(personId)}""")
+            sql("""SELECT email, disabled_email_types FROM person WHERE id = ${bind(personId)}""")
         }
         .exactlyOne<EmailAndEnabledEmailTypes>()
         .let { it.copy(email = it.email?.trim()) }

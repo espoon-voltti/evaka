@@ -6,11 +6,11 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.pis.EmailNotificationSettings
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.PersonalDataUpdate
-import fi.espoo.evaka.pis.getEnabledEmailTypes
+import fi.espoo.evaka.pis.getDisabledEmailTypes
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.updateEnabledEmailTypes
+import fi.espoo.evaka.pis.updateDisabledEmailTypes
 import fi.espoo.evaka.pis.updatePersonalDetails
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -80,7 +80,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-    ): EmailNotificationSettings {
+    ): Set<EmailMessageType> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -90,9 +90,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                         Action.Citizen.Person.READ_NOTIFICATION_SETTINGS,
                         user.id,
                     )
-                    EmailNotificationSettings.fromNotificationTypes(
-                        tx.getEnabledEmailTypes(user.id)
-                    )
+                    tx.getDisabledEmailTypes(user.id)
                 }
             }
             .also { Audit.CitizenNotificationSettingsRead.log(targetId = AuditId(user.id)) }
@@ -103,7 +101,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: EmailNotificationSettings,
+        @RequestBody body: Set<EmailMessageType>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -114,7 +112,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                     Action.Citizen.Person.UPDATE_NOTIFICATION_SETTINGS,
                     user.id,
                 )
-                tx.updateEnabledEmailTypes(user.id, body.toNotificationTypes())
+                tx.updateDisabledEmailTypes(user.id, body)
             }
         }
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
