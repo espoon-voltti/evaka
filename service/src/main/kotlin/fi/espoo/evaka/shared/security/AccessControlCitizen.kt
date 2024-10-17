@@ -49,7 +49,6 @@ SELECT EXISTS (
     FROM children c
     JOIN placement pl ON c.child_id = pl.child_id
     JOIN daycare u ON pl.unit_id = u.id
-    WHERE daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
     AND 'MESSAGING' = ANY(u.enabled_pilot_features)
     
     UNION 
