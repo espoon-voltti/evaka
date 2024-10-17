@@ -78,7 +78,7 @@ class InvoiceGenerator(
     fun calculateInvoiceData(
         tx: Database.Read,
         range: FiniteDateRange,
-    ): DraftInvoiceGenerator.InvoiceCalculationData {
+    ): DraftInvoiceGenerator.InvoiceGeneratorInput {
         val feeThresholds =
             tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
                 ?: error(
@@ -138,7 +138,7 @@ class InvoiceGenerator(
                 .filter { it.defaultOption }
                 .associateBy { it.validPlacementType }
 
-        return DraftInvoiceGenerator.InvoiceCalculationData(
+        return DraftInvoiceGenerator.InvoiceGeneratorInput(
             decisions = unhandledDecisions,
             permanentPlacements = permanentPlacements,
             temporaryPlacements = temporaryPlacements,
