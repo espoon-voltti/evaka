@@ -58,7 +58,9 @@ import FileUpload, {
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { SelectOption } from 'lib-components/molecules/Select'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
 import { Bold } from 'lib-components/typography'
+import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import {
@@ -74,6 +76,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 
 import { createMessagePreflightCheckQuery } from './queries'
+import { sessionKeepalive } from './utils'
 
 type Message = Omit<
   UpdatableDraftContent,
@@ -509,6 +512,11 @@ export default React.memo(function MessageEditor({
     () => setSensitiveInfoOpen((prev) => !prev),
     []
   )
+  const {
+    keepSessionAlive,
+    showSessionExpiredModal,
+    setShowSessionExpiredModal
+  } = useKeepSessionAlive(sessionKeepalive)
 
   const sensitiveCheckbox = (
     <FixedSpaceRow spacing="xs" alignItems="center">
@@ -571,318 +579,327 @@ export default React.memo(function MessageEditor({
   )
 
   return (
-    <FullScreenContainer
-      data-qa="fullscreen-container"
-      className={classNames({ fullscreen: expandedView })}
-    >
-      <Container
-        data-qa="message-editor"
-        data-status={draftState}
+    <>
+      <FullScreenContainer
+        data-qa="fullscreen-container"
         className={classNames({ fullscreen: expandedView })}
       >
-        <TopBar>
-          <Title>{title}</Title>
-          <HeaderButtonContainer>
-            {expandedView ? (
+        <Container
+          data-qa="message-editor"
+          data-status={draftState}
+          className={classNames({ fullscreen: expandedView })}
+        >
+          <TopBar>
+            <Title>{title}</Title>
+            <HeaderButtonContainer>
+              {expandedView ? (
+                <IconOnlyButton
+                  icon={faDownLeftAndUpRightToCenter}
+                  onClick={toggleExpandedView}
+                  color="white"
+                  size="s"
+                  data-qa="collapse-view-btn"
+                  aria-label={i18n.common.open}
+                />
+              ) : (
+                <IconOnlyButton
+                  icon={faUpRightAndDownLeftFromCenter}
+                  onClick={toggleExpandedView}
+                  color="white"
+                  size="s"
+                  data-qa="expand-view-btn"
+                  aria-label={i18n.common.close}
+                />
+              )}
               <IconOnlyButton
-                icon={faDownLeftAndUpRightToCenter}
-                onClick={toggleExpandedView}
+                icon={faTimes}
+                onClick={onCloseHandler}
                 color="white"
-                size="s"
-                data-qa="collapse-view-btn"
-                aria-label={i18n.common.open}
-              />
-            ) : (
-              <IconOnlyButton
-                icon={faUpRightAndDownLeftFromCenter}
-                onClick={toggleExpandedView}
-                color="white"
-                size="s"
-                data-qa="expand-view-btn"
+                size="m"
+                data-qa="close-message-editor-btn"
                 aria-label={i18n.common.close}
               />
-            )}
-            <IconOnlyButton
-              icon={faTimes}
-              onClick={onCloseHandler}
-              color="white"
-              size="m"
-              data-qa="close-message-editor-btn"
-              aria-label={i18n.common.close}
-            />
-          </HeaderButtonContainer>
-        </TopBar>
-        <ScrollableFormArea>
-          <ExpandableLayout expandedView={expandedView}>
-            <Dropdowns expandedView={expandedView}>
-              <HorizontalField>
-                <Bold>{i18n.messages.messageEditor.sender}</Bold>
-                <Combobox
-                  items={senderOptions}
-                  onChange={handleSenderChange}
-                  selectedItem={message.sender}
-                  getItemLabel={(sender) => sender.label}
-                  data-qa="select-sender"
-                  fullWidth
-                />
-              </HorizontalField>
-              <Gap size="s" />
-              <HorizontalField>
-                <Bold>{i18n.messages.messageEditor.recipients}</Bold>
-                <TreeDropdown
-                  tree={receiverTree}
-                  onChange={handleRecipientChange}
-                  placeholder={i18n.messages.messageEditor.selectPlaceholder}
-                  data-qa="select-receiver"
-                />
-              </HorizontalField>
-            </Dropdowns>
-            {expandedView && !simpleMode && (
-              <ExpandedRightPane>
-                <ExpandedHorizontalField>
-                  <Bold>{i18n.messages.messageEditor.type.label}</Bold>
-                  {messageType}
-                </ExpandedHorizontalField>
+            </HeaderButtonContainer>
+          </TopBar>
+          <ScrollableFormArea>
+            <ExpandableLayout expandedView={expandedView}>
+              <Dropdowns expandedView={expandedView}>
+                <HorizontalField>
+                  <Bold>{i18n.messages.messageEditor.sender}</Bold>
+                  <Combobox
+                    items={senderOptions}
+                    onChange={handleSenderChange}
+                    selectedItem={message.sender}
+                    getItemLabel={(sender) => sender.label}
+                    data-qa="select-sender"
+                    fullWidth
+                  />
+                </HorizontalField>
                 <Gap size="s" />
-                <ExpandedHorizontalField>
-                  <Bold>{i18n.messages.messageEditor.flags.heading}</Bold>
-                  {urgent}
-                  {sensitiveCheckbox}
-                </ExpandedHorizontalField>
-                {sensitiveInfoOpen && (
-                  <FixedSpaceRow fullWidth>
+                <HorizontalField>
+                  <Bold>{i18n.messages.messageEditor.recipients}</Bold>
+                  <TreeDropdown
+                    tree={receiverTree}
+                    onChange={handleRecipientChange}
+                    placeholder={i18n.messages.messageEditor.selectPlaceholder}
+                    data-qa="select-receiver"
+                  />
+                </HorizontalField>
+              </Dropdowns>
+              {expandedView && !simpleMode && (
+                <ExpandedRightPane>
+                  <ExpandedHorizontalField>
+                    <Bold>{i18n.messages.messageEditor.type.label}</Bold>
+                    {messageType}
+                  </ExpandedHorizontalField>
+                  <Gap size="s" />
+                  <ExpandedHorizontalField>
+                    <Bold>{i18n.messages.messageEditor.flags.heading}</Bold>
+                    {urgent}
+                    {sensitiveCheckbox}
+                  </ExpandedHorizontalField>
+                  {sensitiveInfoOpen && (
+                    <FixedSpaceRow fullWidth>
+                      <ExpandingInfoBox
+                        width="auto"
+                        info={
+                          i18n.messages.messageEditor.flags.sensitive
+                            .whyDisabled
+                        }
+                        close={onSensitiveInfoClick}
+                      />
+                    </FixedSpaceRow>
+                  )}
+                  {flagsInfo}
+                </ExpandedRightPane>
+              )}
+            </ExpandableLayout>
+            {(senderAccountType === 'PERSONAL' ||
+              senderAccountType === 'MUNICIPAL') && (
+              <>
+                <Gap size="s" />
+                <RightAlignedRow>
+                  <Button
+                    appearance="inline"
+                    order="text-icon"
+                    data-qa="filters-btn"
+                    onClick={useFiltersVisible.toggle}
+                    text={
+                      filtersVisible
+                        ? i18n.messages.messageEditor.filters.hideFilters
+                        : i18n.messages.messageEditor.filters.showFilters
+                    }
+                    icon={filtersVisible ? faChevronUp : faChevronDown}
+                  />
+                </RightAlignedRow>
+                {filtersVisible && (
+                  <>
+                    <Gap size="s" />
+                    <ExpandableLayout expandedView={expandedView}>
+                      <Dropdowns expandedView={expandedView}>
+                        <HorizontalField>
+                          <Bold>
+                            {i18n.messages.messageEditor.filters.yearOfBirth}
+                          </Bold>
+                          <TreeDropdown
+                            tree={yearOfBirthTree}
+                            onChange={handleBirthYearChange}
+                            placeholder={
+                              i18n.messages.messageEditor.selectPlaceholder
+                            }
+                            data-qa="select-years-of-birth"
+                          />
+                        </HorizontalField>
+                      </Dropdowns>
+                      {expandedView && !simpleMode && (
+                        <ExpandedRightPane>
+                          <ExpandedHorizontalField>
+                            <Bold>
+                              {
+                                i18n.messages.messageEditor.filters.shiftCare
+                                  .heading
+                              }
+                            </Bold>
+                            {shiftCareCheckBox}
+                            {featureFlags.intermittentShiftCare
+                              ? intermittentShiftCareCheckBox
+                              : null}
+                          </ExpandedHorizontalField>
+                          <Gap size="s" />
+                          <ExpandedHorizontalField>
+                            <Bold>
+                              {
+                                i18n.messages.messageEditor.filters
+                                  .familyDaycare.heading
+                              }
+                            </Bold>
+                            {familyDaycareCheckBox}
+                          </ExpandedHorizontalField>
+                        </ExpandedRightPane>
+                      )}
+                      {!expandedView && !simpleMode && (
+                        <>
+                          <Gap size="s" />
+                          <HorizontalField>
+                            <Bold>
+                              {
+                                i18n.messages.messageEditor.filters.shiftCare
+                                  .heading
+                              }
+                            </Bold>
+                            {shiftCareCheckBox}
+                            {featureFlags.intermittentShiftCare
+                              ? intermittentShiftCareCheckBox
+                              : null}
+                          </HorizontalField>
+                          <Gap size="s" />
+                          <HorizontalField>
+                            <Bold>
+                              {
+                                i18n.messages.messageEditor.filters
+                                  .familyDaycare.heading
+                              }
+                            </Bold>
+                            {familyDaycareCheckBox}
+                          </HorizontalField>
+                        </>
+                      )}
+                    </ExpandableLayout>
+                    <HorizontalLine slim />
+                  </>
+                )}
+              </>
+            )}
+            <Gap size="s" />
+            <HorizontalField>
+              <Bold>{i18n.messages.messageEditor.title}</Bold>
+              <InputField
+                value={message.title ?? ''}
+                onChange={(title) => updateMessage({ title })}
+                data-qa="input-title"
+              />
+            </HorizontalField>
+            {!expandedView && !simpleMode && (
+              <>
+                <Gap size="s" />
+                <FixedSpaceRow>
+                  <HalfWidthColumn>
+                    <Bold>{i18n.messages.messageEditor.type.label}</Bold>
+                    {messageType}
+                  </HalfWidthColumn>
+                  <HalfWidthColumn>
+                    <Bold>{i18n.messages.messageEditor.flags.heading}</Bold>
+                    {urgent}
+                    {sensitiveCheckbox}
+                  </HalfWidthColumn>
+                </FixedSpaceRow>
+                {sensitiveInfoOpen && !sensitiveCheckboxEnabled && (
+                  <InfoBoxContainer>
                     <ExpandingInfoBox
-                      width="auto"
+                      width="full"
                       info={
                         i18n.messages.messageEditor.flags.sensitive.whyDisabled
                       }
                       close={onSensitiveInfoClick}
                     />
-                  </FixedSpaceRow>
+                  </InfoBoxContainer>
                 )}
                 {flagsInfo}
-              </ExpandedRightPane>
+              </>
             )}
-          </ExpandableLayout>
-          {(senderAccountType === 'PERSONAL' ||
-            senderAccountType === 'MUNICIPAL') && (
-            <>
-              <Gap size="s" />
-              <RightAlignedRow>
-                <Button
-                  appearance="inline"
-                  order="text-icon"
-                  data-qa="filters-btn"
-                  onClick={useFiltersVisible.toggle}
-                  text={
-                    filtersVisible
-                      ? i18n.messages.messageEditor.filters.hideFilters
-                      : i18n.messages.messageEditor.filters.showFilters
-                  }
-                  icon={filtersVisible ? faChevronUp : faChevronDown}
-                />
-              </RightAlignedRow>
-              {filtersVisible && (
-                <>
-                  <Gap size="s" />
-                  <ExpandableLayout expandedView={expandedView}>
-                    <Dropdowns expandedView={expandedView}>
-                      <HorizontalField>
-                        <Bold>
-                          {i18n.messages.messageEditor.filters.yearOfBirth}
-                        </Bold>
-                        <TreeDropdown
-                          tree={yearOfBirthTree}
-                          onChange={handleBirthYearChange}
-                          placeholder={
-                            i18n.messages.messageEditor.selectPlaceholder
-                          }
-                          data-qa="select-years-of-birth"
-                        />
-                      </HorizontalField>
-                    </Dropdowns>
-                    {expandedView && !simpleMode && (
-                      <ExpandedRightPane>
-                        <ExpandedHorizontalField>
-                          <Bold>
-                            {
-                              i18n.messages.messageEditor.filters.shiftCare
-                                .heading
-                            }
-                          </Bold>
-                          {shiftCareCheckBox}
-                          {featureFlags.intermittentShiftCare
-                            ? intermittentShiftCareCheckBox
-                            : null}
-                        </ExpandedHorizontalField>
-                        <Gap size="s" />
-                        <ExpandedHorizontalField>
-                          <Bold>
-                            {
-                              i18n.messages.messageEditor.filters.familyDaycare
-                                .heading
-                            }
-                          </Bold>
-                          {familyDaycareCheckBox}
-                        </ExpandedHorizontalField>
-                      </ExpandedRightPane>
-                    )}
-                    {!expandedView && !simpleMode && (
-                      <>
-                        <Gap size="s" />
-                        <HorizontalField>
-                          <Bold>
-                            {
-                              i18n.messages.messageEditor.filters.shiftCare
-                                .heading
-                            }
-                          </Bold>
-                          {shiftCareCheckBox}
-                          {featureFlags.intermittentShiftCare
-                            ? intermittentShiftCareCheckBox
-                            : null}
-                        </HorizontalField>
-                        <Gap size="s" />
-                        <HorizontalField>
-                          <Bold>
-                            {
-                              i18n.messages.messageEditor.filters.familyDaycare
-                                .heading
-                            }
-                          </Bold>
-                          {familyDaycareCheckBox}
-                        </HorizontalField>
-                      </>
-                    )}
-                  </ExpandableLayout>
-                  <HorizontalLine slim />
-                </>
-              )}
-            </>
-          )}
-          <Gap size="s" />
-          <HorizontalField>
-            <Bold>{i18n.messages.messageEditor.title}</Bold>
-            <InputField
-              value={message.title ?? ''}
-              onChange={(title) => updateMessage({ title })}
-              data-qa="input-title"
+            <Gap size="m" />
+            <Bold>{i18n.messages.messageEditor.message}</Bold>
+            <Gap size="xs" />
+            <StyledTextArea
+              value={message.content}
+              onChange={(e) => updateMessage({ content: e.target.value })}
+              data-qa="input-content"
+              onKeyUp={keepSessionAlive}
             />
-          </HorizontalField>
-          {!expandedView && !simpleMode && (
-            <>
-              <Gap size="s" />
-              <FixedSpaceRow>
-                <HalfWidthColumn>
-                  <Bold>{i18n.messages.messageEditor.type.label}</Bold>
-                  {messageType}
-                </HalfWidthColumn>
-                <HalfWidthColumn>
-                  <Bold>{i18n.messages.messageEditor.flags.heading}</Bold>
-                  {urgent}
-                  {sensitiveCheckbox}
-                </HalfWidthColumn>
-              </FixedSpaceRow>
-              {sensitiveInfoOpen && !sensitiveCheckboxEnabled && (
-                <InfoBoxContainer>
-                  <ExpandingInfoBox
-                    width="full"
-                    info={
-                      i18n.messages.messageEditor.flags.sensitive.whyDisabled
-                    }
-                    close={onSensitiveInfoClick}
-                  />
-                </InfoBoxContainer>
-              )}
-              {flagsInfo}
-            </>
-          )}
-          <Gap size="m" />
-          <Bold>{i18n.messages.messageEditor.message}</Bold>
-          <Gap size="xs" />
-          <StyledTextArea
-            value={message.content}
-            onChange={(e) => updateMessage({ content: e.target.value })}
-            data-qa="input-content"
-          />
-          {!simpleMode && (
-            <FileUpload
-              slim
-              disabled={!draftId}
-              data-qa="upload-message-attachment"
-              files={message.attachments}
-              getDownloadUrl={getAttachmentUrl}
-              onUpload={handleAttachmentUpload}
-              onDelete={handleAttachmentDelete}
-              onStateChange={setUploadStatus}
-            />
-          )}
-          <Gap size="L" />
-        </ScrollableFormArea>
-        <BottomBar>
-          {draftId ? (
-            <Button
-              appearance="inline"
-              onClick={() => onDiscard(message.sender.value, draftId)}
-              text={i18n.messages.messageEditor.deleteDraft}
-              icon={faTrash}
-              data-qa="discard-draft-btn"
-            />
-          ) : (
-            <Gap horizontal />
-          )}
-          <FixedSpaceRow alignItems="center">
-            <div>
-              {i18n.messages.messageEditor.recipientCount}:{' '}
-              {preflightResult
-                .map((r) => r.numberOfRecipientAccounts)
-                .getOrElse('')}
-            </div>
-            <LegacyButton
-              text={
-                sending
-                  ? i18n.messages.messageEditor.sending
-                  : i18n.messages.messageEditor.send
-              }
-              primary
-              disabled={!sendEnabled}
-              onClick={
-                preflightResult
-                  .map((r) => r.numberOfRecipientAccounts > 2)
-                  .getOrElse(false)
-                  ? () => setConfirmLargeSend(true)
-                  : sendHandler
-              }
-              data-qa="send-message-btn"
-            />
-          </FixedSpaceRow>
-        </BottomBar>
+            {!simpleMode && (
+              <FileUpload
+                slim
+                disabled={!draftId}
+                data-qa="upload-message-attachment"
+                files={message.attachments}
+                getDownloadUrl={getAttachmentUrl}
+                onUpload={handleAttachmentUpload}
+                onDelete={handleAttachmentDelete}
+                onStateChange={setUploadStatus}
+              />
+            )}
+            <Gap size="L" />
+          </ScrollableFormArea>
+          <BottomBar>
+            {draftId ? (
+              <Button
+                appearance="inline"
+                onClick={() => onDiscard(message.sender.value, draftId)}
+                text={i18n.messages.messageEditor.deleteDraft}
+                icon={faTrash}
+                data-qa="discard-draft-btn"
+              />
+            ) : (
+              <Gap horizontal />
+            )}
+            <FixedSpaceRow alignItems="center">
+              <div>
+                {i18n.messages.messageEditor.recipientCount}:{' '}
+                {preflightResult
+                  .map((r) => r.numberOfRecipientAccounts)
+                  .getOrElse('')}
+              </div>
+              <LegacyButton
+                text={
+                  sending
+                    ? i18n.messages.messageEditor.sending
+                    : i18n.messages.messageEditor.send
+                }
+                primary
+                disabled={!sendEnabled}
+                onClick={
+                  preflightResult
+                    .map((r) => r.numberOfRecipientAccounts > 2)
+                    .getOrElse(false)
+                    ? () => setConfirmLargeSend(true)
+                    : sendHandler
+                }
+                data-qa="send-message-btn"
+              />
+            </FixedSpaceRow>
+          </BottomBar>
 
-        {confirmLargeSend && preflightResult.isSuccess && (
-          <InfoModal
-            type="warning"
-            icon={faQuestion}
-            title={i18n.messages.messageEditor.manyRecipientsWarning.title}
-            text={i18n.messages.messageEditor.manyRecipientsWarning.text(
-              preflightResult.value.numberOfRecipientAccounts
-            )}
-            close={() => setConfirmLargeSend(false)}
-            closeLabel={i18n.common.cancel}
-            resolve={{
-              label: i18n.messages.messageEditor.send,
-              action: () => {
-                sendHandler()
-                setConfirmLargeSend(false)
-              }
-            }}
-            reject={{
-              label: i18n.common.cancel,
-              action: () => setConfirmLargeSend(false)
-            }}
-          />
-        )}
-      </Container>
-    </FullScreenContainer>
+          {confirmLargeSend && preflightResult.isSuccess && (
+            <InfoModal
+              type="warning"
+              icon={faQuestion}
+              title={i18n.messages.messageEditor.manyRecipientsWarning.title}
+              text={i18n.messages.messageEditor.manyRecipientsWarning.text(
+                preflightResult.value.numberOfRecipientAccounts
+              )}
+              close={() => setConfirmLargeSend(false)}
+              closeLabel={i18n.common.cancel}
+              resolve={{
+                label: i18n.messages.messageEditor.send,
+                action: () => {
+                  sendHandler()
+                  setConfirmLargeSend(false)
+                }
+              }}
+              reject={{
+                label: i18n.common.cancel,
+                action: () => setConfirmLargeSend(false)
+              }}
+            />
+          )}
+        </Container>
+      </FullScreenContainer>
+
+      <SessionExpiredModal
+        isOpen={showSessionExpiredModal}
+        onClose={() => setShowSessionExpiredModal(false)}
+      />
+    </>
   )
 })
 

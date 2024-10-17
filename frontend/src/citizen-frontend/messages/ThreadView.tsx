@@ -53,6 +53,7 @@ import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import { isPrimaryRecipient } from './MessageEditor'
 import { replyToThreadMutation } from './queries'
 import { MessageContext } from './state'
+import { sessionKeepalive } from './utils'
 
 const TitleRow = styled.div`
   display: flex;
@@ -365,19 +366,7 @@ export default React.memo(
               replyContent={replyContent}
               sendEnabled={sendEnabled}
               messageThreadSensitive={sensitive}
-              sessionKeepAlive={async () => {
-                const response = await fetch(
-                  '/api/application/citizen/children',
-                  {
-                    method: 'GET',
-                    credentials: 'include'
-                  }
-                )
-                if (!response.ok) {
-                  throw new Error(`HTTP error! status: ${response.status}`)
-                }
-                return Promise.resolve()
-              }}
+              sessionKeepAlive={sessionKeepalive}
             />
           </ReplyEditorContainer>
         ) : (

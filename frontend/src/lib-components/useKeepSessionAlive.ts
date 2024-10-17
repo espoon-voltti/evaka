@@ -1,7 +1,11 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import throttle from 'lodash/throttle'
 import { useState, useEffect, useMemo } from 'react'
 
-export function useKeepSessionAlive(sessionKeepAlive: () => Promise<void>) {
+export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
 
   const keepSessionAlive = useMemo(
@@ -9,12 +13,17 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<void>) {
       throttle(
         async () => {
           try {
-            await sessionKeepAlive()
+            const sessionAlive = await sessionKeepAlive()
+            if (!sessionAlive) {
+              setShowSessionExpiredModal(true)
+            }
           } catch (error) {
-            setShowSessionExpiredModal(true)
+            // ignore errors that might happen e.g. because client is offline or server temporarily unreachable
+            console.error('Error occurred while keeping session alive', error)
           }
         },
-        5000,
+        // Default to 2 minutes and allow overriding this in automated tests
+        window.evaka?.keepSessionAliveThrottleTime ?? 2 * 60 * 1000,
         {
           leading: true,
           trailing: true
