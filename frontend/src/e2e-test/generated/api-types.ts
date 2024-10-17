@@ -700,9 +700,9 @@ export interface DevPerson {
   backupPhone: string
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
+  disabledEmailTypes: EmailMessageType[]
   duplicateOf: UUID | null
   email: string | null
-  enabledEmailTypes: EmailMessageType[] | null
   firstName: string
   forceManualFeeDecisions: boolean
   id: UUID

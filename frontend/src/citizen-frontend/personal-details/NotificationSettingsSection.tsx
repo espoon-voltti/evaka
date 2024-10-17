@@ -92,7 +92,9 @@ const getInitialState = (
     'BULLETIN_FROM_SUPERVISOR_NOTIFICATION'
   ),
   outdatedIncome: !disabledTypes.includes('OUTDATED_INCOME_NOTIFICATION'),
-  newCustomerIncome: !disabledTypes.includes('NEW_CUSTOMER_INCOME_NOTIFICATION'),
+  newCustomerIncome: !disabledTypes.includes(
+    'NEW_CUSTOMER_INCOME_NOTIFICATION'
+  ),
   calendarEvent: !disabledTypes.includes('CALENDAR_EVENT_NOTIFICATION'),
   decision: !disabledTypes.includes('DECISION_NOTIFICATION'),
   document: !disabledTypes.includes('DOCUMENT_NOTIFICATION'),
@@ -345,8 +347,8 @@ export default React.memo(
             <MutateButton
               mutation={updateNotificationSettingsMutation}
               onClick={() => ({
-                body: emailMessageTypes.filter((type) =>
-                  !isEnabled(form.state, type)
+                body: emailMessageTypes.filter(
+                  (type) => !isEnabled(form.state, type)
                 )
               })}
               onSuccess={useEditing.off}

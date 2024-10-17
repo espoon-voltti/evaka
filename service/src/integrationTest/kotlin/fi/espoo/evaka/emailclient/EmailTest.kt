@@ -38,14 +38,16 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.updateDisabledEmailTypes(
                 testAdult_1.id,
-                listOf(
-                    EmailMessageType.TRANSACTIONAL,
-                    EmailMessageType.BULLETIN_NOTIFICATION,
-                    EmailMessageType.DOCUMENT_NOTIFICATION,
-                ),
+                // Disable all but three
+                EmailMessageType.entries.toSet() -
+                    setOf(
+                        EmailMessageType.TRANSACTIONAL,
+                        EmailMessageType.BULLETIN_NOTIFICATION,
+                        EmailMessageType.DOCUMENT_NOTIFICATION,
+                    ),
             )
         }
-        EmailMessageType.values()
+        EmailMessageType.entries
             .mapNotNull { type -> createEmail(emailType = type, toAddress = "$type@example.com") }
             .also { emails ->
                 assertEquals(
