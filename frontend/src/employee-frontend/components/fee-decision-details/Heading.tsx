@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   PersonDetailed,
   FeeDecisionStatus
@@ -35,7 +35,7 @@ interface Props {
   headOfFamily: PersonDetailed
   partner: PersonDetailed | null
   decisionNumber: number | null
-  validDuring: DateRange
+  validDuring: FiniteDateRange
   sentAt: HelsinkiDateTime | null
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null

@@ -225,7 +225,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                     createVoucherValueDecisionFixture(
                         status = VoucherValueDecisionStatus.DRAFT,
                         validFrom = validFrom,
-                        validTo = null,
+                        validTo = validFrom.plusYears(1),
                         headOfFamilyId = adultId,
                         childId = child.id,
                         dateOfBirth = child.dateOfBirth,

@@ -80,6 +80,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(idArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeRangeArgumentFactory)
+    jdbi.registerArgument(yearMonthArgumentFactory)
     jdbi.registerArgument(productKeyArgumentFactory)
     jdbi.registerArgument(databaseEnumArgumentFactory)
     jdbi.registerArgument(dateSetArgumentFactory)
@@ -99,6 +100,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
         Id::class.java.isAssignableFrom(GenericTypes.getErasedType(type))
     }
     jdbi.register(helsinkiDateTimeColumnMapper)
+    jdbi.register(yearMonthColumnMapper)
     jdbi.register(productKeyColumnMapper)
     jdbi.register(dateSetColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")

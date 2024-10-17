@@ -7,7 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
@@ -15,14 +15,14 @@ import java.util.UUID
 interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val id: Id<*>
     val validFrom: LocalDate
-    val validTo: LocalDate?
+    val validTo: LocalDate
     val headOfFamilyId: PersonId
-    val validDuring: DateRange
+    val validDuring: FiniteDateRange
     val created: HelsinkiDateTime
 
     fun withId(id: UUID): Decision
 
-    fun withValidity(period: DateRange): Decision
+    fun withValidity(period: FiniteDateRange): Decision
 
     fun withCreated(created: HelsinkiDateTime): Decision
 
@@ -58,7 +58,7 @@ fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecis
                                 conflict.annul()
                             } else {
                                 conflict.withValidity(
-                                    DateRange(
+                                    FiniteDateRange(
                                         conflict.validFrom,
                                         newDecision.validFrom.minusDays(1),
                                     )

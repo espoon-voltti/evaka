@@ -106,7 +106,7 @@ fun generateVoucherValueDecisionsDrafts(
             minDate = minDate,
         )
 
-    val newDrafts = voucherBases.map { it.toVoucherValueDecision() }
+    val newDrafts = voucherBases.mapNotNull { it.toVoucherValueDecision() }
 
     return filterAndMergeDrafts(
             newDrafts = newDrafts,
@@ -284,7 +284,8 @@ data class VoucherBasis(
     val familySize: Int,
     val feeThresholds: FeeThresholds,
 ) : WithRange {
-    fun toVoucherValueDecision(): VoucherValueDecision {
+    fun toVoucherValueDecision(): VoucherValueDecision? {
+        if (range.end == null) return null
         if (
             placement == null ||
                 placement.financeDecisionType != FinanceDecisionType.VOUCHER_VALUE_DECISION
