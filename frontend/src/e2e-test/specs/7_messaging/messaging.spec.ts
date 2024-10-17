@@ -677,15 +677,14 @@ describe('Sending and receiving messages', () => {
         await citizenPage.page.setExtraHTTPHeaders({
           'X-Session-TTL': '1000'
         })
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenPage.page.evaluate(() => {
           if (window.evaka) window.evaka.keep_session_alive_throttle_time = 300 // Set to 300ms for tests
         })
-        await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
 
         await citizenMessagesPage.startReplyToFirstThread()
-
         const slowTypedText =
           'Olen aika hidas kirjoittamaan näitä viestejä, mutta yritän parhaani: Lapseni ovat sitä ja tätä...'
         // typing this takes 2x longer than the session TTL
