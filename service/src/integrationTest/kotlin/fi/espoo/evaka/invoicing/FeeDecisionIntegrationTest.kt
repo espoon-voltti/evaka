@@ -2013,7 +2013,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 email = "optin@test.com",
                 forceManualFeeDecisions = false,
                 ssn = "291090-9986",
-                enabledEmailTypes = listOf(EmailMessageType.DECISION_NOTIFICATION),
             )
         db.transaction {
             it.insert(optInAdult, DevPersonType.RAW_ROW)
@@ -2105,7 +2104,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 ssn = "291090-9986",
                 email = "optout@test.com",
                 forceManualFeeDecisions = false,
-                enabledEmailTypes = listOf(),
+                disabledEmailTypes = setOf(EmailMessageType.DECISION_NOTIFICATION),
             )
         db.transaction {
             it.insert(optOutAdult, DevPersonType.RAW_ROW)
