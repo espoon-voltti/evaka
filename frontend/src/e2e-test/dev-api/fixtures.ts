@@ -309,7 +309,7 @@ export class Fixture {
       restrictedDetailsEndDate: null,
       streetAddress: `streetAddress_${id}`,
       duplicateOf: null,
-      enabledEmailTypes: null,
+      disabledEmailTypes: [],
       forceManualFeeDecisions: false,
       invoiceRecipientName: '',
       invoicingStreetAddress: '',

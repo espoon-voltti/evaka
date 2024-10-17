@@ -164,7 +164,7 @@ WHERE p.id = ANY(${bind(childIds)})
         Email.create(
                 dbc = db,
                 personId = msg.guardian,
-                emailType = EmailMessageType.MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION,
+                emailType = EmailMessageType.ATTENDANCE_RESERVATION_NOTIFICATION,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.missingHolidayReservationsNotification(language),
                 traceId = msg.guardian.toString(),

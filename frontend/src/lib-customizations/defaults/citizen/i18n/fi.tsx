@@ -2003,37 +2003,38 @@ export default {
       info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaa-nappia painamalla.',
       subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
       message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
-      bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
-      discussionTimeReservationConfirmation:
-        'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
-      discussionTimeReservationConfirmationInfo:
-        'Vahvistusviesti lähetetään varatusta tai perutusta keskusteluaikavarauksesta',
-      discussionTimeReservationReminder:
-        'Muistutukset eVakaan tehdyistä keskusteluaikavarauksista',
-      discussionTimeReservationReminderInfo:
-        'Muistutusviesti lähetetään ennen varattua aikaa',
-      discussionSurveyCreationNotification:
-        'Ilmoitus eVakaan avatuista keskustelukyselyistä',
-      discussionSurveyCreationNotificationInfo:
-        'Ilmoitus lähetetään kun lapsesi on kutsuttu uuteen keskustelukyselyyn',
-      outdatedIncome: 'Muistutukset tulotietojen päivittämisestä',
-      outdatedIncomeInfo:
+      bulletin: 'eVakaan saapuneista kunnan yleisistä tiedotteista',
+      income: 'Muistutukset tulotietojen päivittämisestä',
+      incomeInfo:
         'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
-      outdatedIncomeWarning:
+      incomeWarning:
         'Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
       calendarEvent:
         'Muistutukset kalenteriin merkityistä uusista tapahtumista',
       decision: 'Saapuneista päätöksistä',
-      document: 'Uusista asiakirjoista',
+      document: 'Saapuneista pedagogisista asiakirjoista',
       documentInfo:
         'Asiakirjoilla tarkoitetaan virallisia asiakirjoja, jotka eivät ole päätöksiä. Tällaisia ovat esimerkiksi varhaiskasvatussuunnitelmat ja pedagogiset arviot.',
       informalDocument: 'Muista lapsen arkeen liittyvistä dokumenteista',
       informalDocumentInfo:
         'Muut lapsen arkeen liittyvät dokumentit voivat olla esimerkiksi kuvia lapsen tekemistä piirustuksista.',
-      missingAttendanceReservation:
-        'Muistutukset puuttuvista läsnäoloilmoituksista',
-      missingAttendanceReservationInfo:
-        'Muistutus lähetetään ennen läsnäoloilmoitusten määräaikaa, mikäli jollakin lapsistasi puuttuu läsnäoloilmoitus tai poissaolomerkintä seuraavalta kahdelta viikolta.'
+      attendanceReservation: 'Muistutukset puuttuvista läsnäoloilmoituksista',
+      attendanceReservationInfo:
+        'Muistutus lähetetään ennen läsnäoloilmoitusten määräaikaa, mikäli jollakin lapsistasi puuttuu läsnäoloilmoitus tai poissaolomerkintä seuraavalta kahdelta viikolta.',
+      discussionTime: 'Keskusteluaikoihin liittyvät ilmoitukset',
+      discussionTimeInfo: (
+        <div>
+          <div>Saat ilmoituksen seuraavista asioista:</div>
+          <ul>
+            <li>
+              kun sinulta kysytään sopivia aikoja esimerkiksi lapsesi
+              varhaiskasvatussuunnitelmaa koskevaan keskusteluun
+            </li>
+            <li>varatuista ja perutuista keskustesteluajoistasi</li>
+            <li>muistutuksen ennen varattua keskusteluaikaa</li>
+          </ul>
+        </div>
+      )
     }
   },
   income: {

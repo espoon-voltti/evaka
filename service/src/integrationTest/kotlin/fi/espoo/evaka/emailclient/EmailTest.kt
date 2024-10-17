@@ -6,7 +6,7 @@ package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.pis.updateEnabledEmailTypes
+import fi.espoo.evaka.pis.updateDisabledEmailTypes
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testAdult_1
@@ -36,16 +36,18 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // Only some notification types are enabled
         db.transaction { tx ->
-            tx.updateEnabledEmailTypes(
+            tx.updateDisabledEmailTypes(
                 testAdult_1.id,
-                listOf(
-                    EmailMessageType.TRANSACTIONAL,
-                    EmailMessageType.BULLETIN_NOTIFICATION,
-                    EmailMessageType.DOCUMENT_NOTIFICATION,
-                ),
+                // Disable all but three
+                EmailMessageType.entries.toSet() -
+                    setOf(
+                        EmailMessageType.TRANSACTIONAL,
+                        EmailMessageType.BULLETIN_NOTIFICATION,
+                        EmailMessageType.DOCUMENT_NOTIFICATION,
+                    ),
             )
         }
-        EmailMessageType.values()
+        EmailMessageType.entries
             .mapNotNull { type -> createEmail(emailType = type, toAddress = "$type@example.com") }
             .also { emails ->
                 assertEquals(
