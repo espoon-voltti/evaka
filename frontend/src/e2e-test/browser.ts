@@ -32,6 +32,7 @@ declare global {
         captureScreenshots: (namePrefix: string) => Promise<void>
         saveTraces: (namePrefix: string) => Promise<void>
         promises: Promise<void>[]
+        keep_session_alive_throttle_time?: number
       }
     | undefined
 }

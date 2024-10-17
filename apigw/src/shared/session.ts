@@ -72,6 +72,16 @@ export function sessionSupport(
   })
 
   const extraMiddleware = toMiddleware(async (req) => {
+    // Check for a custom TTL from header
+    const customTTL = getCustomTTL(req)
+    if (
+      customTTL !== null &&
+      // it may only lower what we have in the configuration
+      customTTL < config.sessionTimeoutMinutes * 60000
+    ) {
+      req.session.cookie.maxAge = customTTL
+    }
+
     // Touch maxAge to guarantee session is rolling (= doesn't expire as long as you are active)
     req.session?.touch()
 
@@ -178,4 +188,15 @@ export function sessionSupport(
     logoutWithToken,
     consumeLogoutToken
   }
+}
+
+function getCustomTTL(req: express.Request): number | null {
+  const headerTTL = req.get('X-Session-TTL')
+  if (headerTTL) {
+    const ttl = parseInt(headerTTL, 10)
+    if (!isNaN(ttl) && ttl > 0) {
+      return ttl
+    }
+  }
+  return null
 }

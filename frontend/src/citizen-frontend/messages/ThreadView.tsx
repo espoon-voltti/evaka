@@ -52,6 +52,7 @@ import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import { isPrimaryRecipient } from './MessageEditor'
 import { replyToThreadMutation } from './queries'
 import { MessageContext } from './state'
+import { sessionKeepalive } from './utils'
 
 const TitleRow = styled.div`
   display: flex;
@@ -352,6 +353,7 @@ export default React.memo(
               replyContent={replyContent}
               sendEnabled={sendEnabled}
               messageThreadSensitive={sensitive}
+              sessionKeepAlive={sessionKeepalive}
             />
           </ReplyEditorContainer>
         ) : (

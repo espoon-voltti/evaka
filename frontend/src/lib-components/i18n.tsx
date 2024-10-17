@@ -95,6 +95,12 @@ export interface Translations {
     discard: string
     messagePlaceholderSensitiveThread: string | undefined
   }
+  sessionTimeout: {
+    sessionExpiredTitle: string
+    sessionExpiredMessage: string
+    goToLoginPage: string
+    cancel: string
+  }
   notifications: {
     close: string
   }

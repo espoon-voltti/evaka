@@ -52,4 +52,20 @@ describe('Citizen authentication', () => {
       await page.findByDataQa('strong-login').waitUntilVisible()
     })
   })
+  describe('Session expiration', () => {
+    test('Session expiration leads to login page', async () => {
+      await page.page.setExtraHTTPHeaders({
+        'X-Session-TTL': '500'
+      })
+      await enduserLogin(page, testAdult)
+      // Main menu should be visible as we are logged-in
+      await page.findByDataQa('sub-nav-menu-desktop').waitUntilVisible()
+      await page.page.waitForTimeout(1000)
+      await page.page.reload()
+      await page.findByDataQa('weak-login').waitUntilVisible()
+      await page.findByDataQa('strong-login').waitUntilVisible()
+      // Main menu should not be visible as we are logged-out
+      await page.findByDataQa('sub-nav-menu-desktop').waitUntilHidden()
+    })
+  })
 })
