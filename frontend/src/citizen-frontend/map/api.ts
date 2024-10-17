@@ -93,18 +93,20 @@ export async function fetchUnitsWithDistances(
     })
   )
 
-  if (unitsWithStraightDistance.length === 0) {
-    return []
-  }
   const unitsToQuery = sortBy(
-    unitsWithStraightDistance.filter((u) => u.straightDistance !== null),
+    unitsWithStraightDistance.filter(
+      (u) => u.location !== null && u.straightDistance !== null
+    ),
     (u) => u.straightDistance
   ).slice(0, accurateDistancesCount)
+
+  if (unitsToQuery.length === 0) {
+    return []
+  }
 
   const query = `
 {
   ${unitsToQuery
-    .filter((u) => u.location)
     .map(
       ({ id, location }) => `
     ${uuidToKey(id)}: plan(
