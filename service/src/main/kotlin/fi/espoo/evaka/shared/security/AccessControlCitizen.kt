@@ -20,7 +20,8 @@ class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
         val messaging = tx.citizenHasAccessToMessaging(clock, citizen)
         return CitizenFeatures(
             messages = messaging,
-            composeNewMessage = messaging && tx.citizenHasChildWithActivePlacement(clock, citizen),
+            composeNewMessage =
+                messaging && tx.citizenHasChildWithActiveOrNearFuturePlacement(clock, citizen),
             reservations =
                 tx.citizenHasAccessToReservations(
                     clock,
@@ -67,7 +68,7 @@ SELECT EXISTS (
             .exactlyOne<Boolean>()
     }
 
-    private fun Database.Read.citizenHasChildWithActivePlacement(
+    private fun Database.Read.citizenHasChildWithActiveOrNearFuturePlacement(
         clock: EvakaClock,
         userId: PersonId,
     ): Boolean {
@@ -84,7 +85,7 @@ SELECT EXISTS (
     SELECT 1
     FROM children c
     JOIN placement pl ON c.child_id = pl.child_id
-    WHERE daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
+    WHERE daterange((pl.start_date - interval '2 weeks')::date, pl.end_date, '[]') @> ${bind(today)}
 )
 """
                 )
