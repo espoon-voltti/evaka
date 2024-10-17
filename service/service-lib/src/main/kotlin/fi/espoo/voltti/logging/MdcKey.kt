@@ -12,6 +12,7 @@ enum class MdcKey(val key: String) {
     HTTP_METHOD("httpMethod"),
     PATH("path"),
     QUERY_STRING("queryString"),
+    SECONDARY_USER_ID_HASH("secondaryUserIdHash"),
     TRACE_ID("traceId"),
     USER_ID("userId"),
     USER_ID_HASH("userIdHash");
