@@ -209,6 +209,7 @@ const SingleMessage = React.memo(
 interface Props {
   accountId: UUID
   thread: CitizenMessageThread.Regular
+  replyEnabled: boolean
   closeThread: () => void
   onThreadDeleted: () => void
 }
@@ -230,6 +231,7 @@ export default React.memo(
         sensitive,
         children
       },
+      replyEnabled,
       closeThread,
       onThreadDeleted
     }: Props,
@@ -359,7 +361,7 @@ export default React.memo(
             <>
               <Gap size="s" />
               <ActionRow justifyContent="space-between">
-                {messageType === 'MESSAGE' ? (
+                {messageType === 'MESSAGE' && replyEnabled ? (
                   <ReplyToThreadButton
                     appearance="inline"
                     icon={faReply}

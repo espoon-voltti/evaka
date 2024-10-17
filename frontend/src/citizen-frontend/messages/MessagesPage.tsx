@@ -107,7 +107,7 @@ export default React.memo(function MessagesPage() {
     changeEditorVisibility(false)
   }, [changeEditorVisibility])
 
-  const canSendNewMessage =
+  const canSendMessage =
     !editorVisible && !!user?.accessibleFeatures.composeNewMessage
 
   const { mutateAsync: sendMessage } = useMutationResult(sendMessageMutation)
@@ -125,7 +125,7 @@ export default React.memo(function MessagesPage() {
                 accountId={messageAccount.accountId}
                 selectThread={selectThread}
                 setEditorVisible={changeEditorVisibility}
-                newMessageButtonEnabled={canSendNewMessage}
+                newMessageButtonEnabled={canSendMessage}
               />
               {selectedThread ? (
                 isRegularThread(selectedThread) ? (
@@ -133,6 +133,7 @@ export default React.memo(function MessagesPage() {
                     accountId={messageAccount.accountId}
                     closeThread={() => selectThread(undefined)}
                     thread={selectedThread}
+                    replyEnabled={canSendMessage}
                     onThreadDeleted={() => {
                       onSelectedThreadDeleted()
                       addTimedNotification({
