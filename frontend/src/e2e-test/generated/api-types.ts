@@ -1067,7 +1067,7 @@ export interface VoucherValueDecision {
   siblingDiscount: number
   status: VoucherValueDecisionStatus
   validFrom: LocalDate
-  validTo: LocalDate | null
+  validTo: LocalDate
   voucherValue: number
 }
 
@@ -1549,6 +1549,6 @@ export function deserializeJsonVoucherValueDecision(json: JsonOf<VoucherValueDec
     created: HelsinkiDateTime.parseIso(json.created),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validFrom: LocalDate.parseIso(json.validFrom),
-    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+    validTo: LocalDate.parseIso(json.validTo)
   }
 }

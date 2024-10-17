@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.mergePeriods
-import fi.espoo.evaka.shared.domain.orMax
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.utils.memoize
 import fi.espoo.evaka.shared.withSpan
@@ -163,10 +162,7 @@ class DraftInvoiceGenerator(
             decisions
                 .asSequence()
                 .flatMap { decision ->
-                    decision.children.asSequence().map {
-                        it.child.id to
-                            decision.validDuring.asFiniteDateRange(defaultEnd = LocalDate.MAX)
-                    }
+                    decision.children.asSequence().map { it.child.id to decision.validDuring }
                 }
                 .groupBy({ it.first }, { it.second })
                 .mapValues { DateSet.of(it.value) }
@@ -260,7 +256,7 @@ class DraftInvoiceGenerator(
                         val relevantPeriod =
                             FiniteDateRange(
                                 maxOf(invoicePeriod.start, placementDateRange.start),
-                                minOf(orMax(invoicePeriod.end), orMax(placementDateRange.end)),
+                                minOf(invoicePeriod.end, placementDateRange.end),
                             )
                         val periodDecisions =
                             decisions.filter { placementDateRange.overlaps(it.validDuring) }
@@ -288,10 +284,7 @@ class DraftInvoiceGenerator(
                                     .map { (decisionPeriod, part) ->
                                         FiniteDateRange(
                                             maxOf(relevantPeriod.start, decisionPeriod.start),
-                                            minOf(
-                                                orMax(relevantPeriod.end),
-                                                orMax(decisionPeriod.end),
-                                            ),
+                                            minOf(relevantPeriod.end, decisionPeriod.end),
                                         ) to
                                             InvoiceRowStub(
                                                 ChildWithDateOfBirth(
@@ -320,8 +313,8 @@ class DraftInvoiceGenerator(
                 .groupBy { (_, stub) -> stub.child }
                 .flatMap { (child, childStubs) ->
                     val separatePeriods =
-                        mergePeriods(childStubs.map { it.first.asDateRange() to it.second }).map {
-                            it.first.asFiniteDateRange(defaultEnd = invoicePeriod.end) to it.second
+                        mergePeriods(childStubs.map { it.first to it.second }).map {
+                            it.first to it.second
                         }
 
                     val logic =

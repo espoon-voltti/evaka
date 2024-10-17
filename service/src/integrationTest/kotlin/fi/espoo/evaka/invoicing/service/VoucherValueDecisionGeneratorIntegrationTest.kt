@@ -112,7 +112,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions get correct base values`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
 
@@ -153,14 +153,14 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(
             dad.id,
             listOf(youngerChild.id),
-            DateRange(LocalDate.of(2021, 1, 1), youngerChild.dateOfBirth.plusYears(18)),
+            FiniteDateRange(LocalDate.of(2021, 1, 1), youngerChild.dateOfBirth.plusYears(18)),
         )
         insertFamilyRelations(
             mom.id,
             listOf(olderChild.id),
-            DateRange(LocalDate.of(2021, 1, 1), olderChild.dateOfBirth.plusYears(18)),
+            FiniteDateRange(LocalDate.of(2021, 1, 1), olderChild.dateOfBirth.plusYears(18)),
         )
-        val placementPeriod = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 10, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 10, 31))
         insertPlacement(
             childId = olderChild.id,
             period = placementPeriod,
@@ -220,10 +220,10 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions works as expected with fee alterations`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertFeeAlteration(testChild_1.id, 50.0, period)
+        insertFeeAlteration(testChild_1.id, 50.0, period.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -253,7 +253,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions get correct base values for child not born on first of month`() {
-        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31))
 
         val testChild = testChild_6
 
@@ -289,16 +289,12 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with part time service need`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         val placementId =
             insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         val serviceNeedPeriod = period.copy(start = period.start.plusMonths(5))
-        insertServiceNeed(
-            placementId,
-            serviceNeedPeriod.asFiniteDateRange()!!,
-            snDaycareFullDayPartWeek25.id,
-        )
+        insertServiceNeed(placementId, serviceNeedPeriod, snDaycareFullDayPartWeek25.id)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -329,7 +325,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with five year olds daycare placement`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(
             testChild_2.id,
@@ -358,7 +354,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with part day five year olds daycare placement`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(
             testChild_2.id,
@@ -387,7 +383,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with preschool placement`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.PRESCHOOL, testVoucherDaycare.id)
 
@@ -399,7 +395,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with preparatory placement`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.PREPARATORY, testVoucherDaycare.id)
 
@@ -420,15 +416,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with five year old in daycare with part time hours per week`() {
-        val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         val placementId =
             insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertServiceNeed(
-            placementId,
-            period.asFiniteDateRange()!!,
-            snDaycareFiveYearOldsFullDayPartWeek25.id,
-        )
+        insertServiceNeed(placementId, period, snDaycareFiveYearOldsFullDayPartWeek25.id)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -450,7 +442,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions for a family of two children placed in voucher units`() {
-        val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(
@@ -506,7 +498,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         db.transaction { tx -> listOf(twin1, twin2).forEach { tx.insert(it, DevPersonType.CHILD) } }
 
-        val placementPeriod = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
+        val placementPeriod = FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
         insertPlacement(twin1.id, placementPeriod, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(twin2.id, placementPeriod, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(twin1.id, twin2.id), placementPeriod)
@@ -528,7 +520,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `assistance capacity factor does not affect voucher value decisions`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction {
@@ -555,10 +547,10 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with assistance need voucher coefficient`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertAssistanceNeedCoefficient(testChild_2.id, period.asFiniteDateRange()!!, 3.55)
+        insertAssistanceNeedCoefficient(testChild_2.id, period, 3.55)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -580,12 +572,12 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with changing partners`() {
-        val firstPeriod = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
-        val secondPeriod = DateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 12, 31))
+        val firstPeriod = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
+        val secondPeriod = FiniteDateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 12, 31))
         val wholePeriod = firstPeriod.copy(end = secondPeriod.end)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), wholePeriod)
         insertPlacement(testChild_2.id, wholePeriod, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod.asDateRange(), clock.now())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_2.id) }
 
@@ -593,7 +585,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         assertEquals(2, voucherValueDecisions.size)
         voucherValueDecisions.first().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(firstPeriod, DateRange(decision.validFrom, decision.validTo))
+            assertEquals(firstPeriod, FiniteDateRange(decision.validFrom, decision.validTo))
             assertEquals(3, decision.familySize)
             assertEquals(testAdult_1.id, decision.headOfFamilyId)
             assertEquals(testAdult_2.id, decision.partnerId)
@@ -601,7 +593,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         }
         voucherValueDecisions.last().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(secondPeriod, DateRange(decision.validFrom, decision.validTo))
+            assertEquals(secondPeriod, FiniteDateRange(decision.validFrom, decision.validTo))
             assertEquals(2, decision.familySize)
             assertEquals(testAdult_1.id, decision.headOfFamilyId)
             assertEquals(null, decision.partnerId)
@@ -611,7 +603,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decisions with child income`() {
-        val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(
@@ -622,8 +614,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         // Adult minimal income
-        insertIncome(testAdult_1.id, 310200, period)
-        insertIncome(testChild_1.id, 600000, period)
+        insertIncome(testAdult_1.id, 310200, period.asDateRange())
+        insertIncome(testChild_1.id, 600000, period.asDateRange())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -653,11 +645,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decision is generated for fridge family with two head of families with different children for placed child`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
         insertPlacement(
             testChild_1.id,
             period,
@@ -671,11 +663,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `voucher value decision is generated for fridge family with two head of families with different children for non-placed child`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
         insertPlacement(
             testChild_1.id,
             period,
@@ -692,7 +684,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `head of family difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
@@ -703,7 +695,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
-                { DateRange(it.validFrom, it.validTo) },
+                { FiniteDateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.headOfFamilyId },
             )
@@ -715,20 +707,20 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `partner difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1, clock.now())
-        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1.asDateRange(), clock.now())
+        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2.asDateRange(), clock.now())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
-                { DateRange(it.validFrom, it.validTo) },
+                { FiniteDateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.partnerId },
             )
@@ -740,23 +732,23 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `head of family & partner switch difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
-        insertIncome(testAdult_1.id, 10000, period)
-        insertIncome(testAdult_2.id, 20000, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
+        insertIncome(testAdult_1.id, 10000, period.asDateRange())
+        insertIncome(testAdult_2.id, 20000, period.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForChild(tx, testChild_1.id) }
 
         val expectedHeadOfFamily = testAdult_1
         assertThat(getAllVoucherValueDecisions())
             .extracting(
-                { DateRange(it.validFrom, it.validTo) },
+                { FiniteDateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.headOfFamilyId },
             )
@@ -767,17 +759,17 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `head of family income difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertIncome(testAdult_1.id, 10000, subPeriod2)
+        insertIncome(testAdult_1.id, 10000, subPeriod2.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
                 Tuple(
@@ -793,19 +785,19 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `partner income difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
-        insertIncome(testAdult_2.id, 10000, subPeriod2)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
+        insertIncome(testAdult_2.id, 10000, subPeriod2.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
                 Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
@@ -814,17 +806,17 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `child income difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertIncome(testChild_1.id, 10000, subPeriod2)
+        insertIncome(testChild_1.id, 10000, subPeriod2.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
                 Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
@@ -833,7 +825,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `family size difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -844,7 +836,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
-                { DateRange(it.validFrom, it.validTo) },
+                { FiniteDateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.familySize },
             )
@@ -863,7 +855,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `placement unit difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -874,7 +866,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
-                { DateRange(it.validFrom, it.validTo) },
+                { FiniteDateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.placement?.unitId },
             )
@@ -894,7 +886,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `placement type difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -910,7 +902,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
-                { DateRange(it.validFrom, it.validTo) },
+                { FiniteDateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.placement?.type },
             )
@@ -937,14 +929,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period.asDateRange())
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         val placementId =
-            insertPlacement(
-                testChild_1.id,
-                period.asDateRange(),
-                PlacementType.DAYCARE,
-                testVoucherDaycare.id,
-            )
+            insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertServiceNeed(placementId, subPeriod1, snDefaultDaycare.id)
         insertServiceNeed(placementId, subPeriod2, snDaycareFullDay35.id)
 
@@ -952,18 +939,18 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
-                { DateRange(it.validFrom, it.validTo) },
+                { FiniteDateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.serviceNeed?.voucherValueCoefficient },
             )
             .containsExactlyInAnyOrder(
                 Tuple(
-                    subPeriod1.asDateRange(),
+                    subPeriod1,
                     emptySet<VoucherValueDecisionDifference>(),
                     serviceNeedOptionVoucherValueCoefficients[snDefaultDaycare.id],
                 ),
                 Tuple(
-                    subPeriod2.asDateRange(),
+                    subPeriod2,
                     setOf(VoucherValueDecisionDifference.SERVICE_NEED),
                     serviceNeedOptionVoucherValueCoefficients[snDaycareFullDay35.id],
                 ),
@@ -972,7 +959,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `sibling discount difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
@@ -985,7 +972,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         assertThat(getAllVoucherValueDecisions())
             .extracting(
                 { it.child.dateOfBirth },
-                { DateRange(it.validFrom, it.validTo) },
+                { FiniteDateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.siblingDiscount },
             )
@@ -1017,17 +1004,17 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `fee alterations difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertFeeAlteration(testChild_1.id, 50.0, subPeriod2)
+        insertFeeAlteration(testChild_1.id, 50.0, subPeriod2.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
                 Tuple(
@@ -1042,7 +1029,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `base value difference`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2020, 5, 31))
         val subPeriod2 = period.copy(start = LocalDate.of(2020, 6, 1)) // 3rd birthday
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1051,7 +1038,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
                 Tuple(
@@ -1066,7 +1053,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `fee thresholds difference`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1080,7 +1067,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 .updateExactlyOne()
             tx.insert(
                 FeeThresholds(
-                    validDuring = subPeriod2.copy(end = null),
+                    validDuring = DateRange(subPeriod2.start, null),
                     minIncomeThreshold2 = 213600,
                     minIncomeThreshold3 = 275600,
                     minIncomeThreshold4 = 312900,
@@ -1143,14 +1130,14 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `difference with overlapping drafts`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
-        val subPeriod1 = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 30))
-        val subPeriod2 = DateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 12, 31))
-        val subPeriod3 = DateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 9, 1))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 30))
+        val subPeriod2 = FiniteDateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod3 = FiniteDateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 9, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
-        insertIncome(testChild_1.id, 10000, subPeriod3)
+        insertIncome(testChild_1.id, 10000, subPeriod3.asDateRange())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -1182,7 +1169,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `difference between sent and draft`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1196,7 +1183,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.status }, { it.difference })
+            .extracting(
+                { FiniteDateRange(it.validFrom, it.validTo) },
+                { it.status },
+                { it.difference },
+            )
             .containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1,
@@ -1213,7 +1204,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `difference when drafts replaces sent`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1229,7 +1220,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.status }, { it.difference })
+            .extracting(
+                { FiniteDateRange(it.validFrom, it.validTo) },
+                { it.status },
+                { it.difference },
+            )
             .containsExactlyInAnyOrder(
                 Tuple(
                     period,
@@ -1251,7 +1246,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `difference when gap between two drafts`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1261,7 +1256,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
                 Tuple(subPeriod2, emptySet<VoucherValueDecisionDifference>()),
@@ -1270,7 +1265,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `difference when gap between sent and draft`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1284,7 +1279,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
         assertThat(getAllVoucherValueDecisions())
-            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.status }, { it.difference })
+            .extracting(
+                { FiniteDateRange(it.validFrom, it.validTo) },
+                { it.status },
+                { it.difference },
+            )
             .containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1,
@@ -1302,7 +1301,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     @Test
     fun `duplicate sent voucher value decision is not generated if there is a draft in the past`() {
         val testClock = MockEvakaClock(2023, 1, 1, 16, 30)
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1343,7 +1342,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     private fun insertPlacement(
         childId: ChildId,
-        period: DateRange,
+        period: FiniteDateRange,
         type: PlacementType,
         daycareId: DaycareId,
     ): PlacementId {
@@ -1354,7 +1353,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     childId = childId,
                     unitId = daycareId,
                     startDate = period.start,
-                    endDate = period.end!!,
+                    endDate = period.end,
                 )
             )
         }
@@ -1363,7 +1362,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     private fun insertFamilyRelations(
         headOfFamilyId: PersonId,
         childIds: List<ChildId>,
-        period: DateRange,
+        period: FiniteDateRange,
     ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
@@ -1372,7 +1371,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                         childId = childId,
                         headOfChildId = headOfFamilyId,
                         startDate = period.start,
-                        endDate = period.end!!,
+                        endDate = period.end,
                     )
                 )
             }
