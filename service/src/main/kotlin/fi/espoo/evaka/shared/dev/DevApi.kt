@@ -2042,7 +2042,7 @@ data class DevPerson(
     val updatedFromVtj: HelsinkiDateTime? = null,
     val ophPersonOid: String? = null,
     val duplicateOf: PersonId? = null,
-    val enabledEmailTypes: List<EmailMessageType>? = null,
+    val disabledEmailTypes: Set<EmailMessageType> = emptySet(),
 ) {
     fun toPersonDTO() =
         PersonDTO(
