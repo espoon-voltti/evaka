@@ -1241,7 +1241,6 @@ fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonI
 SELECT COUNT(*)
 FROM application a
 WHERE guardian_id = ${bind(citizenId)}
-AND NOT a.hidefromguardian
 AND NOT EXISTS (
     SELECT 1 FROM guardian_blocklist bl
     WHERE bl.child_id = a.child_id
