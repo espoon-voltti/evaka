@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsencePushNotifications
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.allDayTimeRange
@@ -23,6 +24,8 @@ import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -70,7 +73,9 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired private lateinit var accessContol: AccessControl
+    @Autowired private lateinit var accessControl: AccessControl
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var absencePushNotifications: AbsencePushNotifications
     private lateinit var reservationControllerCitizen: ReservationControllerCitizen
 
     // Monday
@@ -95,9 +100,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     fun before() {
         reservationControllerCitizen =
             ReservationControllerCitizen(
-                accessContol,
+                accessControl,
                 featureConfig,
                 evakaEnv.copy(plannedAbsenceEnabledForHourBasedServiceNeeds = true),
+                asyncJobRunner,
+                absencePushNotifications,
             )
         db.transaction { tx ->
             tx.insertServiceNeedOptions()

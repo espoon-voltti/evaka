@@ -11,6 +11,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.Absence
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsencePushNotifications
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.absence.AbsenceType.PLANNED_ABSENCE
@@ -35,6 +36,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -60,6 +63,8 @@ class ReservationControllerCitizen(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
     private val env: EvakaEnv,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val absencePushNotifications: AbsencePushNotifications,
 ) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
@@ -400,8 +405,17 @@ class ReservationControllerCitizen(
                                 }
                             }
                             .toList()
+
                     val insertedAbsences =
                         tx.upsertFullDayAbsences(user.evakaUserId, now, absenceInserts)
+
+                    val notifications =
+                        if (absenceInserts.any { it.date == today }) {
+                            absencePushNotifications.getAsyncJobs(tx, today, insertedAbsences)
+                        } else emptyList()
+                    if (notifications.isNotEmpty()) {
+                        asyncJobRunner.plan(tx, notifications, runAt = now)
+                    }
 
                     Triple(deletedAbsences, deletedReservations, insertedAbsences)
                 }

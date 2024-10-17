@@ -514,7 +514,8 @@ export const fi = {
       categories: {
         label: 'Aiheet, joista lähetetään ilmoitus tähän puhelimeen',
         values: {
-          RECEIVED_MESSAGE: 'Saapuneet viestit'
+          RECEIVED_MESSAGE: 'Saapuneet viestit',
+          NEW_ABSENCE: 'Lasten kuluvan päivän poissaolomerkinnät'
         }
       },
       groups: {

@@ -12,7 +12,8 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.webpush.PushNotificationCategory
 */
 export const pushNotificationCategories = [
-  'RECEIVED_MESSAGE'
+  'RECEIVED_MESSAGE',
+  'NEW_ABSENCE'
 ] as const
 
 export type PushNotificationCategory = typeof pushNotificationCategories[number]
