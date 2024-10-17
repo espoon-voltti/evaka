@@ -56,7 +56,7 @@ interface Props<T, R> {
   replyContent: string
   sendEnabled: boolean
   messageThreadSensitive?: boolean
-  sessionKeepAlive: () => Promise<void>
+  sessionKeepAlive?: () => Promise<boolean>
 }
 
 function MessageReplyEditor<T, R>({
@@ -77,7 +77,7 @@ function MessageReplyEditor<T, R>({
     keepSessionAlive,
     showSessionExpiredModal,
     setShowSessionExpiredModal
-  } = useKeepSessionAlive(sessionKeepAlive)
+  } = useKeepSessionAlive(sessionKeepAlive ?? (() => Promise.resolve(true)))
 
   const handleSuccess = useCallback(
     (response: R) => {

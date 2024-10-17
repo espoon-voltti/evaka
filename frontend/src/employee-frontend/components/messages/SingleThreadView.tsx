@@ -51,6 +51,7 @@ import { useTranslation } from '../../state/i18n'
 import { MessageContext } from './MessageContext'
 import { replyToThreadMutation } from './queries'
 import { View } from './types-view'
+import { sessionKeepalive } from './utils'
 
 const archiveThreadResult = wrapResult(archiveThread)
 
@@ -297,7 +298,7 @@ export function SingleThreadView({
                 onToggleRecipient={onToggleRecipient}
                 replyContent={replyContent}
                 sendEnabled={sendEnabled}
-                sessionKeepAlive={() => Promise.resolve()}
+                sessionKeepAlive={sessionKeepalive}
               />
             </MessageContainer>
           ) : (

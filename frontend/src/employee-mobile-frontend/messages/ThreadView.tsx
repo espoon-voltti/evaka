@@ -180,7 +180,6 @@ const ReceivedThread = React.memo(function ReceivedThread({
             onToggleRecipient={onToggleRecipient}
             replyContent={replyContent}
             sendEnabled={sendEnabled}
-            sessionKeepAlive={() => Promise.resolve()}
           />
         </ReplyEditorContainer>
       ) : (

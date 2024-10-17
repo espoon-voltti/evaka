@@ -71,7 +71,7 @@ export function sessionSupport(
     store: new RedisStore({ client: redisClient })
   })
 
-  const extraMiddleware = toMiddleware(async (req, res) => {
+  const extraMiddleware = toMiddleware(async (req) => {
     // Check for a custom TTL from header
     const customTTL = getCustomTTL(req)
     if (
