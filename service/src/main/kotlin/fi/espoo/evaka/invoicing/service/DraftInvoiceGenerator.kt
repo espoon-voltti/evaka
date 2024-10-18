@@ -634,7 +634,7 @@ class DraftInvoiceGenerator(
         val operationalDaysByChild: Map<ChildId, DateSet>,
         val businessDays: DateSet,
         val feeThresholds: FeeThresholds,
-        val absences: Map<AbsenceType, Map<ChildId, DateSet>>,
+        val absences: Map<ChildId, List<Pair<AbsenceType, DateSet>>>,
         private val freeChildren: Set<ChildId>,
         val codebtors: Map<PersonId, PersonId?>,
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
@@ -772,28 +772,20 @@ class DraftInvoiceGenerator(
         val child: ChildWithDateOfBirth,
         private val contractDaysPerMonth: Int?,
     ) {
-        private val absences: DateMap<AbsenceType>
         private val operationalDays: DateSet =
             invoiceInput.operationalDaysByChild[child.id] ?: DateSet.empty()
+        private val absences: DateMap<AbsenceType> =
+            (invoiceInput.absences[child.id] ?: emptyList()).fold(DateMap.empty()) {
+                acc,
+                (type, dates) ->
+                acc.set(dates.intersection(operationalDays).ranges(), type)
+            }
 
         private val isPartialMonthChild: Boolean by lazy {
             val businessDaysWithoutDecision =
                 invoiceInput.businessDays -
                     (headInput.feeDecisionRangesByChild[child.id] ?: DateSet.empty())
             businessDaysWithoutDecision.isNotEmpty()
-        }
-
-        init {
-            var absencesDateMap: DateMap<AbsenceType> = DateMap.empty()
-            invoiceInput.absences.forEach { (absenceType, absenceMap) ->
-                val childAbsences = absenceMap[child.id]
-                if (childAbsences != null) {
-                    val operationalDayAbsences = childAbsences.intersection(operationalDays)
-                    absencesDateMap =
-                        absencesDateMap.set(operationalDayAbsences.ranges(), absenceType)
-                }
-            }
-            absences = absencesDateMap
         }
 
         fun hasAbsenceOnDate(date: LocalDate): Boolean {
