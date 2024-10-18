@@ -753,7 +753,7 @@ WITH user_account AS (
 ), placements AS (
     SELECT p.id, p.unit_id, p.child_id
     FROM children c
-    JOIN placement p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
+    JOIN placement p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
     WHERE NOT EXISTS (
         SELECT 1 FROM backup_care_placements bc
         WHERE bc.child_id = p.child_id
@@ -783,7 +783,7 @@ personal_accounts AS (
 group_accounts AS (
     SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
     FROM placements p
-    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND ${bind(today)} BETWEEN dgp.start_date AND dgp.end_date
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND ${bind(today)} BETWEEN (dgp.start_date - INTERVAL '2 weeks')::date AND dgp.end_date
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
 
