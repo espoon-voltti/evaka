@@ -277,7 +277,10 @@ private class Parser(private var text: CharSequence) {
 
 val dateSetColumnMapper = PgObjectColumnMapper { obj ->
     assert(obj.type == "datemultirange")
-    obj.value?.let(::Parser)?.parseMultiRange { it.parseFiniteDateRange() }?.let { DateSet.of(it) }
+    obj.value
+        ?.let(::Parser)
+        ?.parseMultiRange { it.parseFiniteDateRange() }
+        ?.let { DateSet.unsafeRaw(it) }
 }
 
 val finiteDateRangeColumnMapper = PgObjectColumnMapper { obj ->
