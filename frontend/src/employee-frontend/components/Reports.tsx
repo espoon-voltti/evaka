@@ -662,6 +662,20 @@ export default React.memo(function Reports() {
                     />
                   )
                 }
+              : null,
+            reports.has('TITANIA_ERRORS')
+              ? {
+                  name: i18n.reports.titaniaErrors.title,
+                  item: (
+                    <Report
+                      data-qa="report-titania-errors"
+                      path="/reports/titania-errors"
+                      color={colors.status.warning}
+                      icon={faDiagnoses}
+                      i18n={i18n.reports.titaniaErrors}
+                    />
+                  )
+                }
               : null
           ]
 

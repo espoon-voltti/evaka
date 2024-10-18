@@ -35,6 +35,14 @@ class TitaniaController(private val titaniaService: TitaniaService) {
             lateinit var result: UpdateWorkingTimeEventsServiceResponse
             dbc.transaction { tx -> result = titaniaService.updateWorkingTimeEvents(tx, request) }
             result.createdEmployees.forEach { Audit.EmployeeCreate.log(targetId = AuditId(it)) }
+            if (result.overlappingShifts.isNotEmpty()) {
+                throw TitaniaException(
+                    TitaniaErrorDetail(
+                        errorcode = TitaniaError.CONFLICTING_SHIFTS,
+                        message = "Conflicting working time events found",
+                    )
+                )
+            }
             result.updateWorkingTimeEventsResponse
         }
     }

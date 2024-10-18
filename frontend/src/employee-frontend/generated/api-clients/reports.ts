@@ -59,6 +59,7 @@ import { ServiceVoucherUnitReport } from 'lib-common/generated/api-types/reports
 import { SextetReportRow } from 'lib-common/generated/api-types/reports'
 import { SourceUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
+import { TitaniaErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { UUID } from 'lib-common/types'
 import { UnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { VardaChildErrorReportRow } from 'lib-common/generated/api-types/reports'
@@ -85,6 +86,7 @@ import { deserializeJsonRawReportRow } from 'lib-common/generated/api-types/repo
 import { deserializeJsonServiceVoucherReport } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonServiceVoucherUnitReport } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonStartingPlacementsRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonTitaniaErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonVardaChildErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonVardaUnitErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { uri } from 'lib-common/uri'
@@ -980,6 +982,18 @@ export async function getStartingPlacementsReport(
     params
   })
   return json.map(e => deserializeJsonStartingPlacementsRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.TitaniaErrorReport.getTitaniaErrorsReport
+*/
+export async function getTitaniaErrorsReport(): Promise<TitaniaErrorReportRow[]> {
+  const { data: json } = await client.request<JsonOf<TitaniaErrorReportRow[]>>({
+    url: uri`/employee/reports/titania-errors`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonTitaniaErrorReportRow(e))
 }
 
 

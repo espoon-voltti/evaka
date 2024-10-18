@@ -104,6 +104,7 @@ import ReportRaw from './components/reports/Raw'
 import ReportServiceNeeds from './components/reports/ServiceNeeds'
 import ReportSextet from './components/reports/Sextet'
 import ReportStartingPlacements from './components/reports/StartingPlacements'
+import TitaniaErrors from './components/reports/TitaniaErrors'
 import ReportUnits from './components/reports/Units'
 import VardaChildErrors from './components/reports/VardaChildErrors'
 import VardaUnitErrors from './components/reports/VardaUnitErrors'
@@ -844,6 +845,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <HolidayPeriodAttendanceReport />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/titania-errors',
+          element: (
+            <EmployeeRoute title="reports">
+              <TitaniaErrors />
             </EmployeeRoute>
           )
         },

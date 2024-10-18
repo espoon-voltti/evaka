@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -32,15 +33,23 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         logger.debug { "Titania request: $request" }
         val internal = updateWorkingTimeEventsInternal(tx, request)
         logger.debug { "Titania internal response: $internal" }
-        val response = UpdateWorkingTimeEventsResponse.ok()
+        val response =
+            if (internal.overLappingShifts.isEmpty()) UpdateWorkingTimeEventsResponse.ok()
+            else UpdateWorkingTimeEventsResponse.validationFailed()
         logger.debug { "Titania response: $response" }
-        return UpdateWorkingTimeEventsServiceResponse(response, internal.createdEmployees)
+        return UpdateWorkingTimeEventsServiceResponse(
+            response,
+            internal.createdEmployees,
+            internal.overLappingShifts,
+        )
     }
 
     fun updateWorkingTimeEventsInternal(
         tx: Database.Transaction,
         request: UpdateWorkingTimeEventsRequest,
     ): TitaniaUpdateResponse {
+        val requestTime = HelsinkiDateTime.now()
+
         val period = request.period.toDateRange()
         val persons =
             request.schedulingUnit.flatMap { unit ->
@@ -76,6 +85,9 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                 }
         val createdEmployees = tx.createEmployees(unknownEmployees)
         val allEmployeeNumberToId = employeeNumberToId + createdEmployees
+
+        var unmergedSameDayPlans = mutableListOf<StaffAttendancePlan>()
+        val overlappingShifts = mutableListOf<TitaniaOverLappingShifts>()
 
         val newPlans =
             persons
@@ -131,9 +143,58 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                             } else {
                                 plans.add(next)
                             }
+
+                            if (
+                                unmergedSameDayPlans.lastOrNull()?.startTime?.toLocalDate() !=
+                                    next.startTime.toLocalDate()
+                            ) {
+                                unmergedSameDayPlans = mutableListOf(next)
+                            } else {
+                                // identical shifts are deduplicated later, ignore them here
+                                if (next !in unmergedSameDayPlans) {
+                                    unmergedSameDayPlans
+                                        .filter {
+                                            TimeRange(
+                                                    next.startTime.toLocalTime(),
+                                                    next.endTime.toLocalTime(),
+                                                )
+                                                .overlaps(
+                                                    TimeRange(
+                                                        it.startTime.toLocalTime(),
+                                                        it.endTime.toLocalTime(),
+                                                    )
+                                                )
+                                        }
+                                        .forEach {
+                                            overlappingShifts.add(
+                                                TitaniaOverLappingShifts(
+                                                    allEmployeeNumberToId[employeeNumber]!!,
+                                                    next.startTime.toLocalDate(),
+                                                    it.startTime.toLocalTime(),
+                                                    it.endTime.toLocalTime(),
+                                                    next.startTime.toLocalTime(),
+                                                    next.endTime.toLocalTime(),
+                                                )
+                                            )
+                                        }
+
+                                    unmergedSameDayPlans.add(next)
+                                }
+                            }
+
                             plans.distinct().toMutableList()
                         }
                 }
+
+        if (!overlappingShifts.isEmpty()) {
+            tx.insertReportRows(requestTime, overlappingShifts)
+            return TitaniaUpdateResponse(
+                listOf(),
+                listOf(),
+                createdEmployees.values.toList(),
+                overlappingShifts,
+            )
+        }
 
         logger.info {
             "Removing staff attendance plans for ${employeeNumberToId.size} employees in period $period"
@@ -146,7 +207,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         logger.info { "Adding ${newPlans.size} new staff attendance plans" }
         tx.insertStaffAttendancePlans(newPlans)
 
-        return TitaniaUpdateResponse(deleted, newPlans, createdEmployees.values.toList())
+        return TitaniaUpdateResponse(deleted, newPlans, createdEmployees.values.toList(), listOf())
     }
 
     fun getStampedWorkingTimeEvents(
@@ -349,6 +410,7 @@ data class TitaniaUpdateResponse(
     val deleted: List<StaffAttendancePlan>,
     val inserted: List<StaffAttendancePlan>,
     val createdEmployees: List<EmployeeId>,
+    val overLappingShifts: List<TitaniaOverLappingShifts>,
 )
 
 interface TitaniaEmployeeIdConverter {

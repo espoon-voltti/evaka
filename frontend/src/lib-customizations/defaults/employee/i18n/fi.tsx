@@ -4057,6 +4057,14 @@ export const fi = {
       unit: 'Yksikkö',
       error: 'Virhe'
     },
+    titaniaErrors: {
+      title: 'Titania-virheet',
+      description: 'Titaniasta tuoduista vuorolistoista löydetyt virheet',
+      header: 'Titania-vienti',
+      date: 'Päivämäärä',
+      shift1: 'Ensimmäinen vuoro',
+      shift2: 'Päällekäinen vuoro'
+    },
     sextet: {
       title: 'Kuusikkovertailu',
       description:
