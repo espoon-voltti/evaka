@@ -2001,6 +2001,7 @@ const sv: Translations = {
       subtitle: 'Meddelande som skickas till e-posten',
       message: 'Meddelanden som personalen skickat i eVaka',
       bulletin: 'Bulletiner i eVaka',
+      bulletinFromSupervisor: 'TODO: eVakaan saapuneista yksikön tiedotteista',
       discussionTimeReservationConfirmation:
         'Bekräftelser på bokningar av diskussionstid i eVaka',
       discussionTimeReservationConfirmationInfo:
@@ -2018,6 +2019,8 @@ const sv: Translations = {
         'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
       outdatedIncomeWarning:
         'Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
+      newCustomerIncome:
+        'TODO: Muistutus uuden asiakkaan tulotietojen päivittämisestä',
       calendarEvent: 'Påminnelser om nya händelser som antecknats i kalendern',
       decision: 'Om inkomna beslut',
       document: 'Om nya dokument',
@@ -2029,7 +2032,9 @@ const sv: Translations = {
       missingAttendanceReservation:
         'Påminnelser om närvaroanmälningar som saknas',
       missingAttendanceReservationInfo:
-        'Påminnelsen skickas före deadline för närvaroanmälan om något av dina barn saknar anmälan om närvaro eller frånvaro under de kommande två veckorna.'
+        'Påminnelsen skickas före deadline för närvaroanmälan om något av dina barn saknar anmälan om närvaro eller frånvaro under de kommande två veckorna.',
+      missingHolidayAttendanceReservation:
+        'TODO: Muistutukset puuttuvista loma-ajan läsnäoloilmoituksista'
     }
   },
   income: {

@@ -7,9 +7,12 @@ import React from 'react'
 import { boolean } from 'lib-common/form/fields'
 import { object } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
-import { EmailNotificationSettings } from 'lib-common/generated/api-types/pis'
+import { StateOf } from 'lib-common/form/types'
+import {
+  EmailMessageType,
+  emailMessageTypes
+} from 'lib-common/generated/api-types/pis'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -28,19 +31,93 @@ import { updateNotificationSettingsMutation } from './queries'
 const notificationSettingsForm = object({
   message: boolean(),
   bulletin: boolean(),
+  bulletinFromSupervisor: boolean(),
   outdatedIncome: boolean(),
+  newCustomerIncome: boolean(),
   calendarEvent: boolean(),
   decision: boolean(),
   document: boolean(),
   informalDocument: boolean(),
   missingAttendanceReservation: boolean(),
+  missingHolidayAttendanceReservation: boolean(),
   discussionTimeReservationConfirmation: boolean(),
   discussionTimeReservationReminder: boolean(),
   discussionSurveyCreationNotification: boolean()
 })
 
+function isEnabled(
+  state: StateOf<typeof notificationSettingsForm>,
+  type: EmailMessageType
+): boolean {
+  switch (type) {
+    case 'TRANSACTIONAL':
+      return true // always enabled
+    case 'MESSAGE_NOTIFICATION':
+      return state.message
+    case 'BULLETIN_NOTIFICATION':
+      return state.bulletin
+    case 'BULLETIN_FROM_SUPERVISOR_NOTIFICATION':
+      return state.bulletinFromSupervisor
+    case 'OUTDATED_INCOME_NOTIFICATION':
+      return state.outdatedIncome
+    case 'NEW_CUSTOMER_INCOME_NOTIFICATION':
+      return state.newCustomerIncome
+    case 'CALENDAR_EVENT_NOTIFICATION':
+      return state.calendarEvent
+    case 'DECISION_NOTIFICATION':
+      return state.decision
+    case 'DOCUMENT_NOTIFICATION':
+      return state.document
+    case 'INFORMAL_DOCUMENT_NOTIFICATION':
+      return state.informalDocument
+    case 'MISSING_ATTENDANCE_RESERVATION_NOTIFICATION':
+      return state.missingAttendanceReservation
+    case 'MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION':
+      return state.missingHolidayAttendanceReservation
+    case 'DISCUSSION_TIME_RESERVATION_CONFIRMATION':
+      return state.discussionTimeReservationConfirmation
+    case 'DISCUSSION_SURVEY_CREATION_NOTIFICATION':
+      return state.discussionSurveyCreationNotification
+    case 'DISCUSSION_TIME_RESERVATION_REMINDER':
+      return state.discussionTimeReservationReminder
+  }
+}
+
+const getInitialState = (
+  disabledTypes: EmailMessageType[]
+): StateOf<typeof notificationSettingsForm> => ({
+  message: !disabledTypes.includes('MESSAGE_NOTIFICATION'),
+  bulletin: !disabledTypes.includes('BULLETIN_NOTIFICATION'),
+  bulletinFromSupervisor: !disabledTypes.includes(
+    'BULLETIN_FROM_SUPERVISOR_NOTIFICATION'
+  ),
+  outdatedIncome: !disabledTypes.includes('OUTDATED_INCOME_NOTIFICATION'),
+  newCustomerIncome: !disabledTypes.includes(
+    'NEW_CUSTOMER_INCOME_NOTIFICATION'
+  ),
+  calendarEvent: !disabledTypes.includes('CALENDAR_EVENT_NOTIFICATION'),
+  decision: !disabledTypes.includes('DECISION_NOTIFICATION'),
+  document: !disabledTypes.includes('DOCUMENT_NOTIFICATION'),
+  informalDocument: !disabledTypes.includes('INFORMAL_DOCUMENT_NOTIFICATION'),
+  missingAttendanceReservation: !disabledTypes.includes(
+    'MISSING_ATTENDANCE_RESERVATION_NOTIFICATION'
+  ),
+  missingHolidayAttendanceReservation: !disabledTypes.includes(
+    'MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION'
+  ),
+  discussionTimeReservationConfirmation: !disabledTypes.includes(
+    'DISCUSSION_TIME_RESERVATION_CONFIRMATION'
+  ),
+  discussionSurveyCreationNotification: !disabledTypes.includes(
+    'DISCUSSION_SURVEY_CREATION_NOTIFICATION'
+  ),
+  discussionTimeReservationReminder: !disabledTypes.includes(
+    'DISCUSSION_TIME_RESERVATION_REMINDER'
+  )
+})
+
 export interface Props {
-  initialData: EmailNotificationSettings
+  initialData: EmailMessageType[]
 }
 
 export default React.memo(
@@ -52,18 +129,21 @@ export default React.memo(
     const [editing, useEditing] = useBoolean(false)
     const form = useForm(
       notificationSettingsForm,
-      () => initialData,
+      () => getInitialState(initialData),
       t.validationErrors
     )
     const {
       message,
       bulletin,
+      bulletinFromSupervisor,
       outdatedIncome,
+      newCustomerIncome,
       calendarEvent,
       decision,
       document,
       informalDocument,
       missingAttendanceReservation,
+      missingHolidayAttendanceReservation,
       discussionTimeReservationConfirmation,
       discussionTimeReservationReminder,
       discussionSurveyCreationNotification
@@ -100,6 +180,13 @@ export default React.memo(
           data-qa="bulletin"
         />
         <Gap size="s" />
+        <CheckboxF
+          bind={bulletinFromSupervisor}
+          label={t.personalDetails.notificationsSection.bulletinFromSupervisor}
+          disabled={!editing}
+          data-qa="bulletin-from-supervisor"
+        />
+        <Gap size="s" />
         <ExpandingInfo
           info={t.personalDetails.notificationsSection.outdatedIncomeInfo}
         >
@@ -121,6 +208,13 @@ export default React.memo(
             />
           </>
         ) : null}
+        <Gap size="s" />
+        <CheckboxF
+          bind={newCustomerIncome}
+          label={t.personalDetails.notificationsSection.newCustomerIncome}
+          disabled={!editing}
+          data-qa="new-customer-income"
+        />
         <Gap size="s" />
         <CheckboxF
           bind={calendarEvent}
@@ -174,6 +268,16 @@ export default React.memo(
             data-qa="missing-attendance-reservation"
           />
         </ExpandingInfo>
+        <Gap size="s" />
+        <CheckboxF
+          bind={missingHolidayAttendanceReservation}
+          label={
+            t.personalDetails.notificationsSection
+              .missingHolidayAttendanceReservation
+          }
+          disabled={!editing}
+          data-qa="missing-holiday-attendance-reservation"
+        />
         <Gap size="s" />
         {featureFlags.discussionReservations && (
           <>
@@ -232,9 +336,9 @@ export default React.memo(
         )}
         {editing ? (
           <FixedSpaceRow justifyContent="flex-end">
-            <LegacyButton
+            <Button
               onClick={() => {
-                form.set(initialData)
+                form.set(getInitialState(initialData))
                 useEditing.off()
               }}
               text={t.common.cancel}
@@ -243,7 +347,9 @@ export default React.memo(
             <MutateButton
               mutation={updateNotificationSettingsMutation}
               onClick={() => ({
-                body: form.value()
+                body: emailMessageTypes.filter(
+                  (type) => !isEnabled(form.state, type)
+                )
               })}
               onSuccess={useEditing.off}
               text={t.common.save}

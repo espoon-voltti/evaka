@@ -1761,6 +1761,7 @@ const en: Translations = {
       subtitle: 'Email notifications',
       message: 'messages sent to eVaka by staff',
       bulletin: 'bulletins sent to eVaka',
+      bulletinFromSupervisor: 'TODO: eVakaan saapuneista yksikön tiedotteista',
       discussionTimeReservationConfirmation:
         'Confirmations of discussion time reservations in eVaka',
       discussionTimeReservationConfirmationInfo:
@@ -1778,6 +1779,8 @@ const en: Translations = {
         'If your family pays less than the maximum fee for early childhood education, you must update your income information regularly. If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
       outdatedIncomeWarning:
         'If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
+      newCustomerIncome:
+        'TODO: Muistutus uuden asiakkaan tulotietojen päivittämisestä',
       calendarEvent: 'Reminders about new events marked in the calendar',
       decision: 'New decisions',
       document: 'New documents',
@@ -1789,7 +1792,9 @@ const en: Translations = {
       missingAttendanceReservation:
         'Reminders of missing attendance reservations',
       missingAttendanceReservationInfo:
-        'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.'
+        'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.',
+      missingHolidayAttendanceReservation:
+        'TODO: Muistutukset puuttuvista loma-ajan läsnäoloilmoituksista'
     }
   },
   income: {
