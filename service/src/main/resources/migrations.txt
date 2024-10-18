@@ -445,3 +445,4 @@ V446__consistent_daterange_checks.sql
 V447__push_notification_new_absence.sql
 V448__push_notification_new_absence_defaults.sql
 V449__pedagogical_document_modified_by.sql
+V450__titania_errors.sql

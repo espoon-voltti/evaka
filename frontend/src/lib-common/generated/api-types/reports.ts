@@ -7,6 +7,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import LocalTime from '../../local-time'
 import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
 import { AbsenceType } from './absence'
@@ -811,6 +812,7 @@ export type Report =
   | 'SERVICE_VOUCHER_VALUE'
   | 'SEXTET'
   | 'STARTING_PLACEMENTS'
+  | 'TITANIA_ERRORS'
   | 'UNITS'
   | 'VARDA_ERRORS'
   | 'FUTURE_PRESCHOOLERS'
@@ -918,6 +920,42 @@ export interface StartingPlacementsRow {
   lastName: string
   placementStart: LocalDate
   ssn: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.TitaniaErrorConflict
+*/
+export interface TitaniaErrorConflict {
+  overlappingShiftBegins: LocalTime
+  overlappingShiftEnds: LocalTime
+  shiftBegins: LocalTime
+  shiftDate: LocalDate
+  shiftEnds: LocalTime
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.TitaniaErrorEmployee
+*/
+export interface TitaniaErrorEmployee {
+  conflictingShifts: TitaniaErrorConflict[]
+  employeeName: string
+  employeeNumber: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.TitaniaErrorReportRow
+*/
+export interface TitaniaErrorReportRow {
+  requestTime: HelsinkiDateTime
+  units: TitaniaErrorUnit[]
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.TitaniaErrorUnit
+*/
+export interface TitaniaErrorUnit {
+  employees: TitaniaErrorEmployee[]
+  unitName: string
 }
 
 /**
@@ -1200,6 +1238,43 @@ export function deserializeJsonStartingPlacementsRow(json: JsonOf<StartingPlacem
     ...json,
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     placementStart: LocalDate.parseIso(json.placementStart)
+  }
+}
+
+
+export function deserializeJsonTitaniaErrorConflict(json: JsonOf<TitaniaErrorConflict>): TitaniaErrorConflict {
+  return {
+    ...json,
+    overlappingShiftBegins: LocalTime.parseIso(json.overlappingShiftBegins),
+    overlappingShiftEnds: LocalTime.parseIso(json.overlappingShiftEnds),
+    shiftBegins: LocalTime.parseIso(json.shiftBegins),
+    shiftDate: LocalDate.parseIso(json.shiftDate),
+    shiftEnds: LocalTime.parseIso(json.shiftEnds)
+  }
+}
+
+
+export function deserializeJsonTitaniaErrorEmployee(json: JsonOf<TitaniaErrorEmployee>): TitaniaErrorEmployee {
+  return {
+    ...json,
+    conflictingShifts: json.conflictingShifts.map(e => deserializeJsonTitaniaErrorConflict(e))
+  }
+}
+
+
+export function deserializeJsonTitaniaErrorReportRow(json: JsonOf<TitaniaErrorReportRow>): TitaniaErrorReportRow {
+  return {
+    ...json,
+    requestTime: HelsinkiDateTime.parseIso(json.requestTime),
+    units: json.units.map(e => deserializeJsonTitaniaErrorUnit(e))
+  }
+}
+
+
+export function deserializeJsonTitaniaErrorUnit(json: JsonOf<TitaniaErrorUnit>): TitaniaErrorUnit {
+  return {
+    ...json,
+    employees: json.employees.map(e => deserializeJsonTitaniaErrorEmployee(e))
   }
 }
 

@@ -123,4 +123,31 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
 
         assertThat(capturedOutput).contains("\"eventCode\":\"EmployeeCreate\"")
     }
+
+    @Test
+    fun `put working time events with conflicting shifts should respond 400`() {
+        val (_, res, _) =
+            http
+                .put("/integration/titania/working-time-events")
+                .asUser(AuthenticatedUser.Integration)
+                .jsonBody(jsonMapper.writeValueAsString(titaniaUpdateRequestConflictingExampleData))
+                .response()
+
+        assertThat(res).returns(400) { it.statusCode }
+        assertEquals(
+            """{
+    "faultcode": "Server",
+    "faultstring": "multiple",
+    "faultactor": "/integration/titania/working-time-events",
+    "detail": [
+        {
+            "errorcode": "103",
+            "message": "Conflicting working time events found"
+        }
+    ]
+}""",
+            res.body().asString("application/json"),
+            JSONCompareMode.STRICT,
+        )
+    }
 }
