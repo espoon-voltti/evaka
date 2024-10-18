@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.finiteDateRange
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.list
+import io.kotest.property.arbitrary.map
+import io.kotest.property.arbitrary.positiveInt
 import io.kotest.property.arbitrary.positiveLong
 import io.kotest.property.checkAll
 import java.time.LocalDate
@@ -46,5 +48,8 @@ class DateSetPropertyTest : RangeBasedSetPropertyTest<LocalDate, FiniteDateRange
 
     override fun arbitrarySet(): Arb<DateSet> = Arb.dateSet()
 
-    override fun arbitraryRange(): Arb<FiniteDateRange> = Arb.finiteDateRange()
+    override fun arbitraryRange(duration: Arb<Int>): Arb<FiniteDateRange> =
+        Arb.finiteDateRange(durationDays = duration.map { it.toLong() })
+
+    override fun defaultDuration(): Arb<Int> = Arb.positiveInt(max = 3650)
 }
