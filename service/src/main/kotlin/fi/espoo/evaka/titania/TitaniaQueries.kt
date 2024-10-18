@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Database.Query {
     return createQuery {
@@ -147,3 +148,30 @@ AND ${predicate(daterangeFilter.forTable("sa"))}
             )
         }
         .toList<RawAttendance>()
+
+fun Database.Transaction.insertReportRows(
+    requestTime: HelsinkiDateTime,
+    rows: List<TitaniaOverLappingShifts>,
+) {
+    executeBatch(rows) {
+        sql(
+            """
+                INSERT INTO titania_errors (request_time, employee_id, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends)
+                VALUES (${bind { requestTime} }, ${bind { it.employeeId} }::uuid, ${bind { it.shiftDate} }, ${bind { it.shiftBegins} }, ${bind { it.shiftEnds} }, ${bind { it.overlappingShiftBegins} }, ${bind { it.overlappingShiftEnds} })
+            """
+                .trimIndent()
+        )
+    }
+}
+
+fun Database.Transaction.cleanTitaniaErrors(now: HelsinkiDateTime) {
+    execute {
+        sql(
+            """
+		DELETE
+		FROM titania_errors
+		WHERE request_time < ${bind(now)} - interval '30 days'
+	    """
+        )
+    }
+}

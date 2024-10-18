@@ -257,6 +257,11 @@ interface BaseFeatureFlags {
    * Not ready for production!
    */
   serviceApplications?: boolean
+
+  /**
+   * Show the Titania errors report in the reports list
+   */
+  titaniaErrorsReport?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

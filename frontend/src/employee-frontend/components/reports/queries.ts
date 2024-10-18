@@ -25,6 +25,7 @@ import {
   getPlacementGuaranteeReport,
   getPreschoolAbsenceReport,
   getServiceVoucherReportForAllUnits,
+  getTitaniaErrorsReport,
   getUnitsReport,
   getVardaChildErrorsReport,
   getVardaUnitErrorsReport
@@ -87,7 +88,8 @@ const queryKeys = createQueryKeys('reports', {
   ],
   holidayPeriodAttendanceReport: (
     filters: Arg0<typeof getHolidayPeriodAttendanceReport>
-  ) => ['holidayPeriodPresenceReport', filters]
+  ) => ['holidayPeriodPresenceReport', filters],
+  titaniaErrorsReport: () => ['titaniaErrors']
 })
 
 export const attendanceReservationReportByChildQuery = query({
@@ -213,4 +215,9 @@ export const holidayPeriodAttendanceReportQuery = query({
 export const sendJamixOrdersMutation = mutation({
   api: sendJamixOrders,
   invalidateQueryKeys: () => []
+})
+
+export const titaniaErrorsReportQuery = query({
+  api: getTitaniaErrorsReport,
+  queryKey: queryKeys.titaniaErrorsReport
 })
