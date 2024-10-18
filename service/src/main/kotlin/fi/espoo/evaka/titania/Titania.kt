@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
+import java.time.LocalTime
 import org.springframework.http.HttpStatus
 
 internal const val TITANIA_DATE_FORMAT = "yyyyMMdd"
@@ -178,12 +179,15 @@ data class TitaniaPayrollItem(
 data class UpdateWorkingTimeEventsResponse(val message: String) {
     companion object {
         fun ok() = UpdateWorkingTimeEventsResponse("OK")
+
+        fun validationFailed() = UpdateWorkingTimeEventsResponse("Validation failed")
     }
 }
 
 data class UpdateWorkingTimeEventsServiceResponse(
     val updateWorkingTimeEventsResponse: UpdateWorkingTimeEventsResponse,
     val createdEmployees: List<EmployeeId>,
+    val overlappingShifts: List<TitaniaOverLappingShifts>,
 )
 
 data class GetStampedWorkingTimeEventsRequest(
@@ -231,6 +235,15 @@ data class TitaniaStampedWorkingTimeEvent(
     val endReasonCode: String? = null,
 )
 
+data class TitaniaOverLappingShifts(
+    val employeeId: EmployeeId,
+    val shiftDate: LocalDate,
+    val shiftBegins: LocalTime,
+    val shiftEnds: LocalTime,
+    val overlappingShiftBegins: LocalTime,
+    val overlappingShiftEnds: LocalTime,
+)
+
 data class TitaniaException(val status: HttpStatus, val detail: List<TitaniaErrorDetail>) :
     RuntimeException() {
 
@@ -250,5 +263,6 @@ data class TitaniaErrorResponse(
 )
 
 enum class TitaniaError(val status: HttpStatus) {
-    @JsonProperty("102") EVENT_DATE_OUT_OF_PERIOD(HttpStatus.BAD_REQUEST)
+    @JsonProperty("102") EVENT_DATE_OUT_OF_PERIOD(HttpStatus.BAD_REQUEST),
+    @JsonProperty("103") CONFLICTING_SHIFTS(HttpStatus.BAD_REQUEST),
 }

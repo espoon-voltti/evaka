@@ -236,6 +236,25 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
+    @Test
+    fun `cleanTitaniaErrors() should remove rows older than 30 days`() {
+        db.transaction { tx ->
+            tx.insertErrorTestData()
+            tx.cleanTitaniaErrors(
+                HelsinkiDateTime.of(LocalDate.of(2024, 10, 1), LocalTime.of(3, 40))
+            )
+
+            val remainingRows = tx.fetchReportRows()
+            assertThat(remainingRows).hasSize(2)
+            assertThat(remainingRows)
+                .extracting("requestTime")
+                .containsExactlyInAnyOrder(
+                    HelsinkiDateTime.of(LocalDate.of(2024, 9, 30), LocalTime.of(12, 34)),
+                    HelsinkiDateTime.of(LocalDate.of(2024, 9, 23), LocalTime.of(12, 34)),
+                )
+        }
+    }
+
     private val testStaffAttendancePlan =
         StaffAttendancePlan(
             employeeId = EmployeeId(UUID.randomUUID()),
@@ -280,4 +299,26 @@ fun Database.Transaction.addAttendance(
         BigDecimal(1.0),
         StaffAttendanceType.PRESENT,
     )
+}
+
+fun Database.Transaction.insertErrorTestData() {
+    val employee = createEmployee(testEmployee)
+
+    val rows =
+        listOf(
+            TitaniaOverLappingShifts(
+                employee.id,
+                LocalDate.of(2024, 10, 1),
+                LocalTime.of(8, 0),
+                LocalTime.of(11, 0),
+                LocalTime.of(10, 0),
+                LocalTime.of(13, 0),
+            )
+        )
+
+    insertReportRows(HelsinkiDateTime.of(LocalDate.of(2024, 9, 30), LocalTime.of(12, 34)), rows)
+
+    insertReportRows(HelsinkiDateTime.of(LocalDate.of(2024, 9, 23), LocalTime.of(12, 34)), rows)
+
+    insertReportRows(HelsinkiDateTime.of(LocalDate.of(2024, 8, 29), LocalTime.of(12, 34)), rows)
 }

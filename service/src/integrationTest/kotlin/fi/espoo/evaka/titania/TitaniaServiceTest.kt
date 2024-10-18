@@ -10,6 +10,7 @@ import fi.espoo.evaka.attendance.upsertStaffAttendance
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
@@ -547,6 +548,334 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
         assertThat(numbers).containsOnlyKeys("1234")
 
         assertThat(response.createdEmployees).containsExactly(employees[0].id)
+    }
+
+    @Test
+    fun `checks for conflicting shifts`() {
+        val employeeId1 =
+            db.transaction { tx ->
+                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+            }
+        val employeeId2 =
+            db.transaction { tx ->
+                tx.createEmployee(testEmployee.copy(employeeNumber = "176167")).id
+            }
+
+        lateinit var response: TitaniaUpdateResponse
+        assertDoesNotThrow {
+            response =
+                db.transaction { tx ->
+                    titaniaService.updateWorkingTimeEventsInternal(
+                        tx,
+                        UpdateWorkingTimeEventsRequest(
+                            period =
+                                TitaniaPeriod(
+                                    beginDate = LocalDate.of(2022, 10, 12),
+                                    endDate = LocalDate.of(2022, 10, 13),
+                                ),
+                            schedulingUnit =
+                                listOf(
+                                    TitaniaSchedulingUnit(
+                                        code = "",
+                                        occupation =
+                                            listOf(
+                                                TitaniaOccupation(
+                                                    code = "",
+                                                    name = "",
+                                                    person =
+                                                        listOf(
+                                                            TitaniaPerson(
+                                                                employeeId = "176716",
+                                                                name = "",
+                                                                actualWorkingTimeEvents =
+                                                                    TitaniaWorkingTimeEvents(
+                                                                        event =
+                                                                            listOf(
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                12,
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "0800",
+                                                                                    endTime = "0900",
+                                                                                ),
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                12,
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "0830",
+                                                                                    endTime = "1400",
+                                                                                ),
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                12,
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "1400",
+                                                                                    endTime = "1530",
+                                                                                ),
+                                                                            )
+                                                                    ),
+                                                            ),
+                                                            TitaniaPerson(
+                                                                employeeId = "176167",
+                                                                name = "",
+                                                                actualWorkingTimeEvents =
+                                                                    TitaniaWorkingTimeEvents(
+                                                                        event =
+                                                                            listOf(
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                12,
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "0800",
+                                                                                    endTime = "0900",
+                                                                                ),
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                12,
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "0800",
+                                                                                    endTime = "0900",
+                                                                                ),
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                13,
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "0700",
+                                                                                    endTime = "1130",
+                                                                                ),
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                13,
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "1045",
+                                                                                    endTime = "1300",
+                                                                                ),
+                                                                            )
+                                                                    ),
+                                                            ),
+                                                        ),
+                                                )
+                                            ),
+                                    )
+                                ),
+                        ),
+                    )
+                }
+        }
+
+        assertThat(response.inserted).isEmpty()
+        assertThat(response.deleted).isEmpty()
+        assertThat(response.createdEmployees).isEmpty()
+        assertThat(response.overLappingShifts)
+            .containsExactlyInAnyOrder(
+                TitaniaOverLappingShifts(
+                    employeeId1,
+                    LocalDate.of(2022, 10, 12),
+                    LocalTime.of(8, 0),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(8, 30),
+                    LocalTime.of(14, 0),
+                ),
+                TitaniaOverLappingShifts(
+                    employeeId2,
+                    LocalDate.of(2022, 10, 13),
+                    LocalTime.of(7, 0),
+                    LocalTime.of(11, 30),
+                    LocalTime.of(10, 45),
+                    LocalTime.of(13, 0),
+                ),
+            )
+    }
+
+    @Test
+    fun `stores conflicting shifts in the error report table`() {
+        val employeeId1 =
+            db.transaction { tx ->
+                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+            }
+        val employeeId2 =
+            db.transaction { tx ->
+                tx.createEmployee(testEmployee.copy(employeeNumber = "176167")).id
+            }
+
+        db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(
+                tx,
+                UpdateWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 12),
+                            endDate = LocalDate.of(2022, 10, 13),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaSchedulingUnit(
+                                code = "",
+                                occupation =
+                                    listOf(
+                                        TitaniaOccupation(
+                                            code = "",
+                                            name = "",
+                                            person =
+                                                listOf(
+                                                    TitaniaPerson(
+                                                        employeeId = "176716",
+                                                        name = "",
+                                                        actualWorkingTimeEvents =
+                                                            TitaniaWorkingTimeEvents(
+                                                                event =
+                                                                    listOf(
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    12,
+                                                                                ),
+                                                                            beginTime = "0800",
+                                                                            endTime = "0900",
+                                                                        ),
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    12,
+                                                                                ),
+                                                                            beginTime = "0830",
+                                                                            endTime = "1400",
+                                                                        ),
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    12,
+                                                                                ),
+                                                                            beginTime = "1400",
+                                                                            endTime = "1530",
+                                                                        ),
+                                                                    )
+                                                            ),
+                                                    ),
+                                                    TitaniaPerson(
+                                                        employeeId = "176167",
+                                                        name = "",
+                                                        actualWorkingTimeEvents =
+                                                            TitaniaWorkingTimeEvents(
+                                                                event =
+                                                                    listOf(
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    12,
+                                                                                ),
+                                                                            beginTime = "0800",
+                                                                            endTime = "0900",
+                                                                        ),
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    12,
+                                                                                ),
+                                                                            beginTime = "0800",
+                                                                            endTime = "0900",
+                                                                        ),
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    13,
+                                                                                ),
+                                                                            beginTime = "0700",
+                                                                            endTime = "1130",
+                                                                        ),
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    13,
+                                                                                ),
+                                                                            beginTime = "1045",
+                                                                            endTime = "1300",
+                                                                        ),
+                                                                    )
+                                                            ),
+                                                    ),
+                                                ),
+                                        )
+                                    ),
+                            )
+                        ),
+                ),
+            )
+        }
+
+        val reportRows = db.read { tx -> tx.fetchReportRows() }
+
+        assertThat(reportRows)
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("requestTime")
+            .containsExactlyInAnyOrder(
+                TitaniaTestDbRow(
+                    HelsinkiDateTime.now(),
+                    employeeId1,
+                    LocalDate.of(2022, 10, 12),
+                    LocalTime.of(8, 0),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(8, 30),
+                    LocalTime.of(14, 0),
+                ),
+                TitaniaTestDbRow(
+                    HelsinkiDateTime.now(),
+                    employeeId2,
+                    LocalDate.of(2022, 10, 13),
+                    LocalTime.of(7, 0),
+                    LocalTime.of(11, 30),
+                    LocalTime.of(10, 45),
+                    LocalTime.of(13, 0),
+                ),
+            )
     }
 
     @Test
@@ -1627,3 +1956,25 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             )
     }
 }
+
+fun Database.Read.fetchReportRows(): List<TitaniaTestDbRow> =
+    createQuery {
+            sql(
+                """
+                SELECT request_time, employee_id, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends
+                FROM titania_errors
+            """
+                    .trimIndent()
+            )
+        }
+        .toList<TitaniaTestDbRow>()
+
+data class TitaniaTestDbRow(
+    val requestTime: HelsinkiDateTime,
+    val employeeId: EmployeeId,
+    val shiftDate: LocalDate,
+    val shiftBegins: LocalTime,
+    val shiftEnds: LocalTime,
+    val overlappingShiftBegins: LocalTime,
+    val overlappingShiftEnds: LocalTime,
+)

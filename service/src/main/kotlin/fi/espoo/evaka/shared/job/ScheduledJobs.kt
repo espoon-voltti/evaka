@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.titania.cleanTitaniaErrors
 import fi.espoo.evaka.varda.new.VardaUpdateServiceNew
 import fi.espoo.evaka.varda.old.VardaResetService
 import fi.espoo.evaka.varda.old.VardaUpdateService
@@ -214,6 +215,10 @@ enum class ScheduledJob(
             enabled = true,
             schedule = JobSchedule.cron("0 0 0 1 * *"), // first day of month
         ),
+    ),
+    CleanTitaniaErrors(
+        ScheduledJobs::cleanTitaniaErrors,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 40))),
     ),
 }
 
@@ -468,4 +473,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun rotateSfiMessagesPassword(db: Database.Connection, clock: EvakaClock) =
         sfiMessagesClient?.rotatePassword()
+
+    fun cleanTitaniaErrors(db: Database.Connection, clock: EvakaClock) =
+        db.transaction { it.cleanTitaniaErrors(clock.now()) }
 }
