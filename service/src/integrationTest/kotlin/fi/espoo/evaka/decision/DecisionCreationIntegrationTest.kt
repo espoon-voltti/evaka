@@ -387,6 +387,71 @@ WHERE id = ${bind(testDaycare.id)}
     }
 
     @Test
+    fun `citizen sees decision notification for hidden application`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                period = period,
+                hideFromGuardian = true,
+            )
+        checkDecisionDrafts(
+            applicationId,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true,
+                    )
+                ),
+            otherGuardian = testAdult_6,
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                citizen,
+                RealEvakaClock(),
+            )
+        assertEquals(1, notificationCount)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+        assertEquals(
+            citizenDecisions,
+            ApplicationDecisions(
+                decisions =
+                    listOf(
+                        DecisionSummary(
+                            id = createdDecisions[0].id,
+                            applicationId = applicationId,
+                            childId = testChild_6.id,
+                            type = DecisionType.DAYCARE,
+                            status = DecisionStatus.PENDING,
+                            sentDate = LocalDate.now(),
+                            resolved = null,
+                        )
+                    ),
+                permittedActions =
+                    mapOf(
+                        createdDecisions[0].id to
+                            setOf(
+                                Action.Citizen.Decision.READ,
+                                Action.Citizen.Decision.DOWNLOAD_PDF,
+                            )
+                    ),
+                decidableApplications = setOf(applicationId),
+            ),
+        )
+    }
+
+    @Test
     fun `citizen doesn't see decisions if guardianship has been blocked`() {
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
@@ -529,6 +594,7 @@ WHERE id = ${bind(testDaycare.id)}
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preparatoryEducation: Boolean = false,
+        hideFromGuardian: Boolean = false,
     ): ApplicationId =
         db.transaction { tx ->
             // make sure guardians are up-to-date
@@ -541,6 +607,7 @@ WHERE id = ${bind(testDaycare.id)}
                     guardianId = adult.id,
                     childId = child.id,
                     type = type.toApplicationType(),
+                    hideFromGuardian = hideFromGuardian,
                     document =
                         DaycareFormV0(
                             type = type.toApplicationType(),
