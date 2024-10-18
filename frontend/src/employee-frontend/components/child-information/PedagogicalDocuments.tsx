@@ -206,7 +206,7 @@ export default React.memo(function PedagogicalDocuments({
             </Tr>
           </Thead>
           <Tbody>
-            {orderBy(pedagogicalDocuments, ['created'], ['desc']).map(
+            {orderBy(pedagogicalDocuments, ['createdAt'], ['desc']).map(
               (pedagogicalDocument: PedagogicalDocument) => (
                 <PedagogicalDocumentRow
                   key={pedagogicalDocument.id}
@@ -214,7 +214,7 @@ export default React.memo(function PedagogicalDocuments({
                   childId={pedagogicalDocument.childId}
                   attachments={pedagogicalDocument.attachments}
                   description={pedagogicalDocument.description}
-                  created={pedagogicalDocument.created}
+                  createdAt={pedagogicalDocument.createdAt}
                   createdBy={pedagogicalDocument.createdBy}
                   modifiedAt={pedagogicalDocument.modifiedAt}
                   modifiedBy={pedagogicalDocument.modifiedBy}

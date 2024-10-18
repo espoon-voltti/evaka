@@ -155,9 +155,9 @@ data class PedagogicalDocument(
     val description: String,
     val attachments: List<Attachment> = emptyList(),
     val createdAt: HelsinkiDateTime,
-    @Nested("created_by") val createdBy: EvakaUser?,
+    @Nested("created_by") val createdBy: EvakaUser,
     val modifiedAt: HelsinkiDateTime,
-    @Nested("modified_by") val modifiedBy: EvakaUser?,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class PedagogicalDocumentPostBody(val childId: ChildId, val description: String)

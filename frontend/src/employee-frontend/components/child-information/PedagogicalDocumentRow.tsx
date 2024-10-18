@@ -39,7 +39,7 @@ interface Props {
   childId: UUID
   attachments: Attachment[]
   description: string
-  created: HelsinkiDateTime
+  createdAt: HelsinkiDateTime
   createdBy: EvakaUser
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
@@ -53,7 +53,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   childId,
   attachments,
   description,
-  created,
+  createdAt,
   createdBy,
   modifiedAt,
   modifiedBy,
@@ -70,7 +70,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       childId,
       attachments,
       description,
-      created,
+      createdAt,
       createdBy,
       modifiedAt,
       modifiedBy
@@ -141,7 +141,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
           tooltip={t.createdBy(pedagogicalDocument.createdBy.name)}
           position="right"
         >
-          {pedagogicalDocument.created.toLocalDate().format()}
+          {pedagogicalDocument.createdAt.toLocalDate().format()}
         </Tooltip>
       </DateTd>
       <DateTd data-qa="pedagogical-document-modified-date">

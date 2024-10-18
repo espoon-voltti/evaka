@@ -376,9 +376,9 @@ export class Fixture {
     return new PedagogicalDocumentBuilder({
       id: uuidv4(),
       description: 'Test description',
-      createdBy: systemInternalUser,
+      createdBy: systemInternalUser.id,
       modifiedAt: HelsinkiDateTime.now(),
-      modifiedBy: systemInternalUser,
+      modifiedBy: systemInternalUser.id,
       ...initial
     })
   }

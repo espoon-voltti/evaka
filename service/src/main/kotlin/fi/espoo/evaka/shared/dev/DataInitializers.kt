@@ -92,8 +92,6 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import fi.espoo.evaka.varda.VardaServiceNeed
 import java.time.Instant
 import java.time.LocalDate

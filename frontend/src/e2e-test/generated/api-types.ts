@@ -688,11 +688,11 @@ export interface DevPayment {
 */
 export interface DevPedagogicalDocument {
   childId: UUID
-  createdBy: EvakaUser
+  createdBy: UUID
   description: string
   id: UUID
   modifiedAt: HelsinkiDateTime
-  modifiedBy: EvakaUser
+  modifiedBy: UUID
 }
 
 /**

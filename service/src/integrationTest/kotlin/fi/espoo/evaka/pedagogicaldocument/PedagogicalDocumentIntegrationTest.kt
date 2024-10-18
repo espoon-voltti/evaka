@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
