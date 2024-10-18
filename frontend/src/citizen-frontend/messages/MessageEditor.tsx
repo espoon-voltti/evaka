@@ -145,6 +145,7 @@ export default React.memo(function MessageEditor({
   )
   const selectedChildrenInSameUnit = useMemo(
     () =>
+      selectedChildren.length === 1 ||
       selectedChildren.every(
         (c) => c.unit !== null && c.unit.id === selectedChildren[0].unit?.id
       ),

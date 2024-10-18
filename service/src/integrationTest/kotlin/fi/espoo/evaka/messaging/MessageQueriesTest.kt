@@ -8,11 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageId
-import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -25,7 +21,6 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
-import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -398,51 +393,20 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `query citizen receivers`() {
+    fun `query citizen receivers for group change over 2 weeks into the future`() {
         lateinit var group1Account: MessageAccount
 
         val today = LocalDate.now()
         val startDate = today.minusDays(30)
-        val endDateGroup1 = today.plusDays(15)
-        val startDateGroup2 = today.plusDays(16)
+        val endDateGroup1 = today.plusWeeks(2)
+        val startDateGroup2 = endDateGroup1.plusDays(1)
         val endDate = today.plusDays(30)
 
         db.transaction { tx ->
-            val areaId = tx.insert(DevCareArea())
-            val daycareId =
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        language = Language.fi,
-                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                    )
-                )
-            tx.insertDaycareAclRow(
-                daycareId = daycareId,
-                employeeId = employee1.id,
-                role = UserRole.UNIT_SUPERVISOR,
-            )
-            val group1 = DevDaycareGroup(daycareId = daycareId, name = "Testiläiset")
-            val group2 = DevDaycareGroup(daycareId = daycareId, name = "Testiläiset 2")
-            listOf(group1, group2).forEach { tx.insert(it) }
-            group1Account = tx.createAccount(group1)
-            tx.createAccount(group2)
+            val (childId, daycareId, group1Id, tempGroup1Account, group2Id) =
+                prepareDataForReceiversTest(tx)
+            group1Account = tempGroup1Account
 
-            // and person1 has a child who is placed into a group
-            val childId =
-                tx.insert(
-                    DevPerson(firstName = "Firstname", lastName = "Test Child"),
-                    DevPersonType.CHILD,
-                )
-            tx.insert(
-                DevParentship(
-                    childId = childId,
-                    headOfChildId = person1.id,
-                    startDate = startDate,
-                    endDate = endDate,
-                )
-            )
-            tx.insertGuardian(guardianId = person1.id, childId = childId)
             val placementId =
                 tx.insert(
                     DevPlacement(
@@ -456,7 +420,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
-                    daycareGroupId = group1.id,
+                    daycareGroupId = group1Id,
                     startDate = startDate,
                     endDate = endDateGroup1,
                 )
@@ -464,7 +428,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
-                    daycareGroupId = group2.id,
+                    daycareGroupId = group2Id,
                     startDate = startDateGroup2,
                     endDate = endDate,
                 )
@@ -476,6 +440,91 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.read { it.getCitizenReceivers(today, accounts.person1.id).values.flatten().toSet() }
 
         assertEquals(setOf(group1Account, accounts.employee1), receivers)
+    }
+
+    @Test
+    fun `query citizen receivers for group change less than 2 weeks into the future`() {
+        lateinit var group1Account: MessageAccount
+        lateinit var group2Account: MessageAccount
+
+        val today = LocalDate.now()
+        val startDate = today.minusDays(30)
+        val endDateGroup1 = today.plusWeeks(2).minusDays(1)
+        val startDateGroup2 = endDateGroup1.plusDays(1)
+        val endDate = today.plusDays(30)
+
+        db.transaction { tx ->
+            val (childId, daycareId, group1Id, tempGroup1Account, group2Id, tempGroup2Account) =
+                prepareDataForReceiversTest(tx)
+            group1Account = tempGroup1Account
+            group2Account = tempGroup2Account
+
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        type = PlacementType.DAYCARE,
+                        startDate = startDate,
+                        endDate = endDate,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group1Id,
+                    startDate = startDate,
+                    endDate = endDateGroup1,
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group2Id,
+                    startDate = startDateGroup2,
+                    endDate = endDate,
+                )
+            )
+        }
+
+        // when we get the receivers for the citizen person1
+        val receivers =
+            db.read { it.getCitizenReceivers(today, accounts.person1.id).values.flatten().toSet() }
+
+        assertEquals(setOf(group1Account, group2Account, accounts.employee1), receivers)
+    }
+
+    @Test
+    fun `citizen doesn't get any receivers for ended placements`() {
+        val today = LocalDate.now()
+        val startDate = today.minusMonths(2)
+        val endDate = today.minusDays(1)
+
+        db.transaction { tx ->
+            val (childId, daycareId, group1Id, _, _) = prepareDataForReceiversTest(tx)
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        type = PlacementType.DAYCARE,
+                        startDate = startDate,
+                        endDate = endDate,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group1Id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+        }
+        val receivers =
+            db.read { it.getCitizenReceivers(today, accounts.person1.id).values.flatten().toSet() }
+
+        assertEquals(setOf(), receivers)
     }
 
     @Test
@@ -819,4 +868,51 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             it.createUpdate { sql("DELETE FROM placement WHERE id = ${bind(placement)}") }.execute()
         }
+
+    private data class ReceiverTestData(
+        val personId: PersonId,
+        val daycareId: DaycareId,
+        val group1Id: GroupId,
+        val group1Account: MessageAccount,
+        val group2Id: GroupId,
+        val group2Account: MessageAccount,
+    )
+
+    private fun prepareDataForReceiversTest(tx: Database.Transaction): ReceiverTestData {
+        val areaId = tx.insert(DevCareArea())
+        val daycareId =
+            tx.insert(
+                DevDaycare(
+                    areaId = areaId,
+                    language = Language.fi,
+                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
+                )
+            )
+        tx.insertDaycareAclRow(
+            daycareId = daycareId,
+            employeeId = employee1.id,
+            role = UserRole.UNIT_SUPERVISOR,
+        )
+        val group1 = DevDaycareGroup(daycareId = daycareId, name = "Testiläiset")
+        val group2 = DevDaycareGroup(daycareId = daycareId, name = "Testiläiset 2")
+        listOf(group1, group2).forEach { tx.insert(it) }
+        val group1Account = tx.createAccount(group1)
+        val group2Account = tx.createAccount(group2)
+
+        val childId =
+            tx.insert(
+                DevPerson(firstName = "Firstname", lastName = "Test Child"),
+                DevPersonType.CHILD,
+            )
+
+        tx.insertGuardian(guardianId = person1.id, childId = childId)
+        return ReceiverTestData(
+            childId,
+            daycareId,
+            group1.id,
+            group1Account,
+            group2.id,
+            group2Account,
+        )
+    }
 }
