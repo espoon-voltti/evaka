@@ -504,7 +504,7 @@ class DaycareController(
                                 unitId,
                             )
                         ) {
-                            getMissingGroupPlacements(tx, unitId)
+                            getMissingGroupPlacementsWithinSixMonths(tx, unitId, clock.today())
                         } else {
                             emptyList()
                         }
@@ -619,6 +619,12 @@ class DaycareController(
             .also { Audit.UnitView.log(targetId = AuditId(unitId)) }
     }
 
+    private fun getMissingGroupPlacementsWithinSixMonths(
+        tx: Database.Read,
+        unitId: DaycareId,
+        today: LocalDate,
+    ) = getMissingGroupPlacements(tx, unitId).filter { it.gap.start <= today.plusMonths(6) }
+
     @GetMapping("/{daycareId}/notifications")
     fun getUnitNotifications(
         db: Database,
@@ -666,7 +672,12 @@ class DaycareController(
                                     daycareId,
                                 )
                             )
-                                getMissingGroupPlacements(tx, daycareId).size
+                                getMissingGroupPlacementsWithinSixMonths(
+                                        tx,
+                                        daycareId,
+                                        clock.today(),
+                                    )
+                                    .size
                             else 0,
                     )
                 }
