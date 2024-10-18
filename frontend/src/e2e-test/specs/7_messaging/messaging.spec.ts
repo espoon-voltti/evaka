@@ -664,6 +664,46 @@ describe('Sending and receiving messages', () => {
         )
       })
 
+      test('Citizen session is kept alive as long as user keeps typing', async () => {
+        await openSupervisorPage(mockedDateAt10)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        await openCitizen(mockedDateAt11)
+
+        await citizenPage.page.setExtraHTTPHeaders({
+          'X-Session-TTL': '1000'
+        })
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenPage.page.evaluate(() => {
+          if (window.evaka) window.evaka.keep_session_alive_throttle_time = 300 // Set to 300ms for tests
+        })
+        await citizenMessagesPage.assertThreadContent(defaultMessage)
+
+        await citizenMessagesPage.startReplyToFirstThread()
+        const slowTypedText =
+          'Olen aika hidas kirjoittamaan näitä viestejä, mutta yritän parhaani: Lapseni ovat sitä ja tätä...'
+        // typing this takes 2x longer than the session TTL
+        await citizenMessagesPage
+          .getReplyContentElement()
+          .locator.pressSequentially(slowTypedText, {
+            delay: 2000 / slowTypedText.length
+          })
+
+        await citizenMessagesPage.sendReply()
+
+        // Verify the session is still active by performing an action that requires an active session
+        await citizenMessagesPage.openFirstThread()
+        await citizenMessagesPage.assertThreadMessagesEqual([
+          defaultContent,
+          slowTypedText
+        ])
+      })
+
       describe('Messages can be deleted / archived', () => {
         test('Unit supervisor sends message and citizen deletes the message', async () => {
           await openSupervisorPage(mockedDateAt10)
