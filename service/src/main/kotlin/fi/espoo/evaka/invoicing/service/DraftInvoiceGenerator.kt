@@ -64,13 +64,41 @@ object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
     ): InvoiceGenerationLogic = InvoiceGenerationLogic.Default
 }
 
+data class InvoiceGeneratorConfig(
+    val dailyFeeDivisorOperationalDaysOverride: Int?,
+    val freeAbsenceGivesADailyRefund: Boolean,
+    val freeSickLeaveOnContractDays: Boolean,
+    val maxContractDaySurplusThreshold: Int?,
+    val temporaryDaycarePartDayAbsenceGivesADailyRefund: Boolean,
+    val unplannedAbsencesAreContractSurplusDays: Boolean,
+    val useContractDaysAsDailyFeeDivisor: Boolean,
+) {
+    companion object {
+        fun fromFeatureConfig(featureConfig: FeatureConfig) =
+            InvoiceGeneratorConfig(
+                dailyFeeDivisorOperationalDaysOverride =
+                    featureConfig.dailyFeeDivisorOperationalDaysOverride,
+                freeAbsenceGivesADailyRefund = featureConfig.freeAbsenceGivesADailyRefund,
+                freeSickLeaveOnContractDays = featureConfig.freeSickLeaveOnContractDays,
+                maxContractDaySurplusThreshold = featureConfig.maxContractDaySurplusThreshold,
+                temporaryDaycarePartDayAbsenceGivesADailyRefund =
+                    featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund,
+                unplannedAbsencesAreContractSurplusDays =
+                    featureConfig.unplannedAbsencesAreContractSurplusDays,
+                useContractDaysAsDailyFeeDivisor = featureConfig.useContractDaysAsDailyFeeDivisor,
+            )
+    }
+}
+
 @Component
 class DraftInvoiceGenerator(
     private val productProvider: InvoiceProductProvider,
-    private val featureConfig: FeatureConfig,
+    featureConfig: FeatureConfig,
     private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser,
     private val tracer: Tracer = noopTracer(),
 ) {
+    private val config = InvoiceGeneratorConfig.fromFeatureConfig(featureConfig)
+
     fun generateDraftInvoices(
         tx: Database.Read,
         invoiceInput: InvoiceGeneratorInput,
@@ -94,13 +122,13 @@ class DraftInvoiceGenerator(
                         tx,
                         invoiceInput,
                         HeadOfFamilyInput(
+                            config,
                             invoiceInput,
                             headOfFamilyId,
                             invoiceInput.codebtors[headOfFamilyId],
                             headOfFamilyDecisions,
                             feeDecisionPlacements +
                                 (invoiceInput.temporaryPlacements[headOfFamilyId] ?: listOf()),
-                            featureConfig,
                         ),
                     )
                 }
@@ -178,17 +206,11 @@ class DraftInvoiceGenerator(
                     // one is safe
                     val contractDaysPerMonth =
                         rowInputs.first().second.contractDaysPerMonth.takeIf {
-                            featureConfig.useContractDaysAsDailyFeeDivisor
+                            config.useContractDaysAsDailyFeeDivisor
                         }
 
                     val childInput =
-                        ChildInput(
-                            invoiceInput,
-                            headInput,
-                            child,
-                            featureConfig,
-                            contractDaysPerMonth,
-                        )
+                        ChildInput(config, invoiceInput, headInput, child, contractDaysPerMonth)
 
                     val invoiceRows = mutableListOf<InvoiceRow>()
                     var invoiceRowSum = 0
@@ -200,8 +222,9 @@ class DraftInvoiceGenerator(
                                     PlacementType.TEMPORARY_DAYCARE,
                                     PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
                                         toTemporaryPlacementInvoiceRows(
-                                            period,
+                                            config,
                                             childInput,
+                                            period,
                                             rowInput,
                                         )
                                     else ->
@@ -249,13 +272,14 @@ class DraftInvoiceGenerator(
         BigDecimal(price).divide(BigDecimal(dailyFeeDivisor), 0, RoundingMode.HALF_UP).toInt()
 
     private fun toTemporaryPlacementInvoiceRows(
-        period: FiniteDateRange,
+        config: InvoiceGeneratorConfig,
         childInput: ChildInput,
+        period: FiniteDateRange,
         rowInput: RowInput,
     ): List<InvoiceRow> {
         val refundAbsenceDates =
             rowInput.placementType != PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
-                featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
+                config.temporaryDaycarePartDayAbsenceGivesADailyRefund
 
         val amount =
             childInput.attendanceDates
@@ -348,6 +372,7 @@ class DraftInvoiceGenerator(
         val withDailyModifiers =
             initialRows +
                 surplusContractDays(
+                    config,
                     childInput,
                     period,
                     rowInput,
@@ -399,6 +424,7 @@ class DraftInvoiceGenerator(
     private val unplannedAbsenceTypes = AbsenceType.entries.toSet() - plannedAbsenceTypes
 
     private fun surplusContractDays(
+        config: InvoiceGeneratorConfig,
         childInput: ChildInput,
         period: FiniteDateRange,
         rowInput: RowInput,
@@ -420,7 +446,7 @@ class DraftInvoiceGenerator(
                 .filter { untilEndOfPeriod.includes(it) && !childInput.hasAbsenceOnDate(it) }
                 .size
         val unplannedAbsenceSurplusDays =
-            if (featureConfig.unplannedAbsencesAreContractSurplusDays) {
+            if (config.unplannedAbsencesAreContractSurplusDays) {
                 childInput.absenceCountInPeriod(untilEndOfPeriod, unplannedAbsenceTypes)
             } else {
                 0
@@ -443,8 +469,8 @@ class DraftInvoiceGenerator(
                     // surplus days increase takes invoice row sum above max price threshold
                     total + totalAddition > maxPrice -> 1 to (maxPrice - total)
                     // total attendances days is over the max contract day surplus threshold
-                    (featureConfig.maxContractDaySurplusThreshold ?: Int.MAX_VALUE) <
-                        attendanceDays -> 1 to (maxPrice - total)
+                    (config.maxContractDaySurplusThreshold ?: Int.MAX_VALUE) < attendanceDays ->
+                        1 to (maxPrice - total)
                     else -> surplusAttendanceDays to surplusDailyPrice
                 }
             // it is possible that the max fee is not over the already accumulated invoice total so
@@ -619,12 +645,12 @@ class DraftInvoiceGenerator(
     }
 
     class HeadOfFamilyInput(
+        private val config: InvoiceGeneratorConfig,
         private val invoiceInput: InvoiceGeneratorInput,
         val headOfFamily: PersonId,
         val codebtor: PersonId?,
         val decisions: List<FeeDecision>,
         val placements: List<Pair<FiniteDateRange, PlacementStub>>,
-        private val featureConfig: FeatureConfig,
     ) {
         val feeDecisionRangesByChild: Map<ChildId, DateSet> by lazy {
             decisions
@@ -681,7 +707,7 @@ class DraftInvoiceGenerator(
                         )
                 }
 
-            return if (featureConfig.useContractDaysAsDailyFeeDivisor) {
+            return if (config.useContractDaysAsDailyFeeDivisor) {
                 childDecisionMaxFees.maxOf { (_, maxFee) -> maxFee }
             } else {
                 childDecisionMaxFees
@@ -740,10 +766,10 @@ class DraftInvoiceGenerator(
     }
 
     class ChildInput(
+        config: InvoiceGeneratorConfig,
         invoiceInput: InvoiceGeneratorInput,
         private val headInput: HeadOfFamilyInput,
         val child: ChildWithDateOfBirth,
-        featureConfig: FeatureConfig,
         private val contractDaysPerMonth: Int?,
     ) {
         private val absences: DateMap<AbsenceType>
@@ -843,7 +869,7 @@ class DraftInvoiceGenerator(
             if (allSickLeaves) {
                 FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
             } else if (
-                featureConfig.freeSickLeaveOnContractDays &&
+                config.freeSickLeaveOnContractDays &&
                     atLeastOneSickLeave &&
                     allSickLeavesOrPlannedAbsences
             ) { // freeSickLeaveOnContractDays: The month becomes free if it has at least one
@@ -860,7 +886,7 @@ class DraftInvoiceGenerator(
 
         val dailyFeeDivisor =
             contractDaysPerMonth
-                ?: featureConfig.dailyFeeDivisorOperationalDaysOverride
+                ?: config.dailyFeeDivisorOperationalDaysOverride
                 ?: invoiceInput.businessDayCount
 
         val numRelevantOperationalDays =
