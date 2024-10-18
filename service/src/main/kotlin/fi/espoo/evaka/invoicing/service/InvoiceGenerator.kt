@@ -285,11 +285,11 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonI
 
 fun Database.Read.getBillableAbsencesInRange(
     range: FiniteDateRange
-): Map<AbsenceType, Map<ChildId, DateSet>> {
+): Map<ChildId, List<Pair<AbsenceType, DateSet>>> {
     return createQuery {
             sql(
                 """
-SELECT absence_type, child_id, range_agg(daterange(date, date, '[]')) AS dates
+SELECT child_id, absence_type, range_agg(daterange(date, date, '[]')) AS dates
 FROM absence
 WHERE between_start_and_end(${bind(range)}, date)
 AND category = 'BILLABLE'
@@ -297,15 +297,14 @@ GROUP BY child_id, absence_type
 """
             )
         }
-        .toList {
+        .map {
             Triple(
-                column<AbsenceType>("absence_type"),
                 column<ChildId>("child_id"),
+                column<AbsenceType>("absence_type"),
                 column<DateSet>("dates"),
             )
         }
-        .groupBy({ it.first }, { it.second to it.third })
-        .mapValues { (_, values) -> values.associateBy({ it.first }, { it.second }) }
+        .useSequence { rows -> rows.groupBy({ it.first }, { it.second to it.third }) }
 }
 
 data class PlacementStub(
