@@ -250,7 +250,7 @@ const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
       {items.map((item) => (
         <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
           <ListItemHead>
-            <span>{item.created.toLocalDate().format()}</span>
+            <span>{item.createdAt.toLocalDate().format()}</span>
           </ListItemHead>
           <ItemDescription
             item={item}
@@ -341,7 +341,7 @@ const PedagogicalDocumentsTable = React.memo(
                 <ItemTr key={item.id} documentIsRead={item.isRead}>
                   <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
                     {!item.isRead && <UnreadIndicator />}
-                    {item.created.toLocalDate().format()}
+                    {item.createdAt.toLocalDate().format()}
                   </DateTd>
                   <DescriptionTd>
                     <ItemDescription

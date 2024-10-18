@@ -206,7 +206,7 @@ WHERE status NOT IN ('DRAFT', 'IGNORED')
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child
+    id, created_at, updated_at, child_id AS child
 FROM pedagogical_document
 """
             )

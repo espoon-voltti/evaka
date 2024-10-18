@@ -10,8 +10,10 @@ import {
   Attachment,
   PedagogicalDocument
 } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -37,8 +39,10 @@ interface Props {
   childId: UUID
   attachments: Attachment[]
   description: string
-  created: HelsinkiDateTime
-  updated: HelsinkiDateTime
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUser
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
   initInEditMode: boolean
   onReload: () => void
   onDelete: (d: PedagogicalDocument) => void
@@ -49,21 +53,27 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   childId,
   attachments,
   description,
-  created,
-  updated,
+  createdAt,
+  createdBy,
+  modifiedAt,
+  modifiedBy,
   initInEditMode,
   onReload,
   onDelete
 }: Props) {
   const { i18n } = useTranslation()
+  const t = i18n.childInformation.pedagogicalDocument
+
   const [pedagogicalDocument, setPedagogicalDocument] =
     useState<PedagogicalDocument>({
       id,
       childId,
       attachments,
       description,
-      created,
-      updated
+      createdAt,
+      createdBy,
+      modifiedAt,
+      modifiedBy
     })
 
   const [editMode, setEditMode] = useState(initInEditMode)
@@ -86,6 +96,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       setSubmitting(false)
       if (res.isSuccess) {
         endEdit()
+        setPedagogicalDocument(res.value)
         onReload()
       } else {
         setErrorMessage({
@@ -126,7 +137,20 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   return (
     <Tr key={pedagogicalDocument.id} data-qa="table-pedagogical-document-row">
       <DateTd data-qa="pedagogical-document-start-date">
-        {pedagogicalDocument.created.toLocalDate().format()}
+        <Tooltip
+          tooltip={t.createdBy(pedagogicalDocument.createdBy.name)}
+          position="right"
+        >
+          {pedagogicalDocument.createdAt.toLocalDate().format()}
+        </Tooltip>
+      </DateTd>
+      <DateTd data-qa="pedagogical-document-modified-date">
+        <Tooltip
+          tooltip={t.lastModifiedBy(pedagogicalDocument.modifiedBy.name)}
+          position="right"
+        >
+          {pedagogicalDocument.modifiedAt.format()}
+        </Tooltip>
       </DateTd>
       <DescriptionTd data-qa="pedagogical-document-description">
         {editMode ? (

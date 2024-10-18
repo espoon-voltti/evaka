@@ -688,8 +688,11 @@ export interface DevPayment {
 */
 export interface DevPedagogicalDocument {
   childId: UUID
+  createdBy: UUID
   description: string
   id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
 }
 
 /**
@@ -1387,6 +1390,14 @@ export function deserializeJsonDevPayment(json: JsonOf<DevPayment>): DevPayment 
     paymentDate: (json.paymentDate != null) ? LocalDate.parseIso(json.paymentDate) : null,
     period: FiniteDateRange.parseJson(json.period),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
+  }
+}
+
+
+export function deserializeJsonDevPedagogicalDocument(json: JsonOf<DevPedagogicalDocument>): DevPedagogicalDocument {
+  return {
+    ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 

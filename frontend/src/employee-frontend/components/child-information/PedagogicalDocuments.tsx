@@ -172,7 +172,8 @@ export default React.memo(function PedagogicalDocuments({
         <Table data-qa="table-of-pedagogical-documents">
           <Thead>
             <Tr>
-              <Th>{i18n.childInformation.pedagogicalDocument.date}</Th>
+              <Th>{i18n.childInformation.pedagogicalDocument.created}</Th>
+              <Th>{i18n.childInformation.pedagogicalDocument.lastModified}</Th>
               <Th>
                 {i18n.childInformation.pedagogicalDocument.description}
                 {!!i18n.childInformation.pedagogicalDocument
@@ -205,7 +206,7 @@ export default React.memo(function PedagogicalDocuments({
             </Tr>
           </Thead>
           <Tbody>
-            {orderBy(pedagogicalDocuments, ['created'], ['desc']).map(
+            {orderBy(pedagogicalDocuments, ['createdAt'], ['desc']).map(
               (pedagogicalDocument: PedagogicalDocument) => (
                 <PedagogicalDocumentRow
                   key={pedagogicalDocument.id}
@@ -213,8 +214,10 @@ export default React.memo(function PedagogicalDocuments({
                   childId={pedagogicalDocument.childId}
                   attachments={pedagogicalDocument.attachments}
                   description={pedagogicalDocument.description}
-                  created={pedagogicalDocument.created}
-                  updated={pedagogicalDocument.updated}
+                  createdAt={pedagogicalDocument.createdAt}
+                  createdBy={pedagogicalDocument.createdBy}
+                  modifiedAt={pedagogicalDocument.modifiedAt}
+                  modifiedBy={pedagogicalDocument.modifiedBy}
                   initInEditMode={
                     uiMode ==
                     `edit-pedagogical-document-${pedagogicalDocument.id}`
