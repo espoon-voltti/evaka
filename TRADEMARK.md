@@ -13,7 +13,7 @@ Tässä dokumentissa kuvataan, mikä on sallittua eVaka® tavaramerkin käyttö�
 
 ## On sallittua
 
-Kunnan käyttää eVaka-tavaramerkkiä omassa toiminnassaan em. avoimen lähdekoodin eVaka-tietojärjestelmään liittyen. Tavaramerkkiä ei tule liittää kaupalliseen toimintaan.
+Kunnan käyttää eVaka-tavaramerkkiä omassa toiminnassaan em. avoimen lähdekoodin eVaka-tietojärjestelmään liittyen. *Kunnan ei tule liittää tavaramerkkiä kaupalliseen toimintaan*.
 
 Kunnan X nimetä oma oma implementaationsa eVaka Kunta X tai Kunta X:n eVaka. 
 
