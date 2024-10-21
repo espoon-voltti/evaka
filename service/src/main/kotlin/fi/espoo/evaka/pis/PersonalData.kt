@@ -22,7 +22,10 @@ enum class EmailMessageType : DatabaseEnum {
      */
     TRANSACTIONAL,
 
-    /** Notifications about new eVaka messages from daycare staff including bulletins sent by unit supervisor */
+    /**
+     * Notifications about new eVaka messages from daycare staff including bulletins sent by unit
+     * supervisor
+     */
     MESSAGE_NOTIFICATION,
 
     /** Notifications about new general bulletins from municipal accounts (tiedotteet) */
@@ -52,7 +55,7 @@ enum class EmailMessageType : DatabaseEnum {
     /** Reminders about making attendance reservations */
     ATTENDANCE_RESERVATION_NOTIFICATION,
 
-    /** Discussion time related notifications  */
+    /** Discussion time related notifications */
     DISCUSSION_TIME_NOTIFICATION;
 
     override val sqlType: String = "email_message_type"
