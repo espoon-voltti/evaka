@@ -201,16 +201,7 @@ class DraftInvoiceGenerator(
                         )
                     if (logic == InvoiceGenerationLogic.Free) return@flatMap listOf()
 
-                    // In cities that use contract days it is not allowed to change service needs
-                    // during middle of the month, so picking contractDaysPerMonth from the first
-                    // one is safe
-                    val contractDaysPerMonth =
-                        rowInputs.first().second.contractDaysPerMonth.takeIf {
-                            config.useContractDaysAsDailyFeeDivisor
-                        }
-
-                    val childInput =
-                        ChildInput(config, invoiceInput, headInput, child, contractDaysPerMonth)
+                    val childInput = ChildInput(config, invoiceInput, headInput, child)
 
                     val invoiceRows = mutableListOf<InvoiceRow>()
                     var invoiceRowSum = 0
@@ -430,7 +421,7 @@ class DraftInvoiceGenerator(
         rowInput: RowInput,
         total: Int,
     ): List<InvoiceRow> {
-        if (rowInput.contractDaysPerMonth == null) return listOf()
+        if (childInput.contractDaysPerMonth == null) return listOf()
 
         val isAbsentFullMonth =
             setOf(
@@ -453,16 +444,19 @@ class DraftInvoiceGenerator(
             }
         val attendanceDays = attendances + unplannedAbsenceSurplusDays
 
-        return if (rowInput.contractDaysPerMonth < attendanceDays) {
-            val surplusAttendanceDays = attendanceDays - rowInput.contractDaysPerMonth
+        return if (childInput.contractDaysPerMonth < attendanceDays) {
+            val surplusAttendanceDays = attendanceDays - childInput.contractDaysPerMonth
             val surplusDailyPrice =
-                calculateDailyPriceForInvoiceRow(rowInput.finalPrice, rowInput.contractDaysPerMonth)
-            val totalAddition = surplusAttendanceDays * surplusDailyPrice
-            val maxPrice =
-                childInput.getInvoiceMaxFee(
-                    listOf(PlacementType.PREPARATORY_DAYCARE, PlacementType.PRESCHOOL_DAYCARE)
-                        .contains(rowInput.placementType)
+                calculateDailyPriceForInvoiceRow(
+                    rowInput.finalPrice,
+                    childInput.contractDaysPerMonth,
                 )
+            val totalAddition = surplusAttendanceDays * surplusDailyPrice
+
+            val capMaxFeeAtDefault =
+                listOf(PlacementType.PREPARATORY_DAYCARE, PlacementType.PRESCHOOL_DAYCARE)
+                    .contains(rowInput.placementType)
+            val maxPrice = childInput.getInvoiceMaxFee(capMaxFeeAtDefault)
 
             val (amount, unitPrice) =
                 when {
@@ -526,10 +520,7 @@ class DraftInvoiceGenerator(
         if (refundedDayCount == 0) return listOf()
 
         val (amount, unitPrice) =
-            if (
-                refundedDayCount >=
-                    minOf(childInput.dailyFeeDivisor, childInput.numRelevantOperationalDays)
-            ) {
+            if (refundedDayCount >= childInput.numRelevantOperationalDays) {
                 1 to -accumulatedSum
             } else {
                 refundedDayCount to
@@ -662,6 +653,16 @@ class DraftInvoiceGenerator(
                 .mapValues { DateSet.of(it.value) }
         }
 
+        // In cities that use contract days, it is not allowed to change service needs
+        // during middle of the month, so picking `contractDaysPerMonth` from the first
+        // row is safe.
+        val contractDaysPerMonthByChild: Map<ChildId, Int?> by lazy {
+            decisions
+                .flatMap { it.children }
+                .groupBy { it.child.id }
+                .mapValues { (_, parts) -> parts.first().serviceNeed.contractDaysPerMonth }
+        }
+
         fun getInvoiceMaxFee(childId: ChildId, capMaxFeeAtDefault: Boolean): Int {
             val childDecisions =
                 decisions.mapNotNull { decision ->
@@ -736,7 +737,6 @@ class DraftInvoiceGenerator(
         val priceBeforeFeeAlterations: Int,
         val feeAlterations: List<Pair<FeeAlterationType, Int>>,
         val finalPrice: Int,
-        val contractDaysPerMonth: Int?,
     ) {
         companion object {
             fun fromTemporaryPlacement(
@@ -747,7 +747,7 @@ class DraftInvoiceGenerator(
             ): RowInput {
                 val partDay = placement.type == PlacementType.TEMPORARY_DAYCARE_PART_DAY
                 val fee = feeThresholds.calculatePriceForTemporary(partDay, siblingOrdinal)
-                return RowInput(child, placement.unit, placement.type, fee, listOf(), fee, null)
+                return RowInput(child, placement.unit, placement.type, fee, listOf(), fee)
             }
 
             fun fromFeeDecisionPart(part: FeeDecisionChild) =
@@ -760,7 +760,6 @@ class DraftInvoiceGenerator(
                         Pair(feeAlteration.type, feeAlteration.effect)
                     },
                     part.finalFee,
-                    part.serviceNeed.contractDaysPerMonth,
                 )
         }
     }
@@ -770,7 +769,6 @@ class DraftInvoiceGenerator(
         invoiceInput: InvoiceGeneratorInput,
         private val headInput: HeadOfFamilyInput,
         val child: ChildWithDateOfBirth,
-        private val contractDaysPerMonth: Int?,
     ) {
         private val operationalDays: DateSet =
             invoiceInput.operationalDaysByChild[child.id] ?: DateSet.empty()
@@ -787,6 +785,8 @@ class DraftInvoiceGenerator(
                     (headInput.feeDecisionRangesByChild[child.id] ?: DateSet.empty())
             businessDaysWithoutDecision.isNotEmpty()
         }
+
+        val contractDaysPerMonth = headInput.contractDaysPerMonthByChild[child.id]
 
         fun hasAbsenceOnDate(date: LocalDate): Boolean {
             return absences.getValue(date) != null
@@ -807,37 +807,34 @@ class DraftInvoiceGenerator(
         }
 
         val attendanceDates: List<LocalDate> by lazy {
-            val attendanceDates =
-                operationalDatesByWeek(invoiceInput.invoicePeriod, operationalDays).flatMap {
-                    weekOperationalDates ->
-                    if (
-                        contractDaysPerMonth != null
-                    ) { // Use real attendance dates (with no planned absences) for contract day
-                        // children
-                        weekOperationalDates.filterNot { date ->
-                            hasAbsenceOnDate(date, AbsenceType.PLANNED_ABSENCE)
-                        }
-                    } else { // Take at most 5 days per week (for round-the-clock units)
-                        weekOperationalDates.take(5)
-                    }
-                }
+            if (config.useContractDaysAsDailyFeeDivisor && contractDaysPerMonth != null) {
+                // Use real attendance dates (operational dates minus planned absences dates)
+                val attendanceDates =
+                    operationalDays
+                        .ranges()
+                        .flatMap { it.dates() }
+                        .filterNot { date -> hasAbsenceOnDate(date, AbsenceType.PLANNED_ABSENCE) }
+                        .toList()
 
-            // If this is a full month for a contract day child (not in partialMonthChildren), make
-            // sure that there's no less than `contractDaysPerMonth` days even if they have more
-            // planned absences than they should
-            if (
-                contractDaysPerMonth != null &&
-                    !isPartialMonthChild &&
-                    attendanceDates.size < contractDaysPerMonth
-            ) {
-                val extraDatesToAdd = contractDaysPerMonth - attendanceDates.size
-                val operationalDaysWithoutAttendance =
-                    (operationalDays - DateSet.ofDates(attendanceDates)).ranges().flatMap {
-                        it.dates()
-                    }
-                (attendanceDates + operationalDaysWithoutAttendance.take(extraDatesToAdd)).sorted()
+                // If this is a full month for a contract day child, make sure that there's no less
+                // than `contractDaysPerMonth` days even if they have more planned absences than
+                // they should
+                if (!isPartialMonthChild && attendanceDates.size < contractDaysPerMonth) {
+                    val extraDatesToAdd = contractDaysPerMonth - attendanceDates.size
+                    val operationalDaysWithoutAttendance =
+                        (operationalDays - DateSet.ofDates(attendanceDates)).ranges().flatMap {
+                            it.dates()
+                        }
+                    (attendanceDates + operationalDaysWithoutAttendance.take(extraDatesToAdd))
+                        .sorted()
+                } else {
+                    attendanceDates
+                }
             } else {
-                attendanceDates
+                // Take at most 5 days per week (for round-the-clock units)
+                datesByWeekInPeriod(invoiceInput.invoicePeriod).flatMap { week ->
+                    week.filter { operationalDays.includes(it) }.take(5)
+                }
             }
         }
 
@@ -877,12 +874,15 @@ class DraftInvoiceGenerator(
         }
 
         val dailyFeeDivisor =
-            contractDaysPerMonth
-                ?: config.dailyFeeDivisorOperationalDaysOverride
-                ?: invoiceInput.businessDayCount
+            if (config.useContractDaysAsDailyFeeDivisor && contractDaysPerMonth != null) {
+                contractDaysPerMonth
+            } else if (config.dailyFeeDivisorOperationalDaysOverride != null) {
+                config.dailyFeeDivisorOperationalDaysOverride
+            } else {
+                invoiceInput.businessDayCount
+            }
 
-        val numRelevantOperationalDays =
-            minOf(contractDaysPerMonth ?: invoiceInput.businessDayCount, dailyFeeDivisor)
+        val numRelevantOperationalDays = minOf(dailyFeeDivisor, invoiceInput.businessDayCount)
 
         fun getInvoiceMaxFee(capMaxFeeAtDefault: Boolean): Int =
             headInput.getInvoiceMaxFee(child.id, capMaxFeeAtDefault)
@@ -896,18 +896,12 @@ enum class FullMonthAbsenceType {
     NOTHING,
 }
 
-private fun operationalDatesByWeek(
-    period: FiniteDateRange,
-    operationalDays: DateSet,
-): List<List<LocalDate>> {
-    return period
-        .dates()
-        .fold<LocalDate, List<List<LocalDate>>>(listOf()) { weeks, date ->
-            if (weeks.isEmpty() || date.dayOfWeek == DayOfWeek.MONDAY) {
-                weeks.plusElement(listOf(date))
-            } else {
-                weeks.dropLast(1).plusElement(weeks.last() + date)
-            }
+private fun datesByWeekInPeriod(period: FiniteDateRange): List<List<LocalDate>> {
+    return period.dates().fold<LocalDate, List<List<LocalDate>>>(listOf()) { weeks, date ->
+        if (weeks.isEmpty() || date.dayOfWeek == DayOfWeek.MONDAY) {
+            weeks.plusElement(listOf(date))
+        } else {
+            weeks.dropLast(1).plusElement(weeks.last() + date)
         }
-        .map { week -> week.filter { date -> operationalDays.includes(date) } }
+    }
 }
