@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -269,13 +270,15 @@ WHERE id = ${bind(eventTimeId)} AND (child_id IS NULL OR child_id = ${bind(child
         .updateNoneOrOne()
 
 fun Database.Transaction.deleteCalendarEventTimeReservations(
+    user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     calendarEventId: CalendarEventId,
     childId: ChildId,
 ) = execute {
     sql(
         """
 UPDATE calendar_event_time
-SET child_id = NULL::uuid
+SET child_id = NULL::uuid, modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE calendar_event_id = ${bind(calendarEventId)}
 AND child_id = ${bind(childId)}
 """
@@ -283,16 +286,34 @@ AND child_id = ${bind(childId)}
 }
 
 fun Database.Transaction.deleteCalendarEventTimeReservation(
-    calendarEventTimeId: CalendarEventTimeId
+    user: AuthenticatedUser,
+    now: HelsinkiDateTime,
+    calendarEventTimeId: CalendarEventTimeId,
 ) = execute {
     sql(
         """
 UPDATE calendar_event_time
-SET child_id = NULL::uuid
+SET child_id = NULL::uuid, modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(calendarEventTimeId)}
 """
     )
 }
+
+fun Database.Read.getCalendarEventTimesByChildAndEvent(
+    childId: PersonId,
+    calendarEventId: CalendarEventId,
+): List<CalendarEventTime> =
+    createQuery {
+            sql(
+                """
+SELECT id, date, start_time, end_time, child_id
+FROM calendar_event_time
+WHERE calendar_event_id = ${bind(calendarEventId)}
+AND child_id = ${bind(childId)}
+"""
+            )
+        }
+        .toList<CalendarEventTime>()
 
 data class CitizenCalendarEventRow(
     val id: CalendarEventId,

@@ -380,6 +380,49 @@ describe('Discussion surveys', () => {
     await surveyView.assertNoTimesExist(testDay)
   })
 
+  test("Employee can clear all child's survey reservations", async () => {
+    const testDay = mockedToday.addDays(1)
+
+    await calendarPage.selectGroup(groupId)
+    await calendarPage.weekModeButton.click()
+
+    const surveyListPage =
+      await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
+    const surveyView = await surveyListPage.openDiscussionSurvey(testSurveyId)
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.addEventTimeForDay(testDay, {
+      startTime: '09:00',
+      endTime: '09:30'
+    })
+    await surveyView.addEventTimeForDay(testDay, {
+      startTime: '10:00',
+      endTime: '10:30'
+    })
+    await surveyView.waitUntilLoaded()
+
+    let reservationModal = await surveyView.openReservationModal(0, testDay)
+    await reservationModal.reserveEventTimeForChild(
+      `${child1Fixture.lastName} ${child1Fixture.firstName}`
+    )
+    reservationModal = await surveyView.openReservationModal(1, testDay)
+    await reservationModal.reserveEventTimeForChild(
+      `${child1Fixture.lastName} ${child1Fixture.firstName}`
+    )
+    await surveyView.waitUntilLoaded()
+    await surveyView.assertReservedAttendeeExists(child1Fixture.id)
+
+    const confirmationModal =
+      await surveyView.openReservationClearingConfirmationModal(
+        child1Fixture.id
+      )
+    await confirmationModal.submit()
+
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.assertUnreservedAttendeeExists(child1Fixture.id)
+  })
+
   test('Employee can reserve a time', async () => {
     const childData = {
       lastName: 'Högfors',

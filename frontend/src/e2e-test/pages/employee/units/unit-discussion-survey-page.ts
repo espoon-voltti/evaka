@@ -158,6 +158,13 @@ export class DiscussionSurveyReadView {
     )
   }
 
+  async openReservationClearingConfirmationModal(childId: string) {
+    await this.page.findByDataQa(`clear-reservations-button-${childId}`).click()
+    return new Modal(
+      this.page.findByDataQa(`clear-reservations-confirmation-modal`)
+    )
+  }
+
   async openSurveyEditor() {
     await this.editSurveyButton.click()
     return new DiscussionSurveyEditor(this.page)

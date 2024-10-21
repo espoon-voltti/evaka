@@ -7,6 +7,7 @@
 import LocalDate from 'lib-common/local-date'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventForm } from 'lib-common/generated/api-types/calendarevent'
+import { CalendarEventTimeClearingForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeEmployeeReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventUpdateForm } from 'lib-common/generated/api-types/calendarevent'
@@ -34,6 +35,23 @@ export async function addCalendarEventTime(
     url: uri`/employee/calendar-event/${request.id}/time`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CalendarEventTimeForm>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.clearEventTimesInEventForChild
+*/
+export async function clearEventTimesInEventForChild(
+  request: {
+    body: CalendarEventTimeClearingForm
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/calendar-event/clear-survey-reservations-for-child`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<CalendarEventTimeClearingForm>
   })
   return json
 }
