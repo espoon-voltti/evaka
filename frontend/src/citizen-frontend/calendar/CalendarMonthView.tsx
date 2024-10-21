@@ -144,6 +144,44 @@ export default React.memo(function CalendarMonthView({
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(1)
   const selectedMonthData = calendarMonths[selectedMonthIndex]
 
+  const prevMonth = useCallback(() => {
+    setSelectedMonthIndex((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : prevIndex
+    )
+  }, [])
+  const nextMonth = useCallback(() => {
+    setSelectedMonthIndex((prevIndex) =>
+      prevIndex < calendarMonths.length - 1 ? prevIndex + 1 : prevIndex
+    )
+  }, [calendarMonths.length])
+
+  const isDateInCurrentMonth = useCallback(() => {
+    if (!selectedDate) return false
+    return selectedMonthData.weeks.some((w) => {
+      return w.calendarDays.some((d) => d.date.isEqual(selectedDate))
+    })
+  }, [selectedDate, selectedMonthData.weeks])
+
+  const firstDayOfMonth = useMemo(() => {
+    return selectedMonthData.weeks[0].calendarDays[0].date
+  }, [selectedMonthData.weeks])
+
+  useEffect(() => {
+    if (selectedDate && !isDateInCurrentMonth()) {
+      if (selectedDate.isBefore(firstDayOfMonth)) {
+        prevMonth()
+      } else {
+        nextMonth()
+      }
+    }
+  }, [
+    firstDayOfMonth,
+    isDateInCurrentMonth,
+    nextMonth,
+    prevMonth,
+    selectedDate
+  ])
+
   useEffect(() => {
     const top = todayRef.current?.getBoundingClientRect().top
 
@@ -179,17 +217,6 @@ export default React.memo(function CalendarMonthView({
   )
   const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
     useSummaryInfo(childSummaries)
-
-  const prevMonth = useCallback(() => {
-    setSelectedMonthIndex((prevIndex) =>
-      prevIndex > 0 ? prevIndex - 1 : prevIndex
-    )
-  }, [])
-  const nextMonth = useCallback(() => {
-    setSelectedMonthIndex((prevIndex) =>
-      prevIndex < calendarMonths.length - 1 ? prevIndex + 1 : prevIndex
-    )
-  }, [calendarMonths.length])
 
   return (
     <>
