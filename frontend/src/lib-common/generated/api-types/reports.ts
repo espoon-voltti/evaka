@@ -680,6 +680,24 @@ export interface PlacementSketchingReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.PreschoolApplicationReportRow
+*/
+export interface PreschoolApplicationReportRow {
+  applicationId: UUID
+  applicationUnitId: UUID
+  applicationUnitName: string
+  childDateOfBirth: LocalDate
+  childFirstName: string
+  childId: UUID
+  childLastName: string
+  childPostalCode: string
+  childStreetAddress: string
+  currentUnitId: UUID | null
+  currentUnitName: string | null
+  isDaycareAssistanceNeed: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.PreschoolUnitsReportRow
 */
 export interface PreschoolUnitsReportRow {
@@ -786,6 +804,7 @@ export type Report =
   | 'PLACEMENT_GUARANTEE'
   | 'PLACEMENT_SKETCHING'
   | 'PRESCHOOL_ABSENCES'
+  | 'PRESCHOOL_APPLICATIONS'
   | 'PRESENCE'
   | 'RAW'
   | 'SERVICE_NEED'
@@ -1121,6 +1140,14 @@ export function deserializeJsonPlacementSketchingReportRow(json: JsonOf<Placemen
     childMovingDate: (json.childMovingDate != null) ? LocalDate.parseIso(json.childMovingDate) : null,
     preferredStartDate: LocalDate.parseIso(json.preferredStartDate),
     sentDate: LocalDate.parseIso(json.sentDate)
+  }
+}
+
+
+export function deserializeJsonPreschoolApplicationReportRow(json: JsonOf<PreschoolApplicationReportRow>): PreschoolApplicationReportRow {
+  return {
+    ...json,
+    childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
   }
 }
 

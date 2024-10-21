@@ -154,10 +154,12 @@ const SortableIconContainer = styled.div`
   flex-direction: column;
 `
 
+export type SortDirection = 'ASC' | 'DESC'
+
 interface SortableProps {
   children?: React.ReactNode
   onClick: () => void
-  sorted?: 'ASC' | 'DESC'
+  sorted?: SortDirection
   sticky?: boolean
   top?: string
   'data-qa'?: string

@@ -4134,6 +4134,20 @@ export const fi = {
         }
       }
     },
+    preschoolApplications: {
+      title: 'Ehdottava EO-raportti',
+      description: 'EO-raportti, josta johtaja voi tarkistaa oppilaan koulun',
+      columns: {
+        applicationUnitName: 'Yksikkö',
+        childLastName: 'Sukunimi',
+        childFirstName: 'Etunimi',
+        childDateOfBirth: 'Syntymäaika',
+        childStreetAddress: 'Postiosoite',
+        childPostalCode: 'Postinumero',
+        currentUnitName: 'Nykyinen yksikkö',
+        isDaycareAssistanceNeed: 'Tuen tarve'
+      }
+    },
     holidayPeriodAttendance: {
       title: 'Lomakyselyraportti',
       description: 'Yksikön läsnäolojen päivätason seuranta lomakyselyn aikana',

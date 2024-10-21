@@ -66,6 +66,11 @@ export default class ReportsPage {
     return new PreschoolAbsenceReport(this.page)
   }
 
+  async openPreschoolApplicationReport() {
+    await this.page.findByDataQa('report-preschool-application').click()
+    return new PreschoolApplicationReport(this.page)
+  }
+
   async openHolidayPeriodAttendanceReport() {
     await this.page.findByDataQa('report-holiday-period-attendance').click()
     return new HolidayPeriodAttendanceReport(this.page)
@@ -591,6 +596,20 @@ export class PreschoolAbsenceReport {
           .assertTextEquals(data.UNKNOWN_ABSENCE)
       })
     )
+  }
+}
+
+export class PreschoolApplicationReport {
+  constructor(private page: Page) {}
+
+  async assertNoResults() {
+    const noResults = this.page.findByDataQa('no-results')
+    await noResults.waitUntilVisible()
+  }
+
+  async assertRows(expected: string[]) {
+    const rows = this.page.findAllByDataQa('row')
+    await rows.assertTextsEqual(expected)
   }
 }
 
