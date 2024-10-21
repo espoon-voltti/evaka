@@ -190,6 +190,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   types: DocumentType[]
 }) {
   const i18n = useTranslation()
+
   const documentsResult = useQueryResult(
     childDocumentSummariesQuery({ childId })
   ).map((docs) => docs.filter((doc) => types.includes(doc.type)))
