@@ -15,17 +15,9 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevGuardian
-import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPersonType
-import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
@@ -528,6 +520,63 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `citizen receivers include backup and standard placements`() {
+        val today = LocalDate.now()
+        val startDate = today.minusMonths(2)
+        val endDate = today.plusMonths(2)
+        lateinit var groupAccount: MessageAccount
+
+        db.transaction { tx ->
+            val (childId, daycareId, groupId, tempGroupAccount, _, _, areaId) =
+                prepareDataForReceiversTest(tx)
+            groupAccount = tempGroupAccount
+
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        type = PlacementType.DAYCARE,
+                        startDate = startDate,
+                        endDate = endDate,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+            val backupDaycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        language = Language.fi,
+                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
+                    )
+                )
+            tx.insertDaycareAclRow(
+                daycareId = backupDaycareId,
+                employeeId = employee2.id,
+                role = UserRole.UNIT_SUPERVISOR,
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = childId,
+                    unitId = backupDaycareId,
+                    period = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
+                )
+            )
+        }
+        val receivers =
+            db.read { it.getCitizenReceivers(today, accounts.person1.id).values.flatten().toSet() }
+
+        assertEquals(setOf(accounts.employee1, accounts.employee2, groupAccount), receivers)
+    }
+
+    @Test
     fun `children with only secondary recipients are not included in receivers`() {
         lateinit var child1Id: PersonId
         lateinit var child2Id: PersonId
@@ -876,6 +925,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val group1Account: MessageAccount,
         val group2Id: GroupId,
         val group2Account: MessageAccount,
+        val areaId: AreaId,
     )
 
     private fun prepareDataForReceiversTest(tx: Database.Transaction): ReceiverTestData {
@@ -913,6 +963,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             group1Account,
             group2.id,
             group2Account,
+            areaId,
         )
     }
 }
