@@ -796,7 +796,7 @@ const DayCellDate = styled.div<{ inactive: boolean; holiday: boolean }>`
 `
 
 const MonthSummaryInfoBox = styled(ExpandingInfoBox)`
-  margin: ${defaultMargins.s} 0 ${defaultMargins.xs};
+  margin: 0 0 ${defaultMargins.xs};
   width: 100%;
 `
 
