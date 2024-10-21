@@ -70,9 +70,6 @@ export default React.memo(function CalendarEventTimeReservation({
   reserveAction: (time: CalendarEventTime) => void
 }) {
   const { i18n } = useTranslation()
-  const childName = reservationChild
-    ? `${reservationChild.firstName}  ${reservationChild.lastName}`
-    : ''
   return (
     <ReservationRow
       spacing="xs"
@@ -87,7 +84,7 @@ export default React.memo(function CalendarEventTimeReservation({
         order="text-icon"
         text={
           reservationChild
-            ? childName
+            ? `${reservationChild.firstName} ${reservationChild.lastName}`
             : i18n.unit.calendar.events.discussionReservation.reserveButton
         }
         icon={faPen}
