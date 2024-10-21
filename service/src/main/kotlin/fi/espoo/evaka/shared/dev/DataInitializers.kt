@@ -80,6 +80,7 @@ import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
@@ -1178,14 +1179,17 @@ data class DevPedagogicalDocument(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
     val description: String,
+    val createdBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 )
 
 fun Database.Transaction.insert(row: DevPedagogicalDocument): PedagogicalDocumentId =
     createUpdate {
             sql(
                 """
-INSERT INTO pedagogical_document (id, child_id, description)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.description)})
+INSERT INTO pedagogical_document (id, child_id, description, created_by, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.description)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
 """
             )

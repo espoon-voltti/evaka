@@ -15,6 +15,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.user.EvakaUser
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -47,7 +49,7 @@ class PedagogicalDocumentController(
                         Action.Child.CREATE_PEDAGOGICAL_DOCUMENT,
                         body.childId,
                     )
-                    tx.createDocument(user, body).also {
+                    tx.createDocument(user, clock.now(), body).also {
                         pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
                             tx,
                             it.id,
@@ -80,7 +82,7 @@ class PedagogicalDocumentController(
                         Action.PedagogicalDocument.UPDATE,
                         documentId,
                     )
-                    tx.updateDocument(user, body, documentId).also {
+                    tx.updateDocument(user, clock.now(), body, documentId).also {
                         pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
                             tx,
                             it.id,
@@ -152,45 +154,77 @@ data class PedagogicalDocument(
     val childId: ChildId,
     val description: String,
     val attachments: List<Attachment> = emptyList(),
-    val created: HelsinkiDateTime,
-    val updated: HelsinkiDateTime,
+    val createdAt: HelsinkiDateTime,
+    @Nested("created_by") val createdBy: EvakaUser,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class PedagogicalDocumentPostBody(val childId: ChildId, val description: String)
 
 private fun Database.Transaction.createDocument(
     user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     body: PedagogicalDocumentPostBody,
 ): PedagogicalDocument {
-    return createUpdate {
+    return createQuery {
             sql(
                 """
-INSERT INTO pedagogical_document(child_id, created_by, description)
-VALUES (${bind(body.childId)}, ${bind(user.evakaUserId)}, ${bind(body.description)})
-RETURNING *
+WITH pd AS (
+    INSERT INTO pedagogical_document(child_id, created_by, description, modified_at, modified_by)
+    VALUES (${bind(body.childId)}, ${bind(user.evakaUserId)}, ${bind(body.description)}, ${bind(now)}, ${bind(user.evakaUserId)})
+    RETURNING *
+) SELECT
+    pd.id,
+    pd.child_id,
+    pd.description,
+    pd.created_at,
+    ce.id AS created_by_id,
+    ce.name AS created_by_name,
+    ce.type AS created_by_type,
+    pd.modified_at,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
+FROM pd LEFT JOIN evaka_user ce ON pd.created_by = ce.id LEFT JOIN evaka_user e ON pd.modified_by = e.id
 """
             )
         }
-        .executeAndReturnGeneratedKeys()
         .exactlyOne<PedagogicalDocument>()
 }
 
 private fun Database.Transaction.updateDocument(
     user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     body: PedagogicalDocumentPostBody,
     documentId: PedagogicalDocumentId,
 ): PedagogicalDocument {
-    return createUpdate {
+    return createQuery {
             sql(
                 """
-UPDATE pedagogical_document
-SET description = ${bind(body.description)}, 
-    updated_by = ${bind(user.evakaUserId)}
-WHERE id = ${bind(documentId)} AND child_id = ${bind(body.childId)}
+WITH pd AS (
+    UPDATE pedagogical_document
+    SET description = ${bind(body.description)}, 
+        modified_at = ${bind(now)},
+        modified_by = ${bind(user.evakaUserId)}
+    WHERE id = ${bind(documentId)} AND child_id = ${bind(body.childId)}
+    RETURNING *
+) SELECT
+    pd.id,
+    pd.child_id,
+    pd.description,
+    pd.created_at,
+    ce.id AS created_by_id,
+    ce.name AS created_by_name,
+    ce.type AS created_by_type,
+    pd.modified_at,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
+FROM pd LEFT JOIN evaka_user ce ON pd.created_by = ce.id LEFT JOIN evaka_user e ON pd.modified_by = e.id
 """
             )
         }
-        .executeAndReturnGeneratedKeys()
         .exactlyOne<PedagogicalDocument>()
 }
 
@@ -200,13 +234,21 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
     return createQuery {
             sql(
                 """
-                SELECT 
+                SELECT
                     pd.id,
                     pd.child_id,
                     pd.description,
-                    pd.created,
-                    pd.updated
+                    pd.created_at,
+                    ce.id AS created_by_id,
+                    ce.name AS created_by_name,
+                    ce.type AS created_by_type,
+                    pd.modified_at,
+                    e.id AS modified_by_id,
+                    e.name AS modified_by_name,
+                    e.type AS modified_by_type
                 FROM pedagogical_document pd
+                LEFT JOIN evaka_user ce ON pd.created_by = ce.id
+                LEFT JOIN evaka_user e ON pd.modified_by = e.id
                 WHERE child_id = ${bind(childId)}
                 """
             )

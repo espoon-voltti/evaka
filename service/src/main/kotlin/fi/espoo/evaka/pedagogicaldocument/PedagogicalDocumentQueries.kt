@@ -35,7 +35,7 @@ data class PedagogicalDocumentCitizen(
     val childId: ChildId,
     val description: String,
     @Json val attachments: List<Attachment> = emptyList(),
-    val created: HelsinkiDateTime,
+    val createdAt: HelsinkiDateTime,
     val isRead: Boolean,
 )
 
@@ -50,8 +50,8 @@ SELECT
     pd.id,
     pd.child_id,
     pd.description,
-    pd.created,
-    pd.updated,
+    pd.created_at,
+    pd.updated_at,
     pdr.read_at is not null is_read,
     (
         SELECT
@@ -66,7 +66,7 @@ SELECT
 FROM pedagogical_document pd
 LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = ${bind(userId)}
 WHERE pd.child_id = ${bind(childId)}
-ORDER BY pd.created DESC
+ORDER BY pd.created_at DESC
 """
             )
         }

@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
@@ -23,10 +24,12 @@ export interface Attachment {
 export interface PedagogicalDocument {
   attachments: Attachment[]
   childId: UUID
-  created: HelsinkiDateTime
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUser
   description: string
   id: UUID
-  updated: HelsinkiDateTime
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
 }
 
 /**
@@ -35,7 +38,7 @@ export interface PedagogicalDocument {
 export interface PedagogicalDocumentCitizen {
   attachments: Attachment[]
   childId: UUID
-  created: HelsinkiDateTime
+  createdAt: HelsinkiDateTime
   description: string
   id: UUID
   isRead: boolean
@@ -53,8 +56,8 @@ export interface PedagogicalDocumentPostBody {
 export function deserializeJsonPedagogicalDocument(json: JsonOf<PedagogicalDocument>): PedagogicalDocument {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 
@@ -62,6 +65,6 @@ export function deserializeJsonPedagogicalDocument(json: JsonOf<PedagogicalDocum
 export function deserializeJsonPedagogicalDocumentCitizen(json: JsonOf<PedagogicalDocumentCitizen>): PedagogicalDocumentCitizen {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created)
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt)
   }
 }

@@ -101,7 +101,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "other_assistance_measure",
                 "pairing",
                 "payment",
-                "pedagogical_document",
                 "person",
                 "placement",
                 "placement_plan",
@@ -200,7 +199,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "other_assistance_measure",
                 "pairing",
                 "payment",
-                "pedagogical_document",
                 "person",
                 "placement",
                 "placement_plan",
@@ -421,7 +419,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ),
                 Column(ColumnRef("child_document", "created_by"), "uuid", nullable = true),
                 Column(ColumnRef("fridge_partner", "created_by"), "uuid", nullable = true),
-                Column(ColumnRef("pedagogical_document", "created_by"), "uuid", nullable = true),
             )
         val violations =
             columns
@@ -440,7 +437,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ColumnRef("assistance_need", "updated_by"),
                 ColumnRef("fee_alteration", "updated_by"),
                 ColumnRef("income", "updated_by"),
-                ColumnRef("pedagogical_document", "updated_by"),
             )
         val violations = columns.filter { it.ref.columnName == "updated_by" }.map { it.ref }.toSet()
         assertEquals(permittedViolations, violations)

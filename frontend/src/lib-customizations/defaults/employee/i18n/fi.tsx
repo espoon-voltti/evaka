@@ -1593,18 +1593,22 @@ export const fi = {
     },
     childDocumentsSectionTitle: 'Pedagogiset asiakirjat',
     pedagogicalDocument: {
-      title: 'Pedagoginen dokumentointi',
-      explanation: '',
-      explanationInfo: '',
+      create: 'Lisää uusi',
+      created: 'Lisätty',
+      createdBy: (name: string) => `Lisääjä: ${name}`,
       date: 'Päivämäärä',
+      descriptionInfo: '',
+      description: 'Pedagoginen kuvaus',
       document: 'Dokumentti',
       documentInfo: '',
-      description: 'Pedagoginen kuvaus',
-      descriptionInfo: '',
-      create: 'Lisää uusi',
+      explanation: '',
+      explanationInfo: '',
+      lastModified: 'Viimeksi muokattu',
+      lastModifiedBy: (name: string) => `Muokkaaja: ${name}`,
       removeConfirmation: 'Haluatko poistaa dokumentin?',
       removeConfirmationText:
-        'Haluatko varmasti poistaa pedagogisen dokumentin ja sen kuvaustekstin? Poistoa ei saa peruutettua, ja dokumentti poistetaan näkyvistä myös huoltajalta.'
+        'Haluatko varmasti poistaa pedagogisen dokumentin ja sen kuvaustekstin? Poistoa ei saa peruutettua, ja dokumentti poistetaan näkyvistä myös huoltajalta.',
+      title: 'Pedagoginen dokumentointi'
     }
   },
   personSearch: {

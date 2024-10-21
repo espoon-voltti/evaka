@@ -215,8 +215,8 @@ data class BiVoucherValueDecision(
 
 data class BiPedagogicalDocument(
     val id: UUID,
-    val created: HelsinkiDateTime,
-    val updated: HelsinkiDateTime,
+    val createdAt: HelsinkiDateTime,
+    val updatedAt: HelsinkiDateTime,
     val child: UUID,
 )
 
