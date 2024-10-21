@@ -745,7 +745,7 @@ WITH user_account AS (
 ), backup_care_placements AS (
     SELECT p.id, p.unit_id, p.child_id, p.group_id
     FROM children c
-    JOIN backup_care p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
+    JOIN backup_care p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
     WHERE EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
@@ -754,10 +754,6 @@ WITH user_account AS (
     SELECT p.id, p.unit_id, p.child_id
     FROM children c
     JOIN placement p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
-    WHERE NOT EXISTS (
-        SELECT 1 FROM backup_care_placements bc
-        WHERE bc.child_id = p.child_id
-    )
     AND EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
