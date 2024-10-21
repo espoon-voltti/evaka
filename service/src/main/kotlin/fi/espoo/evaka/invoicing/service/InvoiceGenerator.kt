@@ -43,6 +43,8 @@ import kotlin.math.abs
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Component
 
+private val logger = mu.KotlinLogging.logger {}
+
 @Component
 class InvoiceGenerator(
     private val draftInvoiceGenerator: DraftInvoiceGenerator,
@@ -50,18 +52,23 @@ class InvoiceGenerator(
     private val tracer: Tracer = noopTracer(),
 ) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, month: YearMonth) {
+        logger.info("Generating invoices for $month")
         val range = FiniteDateRange.ofMonth(month)
 
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
+        logger.info("Calculate invoice data")
         val invoiceCalculationData =
             tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, range) }
+        logger.info("Generate draft invoices")
         val invoices = draftInvoiceGenerator.generateDraftInvoices(tx, invoiceCalculationData)
+        logger.info("Apply corrections")
         val invoicesWithCorrections =
             tracer.withSpan("applyCorrections") {
                 applyCorrections(tx, invoices, month, invoiceCalculationData.areaIds)
             }
+        logger.info("Database operations")
         tx.deleteDraftInvoicesByDateRange(range)
         tx.insertInvoices(
             invoices = invoicesWithCorrections,
@@ -73,6 +80,7 @@ class InvoiceGenerator(
                             .map { it.id }
                 },
         )
+        logger.info("Invoice generation done")
     }
 
     fun calculateInvoiceData(
