@@ -91,7 +91,7 @@ LIMIT 1
         Email.create(
                 dbc = db,
                 personId = msg.guardian,
-                emailType = EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
+                emailType = EmailMessageType.ATTENDANCE_RESERVATION_NOTIFICATION,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.missingReservationsNotification(language, msg.range),
                 traceId = msg.guardian.toString(),

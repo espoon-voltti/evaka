@@ -88,7 +88,7 @@ class NewCustomerIncomeNotification(
 
             Email.create(
                     dbc = db,
-                    emailType = EmailMessageType.NEW_CUSTOMER_INCOME_NOTIFICATION,
+                    emailType = EmailMessageType.INCOME_NOTIFICATION,
                     personId = msg.guardianId,
                     fromAddress = emailEnv.sender(language),
                     content =

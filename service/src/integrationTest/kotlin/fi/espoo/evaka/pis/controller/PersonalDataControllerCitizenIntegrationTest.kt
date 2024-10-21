@@ -5,7 +5,7 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.pis.EmailNotificationSettings
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -24,28 +24,13 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
     fun `all notifications are enabled by default`() {
         db.transaction { tx -> tx.insert(testAdult_1, DevPersonType.RAW_ROW) }
 
-        val settings =
+        val disabledTypes =
             personalDataController.getNotificationSettings(
                 dbInstance(),
                 AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.WEAK),
                 RealEvakaClock(),
             )
-        assertEquals(
-            EmailNotificationSettings(
-                message = true,
-                bulletin = true,
-                outdatedIncome = true,
-                calendarEvent = true,
-                decision = true,
-                document = true,
-                informalDocument = true,
-                missingAttendanceReservation = true,
-                discussionTimeReservationConfirmation = true,
-                discussionSurveyCreationNotification = true,
-                discussionTimeReservationReminder = true,
-            ),
-            settings,
-        )
+        assertEquals(emptySet(), disabledTypes)
     }
 
     @Test
@@ -56,18 +41,11 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
             dbInstance(),
             AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.WEAK),
             RealEvakaClock(),
-            EmailNotificationSettings(
-                message = true,
-                bulletin = false,
-                outdatedIncome = true,
-                calendarEvent = false,
-                decision = true,
-                document = false,
-                informalDocument = true,
-                missingAttendanceReservation = false,
-                discussionTimeReservationConfirmation = true,
-                discussionSurveyCreationNotification = true,
-                discussionTimeReservationReminder = true,
+            setOf(
+                EmailMessageType.BULLETIN_NOTIFICATION,
+                EmailMessageType.CALENDAR_EVENT_NOTIFICATION,
+                EmailMessageType.DOCUMENT_NOTIFICATION,
+                EmailMessageType.ATTENDANCE_RESERVATION_NOTIFICATION,
             ),
         )
 
@@ -78,18 +56,11 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 RealEvakaClock(),
             )
         assertEquals(
-            EmailNotificationSettings(
-                message = true,
-                bulletin = false,
-                outdatedIncome = true,
-                calendarEvent = false,
-                decision = true,
-                document = false,
-                informalDocument = true,
-                missingAttendanceReservation = false,
-                discussionTimeReservationConfirmation = true,
-                discussionSurveyCreationNotification = true,
-                discussionTimeReservationReminder = true,
+            setOf(
+                EmailMessageType.BULLETIN_NOTIFICATION,
+                EmailMessageType.CALENDAR_EVENT_NOTIFICATION,
+                EmailMessageType.DOCUMENT_NOTIFICATION,
+                EmailMessageType.ATTENDANCE_RESERVATION_NOTIFICATION,
             ),
             settings,
         )
