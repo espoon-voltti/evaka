@@ -101,12 +101,14 @@ export const pinLoginRequestHandler = (redisClient: RedisClient) =>
     const employeeId = assertStringProp(req.body, 'employeeId')
     const response = await employeePinLogin(req)
 
-    const token = uuid()
-    await redisClient.set(toMobileEmployeeIdKey(token), employeeId, {
-      EX: pinSessionTimeoutSeconds
-    })
+    if (response.status === 'SUCCESS') {
+      const token = uuid()
+      await redisClient.set(toMobileEmployeeIdKey(token), employeeId, {
+        EX: pinSessionTimeoutSeconds
+      })
+      req.session.employeeIdToken = token
+    }
 
-    req.session.employeeIdToken = token
     res.status(200).send(response)
   })
 
