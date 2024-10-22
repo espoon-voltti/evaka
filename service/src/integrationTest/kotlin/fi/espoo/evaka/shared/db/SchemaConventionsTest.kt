@@ -564,7 +564,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ColumnRef("daycare", "club_apply_period"),
                 ColumnRef("daycare", "daycare_apply_period"),
                 ColumnRef("daycare", "preschool_apply_period"),
-                ColumnRef("fee_decision", "valid_during"),
                 ColumnRef("fee_thresholds", "valid_during"),
                 ColumnRef("foster_parent", "valid_during"),
                 ColumnRef("holiday_period", "period"),

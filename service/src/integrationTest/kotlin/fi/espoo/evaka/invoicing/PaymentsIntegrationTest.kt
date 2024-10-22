@@ -477,7 +477,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 createVoucherValueDecisionFixture(
                     status = VoucherValueDecisionStatus.DRAFT,
                     validFrom = validFrom,
-                    validTo = null,
+                    validTo = validFrom.plusYears(1),
                     headOfFamilyId = headOfFamilyId,
                     childId = childId,
                     dateOfBirth = testChild_1.dateOfBirth,

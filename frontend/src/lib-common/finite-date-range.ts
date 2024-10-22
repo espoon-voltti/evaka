@@ -9,6 +9,7 @@ import DateRange from './date-range'
 import { JsonOf } from './json'
 import LocalDate from './local-date'
 import { groupDatesToRanges } from './utils/local-date'
+import YearMonth from './year-month'
 
 function maxOf(a: LocalDate, b: LocalDate) {
   return a.isAfter(b) ? a : b
@@ -197,6 +198,10 @@ export default class FiniteDateRange {
       LocalDate.parseIso(json.start),
       LocalDate.parseIso(json.end)
     )
+  }
+
+  static ofMonth(month: YearMonth) {
+    return new FiniteDateRange(month.atDay(1), month.atEndOfMonth())
   }
 }
 

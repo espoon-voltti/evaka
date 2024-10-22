@@ -8,6 +8,7 @@ import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import YearMonth from '../../year-month'
 import { Action } from '../action'
 import { CareType } from './daycare'
 import { IncomeAttachment } from './attachment'
@@ -144,9 +145,9 @@ export interface FeeDecision {
   sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
   totalFee: number
-  validDuring: DateRange
+  validDuring: FiniteDateRange
   validFrom: LocalDate
-  validTo: LocalDate | null
+  validTo: LocalDate
 }
 
 /**
@@ -213,7 +214,7 @@ export interface FeeDecisionDetailed {
   status: FeeDecisionStatus
   totalFee: number
   totalIncome: number | null
-  validDuring: DateRange
+  validDuring: FiniteDateRange
 }
 
 /**
@@ -291,7 +292,7 @@ export interface FeeDecisionSummary {
   id: UUID
   sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
-  validDuring: DateRange
+  validDuring: FiniteDateRange
 }
 
 /**
@@ -523,7 +524,7 @@ export interface InvoiceCodes {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrection
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceCorrection
 */
 export interface InvoiceCorrection {
   amount: number
@@ -531,8 +532,23 @@ export interface InvoiceCorrection {
   description: string
   headOfFamilyId: UUID
   id: UUID
-  invoiceId: UUID | null
-  invoiceStatus: InvoiceStatus | null
+  invoice: InvoiceWithCorrection | null
+  note: string
+  period: FiniteDateRange
+  product: string
+  targetMonth: YearMonth | null
+  unitId: UUID
+  unitPrice: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceCorrectionInsert
+*/
+export interface InvoiceCorrectionInsert {
+  amount: number
+  childId: UUID
+  description: string
+  headOfFamilyId: UUID
   note: string
   period: FiniteDateRange
   product: string
@@ -705,18 +721,11 @@ export interface InvoiceSummaryResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.NewInvoiceCorrection
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceWithCorrection
 */
-export interface NewInvoiceCorrection {
-  amount: number
-  childId: UUID
-  description: string
-  headOfFamilyId: UUID
-  note: string
-  period: FiniteDateRange
-  product: string
-  unitId: UUID
-  unitPrice: number
+export interface InvoiceWithCorrection {
+  id: UUID
+  status: InvoiceStatus
 }
 
 /**
@@ -1027,7 +1036,7 @@ export interface VoucherValueDecisionDetailed {
   status: VoucherValueDecisionStatus
   totalIncome: number | null
   validFrom: LocalDate
-  validTo: LocalDate | null
+  validTo: LocalDate
   voucherValue: number
 }
 
@@ -1188,9 +1197,9 @@ export function deserializeJsonFeeDecision(json: JsonOf<FeeDecision>): FeeDecisi
     children: json.children.map(e => deserializeJsonFeeDecisionChild(e)),
     created: HelsinkiDateTime.parseIso(json.created),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    validDuring: DateRange.parseJson(json.validDuring),
+    validDuring: FiniteDateRange.parseJson(json.validDuring),
     validFrom: LocalDate.parseIso(json.validFrom),
-    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+    validTo: LocalDate.parseIso(json.validTo)
   }
 }
 
@@ -1220,7 +1229,7 @@ export function deserializeJsonFeeDecisionDetailed(json: JsonOf<FeeDecisionDetai
     headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
     partner: (json.partner != null) ? deserializeJsonPersonDetailed(json.partner) : null,
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    validDuring: DateRange.parseJson(json.validDuring)
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
   }
 }
 
@@ -1233,7 +1242,7 @@ export function deserializeJsonFeeDecisionSummary(json: JsonOf<FeeDecisionSummar
     created: HelsinkiDateTime.parseIso(json.created),
     headOfFamily: deserializeJsonPersonBasic(json.headOfFamily),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    validDuring: DateRange.parseJson(json.validDuring)
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
   }
 }
 
@@ -1303,6 +1312,15 @@ export function deserializeJsonInvoice(json: JsonOf<Invoice>): Invoice {
 
 
 export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>): InvoiceCorrection {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period),
+    targetMonth: (json.targetMonth != null) ? YearMonth.parseIso(json.targetMonth) : null
+  }
+}
+
+
+export function deserializeJsonInvoiceCorrectionInsert(json: JsonOf<InvoiceCorrectionInsert>): InvoiceCorrectionInsert {
   return {
     ...json,
     period: FiniteDateRange.parseJson(json.period)
@@ -1397,14 +1415,6 @@ export function deserializeJsonInvoiceSummaryResponse(json: JsonOf<InvoiceSummar
   return {
     ...json,
     data: deserializeJsonInvoiceSummary(json.data)
-  }
-}
-
-
-export function deserializeJsonNewInvoiceCorrection(json: JsonOf<NewInvoiceCorrection>): NewInvoiceCorrection {
-  return {
-    ...json,
-    period: FiniteDateRange.parseJson(json.period)
   }
 }
 
@@ -1542,7 +1552,7 @@ export function deserializeJsonVoucherValueDecisionDetailed(json: JsonOf<Voucher
     partner: (json.partner != null) ? deserializeJsonPersonDetailed(json.partner) : null,
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validFrom: LocalDate.parseIso(json.validFrom),
-    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+    validTo: LocalDate.parseIso(json.validTo)
   }
 }
 

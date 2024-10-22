@@ -108,6 +108,7 @@ data class FeeThresholds(
         }
 
     fun calculatePriceForTemporary(partDay: Boolean, siblingOrdinal: Int): Int {
+        require(siblingOrdinal >= 1) { "Sibling ordinal must be >= 1 (was $siblingOrdinal)" }
         return when (siblingOrdinal) {
             1 -> if (partDay) temporaryFeePartDay else temporaryFee
             else -> if (partDay) temporaryFeeSiblingPartDay else temporaryFeeSibling

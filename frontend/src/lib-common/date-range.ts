@@ -7,6 +7,7 @@ import FiniteDateRange from './finite-date-range'
 import { JsonOf } from './json'
 import LocalDate from './local-date'
 import { maxOf, minOf } from './ordered'
+import YearMonth from './year-month'
 
 export type Tense = 'past' | 'present' | 'future'
 
@@ -114,5 +115,9 @@ export default class DateRange {
       LocalDate.parseIso(json.start),
       json.end ? LocalDate.parseIso(json.end) : null
     )
+  }
+
+  static ofMonth(month: YearMonth) {
+    return new FiniteDateRange(month.atDay(1), month.atEndOfMonth())
   }
 }

@@ -25,6 +25,7 @@ import java.text.ParsePosition
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Optional
 import java.util.UUID
@@ -133,6 +134,9 @@ val helsinkiDateTimeRangeArgumentFactory =
             }
         }
     }
+
+val yearMonthArgumentFactory =
+    customArgumentFactory<YearMonth>(Types.DATE) { CustomObjectArgument(it.atDay(1)) }
 
 val productKeyArgumentFactory =
     customArgumentFactory<ProductKey>(Types.VARCHAR) { CustomStringArgument(it.value) }
@@ -273,7 +277,10 @@ private class Parser(private var text: CharSequence) {
 
 val dateSetColumnMapper = PgObjectColumnMapper { obj ->
     assert(obj.type == "datemultirange")
-    obj.value?.let(::Parser)?.parseMultiRange { it.parseFiniteDateRange() }?.let { DateSet.of(it) }
+    obj.value
+        ?.let(::Parser)
+        ?.parseMultiRange { it.parseFiniteDateRange() }
+        ?.let { DateSet.unsafeRaw(it) }
 }
 
 val finiteDateRangeColumnMapper = PgObjectColumnMapper { obj ->
@@ -312,6 +319,10 @@ val helsinkiDateTimeColumnMapper = ColumnMapper { r, columnNumber, _ ->
     r.getObject(columnNumber, OffsetDateTime::class.java)?.let {
         HelsinkiDateTime.from(it.toInstant())
     }
+}
+
+val yearMonthColumnMapper = ColumnMapper { r, columnNumber, _ ->
+    r.getObject(columnNumber, LocalDate::class.java)?.let { YearMonth.from(it) }
 }
 
 val productKeyColumnMapper = ColumnMapper { rs, columnNumber, _ ->

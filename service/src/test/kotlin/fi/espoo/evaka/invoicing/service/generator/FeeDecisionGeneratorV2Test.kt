@@ -35,9 +35,9 @@ import org.junit.jupiter.api.Test
 class FeeDecisionGeneratorV2Test {
     @Test
     fun `mergeAdjacentIdenticalDrafts merges if adjacent and identical`() {
-        val f1 = feeDecision.copy(validDuring = DateRange(date(1), date(10)))
-        val f2 = feeDecision.copy(validDuring = DateRange(date(11), date(20)))
-        val f3 = feeDecision.copy(validDuring = DateRange(date(15), date(25)))
+        val f1 = feeDecision.copy(validDuring = FiniteDateRange(date(1), date(10)))
+        val f2 = feeDecision.copy(validDuring = FiniteDateRange(date(11), date(20)))
+        val f3 = feeDecision.copy(validDuring = FiniteDateRange(date(15), date(25)))
         val merged = mergeAdjacentIdenticalDrafts(listOf(f1, f2, f3))
         assertEquals(1, merged.size)
         assertEquals(date(1), merged.first().validFrom)
@@ -46,18 +46,18 @@ class FeeDecisionGeneratorV2Test {
 
     @Test
     fun `mergeAdjacentIdenticalDrafts does not merge if not adjacent`() {
-        val f1 = feeDecision.copy(validDuring = DateRange(date(1), date(10)))
-        val f2 = feeDecision.copy(validDuring = DateRange(date(12), date(20)))
+        val f1 = feeDecision.copy(validDuring = FiniteDateRange(date(1), date(10)))
+        val f2 = feeDecision.copy(validDuring = FiniteDateRange(date(12), date(20)))
         val merged = mergeAdjacentIdenticalDrafts(listOf(f1, f2))
         assertEquals(listOf(f1, f2), merged)
     }
 
     @Test
     fun `mergeAdjacentIdenticalDrafts does not merge if not identical`() {
-        val f1 = feeDecision.copy(validDuring = DateRange(date(1), date(10)))
+        val f1 = feeDecision.copy(validDuring = FiniteDateRange(date(1), date(10)))
         val f2 =
             feeDecision.copy(
-                validDuring = DateRange(date(11), date(20)),
+                validDuring = FiniteDateRange(date(11), date(20)),
                 partnerId = PersonId(UUID.randomUUID()),
             )
         val merged = mergeAdjacentIdenticalDrafts(listOf(f1, f2))
@@ -68,7 +68,7 @@ class FeeDecisionGeneratorV2Test {
     fun `FeeBasis produces correct decision`() {
         val feeBasis = createFeeBasis()
         val childBasis = feeBasis.children[2]
-        val decision = feeBasis.toFeeDecision()
+        val decision = feeBasis.toFeeDecision()!!
         assertEquals(
             decision,
             FeeDecision(
@@ -110,7 +110,7 @@ class FeeDecisionGeneratorV2Test {
                         )
                     ),
                 headOfFamilyId = feeBasis.headOfFamilyId,
-                validDuring = feeBasis.range,
+                validDuring = feeBasis.range.asFiniteDateRange()!!,
                 status = FeeDecisionStatus.DRAFT,
                 decisionNumber = null,
                 decisionType = FeeDecisionType.NORMAL,
@@ -137,7 +137,7 @@ private val feeDecision =
     createFeeDecisionFixture(
         status = FeeDecisionStatus.DRAFT,
         decisionType = FeeDecisionType.NORMAL,
-        period = DateRange(date(1), date(31)),
+        period = FiniteDateRange(date(1), date(31)),
         children =
             listOf(
                 createFeeDecisionChildFixture(

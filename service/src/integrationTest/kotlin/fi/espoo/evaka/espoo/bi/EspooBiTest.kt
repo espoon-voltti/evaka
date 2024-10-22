@@ -519,7 +519,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 )
                             ),
                         headOfFamilyId = insert(DevPerson(), DevPersonType.RAW_ROW),
-                        validDuring = DateRange.ofMonth(2019, Month.JANUARY),
+                        validDuring = FiniteDateRange.ofMonth(2019, Month.JANUARY),
                         status = FeeDecisionStatus.SENT,
                         decisionNumber = 999L,
                         decisionType = FeeDecisionType.NORMAL,

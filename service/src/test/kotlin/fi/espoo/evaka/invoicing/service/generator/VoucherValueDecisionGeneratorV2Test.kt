@@ -33,7 +33,7 @@ class VoucherValueDecisionGeneratorV2Test {
     @Test
     fun `VoucherBasis produces correct decision`() {
         val voucherBasis = createVoucherBasis()
-        val decision = voucherBasis.toVoucherValueDecision()
+        val decision = voucherBasis.toVoucherValueDecision()!!
         assertEquals(
             decision,
             VoucherValueDecision(
