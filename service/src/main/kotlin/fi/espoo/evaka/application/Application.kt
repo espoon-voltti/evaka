@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.upsertCitizenUser
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 
 data class CitizenApplicationUpdate(
@@ -74,6 +75,8 @@ data class PlacementProposalStatus(
     val unitConfirmationStatus: PlacementPlanConfirmationStatus,
     val unitRejectReason: PlacementPlanRejectReason?,
     val unitRejectOtherReason: String?,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUser?,
 )
 
 data class PersonApplicationSummary(

@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
@@ -45,6 +46,7 @@ enum class ApplicationSortColumn {
     DUE_DATE,
     START_DATE,
     STATUS,
+    STATUS_LAST_MODIFIED,
     UNIT_NAME,
 }
 
@@ -80,8 +82,8 @@ fun Database.Transaction.insertApplication(
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified)
-VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)})
+INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified, status_modified_at, status_modified_by)
+VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)}, ${bind(now)}, ${bind(createdBy)})
 RETURNING id
 """
             )
@@ -408,6 +410,8 @@ fun Database.Read.fetchApplicationSummaries(
                 "ORDER BY preferredStartDate $sortDir, last_name, first_name"
             ApplicationSortColumn.STATUS ->
                 "ORDER BY application_status $sortDir, last_name, first_name"
+            ApplicationSortColumn.STATUS_LAST_MODIFIED ->
+                "ORDER BY a.status_modified_at $sortDir, last_name, first_name"
             ApplicationSortColumn.UNIT_NAME -> "ORDER BY d.name $sortDir, last_name, first_name"
         }.exhaust()
 
@@ -457,10 +461,15 @@ fun Database.Read.fetchApplicationSummaries(
             cpu.id AS current_placement_unit_id,
             cpu.name AS current_placement_unit_name,
             count(*) OVER () AS total,
-            pu.preferredUnits
+            pu.preferredUnits,
+            a.status_modified_at,
+            e.id AS status_modified_by_id,
+            e.name AS status_modified_by_name,
+            e.type AS status_modified_by_type
         FROM application a
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
+        LEFT JOIN evaka_user e ON e.id = a.status_modified_by
         JOIN daycare d ON COALESCE(pp.unit_id, (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
         JOIN care_area ca ON d.care_area_id = ca.id
         JOIN (
@@ -553,15 +562,20 @@ fun Database.Read.fetchApplicationSummaries(
                     attachmentCount = column("attachmentCount"),
                     additionalDaycareApplication = column("additionaldaycareapplication"),
                     placementProposalStatus =
-                        column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
-                            ?.takeIf { status == ApplicationStatus.WAITING_UNIT_CONFIRMATION }
-                            ?.let {
-                                PlacementProposalStatus(
-                                    unitConfirmationStatus = it,
-                                    unitRejectReason = column("unit_reject_reason"),
-                                    unitRejectOtherReason = column("unit_reject_other_reason"),
-                                )
-                            },
+                        column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")?.let {
+                            PlacementProposalStatus(
+                                unitConfirmationStatus = it,
+                                unitRejectReason = column("unit_reject_reason"),
+                                unitRejectOtherReason = column("unit_reject_other_reason"),
+                                modifiedAt = column("status_modified_at"),
+                                modifiedBy =
+                                    EvakaUser(
+                                        id = column("status_modified_by_id"),
+                                        name = column("status_modified_by_name"),
+                                        type = column("status_modified_by_type"),
+                                    ),
+                            )
+                        },
                     placementPlanStartDate = column("placement_plan_start_date"),
                     placementPlanUnitName = column("placement_plan_unit_name"),
                     currentPlacementUnit =

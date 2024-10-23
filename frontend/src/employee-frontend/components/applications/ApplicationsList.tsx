@@ -459,6 +459,23 @@ const ApplicationsList = React.memo(function Applications({
           )}
         </FixedSpaceRow>
       </Td>
+      <Td data-qa="application-status-modifed-metadata">
+        {application.placementProposalStatus?.modifiedAt ? (
+          <Tooltip
+            tooltip={
+              application.placementProposalStatus.modifiedBy
+                ? i18n.unit.placementProposals.statusLastModifiedBy(
+                    application.placementProposalStatus.modifiedBy.name
+                  )
+                : null
+            }
+          >
+            {application.placementProposalStatus.modifiedAt.format()}
+          </Tooltip>
+        ) : (
+          i18n.unit.placementProposals.unknown
+        )}
+      </Td>
 
       <RequireRole oneOf={['SERVICE_WORKER']}>
         <Td>
@@ -566,6 +583,12 @@ const ApplicationsList = React.memo(function Applications({
                 onClick={toggleSort('STATUS')}
               >
                 {i18n.applications.list.status}
+              </SortableTh>
+              <SortableTh
+                sorted={isSorted('STATUS_LAST_MODIFIED')}
+                onClick={toggleSort('STATUS_LAST_MODIFIED')}
+              >
+                {i18n.applications.list.statusLastModified}
               </SortableTh>
               <RequireRole oneOf={['SERVICE_WORKER']}>
                 <Th>{i18n.applications.list.note}</Th>
