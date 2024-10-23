@@ -673,6 +673,7 @@ function StaffAttendanceDetailsModal<
                           hasStaffOccupancyEffect: value
                         })
                       }
+                      data-qa="has-staff-occupancy-effect"
                     />
                   </FullGridWidth>
                   <Gap size="xs" />

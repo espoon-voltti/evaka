@@ -354,6 +354,23 @@ export class StaffAttendanceDetailsModal extends Element {
     await this.newAttendanceButton.click()
   }
 
+  async checkHasStaffOccupancyEffect(checked: boolean) {
+    const checkbox = new Checkbox(
+      this.findByDataQa('has-staff-occupancy-effect')
+    )
+    if (checked) {
+      await checkbox.check()
+    } else {
+      await checkbox.uncheck()
+    }
+  }
+
+  async assertHasStaffOccupancyEffectChecked(checked: boolean) {
+    await new Checkbox(
+      this.findByDataQa('has-staff-occupancy-effect')
+    ).waitUntilChecked(checked)
+  }
+
   async save() {
     const button = new AsyncButton(this.findByDataQa('save'))
     await button.click()
