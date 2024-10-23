@@ -46,6 +46,7 @@ enum class ApplicationSortColumn {
     DUE_DATE,
     START_DATE,
     STATUS,
+    STATUS_LAST_MODIFIED,
     UNIT_NAME,
 }
 
@@ -409,6 +410,8 @@ fun Database.Read.fetchApplicationSummaries(
                 "ORDER BY preferredStartDate $sortDir, last_name, first_name"
             ApplicationSortColumn.STATUS ->
                 "ORDER BY application_status $sortDir, last_name, first_name"
+            ApplicationSortColumn.STATUS_LAST_MODIFIED ->
+                "ORDER BY a.status_modified_at $sortDir, last_name, first_name"
             ApplicationSortColumn.UNIT_NAME -> "ORDER BY d.name $sortDir, last_name, first_name"
         }.exhaust()
 
@@ -458,10 +461,15 @@ fun Database.Read.fetchApplicationSummaries(
             cpu.id AS current_placement_unit_id,
             cpu.name AS current_placement_unit_name,
             count(*) OVER () AS total,
-            pu.preferredUnits
+            pu.preferredUnits,
+            a.status_modified_at,
+            e.id AS status_modified_by_id,
+            e.name AS status_modified_by_name,
+            e.type AS status_modified_by_type
         FROM application a
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
+        LEFT JOIN evaka_user e ON e.id = a.status_modified_by
         JOIN daycare d ON COALESCE(pp.unit_id, (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
         JOIN care_area ca ON d.care_area_id = ca.id
         JOIN (

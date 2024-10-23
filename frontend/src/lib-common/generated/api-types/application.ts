@@ -220,6 +220,7 @@ export type ApplicationSortColumn =
   | 'DUE_DATE'
   | 'START_DATE'
   | 'STATUS'
+  | 'STATUS_LAST_MODIFIED'
   | 'UNIT_NAME'
 
 /**

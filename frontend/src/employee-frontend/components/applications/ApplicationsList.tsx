@@ -584,6 +584,12 @@ const ApplicationsList = React.memo(function Applications({
               >
                 {i18n.applications.list.status}
               </SortableTh>
+              <SortableTh
+                sorted={isSorted('STATUS_LAST_MODIFIED')}
+                onClick={toggleSort('STATUS_LAST_MODIFIED')}
+              >
+                {i18n.applications.list.statusLastModified}
+              </SortableTh>
               <RequireRole oneOf={['SERVICE_WORKER']}>
                 <Th>{i18n.applications.list.note}</Th>
               </RequireRole>
