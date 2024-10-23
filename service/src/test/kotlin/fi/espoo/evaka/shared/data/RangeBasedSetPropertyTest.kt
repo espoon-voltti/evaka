@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.data
 import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.list
+import io.kotest.property.arbitrary.positiveInt
 import io.kotest.property.checkAll
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -24,7 +25,9 @@ abstract class RangeBasedSetPropertyTest<
 
     protected abstract fun arbitrarySet(): Arb<RangeSet>
 
-    protected abstract fun arbitraryRange(): Arb<Range>
+    protected abstract fun arbitraryRange(duration: Arb<Int> = defaultDuration()): Arb<Range>
+
+    protected open fun defaultDuration(): Arb<Int> = Arb.positiveInt(max = 20)
 
     @Test
     fun `it never contains overlapping or adjacent ranges`() {
@@ -55,10 +58,11 @@ abstract class RangeBasedSetPropertyTest<
     }
 
     @Test
-    fun `it contains every range added to it`() {
+    fun `it contains every range added to it, and every range returned by its ranges function`() {
         runBlocking {
             checkAll(Arb.list(arbitraryRange())) { ranges ->
                 val set = emptySet().addAll(ranges)
+                assertTrue(ranges.all { set.contains(it) })
                 assertTrue(set.ranges().all { set.contains(it) })
             }
         }

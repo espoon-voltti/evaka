@@ -25,6 +25,8 @@ class DateMap<T> private constructor(entries: List<Pair<FiniteDateRange, T>>) :
     override fun range(start: LocalDate, end: LocalDate): FiniteDateRange =
         FiniteDateRange(start, end)
 
+    override fun range(point: LocalDate): FiniteDateRange = FiniteDateRange(point, point)
+
     override fun equals(other: Any?): Boolean = other is DateMap<*> && this.entries == other.entries
 
     override fun hashCode(): Int = Objects.hash(entries)
