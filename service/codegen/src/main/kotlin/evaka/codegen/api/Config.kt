@@ -55,6 +55,7 @@ object Imports {
     val dateRange = TsImport.Default(LibCommon / "date-range.ts", "DateRange")
     val timeInterval = TsImport.Default(LibCommon / "time-interval.ts", "TimeInterval")
     val timeRange = TsImport.Default(LibCommon / "time-range.ts", "TimeRange")
+    val yearMonth = TsImport.Default(LibCommon / "year-month.ts", "YearMonth")
     val vasuQuestion = TsImport.Named(LibCommon / "api-types/vasu.ts", "VasuQuestion")
     val mapVasuQuestion = TsImport.Named(LibCommon / "api-types/vasu.ts", "mapVasuQuestion")
     val messageReceiver = TsImport.Named(LibCommon / "api-types/messaging.ts", "MessageReceiver")
@@ -211,15 +212,16 @@ val defaultMetadata =
         ExternalId::class to TsPlain("string"),
         YearMonth::class to
             TsExternalTypeRef(
-                "LocalDate",
+                "YearMonth",
                 keyRepresentation = null,
-                deserializeJson = { error("YearMonth in JSON is not supported") },
-                serializePathVariable = { value -> value + ".formatExotic('yyyy-MM')" },
-                serializeRequestParam = { value, nullable ->
-                    value +
-                        if (nullable) "?.formatExotic('yyyy-MM')" else ".formatExotic('yyyy-MM')"
+                deserializeJson = { json ->
+                    TsCode { "${ref(Imports.yearMonth)}.parseIso(${inline(json)})" }
                 },
-                Imports.localDate,
+                serializePathVariable = { value -> value + ".formatIso()" },
+                serializeRequestParam = { value, nullable ->
+                    value + if (nullable) "?.formatIso(')" else ".formatIso()"
+                },
+                Imports.yearMonth,
             ),
     ) +
         TypeMetadata(

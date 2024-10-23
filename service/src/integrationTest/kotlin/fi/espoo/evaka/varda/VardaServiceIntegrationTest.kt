@@ -39,6 +39,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertVardaServiceNeed
 import fi.espoo.evaka.shared.dev.upsertServiceNeedOption
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultClub
@@ -310,7 +311,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             db,
             testChild_1,
             testAdult_1.id,
-            DateRange(snStartDate, snEndDate),
+            FiniteDateRange(snStartDate, snEndDate),
             since.toInstant(),
         )
 
@@ -403,7 +404,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 db,
                 testChild_1,
                 testAdult_1.id,
-                DateRange(startDate, endDate),
+                FiniteDateRange(startDate, endDate),
                 since.toInstant(),
             )
 
@@ -413,14 +414,14 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 db,
                 testChild_1,
                 testAdult_1.id,
-                DateRange(startDate2, null),
+                FiniteDateRange(startDate2, startDate.plusYears(1)),
                 since.toInstant(),
             )
         createFeeDecision(
             db,
             testChild_1,
             testAdult_1.id,
-            DateRange(startDate.minusDays(10), startDate.minusDays(1)),
+            FiniteDateRange(startDate.minusDays(10), startDate.minusDays(1)),
             since.toInstant(),
         )
 
@@ -443,7 +444,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             db,
             testChild_1,
             testAdult_1.id,
-            DateRange(lastFeedecisionCutoffDate, lastFeedecisionCutoffDate),
+            FiniteDateRange(lastFeedecisionCutoffDate, lastFeedecisionCutoffDate),
             since.toInstant(),
         )
 
@@ -468,7 +469,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             db,
             testChild_1,
             testAdult_1.id,
-            DateRange(lastFeedecisionCutoffDate, lastFeedecisionCutoffDate.plusDays(1)),
+            FiniteDateRange(lastFeedecisionCutoffDate, lastFeedecisionCutoffDate.plusDays(1)),
             since.toInstant(),
         )
 
@@ -502,7 +503,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             createVoucherDecision(
                 db,
                 startDate2,
-                null,
+                startDate2.plusYears(1),
                 testDaycare.id,
                 100,
                 100,
@@ -609,10 +610,12 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val childId = testChild_1.id
         db.transaction { it.insertVardaChild(childId) }
         val since = HelsinkiDateTime.now()
-        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val serviceNeedPeriod =
+            FiniteDateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        val voucherDecisionPeriod =
+            FiniteDateRange(feeDecisionPeriod.end.plusDays(1), feeDecisionPeriod.end.plusYears(1))
         createServiceNeedAndFeeData(
             testChild_1,
             testAdult_1,
@@ -629,7 +632,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         assertVardaDecision(
             vardaDecision,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!,
+            serviceNeedPeriod.end,
             serviceNeedPeriod.start.minusDays(15),
             1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble(),
@@ -818,10 +821,12 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `updateChildData removes all related varda data when last service need is removed from evaka`() {
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
-        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val serviceNeedPeriod =
+            FiniteDateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        val voucherDecisionPeriod =
+            FiniteDateRange(feeDecisionPeriod.end.plusDays(1), feeDecisionPeriod.end.plusYears(1))
         val id =
             createServiceNeedAndFeeData(
                 testChild_1,
@@ -859,13 +864,13 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         assertVardaElementCounts(0, 0, 0)
 
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
         val fdId =
             createFeeDecision(
                 db,
                 testChild_1,
                 testAdult_1.id,
-                DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
+                feeDecisionPeriod,
                 since.toInstant(),
                 FeeDecisionStatus.WAITING_FOR_SENDING,
             )
@@ -912,23 +917,23 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `updateChildData sends child service need to varda only when voucher value decision is created in evaka`() {
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
-        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val serviceNeedPeriod =
+            FiniteDateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!,
+            serviceNeedPeriod.end,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(0, 0, 0)
 
-        val voucherDecisionPeriod = DateRange(serviceNeedPeriod.start, null)
         createVoucherDecision(
             db,
-            voucherDecisionPeriod.start,
-            voucherDecisionPeriod.end,
+            serviceNeedPeriod.start,
+            serviceNeedPeriod.end,
             testDaycare.id,
             VOUCHER_VALUE,
             VOUCHER_CO_PAYMENT,
@@ -946,7 +951,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         assertVardaDecision(
             vardaDecision,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!,
+            serviceNeedPeriod.end,
             serviceNeedPeriod.start.minusDays(15),
             1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble(),
@@ -957,7 +962,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 maksun_peruste_koodi = "MP03",
                 asiakasmaksu = 50.0,
                 palveluseteli_arvo = 100.0,
-                alkamis_pvm = voucherDecisionPeriod.start,
+                alkamis_pvm = serviceNeedPeriod.start,
                 paattymis_pvm = serviceNeedPeriod.end,
                 perheen_koko = 2,
                 lahdejarjestelma = "SourceSystemVarda",
@@ -997,15 +1002,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         )
 
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
-        createFeeDecision(
-            db,
-            testChild_1,
-            testAdult_1.id,
-            DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant(),
-        )
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        createFeeDecision(db, testChild_1, testAdult_1.id, feeDecisionPeriod, since.toInstant())
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
@@ -1027,24 +1025,19 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `updateChildData doesn't send blank guardian oid as empty string`() {
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
-        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val serviceNeedPeriod =
+            FiniteDateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!,
+            serviceNeedPeriod.end,
         )
 
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        createFeeDecision(
-            db,
-            testChild_1,
-            testAdult_1.id,
-            DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant(),
-        )
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        createFeeDecision(db, testChild_1, testAdult_1.id, feeDecisionPeriod, since.toInstant())
         db.transaction {
             @Suppress("DEPRECATION")
             it.createUpdate("update person set oph_person_oid = ' ' where id = :id")
@@ -1091,15 +1084,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         )
 
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
-        createFeeDecision(
-            db,
-            testChild_1,
-            testAdult_1.id,
-            DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant(),
-        )
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        createFeeDecision(db, testChild_1, testAdult_1.id, feeDecisionPeriod, since.toInstant())
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
@@ -1131,17 +1117,11 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         )
 
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
         val voucherDecisionPeriod =
-            DateRange(feeDecisionPeriod.end!!.plusDays(1), feeDecisionPeriod.end!!.plusDays(10))
+            FiniteDateRange(feeDecisionPeriod.end.plusDays(1), feeDecisionPeriod.end.plusDays(10))
 
-        createFeeDecision(
-            db,
-            testChild_1,
-            testAdult_2.id,
-            DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant(),
-        )
+        createFeeDecision(db, testChild_1, testAdult_2.id, feeDecisionPeriod, since.toInstant())
         createVoucherDecision(
             db,
             voucherDecisionPeriod.start,
@@ -1187,15 +1167,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         )
 
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
-        createFeeDecision(
-            db,
-            testChild_1,
-            testAdult_2.id,
-            DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant(),
-        )
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        createFeeDecision(db, testChild_1, testAdult_2.id, feeDecisionPeriod, since.toInstant())
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
 
@@ -1251,8 +1224,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        val voucherDecisionPeriod =
+            FiniteDateRange(feeDecisionPeriod.end.plusDays(1), feeDecisionPeriod.end.plusYears(1))
         val child = testChild_1
         val adult = testAdult_1
         createServiceNeed(
@@ -1262,13 +1236,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
         )
-        createFeeDecision(
-            db,
-            child,
-            adult.id,
-            DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant(),
-        )
+        createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant())
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaCallCounts(1)
         assertVardaElementCounts(1, 1, 1)
@@ -1299,8 +1267,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        val voucherDecisionPeriod =
+            FiniteDateRange(feeDecisionPeriod.end.plusDays(1), feeDecisionPeriod.end.plusYears(1))
         val child = testChild_1
         val adult = testAdult_1
         createServiceNeed(
@@ -1342,11 +1311,17 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
 
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
         val feeDecisionPeriod2 =
-            DateRange(serviceNeedPeriod.start.plusDays(31), serviceNeedPeriod.start.plusDays(70))
+            FiniteDateRange(
+                serviceNeedPeriod.start.plusDays(31),
+                serviceNeedPeriod.start.plusDays(70),
+            )
         val feeDecisionPeriod3 =
-            DateRange(serviceNeedPeriod.start.plusDays(71), serviceNeedPeriod.start.plusDays(100))
+            FiniteDateRange(
+                serviceNeedPeriod.start.plusDays(71),
+                serviceNeedPeriod.start.plusDays(100),
+            )
 
         val child = testChild_1
         val adult = testAdult_1
@@ -1370,7 +1345,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
 
         val child = testChild_1
         val adult = testAdult_1
@@ -1399,10 +1374,12 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `updateChildData retries failed service need addition`() {
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
-        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val serviceNeedPeriod =
+            FiniteDateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        val voucherDecisionPeriod =
+            FiniteDateRange(feeDecisionPeriod.end.plusDays(1), feeDecisionPeriod.end.plusYears(1))
         val snId =
             createServiceNeedAndFeeData(
                 testChild_1,
@@ -1433,7 +1410,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         assertVardaDecision(
             vardaDecision,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!,
+            serviceNeedPeriod.end,
             serviceNeedPeriod.start.minusDays(15),
             2,
             snDefaultDaycare.daycareHoursPerWeek.toDouble(),
@@ -1606,9 +1583,10 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     private fun insertServiceNeedWithFeeDecision(): ServiceNeedId {
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
-        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val serviceNeedPeriod =
+            FiniteDateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod =
-            DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
+            FiniteDateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(30))
 
         val child = testChild_1
         val adult = testAdult_1
@@ -1618,7 +1596,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 snDefaultDaycare,
                 child,
                 serviceNeedPeriod.start,
-                serviceNeedPeriod.end!!,
+                serviceNeedPeriod.end,
                 unitId = testDaycare.id,
             )
         createFeeDecision(
@@ -1671,9 +1649,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         child: DevPerson,
         adult: DevPerson,
         since: HelsinkiDateTime,
-        serviceNeedPeriod: DateRange,
-        feeDecisionPeriod: DateRange,
-        voucherDecisionPeriod: DateRange,
+        serviceNeedPeriod: FiniteDateRange,
+        feeDecisionPeriod: FiniteDateRange,
+        voucherDecisionPeriod: FiniteDateRange,
     ): ServiceNeedId {
         val id =
             createServiceNeed(
@@ -1681,15 +1659,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 snDefaultDaycare,
                 child,
                 serviceNeedPeriod.start,
-                serviceNeedPeriod.end!!,
+                serviceNeedPeriod.end,
             )
-        createFeeDecision(
-            db,
-            child,
-            adult.id,
-            DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant(),
-        )
+        createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant())
         createVoucherDecision(
             db,
             voucherDecisionPeriod.start,
@@ -1824,7 +1796,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         db: Database.Connection,
         child: DevPerson,
         headOfFamilyId: PersonId,
-        period: DateRange,
+        period: FiniteDateRange,
         sentAt: Instant,
         status: FeeDecisionStatus = FeeDecisionStatus.SENT,
         daycareId: DaycareId = testDaycare.id,
@@ -1856,7 +1828,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     private fun createVoucherDecision(
         db: Database.Connection,
         validFrom: LocalDate,
-        validTo: LocalDate?,
+        validTo: LocalDate,
         unitId: DaycareId,
         value: Int,
         coPayment: Int,

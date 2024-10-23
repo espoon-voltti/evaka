@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
+import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 
@@ -174,6 +175,9 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
         fun ofMonth(year: Int, month: Month): FiniteDateRange =
             ofMonth(LocalDate.of(year, month, 1))
 
+        fun ofMonth(yearMonth: YearMonth): FiniteDateRange =
+            ofMonth(LocalDate.of(yearMonth.year, yearMonth.month, 1))
+
         fun ofMonth(date: LocalDate): FiniteDateRange {
             val from = date.with(date.withDayOfMonth(1))
             val to = date.with(lastDayOfMonth())
@@ -232,6 +236,9 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
     companion object {
         fun ofMonth(year: Int, month: Month): DateRange = ofMonth(LocalDate.of(year, month, 1))
 
+        fun ofMonth(yearMonth: YearMonth): DateRange =
+            ofMonth(LocalDate.of(yearMonth.year, yearMonth.month, 1))
+
         fun ofMonth(date: LocalDate): DateRange {
             val from = date.with(date.withDayOfMonth(1))
             val to = date.with(lastDayOfMonth())
@@ -240,21 +247,18 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
     }
 }
 
-fun periodsCanMerge(first: DateRange, second: DateRange): Boolean =
-    first.overlaps(second) || first.end?.let { first.end.plusDays(1) == second.start } ?: false
+fun periodsCanMerge(first: FiniteDateRange, second: FiniteDateRange): Boolean =
+    first.overlaps(second) || first.end.plusDays(1) == second.start
 
-private fun minimalCover(first: DateRange, second: DateRange): DateRange =
-    DateRange(
-        minOf(first.start, second.start),
-        if (first.end == null || second.end == null) null else maxOf(first.end, second.end),
-    )
+private fun minimalCover(first: FiniteDateRange, second: FiniteDateRange): FiniteDateRange =
+    FiniteDateRange(minOf(first.start, second.start), maxOf(first.end, second.end))
 
 private fun <T> simpleEquals(a: T, b: T): Boolean = a == b
 
 fun <T> mergePeriods(
-    values: List<Pair<DateRange, T>>,
+    values: List<Pair<FiniteDateRange, T>>,
     equals: (T, T) -> Boolean = ::simpleEquals,
-): List<Pair<DateRange, T>> {
+): List<Pair<FiniteDateRange, T>> {
     return values
         .sortedBy { (period, _) -> period.start }
         .fold(listOf()) { periods, (period, value) ->
@@ -272,25 +276,28 @@ fun <T> mergePeriods(
         }
 }
 
-fun asDistinctPeriods(periods: List<DateRange>, spanningPeriod: DateRange): List<DateRange> {
+fun asDistinctPeriods(
+    periods: List<FiniteDateRange>,
+    spanningPeriod: FiniteDateRange,
+): List<FiniteDateRange> {
     // Includes the end dates with one day added to fill in gaps in original periods
     val allStartDates =
-        (periods.flatMap { listOf(it.start, it.end?.plusDays(1)) } + spanningPeriod.start)
+        (periods.flatMap { listOf(it.start, it.end.plusDays(1)) } + spanningPeriod.start)
             .asSequence()
             .filterNotNull()
-            .filter { spanningPeriod.start <= it && it <= orMax(spanningPeriod.end) }
+            .filter { spanningPeriod.start <= it && it <= spanningPeriod.end }
             .distinct()
             .sorted()
 
     // Includes the start dates with one day subtracted to fill in gaps in original periods
     val allEndDates =
         (periods.flatMap { listOf(it.end, it.start.minusDays(1)) } + spanningPeriod.end)
-            .filter { spanningPeriod.start <= orMax(it) && orMax(it) <= orMax(spanningPeriod.end) }
+            .filter { spanningPeriod.start <= it && it <= spanningPeriod.end }
             .distinct()
-            .sortedBy { orMax(it) }
+            .sortedBy { it }
 
     return allStartDates
-        .map { start -> DateRange(start, allEndDates.find { end -> start <= orMax(end) }) }
+        .map { start -> FiniteDateRange(start, allEndDates.find { end -> start <= end }!!) }
         .toList()
 }
 
