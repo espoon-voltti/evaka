@@ -885,6 +885,7 @@ data class ThreadWithParticipants(
     val senders: Set<MessageAccountId>,
     val recipients: Set<MessageAccountId>,
     val applicationId: ApplicationId?,
+    val children: Set<ChildId>,
 )
 
 fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
@@ -897,11 +898,13 @@ SELECT
     t.is_copy,
     t.application_id,
     (SELECT array_agg(m2.sender_id)) as senders,
-    (SELECT array_agg(rec.recipient_id)) as recipients
+    (SELECT array_agg(rec.recipient_id)) as recipients,
+    (SELECT coalesce(array_agg(mtc.child_id) FILTER (WHERE mtc.child_id IS NOT NULL), '{}')) as children
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
     JOIN message m2 ON m2.thread_id = t.id
     JOIN message_recipients rec ON rec.message_id = m2.id
+    LEFT JOIN message_thread_children mtc ON mtc.thread_id = t.id
     WHERE m.id = ${bind(messageId)}
     GROUP BY t.id, t.message_type
 """

@@ -1280,6 +1280,42 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `citizen cannot reply to a message if the related placement has ended`() {
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId2)
+                tx.insertGuardian(person2.id, it.id)
+            }
+        }
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_2.id)),
+            user = employee1,
+            now = HelsinkiDateTime.of(placementEnd, LocalTime.NOON),
+        )
+        val threads = getRegularMessageThreads(person2)
+        replyToMessage(
+            user = person2,
+            messageId = threads.first().messages.last().id,
+            recipientAccountIds = setOf(employee1Account),
+            content = "Viimeisen päivän vastaus",
+            now = HelsinkiDateTime.of(placementEnd, LocalTime.NOON).plusMinutes(10),
+        )
+        assertThrows<Forbidden> {
+            replyToMessage(
+                user = person2,
+                messageId = threads.first().messages.last().id,
+                recipientAccountIds = setOf(employee1Account),
+                content = "Se on ohi",
+                now = HelsinkiDateTime.of(placementEnd.plusDays(1), LocalTime.NOON),
+            )
+        }
+    }
+
+    @Test
     fun `recipient list can be filtered by yearsOfBirth`() {
         postNewThread(
             title = "Vappu",

@@ -345,6 +345,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 senders = setOf(accounts.employee1.id),
                 recipients = setOf(accounts.person1.id, accounts.person2.id),
                 applicationId = null,
+                children = setOf(),
             ),
             participants,
         )
@@ -379,6 +380,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 senders = setOf(accounts.employee1.id, accounts.person2.id),
                 recipients = setOf(accounts.person1.id, accounts.person2.id, accounts.employee1.id),
                 applicationId = null,
+                children = setOf(),
             ),
             participants2,
         )
