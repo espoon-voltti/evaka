@@ -459,6 +459,23 @@ const ApplicationsList = React.memo(function Applications({
           )}
         </FixedSpaceRow>
       </Td>
+      <Td data-qa="application-status-modifed-metadata">
+        {application.placementProposalStatus?.modifiedAt ? (
+          <Tooltip
+            tooltip={
+              application.placementProposalStatus.modifiedBy
+                ? i18n.unit.placementProposals.statusLastModifiedBy(
+                    application.placementProposalStatus.modifiedBy.name
+                  )
+                : null
+            }
+          >
+            {application.placementProposalStatus.modifiedAt.format()}
+          </Tooltip>
+        ) : (
+          i18n.unit.placementProposals.unknown
+        )}
+      </Td>
 
       <RequireRole oneOf={['SERVICE_WORKER']}>
         <Td>
