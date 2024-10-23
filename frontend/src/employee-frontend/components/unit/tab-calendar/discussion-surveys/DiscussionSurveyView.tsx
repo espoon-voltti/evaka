@@ -4,7 +4,6 @@
 
 import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
-import partition from 'lodash/partition'
 import React, {
   MutableRefObject,
   useCallback,
@@ -421,13 +420,6 @@ export default React.memo(function DiscussionReservationSurveyView({
                     gp.overlapsWith(eventData.period.asDateRange())
                   )
                 )
-              const reservations = eventData.times.filter(
-                (t) => t.childId !== null
-              )
-              const [reserved, unreserved] = partition(
-                sortedPeriodInvitees,
-                (e) => reservations.some((r) => r.childId === e.child.id)
-              )
 
               return (
                 <>
@@ -435,8 +427,8 @@ export default React.memo(function DiscussionReservationSurveyView({
                     <H3>{t.discussionReservation.surveyInviteeTitle}</H3>
                     <FormFieldGroup>
                       <InviteeSection
-                        reserved={reserved}
-                        unreserved={unreserved}
+                        invitees={sortedPeriodInvitees}
+                        event={eventData}
                       />
                     </FormFieldGroup>
                   </FormSectionGroup>

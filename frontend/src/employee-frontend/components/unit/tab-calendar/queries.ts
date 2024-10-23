@@ -4,6 +4,7 @@
 
 import {
   addCalendarEventTime,
+  clearEventTimesInEventForChild,
   createCalendarEvent,
   deleteCalendarEvent,
   deleteCalendarEventTime,
@@ -73,6 +74,14 @@ export const setCalendarEventTimeReservationMutation = mutation({
   ) => setCalendarEventTimeReservation(arg),
   invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
 })
+
+export const clearChildCalendarEventTimeReservationsForSurveyMutation =
+  mutation({
+    api: (
+      arg: Arg0<typeof clearEventTimesInEventForChild> & { eventId: UUID }
+    ) => clearEventTimesInEventForChild(arg),
+    invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
+  })
 
 export const addCalendarEventTimeMutation = mutation({
   api: (arg: Arg0<typeof addCalendarEventTime>) => addCalendarEventTime(arg),
