@@ -89,7 +89,10 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
         assertThat(rows)
-            .extracting({ it.firstName }, { it.serviceNeed })
-            .containsExactlyInAnyOrder(Tuple("Eka", snDaycareFullDay35.nameFi), Tuple("Toka", null))
+            .extracting({ it.firstName }, { it.hasServiceNeed }, { it.serviceNeed })
+            .containsExactlyInAnyOrder(
+                Tuple("Eka", true, snDaycareFullDay35.nameFi),
+                Tuple("Toka", false, null),
+            )
     }
 }

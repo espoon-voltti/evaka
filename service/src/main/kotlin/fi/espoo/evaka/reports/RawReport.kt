@@ -110,7 +110,7 @@ SELECT
     bc.unit_id as backup_unit_id,
     bc.group_id as backup_group_id,
 
-    sn IS NOT NULL AS has_service_need,
+    sn.id IS NOT NULL AS has_service_need,
     sno.name_fi AS service_need,
     coalesce(sno.part_day, false) AS part_day,
     coalesce(sn.part_week, false) AS part_week,
