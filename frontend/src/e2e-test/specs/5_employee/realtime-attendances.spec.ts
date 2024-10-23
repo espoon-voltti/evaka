@@ -388,6 +388,8 @@ describe('Realtime staff attendances', () => {
 
       let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '15:00')
+      await modal.assertHasStaffOccupancyEffectChecked(true)
+      await modal.checkHasStaffOccupancyEffect(false)
       await modal.save()
 
       await staffAttendances.assertTableRow({
@@ -397,6 +399,8 @@ describe('Realtime staff attendances', () => {
       })
 
       modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.assertHasStaffOccupancyEffectChecked(false)
+
       await waitUntilEqual(() => modal.summary(), {
         plan: '–',
         realized: '07:00 – 15:00',

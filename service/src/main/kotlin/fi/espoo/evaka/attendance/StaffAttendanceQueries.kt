@@ -170,7 +170,7 @@ RETURNING id
                 sql(
                     """
 UPDATE staff_attendance_realtime
-SET group_id = ${bind(groupId)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, type = ${bind(type)}, departed_automatically = ${bind(departedAutomatically)}
+SET group_id = ${bind(groupId)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, occupancy_coefficient = ${bind(occupancyCoefficient)}, type = ${bind(type)}, departed_automatically = ${bind(departedAutomatically)}
 WHERE id = ${bind(attendanceId)}
 """
                 )
