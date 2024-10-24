@@ -8,6 +8,7 @@ import React, {
   useContext,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -209,6 +210,7 @@ const SingleMessage = React.memo(
 interface Props {
   accountId: UUID
   thread: CitizenMessageThread.Regular
+  allowedReplyAccounts: Record<string, string[]>
   closeThread: () => void
   onThreadDeleted: () => void
 }
@@ -230,6 +232,7 @@ export default React.memo(
         sensitive,
         children
       },
+      allowedReplyAccounts,
       closeThread,
       onThreadDeleted
     }: Props,
@@ -281,6 +284,16 @@ export default React.memo(
     const sendEnabled =
       !!replyContent &&
       recipients.some((r) => r.selected && isPrimaryRecipient(r))
+
+    const allowReply = useMemo(() => {
+      // applications don't have children, enable reply for them
+      if (children.length === 0) return true
+
+      const allowedAccounts = new Set(
+        children.flatMap((c) => allowedReplyAccounts[c.childId])
+      )
+      return recipients.every((r) => allowedAccounts.has(r.id))
+    }, [allowedReplyAccounts, children, recipients])
 
     return (
       <ThreadContainer data-qa="thread-reader">
@@ -359,7 +372,7 @@ export default React.memo(
             <>
               <Gap size="s" />
               <ActionRow justifyContent="space-between">
-                {messageType === 'MESSAGE' ? (
+                {messageType === 'MESSAGE' && allowReply ? (
                   <ReplyToThreadButton
                     appearance="inline"
                     icon={faReply}
