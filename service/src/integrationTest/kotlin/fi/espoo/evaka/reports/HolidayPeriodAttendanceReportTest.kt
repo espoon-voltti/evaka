@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
@@ -36,6 +37,7 @@ import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
@@ -560,6 +562,155 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             }
     }
 
+    @Test
+    fun `Report does not count preschoolers on term break to non-responders`() {
+        val monday = holidayPeriod.period.start // 2024-12-23
+        val testUnitData = initTestUnitData(monday)
+        val testData = initTestPlacementData(monday, testUnitData[0])
+        // add preschooler
+        val placementDuration = FiniteDateRange(monday.minusMonths(1), monday.plusMonths(5))
+        val testChildEmil =
+            DevPerson(
+                ChildId(UUID.randomUUID()),
+                dateOfBirth = monday.minusYears(6),
+                firstName = "Emil",
+                lastName = "Eskarilainen",
+            )
+        val testDataEmil =
+            Pair(
+                testChildEmil,
+                listOf(
+                    DevPlacement(
+                        id = PlacementId(UUID.randomUUID()),
+                        type = PlacementType.PRESCHOOL,
+                        childId = testChildEmil.id,
+                        unitId = testUnitData[0],
+                        startDate = placementDuration.start,
+                        endDate = placementDuration.end,
+                    )
+                ),
+            )
+
+        db.transaction { tx ->
+            tx.insert(testChildEmil, DevPersonType.CHILD)
+            tx.insert(testDataEmil.second[0])
+
+            val term =
+                DevPreschoolTerm(
+                    finnishPreschool = placementDuration,
+                    swedishPreschool = placementDuration,
+                    extendedTerm = placementDuration,
+                    applicationPeriod = placementDuration,
+                    termBreaks = DateSet.ofDates(monday, monday.plusDays(1), monday.plusDays(2)),
+                )
+            tx.insert(term)
+        }
+
+        val reportResultsByDate =
+            holidayPeriodAttendanceReport
+                .getHolidayPeriodAttendanceReport(
+                    dbInstance(),
+                    mockClock,
+                    adminLoginUser,
+                    testUnitData[0],
+                    holidayPeriod.id,
+                )
+                .associateBy { it.date }
+
+        val expectedMonday =
+            HolidayPeriodAttendanceReportRow(
+                absentCount = 2,
+                requiredStaff = 0,
+                presentChildren = emptyList(),
+                assistanceChildren = emptyList(),
+                noResponseChildren =
+                    listOf(testData[1].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
+                date = monday,
+                presentOccupancyCoefficient = 0.0,
+            )
+
+        val expectedTuesday =
+            HolidayPeriodAttendanceReportRow(
+                absentCount = 0,
+                requiredStaff = 2,
+                presentChildren =
+                    testData.slice(0..2).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
+                    },
+                assistanceChildren =
+                    listOf(testData[2].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
+                noResponseChildren = emptyList(),
+                date = monday.plusDays(1),
+                presentOccupancyCoefficient = 8.25,
+            )
+
+        val expectedWednesday =
+            HolidayPeriodAttendanceReportRow(
+                absentCount = 0,
+                requiredStaff = 1,
+                presentChildren =
+                    listOf(testData[0]).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
+                    },
+                assistanceChildren = emptyList(),
+                noResponseChildren =
+                    testData.slice(1..2).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
+                    },
+                date = monday.plusDays(2),
+                presentOccupancyCoefficient = 1.75,
+            )
+
+        val expectedThursday =
+            HolidayPeriodAttendanceReportRow(
+                absentCount = 1,
+                requiredStaff = 1,
+                presentChildren =
+                    (testData.slice(0..1)).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
+                    },
+                assistanceChildren = emptyList(),
+                noResponseChildren =
+                    listOf(testDataEmil).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
+                    },
+                date = monday.plusDays(3),
+                presentOccupancyCoefficient = 2.75,
+            )
+        val expectedFriday =
+            HolidayPeriodAttendanceReportRow(
+                absentCount = 2,
+                requiredStaff = 1,
+                presentChildren =
+                    listOf(testData[2].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
+                assistanceChildren =
+                    listOf(testData[2].first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
+                noResponseChildren =
+                    listOf(testDataEmil.first).map {
+                        ChildWithName(it.id, it.firstName, it.lastName)
+                    },
+                date = monday.plusDays(4),
+                presentOccupancyCoefficient = 5.5,
+            )
+
+        listOf(expectedMonday, expectedTuesday, expectedWednesday, expectedThursday, expectedFriday)
+            .forEachIndexed { index, expected ->
+                assertReportDay(
+                    expected,
+                    reportResultsByDate[monday.plusDays(index.toLong())]
+                        ?: fail("${index + 1}. date not found"),
+                )
+            }
+    }
+
     private fun initTestUnitData(monday: LocalDate): List<DaycareId> {
         return db.transaction { tx ->
             val areaAId = tx.insert(DevCareArea(name = "Area A", shortName = "Area A"))
@@ -571,7 +722,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         name = "Daycare A",
                         areaId = areaAId,
                         openingDate = monday.minusDays(7),
-                        type = setOf(CareType.CENTRE),
+                        type = setOf(CareType.CENTRE, CareType.PRESCHOOL),
                         operationTimes =
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
@@ -671,9 +822,9 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             val defaultPlacementDuration =
                 FiniteDateRange(monday.minusMonths(1), monday.plusMonths(5))
 
-            // 3 children
+            // 4 children
             // A: < 3, no assistance             -> 1.75 coefficient
-            // B: > 3, no assistance             -> 1.00 coefficient
+            // B, V: > 3, no assistance          -> 1.00 coefficient
             // C: > 3, assistance factor of 5.50 -> 5.50 coefficient
 
             val placementA =

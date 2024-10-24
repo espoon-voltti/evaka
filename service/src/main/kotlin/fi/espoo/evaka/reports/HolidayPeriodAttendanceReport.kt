@@ -9,7 +9,9 @@ import fi.espoo.evaka.absence.getAbsences
 import fi.espoo.evaka.assistance.getAssistanceFactorsForChildrenOverRange
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.document.childdocument.ChildBasics
 import fi.espoo.evaka.holidayperiod.getHolidayPeriod
 import fi.espoo.evaka.placement.PlacementType
@@ -65,11 +67,29 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         tx.getHolidayPeriod(periodId) ?: throw BadRequest("No such holiday period")
                     val holidays = getHolidays(holidayPeriod.period)
 
+                    val relevantTermBreaks =
+                        tx.getPreschoolTerms()
+                            .filter { term ->
+                                val termDuration =
+                                    if (unit.language == Language.sv) term.swedishPreschool
+                                    else term.finnishPreschool
+                                termDuration.overlaps(holidayPeriod.period)
+                            }
+                            .map { activeTerm ->
+                                activeTerm.termBreaks.intersection(listOf(holidayPeriod.period))
+                            }
+
                     // report result days
                     val periodDays =
                         holidayPeriod.period
                             .dates()
-                            .map { PeriodDay(it, holidays.contains(it)) }
+                            .map {
+                                PeriodDay(
+                                    it,
+                                    holidays.contains(it),
+                                    relevantTermBreaks.any { termBreak -> termBreak.includes(it) },
+                                )
+                            }
                             .filter {
                                 unitOperationDays.contains(it.date.dayOfWeek.value) &&
                                     (unit.shiftCareOpenOnHolidays || !it.isHoliday)
@@ -132,7 +152,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         )
 
                     // collect daily report values
-                    periodDays.map { (date) ->
+                    periodDays.map { (date, _, isTermBreak) ->
                         val dailyDirectlyPlacedData =
                             directlyPlacedChildData.filter { sn ->
                                 sn.validity.includes(date) &&
@@ -224,12 +244,13 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                             requiredStaff = staffNeedAtDate,
                             noResponseChildren =
                                 noResponses
-                                    // expect a response always if full shift care, based on
-                                    // operation days otherwise
+                                    // don't expect a response when:
+                                    // - it's not an operation day for child
+                                    // - child is only in preschool, and it's a term break
                                     .filter {
-                                        (it.shiftCareType == ShiftCareType.FULL ||
-                                            operationDaysByChild[it.child.id]?.contains(date) ==
-                                                true)
+                                        operationDaysByChild[it.child.id]?.contains(date) == true &&
+                                            !(isTermBreak &&
+                                                it.placementType == PlacementType.PRESCHOOL)
                                     }
                                     .map { (child) ->
                                         ChildWithName(
@@ -250,7 +271,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
     }
 }
 
-data class PeriodDay(val date: LocalDate, val isHoliday: Boolean)
+data class PeriodDay(val date: LocalDate, val isHoliday: Boolean, val isTermBreak: Boolean)
 
 data class ChildWithName(val id: PersonId, val firstName: String, val lastName: String)
 
