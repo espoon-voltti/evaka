@@ -1,10 +1,25 @@
 ALTER TABLE invoice_correction ADD COLUMN target_month date;
 
+-- It seems that there has been some bug in the past that has caused invoice corrections to be applied too many times.
+-- Just delete the affected invoice corrections.
+WITH buggy_corrections AS (
+    SELECT id FROM invoice_correction ic
+    WHERE
+        ic.applied_completely AND
+        (SELECT SUM(ir.amount * ir.unit_price) FROM invoice_row ir WHERE ir.correction_id = ic.id) <> ic.amount * ic.unit_price
+), updated_rows AS (
+    UPDATE invoice_row
+    SET correction_id = NULL
+    WHERE correction_id IN (SELECT id FROM buggy_corrections)
+)
+DELETE FROM invoice_correction WHERE id IN (SELECT id FROM buggy_corrections);
+
 WITH applied_corrections AS (
     SELECT ic.id AS original_correction_id, ext.uuid_generate_v1mc() AS new_correction_id, ir.id AS invoice_row_id, ic.created, ic.head_of_family_id, ic.child_id, ic.unit_id, ic.product, ic.period, ir.amount, ir.unit_price, ic.description, ic.note, i.period_start AS target_month
     FROM invoice_correction ic
     JOIN invoice_row ir ON ir.correction_id = ic.id
     JOIN invoice i ON ir.invoice_id = i.id
+    WHERE i.status <> 'DRAFT'
 ), inserted_corrections AS (
     INSERT INTO invoice_correction (id, created, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note, applied_completely, target_month)
     SELECT ac.new_correction_id, ac.created, ac.head_of_family_id, ac.child_id, ac.unit_id, ac.product, ac.period, ac.amount, ac.unit_price, ac.description, ac.note, FALSE, ac.target_month
