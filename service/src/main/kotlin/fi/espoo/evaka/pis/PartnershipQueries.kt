@@ -27,14 +27,22 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
             fp1.conflict,
             ${aliasedPersonColumns("p1")},
             ${aliasedPersonColumns("p2")},
+            fp1.create_source,
             fp1.created_at,
             fp1.created_by,
+            (SELECT name FROM evaka_user WHERE id = fp1.created_by) AS created_by_name,
+            fp1.modify_source,
             fp1.modified_at,
-            fp1.modified_by
+            fp1.modified_by,
+            (SELECT name FROM evaka_user WHERE id = fp1.modified_by) AS modified_by_name,
+            fp1.created_from_application,
+            a.type AS created_from_application_type,
+            a.created AS created_from_application_created
         FROM fridge_partner fp1
         JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
         JOIN person p2 ON fp2.person_id = p2.id
+        LEFT JOIN application a ON fp1.created_from_application = a.id
         WHERE fp1.partnership_id = ${bind(id)}
         """
             )
@@ -56,14 +64,22 @@ SELECT
     fp1.conflict,
     ${aliasedPersonColumns("p1")},
     ${aliasedPersonColumns("p2")},
+    fp1.create_source,
     fp1.created_at,
     fp1.created_by,
+    (SELECT name FROM evaka_user WHERE id = fp1.created_by) AS created_by_name,
+    fp1.modify_source,
     fp1.modified_at,
-    fp1.modified_by
+    fp1.modified_by,
+    (SELECT name FROM evaka_user WHERE id = fp1.modified_by) AS modified_by_name,
+    fp1.created_from_application,
+    a.type AS created_from_application_type,
+    a.created AS created_from_application_created
 FROM fridge_partner fp1
 JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
 JOIN person p1 ON fp1.person_id = p1.id
 JOIN person p2 ON fp2.person_id = p2.id
+LEFT JOIN application a ON fp1.created_from_application = a.id
 WHERE fp1.person_id = ${bind(personId)} OR fp2.person_id = ${bind(personId)}
 AND (${bind(includeConflicts)} OR fp1.conflict = false)
 """
@@ -138,14 +154,19 @@ fun Database.Transaction.createPartnership(
             fp1.create_source,
             fp1.created_at,
             fp1.created_by,
+            (SELECT name FROM evaka_user WHERE id = fp1.created_by) AS created_by_name,
             fp1.modify_source,
             fp1.modified_at,
             fp1.modified_by,
-            fp1.created_from_application
+            (SELECT name FROM evaka_user WHERE id = fp1.modified_by) AS modified_by_name,
+            fp1.created_from_application,
+            a.type AS created_from_application_type,
+            a.created AS created_from_application_created
         FROM new_fridge_partner fp1
         JOIN new_fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
         JOIN person p2 ON fp2.person_id = p2.id
+        LEFT JOIN application a ON fp1.created_from_application = a.id
         """
             )
         }
@@ -208,6 +229,20 @@ private val toPartnership: (String, String) -> Row.() -> Partnership =
                 startDate = column("start_date"),
                 endDate = column("end_date"),
                 conflict = column("conflict"),
+                creationModificationMetadata =
+                    CreationModificationMetadata(
+                        createSource = column("create_source"),
+                        createdAt = column("created_at"),
+                        createdBy = column("created_by"),
+                        createdByName = column("created_by_name"),
+                        modifySource = column("modify_source"),
+                        modifiedAt = column("modified_at"),
+                        modifiedBy = column("modified_by"),
+                        modifiedByName = column("modified_by_name"),
+                        createdFromApplication = column("created_from_application"),
+                        createdFromApplicationType = column("created_from_application_type"),
+                        createdFromApplicationCreated = column("created_from_application_created"),
+                    ),
             )
         }
     }
