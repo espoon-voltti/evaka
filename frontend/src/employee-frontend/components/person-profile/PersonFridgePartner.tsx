@@ -11,6 +11,7 @@ import { wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -147,6 +148,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                 <Th>{i18n.common.form.socialSecurityNumber}</Th>
                 <Th>{i18n.common.form.startDate}</Th>
                 <Th>{i18n.common.form.endDate}</Th>
+                <Th>{i18n.common.form.lastModified}</Th>
                 <Th />
                 <Th />
               </Tr>
@@ -159,55 +161,83 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
               ).map(({ permittedActions, data: fridgePartner }, i) =>
                 fridgePartner.partners
                   .filter((p) => p.id !== id)
-                  .map((partner: PersonJSON) => (
-                    <Tr
-                      key={`${partner.id}-${i}`}
-                      data-qa="table-fridge-partner-row"
-                    >
-                      <NameTd>
-                        <Link to={`/profile/${partner.id}`}>
-                          {formatName(
-                            partner.firstName,
-                            partner.lastName,
-                            i18n,
-                            true
+                  .map((partner: PersonJSON) => {
+                    const modifiedAt =
+                      fridgePartner?.creationModificationMetadata?.modifiedAt ||
+                      fridgePartner?.creationModificationMetadata?.createdAt
+                    const modifiedByName =
+                      fridgePartner?.creationModificationMetadata
+                        ?.modifiedByName ||
+                      fridgePartner?.creationModificationMetadata?.createdByName
+
+                    return (
+                      <Tr
+                        key={`${partner.id}-${i}`}
+                        data-qa="table-fridge-partner-row"
+                      >
+                        <NameTd>
+                          <Link to={`/profile/${partner.id}`}>
+                            {formatName(
+                              partner.firstName,
+                              partner.lastName,
+                              i18n,
+                              true
+                            )}
+                          </Link>
+                        </NameTd>
+                        <Td>{partner.socialSecurityNumber}</Td>
+                        <DateTd>{fridgePartner.startDate.format()}</DateTd>
+                        <DateTd>{fridgePartner.endDate?.format()}</DateTd>
+                        <Td>
+                          {modifiedAt ? (
+                            <Tooltip
+                              tooltip={
+                                modifiedByName
+                                  ? i18n.common.form.lastModifiedBy(
+                                      modifiedByName
+                                    )
+                                  : null
+                              }
+                              position="left"
+                            >
+                              {modifiedAt.format()}
+                            </Tooltip>
+                          ) : (
+                            i18n.common.unknown
                           )}
-                        </Link>
-                      </NameTd>
-                      <Td>{partner.socialSecurityNumber}</Td>
-                      <DateTd>{fridgePartner.startDate.format()}</DateTd>
-                      <DateTd>{fridgePartner.endDate?.format()}</DateTd>
-                      <ButtonsTd>
-                        <Toolbar
-                          dateRange={fridgePartner}
-                          conflict={fridgePartner.conflict}
-                          onRetry={
-                            fridgePartner.conflict
-                              ? () => {
-                                  void retryPartnershipResult({
-                                    partnershipId: fridgePartner.id
-                                  }).then(() => reload())
-                                }
-                              : undefined
-                          }
-                          onEdit={() => {
-                            setSelectedPartnershipId(fridgePartner.id)
-                            toggleUiMode(
-                              `edit-fridge-partner-${fridgePartner.id}`
-                            )
-                          }}
-                          onDelete={() => {
-                            setSelectedPartnershipId(fridgePartner.id)
-                            toggleUiMode(
-                              `remove-fridge-partner-${fridgePartner.id}`
-                            )
-                          }}
-                          editable={permittedActions.includes('UPDATE')}
-                          deletable={permittedActions.includes('DELETE')}
-                        />
-                      </ButtonsTd>
-                    </Tr>
-                  ))
+                        </Td>
+                        <ButtonsTd>
+                          <Toolbar
+                            dateRange={fridgePartner}
+                            conflict={fridgePartner.conflict}
+                            onRetry={
+                              fridgePartner.conflict
+                                ? () => {
+                                    void retryPartnershipResult({
+                                      partnershipId: fridgePartner.id
+                                    }).then(() => reload())
+                                  }
+                                : undefined
+                            }
+                            onEdit={() => {
+                              setSelectedPartnershipId(fridgePartner.id)
+                              toggleUiMode(
+                                `edit-fridge-partner-${fridgePartner.id}`
+                              )
+                            }}
+                            onDelete={() => {
+                              setSelectedPartnershipId(fridgePartner.id)
+                              toggleUiMode(
+                                `remove-fridge-partner-${fridgePartner.id}`
+                              )
+                            }}
+                            editable={permittedActions.includes('UPDATE')}
+                            deletable={permittedActions.includes('DELETE')}
+                          />
+                        </ButtonsTd>
+                      </Tr>
+                    )
+                  })
               )}
             </Tbody>
           </Table>

@@ -92,6 +92,8 @@ data class Partnership(
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val conflict: Boolean = false,
+    val creationModificationMetadata: CreationModificationMetadata =
+        CreationModificationMetadata.empty(),
 )
 
 data class Partner(
