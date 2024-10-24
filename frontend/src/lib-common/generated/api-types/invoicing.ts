@@ -8,6 +8,7 @@ import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import YearMonth from '../../year-month'
 import { Action } from '../action'
 import { CareType } from './daycare'
 import { IncomeAttachment } from './attachment'
@@ -523,7 +524,7 @@ export interface InvoiceCodes {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrection
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceCorrection
 */
 export interface InvoiceCorrection {
   amount: number
@@ -531,8 +532,23 @@ export interface InvoiceCorrection {
   description: string
   headOfFamilyId: UUID
   id: UUID
-  invoiceId: UUID | null
-  invoiceStatus: InvoiceStatus | null
+  invoice: InvoiceWithCorrection | null
+  note: string
+  period: FiniteDateRange
+  product: string
+  targetMonth: YearMonth | null
+  unitId: UUID
+  unitPrice: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceCorrectionInsert
+*/
+export interface InvoiceCorrectionInsert {
+  amount: number
+  childId: UUID
+  description: string
+  headOfFamilyId: UUID
   note: string
   period: FiniteDateRange
   product: string
@@ -705,18 +721,11 @@ export interface InvoiceSummaryResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.NewInvoiceCorrection
+* Generated from fi.espoo.evaka.invoicing.service.InvoiceWithCorrection
 */
-export interface NewInvoiceCorrection {
-  amount: number
-  childId: UUID
-  description: string
-  headOfFamilyId: UUID
-  note: string
-  period: FiniteDateRange
-  product: string
-  unitId: UUID
-  unitPrice: number
+export interface InvoiceWithCorrection {
+  id: UUID
+  status: InvoiceStatus
 }
 
 /**
@@ -1305,6 +1314,15 @@ export function deserializeJsonInvoice(json: JsonOf<Invoice>): Invoice {
 export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>): InvoiceCorrection {
   return {
     ...json,
+    period: FiniteDateRange.parseJson(json.period),
+    targetMonth: (json.targetMonth != null) ? YearMonth.parseIso(json.targetMonth) : null
+  }
+}
+
+
+export function deserializeJsonInvoiceCorrectionInsert(json: JsonOf<InvoiceCorrectionInsert>): InvoiceCorrectionInsert {
+  return {
+    ...json,
     period: FiniteDateRange.parseJson(json.period)
   }
 }
@@ -1397,14 +1415,6 @@ export function deserializeJsonInvoiceSummaryResponse(json: JsonOf<InvoiceSummar
   return {
     ...json,
     data: deserializeJsonInvoiceSummary(json.data)
-  }
-}
-
-
-export function deserializeJsonNewInvoiceCorrection(json: JsonOf<NewInvoiceCorrection>): NewInvoiceCorrection {
-  return {
-    ...json,
-    period: FiniteDateRange.parseJson(json.period)
   }
 }
 

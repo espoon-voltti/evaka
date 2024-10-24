@@ -45,7 +45,7 @@ WITH people_with_no_archive_data AS (
     EXCEPT
     SELECT DISTINCT child_id FROM voucher_value_decision
     EXCEPT
-    SELECT DISTINCT head_of_family_id FROM invoice_correction WHERE NOT applied_completely
+    SELECT DISTINCT head_of_family_id FROM invoice_correction
     EXCEPT
     SELECT DISTINCT person_id FROM income_statement
     EXCEPT
