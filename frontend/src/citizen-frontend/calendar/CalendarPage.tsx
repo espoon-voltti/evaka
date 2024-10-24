@@ -31,6 +31,7 @@ import AbsenceModal from './AbsenceModal'
 import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'
 import CalendarListView from './CalendarListView'
+import CalendarMonthView from './CalendarMonthView'
 import CalendarNotifications from './CalendarNotifications'
 import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
@@ -181,28 +182,53 @@ const CalendarPage = React.memo(function CalendarPage() {
                 </ContentArea>
               </RenderOnlyOn>
               <RenderOnlyOn desktop>
-                <CalendarGridView
-                  childData={response.children}
-                  calendarDays={response.days}
-                  onCreateReservationClicked={
-                    openReservationModalWithoutInitialRange
-                  }
-                  onCreateAbsencesClicked={(date) =>
-                    openAbsenceModal(date, false)
-                  }
-                  onOpenDiscussionReservationsClicked={
-                    openDiscussionSurveyModal
-                  }
-                  onReportHolidaysClicked={openHolidayModal}
-                  selectedDate={
-                    modalState?.type === 'day' ? modalState.date : undefined
-                  }
-                  selectDate={openDayModal}
-                  includeWeekends={true}
-                  dayIsReservable={dayIsReservable}
-                  events={events}
-                  isDiscussionActionVisible={showDiscussions}
-                />
+                {featureFlags.calendarMonthView ? (
+                  <CalendarMonthView
+                    childData={response.children}
+                    calendarDays={response.days}
+                    onCreateReservationClicked={
+                      openReservationModalWithoutInitialRange
+                    }
+                    onCreateAbsencesClicked={(date) =>
+                      openAbsenceModal(date, false)
+                    }
+                    onOpenDiscussionReservationsClicked={
+                      openDiscussionSurveyModal
+                    }
+                    onReportHolidaysClicked={openHolidayModal}
+                    selectedDate={
+                      modalState?.type === 'day' ? modalState.date : undefined
+                    }
+                    selectDate={openDayModal}
+                    includeWeekends={true}
+                    dayIsReservable={dayIsReservable}
+                    events={events}
+                    isDiscussionActionVisible={showDiscussions}
+                  />
+                ) : (
+                  <CalendarGridView
+                    childData={response.children}
+                    calendarDays={response.days}
+                    onCreateReservationClicked={
+                      openReservationModalWithoutInitialRange
+                    }
+                    onCreateAbsencesClicked={(date) =>
+                      openAbsenceModal(date, false)
+                    }
+                    onOpenDiscussionReservationsClicked={
+                      openDiscussionSurveyModal
+                    }
+                    onReportHolidaysClicked={openHolidayModal}
+                    selectedDate={
+                      modalState?.type === 'day' ? modalState.date : undefined
+                    }
+                    selectDate={openDayModal}
+                    includeWeekends={true}
+                    dayIsReservable={dayIsReservable}
+                    events={events}
+                    isDiscussionActionVisible={showDiscussions}
+                  />
+                )}
               </RenderOnlyOn>
               {modalState?.type === 'day' && (
                 <DayView
