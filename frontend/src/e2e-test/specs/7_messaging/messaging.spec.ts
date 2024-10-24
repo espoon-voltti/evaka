@@ -403,6 +403,54 @@ describe('Sending and receiving messages', () => {
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
       })
 
+      test('Citizen sends a message to the unit supervisor before the placement, both will reply', async () => {
+        const tenDaysbeforePlacementAt10 = HelsinkiDateTime.fromLocal(
+          mockedDate.addDays(-10),
+          LocalTime.of(10, 2)
+        )
+        const receivers = ['Esimies Essi']
+        await openCitizen(tenDaysbeforePlacementAt10)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.sendNewMessage(
+          defaultTitle,
+          defaultContent,
+          [],
+          receivers,
+          false
+        )
+        await runPendingAsyncJobs(tenDaysbeforePlacementAt10.addMinutes(1))
+
+        const tenDaysBeforePlacementAt11 = HelsinkiDateTime.fromLocal(
+          mockedDate.addDays(-10),
+          LocalTime.of(11, 31)
+        )
+        await openSupervisorPage(tenDaysBeforePlacementAt11)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.openInbox(0)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.openFirstThreadReplyEditor()
+        await messagesPage.fillReplyContent(defaultReply)
+        await messagesPage.sendReplyButton.click()
+        await messagesPage.sendReplyButton.waitUntilHidden()
+        await runPendingAsyncJobs(tenDaysBeforePlacementAt11.addMinutes(1))
+
+        const tenDaysBeforePlacementAt12 = HelsinkiDateTime.fromLocal(
+          mockedDate.addDays(-10),
+          LocalTime.of(12, 13)
+        )
+        await openCitizen(tenDaysBeforePlacementAt12)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPageLater = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPageLater.openFirstThread()
+        await waitUntilEqual(
+          () => citizenMessagesPageLater.getMessageCount(),
+          2
+        )
+        await citizenMessagesPageLater.replyToFirstThread(defaultReply)
+      })
+
       test('Citizen can send a message and receive a notification on success', async () => {
         const receivers = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
@@ -483,6 +531,7 @@ describe('Sending and receiving messages', () => {
           '(Karhula Jari)'
         )
       })
+
       test('The citizen must select the child that the message is in regards to', async () => {
         const daycarePlacementFixture = await Fixture.placement({
           childId: testChild2.id,
