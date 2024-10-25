@@ -1,0 +1,32 @@
+' SPDX-FileCopyrightText: 2017-2024 City of Espoo
+'
+' SPDX-License-Identifier: LGPL-2.1-or-later
+
+@startuml koski-integration
+!includeurl https://github.com/plantuml-stdlib/C4-PlantUML/raw/v2.0.0/C4_Component.puml
+title eVakan Koski-integraatio
+
+System_Ext(koski, "Koski", "Opetushallituksen Koski-tietovaranto")
+System_Boundary(aws, "AWS Virtual private cloud") {
+    Container_Boundary(api, "evaka-service") {
+        Component(scheduled_runner, "ScheduledJobRunner", "Spring service", "Käynnistää ajastetun tausta-ajon")
+        Component(scheduled_job, "KoskiUpdate", "Scheduled job")
+        Component(service, "KoskiUpdateService", "Spring service", "Toteuttaa muutosten tunnistamisen ja yksittäisten Koski-ajojen ajastamislogiikan")
+        Component(async_runner, "AsyncJobRunner", "Spring service", "Käynnistää tausta-ajot")
+        Component(client, "KoskiClient", "Spring service", "Toteuttaa yksittäisen opinto-oikeuden lataamisen sovelluslogiikan")
+        Component(async_job, "UploadToKoski", "Async job")
+        Rel_D(scheduled_runner, scheduled_job, "Käynnistää")
+        Rel_R(scheduled_job, service, "Kutsuu")
+        Rel_U(service, async_runner, "Ajastaa 0-N kpl ajoja")
+        Rel_R(async_runner, async_job, "Käynnistää")
+        Rel_D(async_job, client, "Kutsuu")
+        Rel(client, koski, "Lähettää tiedot", "JSON / HTTPS")
+        Rel(koski, client, "Palauttaa", "JSON / HTTPS")
+    }
+    ContainerDb(db, "evaka-db", "Postgres AWS RDS", "Tallentaa tiedot, joista opinto-oikeudet koostetaan")
+    Lay_L(service, client)
+    Rel_D(service, db, "Tarkistaa muuttuneet tiedot", "JDBC")
+    Rel_D(client, db, "Koostaa opinto-oikeuksien tiedot", "JDBC")
+}
+
+@enduml
