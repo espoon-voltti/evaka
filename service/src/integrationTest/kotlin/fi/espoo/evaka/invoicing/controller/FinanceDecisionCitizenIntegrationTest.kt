@@ -43,7 +43,6 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -106,7 +105,10 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
 
             val testPeriod1 = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31))
             val testPeriod2 =
-                DateRange(testPeriod1.end.plusDays(1), testPeriod1.end.plusDays(1).plusMonths(1))
+                FiniteDateRange(
+                    testPeriod1.end.plusDays(1),
+                    testPeriod1.end.plusDays(1).plusMonths(1),
+                )
 
             val fdId = FeeDecisionId(UUID.randomUUID())
             val testFeeDecisions =
@@ -116,7 +118,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = headOfFamily.id,
                         partnerId = partner.id,
-                        period = DateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
+                        period =
+                            FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
                         children =
                             listOf(
                                 createFeeDecisionChildFixture(
@@ -251,7 +254,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun createTestVoucherValueDecision(
         id: VoucherValueDecisionId,
         validFrom: LocalDate,
-        validTo: LocalDate?,
+        validTo: LocalDate,
         headOfFamilyId: PersonId,
         childId: ChildId,
         dateOfBirth: LocalDate,
@@ -299,7 +302,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun createTestFeeDecision(
         id: FeeDecisionId,
         decisionType: FeeDecisionType,
-        period: DateRange,
+        period: FiniteDateRange,
         headOfFamilyId: PersonId,
         children: List<FeeDecisionChild>,
         partnerId: PersonId? = null,

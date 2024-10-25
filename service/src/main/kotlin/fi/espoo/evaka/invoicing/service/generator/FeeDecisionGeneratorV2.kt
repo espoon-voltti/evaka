@@ -100,7 +100,7 @@ fun generateFeeDecisionsDrafts(
             minDate = minDate,
         )
 
-    val newDrafts = feeBases.map { it.toFeeDecision() }
+    val newDrafts = feeBases.mapNotNull { it.toFeeDecision() }
 
     return filterAndMergeDrafts(
             newDrafts = newDrafts,
@@ -179,7 +179,7 @@ private fun getFeeBases(
             *feeAlterationsByChild.flatMap { it.value }.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
             *allServiceNeedOptionFees.toTypedArray(),
-        ) + activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+        ) + activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo.plusDays(1)) }
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null
@@ -274,10 +274,11 @@ data class FeeBasis(
     val familySize: Int,
     val feeThresholds: FeeThresholds,
 ) : WithRange {
-    fun toFeeDecision(): FeeDecision {
+    fun toFeeDecision(): FeeDecision? {
+        if (range.end == null) return null
         return FeeDecision(
             id = FeeDecisionId(UUID.randomUUID()),
-            validDuring = range,
+            validDuring = range.asFiniteDateRange()!!,
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = headOfFamilyId,

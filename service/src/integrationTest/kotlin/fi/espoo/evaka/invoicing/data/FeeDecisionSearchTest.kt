@@ -31,7 +31,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
@@ -211,7 +211,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
                         children = listOf(childFixture(testChild_4, daycare2.id)),
-                        period = DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 8, 1)),
+                        period = FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 8, 1)),
                     ),
                 )
             )
@@ -239,7 +239,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamily = testAdult_3.id,
                         children =
                             listOf(childFixture(testChild_3, daycare1.id, serviceNeed = null)),
-                        period = DateRange(now.today(), now.today()),
+                        period = FiniteDateRange(now.today(), now.today()),
                     )
                 )
             )
@@ -283,12 +283,12 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
                         children = listOf(childFixture(testChild_3)),
-                        period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 5, 1)),
+                        period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 5, 1)),
                     ),
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
                         children = listOf(childFixture(testChild_4)),
-                        period = DateRange(LocalDate.of(2022, 6, 1), LocalDate.of(2023, 1, 1)),
+                        period = FiniteDateRange(LocalDate.of(2022, 6, 1), LocalDate.of(2023, 1, 1)),
                     ),
                 )
             )
@@ -361,14 +361,16 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                             headOfFamily = testAdult_4.id,
                             children = listOf(childFixture(testChild_3, fee = 28900)),
-                            period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2022, 1, 1)),
+                            period =
+                                FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2022, 1, 1)),
                             status = FeeDecisionStatus.DRAFT,
                         )
                         .copy(decisionNumber = 1_111_111L),
                     decisionFixture(
                             headOfFamily = testAdult_3.id,
                             children = listOf(childFixture(testChild_4, fee = 38900)),
-                            period = DateRange(LocalDate.of(2021, 6, 1), LocalDate.of(2022, 6, 1)),
+                            period =
+                                FiniteDateRange(LocalDate.of(2021, 6, 1), LocalDate.of(2022, 6, 1)),
                             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
                         )
                         .copy(decisionNumber = 2_222_222L),
@@ -398,7 +400,8 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
         headOfFamily: PersonId,
         children: List<FeeDecisionChild>,
         status: FeeDecisionStatus = FeeDecisionStatus.DRAFT,
-        period: DateRange = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
+        period: FiniteDateRange =
+            FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
     ) =
         createFeeDecisionFixture(
             status = status,

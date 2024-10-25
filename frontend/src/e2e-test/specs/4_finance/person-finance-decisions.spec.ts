@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -66,7 +66,7 @@ describe('Person finance decisions', () => {
             testChild2,
             testDaycare.id,
             null,
-            new DateRange(sentAt, sentAt),
+            new FiniteDateRange(sentAt, sentAt),
             sentAt.toHelsinkiDateTime(LocalTime.of(12, 0)),
             uuidv4()
           )

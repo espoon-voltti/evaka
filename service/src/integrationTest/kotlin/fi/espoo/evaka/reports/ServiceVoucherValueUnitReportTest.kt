@@ -1173,7 +1173,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
         alwaysUseDaycareFinanceDecisionHandler: Boolean = false,
         feeAlterations: List<FeeAlterationWithEffect> = listOf(),
-        validTo: LocalDate? = null,
+        validTo: LocalDate = validFrom.plusYears(1),
     ): VoucherValueDecision {
         val id =
             db.transaction {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -52,7 +52,7 @@ beforeEach(async () => {
 const insertFeeDecisionFixtureAndNavigateToIt = async (
   headOfFamily: DevPerson,
   child: DevPerson,
-  validDuring: DateRange,
+  validDuring: FiniteDateRange,
   partner: DevPerson | null = null,
   childIncome: DecisionIncome | null = null
 ) => {
@@ -94,7 +94,7 @@ describe('Fee decisions', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       testAdult,
       testChild2,
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await waitUntilEqual(() => feeDecisionsPage.getFeeDecisionCount(), 1)
   })
@@ -103,7 +103,7 @@ describe('Fee decisions', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       testAdult,
       testChild2,
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.openFirstFeeDecision()
   })
@@ -112,7 +112,7 @@ describe('Fee decisions', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       testAdult,
       testChild2,
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     await feeDecisionsPage.sendFeeDecisions(HelsinkiDateTime.of(2023, 1, 1))
@@ -137,7 +137,7 @@ describe('Fee decisions', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       familyWithTwoGuardians.guardian,
       familyWithTwoGuardians.children[0],
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
       partner
     )
     const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
@@ -159,7 +159,7 @@ describe('Fee decisions', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       familyWithTwoGuardians.guardian,
       familyWithTwoGuardians.children[0],
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
       partner
     )
     const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
@@ -183,7 +183,7 @@ describe('Fee decisions', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       familyWithTwoGuardians.guardian,
       familyWithTwoGuardians.children[0],
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
       partner,
       DecisionIncomeFixture(54321)
     )
@@ -217,7 +217,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       testAdult,
       testChild2,
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     const modal = await feeDecisionsPage.openDecisionHandlerModal()
@@ -229,7 +229,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       testAdult,
       testChild2,
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     const modal = await feeDecisionsPage.openDecisionHandlerModal()
@@ -244,7 +244,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       testAdult,
       testChild2,
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     const otherFinanceAdmin = await Fixture.employee({
       email: 'laura.laskuttaja@evaka.test',
@@ -267,7 +267,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       testAdult,
       testChild2,
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     const feeDecisionDetailsPageDraft =
       await feeDecisionsPage.openFirstFeeDecision()
@@ -285,7 +285,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       testAdult,
       testChild2,
-      new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+      new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     const otherFinanceAdmin = await Fixture.employee({
       email: 'laura.laskuttaja@evaka.test',

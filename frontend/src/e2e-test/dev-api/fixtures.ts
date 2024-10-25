@@ -2899,7 +2899,7 @@ export const feeDecisionsFixture = (
   child: DevPerson,
   daycareId: UUID,
   partner: DevPerson | null,
-  validDuring: DateRange = new DateRange(
+  validDuring: FiniteDateRange = new FiniteDateRange(
     LocalDate.todayInSystemTz().subYears(1),
     LocalDate.todayInSystemTz().addYears(1)
   ),

@@ -46,8 +46,8 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -104,7 +104,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamilyId = testAdult_1.id,
-                period = DateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
+                period = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -129,7 +129,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.SENT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamilyId = testAdult_1.id,
-                period = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
+                period = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -145,7 +145,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.SENT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamilyId = testAdult_2.id,
-                period = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
+                period = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -161,7 +161,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamilyId = testAdult_3.id,
-                period = DateRange(LocalDate.of(2015, 5, 1), LocalDate.of(2015, 5, 31)),
+                period = FiniteDateRange(LocalDate.of(2015, 5, 1), LocalDate.of(2015, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -177,7 +177,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamilyId = testAdult_3.id,
-                period = DateRange(LocalDate.of(2016, 5, 1), LocalDate.of(2016, 5, 31)),
+                period = FiniteDateRange(LocalDate.of(2016, 5, 1), LocalDate.of(2016, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -193,7 +193,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.RELIEF_ACCEPTED,
                 headOfFamilyId = testAdult_3.id,
-                period = DateRange(LocalDate.of(2017, 5, 1), LocalDate.of(2017, 5, 31)),
+                period = FiniteDateRange(LocalDate.of(2017, 5, 1), LocalDate.of(2017, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -209,7 +209,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.RELIEF_PARTLY_ACCEPTED,
                 headOfFamilyId = testAdult_3.id,
-                period = DateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
+                period = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -225,7 +225,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.RELIEF_REJECTED,
                 headOfFamilyId = testAdult_3.id,
-                period = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
+                period = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -245,7 +245,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamilyId = testAdult_1.id,
-                period = DateRange(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 31)),
+                period = FiniteDateRange(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -270,7 +270,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamilyId = testAdult_1.id,
-                period = DateRange(LocalDate.of(2018, 9, 1), LocalDate.of(2018, 9, 30)),
+                period = FiniteDateRange(LocalDate.of(2018, 9, 1), LocalDate.of(2018, 9, 30)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -458,9 +458,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `search works with distinctions param RETROACTIVE`() {
         val now = LocalDate.now()
         val oldDecision =
-            testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
+            testDecisions[0].copy(
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+            )
         val futureDecision =
-            testDecisions[1].copy(validDuring = DateRange(now.plusMonths(1), now.plusMonths(2)))
+            testDecisions[1].copy(
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+            )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
@@ -827,7 +831,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 .find { it.status == FeeDecisionStatus.DRAFT }!!
                 .copy(
                     validDuring =
-                        DateRange(LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(1))
+                        FiniteDateRange(
+                            LocalDate.now().withDayOfMonth(1),
+                            LocalDate.now().plusMonths(1),
+                        )
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft)) }
         db.transaction {
@@ -898,7 +905,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val oldDecision =
             testDecisions
                 .first()
-                .copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
+                .copy(validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1)))
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision)) }
 
@@ -972,7 +979,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 .find { it.status == FeeDecisionStatus.DRAFT }!!
                 .copy(
                     validDuring =
-                        DateRange(LocalDate.now().plusDays(2), LocalDate.now().plusYears(1))
+                        FiniteDateRange(LocalDate.now().plusDays(2), LocalDate.now().plusYears(1))
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
@@ -988,7 +995,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 .find { it.status == FeeDecisionStatus.DRAFT }!!
                 .copy(
                     validDuring =
-                        DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusYears(1))
+                        FiniteDateRange(
+                            now.toLocalDate().plusDays(1),
+                            now.toLocalDate().plusYears(1),
+                        )
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
@@ -1054,13 +1064,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 id = FeeDecisionId(UUID.randomUUID()),
                 status = FeeDecisionStatus.SENT,
-                validDuring = DateRange(draft.validFrom.plusDays(5), draft.validFrom.plusDays(10)),
+                validDuring =
+                    FiniteDateRange(draft.validFrom.plusDays(5), draft.validFrom.plusDays(10)),
             )
         val conflict2 =
             draft.copy(
                 id = FeeDecisionId(UUID.randomUUID()),
                 status = FeeDecisionStatus.SENT,
-                validDuring = DateRange(draft.validFrom.plusDays(11), draft.validFrom.plusDays(20)),
+                validDuring =
+                    FiniteDateRange(draft.validFrom.plusDays(11), draft.validFrom.plusDays(20)),
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict1, conflict2)) }
 
@@ -1084,7 +1096,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 id = FeeDecisionId(UUID.randomUUID()),
                 status = FeeDecisionStatus.SENT,
-                validDuring = draft.validDuring.copy(end = draft.validTo!!.plusDays(10)),
+                validDuring = draft.validDuring.copy(end = draft.validTo.plusDays(10)),
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
@@ -1135,7 +1147,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 originalDraft.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring =
-                        DateRange(
+                        FiniteDateRange(
                             originalDraft.validFrom.minusDays(1),
                             originalDraft.validFrom.plusDays(7),
                         ),
@@ -1143,9 +1155,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 originalDraft.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring =
-                        DateRange(
+                        FiniteDateRange(
                             originalDraft.validFrom.plusDays(8),
-                            originalDraft.validTo!!.plusDays(1),
+                            originalDraft.validTo.plusDays(1),
                         ),
                 ),
             )
@@ -1266,7 +1278,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `confirmDrafts replaces both parents decisions with a new combined decision`() {
-        val decisionPeriod = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val decisionPeriod = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         val sentDecisions =
             listOf(
                 createFeeDecisionFixture(
@@ -1377,7 +1389,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `confirmDrafts updates both parents decisions end dates when a new combined decision is sent`() {
-        val decisionPeriod = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val decisionPeriod = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         val sentDecisions =
             listOf(
                 createFeeDecisionFixture(
@@ -1490,9 +1502,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `date range picker does not return anything with range before first decision`() {
         val now = LocalDate.now()
         val oldDecision =
-            testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
+            testDecisions[0].copy(
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+            )
         val futureDecision =
-            testDecisions[1].copy(validDuring = DateRange(now.plusMonths(1), now.plusMonths(2)))
+            testDecisions[1].copy(
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+            )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
@@ -1512,9 +1528,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `date range picker finds only one decision in the past`() {
         val now = LocalDate.now()
         val oldDecision =
-            testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
+            testDecisions[0].copy(
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+            )
         val futureDecision =
-            testDecisions[1].copy(validDuring = DateRange(now.plusMonths(1), now.plusMonths(2)))
+            testDecisions[1].copy(
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+            )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
@@ -1533,9 +1553,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `date range picker finds only one decision in the future`() {
         val now = LocalDate.now()
         val oldDecision =
-            testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
+            testDecisions[0].copy(
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+            )
         val futureDecision =
-            testDecisions[1].copy(validDuring = DateRange(now.plusMonths(1), now.plusMonths(2)))
+            testDecisions[1].copy(
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+            )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
@@ -1555,9 +1579,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `date range picker finds a decisions with exact start date or end date`() {
         val now = LocalDate.now()
         val oldDecision =
-            testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
+            testDecisions[0].copy(
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+            )
         val futureDecision =
-            testDecisions[1].copy(validDuring = DateRange(now.plusMonths(1), now.plusMonths(2)))
+            testDecisions[1].copy(
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+            )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
@@ -1588,9 +1616,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `date range picker finds all decisions without specifying a start date and having end date in the future`() {
         val now = LocalDate.now()
         val oldDecision =
-            testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
+            testDecisions[0].copy(
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+            )
         val futureDecision =
-            testDecisions[1].copy(validDuring = DateRange(now.plusMonths(1), now.plusMonths(2)))
+            testDecisions[1].copy(
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+            )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
@@ -1603,9 +1635,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `date range picker finds all decisions without specifying a end date and having start date in the past`() {
         val now = LocalDate.now()
         val oldDecision =
-            testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
+            testDecisions[0].copy(
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+            )
         val futureDecision =
-            testDecisions[1].copy(validDuring = DateRange(now.plusMonths(1), now.plusMonths(2)))
+            testDecisions[1].copy(
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+            )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
@@ -2169,7 +2205,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = headOfFamily.id,
-            period = DateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
+            period = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
             children =
                 familyChildren.map {
                     createFeeDecisionChildFixture(

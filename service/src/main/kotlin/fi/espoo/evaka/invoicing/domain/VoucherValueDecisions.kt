@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.math.BigDecimal
@@ -25,7 +26,7 @@ import org.jdbi.v3.json.Json
 data class VoucherValueDecision(
     override val id: VoucherValueDecisionId,
     override val validFrom: LocalDate,
-    override val validTo: LocalDate?,
+    override val validTo: LocalDate,
     override val headOfFamilyId: PersonId,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
@@ -55,12 +56,12 @@ data class VoucherValueDecision(
     override val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val decisionHandler: UUID? = null,
 ) : FinanceDecision<VoucherValueDecision> {
-    override val validDuring: DateRange
-        @JsonIgnore get() = DateRange(validFrom, validTo)
+    override val validDuring: FiniteDateRange
+        @JsonIgnore get() = FiniteDateRange(validFrom, validTo)
 
     override fun withId(id: UUID) = this.copy(id = VoucherValueDecisionId(id))
 
-    override fun withValidity(period: DateRange) =
+    override fun withValidity(period: FiniteDateRange) =
         this.copy(validFrom = period.start, validTo = period.end)
 
     override fun withCreated(created: HelsinkiDateTime) = this.copy(created = created)
@@ -83,7 +84,7 @@ data class VoucherValueDecision(
     companion object {
         fun empty(
             validFrom: LocalDate,
-            validTo: LocalDate?,
+            validTo: LocalDate,
             headOfFamilyId: PersonId,
             partnerId: PersonId?,
             headOfFamilyIncome: DecisionIncome?,
@@ -204,7 +205,7 @@ enum class VoucherValueDecisionDifference(
 data class VoucherValueDecisionDetailed(
     val id: VoucherValueDecisionId,
     val validFrom: LocalDate,
-    val validTo: LocalDate?,
+    val validTo: LocalDate,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: VoucherValueDecisionType,
