@@ -36,6 +36,7 @@ import HelsinkiDateTime from './helsinki-date-time'
 import LocalTime from './local-time'
 import { Ordered } from './ordered'
 import { isAutomatedTest } from './utils/helpers'
+import YearMonth from './year-month'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
 const fiPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/
@@ -61,6 +62,9 @@ export default class LocalDate implements Ordered<LocalDate> {
   }
   getIsoWeek(): number {
     return getISOWeek(this.toSystemTzDate())
+  }
+  getYearMonth(): YearMonth {
+    return new YearMonth(this.year, this.month)
   }
   withYear(year: number): LocalDate {
     return LocalDate.of(year, this.month, this.date)
