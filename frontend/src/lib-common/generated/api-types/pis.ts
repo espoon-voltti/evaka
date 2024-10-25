@@ -431,6 +431,7 @@ export interface ParentshipWithPermittedActions {
 */
 export interface Partnership {
   conflict: boolean
+  creationModificationMetadata: CreationModificationMetadata
   endDate: LocalDate | null
   id: UUID
   partners: PersonJSON[]
@@ -807,6 +808,7 @@ export function deserializeJsonParentshipWithPermittedActions(json: JsonOf<Paren
 export function deserializeJsonPartnership(json: JsonOf<Partnership>): Partnership {
   return {
     ...json,
+    creationModificationMetadata: deserializeJsonCreationModificationMetadata(json.creationModificationMetadata),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     partners: json.partners.map(e => deserializeJsonPersonJSON(e)),
     startDate: LocalDate.parseIso(json.startDate)
