@@ -178,7 +178,6 @@ export default React.memo(function EndedPlacements() {
               headers={[
                 { label: 'Lapsen sukunimi', key: 'lastName' },
                 { label: 'Lapsen etunimi', key: 'firstName' },
-                { label: 'Henkilötunnus', key: 'ssn' },
                 { label: 'Lopettaa varhaiskasvatuksessa', key: 'placementEnd' },
                 {
                   label: 'Jatkaa varhaiskasvatuksessa',
@@ -191,7 +190,6 @@ export default React.memo(function EndedPlacements() {
               <Thead>
                 <Tr>
                   <Th>{i18n.reports.common.childName}</Th>
-                  <Th>{i18n.reports.endedPlacements.ssn}</Th>
                   <Th>{i18n.reports.endedPlacements.placementEnd}</Th>
                   <Th>{i18n.reports.endedPlacements.unit}</Th>
                   <Th>{i18n.reports.endedPlacements.area}</Th>
@@ -200,17 +198,21 @@ export default React.memo(function EndedPlacements() {
               </Thead>
               <Tbody>
                 {filteredRows.map((row) => (
-                  <Tr key={row.childId}>
+                  <Tr key={row.childId} data-qa="report-row">
                     <Td>
-                      <Link to={`/child-information/${row.childId}`}>{`${
-                        row.lastName ?? ''
-                      } ${row.firstName ?? ''}`}</Link>
+                      <Link
+                        to={`/child-information/${row.childId}`}
+                        data-qa="child-name"
+                      >{`${row.lastName ?? ''} ${row.firstName ?? ''}`}</Link>
                     </Td>
-                    <Td>{row.ssn ?? ''}</Td>
-                    <Td>{row.placementEnd.format()}</Td>
-                    <Td>{row.unitName}</Td>
-                    <Td>{row.areaName}</Td>
-                    <Td>{row.nextPlacementStart?.format()}</Td>
+                    <Td data-qa="placement-end-date">
+                      {row.placementEnd.format()}
+                    </Td>
+                    <Td data-qa="unit-name">{row.unitName}</Td>
+                    <Td data-qa="area-name">{row.areaName}</Td>
+                    <Td data-qa="next-placement-start-date">
+                      {row.nextPlacementStart?.format()}
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>

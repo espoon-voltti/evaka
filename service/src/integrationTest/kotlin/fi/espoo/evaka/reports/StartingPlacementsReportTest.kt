@@ -166,7 +166,6 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
             firstName = child.firstName,
             lastName = child.lastName,
             dateOfBirth = child.dateOfBirth,
-            ssn = child.ssn,
             placementStart = startDate,
             careAreaName = careAreaName,
         )
