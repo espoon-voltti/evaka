@@ -229,20 +229,7 @@ private val toPartnership: (String, String) -> Row.() -> Partnership =
                 startDate = column("start_date"),
                 endDate = column("end_date"),
                 conflict = column("conflict"),
-                creationModificationMetadata =
-                    CreationModificationMetadata(
-                        createSource = column("create_source"),
-                        createdAt = column("created_at"),
-                        createdBy = column("created_by"),
-                        createdByName = column("created_by_name"),
-                        modifySource = column("modify_source"),
-                        modifiedAt = column("modified_at"),
-                        modifiedBy = column("modified_by"),
-                        modifiedByName = column("modified_by_name"),
-                        createdFromApplication = column("created_from_application"),
-                        createdFromApplicationType = column("created_from_application_type"),
-                        createdFromApplicationCreated = column("created_from_application_created"),
-                    ),
+                creationModificationMetadata = row<CreationModificationMetadata>(),
             )
         }
     }
@@ -255,20 +242,7 @@ private val toPartner: (String) -> Row.() -> Partner = { tableAlias ->
             startDate = column("start_date"),
             endDate = column("end_date"),
             conflict = column("conflict"),
-            creationModificationMetadata =
-                CreationModificationMetadata(
-                    createSource = column("create_source"),
-                    createdAt = column("created_at"),
-                    createdBy = column("created_by"),
-                    createdByName = column("created_by_name"),
-                    modifySource = column("modify_source"),
-                    modifiedAt = column("modified_at"),
-                    modifiedBy = column("modified_by"),
-                    modifiedByName = column("modified_by_name"),
-                    createdFromApplication = column("created_from_application"),
-                    createdFromApplicationType = column("created_from_application_type"),
-                    createdFromApplicationCreated = column("created_from_application_created"),
-                ),
+            creationModificationMetadata = row<CreationModificationMetadata>(),
         )
     }
 }
