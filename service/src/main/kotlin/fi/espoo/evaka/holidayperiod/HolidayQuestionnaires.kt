@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.holidayperiod
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
@@ -22,38 +24,86 @@ enum class QuestionnaireType : DatabaseEnum {
 
 data class QuestionnaireConditions(val continuousPlacement: FiniteDateRange? = null)
 
-// TODO use sealed class when OPEN_RANGES is implemented
-data class FixedPeriodQuestionnaire(
-    val id: HolidayQuestionnaireId,
-    val type: QuestionnaireType,
-    val absenceType: AbsenceType,
-    val requiresStrongAuth: Boolean,
-    val active: FiniteDateRange,
-    @Json val title: Translatable,
-    @Json val description: Translatable,
-    @Json val descriptionLink: Translatable,
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class HolidayQuestionnaire(val type: QuestionnaireType) {
+    abstract val id: HolidayQuestionnaireId
+    abstract val absenceType: AbsenceType
+    abstract val requiresStrongAuth: Boolean
+    abstract val active: FiniteDateRange
+    abstract val title: Translatable
+    abstract val description: Translatable
+    abstract val descriptionLink: Translatable
     /**
      * Conditions are optional and will prevent the questionnaire from being shown unless all
      * conditions are satisfied.
      */
-    @Nested("condition") val conditions: QuestionnaireConditions,
+    abstract val conditions: QuestionnaireConditions
 
-    // fixed period specific
-    val periodOptions: List<FiniteDateRange>,
-    @Json val periodOptionLabel: Translatable,
-)
+    @JsonTypeName("FIXED_PERIOD")
+    data class FixedPeriodQuestionnaire(
+        override val id: HolidayQuestionnaireId,
+        override val absenceType: AbsenceType,
+        override val requiresStrongAuth: Boolean,
+        override val active: FiniteDateRange,
+        @Json override val title: Translatable,
+        @Json override val description: Translatable,
+        @Json override val descriptionLink: Translatable,
+        @Nested("condition") override val conditions: QuestionnaireConditions,
+        val periodOptions: List<FiniteDateRange>,
+        @Json val periodOptionLabel: Translatable,
+    ) : HolidayQuestionnaire(QuestionnaireType.FIXED_PERIOD)
 
-data class FixedPeriodQuestionnaireBody(
-    val absenceType: AbsenceType,
-    val requiresStrongAuth: Boolean,
-    val active: FiniteDateRange,
-    @Json val title: Translatable,
-    @Json val description: Translatable,
-    @Json val descriptionLink: Translatable,
-    val conditions: QuestionnaireConditions,
-    val periodOptions: List<FiniteDateRange>,
-    @Json val periodOptionLabel: Translatable,
-)
+    @JsonTypeName("OPEN_RANGES")
+    data class OpenRangesQuestionnaire(
+        override val id: HolidayQuestionnaireId,
+        override val absenceType: AbsenceType,
+        override val requiresStrongAuth: Boolean,
+        override val active: FiniteDateRange,
+        @Json override val title: Translatable,
+        @Json override val description: Translatable,
+        @Json override val descriptionLink: Translatable,
+        @Nested("condition") override val conditions: QuestionnaireConditions,
+        val period: FiniteDateRange,
+        val absenceTypeThreshold: Int,
+    ) : HolidayQuestionnaire(QuestionnaireType.OPEN_RANGES)
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class QuestionnaireBody() {
+    abstract val absenceType: AbsenceType
+    abstract val requiresStrongAuth: Boolean
+    abstract val active: FiniteDateRange
+    abstract val title: Translatable
+    abstract val description: Translatable
+    abstract val descriptionLink: Translatable
+    abstract val conditions: QuestionnaireConditions
+
+    @JsonTypeName("FIXED_PERIOD")
+    data class FixedPeriodQuestionnaireBody(
+        override val absenceType: AbsenceType,
+        override val requiresStrongAuth: Boolean,
+        override val active: FiniteDateRange,
+        @Json override val title: Translatable,
+        @Json override val description: Translatable,
+        @Json override val descriptionLink: Translatable,
+        override val conditions: QuestionnaireConditions,
+        val periodOptions: List<FiniteDateRange>,
+        @Json val periodOptionLabel: Translatable,
+    ) : QuestionnaireBody()
+
+    @JsonTypeName("OPEN_RANGES")
+    data class OpenRangesQuestionnaireBody(
+        override val absenceType: AbsenceType,
+        override val requiresStrongAuth: Boolean,
+        override val active: FiniteDateRange,
+        @Json override val title: Translatable,
+        @Json override val description: Translatable,
+        @Json override val descriptionLink: Translatable,
+        override val conditions: QuestionnaireConditions,
+        val period: FiniteDateRange,
+        val absenceTypeThreshold: Int,
+    ) : QuestionnaireBody()
+}
 
 data class HolidayQuestionnaireAnswer(
     val questionnaireId: HolidayQuestionnaireId,
