@@ -15,7 +15,7 @@ import { createProxy } from '../shared/proxy-utils.js'
 import { RedisClient } from '../shared/redis-client.js'
 import createSamlRouter from '../shared/routes/saml.js'
 import { createSamlConfig } from '../shared/saml/index.js'
-import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
+import redisCacheProvider from '../shared/saml/node-saml-cache-redis.js'
 import { sessionSupport } from '../shared/session.js'
 
 import { createDevSfiRouter } from './dev-sfi-auth.js'

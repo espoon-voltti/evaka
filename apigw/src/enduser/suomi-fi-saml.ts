@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SamlConfig, Strategy } from '@node-saml/passport-saml'
+import { SamlConfig } from '@node-saml/node-saml'
+import { Strategy } from '@node-saml/passport-saml'
 import { z } from 'zod'
 
 import { logWarn } from '../shared/logging.js'

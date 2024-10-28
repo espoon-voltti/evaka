@@ -5,10 +5,8 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
+import { CacheProvider, Profile, SamlConfig } from '@node-saml/node-saml'
 import {
-  CacheProvider,
-  Profile,
-  SamlConfig,
   Strategy as SamlStrategy,
   VerifyWithRequest
 } from '@node-saml/passport-saml'
@@ -58,7 +56,7 @@ export function createSamlConfig(
     signatureAlgorithm: 'sha256',
     validateInResponseTo: config.validateInResponseTo,
     passReqToCallback: true,
-    // When *both* wantXXXXSigned settings are false, passport-saml still
+    // When *both* wantXXXXSigned settings are false, node-saml still
     // requires at least the whole response *or* the assertion to be signed, so
     // these settings don't introduce a security problem
     wantAssertionsSigned: false,

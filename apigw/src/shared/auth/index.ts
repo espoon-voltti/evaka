@@ -4,7 +4,7 @@
 
 import { randomBytes } from 'node:crypto'
 
-import { Profile } from '@node-saml/passport-saml'
+import { Profile } from '@node-saml/node-saml'
 import express, { NextFunction, Request, Response } from 'express'
 import passport, { AuthenticateCallback } from 'passport'
 

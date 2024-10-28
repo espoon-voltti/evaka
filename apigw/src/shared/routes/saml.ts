@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import passportSaml from '@node-saml/passport-saml'
+import { Profile } from '@node-saml/node-saml'
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml'
 import type {
   AuthenticateOptions,
   RequestWithUser
@@ -24,7 +25,7 @@ const urlencodedParser = express.urlencoded({ extended: false })
 export interface SamlEndpointConfig {
   sessions: Sessions
   strategyName: string
-  strategy: passportSaml.Strategy
+  strategy: SamlStrategy
   defaultPageUrl: string
 }
 
@@ -50,7 +51,7 @@ function createLoginHandler({
       (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         err: any,
-        user: (Express.User & passportSaml.Profile) | undefined
+        user: (Express.User & Profile) | undefined
       ) => {
         if (err || !user) {
           const description =

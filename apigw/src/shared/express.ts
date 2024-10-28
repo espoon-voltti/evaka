@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import passportSaml from '@node-saml/passport-saml'
+import { Profile as SamlProfile } from '@node-saml/node-saml'
 import type express from 'express'
 import { BaseError } from 'make-error-cause'
 
@@ -69,7 +69,7 @@ declare global {
     interface Request {
       traceId?: string
       spanId?: string
-      samlLogoutRequest: passportSaml.Profile
+      samlLogoutRequest: SamlProfile
     }
     interface User extends EvakaSessionUser {}
   }
