@@ -24,9 +24,15 @@ declare global {
   }
 }
 
-const overrides =
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const overrides: Partial<JsonOf<CitizenCustomizations>> | undefined =
   typeof window !== 'undefined'
-    ? window.evaka?.citizenCustomizations
+    ? {
+        ...window.evaka?.citizenCustomizations,
+        ...JSON.parse(
+          sessionStorage.getItem('evaka.citizenCustomizations') || '{}'
+        )
+      }
     : undefined
 
 const customizations: CitizenCustomizations = overrides
