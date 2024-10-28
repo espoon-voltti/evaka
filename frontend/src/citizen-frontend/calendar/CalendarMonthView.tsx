@@ -681,12 +681,27 @@ const StickyTopBar = styled.div`
   margin-bottom: ${defaultMargins.L};
 `
 
-const ButtonContainer = styled(Container)`
+const ButtonContainer = styled.div`
   height: 100%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: ${defaultMargins.L};
+  margin: 0 auto;
+  padding-right: ${defaultMargins.s};
+
+  @media screen and (min-width: 1152px) and (max-width: 1215px) {
+    max-width: 1152px;
+    width: 1152px;
+  }
+  @media screen and (min-width: 1216px) {
+    max-width: 1152px;
+    width: 1152px;
+  }
+  @media screen and (min-width: 1408px) {
+    max-width: 1344px;
+    width: 1344px;
+  }
 `
 
 const gridPattern = (includeWeekends: boolean) => css`
