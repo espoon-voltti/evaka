@@ -9,7 +9,7 @@ import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  FixedPeriodQuestionnaire,
+  HolidayQuestionnaire,
   FixedPeriodsBody,
   HolidayQuestionnaireAnswer
 } from 'lib-common/generated/api-types/holidayperiod'
@@ -25,6 +25,8 @@ import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { answerFixedPeriodQuestionnaireMutation } from '../queries'
 
 import { PeriodSelector } from './PeriodSelector'
+
+import FixedPeriodQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
 
 type FormState = FixedPeriodsBody['fixedPeriods']
 
@@ -75,9 +77,10 @@ export default React.memo(function FixedPeriodSelectionModal({
     <ModalAccessibilityWrapper>
       <MutateFormModal
         mobileFullScreen
-        title={questionnaire.title[lang]}
+        title={questionnaire.title[lang]} // eslint-disable-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
         resolveMutation={answerFixedPeriodQuestionnaireMutation}
         resolveAction={() => ({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
           id: questionnaire.id,
           body: { fixedPeriods }
         })}
@@ -89,10 +92,11 @@ export default React.memo(function FixedPeriodSelectionModal({
       >
         <FixedSpaceColumn>
           <HolidaySection>
+            {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
             <div>{questionnaire.description[lang]}</div>
             <ExternalLink
               text={i18n.calendar.holidayModal.additionalInformation}
-              href={questionnaire.descriptionLink[lang]}
+              href={questionnaire.descriptionLink[lang]} // eslint-disable-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
               newTab
             />
           </HolidaySection>
@@ -114,9 +118,10 @@ export default React.memo(function FixedPeriodSelectionModal({
                   value={fixedPeriods[child.id] ?? null}
                   onSelectPeriod={selectPeriod(child.id)}
                 />
-              ) : questionnaire.conditions.continuousPlacement ? (
+              ) : questionnaire.conditions.continuousPlacement ? ( // eslint-disable-line @typescript-eslint/no-unsafe-member-access
                 <div data-qa="not-eligible">
                   {i18n.calendar.holidayModal.notEligible(
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
                     questionnaire.conditions.continuousPlacement
                   )}
                 </div>

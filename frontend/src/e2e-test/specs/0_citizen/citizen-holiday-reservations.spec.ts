@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { FixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -27,6 +27,8 @@ import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
+
+import FixedPeriodQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
 
 let page: Page
 

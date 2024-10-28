@@ -6,6 +6,7 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -25,13 +26,16 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/holiday-period/questionnaire")
-class HolidayQuestionnaireController(private val accessControl: AccessControl) {
+class HolidayQuestionnaireController(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig,
+) {
     @GetMapping
     fun getQuestionnaires(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-    ): List<FixedPeriodQuestionnaire> {
+    ): List<HolidayQuestionnaire> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -40,7 +44,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_HOLIDAY_QUESTIONNAIRES,
                     )
-                    it.getHolidayQuestionnaires()
+                    it.getHolidayQuestionnaires(featureConfig.holidayQuestionnaireType)
                 }
             }
             .also { Audit.HolidayQuestionnairesList.log(meta = mapOf("count" to it.size)) }
@@ -52,7 +56,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
-    ): FixedPeriodQuestionnaire {
+    ): HolidayQuestionnaire {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -61,7 +65,10 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_HOLIDAY_QUESTIONNAIRE,
                     )
-                    it.getFixedPeriodQuestionnaire(id) ?: throw NotFound()
+                    when (featureConfig.holidayQuestionnaireType) {
+                        QuestionnaireType.FIXED_PERIOD -> it.getFixedPeriodQuestionnaire(id)
+                        QuestionnaireType.OPEN_RANGES -> it.getOpenRangesQuestionnaire(id)
+                    } ?: throw NotFound()
                 }
             }
             .also { Audit.HolidayQuestionnaireRead.log(targetId = AuditId(id)) }
@@ -72,7 +79,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: FixedPeriodQuestionnaireBody,
+        @RequestBody body: QuestionnaireBody,
     ) {
         val id =
             db.connect { dbc ->
@@ -84,7 +91,12 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                         Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE,
                     )
                     try {
-                        it.createFixedPeriodQuestionnaire(body)
+                        when (body) {
+                            is QuestionnaireBody.FixedPeriodQuestionnaireBody ->
+                                it.createFixedPeriodQuestionnaire(body)
+                            is QuestionnaireBody.OpenRangesQuestionnaireBody ->
+                                it.createOpenRangesQuestionnaire(body)
+                        }
                     } catch (e: Exception) {
                         throw mapPSQLException(e)
                     }
@@ -99,7 +111,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
-        @RequestBody body: FixedPeriodQuestionnaireBody,
+        @RequestBody body: QuestionnaireBody,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -110,7 +122,12 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                     Action.Global.UPDATE_HOLIDAY_QUESTIONNAIRE,
                 )
                 try {
-                    it.updateFixedPeriodQuestionnaire(id, body)
+                    when (body) {
+                        is QuestionnaireBody.FixedPeriodQuestionnaireBody ->
+                            it.updateFixedPeriodQuestionnaire(id, body)
+                        is QuestionnaireBody.OpenRangesQuestionnaireBody ->
+                            it.updateOpenRangesQuestionnaire(id, body)
+                    }
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }

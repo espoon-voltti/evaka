@@ -25,6 +25,8 @@ SELECT q.id,
        q.description_link,
        q.period_options,
        q.period_option_label,
+       q.period,
+       q.absence_type_threshold,
        q.condition_continuous_placement
 FROM holiday_period_questionnaire q
 WHERE ${predicate(where.forTable("q"))}
@@ -32,9 +34,29 @@ WHERE ${predicate(where.forTable("q"))}
     )
 }
 
-fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPeriodQuestionnaire? =
-    questionnaireQuery(Predicate { where("$it.active @> ${bind(date)}") })
-        .exactlyOneOrNull<FixedPeriodQuestionnaire>()
+fun Database.Read.getActiveFixedPeriodQuestionnaire(
+    date: LocalDate
+): HolidayQuestionnaire.FixedPeriodQuestionnaire? =
+    questionnaireQuery(
+            Predicate {
+                where(
+                    "$it.active @> ${bind(date)} AND $it.type = ${bind(QuestionnaireType.FIXED_PERIOD)}"
+                )
+            }
+        )
+        .exactlyOneOrNull<HolidayQuestionnaire.FixedPeriodQuestionnaire>()
+
+fun Database.Read.getActiveOpenRangesQuestionnaire(
+    date: LocalDate
+): HolidayQuestionnaire.OpenRangesQuestionnaire? =
+    questionnaireQuery(
+            Predicate {
+                where(
+                    "$it.active @> ${bind(date)} AND $it.type = ${bind(QuestionnaireType.OPEN_RANGES)}"
+                )
+            }
+        )
+        .exactlyOneOrNull<HolidayQuestionnaire.OpenRangesQuestionnaire>()
 
 fun Database.Read.getChildrenWithContinuousPlacement(
     today: LocalDate,
@@ -78,15 +100,30 @@ SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_d
 
 fun Database.Read.getFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId
-): FixedPeriodQuestionnaire? =
-    questionnaireQuery(Predicate { where("$it.id = ${bind(id)}") })
-        .exactlyOneOrNull<FixedPeriodQuestionnaire>()
+): HolidayQuestionnaire.FixedPeriodQuestionnaire? =
+    questionnaireQuery(
+            Predicate {
+                where("$it.id = ${bind(id)} AND $it.type = ${bind(QuestionnaireType.FIXED_PERIOD)}")
+            }
+        )
+        .exactlyOneOrNull<HolidayQuestionnaire.FixedPeriodQuestionnaire>()
 
-fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
-    questionnaireQuery(Predicate.alwaysTrue()).toList<FixedPeriodQuestionnaire>()
+fun Database.Read.getHolidayQuestionnaires(type: QuestionnaireType): List<HolidayQuestionnaire> =
+    when (type) {
+        QuestionnaireType.FIXED_PERIOD ->
+            questionnaireQuery(
+                    Predicate { where("$it.type = ${bind(QuestionnaireType.FIXED_PERIOD)}") }
+                )
+                .toList<HolidayQuestionnaire.FixedPeriodQuestionnaire>()
+        QuestionnaireType.OPEN_RANGES ->
+            questionnaireQuery(
+                    Predicate { where("$it.type = ${bind(QuestionnaireType.OPEN_RANGES)}") }
+                )
+                .toList<HolidayQuestionnaire.OpenRangesQuestionnaire>()
+    }
 
 fun Database.Transaction.createFixedPeriodQuestionnaire(
-    data: FixedPeriodQuestionnaireBody
+    data: QuestionnaireBody.FixedPeriodQuestionnaireBody
 ): HolidayQuestionnaireId =
     createQuery {
             sql(
@@ -123,7 +160,7 @@ RETURNING id
 
 fun Database.Transaction.updateFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId,
-    data: FixedPeriodQuestionnaireBody,
+    data: QuestionnaireBody.FixedPeriodQuestionnaireBody,
 ) =
     createUpdate {
             sql(
@@ -140,7 +177,79 @@ SET
     period_options = ${bind(data.periodOptions)},
     period_option_label = ${bindJson(data.periodOptionLabel)},
     condition_continuous_placement = ${bind(data.conditions.continuousPlacement)}
-WHERE id = ${bind(id)}
+WHERE id = ${bind(id)} AND type = ${bind(QuestionnaireType.FIXED_PERIOD)}
+"""
+            )
+        }
+        .updateExactlyOne()
+
+fun Database.Read.getOpenRangesQuestionnaire(
+    id: HolidayQuestionnaireId
+): HolidayQuestionnaire.OpenRangesQuestionnaire? =
+    questionnaireQuery(
+            Predicate {
+                where("$it.id = ${bind(id)} AND $it.type = ${bind(QuestionnaireType.OPEN_RANGES)}")
+            }
+        )
+        .exactlyOneOrNull<HolidayQuestionnaire.OpenRangesQuestionnaire>()
+
+fun Database.Transaction.createOpenRangesQuestionnaire(
+    data: QuestionnaireBody.OpenRangesQuestionnaireBody
+): HolidayQuestionnaireId =
+    createQuery {
+            sql(
+                """
+INSERT INTO holiday_period_questionnaire (
+    type,
+    absence_type,
+    requires_strong_auth,
+    active,
+    title,
+    description,
+    description_link,
+    condition_continuous_placement,
+    period,
+    absence_type_threshold
+)
+VALUES (
+    ${bind(QuestionnaireType.FIXED_PERIOD)},
+    ${bind(data.absenceType)},
+    ${bind(data.requiresStrongAuth)},
+    ${bind(data.active)},
+    ${bindJson(data.title)},
+    ${bindJson(data.description)},
+    ${bindJson(data.descriptionLink)},
+    ${bind(data.conditions.continuousPlacement)},
+    ${bind(data.period)}
+    ${bind(data.absenceTypeThreshold)}
+)
+RETURNING id
+                """
+                    .trimIndent()
+            )
+        }
+        .exactlyOne<HolidayQuestionnaireId>()
+
+fun Database.Transaction.updateOpenRangesQuestionnaire(
+    id: HolidayQuestionnaireId,
+    data: QuestionnaireBody.OpenRangesQuestionnaireBody,
+) =
+    createUpdate {
+            sql(
+                """
+UPDATE holiday_period_questionnaire
+SET
+    type = ${bind(QuestionnaireType.FIXED_PERIOD)},
+    absence_type = ${bind(data.absenceType)},
+    requires_strong_auth = ${bind(data.requiresStrongAuth)},
+    active = ${bind(data.active)},
+    title = ${bindJson(data.title)},
+    description = ${bindJson(data.description)},
+    description_link = ${bindJson(data.descriptionLink)},
+    condition_continuous_placement = ${bind(data.conditions.continuousPlacement)},
+    period = ${bind(data.period)},
+    absence_type_threshold = ${bind(data.absenceTypeThreshold)}
+WHERE id = ${bind(id)} AND type = ${bind(QuestionnaireType.OPEN_RANGES)}
 """
             )
         }

@@ -24,7 +24,7 @@ import {
 import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
 import {
-  FixedPeriodQuestionnaire,
+  HolidayQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 import {
@@ -148,6 +148,8 @@ import {
   ReservationInsert,
   VoucherValueDecision
 } from '../generated/api-types'
+
+import FixedPeriodQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
 
 const uniqueLabel = (l = 7): string =>
   Math.random().toString(36).substring(0, l)

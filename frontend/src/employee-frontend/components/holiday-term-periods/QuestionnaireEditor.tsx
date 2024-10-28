@@ -12,6 +12,7 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { renderResult } from '../async-rendering'
 
 import FixedPeriodQuestionnaireForm from './FixedPeriodQuestionnaireForm'
+import OpenRangesQuestionnaireForm from './OpenRangesQuestionnaireForm'
 import { questionnaireQuery } from './queries'
 
 export default React.memo(function QuestionnaireEditor() {
@@ -37,13 +38,21 @@ export default React.memo(function QuestionnaireEditor() {
             onCancel={navigateToList}
           />
         ) : (
-          renderResult(questionnaire, (questionnaire) => (
-            <FixedPeriodQuestionnaireForm
-              questionnaire={questionnaire}
-              onSuccess={navigateToList}
-              onCancel={navigateToList}
-            />
-          ))
+          renderResult(questionnaire, (questionnaire) =>
+            questionnaire.type === 'FIXED_PERIOD' ? (
+              <FixedPeriodQuestionnaireForm
+                questionnaire={questionnaire}
+                onSuccess={navigateToList}
+                onCancel={navigateToList}
+              />
+            ) : (
+              <OpenRangesQuestionnaireForm
+                questionnaire={questionnaire}
+                onSuccess={navigateToList}
+                onCancel={navigateToList}
+              />
+            )
+          )
         )}
       </ContentArea>
     </Container>

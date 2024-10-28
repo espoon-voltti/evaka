@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -30,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 data class ActiveQuestionnaire(
-    val questionnaire: FixedPeriodQuestionnaire,
+    val questionnaire: HolidayQuestionnaire,
     val eligibleChildren: List<ChildId>,
     val previousAnswers: List<HolidayQuestionnaireAnswer>,
 )
@@ -76,7 +77,12 @@ class HolidayPeriodControllerCitizen(
                         Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES,
                     )
                     val activeQuestionnaire =
-                        tx.getActiveFixedPeriodQuestionnaire(clock.today()) ?: return@read listOf()
+                        when (featureConfig.holidayQuestionnaireType) {
+                            QuestionnaireType.FIXED_PERIOD ->
+                                tx.getActiveFixedPeriodQuestionnaire(clock.today())
+                            QuestionnaireType.OPEN_RANGES ->
+                                tx.getActiveOpenRangesQuestionnaire(clock.today())
+                        } ?: return@read listOf()
 
                     val continuousPlacementPeriod =
                         activeQuestionnaire.conditions.continuousPlacement
@@ -136,21 +142,7 @@ class HolidayPeriodControllerCitizen(
                         if (!it.active.includes(today))
                             throw BadRequest("Questionnaire is not open")
                     } ?: throw BadRequest("Questionnaire not found")
-                if (questionnaire.conditions.continuousPlacement != null) {
-                    val eligibleChildren =
-                        tx.getChildrenWithContinuousPlacement(
-                            today,
-                            user.id,
-                            questionnaire.conditions.continuousPlacement,
-                        )
-                    if (
-                        childIds.any {
-                            body.fixedPeriods[it] != null && !eligibleChildren.contains(it)
-                        }
-                    ) {
-                        throw BadRequest("Some children are not eligible to answer")
-                    }
-                }
+                validateEligibility(questionnaire, tx, today, user, childIds, body, null)
 
                 val invalidPeriod =
                     body.fixedPeriods.values.find { !questionnaire.periodOptions.contains(it) }
@@ -192,6 +184,72 @@ class HolidayPeriodControllerCitizen(
         }
         Audit.HolidayAbsenceCreate.log(targetId = AuditId(id), objectId = AuditId(childIds.toSet()))
     }
+
+    @PostMapping("/questionnaire/open-range/{id}")
+    fun answerOpenRangeQuestionnaire(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable id: HolidayQuestionnaireId,
+        @RequestBody body: OpenRangesBody,
+    ) {
+        val now = clock.now()
+        val today = now.toLocalDate()
+        val childIds = body.openRanges.keys
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE,
+                    childIds,
+                )
+                val questionnaire =
+                    tx.getOpenRangesQuestionnaire(id)?.also {
+                        if (!it.active.includes(today))
+                            throw BadRequest("Questionnaire is not open")
+                    } ?: throw BadRequest("Questionnaire not found")
+                validateEligibility(questionnaire, tx, today, user, childIds, null, body)
+
+                // TODO: validate selected periods
+                // TODO: deduce and update absences
+                // TODO: insert questionnaire answers
+
+            }
+        }
+        Audit.HolidayAbsenceCreate.log(targetId = AuditId(id), objectId = AuditId(childIds.toSet()))
+    }
+
+    private fun validateEligibility(
+        questionnaire: HolidayQuestionnaire,
+        tx: Database.Transaction,
+        today: LocalDate,
+        user: AuthenticatedUser.Citizen,
+        childIds: Set<ChildId>,
+        fixedBody: FixedPeriodsBody?,
+        openBody: OpenRangesBody?,
+    ) {
+        if (questionnaire.conditions.continuousPlacement != null) {
+            val eligibleChildren =
+                tx.getChildrenWithContinuousPlacement(
+                    today,
+                    user.id,
+                    questionnaire.conditions.continuousPlacement!!,
+                )
+            if (
+                childIds.any {
+                    (fixedBody?.fixedPeriods?.get(it) != null && !eligibleChildren.contains(it)) ||
+                        (openBody?.openRanges?.get(it) != null && !eligibleChildren.contains(it))
+                }
+            ) {
+                throw BadRequest("Some children are not eligible to answer")
+            }
+        }
+    }
 }
 
 data class FixedPeriodsBody(val fixedPeriods: Map<ChildId, FiniteDateRange?>)
+
+data class OpenRangesBody(val openRanges: Map<ChildId, List<FiniteDateRange>>)

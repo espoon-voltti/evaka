@@ -91,7 +91,6 @@ import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
-import { FixedPeriodQuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
 import { GroupId } from 'lib-common/generated/api-types/shared'
 import { GroupNoteBody } from 'lib-common/generated/api-types/note'
 import { GroupNoteId } from 'lib-common/generated/api-types/shared'
@@ -111,6 +110,7 @@ import { PlacementPlan } from './api-types'
 import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingResponseReq } from 'lib-common/generated/api-types/pairing'
+import { QuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationInsert } from './api-types'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { SfiMessage } from './api-types'
@@ -1188,7 +1188,7 @@ export async function createHolidayPeriod(
 export async function createHolidayQuestionnaire(
   request: {
     id: HolidayQuestionnaireId,
-    body: FixedPeriodQuestionnaireBody
+    body: QuestionnaireBody
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
@@ -1197,7 +1197,7 @@ export async function createHolidayQuestionnaire(
       url: uri`/holiday-period/questionnaire/${request.id}`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
-      data: request.body satisfies JsonCompatible<FixedPeriodQuestionnaireBody>
+      data: request.body satisfies JsonCompatible<QuestionnaireBody>
     })
     return json
   } catch (e) {

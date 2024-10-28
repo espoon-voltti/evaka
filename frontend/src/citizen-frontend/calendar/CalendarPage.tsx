@@ -317,13 +317,17 @@ const CalendarPage = React.memo(function CalendarPage() {
                       : 'WEAK'
                   }
                 >
-                  <FixedPeriodSelectionModal
-                    close={closeModal}
-                    questionnaire={questionnaire.questionnaire}
-                    availableChildren={response.children}
-                    eligibleChildren={questionnaire.eligibleChildren}
-                    previousAnswers={questionnaire.previousAnswers}
-                  />
+                  {questionnaire.questionnaire.type === 'FIXED_PERIOD' ? (
+                    <FixedPeriodSelectionModal
+                      close={closeModal}
+                      questionnaire={questionnaire.questionnaire}
+                      availableChildren={response.children}
+                      eligibleChildren={questionnaire.eligibleChildren}
+                      previousAnswers={questionnaire.previousAnswers}
+                    />
+                  ) : (
+                    <div>Not Yet Implemented</div>
+                  )}
                 </RequireAuth>
               )}
             </div>
