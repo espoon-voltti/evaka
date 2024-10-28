@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.data
 
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import java.time.Duration
 import java.util.Objects
 
 /**
@@ -24,6 +25,9 @@ class DateTimeMap<T> private constructor(entries: List<Pair<HelsinkiDateTimeRang
 
     override fun range(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange =
         HelsinkiDateTimeRange(start, end)
+
+    override fun range(point: HelsinkiDateTime): HelsinkiDateTimeRange =
+        HelsinkiDateTimeRange(point, point.plus(Duration.ofNanos(1000)))
 
     override fun equals(other: Any?): Boolean =
         other is DateTimeMap<*> && this.entries == other.entries
