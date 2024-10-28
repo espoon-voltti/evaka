@@ -68,5 +68,5 @@ dependencies {
     api(platform("org.junit:junit-bom:5.11.0"))
     api(platform(libs.spring.boot.dependencies))
     api(platform("org.springframework:spring-framework-bom:6.1.14")) // only needed for CVE fix
-    api(platform("software.amazon.awssdk:bom:2.28.1"))
+    api(platform("software.amazon.awssdk:bom:2.29.1"))
 }
