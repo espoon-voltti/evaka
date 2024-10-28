@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared
 
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.holidayperiod.QuestionnaireType
 import fi.espoo.evaka.shared.auth.UserRole
 import java.time.MonthDay
 
@@ -155,6 +156,9 @@ data class FeatureConfig(
 
     /** Status of the applications created by placement tool */
     val placementToolApplicationStatus: ApplicationStatus = ApplicationStatus.SENT,
+
+    /** Type of holiday questionnaire */
+    val holidayQuestionnaireType: QuestionnaireType = QuestionnaireType.FIXED_PERIOD,
 )
 
 enum class ArchiveProcessType {

@@ -4,17 +4,17 @@
 
 // GENERATED FILE: no manual modifications
 
-import { FixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
-import { FixedPeriodQuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayPeriodCreate } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayPeriodUpdate } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { QuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
-import { deserializeJsonFixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { deserializeJsonHolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import { deserializeJsonHolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { uri } from 'lib-common/uri'
 
 
@@ -102,13 +102,13 @@ export async function updateHolidayPeriod(
 */
 export async function createHolidayQuestionnaire(
   request: {
-    body: FixedPeriodQuestionnaireBody
+    body: QuestionnaireBody
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/holiday-period/questionnaire`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<FixedPeriodQuestionnaireBody>
+    data: request.body satisfies JsonCompatible<QuestionnaireBody>
   })
   return json
 }
@@ -137,24 +137,24 @@ export async function getQuestionnaire(
   request: {
     id: UUID
   }
-): Promise<FixedPeriodQuestionnaire> {
-  const { data: json } = await client.request<JsonOf<FixedPeriodQuestionnaire>>({
+): Promise<HolidayQuestionnaire> {
+  const { data: json } = await client.request<JsonOf<HolidayQuestionnaire>>({
     url: uri`/employee/holiday-period/questionnaire/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonFixedPeriodQuestionnaire(json)
+  return deserializeJsonHolidayQuestionnaire(json)
 }
 
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireController.getQuestionnaires
 */
-export async function getQuestionnaires(): Promise<FixedPeriodQuestionnaire[]> {
-  const { data: json } = await client.request<JsonOf<FixedPeriodQuestionnaire[]>>({
+export async function getQuestionnaires(): Promise<HolidayQuestionnaire[]> {
+  const { data: json } = await client.request<JsonOf<HolidayQuestionnaire[]>>({
     url: uri`/employee/holiday-period/questionnaire`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonFixedPeriodQuestionnaire(e))
+  return json.map(e => deserializeJsonHolidayQuestionnaire(e))
 }
 
 
@@ -164,13 +164,13 @@ export async function getQuestionnaires(): Promise<FixedPeriodQuestionnaire[]> {
 export async function updateHolidayQuestionnaire(
   request: {
     id: UUID,
-    body: FixedPeriodQuestionnaireBody
+    body: QuestionnaireBody
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/holiday-period/questionnaire/${request.id}`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<FixedPeriodQuestionnaireBody>
+    data: request.body satisfies JsonCompatible<QuestionnaireBody>
   })
   return json
 }
