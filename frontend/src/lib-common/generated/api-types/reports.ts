@@ -444,6 +444,19 @@ export interface HolidayPeriodAttendanceReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.IncompleteIncomeDbRow
+*/
+export interface IncompleteIncomeDbRow {
+  careareaId: string
+  careareaName: string
+  daycareId: string
+  daycareName: string
+  firstName: string
+  lastName: string
+  validFrom: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.InvoiceReport
 */
 export interface InvoiceReport {
@@ -1122,6 +1135,14 @@ export function deserializeJsonHolidayPeriodAttendanceReportRow(json: JsonOf<Hol
   return {
     ...json,
     date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonIncompleteIncomeDbRow(json: JsonOf<IncompleteIncomeDbRow>): IncompleteIncomeDbRow {
+  return {
+    ...json,
+    validFrom: LocalDate.parseIso(json.validFrom)
   }
 }
 

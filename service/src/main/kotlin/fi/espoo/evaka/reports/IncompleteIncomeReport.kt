@@ -21,7 +21,7 @@ class IncompleteIncomeReport(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-    ): List<IncompleteIncomeReportRow> {
+    ): List<IncompleteIncomeDbRow> {
         return db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(
@@ -40,7 +40,7 @@ class IncompleteIncomeReport(private val accessControl: AccessControl) {
 
 
 
-fun Database.Read.getIncompleteReport(): List<IncompleteIncomeReportRow> {
+fun Database.Read.getIncompleteReport(): List<IncompleteIncomeDbRow> {
     val dbRows =
         createQuery {
             sql(
@@ -74,14 +74,10 @@ fun Database.Read.getIncompleteReport(): List<IncompleteIncomeReportRow> {
 
 data class IncompleteIncomeDbRow(
     val firstName: String,
-    val firstName: String,
+    val lastName: String,
     val validFrom: LocalDate,
     val daycareId: String,
     val daycareName: String,
     val careareaId: String,
     val careareaName: String,
 )
-
-data class IncompleteIncomeReportRow {
-
-}
