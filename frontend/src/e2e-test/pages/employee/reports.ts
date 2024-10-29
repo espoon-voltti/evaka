@@ -80,6 +80,16 @@ export default class ReportsPage {
     await this.page.findByDataQa('report-varda-child-errors').click()
     return new VardaErrorsReport(this.page)
   }
+
+  async openStartingPlacementsReport() {
+    await this.page.findByDataQa('report-starting-placements').click()
+    return new StartingPlacementsReport(this.page)
+  }
+
+  async openEndedPlacementsReport() {
+    await this.page.findByDataQa('report-ended-placements').click()
+    return new EndedPlacementsReport(this.page)
+  }
 }
 
 export class MissingHeadOfFamilyReport {
@@ -746,6 +756,62 @@ export class ChildAttendanceReservationByChildReport {
         await row
           .findByDataQa('attendance-reservation-end')
           .assertTextEquals(data.attendanceReservationEnd)
+      })
+    )
+  }
+}
+
+export class StartingPlacementsReport {
+  constructor(private page: Page) {}
+
+  async assertRows(
+    expected: {
+      childName: string
+      areaName: string
+      placementStart: LocalDate
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('report-row')
+    await rows.assertCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+        await row.findByDataQa('child-name').assertTextEquals(data.childName)
+        await row.findByDataQa('area-name').assertTextEquals(data.areaName)
+        await row
+          .findByDataQa('placement-start-date')
+          .assertTextEquals(data.placementStart.format())
+      })
+    )
+  }
+}
+
+export class EndedPlacementsReport {
+  constructor(private page: Page) {}
+
+  async assertRows(
+    expected: {
+      childName: string
+      areaName: string
+      unitName: string
+      placementEnd: LocalDate
+      nextPlacementStart: LocalDate
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('report-row')
+    await rows.assertCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+        await row.findByDataQa('child-name').assertTextEquals(data.childName)
+        await row.findByDataQa('area-name').assertTextEquals(data.areaName)
+        await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
+        await row
+          .findByDataQa('placement-end-date')
+          .assertTextEquals(data.placementEnd.format())
+        await row
+          .findByDataQa('next-placement-start-date')
+          .assertTextEquals(data.nextPlacementStart.format())
       })
     )
   }

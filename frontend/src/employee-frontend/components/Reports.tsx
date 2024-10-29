@@ -360,6 +360,7 @@ export default React.memo(function Reports() {
                       color={colors.main.m2}
                       icon={faHourglassStart}
                       i18n={i18n.reports.startingPlacements}
+                      data-qa="report-starting-placements"
                     />
                   )
                 }
@@ -373,6 +374,7 @@ export default React.memo(function Reports() {
                       color={colors.main.m2}
                       icon={faHourglassEnd}
                       i18n={i18n.reports.endedPlacements}
+                      data-qa="report-ended-placements"
                     />
                   )
                 }

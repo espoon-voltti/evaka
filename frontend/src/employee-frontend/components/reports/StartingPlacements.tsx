@@ -176,14 +176,12 @@ export default React.memo(function StartingPlacements() {
             careAreaName: row.careAreaName,
             firstName: row.firstName,
             lastName: row.lastName,
-            ssn: row.ssn ?? row.dateOfBirth.format(),
             placementStart: row.placementStart.format()
           }))}
           headers={[
             { label: 'Palvelualue', key: 'careAreaName' },
             { label: 'Lapsen sukunimi', key: 'lastName' },
             { label: 'Lapsen etunimi', key: 'firstName' },
-            { label: 'Henkilötunnus', key: 'ssn' },
             { label: 'Aloittaa varhaiskasvatuksessa', key: 'placementStart' }
           ]}
           filename={getFilename(i18n, filters.year, filters.month)}
@@ -193,22 +191,23 @@ export default React.memo(function StartingPlacements() {
             <Tr>
               <Th>{i18n.reports.common.careAreaName}</Th>
               <Th>{i18n.reports.common.childName}</Th>
-              <Th>{i18n.reports.startingPlacements.ssn}</Th>
               <Th>{i18n.reports.startingPlacements.placementStart}</Th>
             </Tr>
           </Thead>
           {rows.isSuccess && (
             <Tbody>
               {filteredRows.map((row) => (
-                <Tr key={row.childId}>
-                  <StyledTd>{row.careAreaName}</StyledTd>
+                <Tr key={row.childId} data-qa="report-row">
+                  <StyledTd data-qa="area-name">{row.careAreaName}</StyledTd>
                   <StyledTd>
                     <Link
+                      data-qa="child-name"
                       to={`/child-information/${row.childId}`}
                     >{`${row.lastName} ${row.firstName}`}</Link>
                   </StyledTd>
-                  <StyledTd>{row.ssn ?? row.dateOfBirth.format()}</StyledTd>
-                  <StyledTd>{row.placementStart.format()}</StyledTd>
+                  <StyledTd data-qa="placement-start-date">
+                    {row.placementStart.format()}
+                  </StyledTd>
                 </Tr>
               ))}
             </Tbody>

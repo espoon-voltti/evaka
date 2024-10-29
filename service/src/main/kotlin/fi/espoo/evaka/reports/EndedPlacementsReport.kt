@@ -58,15 +58,15 @@ private fun Database.Read.getEndedPlacementsRows(
                 """
 WITH ended_placements AS (
     SELECT 
-        p.id AS child_id, p.first_name, p.last_name, p.social_security_number, 
+        p.id AS child_id, p.first_name, p.last_name,
         max(pl.end_date) AS placement_end
     FROM placement pl
     JOIN person p ON p.id = pl.child_id
     WHERE daterange(${bind(from)}, ${bind(to)}, '[]') @> pl.end_date AND pl.type != 'CLUB'::placement_type
-    GROUP BY p.id, p.first_name, p.last_name, p.social_security_number
+    GROUP BY p.id, p.first_name, p.last_name
 )
 SELECT 
-    ep.child_id, ep.first_name, ep.last_name, ep.social_security_number AS ssn,
+    ep.child_id, ep.first_name, ep.last_name,
     ep.placement_end, dc.name as unit_name, ca.name as area_name, min(next.start_date) AS next_placement_start
 FROM ended_placements ep
 JOIN placement pl
@@ -77,9 +77,9 @@ JOIN care_area ca
     ON dc.care_area_id = ca.id
 LEFT JOIN placement next
     ON next.child_id = ep.child_id AND next.start_date > ep.placement_end AND next.type != 'CLUB'::placement_type
-GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.social_security_number, ep.placement_end, dc.name, ca.name
+GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.placement_end, dc.name, ca.name
 HAVING min(next.start_date) IS NULL OR min(next.start_date) > ${bind(to)}
-ORDER BY last_name, first_name, social_security_number
+ORDER BY last_name, first_name, ep.child_id
 """
             )
         }
@@ -90,7 +90,6 @@ data class EndedPlacementsReportRow(
     val childId: ChildId,
     val firstName: String?,
     val lastName: String?,
-    val ssn: String?,
     val placementEnd: LocalDate,
     val unitName: String,
     val areaName: String,

@@ -53,7 +53,6 @@ data class StartingPlacementsRow(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
-    val ssn: String?,
     val placementStart: LocalDate,
     val careAreaName: String,
 )
@@ -69,7 +68,7 @@ private fun Database.Read.getStartingPlacementsRows(
     return createQuery {
             sql(
                 """
-SELECT p.child_id, p.start_date AS placement_start, c.first_name, c.last_name, c.date_of_birth, c.social_security_number AS ssn,
+SELECT p.child_id, p.start_date AS placement_start, c.first_name, c.last_name, c.date_of_birth,
     (CASE
         WHEN u.provider_type = 'PRIVATE_SERVICE_VOUCHER' THEN 'palvelusetelialue'
         ELSE ca.name

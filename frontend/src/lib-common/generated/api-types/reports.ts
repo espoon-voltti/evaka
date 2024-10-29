@@ -308,7 +308,6 @@ export interface EndedPlacementsReportRow {
   lastName: string | null
   nextPlacementStart: LocalDate | null
   placementEnd: LocalDate
-  ssn: string | null
   unitName: string
 }
 
@@ -919,7 +918,6 @@ export interface StartingPlacementsRow {
   firstName: string
   lastName: string
   placementStart: LocalDate
-  ssn: string | null
 }
 
 /**
