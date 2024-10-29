@@ -932,7 +932,9 @@ export interface StartingPlacementsRow {
   dateOfBirth: LocalDate
   firstName: string
   lastName: string
+  placementId: UUID
   placementStart: LocalDate
+  unitName: string
 }
 
 /**

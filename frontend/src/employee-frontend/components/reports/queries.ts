@@ -27,6 +27,7 @@ import {
   getPreschoolAbsenceReport,
   getPreschoolApplicationReport,
   getServiceVoucherReportForAllUnits,
+  getStartingPlacementsReport,
   getTitaniaErrorsReport,
   getUnitsReport,
   getVardaChildErrorsReport,
@@ -93,7 +94,10 @@ const queryKeys = createQueryKeys('reports', {
     filters: Arg0<typeof getHolidayPeriodAttendanceReport>
   ) => ['holidayPeriodPresenceReport', filters],
   titaniaErrorsReport: () => ['titaniaErrors'],
-  incompleteIncomeReport: () => ['incompleteIncomes']
+  incompleteIncomeReport: () => ['incompleteIncomes'],
+  startingPlacementsReport: (
+    filters: Arg0<typeof getStartingPlacementsReport>
+  ) => ['startingPlacementsReport', filters]
 })
 
 export const attendanceReservationReportByChildQuery = query({
@@ -234,4 +238,9 @@ export const titaniaErrorsReportQuery = query({
 export const incompleteIncomeReportQuery = query({
   api: getIncompleteIncomeReport,
   queryKey: queryKeys.incompleteIncomeReport
+})
+
+export const startingPlacementsReportQuery = query({
+  api: getStartingPlacementsReport,
+  queryKey: queryKeys.startingPlacementsReport
 })

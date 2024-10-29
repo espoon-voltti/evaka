@@ -3886,6 +3886,7 @@ export const fi = {
         'Raportti tarjoaa tiedot yhden palvelualueen ja yhden kuukauden käyttö- tai täyttöasteista.',
       filters: {
         areaPlaceholder: 'Valitse palvelualue',
+        unitPlaceholder: 'Valitse yksikkö',
         type: 'Tyyppi',
         types: {
           UNITS: {
@@ -3939,6 +3940,8 @@ export const fi = {
       description:
         'Kelaan toimitettava raportti varhaiskasvatuksessa aloittavista lapsista.',
       ssn: 'Hetu',
+      childLastName: 'Lapsen sukunimi',
+      childFirstName: 'Lapsen etunimi',
       placementStart: 'Aloittaa varhaiskasvatuksessa',
       reportFileName: 'alkavat_sijoitukset'
     },
