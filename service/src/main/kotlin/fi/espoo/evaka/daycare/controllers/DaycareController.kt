@@ -44,7 +44,7 @@ import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.TerminatedPlacement
 import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
-import fi.espoo.evaka.placement.getMissingGroupPlacementsWithinSixMonths
+import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getTerminatedPlacements
 import fi.espoo.evaka.placement.getUnitChildrenCapacities
 import fi.espoo.evaka.placement.getWaitingUnitConfirmationApplicationsCount
@@ -504,7 +504,7 @@ class DaycareController(
                                 unitId,
                             )
                         ) {
-                            getMissingGroupPlacementsWithinSixMonths(tx, unitId, clock.today())
+                            getMissingGroupPlacements(tx, unitId, clock.today().plusMonths(6))
                         } else {
                             emptyList()
                         }
@@ -666,10 +666,10 @@ class DaycareController(
                                     daycareId,
                                 )
                             )
-                                getMissingGroupPlacementsWithinSixMonths(
+                                getMissingGroupPlacements(
                                         tx,
                                         daycareId,
-                                        clock.today(),
+                                        clock.today().plusMonths(6),
                                     )
                                     .size
                             else 0,

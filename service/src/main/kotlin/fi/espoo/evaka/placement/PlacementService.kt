@@ -595,10 +595,10 @@ private fun addMissingGroupPlacements(
     return daycarePlacement.copy(groupPlacements = groupPlacements)
 }
 
-fun getMissingGroupPlacementsWithinSixMonths(
+fun getMissingGroupPlacements(
     tx: Database.Read,
     unitId: DaycareId,
-    today: LocalDate,
+    placementUntil: LocalDate? = null,
 ): List<MissingGroupPlacement> {
     val evakaLaunch = LocalDate.of(2020, 3, 1)
 
@@ -615,7 +615,7 @@ WITH missing_group_placement AS (
         FROM daycare_group_placement dgp
         WHERE p.id = dgp.daycare_placement_id
     ) dgp ON true
-    WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && daterange(${bind(evakaLaunch)}, NULL)
+    WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && daterange(${bind(evakaLaunch)}, ${bind(placementUntil)})
     AND NOT isempty(multirange(daterange(greatest(p.start_date, ${bind(evakaLaunch)}), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange))
 )
 SELECT
@@ -648,7 +648,6 @@ LEFT JOIN service_need_option default_sno ON default_sno.default_option AND defa
                 )
             }
             .toList<MissingGroupPlacement>()
-            .filter { it.gap.start <= today.plusMonths(6) }
 
     val missingBackupCareGroups =
         tx.createQuery {
