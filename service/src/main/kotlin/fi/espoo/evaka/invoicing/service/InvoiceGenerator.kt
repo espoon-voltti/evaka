@@ -47,22 +47,21 @@ import org.springframework.stereotype.Component
 class InvoiceGenerator(
     private val draftInvoiceGenerator: DraftInvoiceGenerator,
     private val featureConfig: FeatureConfig,
+    private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser,
     private val tracer: Tracer = noopTracer(),
 ) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, month: YearMonth) {
-        val range = FiniteDateRange.ofMonth(month)
-
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
         val invoiceCalculationData =
-            tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, range) }
+            tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, month) }
         val invoices = draftInvoiceGenerator.generateDraftInvoices(tx, invoiceCalculationData)
         val invoicesWithCorrections =
             tracer.withSpan("applyCorrections") {
                 applyCorrections(tx, invoices, month, invoiceCalculationData.areaIds)
             }
-        tx.deleteDraftInvoicesByDateRange(range)
+        tx.deleteDraftInvoicesByDateRange(FiniteDateRange.ofMonth(month))
         tx.insertInvoices(
             invoices = invoicesWithCorrections,
             relatedFeeDecisions =
@@ -77,8 +76,10 @@ class InvoiceGenerator(
 
     fun calculateInvoiceData(
         tx: Database.Read,
-        range: FiniteDateRange,
+        month: YearMonth,
     ): DraftInvoiceGenerator.InvoiceGeneratorInput {
+        val range = FiniteDateRange.ofMonth(month)
+
         val feeThresholds =
             tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
                 ?: error(
@@ -96,7 +97,7 @@ class InvoiceGenerator(
 
         val absences = tx.getBillableAbsencesInRange(range)
 
-        val freeChildren =
+        val julyFreeChildren =
             if (
                 range.start.month == Month.JULY &&
                     (range.end.month == Month.JULY && range.start.year == range.end.year)
@@ -105,6 +106,8 @@ class InvoiceGenerator(
             } else {
                 emptySet()
             }
+
+        val extraFreeChildren = invoiceGenerationLogicChooser.getFreeChildren(tx, month)
 
         val codebtors =
             unhandledDecisions.mapValues { (_, decisions) ->
@@ -148,7 +151,7 @@ class InvoiceGenerator(
             businessDays = businessDays,
             feeThresholds = feeThresholds,
             absences = absences,
-            freeChildren = freeChildren,
+            freeChildren = julyFreeChildren + extraFreeChildren,
             codebtors = codebtors,
             defaultServiceNeedOptions = defaultServiceNeedOptions,
         )
