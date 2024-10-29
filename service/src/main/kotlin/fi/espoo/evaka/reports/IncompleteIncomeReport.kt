@@ -28,7 +28,7 @@ class IncompleteIncomeReport(private val accessControl: AccessControl) {
                     it,
                     user,
                     clock,
-                    Action.Global.READ_TITANIA_ERRORS, // täytyy tarkentaa
+                    Action.Global.READ_INCOMPLETE_INCOMES_REPORT,
                 )
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getIncompleteReport()

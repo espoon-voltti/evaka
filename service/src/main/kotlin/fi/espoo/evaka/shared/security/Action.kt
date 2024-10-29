@@ -273,6 +273,7 @@ sealed interface Action {
         READ_SEXTET_REPORT(HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER)),
         READ_UNITS_REPORT(HasGlobalRole(ADMIN)),
         READ_TITANIA_ERRORS(HasGlobalRole(ADMIN)),
+        READ_INCOMPLETE_INCOMES_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         READ_VARDA_REPORT(HasGlobalRole(ADMIN)),
         UPDATE_SETTINGS(HasGlobalRole(ADMIN)),
         READ_SPECIAL_DIET_LIST(
