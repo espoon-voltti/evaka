@@ -22,7 +22,6 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { scrollToPos } from 'lib-common/utils/scrolling'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
@@ -47,7 +46,6 @@ import {
 
 import { useUser } from '../auth/state'
 import { useLang, useTranslation } from '../localization'
-import { headerHeightDesktop } from '../navigation/const'
 
 import {
   CalendarEventCount,
@@ -181,16 +179,6 @@ export default React.memo(function CalendarMonthView({
     prevMonth,
     selectedDate
   ])
-
-  useEffect(() => {
-    const top = todayRef.current?.getBoundingClientRect().top
-
-    if (top) {
-      scrollToPos({
-        top: top - headerHeightDesktop * 2 - 32
-      })
-    }
-  }, [])
 
   const onCreateAbsences = useCallback(
     () => onCreateAbsencesClicked(undefined),
