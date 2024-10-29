@@ -2017,17 +2017,17 @@ const sv: Translations = {
       attendanceReservation: 'Påminnelser om närvaroanmälningar som saknas',
       attendanceReservationInfo:
         'Påminnelsen skickas före deadline för närvaroanmälan om något av dina barn saknar anmälan om närvaro eller frånvaro under de kommande två veckorna.',
-      discussionTime: 'Keskusteluaikoihin liittyvät ilmoitukset',
+      discussionTime: 'Meddelanden om samtalstider',
       discussionTimeInfo: (
         <div>
-          <div>Saat ilmoituksen seuraavista asioista:</div>
+          <div>Du får ett meddelande när vi skickar:</div>
           <ul>
             <li>
-              kun sinulta kysytään sopivia aikoja esimerkiksi lapsesi
-              varhaiskasvatussuunnitelmaa koskevaan keskusteluun
+              en förfrågan om lämpliga tider till exempel för samtal om ditt
+              barns plan för småbarnspedagogik
             </li>
-            <li>varatuista ja perutuista keskustesteluajoistasi</li>
-            <li>muistutuksen ennen varattua keskusteluaikaa</li>
+            <li>information om dina bokade och avbokade samtalstider</li>
+            <li>påminnelser inför bokade samtalstider</li>
           </ul>
         </div>
       )

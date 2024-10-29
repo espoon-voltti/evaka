@@ -1777,17 +1777,17 @@ const en: Translations = {
       attendanceReservation: 'Reminders of missing attendance reservations',
       attendanceReservationInfo:
         'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.',
-      discussionTime: 'Keskusteluaikoihin liittyvät ilmoitukset',
+      discussionTime: 'Notifications related to discussion appointments',
       discussionTimeInfo: (
         <div>
-          <div>Saat ilmoituksen seuraavista asioista:</div>
+          <div>You will receive notifications of the following:</div>
           <ul>
             <li>
-              kun sinulta kysytään sopivia aikoja esimerkiksi lapsesi
-              varhaiskasvatussuunnitelmaa koskevaan keskusteluun
+              when you are asked about suitable times for a discussion, e.g.
+              concerning your child’s early childhood education plan
             </li>
-            <li>varatuista ja perutuista keskustesteluajoistasi</li>
-            <li>muistutuksen ennen varattua keskusteluaikaa</li>
+            <li>booked and cancelled discussion appointments</li>
+            <li>reminders about upcoming discussion appointments</li>
           </ul>
         </div>
       )
