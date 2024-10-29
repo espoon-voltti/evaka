@@ -154,6 +154,9 @@ export default React.memo(function DatePickerLowLevel({
     (e: React.KeyboardEvent) => {
       if (e.key === 'Esc' || e.key === 'Escape' || e.key === 'Enter') {
         e.stopPropagation()
+        if (e.key === 'Enter' && !(e.target instanceof HTMLInputElement)) {
+          return
+        }
         showDatePickerOff()
       }
     },
