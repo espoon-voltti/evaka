@@ -595,7 +595,11 @@ private fun addMissingGroupPlacements(
     return daycarePlacement.copy(groupPlacements = groupPlacements)
 }
 
-fun getMissingGroupPlacements(tx: Database.Read, unitId: DaycareId): List<MissingGroupPlacement> {
+fun getMissingGroupPlacements(
+    tx: Database.Read,
+    unitId: DaycareId,
+    placementUntil: LocalDate? = null,
+): List<MissingGroupPlacement> {
     val evakaLaunch = LocalDate.of(2020, 3, 1)
 
     val missingGroupPlacements =
@@ -611,7 +615,7 @@ WITH missing_group_placement AS (
         FROM daycare_group_placement dgp
         WHERE p.id = dgp.daycare_placement_id
     ) dgp ON true
-    WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && daterange(${bind(evakaLaunch)}, NULL)
+    WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && daterange(${bind(evakaLaunch)}, ${bind(placementUntil)})
     AND NOT isempty(multirange(daterange(greatest(p.start_date, ${bind(evakaLaunch)}), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange))
 )
 SELECT

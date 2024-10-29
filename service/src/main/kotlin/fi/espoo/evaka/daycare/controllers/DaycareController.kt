@@ -504,7 +504,7 @@ class DaycareController(
                                 unitId,
                             )
                         ) {
-                            getMissingGroupPlacements(tx, unitId)
+                            getMissingGroupPlacements(tx, unitId, clock.today().plusMonths(6))
                         } else {
                             emptyList()
                         }
@@ -666,7 +666,12 @@ class DaycareController(
                                     daycareId,
                                 )
                             )
-                                getMissingGroupPlacements(tx, daycareId).size
+                                getMissingGroupPlacements(
+                                        tx,
+                                        daycareId,
+                                        clock.today().plusMonths(6),
+                                    )
+                                    .size
                             else 0,
                     )
                 }
