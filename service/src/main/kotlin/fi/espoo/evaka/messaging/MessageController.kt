@@ -154,12 +154,18 @@ class MessageController(
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
+                    val groupAccountAccessFrom =
+                        it.getStartDateOfGroupAccountAccess(
+                            accountId,
+                            (user as? AuthenticatedUser.Employee)?.id,
+                        )
                     it.getReceivedThreads(
                         accountId,
                         pageSize = 20,
                         page,
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
+                        groupAccountMessagesVisibleFrom = groupAccountAccessFrom?.minusWeeks(1),
                     )
                 }
             }

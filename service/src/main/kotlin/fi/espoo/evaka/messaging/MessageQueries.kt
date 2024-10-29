@@ -6,20 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.MessageAttachment
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageContentId
-import fi.espoo.evaka.shared.MessageId
-import fi.espoo.evaka.shared.MessageRecipientId
-import fi.espoo.evaka.shared.MessageThreadFolderId
-import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.PagedFactory
-import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -27,7 +14,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.formatName
-import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
@@ -443,6 +429,35 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
+/**
+ * Returns the date when the employee was given access to the group account. Returns null when the
+ * employee has no access, or the access is because of being a unit supervisor (supervisor has
+ * access without being assigned to the group).
+ * *
+ */
+fun Database.Read.getStartDateOfGroupAccountAccess(
+    groupAccountId: MessageAccountId,
+    employeeId: EmployeeId?,
+): LocalDate? {
+    if (employeeId == null) return null
+
+    return createQuery {
+            sql(
+                """
+SELECT
+    dga.created::date
+FROM daycare_group_acl dga
+JOIN message_account ma ON ma.daycare_group_id = dga.daycare_group_id
+JOIN daycare_group dg ON dga.daycare_group_id = dg.id
+JOIN daycare_acl da ON da.employee_id = dga.employee_id AND da.daycare_id = dg.daycare_id
+WHERE ma.id = ${bind(groupAccountId)} AND dga.employee_id = ${bind(employeeId)} AND da.role != 'UNIT_SUPERVISOR'
+"""
+            )
+        }
+        .mapTo<LocalDate>()
+        .exactlyOneOrNull()
+}
+
 /** Return all threads in which the account has received messages */
 fun Database.Read.getReceivedThreads(
     accountId: MessageAccountId,
@@ -451,6 +466,7 @@ fun Database.Read.getReceivedThreads(
     municipalAccountName: String,
     serviceWorkerAccountName: String,
     folderId: MessageThreadFolderId? = null,
+    groupAccountMessagesVisibleFrom: LocalDate? = null,
 ): PagedMessageThreads {
     val threads =
         createQuery {
@@ -488,7 +504,8 @@ WHERE
             "tp.folder_id = ${bind(folderId)}"
         }
     } AND
-    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL)
+    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL) AND
+    (${bind(groupAccountMessagesVisibleFrom)} IS NULL OR tp.last_message_timestamp >= ${bind(groupAccountMessagesVisibleFrom)})
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
         """

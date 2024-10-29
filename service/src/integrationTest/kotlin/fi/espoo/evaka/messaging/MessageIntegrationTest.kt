@@ -54,12 +54,15 @@ import fi.espoo.evaka.test.validDaycareApplication
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import java.util.stream.Stream
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockMultipartFile
 
@@ -1417,6 +1420,75 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2018)),
             )
         assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 2), response)
+    }
+
+    companion object {
+        @JvmStatic
+        fun groupAccountAccessParams(): Stream<Array<Any>> =
+            Stream.of(
+                arrayOf(10, UserRole.STAFF, false),
+                arrayOf(1, UserRole.STAFF, true),
+                arrayOf(10, UserRole.UNIT_SUPERVISOR, true),
+            )
+    }
+
+    @ParameterizedTest(name = "replyDaysAgo={0}, userRole={1}")
+    @MethodSource("groupAccountAccessParams")
+    fun `group account sees threads from before employee group assignment`(
+        replyDaysAgo: Int,
+        userRole: UserRole,
+        isVisible: Boolean,
+    ) {
+        val newEmployee =
+            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId1)
+                tx.insertGuardian(person2.id, it.id)
+            }
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = clock.today().minusMonths(6),
+                        endDate = clock.today().plusMonths(6),
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId1,
+                    startDate = clock.today().minusMonths(6),
+                    endDate = clock.today().plusMonths(6),
+                )
+            )
+            tx.insert(DevEmployee(id = newEmployee.id, firstName = "New", lastName = "Staff"))
+            tx.insertDaycareAclRow(testDaycare.id, newEmployee.id, userRole)
+            tx.insertDaycareGroupAcl(testDaycare.id, newEmployee.id, listOf(groupId1))
+        }
+
+        postNewThread(
+            person2,
+            "title",
+            "content",
+            listOf(group1Account, employee1Account),
+            listOf(testChild_2.id),
+            now = clock.now().minusWeeks(3),
+        )
+        val thread2 = getRegularMessageThreads(person2).first()
+        replyToMessage(
+            employee1,
+            employee1Account,
+            thread2.messages.last().id,
+            setOf(person2Account, group1Account),
+            "reply",
+            now = clock.now().minusDays(replyDaysAgo.toLong()),
+        )
+
+        val newEmployeeThreads =
+            getEmployeeMessageThreads(group1Account, newEmployee, now = clock.now())
+        assertEquals(if (isVisible) 1 else 0, newEmployeeThreads.size)
     }
 
     private fun getUnreadReceivedMessages(
