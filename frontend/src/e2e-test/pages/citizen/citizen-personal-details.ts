@@ -117,23 +117,15 @@ export class CitizenNotificationSettingsSection extends Element {
   checkboxes = {
     message: new Checkbox(this.findByDataQa('message')),
     bulletin: new Checkbox(this.findByDataQa('bulletin')),
-    outdatedIncome: new Checkbox(this.findByDataQa('outdated-income')),
+    income: new Checkbox(this.findByDataQa('income')),
     calendarEvent: new Checkbox(this.findByDataQa('calendar-event')),
     decision: new Checkbox(this.findByDataQa('decision')),
     document: new Checkbox(this.findByDataQa('document')),
     informalDocument: new Checkbox(this.findByDataQa('informal-document')),
-    missingAttendanceReservation: new Checkbox(
-      this.findByDataQa('missing-attendance-reservation')
+    attendanceReservation: new Checkbox(
+      this.findByDataQa('attendance-reservation')
     ),
-    discussionTimeReservationConfirmation: new Checkbox(
-      this.findByDataQa('discussion-time-reservation-confirmation')
-    ),
-    discussionTimeReservationReminder: new Checkbox(
-      this.findByDataQa('discussion-time-reservation-reminder')
-    ),
-    discussionSurveyCreationNotificaiton: new Checkbox(
-      this.findByDataQa('discussion-survey-creation-notification')
-    )
+    discussionTime: new Checkbox(this.findByDataQa('discussion-time'))
   }
 
   async assertEditable(editable: boolean) {

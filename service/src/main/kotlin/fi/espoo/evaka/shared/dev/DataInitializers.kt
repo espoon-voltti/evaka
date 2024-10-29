@@ -349,13 +349,13 @@ fun Database.Transaction.insert(person: DevPerson, type: DevPersonType): PersonI
 INSERT INTO person (
     id, date_of_birth, date_of_death, first_name, last_name, preferred_name, social_security_number, email, phone, language,
     street_address, postal_code, post_office, residence_code, nationalities, restricted_details_enabled, restricted_details_end_date,
-    invoicing_street_address, invoicing_postal_code, invoicing_post_office, updated_from_vtj, oph_person_oid, duplicate_of, enabled_email_types
+    invoicing_street_address, invoicing_postal_code, invoicing_post_office, updated_from_vtj, oph_person_oid, duplicate_of, disabled_email_types
 ) VALUES (
     ${bind(p.id)}, ${bind(p.dateOfBirth)}, ${bind(p.dateOfDeath)}, ${bind(p.firstName)}, ${bind(p.lastName)}, ${bind(p.preferredName)},
     ${bind(p.ssn)}, ${bind(p.email)}, ${bind(p.phone)}, ${bind(p.language)}, ${bind(p.streetAddress)}, ${bind(p.postalCode)}, ${bind(p.postOffice)},
     ${bind(p.residenceCode)}, ${bind(p.nationalities)}, ${bind(p.restrictedDetailsEnabled)}, ${bind(p.restrictedDetailsEndDate)},
     ${bind(p.invoicingStreetAddress)}, ${bind(p.invoicingPostalCode)}, ${bind(p.invoicingPostOffice)}, ${bind(p.updatedFromVtj)},
-    ${bind(p.ophPersonOid)}, ${bind(p.duplicateOf)}, ${bind(p.enabledEmailTypes)}
+    ${bind(p.ophPersonOid)}, ${bind(p.duplicateOf)}, ${bind(p.disabledEmailTypes)}
 )
 RETURNING id
 """

@@ -106,7 +106,9 @@ WHERE m.id = ANY(${bind(messageIds)})
                 emailType =
                     when (thread.type) {
                         MessageType.MESSAGE -> EmailMessageType.MESSAGE_NOTIFICATION
-                        MessageType.BULLETIN -> EmailMessageType.BULLETIN_NOTIFICATION
+                        MessageType.BULLETIN ->
+                            if (isSenderMunicipalAccount) EmailMessageType.BULLETIN_NOTIFICATION
+                            else EmailMessageType.MESSAGE_NOTIFICATION
                     },
                 fromAddress = emailEnv.sender(msg.language),
                 content =

@@ -35,6 +35,7 @@ import { DocumentContent } from 'lib-common/generated/api-types/document'
 import { DocumentStatus } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { DocumentType } from 'lib-common/generated/api-types/document'
+import { EmailMessageType } from 'lib-common/generated/api-types/pis'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import { FeeAlterationWithEffect } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionThresholds } from 'lib-common/generated/api-types/invoicing'
@@ -702,9 +703,9 @@ export interface DevPerson {
   backupPhone: string
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
+  disabledEmailTypes: EmailMessageType[]
   duplicateOf: UUID | null
   email: string | null
-  enabledEmailTypes: EmailMessageType[] | null
   firstName: string
   forceManualFeeDecisions: boolean
   id: UUID
@@ -908,25 +909,6 @@ export interface EmailContent {
   subject: string
   text: string
 }
-
-/**
-* Generated from fi.espoo.evaka.pis.EmailMessageType
-*/
-export type EmailMessageType =
-  | 'TRANSACTIONAL'
-  | 'MESSAGE_NOTIFICATION'
-  | 'BULLETIN_NOTIFICATION'
-  | 'OUTDATED_INCOME_NOTIFICATION'
-  | 'NEW_CUSTOMER_INCOME_NOTIFICATION'
-  | 'CALENDAR_EVENT_NOTIFICATION'
-  | 'DECISION_NOTIFICATION'
-  | 'DOCUMENT_NOTIFICATION'
-  | 'INFORMAL_DOCUMENT_NOTIFICATION'
-  | 'MISSING_ATTENDANCE_RESERVATION_NOTIFICATION'
-  | 'MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION'
-  | 'DISCUSSION_TIME_RESERVATION_CONFIRMATION'
-  | 'DISCUSSION_SURVEY_CREATION_NOTIFICATION'
-  | 'DISCUSSION_TIME_RESERVATION_REMINDER'
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Feature

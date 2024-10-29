@@ -7,9 +7,12 @@ import React from 'react'
 import { boolean } from 'lib-common/form/fields'
 import { object } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
-import { EmailNotificationSettings } from 'lib-common/generated/api-types/pis'
+import { StateOf } from 'lib-common/form/types'
+import {
+  EmailMessageType,
+  emailMessageTypes
+} from 'lib-common/generated/api-types/pis'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -28,19 +31,61 @@ import { updateNotificationSettingsMutation } from './queries'
 const notificationSettingsForm = object({
   message: boolean(),
   bulletin: boolean(),
-  outdatedIncome: boolean(),
+  income: boolean(),
   calendarEvent: boolean(),
   decision: boolean(),
   document: boolean(),
   informalDocument: boolean(),
-  missingAttendanceReservation: boolean(),
-  discussionTimeReservationConfirmation: boolean(),
-  discussionTimeReservationReminder: boolean(),
-  discussionSurveyCreationNotification: boolean()
+  attendanceReservation: boolean(),
+  discussionTime: boolean()
+})
+
+function isEnabled(
+  state: StateOf<typeof notificationSettingsForm>,
+  type: EmailMessageType
+): boolean {
+  switch (type) {
+    case 'TRANSACTIONAL':
+      return true // always enabled
+    case 'MESSAGE_NOTIFICATION':
+      return state.message
+    case 'BULLETIN_NOTIFICATION':
+      return state.bulletin
+    case 'INCOME_NOTIFICATION':
+      return state.income
+    case 'CALENDAR_EVENT_NOTIFICATION':
+      return state.calendarEvent
+    case 'DECISION_NOTIFICATION':
+      return state.decision
+    case 'DOCUMENT_NOTIFICATION':
+      return state.document
+    case 'INFORMAL_DOCUMENT_NOTIFICATION':
+      return state.informalDocument
+    case 'ATTENDANCE_RESERVATION_NOTIFICATION':
+      return state.attendanceReservation
+    case 'DISCUSSION_TIME_NOTIFICATION':
+      return state.discussionTime
+  }
+}
+
+const getInitialState = (
+  disabledTypes: EmailMessageType[]
+): StateOf<typeof notificationSettingsForm> => ({
+  message: !disabledTypes.includes('MESSAGE_NOTIFICATION'),
+  bulletin: !disabledTypes.includes('BULLETIN_NOTIFICATION'),
+  income: !disabledTypes.includes('INCOME_NOTIFICATION'),
+  calendarEvent: !disabledTypes.includes('CALENDAR_EVENT_NOTIFICATION'),
+  decision: !disabledTypes.includes('DECISION_NOTIFICATION'),
+  document: !disabledTypes.includes('DOCUMENT_NOTIFICATION'),
+  informalDocument: !disabledTypes.includes('INFORMAL_DOCUMENT_NOTIFICATION'),
+  attendanceReservation: !disabledTypes.includes(
+    'ATTENDANCE_RESERVATION_NOTIFICATION'
+  ),
+  discussionTime: !disabledTypes.includes('DISCUSSION_TIME_NOTIFICATION')
 })
 
 export interface Props {
-  initialData: EmailNotificationSettings
+  initialData: EmailMessageType[]
 }
 
 export default React.memo(
@@ -52,21 +97,19 @@ export default React.memo(
     const [editing, useEditing] = useBoolean(false)
     const form = useForm(
       notificationSettingsForm,
-      () => initialData,
+      () => getInitialState(initialData),
       t.validationErrors
     )
     const {
       message,
       bulletin,
-      outdatedIncome,
+      income,
       calendarEvent,
       decision,
       document,
       informalDocument,
-      missingAttendanceReservation,
-      discussionTimeReservationConfirmation,
-      discussionTimeReservationReminder,
-      discussionSurveyCreationNotification
+      attendanceReservation,
+      discussionTime
     } = useFormFields(form)
 
     return (
@@ -100,24 +143,20 @@ export default React.memo(
           data-qa="bulletin"
         />
         <Gap size="s" />
-        <ExpandingInfo
-          info={t.personalDetails.notificationsSection.outdatedIncomeInfo}
-        >
+        <ExpandingInfo info={t.personalDetails.notificationsSection.incomeInfo}>
           <CheckboxF
-            bind={outdatedIncome}
-            label={t.personalDetails.notificationsSection.outdatedIncome}
+            bind={income}
+            label={t.personalDetails.notificationsSection.income}
             disabled={!editing}
-            data-qa="outdated-income"
+            data-qa="income"
           />
         </ExpandingInfo>
-        {outdatedIncome.state === false ? (
+        {income.state === false ? (
           <>
             <Gap size="s" />
             <AlertBox
               noMargin
-              message={
-                t.personalDetails.notificationsSection.outdatedIncomeWarning
-              }
+              message={t.personalDetails.notificationsSection.incomeWarning}
             />
           </>
         ) : null}
@@ -160,71 +199,27 @@ export default React.memo(
         <Gap size="s" />
         <ExpandingInfo
           info={
-            t.personalDetails.notificationsSection
-              .missingAttendanceReservationInfo
+            t.personalDetails.notificationsSection.attendanceReservationInfo
           }
         >
           <CheckboxF
-            bind={missingAttendanceReservation}
-            label={
-              t.personalDetails.notificationsSection
-                .missingAttendanceReservation
-            }
+            bind={attendanceReservation}
+            label={t.personalDetails.notificationsSection.attendanceReservation}
             disabled={!editing}
-            data-qa="missing-attendance-reservation"
+            data-qa="attendance-reservation"
           />
         </ExpandingInfo>
         <Gap size="s" />
         {featureFlags.discussionReservations && (
           <>
             <ExpandingInfo
-              info={
-                t.personalDetails.notificationsSection
-                  .discussionTimeReservationConfirmationInfo
-              }
+              info={t.personalDetails.notificationsSection.discussionTimeInfo}
             >
               <CheckboxF
-                bind={discussionTimeReservationConfirmation}
-                label={
-                  t.personalDetails.notificationsSection
-                    .discussionTimeReservationConfirmation
-                }
+                bind={discussionTime}
+                label={t.personalDetails.notificationsSection.discussionTime}
                 disabled={!editing}
-                data-qa="discussion-time-reservation-confirmation"
-              />
-            </ExpandingInfo>
-            <Gap size="s" />
-            <ExpandingInfo
-              info={
-                t.personalDetails.notificationsSection
-                  .discussionTimeReservationReminderInfo
-              }
-            >
-              <CheckboxF
-                bind={discussionTimeReservationReminder}
-                label={
-                  t.personalDetails.notificationsSection
-                    .discussionTimeReservationReminder
-                }
-                disabled={!editing}
-                data-qa="discussion-time-reservation-reminder"
-              />
-            </ExpandingInfo>
-            <Gap size="s" />
-            <ExpandingInfo
-              info={
-                t.personalDetails.notificationsSection
-                  .discussionSurveyCreationNotificationInfo
-              }
-            >
-              <CheckboxF
-                bind={discussionSurveyCreationNotification}
-                label={
-                  t.personalDetails.notificationsSection
-                    .discussionSurveyCreationNotification
-                }
-                disabled={!editing}
-                data-qa="discussion-survey-creation-notification"
+                data-qa="discussion-time"
               />
             </ExpandingInfo>
             <Gap size="s" />
@@ -232,9 +227,9 @@ export default React.memo(
         )}
         {editing ? (
           <FixedSpaceRow justifyContent="flex-end">
-            <LegacyButton
+            <Button
               onClick={() => {
-                form.set(initialData)
+                form.set(getInitialState(initialData))
                 useEditing.off()
               }}
               text={t.common.cancel}
@@ -243,7 +238,9 @@ export default React.memo(
             <MutateButton
               mutation={updateNotificationSettingsMutation}
               onClick={() => ({
-                body: form.value()
+                body: emailMessageTypes.filter(
+                  (type) => !isEnabled(form.state, type)
+                )
               })}
               onSuccess={useEditing.off}
               text={t.common.save}

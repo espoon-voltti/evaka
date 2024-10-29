@@ -2001,35 +2001,36 @@ const sv: Translations = {
       subtitle: 'Meddelande som skickas till e-posten',
       message: 'Meddelanden som personalen skickat i eVaka',
       bulletin: 'Bulletiner i eVaka',
-      discussionTimeReservationConfirmation:
-        'Bekräftelser på bokningar av diskussionstid i eVaka',
-      discussionTimeReservationConfirmationInfo:
-        'Ett bekräftelsemeddelande skickas för en bokad eller avbokad bokning av diskussionstid.',
-      discussionTimeReservationReminder:
-        'Påminnelser om bokade diskussionstider i eVaka',
-      discussionTimeReservationReminderInfo:
-        'Ett påminnelsemeddelande skickas före den bokade tiden.',
-      discussionSurveyCreationNotification:
-        'Meddelande om öppnade diskussionsenkäter i eVaka',
-      discussionSurveyCreationNotificationInfo:
-        'Meddelandet skickas när en ny diskussionsenkät gällande ditt barn har skapats i eVaka',
-      outdatedIncome: 'Påminnelse om att uppdatera inkomstuppgifter',
-      outdatedIncomeInfo:
+      income: 'Påminnelse om att uppdatera inkomstuppgifter',
+      incomeInfo:
         'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
-      outdatedIncomeWarning:
+      incomeWarning:
         'Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
       calendarEvent: 'Påminnelser om nya händelser som antecknats i kalendern',
       decision: 'Om inkomna beslut',
-      document: 'Om nya dokument',
+      document: 'Om inkomna pedagogiska dokument',
       documentInfo:
         'Med dokument avses officiella handlingar som inte är beslut. Dessa kan till exempel vara planer för småbarnspedagogik eller pedagogiska bedömningar.',
       informalDocument: 'Om andra dokument som gäller barnets vardag',
       informalDocumentInfo:
         'Dessa kan till exempel vara bilder på teckningar som barnet gjort.',
-      missingAttendanceReservation:
-        'Påminnelser om närvaroanmälningar som saknas',
-      missingAttendanceReservationInfo:
-        'Påminnelsen skickas före deadline för närvaroanmälan om något av dina barn saknar anmälan om närvaro eller frånvaro under de kommande två veckorna.'
+      attendanceReservation: 'Påminnelser om närvaroanmälningar som saknas',
+      attendanceReservationInfo:
+        'Påminnelsen skickas före deadline för närvaroanmälan om något av dina barn saknar anmälan om närvaro eller frånvaro under de kommande två veckorna.',
+      discussionTime: 'Meddelanden om samtalstider',
+      discussionTimeInfo: (
+        <div>
+          <div>Du får ett meddelande när vi skickar:</div>
+          <ul>
+            <li>
+              en förfrågan om lämpliga tider till exempel för samtal om ditt
+              barns plan för småbarnspedagogik
+            </li>
+            <li>information om dina bokade och avbokade samtalstider</li>
+            <li>påminnelser inför bokade samtalstider</li>
+          </ul>
+        </div>
+      )
     }
   },
   income: {
