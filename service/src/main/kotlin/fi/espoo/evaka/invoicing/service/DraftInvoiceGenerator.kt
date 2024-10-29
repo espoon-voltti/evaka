@@ -83,10 +83,7 @@ class DraftInvoiceGenerator(
 ) {
     private val config = InvoiceGeneratorConfig.fromFeatureConfig(featureConfig)
 
-    fun generateDraftInvoices(
-        tx: Database.Read,
-        invoiceInput: InvoiceGeneratorInput,
-    ): List<Invoice> {
+    fun generateDraftInvoices(invoiceInput: InvoiceGeneratorInput): List<Invoice> {
         val headsOfFamily = invoiceInput.decisions.keys + invoiceInput.temporaryPlacements.keys
         return headsOfFamily.mapNotNull { headOfFamilyId ->
             try {
@@ -103,7 +100,6 @@ class DraftInvoiceGenerator(
                     Tracing.headOfFamilyId withValue headOfFamilyId,
                 ) {
                     generateDraftInvoice(
-                        tx,
                         invoiceInput,
                         HeadOfFamilyInput(
                             config,
@@ -123,7 +119,6 @@ class DraftInvoiceGenerator(
     }
 
     private fun generateDraftInvoice(
-        tx: Database.Read,
         invoiceInput: InvoiceGeneratorInput,
         headInput: HeadOfFamilyInput,
     ): Invoice? {

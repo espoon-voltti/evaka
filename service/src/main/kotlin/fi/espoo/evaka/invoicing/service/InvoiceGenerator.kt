@@ -56,7 +56,7 @@ class InvoiceGenerator(
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
         val invoiceCalculationData =
             tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, month) }
-        val invoices = draftInvoiceGenerator.generateDraftInvoices(tx, invoiceCalculationData)
+        val invoices = draftInvoiceGenerator.generateDraftInvoices(invoiceCalculationData)
         val invoicesWithCorrections =
             tracer.withSpan("applyCorrections") {
                 applyCorrections(tx, invoices, month, invoiceCalculationData.areaIds)
