@@ -44,7 +44,7 @@ import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.TerminatedPlacement
 import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
-import fi.espoo.evaka.placement.getMissingGroupPlacements
+import fi.espoo.evaka.placement.getMissingGroupPlacementsWithinSixMonths
 import fi.espoo.evaka.placement.getTerminatedPlacements
 import fi.espoo.evaka.placement.getUnitChildrenCapacities
 import fi.espoo.evaka.placement.getWaitingUnitConfirmationApplicationsCount
@@ -618,12 +618,6 @@ class DaycareController(
             }
             .also { Audit.UnitView.log(targetId = AuditId(unitId)) }
     }
-
-    private fun getMissingGroupPlacementsWithinSixMonths(
-        tx: Database.Read,
-        unitId: DaycareId,
-        today: LocalDate,
-    ) = getMissingGroupPlacements(tx, unitId).filter { it.gap.start <= today.plusMonths(6) }
 
     @GetMapping("/{daycareId}/notifications")
     fun getUnitNotifications(

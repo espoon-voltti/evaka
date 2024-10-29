@@ -1472,7 +1472,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 placement
             }
 
-        val result = db.read { tx -> getMissingGroupPlacements(tx, daycare1.id) }
+        val result =
+            db.read { tx ->
+                getMissingGroupPlacementsWithinSixMonths(
+                    tx,
+                    daycare1.id,
+                    today = evakaLaunch.plusMonths(3),
+                )
+            }
         assertEquals(
             listOf(
                 MissingGroupPlacement(
@@ -1535,7 +1542,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             }
 
-        val result = db.read { tx -> getMissingGroupPlacements(tx, daycare2.id) }
+        val result =
+            db.read { tx ->
+                getMissingGroupPlacementsWithinSixMonths(
+                    tx,
+                    daycare2.id,
+                    today = evakaLaunch.plusMonths(3),
+                )
+            }
         assertEquals(
             listOf(
                 MissingGroupPlacement(
