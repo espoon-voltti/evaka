@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
@@ -14,11 +13,9 @@ import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
-import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -26,6 +23,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -33,13 +31,11 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
-import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.withSpan
 import io.opentelemetry.api.trace.Tracer
 import java.time.DayOfWeek
 import java.time.Duration
-import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
 import java.util.UUID
@@ -79,7 +75,10 @@ class InvoiceGenerator(
         )
     }
 
-    fun calculateInvoiceData(tx: Database.Read, range: FiniteDateRange): InvoiceCalculationData {
+    fun calculateInvoiceData(
+        tx: Database.Read,
+        range: FiniteDateRange,
+    ): DraftInvoiceGenerator.InvoiceGeneratorInput {
         val feeThresholds =
             tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
                 ?: error(
@@ -95,7 +94,7 @@ class InvoiceGenerator(
             effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
         val areaIds = tx.getAreaIds()
 
-        val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
+        val absences = tx.getBillableAbsencesInRange(range)
 
         val freeChildren =
             if (
@@ -139,36 +138,21 @@ class InvoiceGenerator(
                 .filter { it.defaultOption }
                 .associateBy { it.validPlacementType }
 
-        return InvoiceCalculationData(
+        return DraftInvoiceGenerator.InvoiceGeneratorInput(
             decisions = unhandledDecisions,
             permanentPlacements = permanentPlacements,
             temporaryPlacements = temporaryPlacements,
-            period = range,
+            invoicePeriod = range,
             areaIds = areaIds,
             operationalDaysByChild = operationalDaysByChild,
             businessDays = businessDays,
             feeThresholds = feeThresholds,
-            absences = allAbsences,
+            absences = absences,
             freeChildren = freeChildren,
             codebtors = codebtors,
             defaultServiceNeedOptions = defaultServiceNeedOptions,
         )
     }
-
-    data class InvoiceCalculationData(
-        val decisions: Map<PersonId, List<FeeDecision>>,
-        val permanentPlacements: Map<ChildId, List<Pair<FiniteDateRange, PlacementStub>>>,
-        val temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
-        val period: FiniteDateRange,
-        val areaIds: Map<DaycareId, AreaId>,
-        val operationalDaysByChild: Map<ChildId, DateSet>,
-        val businessDays: DateSet,
-        val feeThresholds: FeeThresholds,
-        val absences: List<AbsenceStub> = listOf(),
-        val freeChildren: Set<ChildId> = setOf(),
-        val codebtors: Map<PersonId, PersonId?> = mapOf(),
-        val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
-    )
 
     private fun getInvoiceCodebtor(
         tx: Database.Read,
@@ -299,28 +283,28 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonI
         .toSet<PersonId>()
 }
 
-data class AbsenceStub(
-    val childId: ChildId,
-    val date: LocalDate,
-    val category: AbsenceCategory,
-    val absenceType: AbsenceType,
-)
-
-fun Database.Read.getAbsenceStubs(
-    spanningRange: FiniteDateRange,
-    categories: Collection<AbsenceCategory>,
-): List<AbsenceStub> {
+fun Database.Read.getBillableAbsencesInRange(
+    range: FiniteDateRange
+): Map<ChildId, List<Pair<AbsenceType, DateSet>>> {
     return createQuery {
             sql(
                 """
-SELECT child_id, date, category, absence_type
+SELECT child_id, absence_type, range_agg(daterange(date, date, '[]')) AS dates
 FROM absence
-WHERE between_start_and_end(${bind(spanningRange)}, date)
-AND category = ANY(${bind(categories)})
+WHERE between_start_and_end(${bind(range)}, date)
+AND category = 'BILLABLE'
+GROUP BY child_id, absence_type
 """
             )
         }
-        .toList<AbsenceStub>()
+        .map {
+            Triple(
+                column<ChildId>("child_id"),
+                column<AbsenceType>("absence_type"),
+                column<DateSet>("dates"),
+            )
+        }
+        .useSequence { rows -> rows.groupBy({ it.first }, { it.second to it.third }) }
 }
 
 data class PlacementStub(
@@ -390,9 +374,10 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
                 }
 
             headOfFamily to
-                mergePeriods(familyPlacementsSeries).flatMap { (period, placements) ->
-                    placements.map { period to it }
-                }
+                DateMap.of(familyPlacementsSeries)
+                    .entries()
+                    .flatMap { (period, placements) -> placements.map { period to it } }
+                    .toList()
         }
         .toMap()
 }
@@ -413,7 +398,7 @@ internal fun toFamilyCompositions(
                             .map { (_, child) -> child }
                             .sortedByDescending { it.dateOfBirth }
                 }
-                .let { mergePeriods(it) }
+                .let { DateMap.of(it).entries().toList() }
         }
 }
 

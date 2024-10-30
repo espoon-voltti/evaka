@@ -78,6 +78,17 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
          */
         fun ofDates(dates: Sequence<LocalDate>): DateSet =
             empty().addAll(dates.map { it.toFiniteDateRange() })
+
+        /**
+         * Returns a new date set containing all the given ranges. The list must be ordered and the
+         * ranges must not overlap with each other. The function name is prefixed with `unsafe` to
+         * emphasize that the input must be correct.
+         *
+         * *Note that DateSet is not an efficient data structure for random unconnected dates*. If
+         * you have a large amount of dates that cannot be joined into a smaller amount of ranges,
+         * consider using `Set<LocalDate>` instead.
+         */
+        fun unsafeRaw(ranges: List<FiniteDateRange>): DateSet = DateSet(ranges)
     }
 
     class FromJson : StdConverter<List<FiniteDateRange>, DateSet>() {
