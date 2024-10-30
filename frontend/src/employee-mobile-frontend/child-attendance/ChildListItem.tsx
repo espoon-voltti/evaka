@@ -101,6 +101,8 @@ interface ChildListItemProps {
   onClick?: () => void
   type?: AttendanceStatus
   childAttendanceUrl: string
+  selected: boolean | null // null = not in multiselect mode
+  onChangeSelected: (selected: boolean) => void
 }
 
 export default React.memo(function ChildListItem({

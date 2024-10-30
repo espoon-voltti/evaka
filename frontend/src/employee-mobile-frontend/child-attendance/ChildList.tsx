@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
+import { UUID } from 'lib-common/types'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
   defaultMargins,
@@ -46,21 +48,47 @@ export default React.memo(function ChildList({
   const { i18n } = useTranslation()
   const unitId = unitOrGroup.unitId
 
+  const [multiSelectMode, setMultiSelectMode] = useState(false)
+  const [selectedChildren, setSelectedChildren] = useState<UUID[]>([])
+
   return (
     <FixedSpaceColumn>
       <OrderedList spacing="zero">
         {items.length > 0 ? (
-          items.map((ac) => (
-            <Li key={ac.id}>
-              <ChildListItem
-                unitOrGroup={unitOrGroup}
-                type={type}
-                key={ac.id}
-                child={ac}
-                childAttendanceUrl={routes.child(unitId, ac.id).value}
-              />
-            </Li>
-          ))
+          <>
+            {type === 'COMING' && (
+              <Li>
+                <MultiselectToggleBox>
+                  <Checkbox
+                    checked={multiSelectMode}
+                    onChange={setMultiSelectMode}
+                    label="Kirjaa useampi lapsi"
+                  />
+                </MultiselectToggleBox>
+              </Li>
+            )}
+            {items.map((ac) => (
+              <Li key={ac.id}>
+                <ChildListItem
+                  unitOrGroup={unitOrGroup}
+                  type={type}
+                  key={ac.id}
+                  child={ac}
+                  childAttendanceUrl={routes.child(unitId, ac.id).value}
+                  selected={
+                    multiSelectMode ? selectedChildren.includes(ac.id) : null
+                  }
+                  onChangeSelected={(selected) => {
+                    setSelectedChildren((prev) =>
+                      selected
+                        ? [...prev, ac.id]
+                        : prev.filter((id) => id !== ac.id)
+                    )
+                  }}
+                />
+              </Li>
+            ))}
+          </>
         ) : (
           <NoChildrenOnList data-qa="no-children-indicator">
             {i18n.mobile.emptyList(type || 'ABSENT')}
@@ -101,4 +129,12 @@ const Li = styled.li`
     position: absolute;
     left: ${defaultMargins.s};
   }
+`
+
+const MultiselectToggleBox = styled.div`
+  align-items: center;
+  display: flex;
+  padding: ${defaultMargins.s} ${defaultMargins.m};
+  border-radius: 2px;
+  background-color: ${colors.grayscale.g0};
 `
