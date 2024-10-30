@@ -48,6 +48,14 @@ const AttendanceLinkBox = styled(Link)`
   width: 100%;
 `
 
+const MultiselectBox = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+`
+
 export const IconBox = styled.div<{ type: AttendanceStatus }>`
   background-color: ${(props) => attendanceColors[props.type]};
   border-radius: 50%;
@@ -125,6 +133,8 @@ export default React.memo(function ChildListItem({
   unitOrGroup,
   child,
   type,
+  selected,
+  onChangeSelected,
   childAttendanceUrl
 }: ChildListItemProps) {
   const unitId = unitOrGroup.unitId
@@ -160,62 +170,82 @@ export default React.memo(function ChildListItem({
 
   return (
     <ChildBox data-qa={`child-${child.id}`}>
-      <AttendanceLinkBox to={childAttendanceUrl}>
-        <ChildImage child={child} type={type} />
-        <MainInfoColumn>
-          <NameRow>
-            <Bold data-qa="child-name">
-              {child.firstName} {child.lastName}
-              {child.preferredName ? ` (${child.preferredName})` : null}
-            </Bold>
-          </NameRow>
-          <FixedSpaceRow spacing="xs">
-            <DetailsText>{infoText}</DetailsText>
-            {child.backup && (
-              <RoundIcon content="V" size="m" color={colors.main.m1} />
-            )}
-          </FixedSpaceRow>
-        </MainInfoColumn>
-        <RightColumn>
-          <GroupName data-qa={`child-group-name-${child.id}`}>
-            {maybeGroupName}
-          </GroupName>
-          <FixedSpaceRow alignItems="center">
-            {hasActiveStickyNote && (
-              <Link
-                to={routes.childNotes(unitId, child.id).value}
-                data-qa="link-child-daycare-daily-note"
-              >
-                <RoundIcon
-                  content={fasExclamation}
-                  color={colors.accents.a5orangeLight}
-                  size="m"
-                />
-              </Link>
-            )}
-            {child.dailyNote && (
-              <Link
-                to={routes.childNotes(unitId, child.id).value}
-                data-qa="link-child-daycare-daily-note"
-              >
-                <RoundIcon
-                  content={farStickyNote}
-                  color={colors.accents.a9pink}
-                  size="m"
-                />
-              </Link>
-            )}
-            {child.groupId && groupNotes.length > 0 ? (
-              <Link
-                to={routes.childNotes(unitId, child.id).value}
-                data-qa="link-child-daycare-daily-note"
-              >
-                <RoundIcon content={farUsers} color={colors.main.m4} size="m" />
-              </Link>
-            ) : null}
-          </FixedSpaceRow>
-        </RightColumn>
-      </AttendanceLinkBox>
+      {selected === null ? (
+        <AttendanceLinkBox to={childAttendanceUrl}>
+          <ChildImage child={child} type={type} />
+          <MainInfoColumn>
+            <NameRow>
+              <Bold data-qa="child-name">
+                {child.firstName} {child.lastName}
+                {child.preferredName ? ` (${child.preferredName})` : null}
+              </Bold>
+            </NameRow>
+            <FixedSpaceRow spacing="xs">
+              <DetailsText>{infoText}</DetailsText>
+              {child.backup && (
+                <RoundIcon content="V" size="m" color={colors.main.m1} />
+              )}
+            </FixedSpaceRow>
+          </MainInfoColumn>
+          <RightColumn>
+            <GroupName data-qa={`child-group-name-${child.id}`}>
+              {maybeGroupName}
+            </GroupName>
+            <FixedSpaceRow alignItems="center">
+              {hasActiveStickyNote && (
+                <Link
+                  to={routes.childNotes(unitId, child.id).value}
+                  data-qa="link-child-daycare-daily-note"
+                >
+                  <RoundIcon
+                    content={fasExclamation}
+                    color={colors.accents.a5orangeLight}
+                    size="m"
+                  />
+                </Link>
+              )}
+              {child.dailyNote && (
+                <Link
+                  to={routes.childNotes(unitId, child.id).value}
+                  data-qa="link-child-daycare-daily-note"
+                >
+                  <RoundIcon
+                    content={farStickyNote}
+                    color={colors.accents.a9pink}
+                    size="m"
+                  />
+                </Link>
+              )}
+              {child.groupId && groupNotes.length > 0 ? (
+                <Link
+                  to={routes.childNotes(unitId, child.id).value}
+                  data-qa="link-child-daycare-daily-note"
+                >
+                  <RoundIcon
+                    content={farUsers}
+                    color={colors.main.m4}
+                    size="m"
+                  />
+                </Link>
+              ) : null}
+            </FixedSpaceRow>
+          </RightColumn>
+        </AttendanceLinkBox>
+      ) : (
+        <MultiselectBox onClick={() => onChangeSelected(!selected)}>
+          <ChildImage child={child} type={type} />
+          <MainInfoColumn>
+            <NameRow>
+              <Bold data-qa="child-name">
+                {child.firstName} {child.lastName}
+                {child.preferredName ? ` (${child.preferredName})` : null}
+              </Bold>
+            </NameRow>
+            <DetailsText>{selected ? 'Valittu' : 'Valitse'}</DetailsText>
+          </MainInfoColumn>
+          <RightColumn>{selected ? '[x]' : '[ ]'}</RightColumn>
+        </MultiselectBox>
+      )}
     </ChildBox>
   )
 })
