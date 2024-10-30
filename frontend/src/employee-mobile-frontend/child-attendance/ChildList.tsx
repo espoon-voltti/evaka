@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import {
@@ -51,6 +51,20 @@ export default React.memo(function ChildList({
   const [multiSelectMode, setMultiSelectMode] = useState(false)
   const [selectedChildren, setSelectedChildren] = useState<UUID[]>([])
 
+  const enterMultiSelectMode = () => {
+    setMultiSelectMode(true)
+    setSelectedChildren([])
+  }
+
+  const exitMultiSelectMode = () => {
+    setMultiSelectMode(false)
+    setSelectedChildren([])
+  }
+
+  useEffect(() => {
+    if (type !== 'COMING') exitMultiSelectMode()
+  }, [type])
+
   return (
     <FixedSpaceColumn>
       <OrderedList spacing="zero">
@@ -61,7 +75,9 @@ export default React.memo(function ChildList({
                 <MultiselectToggleBox>
                   <Checkbox
                     checked={multiSelectMode}
-                    onChange={setMultiSelectMode}
+                    onChange={(checked) =>
+                      checked ? enterMultiSelectMode() : exitMultiSelectMode()
+                    }
                     label="Kirjaa useampi lapsi"
                   />
                 </MultiselectToggleBox>
