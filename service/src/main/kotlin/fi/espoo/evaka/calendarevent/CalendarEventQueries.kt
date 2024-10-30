@@ -299,6 +299,23 @@ WHERE id = ${bind(calendarEventTimeId)}
     )
 }
 
+fun Database.Transaction.deleteCalendarEventTimeReservations(
+    user: AuthenticatedUser,
+    now: HelsinkiDateTime,
+    calendarEventTimeIds: Set<CalendarEventTimeId>,
+) =
+    if (calendarEventTimeIds.isEmpty()) 0
+    else
+        execute {
+            sql(
+                """
+UPDATE calendar_event_time
+SET child_id = NULL::uuid, modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
+WHERE id = ANY(${bind(calendarEventTimeIds)})
+"""
+            )
+        }
+
 fun Database.Read.getCalendarEventTimesByChildAndEvent(
     childId: PersonId,
     calendarEventId: CalendarEventId,

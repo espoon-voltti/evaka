@@ -77,10 +77,11 @@ export const setCalendarEventTimeReservationMutation = mutation({
 
 export const clearChildCalendarEventTimeReservationsForSurveyMutation =
   mutation({
-    api: (
-      arg: Arg0<typeof clearEventTimesInEventForChild> & { eventId: UUID }
-    ) => clearEventTimesInEventForChild(arg),
-    invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
+    api: (arg: Arg0<typeof clearEventTimesInEventForChild>) =>
+      clearEventTimesInEventForChild(arg),
+    invalidateQueryKeys: ({ body }) => [
+      queryKeys.discussionSurvey(body.calendarEventId)
+    ]
   })
 
 export const addCalendarEventTimeMutation = mutation({

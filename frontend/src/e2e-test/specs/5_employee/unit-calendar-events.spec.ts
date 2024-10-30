@@ -389,7 +389,6 @@ describe('Discussion surveys', () => {
     const surveyListPage =
       await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
     const surveyView = await surveyListPage.openDiscussionSurvey(testSurveyId)
-    await surveyView.waitUntilLoaded()
 
     await surveyView.addEventTimeForDay(testDay, {
       startTime: '09:00',

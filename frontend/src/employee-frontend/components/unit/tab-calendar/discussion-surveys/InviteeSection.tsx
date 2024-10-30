@@ -5,7 +5,7 @@
 import { faX } from '@fortawesome/free-solid-svg-icons'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -138,16 +138,19 @@ export default React.memo(function InviteeSection({
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events.discussionReservation
 
-  const childrenWithReservations = invitees.map((i) => ({
-    child: i.child,
-    reservations: orderBy(
-      event.times.filter((t) => t.childId === i.child.id),
-      [(t) => t.date, (t) => t.startTime, (t) => t.endTime]
-    )
-  }))
-  const [reserved, unreserved] = partition(
-    childrenWithReservations,
-    (c) => c.reservations.length > 0
+  const [reserved, unreserved] = useMemo(
+    () =>
+      partition(
+        invitees.map((i) => ({
+          child: i.child,
+          reservations: orderBy(
+            event.times.filter((t) => t.childId === i.child.id),
+            [(t) => t.date, (t) => t.startTime, (t) => t.endTime]
+          )
+        })),
+        (c) => c.reservations.length > 0
+      ),
+    [invitees, event.times]
   )
 
   return (

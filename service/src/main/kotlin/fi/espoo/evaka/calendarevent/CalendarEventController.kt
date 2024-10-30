@@ -549,7 +549,8 @@ class CalendarEventController(
         clock: EvakaClock,
         @RequestBody body: CalendarEventTimeClearingForm,
     ) {
-        return db.connect { dbc ->
+        val removedIds =
+            db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -558,14 +559,14 @@ class CalendarEventController(
                         Action.CalendarEvent.UPDATE,
                         body.calendarEventId,
                     )
-                    val eventTimesToRemoved =
+                    val eventTimesToRemove =
                         tx.getCalendarEventTimesByChildAndEvent(body.childId, body.calendarEventId)
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
                         Action.CalendarEventTime.UPDATE_RESERVATION,
-                        eventTimesToRemoved.map { it.id },
+                        eventTimesToRemove.map { it.id },
                     )
                     val discussionSurvey =
                         tx.getCalendarEventById(body.calendarEventId)
@@ -575,35 +576,37 @@ class CalendarEventController(
                     tx.deleteCalendarEventTimeReservations(
                         user,
                         clock.now(),
-                        body.calendarEventId,
-                        body.childId,
+                        eventTimesToRemove.map { it.id }.toSet(),
                     )
+
                     // only discussion times in the future should result in cancellation messages
-                    eventTimesToRemoved
-                        .filter { HelsinkiDateTime.of(it.date, it.endTime).isAfter(clock.now()) }
-                        .forEach {
-                            asyncJobRunner.plan(
-                                tx,
+                    asyncJobRunner.plan(
+                        tx,
+                        eventTimesToRemove
+                            .filter {
+                                HelsinkiDateTime.of(it.date, it.endTime).isAfter(clock.now())
+                            }
+                            .flatMap { time ->
                                 cancellationRecipients.map { recipient ->
                                     AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
                                         eventTitle = discussionSurvey.title,
                                         childId = body.childId,
                                         language = Language.fi,
-                                        calendarEventTime = it,
+                                        calendarEventTime = time,
                                         recipientId = recipient.id,
                                     )
-                                },
-                                runAt = clock.now(),
-                            )
-                        }
+                                }
+                            },
+                        runAt = clock.now(),
+                    )
+                    eventTimesToRemove.map { it.id }
                 }
             }
-            .also {
-                Audit.CalendarEventChildTimesCancellation.log(
-                    targetId = AuditId(body.calendarEventId),
-                    objectId = AuditId(body.childId),
-                )
-            }
+        Audit.CalendarEventChildTimesCancellation.log(
+            targetId = AuditId(body.calendarEventId),
+            objectId = AuditId(body.childId),
+            meta = mapOf("eventTimes" to removedIds),
+        )
     }
 
     @GetMapping("/citizen/calendar-events")

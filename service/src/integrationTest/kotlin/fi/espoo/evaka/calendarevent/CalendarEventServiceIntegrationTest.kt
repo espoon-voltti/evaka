@@ -2802,11 +2802,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `only employee from same group is allowed to clear child reservations from calendar event`() {
-        val daycare1Employee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())
-        val daycare2Employee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())
+        val daycare1Employee = DevEmployee()
+        val daycare2Employee = DevEmployee()
         val event =
             DevCalendarEvent(
-                id = CalendarEventId(UUID.randomUUID()),
                 title = "Testieventti",
                 description = "Eventin kuvaus",
                 eventType = CalendarEventType.DISCUSSION_SURVEY,
@@ -2815,7 +2814,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         val eventTime =
             DevCalendarEventTime(
-                id = CalendarEventTimeId(UUID.randomUUID()),
                 calendarEventId = event.id,
                 childId = testChild_1.id,
                 date = today.plusDays(3),
@@ -2826,12 +2824,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         db.transaction { tx ->
             tx.insert(
-                DevEmployee(id = daycare1Employee.id),
+                daycare1Employee,
                 unitRoles = mapOf(testDaycare.id to UserRole.STAFF),
                 groupAcl = mapOf(testDaycare.id to listOf(groupId)),
             )
             tx.insert(
-                DevEmployee(id = daycare2Employee.id),
+                daycare2Employee,
                 unitRoles = mapOf(testDaycare2.id to UserRole.STAFF),
                 groupAcl = mapOf(testDaycare2.id to listOf(groupId2)),
             )
@@ -2853,7 +2851,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertThrows<Forbidden> {
             calendarEventController.clearEventTimesInEventForChild(
                 dbInstance(),
-                daycare2Employee,
+                daycare2Employee.user,
                 clock,
                 clearingForm,
             )
@@ -2861,7 +2859,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         calendarEventController.clearEventTimesInEventForChild(
             dbInstance(),
-            daycare1Employee,
+            daycare1Employee.user,
             clock,
             clearingForm,
         )
@@ -2878,7 +2876,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `guardian receives notifications for only future reservations after mass cancellation`() {
         val event =
             DevCalendarEvent(
-                id = CalendarEventId(UUID.randomUUID()),
                 title = "Testieventti",
                 description = "Eventin kuvaus",
                 eventType = CalendarEventType.DISCUSSION_SURVEY,
@@ -2887,7 +2884,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         val pastEventTime =
             DevCalendarEventTime(
-                id = CalendarEventTimeId(UUID.randomUUID()),
                 calendarEventId = event.id,
                 childId = testChild_3.id,
                 date = today.minusDays(3),
@@ -2898,7 +2894,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         val futureEventTime =
             DevCalendarEventTime(
-                id = CalendarEventTimeId(UUID.randomUUID()),
                 calendarEventId = event.id,
                 childId = testChild_3.id,
                 date = today.plusDays(3),
@@ -2967,7 +2962,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 notificationDetails = emailDetails,
             )
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
         assertAllEmailsFor(testAdult_2, listOf(cancellationEmailContent), expectedFromAddress)
