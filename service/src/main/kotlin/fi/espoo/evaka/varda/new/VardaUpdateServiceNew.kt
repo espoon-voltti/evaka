@@ -27,6 +27,20 @@ import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
+// TODO: testit tarvitaan
+
+/**
+ * Data before this date is not sent to Varda. This is Varda's internal validation rule that must be
+ * followed.
+ */
+val VARDA_START_DATE: LocalDate = LocalDate.of(2019, 1, 1)
+
+/**
+ * Fee data before this date is not sent to Varda. This is Varda's internal validation rule that
+ * must be followed.
+ */
+val VARDA_FEE_START_DATE: LocalDate = LocalDate.of(2019, 9, 1)
+
 @Service
 class VardaUpdateServiceNew(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -88,15 +102,11 @@ class VardaUpdateServiceNew(
         VardaClient(httpClient, jsonMapper, vardaEnv.url, vardaEnv.basicAuth.value)
 
     private val vardaEnabledRange =
-        DateRange(
-            // 2019-01-01 was the hard-coded cutoff date of the old Varda integration
-            vardaEnv.startDate ?: LocalDate.of(2019, 1, 1),
-            vardaEnv.endDate,
-        )
+        DateRange(vardaEnv.startDate ?: VARDA_START_DATE, vardaEnv.endDate)
 
     init {
-        check(vardaEnabledRange.start >= LocalDate.of(2019, 1, 1)) {
-            "Varda enabled range must start after 2019-01-01"
+        check(vardaEnabledRange.start >= VARDA_START_DATE) {
+            "Varda enabled range must start after $VARDA_START_DATE"
         }
         asyncJobRunner.registerHandler(::updateChildJob)
     }
@@ -279,9 +289,9 @@ class VardaUpdater(
             return null
         }
 
-        // Only fee data after 2019-09-01 can be sent to Varda (error code MA019)
+        // Only fee data after VARDA_FEE_START_DATE can be sent to Varda (error code MA019)
         val vardaFeeDataRange =
-            vardaEnabledRange.intersection(DateRange(LocalDate.of(2019, 9, 1), null))
+            vardaEnabledRange.intersection(DateRange(VARDA_FEE_START_DATE, null))
 
         val evakaLapsiServiceNeeds =
             serviceNeeds
@@ -593,9 +603,14 @@ class VardaUpdater(
         entity: VardaEntityWithValidity,
         endDate: LocalDate,
     ) {
-        if (endDate < LocalDate.of(2019, 1, 1)) {
-            // Delete old entries that would be set to end before 2019-01-01, because sending data
-            // before 2019-01-01 is not supported by Varda (error MI021)
+        val earliestValidEndDate =
+            when (entity) {
+                is VardaReadClient.MaksutietoResponse -> VARDA_FEE_START_DATE
+                else -> VARDA_START_DATE
+            }
+        if (endDate < earliestValidEndDate) {
+            // Delete old entries that would be set to end before the data type's earliest valid end
+            // date. Sending too old data is prohibited by Varda (e.g. errors MA019, MI021).
             this.delete(entity)
         } else if (entity.alkamis_pvm > endDate) {
             this.delete(entity)
