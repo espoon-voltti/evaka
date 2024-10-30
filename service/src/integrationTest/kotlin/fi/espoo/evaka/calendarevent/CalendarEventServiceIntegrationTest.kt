@@ -2321,6 +2321,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_3.id,
                     parentId = testAdult_3.id,
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
+                    createdAt = now,
+                    createdBy = admin.evakaUserId,
                 )
             )
             val placementId3 =
@@ -2451,6 +2453,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_3.id,
                     parentId = testAdult_3.id,
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
+                    createdAt = now,
+                    createdBy = admin.evakaUserId,
                 )
             )
             val placementId3 =
@@ -2568,6 +2572,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_3.id,
                     parentId = testAdult_3.id,
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
+                    createdAt = now,
+                    createdBy = admin.evakaUserId,
                 )
             )
             val placementId3 =
@@ -2666,6 +2672,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_4.id,
                     parentId = testAdult_3.id,
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
+                    createdAt = now,
+                    createdBy = admin.evakaUserId,
                 )
             )
             val placementId4 =

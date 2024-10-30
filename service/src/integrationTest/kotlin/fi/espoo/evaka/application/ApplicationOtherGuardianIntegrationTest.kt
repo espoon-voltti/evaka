@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.pis.Modifier
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.updateFosterParentRelationshipValidity
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
@@ -201,6 +202,8 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     it.updateFosterParentRelationshipValidity(
                         fosterParentRelationship,
                         DateRange(clock.today(), clock.today()),
+                        clock.now(),
+                        Modifier.User(serviceWorker.evakaUserId),
                     )
                 }
                 clock.tick(Duration.ofDays(1))
@@ -237,6 +240,8 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     childId = child.id,
                     parentId = fosterParent.id,
                     validDuring = DateRange(clock.today(), null),
+                    createdAt = clock.now(),
+                    createdBy = serviceWorker.evakaUserId,
                 )
             )
         }

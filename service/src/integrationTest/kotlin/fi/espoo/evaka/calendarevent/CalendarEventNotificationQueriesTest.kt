@@ -10,11 +10,15 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCalendarEvent
 import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -45,6 +49,8 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
 
     private val today: LocalDate = LocalDate.of(2023, 5, 1)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(18, 0, 0))
+    private val employeeId = EmployeeId(UUID.randomUUID())
+    private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
 
     private fun insertTestData(
         placementStart: LocalDate = today.minusYears(1),
@@ -56,6 +62,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testDaycare2.copy(financeDecisionHandler = null))
             tx.insert(testDaycareGroup)
             tx.insert(testDaycareGroup2)
+            tx.insert(DevEmployee(id = employeeId))
 
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(
@@ -119,6 +126,8 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     parentId = testAdult_3.id,
                     childId = testChild_3.id,
                     validDuring = DateRange(today, today.plusYears(1)),
+                    createdAt = now,
+                    createdBy = employee.evakaUserId,
                 )
             )
         }

@@ -305,6 +305,7 @@ export interface FamilyOverviewPerson {
 */
 export interface FosterParentRelationship {
   child: PersonSummary
+  creationModificationMetadata: CreationModificationMetadata
   parent: PersonSummary
   relationshipId: UUID
   validDuring: DateRange
@@ -734,6 +735,7 @@ export function deserializeJsonFosterParentRelationship(json: JsonOf<FosterParen
   return {
     ...json,
     child: deserializeJsonPersonSummary(json.child),
+    creationModificationMetadata: deserializeJsonCreationModificationMetadata(json.creationModificationMetadata),
     parent: deserializeJsonPersonSummary(json.parent),
     validDuring: DateRange.parseJson(json.validDuring)
   }

@@ -6,6 +6,9 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.pis.CreationModificationMetadata
+import fi.espoo.evaka.pis.Creator
+import fi.espoo.evaka.pis.Modifier
 import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createFosterParentRelationship
 import fi.espoo.evaka.pis.deleteFosterParentRelationship
@@ -92,14 +95,18 @@ class FosterParentController(private val accessControl: AccessControl) {
                         Action.Person.CREATE_FOSTER_PARENT_RELATIONSHIP,
                         body.parentId,
                     )
-                    tx.createFosterParentRelationship(body)
+                    tx.createFosterParentRelationship(
+                        body,
+                        Creator.User(user.evakaUserId),
+                        clock.now(),
+                    )
                 }
             }
             .also { id ->
                 Audit.FosterParentCreateRelationship.log(
                     targetId = AuditId(body.parentId),
                     objectId = AuditId(body.childId),
-                    meta = mapOf("fosterParentId" to id),
+                    meta = mapOf("fosterParentId" to id, "createdBy" to user.evakaUserId),
                 )
             }
     }
@@ -121,13 +128,18 @@ class FosterParentController(private val accessControl: AccessControl) {
                         Action.FosterParent.UPDATE,
                         id,
                     )
-                    tx.updateFosterParentRelationshipValidity(id, validDuring)
+                    tx.updateFosterParentRelationshipValidity(
+                        id,
+                        validDuring,
+                        clock.now(),
+                        Modifier.User(user.evakaUserId),
+                    )
                 }
             }
             .also {
                 Audit.FosterParentUpdateRelationship.log(
                     targetId = AuditId(id),
-                    meta = mapOf("validDuring" to validDuring),
+                    meta = mapOf("validDuring" to validDuring, "modifiedBy" to user.evakaUserId),
                 )
             }
     }
@@ -151,7 +163,12 @@ class FosterParentController(private val accessControl: AccessControl) {
                     tx.deleteFosterParentRelationship(id)
                 }
             }
-            .also { Audit.FosterParentDeleteRelationship.log(targetId = AuditId(id)) }
+            .also {
+                Audit.FosterParentDeleteRelationship.log(
+                    targetId = AuditId(id),
+                    meta = mapOf("deletedBy" to user.evakaUserId),
+                )
+            }
     }
 }
 
@@ -160,6 +177,8 @@ data class FosterParentRelationship(
     @Nested("child") val child: PersonSummary,
     @Nested("parent") val parent: PersonSummary,
     val validDuring: DateRange,
+    @Nested("creation_modification_metadata")
+    val creationModificationMetadata: CreationModificationMetadata,
 )
 
 data class CreateFosterParentRelationshipBody(

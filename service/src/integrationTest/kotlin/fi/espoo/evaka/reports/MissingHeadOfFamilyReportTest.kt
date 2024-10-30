@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
@@ -40,6 +41,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     private val startDate: LocalDate = LocalDate.now()
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val user = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
+    private val clock = MockEvakaClock(2024, 1, 3, 3, 7)
 
     @BeforeEach
     fun beforeEach() {
@@ -347,6 +349,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                                     startDate.plusDays(start.toLong()),
                                     startDate.plusDays(end.toLong()),
                                 ),
+                            createdAt = clock.now(),
+                            createdBy = user.evakaUserId,
                         )
                     )
                 }

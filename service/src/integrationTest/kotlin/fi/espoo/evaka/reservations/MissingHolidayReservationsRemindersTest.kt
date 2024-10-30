@@ -14,13 +14,16 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevHolidayPeriod
@@ -39,6 +42,7 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDefaultDaycare
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -58,6 +62,8 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
     private lateinit var child: ChildId
     private lateinit var daycareId: DaycareId
     private lateinit var areaId: AreaId
+    private val employeeId = EmployeeId(UUID.randomUUID())
+    private val admin = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
 
     @BeforeEach
     fun beforeEach() {
@@ -178,6 +184,8 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                 )
             )
 
+            it.insert(DevEmployee(id = employeeId))
+
             val fosterParentId =
                 it.insert(DevPerson(email = "fosterparent@test.com"), DevPersonType.ADULT)
             it.insert(
@@ -185,6 +193,8 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     childId = child,
                     parentId = fosterParentId,
                     validDuring = DateRange(clockToday.today(), clockToday.today()),
+                    createdAt = clockToday.now(),
+                    createdBy = admin.evakaUserId,
                 )
             )
             it.blockGuardian(childId = child, guardianId = guardian)
