@@ -10,6 +10,7 @@ import { wrapResult } from 'lib-common/api'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -118,6 +119,7 @@ export default React.memo(function PersonFridgeChild({
                 <Th>{i18n.common.form.age}</Th>
                 <Th>{i18n.common.form.startDate}</Th>
                 <Th>{i18n.common.form.endDate}</Th>
+                <Th>{i18n.common.form.lastModified}</Th>
                 <Th />
               </Tr>
             </Thead>
@@ -133,63 +135,92 @@ export default React.memo(function PersonFridgeChild({
                     permittedActions
                   }: ParentshipWithPermittedActions,
                   i: number
-                ) => (
-                  <Tr
-                    key={`${fridgeChild.child.id}-${i}`}
-                    data-qa="table-fridge-child-row"
-                  >
-                    <NameTd>
-                      <Link to={`/child-information/${fridgeChild.child.id}`}>
-                        {formatName(
-                          fridgeChild.child.firstName,
-                          fridgeChild.child.lastName,
-                          i18n,
-                          true
+                ) => {
+                  const modifiedAt =
+                    fridgeChild.creationModificationMetadata.modifiedAt ||
+                    fridgeChild.creationModificationMetadata.createdAt
+                  const modifiedByName =
+                    fridgeChild.creationModificationMetadata.modifiedByName ||
+                    fridgeChild.creationModificationMetadata.createdByName
+
+                  return (
+                    <Tr
+                      key={`${fridgeChild.child.id}-${i}`}
+                      data-qa="table-fridge-child-row"
+                    >
+                      <NameTd>
+                        <Link to={`/child-information/${fridgeChild.child.id}`}>
+                          {formatName(
+                            fridgeChild.child.firstName,
+                            fridgeChild.child.lastName,
+                            i18n,
+                            true
+                          )}
+                        </Link>
+                      </NameTd>
+                      <Td>
+                        {fridgeChild.child.socialSecurityNumber ??
+                          fridgeChild.child.dateOfBirth.format()}
+                      </Td>
+                      <Td data-qa="child-age">
+                        {getAge(fridgeChild.child.dateOfBirth)}
+                      </Td>
+                      <DateTd>{fridgeChild.startDate.format()}</DateTd>
+                      <DateTd>{fridgeChild.endDate.format()}</DateTd>
+                      <Td>
+                        {modifiedAt ? (
+                          <Tooltip
+                            tooltip={
+                              modifiedByName
+                                ? i18n.common.form.lastModifiedBy(
+                                    modifiedByName
+                                  )
+                                : null
+                            }
+                            position="left"
+                          >
+                            {modifiedAt.format()}
+                          </Tooltip>
+                        ) : (
+                          i18n.common.unknown
                         )}
-                      </Link>
-                    </NameTd>
-                    <Td>
-                      {fridgeChild.child.socialSecurityNumber ??
-                        fridgeChild.child.dateOfBirth.format()}
-                    </Td>
-                    <Td data-qa="child-age">
-                      {getAge(fridgeChild.child.dateOfBirth)}
-                    </Td>
-                    <DateTd>{fridgeChild.startDate.format()}</DateTd>
-                    <DateTd>{fridgeChild.endDate.format()}</DateTd>
-                    <ButtonsTd>
-                      <Toolbar
-                        dateRange={fridgeChild}
-                        onRetry={
-                          fridgeChild.conflict
-                            ? () => {
-                                void retryParentshipResult({
-                                  id: fridgeChild.id
-                                }).then(reloadFridgeChildren)
-                              }
-                            : undefined
-                        }
-                        editable={permittedActions.includes('UPDATE')}
-                        onEdit={() => {
-                          setSelectedParentshipId(fridgeChild.id)
-                          toggleUiMode(`edit-fridge-child-${fridgeChild.id}`)
-                        }}
-                        deletable={
-                          fridgeChild.conflict
-                            ? permittedActions.includes(
-                                'DELETE_CONFLICTED_PARENTSHIP'
-                              )
-                            : permittedActions.includes('DELETE')
-                        }
-                        onDelete={() => {
-                          setSelectedParentshipId(fridgeChild.id)
-                          toggleUiMode(`remove-fridge-child-${fridgeChild.id}`)
-                        }}
-                        conflict={fridgeChild.conflict}
-                      />
-                    </ButtonsTd>
-                  </Tr>
-                )
+                      </Td>
+                      <ButtonsTd>
+                        <Toolbar
+                          dateRange={fridgeChild}
+                          onRetry={
+                            fridgeChild.conflict
+                              ? () => {
+                                  void retryParentshipResult({
+                                    id: fridgeChild.id
+                                  }).then(reloadFridgeChildren)
+                                }
+                              : undefined
+                          }
+                          editable={permittedActions.includes('UPDATE')}
+                          onEdit={() => {
+                            setSelectedParentshipId(fridgeChild.id)
+                            toggleUiMode(`edit-fridge-child-${fridgeChild.id}`)
+                          }}
+                          deletable={
+                            fridgeChild.conflict
+                              ? permittedActions.includes(
+                                  'DELETE_CONFLICTED_PARENTSHIP'
+                                )
+                              : permittedActions.includes('DELETE')
+                          }
+                          onDelete={() => {
+                            setSelectedParentshipId(fridgeChild.id)
+                            toggleUiMode(
+                              `remove-fridge-child-${fridgeChild.id}`
+                            )
+                          }}
+                          conflict={fridgeChild.conflict}
+                        />
+                      </ButtonsTd>
+                    </Tr>
+                  )
+                }
               )}
             </Tbody>
           </Table>
