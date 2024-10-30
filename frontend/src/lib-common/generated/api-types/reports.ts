@@ -757,6 +757,7 @@ export interface RawReportRow {
   postOffice: string
   postalCode: string
   realizedCapacity: number
+  serviceNeed: string | null
   shiftCare: boolean
   staffDimensioning: number
   unitId: UUID

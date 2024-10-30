@@ -158,6 +158,7 @@ export default React.memo(function Raw() {
                 { label: 'Varahoidossa yksikössä', key: 'backupUnitId' },
                 { label: 'Varahoidossa ryhmässä', key: 'backupGroupId' },
                 { label: 'Palveluntarve merkitty', key: 'hasServiceNeed' },
+                { label: 'Palveluntarve', key: 'serviceNeed' },
                 { label: 'Osapäiväinen', key: 'partDay' },
                 { label: 'Osaviikkoinen', key: 'partWeek' },
                 { label: 'Vuorohoito', key: 'shiftCare' },
