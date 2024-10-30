@@ -11,6 +11,7 @@ import LocalDate from 'lib-common/local-date'
 import { H3, P } from 'lib-components/typography'
 
 import components from '../../components/i18n/fi'
+import {Td} from "../../../../lib-components/layout/Table";
 
 export const fi = {
   titles: {
@@ -3906,6 +3907,16 @@ export const fi = {
       sum: 'Summa',
       caretakers: 'Kasvattajia',
       missingCaretakersLegend: 'kasvattajien lukumäärä puuttuu'
+    },
+    incompleteIncomes: {
+      title: 'Puuttuvat tulotiedot',
+      description:
+        'Raportti kertoo vanhemmista, joiden tulotiedot ovat vanhentuneet.',
+      validFrom: 'Alkupäivämäärä',
+      firstName: 'Etunimi',
+      lastName: 'Sukunimi',
+      daycareName: 'Päiväkoti',
+      careareaName: 'Palvelualue'
     },
     invoices: {
       title: 'Laskujen täsmäytys',

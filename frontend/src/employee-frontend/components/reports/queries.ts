@@ -16,7 +16,7 @@ import {
   getFuturePreschoolersReport,
   getFuturePreschoolersSourceUnitsReport,
   getFuturePreschoolersUnitsReport,
-  getHolidayPeriodAttendanceReport,
+  getHolidayPeriodAttendanceReport, getIncompleteIncomeReport,
   getMealReportByUnit,
   getMissingHeadOfFamilyReport,
   getNonSsnChildrenReportRows,
@@ -91,7 +91,8 @@ const queryKeys = createQueryKeys('reports', {
   holidayPeriodAttendanceReport: (
     filters: Arg0<typeof getHolidayPeriodAttendanceReport>
   ) => ['holidayPeriodPresenceReport', filters],
-  titaniaErrorsReport: () => ['titaniaErrors']
+  titaniaErrorsReport: () => ['titaniaErrors'],
+  incompleteIncomeReport: () => ['incompleteIncomes']
 })
 
 export const attendanceReservationReportByChildQuery = query({
@@ -227,4 +228,9 @@ export const sendJamixOrdersMutation = mutation({
 export const titaniaErrorsReportQuery = query({
   api: getTitaniaErrorsReport,
   queryKey: queryKeys.titaniaErrorsReport
+})
+
+export const incompleteIncomeReportQuery = query({
+  api: getIncompleteIncomeReport,
+  queryKey: queryKeys.incompleteIncomeReport
 })
