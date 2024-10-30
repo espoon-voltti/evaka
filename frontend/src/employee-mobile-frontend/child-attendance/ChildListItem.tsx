@@ -30,6 +30,8 @@ import { unitInfoQuery } from '../units/queries'
 import { ListItem } from './ChildList'
 import { Reservations } from './Reservations'
 
+const imageHeight = '56px'
+
 const ChildBox = styled.div`
   align-items: center;
   display: flex;
@@ -40,20 +42,10 @@ const ChildBox = styled.div`
 
 const AttendanceLinkBox = styled(Link)`
   display: flex;
+  flex-direction: row;
   align-items: center;
-  width: 100%;
-`
-
-const imageHeight = '56px'
-
-const ChildBoxInfo = styled.div`
-  margin-left: 24px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   justify-content: space-between;
-  min-height: ${imageHeight};
+  width: 100%;
 `
 
 export const IconBox = styled.div<{ type: AttendanceStatus }>`
@@ -63,25 +55,22 @@ export const IconBox = styled.div<{ type: AttendanceStatus }>`
   border: 2px solid ${colors.grayscale.g0};
 `
 
-const DetailsRow = styled.div`
+const MainInfoColumn = styled.div`
+  margin-left: 24px;
+  flex-grow: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  color: ${colors.grayscale.g70};
-  font-size: 0.875em;
-  width: 100%;
+  min-height: ${imageHeight};
 `
 
-const RoundImage = styled.img`
-  border-radius: 9000px;
-  width: ${imageHeight};
-  height: ${imageHeight};
-  display: block;
-`
-
-const FixedSpaceRowWithLeftMargin = styled(FixedSpaceRow)`
-  margin-left: ${defaultMargins.m};
+const RightColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  min-height: ${imageHeight};
+  margin-left: ${defaultMargins.xs};
 `
 
 const NameRow = styled.div`
@@ -91,14 +80,41 @@ const NameRow = styled.div`
   word-break: break-word;
 `
 
+const DetailsText = styled.div`
+  color: ${colors.grayscale.g70};
+  font-size: 0.875em;
+`
+
+const RoundImage = styled.img`
+  border-radius: 9000px;
+  width: ${imageHeight};
+  height: ${imageHeight};
+  display: block;
+`
+
 const GroupName = styled(InformationText)`
   text-align: right;
+`
+
+const RoundIconOnTop = styled(RoundIcon)`
+  position: absolute;
+  left: 40px;
+  top: -20px;
+  z-index: 2;
+`
+
+const IconPlacementBox = styled.div`
+  position: relative;
+  width: 0;
+  height: 0;
+  &.m {
+    font-size: 14px;
+  }
 `
 
 interface ChildListItemProps {
   unitOrGroup: UnitOrGroup
   child: ListItem
-  onClick?: () => void
   type?: AttendanceStatus
   childAttendanceUrl: string
   selected: boolean | null // null = not in multiselect mode
@@ -108,7 +124,6 @@ interface ChildListItemProps {
 export default React.memo(function ChildListItem({
   unitOrGroup,
   child,
-  onClick,
   type,
   childAttendanceUrl
 }: ChildListItemProps) {
@@ -137,7 +152,6 @@ export default React.memo(function ChildListItem({
   const maybeGroupName =
     type && unitOrGroup.type === 'unit' ? groupName : undefined
   const today = LocalDate.todayInSystemTz()
-  const childAge = today.differenceInYears(child.dateOfBirth)
 
   const hasActiveStickyNote = useMemo(
     () => child.stickyNotes.some((n) => n.expires.isEqualOrAfter(today)),
@@ -147,83 +161,94 @@ export default React.memo(function ChildListItem({
   return (
     <ChildBox data-qa={`child-${child.id}`}>
       <AttendanceLinkBox to={childAttendanceUrl}>
-        <IconBox type={child.status}>
-          {child.imageUrl ? (
-            <RoundImage src={child.imageUrl} />
-          ) : (
-            <RoundIcon
-              content={farUser}
-              color={type ? attendanceColors[type] : colors.main.m1}
-              size="XL"
-            />
-          )}
-          <IconPlacementBox>
-            <RoundIconOnTop
-              content={`${childAge}v`}
-              color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
-              size="m"
-            />
-          </IconPlacementBox>
-        </IconBox>
-        <ChildBoxInfo onClick={onClick}>
+        <ChildImage child={child} type={type} />
+        <MainInfoColumn>
           <NameRow>
             <Bold data-qa="child-name">
               {child.firstName} {child.lastName}
               {child.preferredName ? ` (${child.preferredName})` : null}
             </Bold>
-            <GroupName data-qa={`child-group-name-${child.id}`}>
-              {maybeGroupName}
-            </GroupName>
           </NameRow>
-          <DetailsRow>
-            <LeftDetailsDiv>
-              {infoText}
-              {child.backup && (
-                <RoundIcon content="V" size="m" color={colors.main.m1} />
-              )}
-            </LeftDetailsDiv>
-            <FixedSpaceRowWithLeftMargin alignItems="center">
-              {hasActiveStickyNote && (
-                <Link
-                  to={routes.childNotes(unitId, child.id).value}
-                  data-qa="link-child-daycare-daily-note"
-                >
-                  <RoundIcon
-                    content={fasExclamation}
-                    color={colors.accents.a5orangeLight}
-                    size="m"
-                  />
-                </Link>
-              )}
-              {child.dailyNote && (
-                <Link
-                  to={routes.childNotes(unitId, child.id).value}
-                  data-qa="link-child-daycare-daily-note"
-                >
-                  <RoundIcon
-                    content={farStickyNote}
-                    color={colors.accents.a9pink}
-                    size="m"
-                  />
-                </Link>
-              )}
-              {child.groupId && groupNotes.length > 0 ? (
-                <Link
-                  to={routes.childNotes(unitId, child.id).value}
-                  data-qa="link-child-daycare-daily-note"
-                >
-                  <RoundIcon
-                    content={farUsers}
-                    color={colors.main.m4}
-                    size="m"
-                  />
-                </Link>
-              ) : null}
-            </FixedSpaceRowWithLeftMargin>
-          </DetailsRow>
-        </ChildBoxInfo>
+          <FixedSpaceRow spacing="xs">
+            <DetailsText>{infoText}</DetailsText>
+            {child.backup && (
+              <RoundIcon content="V" size="m" color={colors.main.m1} />
+            )}
+          </FixedSpaceRow>
+        </MainInfoColumn>
+        <RightColumn>
+          <GroupName data-qa={`child-group-name-${child.id}`}>
+            {maybeGroupName}
+          </GroupName>
+          <FixedSpaceRow alignItems="center">
+            {hasActiveStickyNote && (
+              <Link
+                to={routes.childNotes(unitId, child.id).value}
+                data-qa="link-child-daycare-daily-note"
+              >
+                <RoundIcon
+                  content={fasExclamation}
+                  color={colors.accents.a5orangeLight}
+                  size="m"
+                />
+              </Link>
+            )}
+            {child.dailyNote && (
+              <Link
+                to={routes.childNotes(unitId, child.id).value}
+                data-qa="link-child-daycare-daily-note"
+              >
+                <RoundIcon
+                  content={farStickyNote}
+                  color={colors.accents.a9pink}
+                  size="m"
+                />
+              </Link>
+            )}
+            {child.groupId && groupNotes.length > 0 ? (
+              <Link
+                to={routes.childNotes(unitId, child.id).value}
+                data-qa="link-child-daycare-daily-note"
+              >
+                <RoundIcon content={farUsers} color={colors.main.m4} size="m" />
+              </Link>
+            ) : null}
+          </FixedSpaceRow>
+        </RightColumn>
       </AttendanceLinkBox>
     </ChildBox>
+  )
+})
+
+const ChildImage = React.memo(function ChildImage({
+  child,
+  type
+}: {
+  child: ListItem
+  type?: AttendanceStatus
+}) {
+  const childAge = LocalDate.todayInHelsinkiTz().differenceInYears(
+    child.dateOfBirth
+  )
+  return (
+    <IconBox type={child.status}>
+      {child.imageUrl ? (
+        <RoundImage src={child.imageUrl} />
+      ) : (
+        <RoundIcon
+          content={farUser}
+          color={type ? attendanceColors[type] : colors.main.m1}
+          size="XL"
+        />
+      )}
+      <IconPlacementBox>
+        <RoundIconOnTop
+          content={`${childAge}v`}
+          color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
+          size="m"
+        />
+      </IconPlacementBox>
+    </IconBox>
   )
 })
 
@@ -262,28 +287,3 @@ function ChildReservationInfo(props: { child: AttendanceChild }) {
     </em>
   )
 }
-
-const LeftDetailsDiv = styled.div`
-  > * {
-    margin-left: ${defaultMargins.xs};
-
-    &:first-child {
-      margin-left: 0;
-    }
-  }
-`
-
-const RoundIconOnTop = styled(RoundIcon)`
-  position: absolute;
-  left: 40px;
-  top: -20px;
-  z-index: 2;
-`
-const IconPlacementBox = styled.div`
-  position: relative;
-  width: 0;
-  height: 0;
-  &.m {
-    font-size: 14px;
-  }
-`
