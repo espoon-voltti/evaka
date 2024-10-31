@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.application.notes.createApplicationNote
+import fi.espoo.evaka.children.getChildrenByParent
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
@@ -231,20 +232,38 @@ class MessageService(
         serviceWorkerAccountName: String,
         user: AuthenticatedUser,
     ): ThreadReply {
-        val (threadId, type, isCopy, senders, recipients, applicationId) =
+        val today = now.toLocalDate()
+        val (threadId, type, isCopy, previousSenders, previousRecipients, applicationId, children) =
             db.read { it.getThreadByMessageId(replyToMessageId) }
                 ?: throw NotFound("Message not found")
 
         if (isCopy) throw BadRequest("Message copies cannot be replied to")
-        if (type == MessageType.BULLETIN && !senders.contains(senderAccount))
+        if (type == MessageType.BULLETIN && !previousSenders.contains(senderAccount))
             throw Forbidden("Only the author can reply to bulletin")
 
-        val previousParticipants = recipients + senders
+        val previousParticipants = previousRecipients + previousSenders
         if (!previousParticipants.contains(senderAccount))
             throw Forbidden("Not authorized to post to message")
         if (!previousParticipants.containsAll(recipientAccountIds))
             throw Forbidden("Not authorized to widen the audience")
-
+        if (user is AuthenticatedUser.Citizen) {
+            val isApplication = applicationId != null
+            val validRecipients =
+                db.read { it.getCitizenReceivers(today, senderAccount) }
+                    .mapValues { entry -> entry.value.map { it.id }.toSet() }
+            val allRecipientsValid =
+                recipientAccountIds.all { recipient ->
+                    children.any { child -> validRecipients[child]?.contains(recipient) ?: false }
+                }
+            if (!isApplication && !allRecipientsValid)
+                throw Forbidden("Not authorized to send to all recipients")
+            val selectedChildren =
+                db.read { it.getChildrenByParent(user.id, today) }
+                    .filter { children.contains(it.id) }
+            val selectedChildrenInSameUnit = selectedChildren.map { it.unit?.id }.toSet().size == 1
+            if (!isApplication && !selectedChildrenInSameUnit)
+                throw Forbidden("Selected children not in same unit")
+        }
         val message =
             db.transaction { tx ->
                 tx.upsertSenderThreadParticipants(senderAccount, listOf(threadId), now)

@@ -745,7 +745,7 @@ WITH user_account AS (
 ), backup_care_placements AS (
     SELECT p.id, p.unit_id, p.child_id, p.group_id
     FROM children c
-    JOIN backup_care p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
+    JOIN backup_care p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
     WHERE EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
@@ -753,11 +753,7 @@ WITH user_account AS (
 ), placements AS (
     SELECT p.id, p.unit_id, p.child_id
     FROM children c
-    JOIN placement p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
-    WHERE NOT EXISTS (
-        SELECT 1 FROM backup_care_placements bc
-        WHERE bc.child_id = p.child_id
-    )
+    JOIN placement p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
     AND EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
@@ -783,7 +779,7 @@ personal_accounts AS (
 group_accounts AS (
     SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
     FROM placements p
-    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND ${bind(today)} BETWEEN dgp.start_date AND dgp.end_date
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND ${bind(today)} BETWEEN (dgp.start_date - INTERVAL '2 weeks')::date AND dgp.end_date
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
 
@@ -889,6 +885,7 @@ data class ThreadWithParticipants(
     val senders: Set<MessageAccountId>,
     val recipients: Set<MessageAccountId>,
     val applicationId: ApplicationId?,
+    val children: Set<ChildId>,
 )
 
 fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
@@ -901,11 +898,13 @@ SELECT
     t.is_copy,
     t.application_id,
     (SELECT array_agg(m2.sender_id)) as senders,
-    (SELECT array_agg(rec.recipient_id)) as recipients
+    (SELECT array_agg(rec.recipient_id)) as recipients,
+    (SELECT coalesce(array_agg(mtc.child_id) FILTER (WHERE mtc.child_id IS NOT NULL), '{}')) as children
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
     JOIN message m2 ON m2.thread_id = t.id
     JOIN message_recipients rec ON rec.message_id = m2.id
+    LEFT JOIN message_thread_children mtc ON mtc.thread_id = t.id
     WHERE m.id = ${bind(messageId)}
     GROUP BY t.id, t.message_type
 """
