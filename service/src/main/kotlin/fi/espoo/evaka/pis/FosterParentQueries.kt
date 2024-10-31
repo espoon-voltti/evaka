@@ -51,7 +51,7 @@ SELECT
     p.date_of_death AS parent_date_of_death,
     p.social_security_number AS parent_social_security_number,
     p.street_address AS parent_street_address,
-    p.restricted_details_enabled AS parent_restricted_details_enabled,
+    p.restricted_details_enabled AS parent_restricted_details_enabled
 FROM foster_parent fp
 JOIN person c ON fp.child_id = c.id
 JOIN person p ON fp.parent_id = p.id
@@ -93,7 +93,7 @@ fun Database.Transaction.updateFosterParentRelationshipValidity(
 UPDATE foster_parent SET
     valid_during = ${bind(validDuring)},
     modified_by = ${bind(user.evakaUserId)},
-    modified_at = ${bind(now)},
+    modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
 """
             )

@@ -8,14 +8,15 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.getDecisionsByApplication
-import fi.espoo.evaka.pis.Modifier
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.updateFosterParentRelationshipValidity
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -202,8 +203,11 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     it.updateFosterParentRelationshipValidity(
                         fosterParentRelationship,
                         DateRange(clock.today(), clock.today()),
+                        AuthenticatedUser.Employee(
+                            EmployeeId(serviceWorker.id.raw),
+                            setOf(UserRole.SERVICE_WORKER),
+                        ),
                         clock.now(),
-                        Modifier.User(serviceWorker.evakaUserId),
                     )
                 }
                 clock.tick(Duration.ofDays(1))
