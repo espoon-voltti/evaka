@@ -14,7 +14,7 @@ import { TableScrollable } from './common'
 import { incompleteIncomeReportQuery } from './queries'
 import ReportDownload from './ReportDownload'
 
-export default React.memo(function ReportInvoices() {
+export default React.memo(function IncompleteIncomes() {
   const { i18n } = useTranslation()
   const report = useQueryResult(incompleteIncomeReportQuery())
 

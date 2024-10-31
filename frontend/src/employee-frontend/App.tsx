@@ -60,6 +60,7 @@ import HolidayPeriodEditor from './components/holiday-term-periods/HolidayPeriod
 import PreschoolTermPeriodEditor from './components/holiday-term-periods/PreschoolTermPeriodEditor'
 import QuestionnaireEditor from './components/holiday-term-periods/QuestionnaireEditor'
 import IncomeStatementsPage from './components/income-statements/IncomeStatementsPage'
+import IncompleteIncomes from './components/reports/IncompleteIncomeReport'
 import InvoicePage from './components/invoice/InvoicePage'
 import InvoicesPage from './components/invoices/InvoicesPage'
 import MessagesPage from './components/messages/MessagesPage'
@@ -853,6 +854,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <TitaniaErrors />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/incomplete-income',
+          element: (
+            <EmployeeRoute title="reports">
+              <IncompleteIncomes />
             </EmployeeRoute>
           )
         },

@@ -3911,7 +3911,7 @@ export const fi = {
     incompleteIncomes: {
       title: 'Puuttuvat tulotiedot',
       description:
-        'Raportti kertoo vanhemmista, joiden tulotiedot ovat vanhentuneet.',
+        'Raportti vanhemmista, joiden tulotiedot ovat vanhentuneet, mutta lapsella on vielä sijoitus aktiivinen.',
       validFrom: 'Alkupäivämäärä',
       firstName: 'Etunimi',
       lastName: 'Sukunimi',
