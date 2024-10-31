@@ -37,31 +37,16 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.Month
+import java.time.YearMonth
 import java.util.UUID
 import org.springframework.stereotype.Component
 
-enum class InvoiceGenerationLogic {
-    Default,
-    Free,
-}
-
 interface InvoiceGenerationLogicChooser {
-    fun logicForMonth(
-        tx: Database.Read,
-        year: Int,
-        month: Month,
-        childId: ChildId,
-    ): InvoiceGenerationLogic
+    fun getFreeChildren(tx: Database.Read, month: YearMonth): Set<ChildId>
 }
 
 object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
-    override fun logicForMonth(
-        tx: Database.Read,
-        year: Int,
-        month: Month,
-        childId: ChildId,
-    ): InvoiceGenerationLogic = InvoiceGenerationLogic.Default
+    override fun getFreeChildren(tx: Database.Read, month: YearMonth): Set<ChildId> = emptySet()
 }
 
 data class InvoiceGeneratorConfig(
@@ -94,15 +79,11 @@ data class InvoiceGeneratorConfig(
 class DraftInvoiceGenerator(
     private val productProvider: InvoiceProductProvider,
     featureConfig: FeatureConfig,
-    private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser,
     private val tracer: Tracer = noopTracer(),
 ) {
     private val config = InvoiceGeneratorConfig.fromFeatureConfig(featureConfig)
 
-    fun generateDraftInvoices(
-        tx: Database.Read,
-        invoiceInput: InvoiceGeneratorInput,
-    ): List<Invoice> {
+    fun generateDraftInvoices(invoiceInput: InvoiceGeneratorInput): List<Invoice> {
         val headsOfFamily = invoiceInput.decisions.keys + invoiceInput.temporaryPlacements.keys
         return headsOfFamily.mapNotNull { headOfFamilyId ->
             try {
@@ -119,7 +100,6 @@ class DraftInvoiceGenerator(
                     Tracing.headOfFamilyId withValue headOfFamilyId,
                 ) {
                     generateDraftInvoice(
-                        tx,
                         invoiceInput,
                         HeadOfFamilyInput(
                             config,
@@ -139,7 +119,6 @@ class DraftInvoiceGenerator(
     }
 
     private fun generateDraftInvoice(
-        tx: Database.Read,
         invoiceInput: InvoiceGeneratorInput,
         headInput: HeadOfFamilyInput,
     ): Invoice? {
@@ -174,7 +153,7 @@ class DraftInvoiceGenerator(
                                             ?.let { decision.validDuring to it }
                                     }
                                     .filterNot { (_, part) ->
-                                        invoiceInput.isFreeJulyChild(part.child.id)
+                                        invoiceInput.freeChildren.contains(part.child.id)
                                     }
                                     .map { (decisionPeriod, part) ->
                                         relevantPeriod.intersection(decisionPeriod)!! to
@@ -192,15 +171,6 @@ class DraftInvoiceGenerator(
         val rows =
             rowInputsByChild
                 .flatMap { (child, rowInputs) ->
-                    val logic =
-                        invoiceGenerationLogicChooser.logicForMonth(
-                            tx,
-                            invoiceInput.invoicePeriod.start.year,
-                            invoiceInput.invoicePeriod.start.month,
-                            child.id,
-                        )
-                    if (logic == InvoiceGenerationLogic.Free) return@flatMap listOf()
-
                     val childInput = ChildInput(config, invoiceInput, headInput, child)
 
                     val invoiceRows = mutableListOf<InvoiceRow>()
@@ -626,13 +596,11 @@ class DraftInvoiceGenerator(
         val businessDays: DateSet,
         val feeThresholds: FeeThresholds,
         val absences: Map<ChildId, List<Pair<AbsenceType, DateSet>>>,
-        private val freeChildren: Set<ChildId>,
+        val freeChildren: Set<ChildId>,
         val codebtors: Map<PersonId, PersonId?>,
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
     ) {
         val businessDayCount = businessDays.ranges().map { it.durationInDays() }.sum().toInt()
-
-        fun isFreeJulyChild(childId: ChildId): Boolean = freeChildren.contains(childId)
     }
 
     class HeadOfFamilyInput(
