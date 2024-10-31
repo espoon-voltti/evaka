@@ -269,7 +269,7 @@ WHERE id = ${bind(eventTimeId)} AND (child_id IS NULL OR child_id = ${bind(child
         }
         .updateNoneOrOne()
 
-fun Database.Transaction.deleteCalendarEventTimeReservations(
+fun Database.Transaction.deleteCalendarEventTimeReservationsByChildAndEvent(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     calendarEventId: CalendarEventId,

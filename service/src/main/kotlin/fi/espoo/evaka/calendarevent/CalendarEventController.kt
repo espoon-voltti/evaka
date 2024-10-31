@@ -342,7 +342,7 @@ class CalendarEventController(
                     val updated = resolveAttendeeChildIds(tx, event.unitId, body.tree, event.period)
                     val removed = current.minus(updated.toSet())
                     removed.forEach { childId ->
-                        tx.deleteCalendarEventTimeReservations(
+                        tx.deleteCalendarEventTimeReservationsByChildAndEvent(
                             user,
                             clock.now(),
                             calendarEventId = event.id,
