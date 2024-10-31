@@ -12,7 +12,6 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pdfgen.PdfGenerator
-import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createFosterParentRelationship
@@ -162,11 +161,7 @@ class PersonController(
                                 )
                             }
                     parentRelationships.forEach { relationship ->
-                        tx.createFosterParentRelationship(
-                            relationship,
-                            Creator.User(user.evakaUserId),
-                            clock.now(),
-                        )
+                        tx.createFosterParentRelationship(relationship, user, clock.now())
                     }
 
                     if (tx.getPersonById(duplicateId)!!.ophPersonOid.isNullOrBlank()) {

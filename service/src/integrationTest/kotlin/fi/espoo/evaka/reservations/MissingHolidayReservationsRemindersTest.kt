@@ -14,7 +14,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -191,8 +190,8 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     childId = child,
                     parentId = fosterParentId,
                     validDuring = DateRange(clockToday.today(), clockToday.today()),
-                    createdAt = clockToday.now(),
-                    createdBy = EvakaUserId(employee.id.raw),
+                    modifiedAt = clockToday.now(),
+                    modifiedBy = EvakaUserId(employee.id.raw),
                 )
             )
             it.blockGuardian(childId = child, guardianId = guardian)

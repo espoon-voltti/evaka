@@ -154,17 +154,10 @@ export default React.memo(function FosterChildren({
                 ({
                   relationshipId,
                   child,
-                  creationModificationMetadata,
+                  modifiedAt,
+                  modifiedBy,
                   validDuring
-                }) => {
-                  const modifiedAt =
-                    creationModificationMetadata.modifiedAt ||
-                    creationModificationMetadata.createdAt
-                  const modifiedByName =
-                    creationModificationMetadata.modifiedByName ||
-                    creationModificationMetadata.createdByName
-
-                  return (
+                }) => (
                     <Tr
                       key={relationshipId}
                       data-qa={`foster-child-row-${child.id}`}
@@ -183,22 +176,15 @@ export default React.memo(function FosterChildren({
                       <Td data-qa="start">{validDuring.start.format()}</Td>
                       <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
                       <Td>
-                        {modifiedAt ? (
                           <Tooltip
-                            tooltip={
-                              modifiedByName
-                                ? i18n.common.form.lastModifiedBy(
-                                    modifiedByName
+                            tooltip={i18n.common.form.lastModifiedBy(
+                                    modifiedBy.name
                                   )
-                                : null
                             }
                             position="left"
                           >
                             {modifiedAt.format()}
                           </Tooltip>
-                        ) : (
-                          i18n.common.unknown
-                        )}
                       </Td>
                       <Td>
                         <Toolbar
@@ -219,7 +205,7 @@ export default React.memo(function FosterChildren({
                       </Td>
                     </Tr>
                   )
-                }
+                
               )}
             </Tbody>
           </Table>

@@ -8,6 +8,7 @@ import fi.espoo.evaka.pis.controllers.CreateFosterParentRelationshipBody
 import fi.espoo.evaka.pis.controllers.FosterParentRelationship
 import fi.espoo.evaka.shared.FosterParentId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -31,6 +32,10 @@ private fun Database.Read.getFosterParentRelationships(
 SELECT
     fp.id AS relationship_id,
     fp.valid_during,
+    fp.modified_at,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type,
     c.id AS child_id,
     c.first_name AS child_first_name,
     c.last_name AS child_last_name,
@@ -47,21 +52,10 @@ SELECT
     p.social_security_number AS parent_social_security_number,
     p.street_address AS parent_street_address,
     p.restricted_details_enabled AS parent_restricted_details_enabled,
-    fp.create_source AS creation_modification_metadata_create_source,
-    fp.created_at AS creation_modification_metadata_created_at,
-    fp.created_by AS creation_modification_metadata_created_by,
-    (SELECT name FROM evaka_user WHERE id = fp.created_by) AS creation_modification_metadata_created_by_name,
-    fp.modify_source AS creation_modification_metadata_modify_source,
-    fp.modified_at AS creation_modification_metadata_modified_at,
-    fp.modified_by AS creation_modification_metadata_modified_by,
-    (SELECT name FROM evaka_user WHERE id = fp.modified_by) AS creation_modification_metadata_modified_by_name,
-    fp.created_from_application AS creation_modification_metadata_created_from_application,
-    a.type AS creation_modification_metadata_created_from_application_type,
-    a.created AS creation_modification_metadata_created_from_application_created
 FROM foster_parent fp
 JOIN person c ON fp.child_id = c.id
 JOIN person p ON fp.parent_id = p.id
-LEFT JOIN application a ON fp.created_from_application = a.id
+JOIN evaka_user e ON e.id = fp.modified_by
 WHERE fp.parent_id = ${bind(parentId)} OR fp.child_id = ${bind(childId)}
 """
             )
@@ -71,50 +65,35 @@ WHERE fp.parent_id = ${bind(parentId)} OR fp.child_id = ${bind(childId)}
 
 fun Database.Transaction.createFosterParentRelationship(
     data: CreateFosterParentRelationshipBody,
-    creator: Creator,
-    createDate: HelsinkiDateTime,
-): FosterParentId {
-    val (creatorId, applicationId) =
-        when (creator) {
-            is Creator.User -> Pair(creator.id.raw, null)
-            is Creator.Application -> Pair(null, creator.id)
-            is Creator.DVV -> Pair(null, null)
-        }
-
-    return createUpdate {
+    user: AuthenticatedUser,
+    now: HelsinkiDateTime,
+): FosterParentId =
+    createUpdate {
             sql(
                 """
-INSERT INTO foster_parent (child_id, parent_id, valid_during, created_by, created_at, created_from_application, create_source, modified_by, modified_at)
+INSERT INTO foster_parent (child_id, parent_id, valid_during, modified_by, modified_at)
 VALUES
-    (${bind(data.childId)}, ${bind(data.parentId)}, ${bind(data.validDuring)}, ${bind(creatorId)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(creator.source)}, ${bind(creatorId)}, ${bind(createDate)})
+    (${bind(data.childId)}, ${bind(data.parentId)}, ${bind(data.validDuring)}, ${bind(user.evakaUserId)}, ${bind(now)})
 RETURNING id
 """
             )
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<FosterParentId>()
-}
 
 fun Database.Transaction.updateFosterParentRelationshipValidity(
     id: FosterParentId,
     validDuring: DateRange,
-    modifiedAt: HelsinkiDateTime,
-    modifier: Modifier,
-) {
-    val userId =
-        when (modifier) {
-            is Modifier.User -> modifier.id.raw
-            is Modifier.DVV -> null
-        }
-
+    user: AuthenticatedUser,
+    now: HelsinkiDateTime,
+) =
     createUpdate {
             sql(
                 """
 UPDATE foster_parent SET
     valid_during = ${bind(validDuring)},
-    modified_by = ${bind(userId)},
-    modified_at = ${bind(modifiedAt)},
-    modify_source = ${bind(modifier.source)}
+    modified_by = ${bind(user.evakaUserId)},
+    modified_at = ${bind(now)},
 WHERE id = ${bind(id)}
 """
             )
@@ -124,7 +103,6 @@ WHERE id = ${bind(id)}
             if (it != 1)
                 throw BadRequest("Could not update validity of foster_parent row with id $id")
         }
-}
 
 fun Database.Transaction.deleteFosterParentRelationship(id: FosterParentId) =
     createUpdate { sql("DELETE FROM foster_parent WHERE id = ${bind(id)}") }

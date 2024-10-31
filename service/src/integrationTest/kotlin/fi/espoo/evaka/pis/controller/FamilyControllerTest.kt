@@ -83,8 +83,8 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = child,
                             parentId = it,
                             validDuring = currentlyValid.asDateRange(),
-                            createdAt = clock.now(),
-                            createdBy = user.evakaUserId,
+                            modifiedAt = clock.now(),
+                            modifiedBy = user.evakaUserId,
                         )
                     )
                 }
@@ -136,8 +136,8 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = child,
                             parentId = it,
                             validDuring = currentlyValid.asDateRange(),
-                            createdAt = clock.now(),
-                            createdBy = user.evakaUserId,
+                            modifiedAt = clock.now(),
+                            modifiedBy = user.evakaUserId,
                         )
                     )
                     tx.insert(

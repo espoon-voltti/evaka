@@ -349,8 +349,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                                     startDate.plusDays(start.toLong()),
                                     startDate.plusDays(end.toLong()),
                                 ),
-                            createdAt = clock.now(),
-                            createdBy = user.evakaUserId,
+                            modifiedAt = clock.now(),
+                            modifiedBy = user.evakaUserId,
                         )
                     )
                 }

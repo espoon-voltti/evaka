@@ -12,6 +12,7 @@ import { ApplicationType } from './application'
 import { CitizenAuthLevel } from './shared'
 import { CitizenFeatures } from './shared'
 import { EmployeeFeatures } from './shared'
+import { EvakaUser } from './user'
 import { IncomeEffect } from './invoicing'
 import { JsonOf } from '../../json'
 import { MobileDevice } from './pairing'
@@ -305,7 +306,8 @@ export interface FamilyOverviewPerson {
 */
 export interface FosterParentRelationship {
   child: PersonSummary
-  creationModificationMetadata: CreationModificationMetadata
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
   parent: PersonSummary
   relationshipId: UUID
   validDuring: DateRange
@@ -735,7 +737,7 @@ export function deserializeJsonFosterParentRelationship(json: JsonOf<FosterParen
   return {
     ...json,
     child: deserializeJsonPersonSummary(json.child),
-    creationModificationMetadata: deserializeJsonCreationModificationMetadata(json.creationModificationMetadata),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     parent: deserializeJsonPersonSummary(json.parent),
     validDuring: DateRange.parseJson(json.validDuring)
   }

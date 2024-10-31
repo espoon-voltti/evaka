@@ -240,8 +240,8 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     childId = child.id,
                     parentId = fosterParent.id,
                     validDuring = DateRange(clock.today(), null),
-                    createdAt = clock.now(),
-                    createdBy = serviceWorker.evakaUserId,
+                    modifiedAt = clock.now(),
+                    modifiedBy = serviceWorker.evakaUserId,
                 )
             )
         }

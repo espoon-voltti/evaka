@@ -307,8 +307,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     parentId = fosterParentId,
                     childId = person.id,
                     validDuring = fosterValidDuring,
-                    createdAt = clock.now(),
-                    createdBy = admin.evakaUserId,
+                    modifiedAt = clock.now(),
+                    modifiedBy = admin.evakaUserId,
                 )
             )
         }
@@ -334,8 +334,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     parentId = person.id,
                     childId = childId,
                     validDuring = fosterValidDuring,
-                    createdAt = clock.now(),
-                    createdBy = admin.evakaUserId,
+                    modifiedAt = clock.now(),
+                    modifiedBy = admin.evakaUserId,
                 )
             )
         }

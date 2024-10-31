@@ -157,8 +157,8 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = child.id,
                     parentId = adult.id,
                     validDuring = DateRange(today.minusMonths(1), null),
-                    createdAt = clock.now(),
-                    createdBy = supervisor.evakaUserId,
+                    modifiedAt = clock.now(),
+                    modifiedBy = supervisor.evakaUserId,
                 )
             )
         }

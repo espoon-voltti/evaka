@@ -67,8 +67,8 @@ beforeEach(async () => {
         childId: fosterChild.id,
         parentId: fosterParent.id,
         validDuring: new DateRange(mockedDate, mockedDate),
-        createdAt: mockedNow,
-        createdBy: employee.id
+        modifiedAt: mockedNow,
+        modifiedBy: employee.id
       }
     ]
   })
@@ -159,8 +159,8 @@ test('Foster parent can create a daycare application and accept a daycare decisi
         childId: fosterChild.id,
         parentId: fosterParent.id,
         validDuring: new DateRange(mockedDate, mockedDate),
-        createdAt: mockedNow,
-        createdBy: employee.id
+        modifiedAt: mockedNow,
+        modifiedBy: employee.id
       }
     ]
   })
