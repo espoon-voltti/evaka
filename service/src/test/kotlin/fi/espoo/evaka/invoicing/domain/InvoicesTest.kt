@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.domain
 
 import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
 import java.time.LocalDate
 import java.util.UUID
@@ -14,11 +13,9 @@ import org.junit.jupiter.api.Test
 
 class InvoicesTest {
     @Test
-    fun `Invoice has correct default due date calculated from period end date`() {
+    fun `DraftInvoice has correct default due date calculated from period end date`() {
         val invoice =
-            Invoice(
-                id = InvoiceId(UUID.randomUUID()),
-                status = InvoiceStatus.DRAFT,
+            DraftInvoice(
                 periodStart = LocalDate.of(2019, 1, 1),
                 periodEnd = LocalDate.of(2019, 1, 31),
                 areaId = AreaId(UUID.randomUUID()),
@@ -31,11 +28,9 @@ class InvoicesTest {
     }
 
     @Test
-    fun `Invoice has correct default due date when last day of month is saturday`() {
+    fun `DraftInvoice has correct default due date when last day of month is saturday`() {
         val invoice =
-            Invoice(
-                id = InvoiceId(UUID.randomUUID()),
-                status = InvoiceStatus.DRAFT,
+            DraftInvoice(
                 periodStart = LocalDate.of(2019, 7, 1),
                 periodEnd = LocalDate.of(2019, 7, 31),
                 areaId = AreaId(UUID.randomUUID()),
@@ -48,11 +43,9 @@ class InvoicesTest {
     }
 
     @Test
-    fun `Invoice has correct default due date when last day of month is sunday`() {
+    fun `DraftInvoice has correct default due date when last day of month is sunday`() {
         val invoice =
-            Invoice(
-                id = InvoiceId(UUID.randomUUID()),
-                status = InvoiceStatus.DRAFT,
+            DraftInvoice(
                 periodStart = LocalDate.of(2019, 5, 1),
                 periodEnd = LocalDate.of(2019, 5, 31),
                 areaId = AreaId(UUID.randomUUID()),
@@ -65,11 +58,9 @@ class InvoicesTest {
     }
 
     @Test
-    fun `Invoice has correct default invoice date`() {
+    fun `DraftInvoice has correct default invoice date`() {
         val invoice =
-            Invoice(
-                id = InvoiceId(UUID.randomUUID()),
-                status = InvoiceStatus.DRAFT,
+            DraftInvoice(
                 periodStart = LocalDate.of(2019, 1, 1),
                 periodEnd = LocalDate.of(2019, 1, 31),
                 areaId = AreaId(UUID.randomUUID()),

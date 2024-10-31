@@ -36,15 +36,15 @@ data class Invoice(
     val status: InvoiceStatus,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
-    val dueDate: LocalDate = getDueDate(periodEnd),
-    val invoiceDate: LocalDate = dueDate.minusWeeks(2),
+    val dueDate: LocalDate,
+    val invoiceDate: LocalDate,
     val areaId: AreaId,
     val headOfFamily: PersonId,
     val codebtor: PersonId?,
     val rows: List<InvoiceRow>,
-    val number: Long? = null,
-    val sentBy: EvakaUserId? = null,
-    val sentAt: HelsinkiDateTime? = null,
+    val number: Long?,
+    val sentBy: EvakaUserId?,
+    val sentAt: HelsinkiDateTime?,
 ) {
     val totalPrice
         get() = invoiceRowTotal(rows)
@@ -69,7 +69,7 @@ data class InvoiceRow(
     val periodEnd: LocalDate,
     val product: ProductKey,
     val unitId: DaycareId,
-    val description: String = "",
+    val description: String,
     val correctionId: InvoiceCorrectionId?,
 ) : RowWithPrice {
     override val price
@@ -166,3 +166,32 @@ fun getDueDate(periodEnd: LocalDate): LocalDate {
 }
 
 fun invoiceRowTotal(rows: List<RowWithPrice>): Int = rows.sumOf { it.price }
+
+data class DraftInvoice(
+    val periodStart: LocalDate,
+    val periodEnd: LocalDate,
+    val dueDate: LocalDate = getDueDate(periodEnd),
+    val invoiceDate: LocalDate = dueDate.minusWeeks(2),
+    val areaId: AreaId,
+    val headOfFamily: PersonId,
+    val codebtor: PersonId?,
+    val rows: List<DraftInvoiceRow>,
+) {
+    val totalPrice
+        get() = invoiceRowTotal(rows)
+}
+
+data class DraftInvoiceRow(
+    val childId: ChildId,
+    val amount: Int,
+    val unitPrice: Int,
+    val periodStart: LocalDate,
+    val periodEnd: LocalDate,
+    val product: ProductKey,
+    val unitId: DaycareId,
+    val description: String = "",
+    val correctionId: InvoiceCorrectionId? = null,
+) : RowWithPrice {
+    override val price: Int
+        get() = amount * unitPrice
+}

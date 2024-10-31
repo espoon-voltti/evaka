@@ -42,6 +42,7 @@ import { FeeDecisionThresholds } from 'lib-common/generated/api-types/invoicing'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeValue } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { JsonOf } from 'lib-common/json'
 import { Language } from 'lib-common/generated/api-types/daycare'
 import { MailingAddress } from 'lib-common/generated/api-types/daycare'
@@ -629,6 +630,43 @@ export interface DevIncome {
   validFrom: LocalDate
   validTo: LocalDate | null
   worksAtEcha: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevInvoice
+*/
+export interface DevInvoice {
+  areaId: UUID
+  codebtor: UUID | null
+  createdAt: HelsinkiDateTime | null
+  dueDate: LocalDate
+  headOfFamilyId: UUID
+  id: UUID
+  invoiceDate: LocalDate
+  number: number | null
+  periodEnd: LocalDate
+  periodStart: LocalDate
+  rows: DevInvoiceRow[]
+  sentAt: HelsinkiDateTime | null
+  sentBy: UUID | null
+  status: InvoiceStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevInvoiceRow
+*/
+export interface DevInvoiceRow {
+  amount: number
+  childId: UUID
+  correctionId: UUID | null
+  description: string
+  id: UUID
+  idx: number | null
+  periodEnd: LocalDate
+  periodStart: LocalDate
+  product: string
+  unitId: UUID
+  unitPrice: number
 }
 
 /**
@@ -1345,6 +1383,29 @@ export function deserializeJsonDevIncome(json: JsonOf<DevIncome>): DevIncome {
     updatedAt: HelsinkiDateTime.parseIso(json.updatedAt),
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonDevInvoice(json: JsonOf<DevInvoice>): DevInvoice {
+  return {
+    ...json,
+    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
+    dueDate: LocalDate.parseIso(json.dueDate),
+    invoiceDate: LocalDate.parseIso(json.invoiceDate),
+    periodEnd: LocalDate.parseIso(json.periodEnd),
+    periodStart: LocalDate.parseIso(json.periodStart),
+    rows: json.rows.map(e => deserializeJsonDevInvoiceRow(e)),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
+  }
+}
+
+
+export function deserializeJsonDevInvoiceRow(json: JsonOf<DevInvoiceRow>): DevInvoiceRow {
+  return {
+    ...json,
+    periodEnd: LocalDate.parseIso(json.periodEnd),
+    periodStart: LocalDate.parseIso(json.periodStart)
   }
 }
 

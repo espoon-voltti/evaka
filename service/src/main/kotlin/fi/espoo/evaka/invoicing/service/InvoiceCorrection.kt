@@ -4,19 +4,17 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
-import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
-import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.YearMonth
-import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 
@@ -37,9 +35,8 @@ data class InvoiceCorrection(
     @Nested("invoice") val invoice: InvoiceWithCorrection?, // should later be a list?
 ) {
     fun toInvoiceRow() =
-        InvoiceRow(
-            id = InvoiceRowId(UUID.randomUUID()),
-            child = childId,
+        DraftInvoiceRow(
+            childId = childId,
             amount = amount,
             unitPrice = unitPrice,
             periodStart = period.start,

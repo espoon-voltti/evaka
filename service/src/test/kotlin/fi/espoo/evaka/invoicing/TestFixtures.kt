@@ -17,22 +17,15 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.invoicing.domain.Invoice
-import fi.espoo.evaka.invoicing.domain.InvoiceRow
-import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
-import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.InvoiceId
-import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -292,42 +285,4 @@ fun createVoucherValueDecisionFixture(
         feeAlterations = feeAlterations,
         finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
         difference = emptySet(),
-    )
-
-fun createInvoiceRowFixture(
-    childId: ChildId,
-    unitId: DaycareId,
-    amount: Int = 1,
-    unitPrice: Int = 28900,
-) =
-    InvoiceRow(
-        id = InvoiceRowId(UUID.randomUUID()),
-        child = childId,
-        amount = amount,
-        unitPrice = unitPrice,
-        product = ProductKey("DAYCARE"),
-        unitId = unitId,
-        periodStart = LocalDate.of(2019, 1, 1),
-        periodEnd = LocalDate.of(2019, 1, 31),
-        correctionId = null,
-    )
-
-fun createInvoiceFixture(
-    status: InvoiceStatus,
-    headOfFamilyId: PersonId,
-    areaId: AreaId,
-    number: Long? = null,
-    period: FiniteDateRange = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
-    rows: List<InvoiceRow>,
-) =
-    Invoice(
-        id = InvoiceId(UUID.randomUUID()),
-        status = status,
-        number = number,
-        areaId = areaId,
-        headOfFamily = headOfFamilyId,
-        codebtor = null,
-        periodStart = period.start,
-        periodEnd = period.end,
-        rows = rows,
     )

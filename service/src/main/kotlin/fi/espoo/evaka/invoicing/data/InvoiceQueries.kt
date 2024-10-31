@@ -7,6 +7,8 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
+import fi.espoo.evaka.invoicing.domain.DraftInvoice
+import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
@@ -472,20 +474,22 @@ fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
     createUpdate { sql("SELECT id FROM invoice WHERE id = ANY(${bind(ids)}) FOR UPDATE") }.execute()
 }
 
-fun Database.Transaction.insertInvoices(
-    invoices: List<Invoice>,
-    relatedFeeDecisions: Map<InvoiceId, List<FeeDecisionId>> = emptyMap(),
-) {
-    upsertInvoicesWithoutRows(invoices)
-    insertInvoiceRows(invoices.map { it.id to it.rows })
-    insertInvoicedFeeDecisions(
-        relations =
-            invoices.flatMap { invoice ->
-                relatedFeeDecisions.getOrDefault(invoice.id, emptyList()).map { feeDecisionId ->
-                    invoice.id to feeDecisionId
-                }
-            }
+fun Database.Transaction.insertDraftInvoices(
+    invoices: List<DraftInvoice>,
+    relatedFeeDecisions: Map<PersonId, List<FeeDecisionId>> = emptyMap(),
+): List<InvoiceId> {
+    val invoiceIds = insertInvoicesWithoutRows(invoices)
+    insertInvoiceRows(
+        invoices.zip(invoiceIds).map { (invoice, invoiceId) -> invoiceId to invoice.rows }
     )
+    insertInvoicedFeeDecisions(
+        invoices.zip(invoiceIds).flatMap { (invoice, invoiceId) ->
+            (relatedFeeDecisions[invoice.headOfFamily] ?: emptyList()).map { feeDecisionId ->
+                invoiceId to feeDecisionId
+            }
+        }
+    )
+    return invoiceIds
 }
 
 /*
@@ -503,13 +507,13 @@ fun Database.Read.getFirstUninvoicedMonth(): YearMonth =
         }
         .exactlyOneOrNull<YearMonth>() ?: YearMonth.now().plusMonths(1)
 
-private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoice>) {
-    executeBatch(invoices) {
-        sql(
-            """
+private fun Database.Transaction.insertInvoicesWithoutRows(
+    invoices: List<DraftInvoice>
+): List<InvoiceId> =
+    prepareBatch(invoices) {
+            sql(
+                """
 INSERT INTO invoice (
-    id,
-    number,
     status,
     period_start,
     period_end,
@@ -519,9 +523,7 @@ INSERT INTO invoice (
     head_of_family,
     codebtor
 ) VALUES (
-    ${bind { it.id }},
-    ${bind { it.number }},
-    ${bind { it.status }},
+    'DRAFT',
     ${bind { it.periodStart }},
     ${bind { it.periodEnd }},
     ${bind { it.dueDate }},
@@ -529,16 +531,17 @@ INSERT INTO invoice (
     ${bind { it.areaId }},
     ${bind { it.headOfFamily }},
     ${bind { it.codebtor }}
-) ON CONFLICT (id) DO NOTHING
+) RETURNING id
 """
-        )
-    }
-}
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 private fun Database.Transaction.insertInvoiceRows(
-    invoiceRows: List<Pair<InvoiceId, List<InvoiceRow>>>
+    invoiceRows: List<Pair<InvoiceId, List<DraftInvoiceRow>>>
 ) {
-    val batchRows: Sequence<Triple<InvoiceId, Int, InvoiceRow>> =
+    val batchRows: Sequence<Triple<InvoiceId, Int, DraftInvoiceRow>> =
         invoiceRows.asSequence().flatMap { (invoiceId, rows) ->
             rows.withIndex().map { (idx, row) -> Triple(invoiceId, idx, row) }
         }
@@ -548,7 +551,6 @@ private fun Database.Transaction.insertInvoiceRows(
 INSERT INTO invoice_row (
     invoice_id,
     idx,
-    id,
     child,
     amount,
     unit_price,
@@ -561,8 +563,7 @@ INSERT INTO invoice_row (
 ) VALUES (
     ${bind { (invoiceId, _, _) -> invoiceId }},
     ${bind { (_, idx, _) -> idx }},
-    ${bind { (_, _, row) -> row.id }},
-    ${bind { (_, _, row) -> row.child }},
+    ${bind { (_, _, row) -> row.childId }},
     ${bind { (_, _, row) -> row.amount }},
     ${bind { (_, _, row) -> row.unitPrice }},
     ${bind { (_, _, row) -> row.periodStart }},

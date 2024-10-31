@@ -5,10 +5,10 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.invoicing.createInvoiceFixture
-import fi.espoo.evaka.invoicing.createInvoiceRowFixture
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.getInvoicedHeadsOfFamily
+import fi.espoo.evaka.shared.dev.DevInvoice
+import fi.espoo.evaka.shared.dev.DevInvoiceRow
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -27,34 +27,26 @@ import org.junit.jupiter.api.Test
 class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val testInvoices =
         listOf(
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = testArea.id,
-                rows =
-                    listOf(
-                        createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
-                    ),
+                rows = listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
             ),
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = testArea.id,
                 number = 5000000001L,
-                rows =
-                    listOf(
-                        createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
-                    ),
+                rows = listOf(DevInvoiceRow(childId = testChild_2.id, unitId = testDaycare.id)),
             ),
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = testArea.id,
-                period = FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
-                rows =
-                    listOf(
-                        createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
-                    ),
+                periodStart = LocalDate.of(2018, 1, 1),
+                periodEnd = LocalDate.of(2018, 1, 31),
+                rows = listOf(DevInvoiceRow(childId = testChild_2.id, unitId = testDaycare.id)),
             ),
         )
 
@@ -71,7 +63,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `search without params`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            tx.insert(testInvoices)
 
             val result = tx.searchInvoices()
             assertEquals(3, result.size)
@@ -81,7 +73,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `search drafts`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            tx.insert(testInvoices)
 
             val result = tx.searchInvoices(InvoiceStatus.DRAFT)
             assertEquals(2, result.size)
@@ -91,7 +83,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `search canceled`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            tx.insert(testInvoices)
 
             val result = tx.searchInvoices(InvoiceStatus.CANCELED)
             assertEquals(0, result.size)
@@ -101,7 +93,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `search sent`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            tx.insert(testInvoices)
 
             val result = tx.searchInvoices(InvoiceStatus.SENT)
             assertEquals(1, result.size)
@@ -111,20 +103,20 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `get by id`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            val ids = tx.insert(testInvoices)
 
-            val result = tx.getInvoice(testInvoices[0].id)
-            assertEquals(testInvoices[0], result)
+            val result = tx.getInvoice(ids[0])
+            assertEquals(testInvoices[0].id, result?.id)
         }
     }
 
     @Test
     fun `invoice row has child and fee`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            tx.insert(testInvoices)
 
             val result = tx.searchInvoices(InvoiceStatus.SENT)
-            val invoice = result.get(0)
+            val invoice = result[0]
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { row ->
                 assertEquals(testChild_2.id, row.child.id)
@@ -136,15 +128,15 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `getMaxInvoiceNumber works with one invoice`() {
         db.transaction { tx ->
-            tx.insertInvoices(
+            tx.insert(
                 listOf(
-                    createInvoiceFixture(
+                    DevInvoice(
                         status = InvoiceStatus.SENT,
                         headOfFamilyId = testAdult_1.id,
                         areaId = testArea.id,
                         number = 5000000123L,
                         rows =
-                            listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id)),
+                            listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
                     )
                 )
             )
@@ -160,16 +152,16 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             listOf(5000000200L, 5000000300L)
                 .map {
-                    createInvoiceFixture(
+                    DevInvoice(
                         status = InvoiceStatus.SENT,
                         headOfFamilyId = testAdult_1.id,
                         areaId = testArea.id,
                         number = it,
                         rows =
-                            listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id)),
+                            listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
                     )
                 }
-                .let { invoices -> tx.insertInvoices(invoices) }
+                .let { invoices -> tx.insert(invoices) }
 
             val maxNumber = tx.getMaxInvoiceNumber()
 
@@ -180,21 +172,21 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `get invoiced heads of family`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            tx.insert(testInvoices)
 
             val result =
                 tx.getInvoicedHeadsOfFamily(
                     FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
                 )
             assertEquals(1, result.size)
-            assertEquals(setOf(testInvoices[0].headOfFamily), result)
+            assertEquals(setOf(testInvoices[0].headOfFamilyId), result)
         }
     }
 
     @Test
     fun `get invoiced heads of family period with no invoices`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            tx.insert(testInvoices)
 
             val result =
                 tx.getInvoicedHeadsOfFamily(
@@ -207,7 +199,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `delete drafts basic case`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            tx.insert(testInvoices)
             val draft = testInvoices[0]
             tx.deleteDraftInvoices(listOf(draft.id))
 
@@ -219,31 +211,26 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `delete drafts does not delete sent invoices`() {
         db.transaction { tx ->
-            tx.insertInvoices(testInvoices)
+            val sentIds = tx.insert(testInvoices)
             val sent = testInvoices[1]
-            tx.deleteDraftInvoices(listOf(sent.id))
+            tx.deleteDraftInvoices(sentIds)
 
             val result = tx.getInvoice(sent.id)
-            assertEquals(sent, result)
+            assertEquals(sent.id, result?.id)
         }
     }
 
     @Test
     fun `get head of family's invoices`() {
         db.transaction { tx ->
-            tx.insertInvoices(
+            tx.insert(
                 testInvoices.plus(
-                    createInvoiceFixture(
+                    DevInvoice(
                         status = InvoiceStatus.DRAFT,
                         headOfFamilyId = testAdult_2.id,
                         areaId = testArea.id,
                         rows =
-                            listOf(
-                                createInvoiceRowFixture(
-                                    childId = testChild_1.id,
-                                    unitId = testDaycare.id,
-                                )
-                            ),
+                            listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
                     )
                 )
             )

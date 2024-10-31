@@ -1229,52 +1229,74 @@ RETURNING id
 data class DevInvoice(
     val id: InvoiceId = InvoiceId(UUID.randomUUID()),
     val status: InvoiceStatus = InvoiceStatus.SENT,
-    val number: Int = Math.random().times(1000000).toInt(),
-    val invoiceDate: LocalDate = LocalDate.now(),
-    val dueDate: LocalDate = LocalDate.now(),
-    val periodStart: LocalDate,
-    val periodEnd: LocalDate,
-    val headOfFamily: PersonId,
-    val createdAt: HelsinkiDateTime? = HelsinkiDateTime.now(),
-    val sentAt: HelsinkiDateTime? = HelsinkiDateTime.now(),
+    val number: Long? = Math.random().times(1000000).toLong(),
+    val invoiceDate: LocalDate = LocalDate.of(2019, 2, 14),
+    val dueDate: LocalDate = LocalDate.of(2019, 2, 28),
+    val periodStart: LocalDate = LocalDate.of(2019, 1, 1),
+    val periodEnd: LocalDate = LocalDate.of(2019, 1, 31),
+    val headOfFamilyId: PersonId,
+    val createdAt: HelsinkiDateTime? =
+        HelsinkiDateTime.of(LocalDate.of(2019, 2, 14), LocalTime.of(12, 0)),
+    val sentAt: HelsinkiDateTime? =
+        HelsinkiDateTime.of(LocalDate.of(2019, 2, 14), LocalTime.of(13, 0)),
     val sentBy: EvakaUserId? = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val codebtor: PersonId? = null,
     val areaId: AreaId,
+    val rows: List<DevInvoiceRow> = emptyList(),
 )
 
 data class DevInvoiceRow(
     val id: InvoiceRowId = InvoiceRowId(UUID.randomUUID()),
-    val child: PersonId,
-    val amount: Int,
-    val unitPrice: Int,
-    val periodStart: LocalDate,
-    val periodEnd: LocalDate,
-    val product: ProductKey,
+    val childId: PersonId,
     val unitId: DaycareId,
+    val amount: Int = 1,
+    val unitPrice: Int = 28900,
+    val periodStart: LocalDate = LocalDate.of(2019, 1, 1),
+    val periodEnd: LocalDate = LocalDate.of(2019, 1, 31),
+    val product: ProductKey = ProductKey("DAYCARE"),
+    val description: String = "",
     val correctionId: InvoiceCorrectionId? = null,
     val idx: Int? = null,
 )
 
-fun Database.Transaction.insert(invoice: DevInvoice, rows: List<DevInvoiceRow>): InvoiceId {
+fun Database.Transaction.insert(invoice: DevInvoice): InvoiceId {
     execute {
         sql(
             """
-        INSERT INTO invoice (id, status, number, invoice_date, due_date, print_date, period_start, period_end, head_of_family, sent_at, sent_by, created_at, codebtor, area_id) 
-        VALUES (${bind(invoice.id)}, ${bind(invoice.status)}, ${bind(invoice.number)}, ${bind(invoice.invoiceDate)}, ${bind(invoice.dueDate)}, NULL, ${bind(invoice.periodStart)}, ${bind(invoice.periodEnd)}, ${bind(invoice.headOfFamily)}, ${bind(invoice.sentAt)}, ${bind(invoice.sentBy)}, ${bind(invoice.createdAt)}, ${bind(invoice.codebtor)}, ${bind(invoice.areaId)})
-    """
+INSERT INTO invoice (id, status, number, invoice_date, due_date, print_date, period_start, period_end, head_of_family, sent_at, sent_by, created_at, codebtor, area_id) 
+VALUES (${bind(invoice.id)}, ${bind(invoice.status)}, ${bind(invoice.number)}, ${bind(invoice.invoiceDate)}, ${bind(invoice.dueDate)}, NULL, ${bind(invoice.periodStart)}, ${bind(invoice.periodEnd)}, ${bind(invoice.headOfFamilyId)}, ${bind(invoice.sentAt)}, ${bind(invoice.sentBy)}, ${bind(invoice.createdAt)}, ${bind(invoice.codebtor)}, ${bind(invoice.areaId)})
+"""
         )
     }
-    rows.forEachIndexed { idx, row ->
+    invoice.rows.forEachIndexed { idx, row ->
         execute {
             sql(
                 """
-            INSERT INTO invoice_row (id, invoice_id, child, amount, unit_price, price, period_start, period_end, product, saved_cost_center, saved_sub_cost_center, description, unit_id, correction_id, idx) 
-            VALUES (${bind(row.id)}, ${bind(invoice.id)}, ${bind(row.child)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.amount * row.unitPrice)}, ${bind(row.periodStart)}, ${bind(row.periodEnd)}, ${bind(row.product)}, NULL, NULL, NULL, ${bind(row.unitId)}, ${bind(row.correctionId)}, ${bind(row.idx ?: idx)})
-        """
+INSERT INTO invoice_row (id, invoice_id, child, amount, unit_price, price, period_start, period_end, product, saved_cost_center, saved_sub_cost_center, description, unit_id, correction_id, idx) 
+VALUES (${bind(row.id)}, ${bind(invoice.id)}, ${bind(row.childId)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.amount * row.unitPrice)}, ${bind(row.periodStart)}, ${bind(row.periodEnd)}, ${bind(row.product)}, NULL, NULL, ${bind(row.description)}, ${bind(row.unitId)}, ${bind(row.correctionId)}, ${bind(row.idx ?: idx)})
+"""
             )
         }
     }
     return invoice.id
+}
+
+fun Database.Transaction.insert(invoices: List<DevInvoice>): List<InvoiceId> {
+    invoices.forEach { insert(it) }
+    return invoices.map { it.id }
+}
+
+data class DevInvoicedFeeDecision(val invoiceId: InvoiceId, val feeDecisionId: FeeDecisionId)
+
+fun Database.Transaction.insert(row: DevInvoicedFeeDecision) {
+    execute {
+        sql(
+            """
+INSERT INTO invoiced_fee_decision (invoice_id, fee_decision_id)
+VALUES (${bind(row.invoiceId)}, ${bind(row.feeDecisionId)})
+"""
+        )
+    }
 }
 
 data class DevInvoiceCorrection(

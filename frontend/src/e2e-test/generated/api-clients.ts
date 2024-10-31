@@ -54,6 +54,7 @@ import { DevFridgePartner } from './api-types'
 import { DevGuardian } from './api-types'
 import { DevHoliday } from './api-types'
 import { DevIncome } from './api-types'
+import { DevInvoice } from './api-types'
 import { DevMobileDevice } from './api-types'
 import { DevOtherAssistanceMeasure } from './api-types'
 import { DevParentship } from './api-types'
@@ -82,7 +83,6 @@ import { FixedPeriodQuestionnaireBody } from 'lib-common/generated/api-types/hol
 import { GroupNoteBody } from 'lib-common/generated/api-types/note'
 import { HolidayPeriodCreate } from 'lib-common/generated/api-types/holidayperiod'
 import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
-import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MockVtjDataset } from './api-types'
@@ -1177,14 +1177,14 @@ export async function createIncomeStatements(
 */
 export async function createInvoices(
   request: {
-    body: Invoice[]
+    body: DevInvoice[]
   }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/invoices`.toString(),
       method: 'POST',
-      data: request.body satisfies JsonCompatible<Invoice[]>
+      data: request.body satisfies JsonCompatible<DevInvoice[]>
     })
     return json
   } catch (e) {
