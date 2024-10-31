@@ -71,9 +71,9 @@ fun Database.Transaction.createFosterParentRelationship(
     createUpdate {
             sql(
                 """
-INSERT INTO foster_parent (child_id, parent_id, valid_during, modified_by, modified_at)
+INSERT INTO foster_parent (child_id, parent_id, valid_during, created_by, created_at, modified_by, modified_at)
 VALUES
-    (${bind(data.childId)}, ${bind(data.parentId)}, ${bind(data.validDuring)}, ${bind(user.evakaUserId)}, ${bind(now)})
+    (${bind(data.childId)}, ${bind(data.parentId)}, ${bind(data.validDuring)}, ${bind(user.evakaUserId)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(now)})
 RETURNING id
 """
             )

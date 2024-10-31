@@ -1109,8 +1109,8 @@ fun Database.Transaction.insert(row: DevFosterParent): FosterParentId =
     createUpdate {
             sql(
                 """
-INSERT INTO foster_parent (id, child_id, parent_id, valid_during, modified_at, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.parentId)}, ${bind(row.validDuring)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
+INSERT INTO foster_parent (id, child_id, parent_id, valid_during, created_at, created_by, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.parentId)}, ${bind(row.validDuring)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
 """
             )
