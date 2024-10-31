@@ -201,6 +201,8 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     it.updateFosterParentRelationshipValidity(
                         fosterParentRelationship,
                         DateRange(clock.today(), clock.today()),
+                        serviceWorker.user,
+                        clock.now(),
                     )
                 }
                 clock.tick(Duration.ofDays(1))
@@ -237,6 +239,8 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     childId = child.id,
                     parentId = fosterParent.id,
                     validDuring = DateRange(clock.today(), null),
+                    modifiedAt = clock.now(),
+                    modifiedBy = serviceWorker.evakaUserId,
                 )
             )
         }

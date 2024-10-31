@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevHolidayPeriod
@@ -58,6 +59,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
     private lateinit var child: ChildId
     private lateinit var daycareId: DaycareId
     private lateinit var areaId: AreaId
+    private val employee = DevEmployee()
 
     @BeforeEach
     fun beforeEach() {
@@ -178,6 +180,8 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                 )
             )
 
+            it.insert(employee)
+
             val fosterParentId =
                 it.insert(DevPerson(email = "fosterparent@test.com"), DevPersonType.ADULT)
             it.insert(
@@ -185,6 +189,8 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     childId = child,
                     parentId = fosterParentId,
                     validDuring = DateRange(clockToday.today(), clockToday.today()),
+                    modifiedAt = clockToday.now(),
+                    modifiedBy = employee.evakaUserId,
                 )
             )
             it.blockGuardian(childId = child, guardianId = guardian)

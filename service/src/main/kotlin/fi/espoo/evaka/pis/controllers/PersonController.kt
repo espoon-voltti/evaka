@@ -161,7 +161,7 @@ class PersonController(
                                 )
                             }
                     parentRelationships.forEach { relationship ->
-                        tx.createFosterParentRelationship(relationship)
+                        tx.createFosterParentRelationship(relationship, user, clock.now())
                     }
 
                     if (tx.getPersonById(duplicateId)!!.ophPersonOid.isNullOrBlank()) {

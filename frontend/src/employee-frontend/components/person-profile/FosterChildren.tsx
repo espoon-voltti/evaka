@@ -11,6 +11,7 @@ import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -140,6 +141,7 @@ export default React.memo(function FosterChildren({
                 <Th>{i18n.common.form.age}</Th>
                 <Th>{i18n.common.form.startDate}</Th>
                 <Th>{i18n.common.form.endDate}</Th>
+                <Th>{i18n.common.form.lastModified}</Th>
                 <Th />
               </Tr>
             </Thead>
@@ -148,41 +150,59 @@ export default React.memo(function FosterChildren({
                 fosterChildren,
                 [({ child }) => child.lastName, ({ child }) => child.firstName],
                 ['asc', 'asc']
-              ).map(({ relationshipId, child, validDuring }) => (
-                <Tr
-                  key={relationshipId}
-                  data-qa={`foster-child-row-${child.id}`}
-                >
-                  <NameTd data-qa="name">
-                    <Link to={`/child-information/${child.id}`}>
-                      {child.firstName} {child.lastName}
-                    </Link>
-                  </NameTd>
-                  <Td>{child.socialSecurityNumber}</Td>
-                  <Td>
-                    {LocalDate.todayInHelsinkiTz().differenceInYears(
-                      child.dateOfBirth
-                    )}
-                  </Td>
-                  <Td data-qa="start">{validDuring.start.format()}</Td>
-                  <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
-                  <Td>
-                    <Toolbar
-                      disableAll={!!uiMode}
-                      onEdit={() => startEditing(relationshipId, validDuring)}
-                      onDelete={() => startDeleting(relationshipId)}
-                      editable={true}
-                      deletable={true}
-                      dateRange={{
-                        startDate: validDuring.start,
-                        endDate: validDuring.end
-                      }}
-                      dataQaEdit="edit"
-                      dataQaDelete="delete"
-                    />
-                  </Td>
-                </Tr>
-              ))}
+              ).map(
+                ({
+                  relationshipId,
+                  child,
+                  modifiedAt,
+                  modifiedBy,
+                  validDuring
+                }) => (
+                  <Tr
+                    key={relationshipId}
+                    data-qa={`foster-child-row-${child.id}`}
+                  >
+                    <NameTd data-qa="name">
+                      <Link to={`/child-information/${child.id}`}>
+                        {child.firstName} {child.lastName}
+                      </Link>
+                    </NameTd>
+                    <Td>{child.socialSecurityNumber}</Td>
+                    <Td>
+                      {LocalDate.todayInHelsinkiTz().differenceInYears(
+                        child.dateOfBirth
+                      )}
+                    </Td>
+                    <Td data-qa="start">{validDuring.start.format()}</Td>
+                    <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
+                    <Td>
+                      <Tooltip
+                        tooltip={i18n.common.form.lastModifiedBy(
+                          modifiedBy.name
+                        )}
+                        position="left"
+                      >
+                        {modifiedAt.format()}
+                      </Tooltip>
+                    </Td>
+                    <Td>
+                      <Toolbar
+                        disableAll={!!uiMode}
+                        onEdit={() => startEditing(relationshipId, validDuring)}
+                        onDelete={() => startDeleting(relationshipId)}
+                        editable={true}
+                        deletable={true}
+                        dateRange={{
+                          startDate: validDuring.start,
+                          endDate: validDuring.end
+                        }}
+                        dataQaEdit="edit"
+                        dataQaDelete="delete"
+                      />
+                    </Td>
+                  </Tr>
+                )
+              )}
             </Tbody>
           </Table>
         ))}

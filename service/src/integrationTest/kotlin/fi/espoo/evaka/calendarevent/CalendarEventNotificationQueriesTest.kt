@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCalendarEvent
 import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -45,6 +46,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
 
     private val today: LocalDate = LocalDate.of(2023, 5, 1)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(18, 0, 0))
+    private val employee = DevEmployee()
 
     private fun insertTestData(
         placementStart: LocalDate = today.minusYears(1),
@@ -56,6 +58,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testDaycare2.copy(financeDecisionHandler = null))
             tx.insert(testDaycareGroup)
             tx.insert(testDaycareGroup2)
+            tx.insert(employee)
 
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(
@@ -119,6 +122,8 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     parentId = testAdult_3.id,
                     childId = testChild_3.id,
                     validDuring = DateRange(today, today.plusYears(1)),
+                    modifiedAt = now,
+                    modifiedBy = employee.evakaUserId,
                 )
             )
         }

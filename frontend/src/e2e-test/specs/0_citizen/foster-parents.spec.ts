@@ -52,6 +52,7 @@ beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
+  const employee = await Fixture.employee().save()
 
   fosterParent = await Fixture.person(testAdult).saveAdult({
     updateMockVtjWithDependants: []
@@ -65,7 +66,9 @@ beforeEach(async () => {
         id: uuidv4(),
         childId: fosterChild.id,
         parentId: fosterParent.id,
-        validDuring: new DateRange(mockedDate, mockedDate)
+        validDuring: new DateRange(mockedDate, mockedDate),
+        modifiedAt: mockedNow,
+        modifiedBy: employee.id
       }
     ]
   })
@@ -147,6 +150,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
 
 test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async () => {
   const fosterChild = await Fixture.person({ ssn: null }).saveChild()
+  const employee = await Fixture.employee().save()
 
   await createFosterParent({
     body: [
@@ -154,7 +158,9 @@ test('Foster parent can create a daycare application and accept a daycare decisi
         id: uuidv4(),
         childId: fosterChild.id,
         parentId: fosterParent.id,
-        validDuring: new DateRange(mockedDate, mockedDate)
+        validDuring: new DateRange(mockedDate, mockedDate),
+        modifiedAt: mockedNow,
+        modifiedBy: employee.id
       }
     ]
   })

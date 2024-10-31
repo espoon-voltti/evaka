@@ -567,6 +567,8 @@ export interface DevFamilyContact {
 export interface DevFosterParent {
   childId: UUID
   id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
   parentId: UUID
   validDuring: DateRange
 }
@@ -1304,6 +1306,7 @@ export function deserializeJsonDevEmployee(json: JsonOf<DevEmployee>): DevEmploy
 export function deserializeJsonDevFosterParent(json: JsonOf<DevFosterParent>): DevFosterParent {
   return {
     ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validDuring: DateRange.parseJson(json.validDuring)
   }
 }

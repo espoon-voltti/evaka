@@ -18,8 +18,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -92,7 +94,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                         Action.Person.CREATE_FOSTER_PARENT_RELATIONSHIP,
                         body.parentId,
                     )
-                    tx.createFosterParentRelationship(body)
+                    tx.createFosterParentRelationship(body, user, clock.now())
                 }
             }
             .also { id ->
@@ -121,7 +123,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                         Action.FosterParent.UPDATE,
                         id,
                     )
-                    tx.updateFosterParentRelationshipValidity(id, validDuring)
+                    tx.updateFosterParentRelationshipValidity(id, validDuring, user, clock.now())
                 }
             }
             .also {
@@ -160,6 +162,8 @@ data class FosterParentRelationship(
     @Nested("child") val child: PersonSummary,
     @Nested("parent") val parent: PersonSummary,
     val validDuring: DateRange,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class CreateFosterParentRelationshipBody(
