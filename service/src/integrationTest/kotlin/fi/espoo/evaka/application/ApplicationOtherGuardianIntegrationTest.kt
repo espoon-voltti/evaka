@@ -203,10 +203,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     it.updateFosterParentRelationshipValidity(
                         fosterParentRelationship,
                         DateRange(clock.today(), clock.today()),
-                        AuthenticatedUser.Employee(
-                            EmployeeId(serviceWorker.id.raw),
-                            setOf(UserRole.SERVICE_WORKER),
-                        ),
+                        serviceWorker.user,
                         clock.now(),
                     )
                 }

@@ -191,7 +191,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     parentId = fosterParentId,
                     validDuring = DateRange(clockToday.today(), clockToday.today()),
                     modifiedAt = clockToday.now(),
-                    modifiedBy = EvakaUserId(employee.id.raw),
+                    modifiedBy = employee.evakaUserId,
                 )
             )
             it.blockGuardian(childId = child, guardianId = guardian)
