@@ -49,8 +49,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
 
     private val today: LocalDate = LocalDate.of(2023, 5, 1)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(18, 0, 0))
-    private val employeeId = EmployeeId(UUID.randomUUID())
-    private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
+    private val employee = DevEmployee()
 
     private fun insertTestData(
         placementStart: LocalDate = today.minusYears(1),
@@ -62,7 +61,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testDaycare2.copy(financeDecisionHandler = null))
             tx.insert(testDaycareGroup)
             tx.insert(testDaycareGroup2)
-            tx.insert(DevEmployee(id = employeeId))
+            tx.insert(employee)
 
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(

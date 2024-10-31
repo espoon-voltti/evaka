@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin =
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val devEmployee = DevEmployee(id = admin.id)
 
     @Autowired lateinit var controller: PersonController
     @Autowired lateinit var childController: ChildController
@@ -263,17 +264,15 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `duplicate guardians as foster parents`() {
-        val employeeId = EmployeeId(UUID.randomUUID())
-        val user = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
         val person = createPerson()
         db.transaction { tx ->
-            tx.insert(DevEmployee(id = employeeId))
+            tx.insert(devEmployee)
 
             val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = guardianId, childId = person.id))
         }
 
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), admin, clock, person.id)
 
         val fosterParents = db.transaction { tx -> tx.getFosterParents(duplicateId) }
         assertThat(fosterParents)
@@ -283,14 +282,13 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `do not duplicate children as foster children`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
         db.transaction { tx ->
             val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = person.id, childId = childId))
         }
 
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), admin, clock, person.id)
 
         val fosterChildren = db.transaction { tx -> tx.getFosterChildren(duplicateId) }
         assertThat(fosterChildren).isEmpty()
@@ -298,12 +296,10 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `duplicate foster parents as foster parents`() {
-        val employeeId = EmployeeId(UUID.randomUUID())
-        val user = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
         val person = createPerson()
         val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
         db.transaction { tx ->
-            tx.insert(DevEmployee(id = employeeId))
+            tx.insert(devEmployee)
 
             val fosterParentId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(
@@ -312,12 +308,12 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = person.id,
                     validDuring = fosterValidDuring,
                     createdAt = clock.now(),
-                    createdBy = user.evakaUserId,
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
 
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), admin, clock, person.id)
 
         val fosterParents = db.transaction { tx -> tx.getFosterParents(duplicateId) }
         assertThat(fosterParents)
@@ -327,12 +323,10 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `do not duplicate foster children as foster children`() {
-        val employeeId = EmployeeId(UUID.randomUUID())
-        val user = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
         val person = createPerson()
         val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
         db.transaction { tx ->
-            tx.insert(DevEmployee(id = employeeId))
+            tx.insert(devEmployee)
 
             val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(
@@ -341,12 +335,12 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = childId,
                     validDuring = fosterValidDuring,
                     createdAt = clock.now(),
-                    createdBy = user.evakaUserId,
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
 
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), admin, clock, person.id)
 
         val fosterChildren = db.transaction { tx -> tx.getFosterChildren(duplicateId) }
         assertThat(fosterChildren).isEmpty()
