@@ -10,7 +10,6 @@ import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.getDetailedInvoice
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyInvoices
 import fi.espoo.evaka.invoicing.data.paginatedSearch
-import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
@@ -281,7 +280,7 @@ class InvoiceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId,
-    ): List<Invoice> {
+    ): List<InvoiceDetailed> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(

@@ -15,16 +15,14 @@ import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.createFeeDecisionAlterationFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
-import fi.espoo.evaka.invoicing.data.flatten
-import fi.espoo.evaka.invoicing.data.invoiceQueryBase
-import fi.espoo.evaka.invoicing.data.toInvoice
+import fi.espoo.evaka.invoicing.data.invoiceDetailedQuery
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.Invoice
+import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.feeAlterationEffect
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -38,7 +36,6 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevHoliday
@@ -137,16 +134,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(testDaycare.areaId, invoice.areaId)
             assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(testDaycare.id, invoiceRow.unitId)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
@@ -175,15 +172,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(1500, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
                     invoiceRow.product,
@@ -207,15 +204,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(8700, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
                     invoiceRow.product,
@@ -250,15 +247,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(7300, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
                     invoiceRow.product,
@@ -268,7 +265,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(5800, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
                     invoiceRow.product,
@@ -297,15 +294,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(4400, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
                     invoiceRow.product,
@@ -315,7 +312,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(2900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child)
+                assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
                     invoiceRow.product,
@@ -352,15 +349,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(2300, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
                     invoiceRow.product,
@@ -370,7 +367,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(1500, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child)
+                assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
                     invoiceRow.product,
@@ -407,15 +404,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices).sortedBy { it.headOfFamily == testAdult_2.id }
+        val result =
+            db.read { it.getAllInvoices() }.sortedBy { it.headOfFamily.id == testAdult_2.id }
 
         assertEquals(2, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
                     invoiceRow.product,
@@ -426,11 +424,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         }
         result.last().let { invoice ->
-            assertEquals(testAdult_2.id, invoice.headOfFamily)
+            assertEquals(testAdult_2.id, invoice.headOfFamily.id)
             assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
                     invoiceRow.product,
@@ -452,7 +450,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(0, result.size)
     }
@@ -471,15 +469,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(5800, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
                     invoiceRow.product,
@@ -530,15 +528,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -596,15 +594,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(23120, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -614,7 +612,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -680,15 +678,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(40103, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -698,7 +696,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child)
+                assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -757,15 +755,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(28900, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -775,7 +773,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(5256, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -785,7 +783,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(23652, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -844,15 +842,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(28900, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -862,7 +860,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(6880, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -872,7 +870,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(22016, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -931,15 +929,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(28900, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -949,7 +947,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(7225, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -1014,15 +1012,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(39930, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -1032,7 +1030,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child)
+                assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -1042,7 +1040,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(3295, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child)
+                assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -1090,15 +1088,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(23120, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -1108,7 +1106,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -1165,15 +1163,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(32420, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -1183,7 +1181,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -1197,7 +1195,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
 
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -1248,15 +1246,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(1445, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -1266,7 +1264,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -1327,16 +1325,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(2, result.size)
         result
-            .find { it.headOfFamily == testAdult_1.id }
+            .find { it.headOfFamily.id == testAdult_1.id }
             .let { invoice ->
                 assertEquals(28900, invoice!!.totalPrice)
                 assertEquals(1, invoice.rows.size)
                 invoice.rows.first().let { invoiceRow ->
-                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(testChild_1.id, invoiceRow.child.id)
                     assertEquals(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
                         invoiceRow.product,
@@ -1347,12 +1345,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
             }
         result
-            .find { it.headOfFamily == testAdult_2.id }
+            .find { it.headOfFamily.id == testAdult_2.id }
             .let { invoice ->
                 assertEquals(28900, invoice!!.totalPrice)
                 assertEquals(1, invoice.rows.size)
                 invoice.rows.first().let { invoiceRow ->
-                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(testChild_1.id, invoiceRow.child.id)
                     assertEquals(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
                         invoiceRow.product,
@@ -1412,15 +1410,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(6570, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(placementPeriod.start, invoiceRow.periodStart)
                 assertEquals(placementPeriod.end, invoiceRow.periodEnd)
                 assertEquals(
@@ -1445,7 +1443,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1487,7 +1485,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1526,7 +1524,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(13793, invoice.totalPrice)
@@ -1574,7 +1572,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1600,7 +1598,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1634,7 +1632,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
 
@@ -1674,7 +1672,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
 
@@ -1717,7 +1715,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1743,7 +1741,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1777,7 +1775,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
 
@@ -1817,7 +1815,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, YearMonth.of(2019, 1)) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
 
@@ -1882,7 +1880,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, YearMonth.of(2019, 1)) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
 
@@ -1950,7 +1948,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -1997,7 +1995,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2069,7 +2067,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2125,7 +2123,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2172,7 +2170,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2229,7 +2227,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2279,7 +2277,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2321,7 +2319,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2357,7 +2355,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2427,7 +2425,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2480,7 +2478,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -2498,7 +2496,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
 
@@ -2540,7 +2538,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2574,7 +2572,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2609,7 +2607,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2683,7 +2681,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -2732,7 +2730,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -2765,7 +2763,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(15210, invoice.totalPrice)
@@ -2810,7 +2808,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(3042, invoice.totalPrice)
@@ -2852,7 +2850,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(28900, invoice.totalPrice)
@@ -2894,7 +2892,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(28900, invoice.totalPrice)
@@ -2939,7 +2937,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(7605, invoice.totalPrice)
@@ -2984,7 +2982,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(12570, invoice.totalPrice)
@@ -3045,7 +3043,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(28900, invoice.totalPrice)
@@ -3118,7 +3116,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(28900, invoice.totalPrice)
@@ -3174,7 +3172,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(27379, invoice.totalPrice)
@@ -3228,7 +3226,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(27379, invoice.totalPrice)
@@ -3279,7 +3277,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(0, invoice.totalPrice)
@@ -3311,7 +3309,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3333,7 +3331,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
             PlacementType.DAYCARE_PART_TIME,
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3354,7 +3352,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
             ),
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
     }
 
@@ -3377,7 +3375,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
             ),
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3400,7 +3398,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
             freeJulyStartOnSeptember = true,
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3421,7 +3419,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 1)),
             ),
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3442,7 +3440,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
             freeJulyStartOnSeptember = true,
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3452,7 +3450,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             YearMonth.of(2020, 7),
             listOf(FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))),
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3462,7 +3460,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             YearMonth.of(2021, 7),
             listOf(FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))),
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3475,7 +3473,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))
             ),
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -3496,7 +3494,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
         )
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
     }
 
@@ -3512,7 +3510,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
         )
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
     }
 
@@ -3528,7 +3526,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
         )
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
     }
 
@@ -3549,7 +3547,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
             ),
         )
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
     }
 
@@ -3563,7 +3561,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(0, result.size)
     }
@@ -3578,7 +3576,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(0, result.size)
     }
@@ -3593,7 +3591,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(0, result.size)
     }
@@ -3609,11 +3607,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
-            assertEquals(testAdult_2.id, invoice.codebtor)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertEquals(testAdult_2.id, invoice.codebtor?.id)
         }
     }
 
@@ -3625,10 +3623,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertNull(invoice.codebtor)
         }
     }
@@ -3649,10 +3647,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertNull(invoice.codebtor)
         }
     }
@@ -3677,7 +3675,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -3740,7 +3738,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(14470, invoice.totalPrice)
@@ -3799,7 +3797,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(2889, invoice.totalPrice)
@@ -3866,7 +3864,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // ==> 50 % discount because this case is considered a normal full month of absences
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(2889, invoice.totalPrice)
@@ -3934,7 +3932,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = invoiceGenerator(featureConfig.copy(freeSickLeaveOnContractDays = true))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(0, invoice.totalPrice)
@@ -3991,7 +3989,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(11316, invoice.totalPrice)
@@ -4050,7 +4048,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoiceGenerator(featureConfig.copy(useContractDaysAsDailyFeeDivisor = false))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(11316, invoice.totalPrice)
@@ -4112,7 +4110,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoiceGenerator(featureConfig.copy(useContractDaysAsDailyFeeDivisor = false))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(5652, invoice.totalPrice)
@@ -4181,7 +4179,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // ==> 50 % discount because this case is considered a normal full month of absences
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(5652, invoice.totalPrice)
@@ -4248,7 +4246,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoiceGenerator(featureConfig.copy(useContractDaysAsDailyFeeDivisor = false))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -4318,7 +4316,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(14450, invoice.totalPrice)
@@ -4368,7 +4366,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             // 28900 / 20 * 21 is greater than 28900, so it's clamped to a full month
@@ -4409,7 +4407,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoiceGenerator(featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(28900, invoice.totalPrice)
@@ -4451,7 +4449,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoiceGenerator(featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(27455, invoice.totalPrice)
@@ -4501,7 +4499,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoiceGenerator(featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(0, invoice.totalPrice)
@@ -4563,14 +4561,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        fun assertResult(result: List<Invoice>) {
+        fun assertResult(result: List<InvoiceDetailed>) {
             assertEquals(1, result.size)
             result.first().let { invoice ->
-                assertEquals(testAdult_1.id, invoice.headOfFamily)
+                assertEquals(testAdult_1.id, invoice.headOfFamily.id)
                 assertEquals(0, invoice.totalPrice)
                 assertEquals(2, invoice.rows.size)
                 invoice.rows[0].let { invoiceRow ->
-                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(testChild_1.id, invoiceRow.child.id)
                     assertEquals(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
                         invoiceRow.product,
@@ -4580,7 +4578,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     assertEquals(28900, invoiceRow.price)
                 }
                 invoice.rows[1].let { invoiceRow ->
-                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(testChild_1.id, invoiceRow.child.id)
                     assertEquals(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
                         invoiceRow.product,
@@ -4593,9 +4591,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
-        assertResult(db.read(getAllInvoices))
+        assertResult(db.read { it.getAllInvoices() })
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
-        assertResult(db.read(getAllInvoices))
+        assertResult(db.read { it.getAllInvoices() })
     }
 
     @Test
@@ -4646,14 +4644,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(0, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -4696,7 +4694,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -4766,7 +4764,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -4832,7 +4830,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -4868,7 +4866,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -4926,7 +4924,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5004,7 +5002,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5055,7 +5053,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5118,7 +5116,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5179,7 +5177,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = invoiceGenerator(featureConfig.copy(maxContractDaySurplusThreshold = 16))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5227,7 +5225,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = invoiceGenerator(featureConfig.copy(maxContractDaySurplusThreshold = 16))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5277,7 +5275,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5336,7 +5334,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5395,7 +5393,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5461,7 +5459,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5539,7 +5537,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
@@ -5583,7 +5581,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(26272, invoice.totalPrice)
@@ -5616,7 +5614,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = invoiceGenerator(featureConfig.copy(freeAbsenceGivesADailyRefund = false))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(14450, invoice.totalPrice)
@@ -5648,7 +5646,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = invoiceGenerator(featureConfig.copy(freeAbsenceGivesADailyRefund = false))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(10850, invoice.totalPrice)
@@ -5684,7 +5682,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
     }
 
@@ -5728,15 +5726,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read { it.getAllInvoices() }
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertEquals(43400, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(testChild_1.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -5746,7 +5744,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child)
+                assertEquals(testChild_2.id, invoiceRow.child.id)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
                     invoiceRow.product,
@@ -6017,12 +6015,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
     }
 
-    private val getAllInvoices: (Database.Read) -> List<Invoice> = { r ->
-        r.createQuery { sql("$invoiceQueryBase ORDER BY invoice.id, row.idx") }
-            .toList(Row::toInvoice)
-            .let(::flatten)
+    private fun Database.Read.getAllInvoices(): List<InvoiceDetailed> =
+        createQuery { sql("${subquery(invoiceDetailedQuery())} ORDER BY invoice.id") }
+            .toList<InvoiceDetailed>()
             .shuffled() // randomize order to expose assumptions
-    }
 
     private fun datesBetween(start: LocalDate, endInclusive: LocalDate?): List<LocalDate> {
         return generateSequence(start) { it.plusDays(1) }.takeWhile { it <= endInclusive }.toList()

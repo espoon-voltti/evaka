@@ -9,9 +9,7 @@ import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.domain.DraftInvoice
 import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
-import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
-import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
@@ -26,6 +24,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -35,29 +34,9 @@ import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 import java.time.YearMonth
 
-// language=SQL
-val invoiceQueryBase =
-    """
-    SELECT
-        invoice.*,
-        row.id as invoice_row_id,
-        row.child,
-        row.amount,
-        row.unit_price,
-        row.price,
-        row.period_start as invoice_row_period_start,
-        row.period_end as invoice_row_period_end,
-        row.product,
-        row.unit_id,
-        row.description,
-        row.correction_id
-    FROM invoice LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
-    """
-        .trimIndent()
-
-// language=SQL
-val invoiceDetailedQueryBase =
-    """
+fun invoiceDetailedQuery(where: Predicate = Predicate.alwaysTrue()) = QuerySql {
+    sql(
+        """
     SELECT
         invoice.id,
         invoice.status,
@@ -153,64 +132,36 @@ val invoiceDetailedQueryBase =
     JOIN care_area ON invoice.area_id = care_area.id
     LEFT JOIN person as head ON invoice.head_of_family = head.id
     LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
+    WHERE ${predicate(where.forTable("invoice"))}
     """
-        .trimIndent()
+    )
+}
+
+fun Database.Read.getInvoice(id: InvoiceId): InvoiceDetailed? =
+    getInvoicesByIds(listOf(id)).firstOrNull()
 
 fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> {
     if (ids.isEmpty()) return listOf()
 
+    return createQuery { invoiceDetailedQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }) }
+        .toList()
+}
+
+fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyId: PersonId): List<InvoiceDetailed> {
     return createQuery {
             sql(
                 """
-                $invoiceDetailedQueryBase
-                WHERE invoice.id = ANY(${bind(ids)})
-                ORDER BY invoice.id
-                """
+${subquery(invoiceDetailedQuery(Predicate { where("$it.head_of_family = ${bind(headOfFamilyId)}") }))}
+ORDER BY invoice.id
+"""
             )
         }
         .toList()
 }
 
-fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
-    return createQuery {
-            sql(
-                """
-                $invoiceQueryBase
-                WHERE invoice.id = ${bind(id)}
-                ORDER BY invoice.id, row.idx
-                """
-            )
-        }
-        .map(Row::toInvoice)
-        .useIterable { flatten(it) }
-        .firstOrNull()
-}
-
 fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
-    return createQuery {
-            sql(
-                """
-                $invoiceDetailedQueryBase
-                WHERE invoice.id = ${bind(id)}
-                ORDER BY invoice.id
-                """
-            )
-        }
+    return createQuery { invoiceDetailedQuery(Predicate { where("invoice.id = ${bind(id)}") }) }
         .exactlyOneOrNull()
-}
-
-fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invoice> {
-    return createQuery {
-            sql(
-                """
-                $invoiceQueryBase
-                WHERE invoice.head_of_family = ${bind(headOfFamilyUuid)}
-                ORDER BY invoice.id, row.idx
-                """
-            )
-        }
-        .map(Row::toInvoice)
-        .useIterable { flatten(it) }
 }
 
 fun Database.Read.getInvoiceIdsByDates(
@@ -375,11 +326,9 @@ fun Database.Read.searchInvoices(
     return createQuery {
             sql(
                 """
-$invoiceDetailedQueryBase
-WHERE ${predicate(predicate.forTable("invoice"))}
+${subquery(invoiceDetailedQuery(predicate))}
 ORDER BY status DESC, due_date, invoice.id
 """
-                    .trimIndent()
             )
         }
         .toList()
@@ -593,39 +542,6 @@ private fun Database.Transaction.insertInvoicedFeeDecisions(
     }
 }
 
-fun Row.toInvoice() =
-    Invoice(
-        id = column("id"),
-        number = column("number"),
-        status = column("status"),
-        periodStart = column("period_start"),
-        periodEnd = column("period_end"),
-        dueDate = column("due_date"),
-        invoiceDate = column("invoice_date"),
-        areaId = column("area_id"),
-        rows =
-            column<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
-                listOf(
-                    InvoiceRow(
-                        id = rowId,
-                        child = column("child"),
-                        amount = column("amount"),
-                        unitPrice = column("unit_price"),
-                        periodStart = column("invoice_row_period_start"),
-                        periodEnd = column("invoice_row_period_end"),
-                        product = column("product"),
-                        unitId = column("unit_id"),
-                        description = column("description"),
-                        correctionId = column("correction_id"),
-                    )
-                )
-            } ?: listOf(),
-        headOfFamily = column("head_of_family"),
-        codebtor = column("codebtor"),
-        sentBy = column("sent_by"),
-        sentAt = column("sent_at"),
-    )
-
 fun Row.toInvoiceSummary() =
     InvoiceSummary(
         id = column("id"),
@@ -683,20 +599,6 @@ fun Row.toInvoiceSummary() =
 
 fun flattenSummary(invoices: List<InvoiceSummary>): List<InvoiceSummary> {
     val map = mutableMapOf<InvoiceId, InvoiceSummary>()
-    for (invoice in invoices) {
-        val id = invoice.id
-        if (map.containsKey(id)) {
-            val existing = map.getValue(id)
-            map[id] = existing.copy(rows = existing.rows + invoice.rows)
-        } else {
-            map[id] = invoice
-        }
-    }
-    return map.values.toList()
-}
-
-fun flatten(invoices: Iterable<Invoice>): List<Invoice> {
-    val map = mutableMapOf<InvoiceId, Invoice>()
     for (invoice in invoices) {
         val id = invoice.id
         if (map.containsKey(id)) {

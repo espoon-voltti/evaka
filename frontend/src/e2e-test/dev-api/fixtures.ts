@@ -33,7 +33,7 @@ import {
   FeeDecisionStatus,
   FeeThresholds,
   IncomeNotification,
-  Invoice
+  InvoiceStatus
 } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
@@ -3018,7 +3018,7 @@ export const invoiceFixture = (
   childId: UUID,
   areaId: UUID,
   unitId: UUID,
-  status: Invoice['status'],
+  status: InvoiceStatus,
   periodStart = LocalDate.of(2019, 1, 1),
   periodEnd = LocalDate.of(2019, 1, 1)
 ): DevInvoice => ({

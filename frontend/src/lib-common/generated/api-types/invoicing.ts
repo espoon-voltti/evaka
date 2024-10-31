@@ -496,26 +496,6 @@ export interface IncomeWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.Invoice
-*/
-export interface Invoice {
-  areaId: UUID
-  codebtor: UUID | null
-  dueDate: LocalDate
-  headOfFamily: UUID
-  id: UUID
-  invoiceDate: LocalDate
-  number: number | null
-  periodEnd: LocalDate
-  periodStart: LocalDate
-  rows: InvoiceRow[]
-  sentAt: HelsinkiDateTime | null
-  sentBy: UUID | null
-  status: InvoiceStatus
-  totalPrice: number
-}
-
-/**
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceCodes
 */
 export interface InvoiceCodes {
@@ -622,23 +602,6 @@ export interface InvoicePayload {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceRow
-*/
-export interface InvoiceRow {
-  amount: number
-  child: UUID
-  correctionId: UUID | null
-  description: string
-  id: UUID | null
-  periodEnd: LocalDate
-  periodStart: LocalDate
-  price: number
-  product: string
-  unitId: UUID
-  unitPrice: number
-}
-
-/**
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 */
 export interface InvoiceRowDetailed {
@@ -698,7 +661,6 @@ export type InvoiceStatus =
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceSummary
 */
 export interface InvoiceSummary {
-  account: number
   codebtor: PersonDetailed | null
   createdAt: HelsinkiDateTime | null
   headOfFamily: PersonDetailed
@@ -1298,19 +1260,6 @@ export function deserializeJsonIncomeWithPermittedActions(json: JsonOf<IncomeWit
 }
 
 
-export function deserializeJsonInvoice(json: JsonOf<Invoice>): Invoice {
-  return {
-    ...json,
-    dueDate: LocalDate.parseIso(json.dueDate),
-    invoiceDate: LocalDate.parseIso(json.invoiceDate),
-    periodEnd: LocalDate.parseIso(json.periodEnd),
-    periodStart: LocalDate.parseIso(json.periodStart),
-    rows: json.rows.map(e => deserializeJsonInvoiceRow(e)),
-    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
-  }
-}
-
-
 export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>): InvoiceCorrection {
   return {
     ...json,
@@ -1366,15 +1315,6 @@ export function deserializeJsonInvoicePayload(json: JsonOf<InvoicePayload>): Inv
     from: LocalDate.parseIso(json.from),
     invoiceDate: (json.invoiceDate != null) ? LocalDate.parseIso(json.invoiceDate) : null,
     to: LocalDate.parseIso(json.to)
-  }
-}
-
-
-export function deserializeJsonInvoiceRow(json: JsonOf<InvoiceRow>): InvoiceRow {
-  return {
-    ...json,
-    periodEnd: LocalDate.parseIso(json.periodEnd),
-    periodStart: LocalDate.parseIso(json.periodStart)
   }
 }
 

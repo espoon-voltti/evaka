@@ -30,26 +30,6 @@ interface RowWithPrice {
     val price: Int
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Invoice(
-    val id: InvoiceId,
-    val status: InvoiceStatus,
-    val periodStart: LocalDate,
-    val periodEnd: LocalDate,
-    val dueDate: LocalDate,
-    val invoiceDate: LocalDate,
-    val areaId: AreaId,
-    val headOfFamily: PersonId,
-    val codebtor: PersonId?,
-    val rows: List<InvoiceRow>,
-    val number: Long?,
-    val sentBy: EvakaUserId?,
-    val sentAt: HelsinkiDateTime?,
-) {
-    val totalPrice
-        get() = invoiceRowTotal(rows)
-}
-
 enum class InvoiceStatus : DatabaseEnum {
     DRAFT,
     WAITING_FOR_SENDING,
@@ -57,23 +37,6 @@ enum class InvoiceStatus : DatabaseEnum {
     CANCELED;
 
     override val sqlType: String = "invoice_status"
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class InvoiceRow(
-    val id: InvoiceRowId?,
-    @Nested val child: ChildId,
-    val amount: Int,
-    val unitPrice: Int,
-    val periodStart: LocalDate,
-    val periodEnd: LocalDate,
-    val product: ProductKey,
-    val unitId: DaycareId,
-    val description: String,
-    val correctionId: InvoiceCorrectionId?,
-) : RowWithPrice {
-    override val price
-        get() = amount * unitPrice
 }
 
 data class RelatedFeeDecision(val id: FeeDecisionId, val decisionNumber: Long)
@@ -140,7 +103,6 @@ data class InvoiceSummary(
     val sentAt: HelsinkiDateTime?,
     val createdAt: HelsinkiDateTime? = null,
 ) {
-    val account: Int = 3295
     val totalPrice
         get() = invoiceRowTotal(rows)
 }
