@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -468,6 +469,13 @@ fun Database.Read.getReceivedThreads(
     folderId: MessageThreadFolderId? = null,
     groupAccountMessagesVisibleFrom: LocalDate? = null,
 ): PagedMessageThreads {
+    val groupAccessPredicate =
+        if (groupAccountMessagesVisibleFrom != null)
+            Predicate {
+                where("$it.last_message_timestamp >= ${bind(groupAccountMessagesVisibleFrom)}")
+            }
+        else Predicate.alwaysTrue()
+
     val threads =
         createQuery {
                 sql(
@@ -505,7 +513,7 @@ WHERE
         }
     } AND
     EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL) AND
-    (${bind(groupAccountMessagesVisibleFrom)} IS NULL OR tp.last_message_timestamp >= ${bind(groupAccountMessagesVisibleFrom)})
+    ${predicate(groupAccessPredicate.forTable("tp"))}
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
         """
