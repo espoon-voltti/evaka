@@ -505,13 +505,7 @@ WHERE
     tp.participant_id = ${bind(accountId)} AND
     tp.last_received_timestamp IS NOT NULL AND
     NOT t.is_copy AND
-    ${
-        if (folderId == null) {
-            "tp.folder_id IS NULL"
-        } else {
-            "tp.folder_id = ${bind(folderId)}"
-        }
-    } AND
+    tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)} AND 
     EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL) AND
     ${predicate(groupAccessPredicate.forTable("tp"))}
 ORDER BY tp.last_message_timestamp DESC
