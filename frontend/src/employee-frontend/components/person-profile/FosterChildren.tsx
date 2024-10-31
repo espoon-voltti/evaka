@@ -158,54 +158,50 @@ export default React.memo(function FosterChildren({
                   modifiedBy,
                   validDuring
                 }) => (
-                    <Tr
-                      key={relationshipId}
-                      data-qa={`foster-child-row-${child.id}`}
-                    >
-                      <NameTd data-qa="name">
-                        <Link to={`/child-information/${child.id}`}>
-                          {child.firstName} {child.lastName}
-                        </Link>
-                      </NameTd>
-                      <Td>{child.socialSecurityNumber}</Td>
-                      <Td>
-                        {LocalDate.todayInHelsinkiTz().differenceInYears(
-                          child.dateOfBirth
+                  <Tr
+                    key={relationshipId}
+                    data-qa={`foster-child-row-${child.id}`}
+                  >
+                    <NameTd data-qa="name">
+                      <Link to={`/child-information/${child.id}`}>
+                        {child.firstName} {child.lastName}
+                      </Link>
+                    </NameTd>
+                    <Td>{child.socialSecurityNumber}</Td>
+                    <Td>
+                      {LocalDate.todayInHelsinkiTz().differenceInYears(
+                        child.dateOfBirth
+                      )}
+                    </Td>
+                    <Td data-qa="start">{validDuring.start.format()}</Td>
+                    <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
+                    <Td>
+                      <Tooltip
+                        tooltip={i18n.common.form.lastModifiedBy(
+                          modifiedBy.name
                         )}
-                      </Td>
-                      <Td data-qa="start">{validDuring.start.format()}</Td>
-                      <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
-                      <Td>
-                          <Tooltip
-                            tooltip={i18n.common.form.lastModifiedBy(
-                                    modifiedBy.name
-                                  )
-                            }
-                            position="left"
-                          >
-                            {modifiedAt.format()}
-                          </Tooltip>
-                      </Td>
-                      <Td>
-                        <Toolbar
-                          disableAll={!!uiMode}
-                          onEdit={() =>
-                            startEditing(relationshipId, validDuring)
-                          }
-                          onDelete={() => startDeleting(relationshipId)}
-                          editable={true}
-                          deletable={true}
-                          dateRange={{
-                            startDate: validDuring.start,
-                            endDate: validDuring.end
-                          }}
-                          dataQaEdit="edit"
-                          dataQaDelete="delete"
-                        />
-                      </Td>
-                    </Tr>
-                  )
-                
+                        position="left"
+                      >
+                        {modifiedAt.format()}
+                      </Tooltip>
+                    </Td>
+                    <Td>
+                      <Toolbar
+                        disableAll={!!uiMode}
+                        onEdit={() => startEditing(relationshipId, validDuring)}
+                        onDelete={() => startDeleting(relationshipId)}
+                        editable={true}
+                        deletable={true}
+                        dateRange={{
+                          startDate: validDuring.start,
+                          endDate: validDuring.end
+                        }}
+                        dataQaEdit="edit"
+                        dataQaDelete="delete"
+                      />
+                    </Td>
+                  </Tr>
+                )
               )}
             </Tbody>
           </Table>
