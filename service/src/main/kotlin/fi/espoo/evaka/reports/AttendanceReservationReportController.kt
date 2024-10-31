@@ -456,7 +456,7 @@ fun getAttendanceReservationReport(
         }
 }
 
-private fun getAttendanceReservationReportByChild(
+fun getAttendanceReservationReportByChild(
     tx: Database.Read,
     range: FiniteDateRange,
     unitId: DaycareId,
@@ -573,6 +573,7 @@ private fun toItems(
                 childId = row.childId,
                 childFirstName = childInfo.firstName,
                 childLastName = childInfo.lastName,
+                childDateOfBirth = childInfo.dateOfBirth,
                 date = row.date,
                 reservation = row.reservation,
                 fullDayAbsence = row.fullDayAbsence,
@@ -593,6 +594,7 @@ data class AttendanceReservationReportByChildItem(
     val childId: ChildId,
     val childLastName: String,
     val childFirstName: String,
+    val childDateOfBirth: LocalDate,
     val reservation: TimeRange?,
     val fullDayAbsence: Boolean,
     val backupCare: Boolean,
