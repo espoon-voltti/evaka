@@ -1139,8 +1139,8 @@ fun Database.Transaction.insert(row: DevDaycareGroupAcl) {
     createUpdate {
             sql(
                 """
-INSERT INTO daycare_group_acl (daycare_group_id, employee_id)
-VALUES (${bind(row.groupId)}, ${bind(row.employeeId)})
+INSERT INTO daycare_group_acl (daycare_group_id, employee_id${if (row.created != null) ", created, updated" else ""})
+VALUES (${bind(row.groupId)}, ${bind(row.employeeId)}${if (row.created != null) ", " + bind(row.created) + ", " + bind(row.created) else ""})
 """
             )
         }

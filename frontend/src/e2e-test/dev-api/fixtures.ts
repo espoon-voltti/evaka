@@ -1315,7 +1315,7 @@ export class FamilyBuilder extends FixtureBuilder<Family> {
 
 export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
   daycareAcl: { unitId: string; role: ScopedRole }[]
-  groupAcl: string[]
+  groupAcl: { groupId: string; created: HelsinkiDateTime | null }[]
 
   constructor(data: DevEmployee) {
     super(data)
@@ -1370,8 +1370,8 @@ export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
     return this
   }
 
-  withGroupAcl(groupId: string): this {
-    this.groupAcl.push(groupId)
+  withGroupAcl(groupId: string, created: HelsinkiDateTime | null = null): this {
+    this.groupAcl.push({ groupId, created })
     return this
   }
 
@@ -1387,9 +1387,10 @@ export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
     }
     if (this.groupAcl.length > 0) {
       await createDaycareGroupAclRows({
-        body: this.groupAcl.map((groupId) => ({
+        body: this.groupAcl.map(({ groupId, created }) => ({
           groupId,
-          employeeId: this.data.id
+          employeeId: this.data.id,
+          created
         }))
       })
     }

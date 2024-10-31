@@ -77,7 +77,7 @@ beforeEach(async () => {
 
   staff = await Fixture.employee()
     .staff(testDaycare.id)
-    .withGroupAcl(testDaycareGroup.id)
+    .withGroupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
     .save()
 
   unitSupervisor = await Fixture.employee()
