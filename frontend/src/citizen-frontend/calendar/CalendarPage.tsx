@@ -74,6 +74,10 @@ function useEventsDefaultRange(): Result<CitizenCalendarEvent[]> {
 const CalendarPage = React.memo(function CalendarPage() {
   const user = useUser()
 
+  // TODO wip for featureFlags.calendarMonthView
+  const [overrideToUseCalendarList, setOverrideToUseCalendarList] =
+    useState(false)
+
   const data = useReservationsDefaultRange()
   const events = useEventsDefaultRange()
 
@@ -182,7 +186,15 @@ const CalendarPage = React.memo(function CalendarPage() {
                 </ContentArea>
               </RenderOnlyOn>
               <RenderOnlyOn desktop>
-                {featureFlags.calendarMonthView ? (
+                {featureFlags.calendarMonthView && (
+                  <CalendarToggle
+                    value={overrideToUseCalendarList}
+                    onClick={() =>
+                      setOverrideToUseCalendarList(!overrideToUseCalendarList)
+                    }
+                  />
+                )}
+                {featureFlags.calendarMonthView && overrideToUseCalendarList ? (
                   <CalendarMonthView
                     childData={response.children}
                     calendarDays={response.days}
@@ -531,3 +543,27 @@ export default React.memo(function CalendarPageWrapper() {
     </>
   )
 })
+
+const CalendarToggle: React.FC<{
+  value: boolean
+  onClick: () => void
+}> = ({ value, onClick }) => {
+  return (
+    <button
+      id="wip-calendar-toggle"
+      style={{
+        display: 'block',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        zIndex: 100,
+        padding: '4px 8px',
+        minWidth: '120px'
+      }}
+      tabIndex={-1}
+      onClick={onClick}
+    >
+      {value ? 'List view' : 'Month view'}
+    </button>
+  )
+}
