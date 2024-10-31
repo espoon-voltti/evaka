@@ -20,7 +20,6 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -172,8 +171,13 @@ const JustifyContainer = styled.div`
   justify-content: center;
 `
 
-export default React.memo(function MarkPresent({ unitId }: { unitId: UUID }) {
-  const { childId } = useRouteParams(['childId'])
+export default React.memo(function MarkPresent({
+  unitId,
+  childId
+}: {
+  unitId: UUID
+  childId: UUID
+}) {
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
 

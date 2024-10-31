@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -24,7 +24,7 @@ import { routes } from '../App'
 import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { ListItem } from './ChildList'
@@ -183,12 +183,7 @@ export default React.memo(function ChildListItem({
             <FixedSpaceRowWithLeftMargin alignItems="center">
               {hasActiveStickyNote && (
                 <Link
-                  to={
-                    routes.childNotes(
-                      toUnitOrGroup(unitId, child.groupId),
-                      child.id
-                    ).value
-                  }
+                  to={routes.childNotes(unitId, child.id).value}
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon
@@ -200,12 +195,7 @@ export default React.memo(function ChildListItem({
               )}
               {child.dailyNote && (
                 <Link
-                  to={
-                    routes.childNotes(
-                      toUnitOrGroup(unitId, child.groupId),
-                      child.id
-                    ).value
-                  }
+                  to={routes.childNotes(unitId, child.id).value}
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon
@@ -217,12 +207,7 @@ export default React.memo(function ChildListItem({
               )}
               {child.groupId && groupNotes.length > 0 ? (
                 <Link
-                  to={
-                    routes.childNotes(
-                      toUnitOrGroup(unitId, child.groupId),
-                      child.id
-                    ).value
-                  }
+                  to={routes.childNotes(unitId, child.id).value}
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon

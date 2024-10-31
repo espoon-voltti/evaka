@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,14 +10,18 @@ import { combine } from 'lib-common/api'
 import { MessageReceiver } from 'lib-common/api-types/messaging'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import { useQueryResult } from 'lib-common/query'
+import {
+  constantQuery,
+  useChainedQuery,
+  useQueryResult
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
+import { UserContext } from '../auth/state'
 import { childrenQuery } from '../child-attendance/queries'
 import { useChild } from '../child-attendance/utils'
 import TopBar from '../common/TopBar'
@@ -25,8 +29,7 @@ import { BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
 
 import MessageEditor from './MessageEditor'
-import { recipientsQuery } from './queries'
-import { MessageContext } from './state'
+import { messagingAccountsQuery, recipientsQuery } from './queries'
 
 interface Props {
   unitId: UUID
@@ -106,26 +109,37 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
 })
 
 export default React.memo(function MessageEditorPageWrapper({
-  unitId
+  unitId,
+  childId
 }: {
   unitId: UUID
+  childId: UUID
 }) {
-  const { childId } = useRouteParams(['childId'])
-  const { groupAccount } = useContext(MessageContext)
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-  const childGroupAccount = useMemo(
-    () => child.chain((c) => groupAccount(c.groupId)),
-    [child, groupAccount]
-  )
-  return renderResult(
-    combine(child, childGroupAccount),
-    ([child, childGroupAccount]) => (
-      <NewChildMessagePage
-        unitId={unitId}
-        childGroupAccount={childGroupAccount}
-        child={child}
-      />
+
+  const { user } = useContext(UserContext)
+  const groupAccounts = useChainedQuery(
+    user.map((u) =>
+      u && u.pinLoginActive && u.employeeId
+        ? messagingAccountsQuery({ unitId, employeeId: u.employeeId })
+        : constantQuery([])
     )
+  )
+
+  return renderResult(
+    combine(child, groupAccounts),
+    ([child, groupAccounts]) => {
+      const childGroupAccount = child.groupId
+        ? groupAccounts.find((a) => a.daycareGroup?.id === child.groupId)
+        : undefined
+      return (
+        <NewChildMessagePage
+          unitId={unitId}
+          childGroupAccount={childGroupAccount}
+          child={child}
+        />
+      )
+    }
   )
 })
 

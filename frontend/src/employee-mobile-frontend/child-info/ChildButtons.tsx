@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,6 +8,7 @@ import styled, { useTheme } from 'styled-components'
 
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faPen } from 'lib-icons'
@@ -15,26 +16,23 @@ import { faChild, faComments, faPen } from 'lib-icons'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 interface Props {
-  unitOrGroup: UnitOrGroup
+  unitId: UUID
   groupHasNotes: boolean
   child: AttendanceChild
 }
 
 export default React.memo(function ChildButtons({
-  unitOrGroup,
+  unitId,
   groupHasNotes,
   child
 }: Props) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
 
-  const unitInfoResponse = useQueryResult(
-    unitInfoQuery({ unitId: unitOrGroup.unitId })
-  )
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId: unitId }))
   const noteFound =
     child.dailyNote !== null || child.stickyNotes.length > 0 || groupHasNotes
   return renderResult(unitInfoResponse, (unit) => (
@@ -47,7 +45,7 @@ export default React.memo(function ChildButtons({
       >
         {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link
-            to={routes.newChildMessage(unitOrGroup, child.id).value}
+            to={routes.newChildMessage(unitId, child.id).value}
             data-qa="link-new-message"
           >
             <RoundIcon
@@ -61,7 +59,7 @@ export default React.memo(function ChildButtons({
           <></>
         )}
         <Link
-          to={routes.childNotes(unitOrGroup, child.id).value}
+          to={routes.childNotes(unitId, child.id).value}
           data-qa="link-child-daycare-daily-note"
         >
           <RoundIcon
@@ -74,7 +72,7 @@ export default React.memo(function ChildButtons({
           />
         </Link>
         <Link
-          to={routes.childSensitiveInfo(unitOrGroup, child.id).value}
+          to={routes.childSensitiveInfo(unitId, child.id).value}
           data-qa="link-child-sensitive-info"
         >
           <RoundIcon

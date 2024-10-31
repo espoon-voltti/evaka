@@ -8,22 +8,22 @@ import {
   AttendanceChild,
   AttendanceTimes
 } from 'lib-common/generated/api-types/attendance'
+import { UUID } from 'lib-common/types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 
 import { routes } from '../../App'
 import { useTranslation } from '../../common/i18n'
-import { UnitOrGroup } from '../../common/unit-or-group'
 import { WideLinkButton } from '../../pairing/components'
 
 interface Props {
-  unitOrGroup: UnitOrGroup
+  unitId: UUID
   child: AttendanceChild
   attendances: AttendanceTimes[]
 }
 
 export default React.memo(function AttendanceChildComing({
-  unitOrGroup,
+  unitId,
   child,
   attendances
 }: Props) {
@@ -42,7 +42,7 @@ export default React.memo(function AttendanceChildComing({
         <WideLinkButton
           $primary
           data-qa="mark-present-link"
-          to={routes.markPresent(unitOrGroup, child.id).value}
+          to={routes.markPresent(unitId, child.id).value}
         >
           {i18n.attendances.actions.markPresent}
         </WideLinkButton>
@@ -50,7 +50,7 @@ export default React.memo(function AttendanceChildComing({
         {!hasBeenPresentToday && (
           <WideLinkButton
             data-qa="mark-absent-link"
-            to={routes.markAbsent(unitOrGroup, child.id).value}
+            to={routes.markAbsent(unitId, child.id).value}
           >
             {i18n.attendances.actions.markAbsent}
           </WideLinkButton>

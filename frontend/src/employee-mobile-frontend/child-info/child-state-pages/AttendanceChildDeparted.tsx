@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import { UUID } from 'lib-common/types'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -14,15 +15,14 @@ import { faArrowRotateLeft } from 'lib-icons'
 
 import { routes } from '../../App'
 import { useTranslation } from '../../common/i18n'
-import { UnitOrGroup } from '../../common/unit-or-group'
 
 interface Props {
-  unitOrGroup: UnitOrGroup
+  unitId: UUID
   child: AttendanceChild
 }
 
 export default React.memo(function AttendanceChildDeparted({
-  unitOrGroup,
+  unitId,
   child
 }: Props) {
   const { i18n } = useTranslation()
@@ -32,7 +32,7 @@ export default React.memo(function AttendanceChildDeparted({
     <ReturnToPresentButton
       icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
-      onClick={() => navigate(routes.markPresent(unitOrGroup, child.id).value)}
+      onClick={() => navigate(routes.markPresent(unitId, child.id).value)}
       data-qa="return-to-present-btn"
     />
   )

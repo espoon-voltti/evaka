@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -159,6 +159,10 @@ function UnitRouter() {
         path="/groups/:groupId/*"
         element={<GroupRouter unitId={unitId} />}
       />
+      <Route
+        path="/children/:childId/*"
+        element={<ChildRouter unitId={unitId} />}
+      />
       <Route index element={<Navigate replace to="groups/all" />} />
     </Routes>
   )
@@ -247,52 +251,61 @@ function ChildAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         />
         <Route path="list" element={<Navigate replace to="/" />} />
       </Route>
-
-      <Route
-        path=":childId"
-        element={<AttendanceChildPage unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path=":childId/mark-present"
-        element={<MarkPresent unitId={unitOrGroup.unitId} />}
-      />
-      <Route
-        path=":childId/mark-absent"
-        element={<MarkAbsent unitId={unitOrGroup.unitId} />}
-      />
-      <Route
-        path=":childId/mark-reservations"
-        element={<MarkReservations unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path=":childId/mark-absent-beforehand"
-        element={<MarkAbsentBeforehand unitId={unitOrGroup.unitId} />}
-      />
-      <Route
-        path=":childId/mark-departed"
-        element={<MarkDeparted unitId={unitOrGroup.unitId} />}
-      />
-      <Route
-        path=":childId/note"
-        element={<ChildNotes unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path=":childId/info"
-        element={
-          <RequirePinAuth unitId={unitOrGroup.unitId}>
-            <ChildSensitiveInfoPage unitId={unitOrGroup.unitId} />
-          </RequirePinAuth>
-        }
-      />
-      <Route
-        path=":childId/new-message"
-        element={
-          <RequirePinAuth unitId={unitOrGroup.unitId}>
-            <NewChildMessagePage unitId={unitOrGroup.unitId} />
-          </RequirePinAuth>
-        }
-      />
       <Route index element={<Navigate replace to="list/coming" />} />
+    </Routes>
+  )
+}
+
+function ChildRouter({ unitId }: { unitId: UUID }) {
+  const { childId } = useRouteParams(['childId'])
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        index
+        element={<AttendanceChildPage unitId={unitId} childId={childId} />}
+      />
+      <Route
+        path="/mark-present"
+        element={<MarkPresent unitId={unitId} childId={childId} />}
+      />
+      <Route
+        path="/mark-absent"
+        element={<MarkAbsent unitId={unitId} childId={childId} />}
+      />
+      <Route
+        path="/mark-reservations"
+        element={<MarkReservations unitId={unitId} childId={childId} />}
+      />
+      <Route
+        path="/mark-absent-beforehand"
+        element={<MarkAbsentBeforehand unitId={unitId} childId={childId} />}
+      />
+      <Route
+        path="/mark-departed"
+        element={<MarkDeparted unitId={unitId} childId={childId} />}
+      />
+      <Route
+        path="/note"
+        element={<ChildNotes unitId={unitId} childId={childId} />}
+      />
+      <Route
+        path="/info"
+        element={
+          <RequirePinAuth unitId={unitId}>
+            <ChildSensitiveInfoPage unitId={unitId} childId={childId} />
+          </RequirePinAuth>
+        }
+      />
+      <Route
+        path="/new-message"
+        element={
+          <RequirePinAuth unitId={unitId}>
+            <NewChildMessagePage unitId={unitId} childId={childId} />
+          </RequirePinAuth>
+        }
+      />
     </Routes>
   )
 }
@@ -383,96 +396,102 @@ function MessagesRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
 }
 
 export const routes = {
-  unitOrGroup(unitOrGroup: UnitOrGroup): Uri {
-    const id = unitOrGroup.type === 'unit' ? 'all' : unitOrGroup.id
-    return uri`/units/${unitOrGroup.unitId}/groups/${id}`
+  unit(unitId: UUID): Uri {
+    return uri`/units/${unitId}`
   },
   settings(unitId: UUID): Uri {
-    return uri`/units/${unitId}/settings`
+    return uri`${this.unit(unitId)}/settings`
   },
-  childAttendanceList(
+  unitOrGroup(unitOrGroup: UnitOrGroup): Uri {
+    const id = unitOrGroup.type === 'unit' ? 'all' : unitOrGroup.id
+    return uri`${this.unit(unitOrGroup.unitId)}/groups/${id}`
+  },
+  childAttendances(unitOrGroup: UnitOrGroup): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance`
+  },
+  childAttendanceList(unitOrGroup: UnitOrGroup): Uri {
+    return uri`${this.childAttendances(unitOrGroup)}/list`
+  },
+  childAttendanceListState(
     unitOrGroup: UnitOrGroup,
     state: ChildAttendanceUIState
   ): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/list/${state}`
-  },
-  childAttendance(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}`
-  },
-  childAttendances(unitOrGroup: UnitOrGroup): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/`
-  },
-  childAttendancesToday(unitOrGroup: UnitOrGroup): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/list/`
+    return uri`${this.childAttendanceList(unitOrGroup)}/${state}`
   },
   childAttendanceDaylist(unitOrGroup: UnitOrGroup): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/daylist`
+    return uri`${this.childAttendances(unitOrGroup)}/daylist`
   },
-  markAbsentBeforehand(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}/mark-absent-beforehand`
+  child(unitId: UUID, child: UUID): Uri {
+    return uri`${this.unit(unitId)}/children/${child}`
   },
-  markPresent(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}/mark-present`
+  childMarkAbsentBeforehand(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/mark-absent-beforehand`
   },
-  markAbsent(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}/mark-absent`
+  markPresent(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/mark-present`
   },
-  markDeparted(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}/mark-departed`
+  markAbsent(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/mark-absent`
   },
-  markReservations(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}/mark-reservations`
+  markDeparted(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/mark-departed`
   },
-  childNotes(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}/note`
+  markReservations(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/mark-reservations`
   },
-  newChildMessage(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}/new-message`
+  childNotes(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/note`
   },
-  childSensitiveInfo(unitOrGroup: UnitOrGroup, child: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/${child}/info`
+  newChildMessage(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/new-message`
+  },
+  childSensitiveInfo(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/info`
   },
   staff(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/staff`
   },
+  staffAttendanceRoot(unitOrGroup: UnitOrGroup): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance`
+  },
   staffAttendances(unitOrGroup: UnitOrGroup, tab: 'absent' | 'present'): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${tab}`
+    return uri`${this.staffAttendanceRoot(unitOrGroup)}/${tab}`
   },
   externalStaffAttendances(unitOrGroup: UnitOrGroup): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/external`
+    return uri`${this.staffAttendanceRoot(unitOrGroup)}/external`
   },
   externalStaffAttendance(unitOrGroup: UnitOrGroup, attendanceId: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/external/${attendanceId}`
+    return uri`${this.externalStaffAttendances(unitOrGroup)}/${attendanceId}`
   },
   staffAttendance(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}`
+    return uri`${this.staffAttendanceRoot(unitOrGroup)}/${employeeId}`
   },
   staffAttendanceEdit(
     unitOrGroup: UnitOrGroup,
     employeeId: UUID,
     date?: LocalDate
   ): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/edit?date=${(date ?? LocalDate.todayInHelsinkiTz()).formatIso()}`
+    return uri`${this.staffAttendance(unitOrGroup, employeeId)}/edit?date=${(date ?? LocalDate.todayInHelsinkiTz()).formatIso()}`
   },
   staffMarkArrived(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/mark-arrived`
+    return uri`${this.staffAttendance(unitOrGroup, employeeId)}/mark-arrived`
   },
   staffMarkDeparted(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/mark-departed`
+    return uri`${this.staffAttendance(unitOrGroup, employeeId)}/mark-departed`
   },
   staffPreviousAttendances(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/previous`
+    return uri`${this.staffAttendance(unitOrGroup, employeeId)}/previous`
   },
   messages(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/messages`
   },
   unreadMessages(unitOrGroup: UnitOrGroup): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/messages/unread-messages`
+    return uri`${this.messages(unitOrGroup)}/unread-messages`
   },
   receivedThread(unitOrGroup: UnitOrGroup, threadId: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/messages/thread/${threadId}`
+    return uri`${this.messages(unitOrGroup)}/thread/${threadId}`
   },
   newMessage(unitOrGroup: UnitOrGroup): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/messages/new`
+    return uri`${this.messages(unitOrGroup)}/new`
   }
 }

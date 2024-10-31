@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/AttendanceDailyServiceTimes'
-import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
 import { combine } from 'lib-common/api'
 import { localTime } from 'lib-common/form/fields'
 import {
@@ -43,7 +42,6 @@ import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
@@ -216,17 +214,15 @@ const initialFormState = (
 })
 
 export default React.memo(function MarkReservations({
-  unitOrGroup
+  unitId,
+  childId
 }: {
-  unitOrGroup: UnitOrGroup
+  unitId: UUID
+  childId: UUID
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const { childId } = useRouteParams(['childId'])
-  const child = useChild(
-    useQueryResult(childrenQuery(unitOrGroup.unitId)),
-    childId
-  )
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const reservations = useQueryResult(getConfirmedRangeQuery({ childId }))
   const absences = useQueryResult(getFutureAbsencesByChildQuery({ childId }))
   const [mode, setMode] = useState<Mode>('view')
@@ -266,7 +262,7 @@ export default React.memo(function MarkReservations({
                     onEditReservations={() => setMode('edit')}
                     onMarkAbsence={() =>
                       navigate(
-                        routes.markAbsentBeforehand(unitOrGroup, childId).value
+                        routes.childMarkAbsentBeforehand(unitId, childId).value
                       )
                     }
                   />

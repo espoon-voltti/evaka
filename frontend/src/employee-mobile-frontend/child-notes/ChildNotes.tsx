@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,8 +10,12 @@ import {
   ChildDailyNote,
   ChildStickyNote
 } from 'lib-common/generated/api-types/note'
-import { useQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import {
+  constantQuery,
+  useChainedQuery,
+  useQueryResult
+} from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -24,7 +28,6 @@ import { childrenQuery } from '../child-attendance/queries'
 import { useChild } from '../child-attendance/utils'
 import ChildNameBackButton from '../common/ChildNameBackButton'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
 import { TallContentArea } from '../pairing/components'
 
 import { ChildStickyNotesTab } from './ChildStickyNotesTab'
@@ -81,15 +84,15 @@ const childDailyNoteToFormData = ({
 })
 
 export default React.memo(function ChildNotes({
-  unitOrGroup
+  unitId,
+  childId
 }: {
-  unitOrGroup: UnitOrGroup
+  unitId: UUID
+  childId: UUID
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const unitId = unitOrGroup.unitId
-  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
@@ -114,18 +117,18 @@ export default React.memo(function ChildNotes({
     [child]
   )
 
-  const { data: groupNotes } = useQuery(
-    groupNotesQuery({
-      groupId: unitOrGroup.type === 'group' ? unitOrGroup.id : ''
-    }),
-    {
-      enabled: unitOrGroup.type === 'group'
-    }
-  )
+  const groupNotes = useChainedQuery(
+    child.map((child) =>
+      child.groupId
+        ? groupNotesQuery({ groupId: child.groupId })
+        : constantQuery(null)
+    )
+  ).getOrElse(null)
 
   const dailyNoteCount = dailyNote ? 1 : 0
   const stickyNoteCount = stickyNotes.length
   const groupNoteCount = groupNotes?.length ?? 0
+
   const noteTabs = useMemo(() => {
     const tabs = [
       {
@@ -138,7 +141,7 @@ export default React.memo(function ChildNotes({
         title: `${i18n.common.nb}!`,
         noteCount: stickyNoteCount
       },
-      unitOrGroup.type === 'group'
+      groupNotes !== null
         ? {
             type: 'GROUP' as const,
             title: i18n.common.group,
@@ -159,9 +162,9 @@ export default React.memo(function ChildNotes({
     ))
   }, [
     i18n,
-    unitOrGroup,
     dailyNoteCount,
     stickyNoteCount,
+    groupNotes,
     groupNoteCount,
     selectedTab
   ])
@@ -204,8 +207,8 @@ export default React.memo(function ChildNotes({
             notes={stickyNotes}
           />
         )}
-        {unitOrGroup.type === 'group' && selectedTab === 'GROUP' && (
-          <GroupNotesTab groupId={unitOrGroup.id} notes={groupNotes ?? []} />
+        {!!child.groupId && groupNotes !== null && selectedTab === 'GROUP' && (
+          <GroupNotesTab groupId={child.groupId} notes={groupNotes ?? []} />
         )}
       </FixedSpaceColumn>
     </TallContentArea>
