@@ -492,9 +492,10 @@ export interface DevDaycareGroup {
 * Generated from fi.espoo.evaka.shared.dev.DevDaycareGroupAcl
 */
 export interface DevDaycareGroupAcl {
-  created: HelsinkiDateTime | null
+  created: HelsinkiDateTime
   employeeId: UUID
   groupId: UUID
+  updated: HelsinkiDateTime
 }
 
 /**
@@ -1320,7 +1321,8 @@ export function deserializeJsonDevDaycareGroup(json: JsonOf<DevDaycareGroup>): D
 export function deserializeJsonDevDaycareGroupAcl(json: JsonOf<DevDaycareGroupAcl>): DevDaycareGroupAcl {
   return {
     ...json,
-    created: (json.created != null) ? HelsinkiDateTime.parseIso(json.created) : null
+    created: HelsinkiDateTime.parseIso(json.created),
+    updated: HelsinkiDateTime.parseIso(json.updated)
   }
 }
 
