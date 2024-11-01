@@ -17,11 +17,11 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.QuerySql
-import fi.espoo.evaka.shared.db.freeTextSearchQuery
+import fi.espoo.evaka.shared.db.freeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -202,102 +202,94 @@ fun Database.Read.paginatedSearch(
             InvoiceSortParam.CREATED_AT -> Pair("max(invoice.created_at)", "invoice.created_at")
         }
 
-    val params =
-        listOf(
-                Binding.of("page", page),
-                Binding.of("pageSize", pageSize),
-                Binding.of("periodStart", periodStart),
-                Binding.of("periodEnd", periodEnd),
-            )
-            .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
-            .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
-            .let { ps -> if (unit != null) ps + Binding.of("unit", unit) else ps }
-
-    val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "child"), searchTerms)
-
     val withMissingAddress = distinctiveParams.contains(InvoiceDistinctiveParams.MISSING_ADDRESS)
 
     val conditions =
-        listOfNotNull(
-            if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
+        PredicateSql.allNotNull(
+            if (statuses.isNotEmpty())
+                PredicateSql { where("invoice.status = ANY(${bind(statuses)})") }
+            else null,
             if (areas.isNotEmpty())
-                "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))"
+                PredicateSql {
+                    where(
+                        "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))"
+                    )
+                }
             else null,
-            if (unit != null) "row.unit_id = :unit" else null,
+            if (unit != null) PredicateSql { where("row.unit_id = ${bind(unit)}") } else null,
             if (withMissingAddress)
-                "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
+                PredicateSql {
+                    where(
+                        "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
+                    )
+                }
             else null,
-            if (searchTerms.isNotBlank()) freeTextQuery else null,
-            if (periodStart != null) "invoice_date  >= :periodStart" else null,
-            if (periodEnd != null) "invoice_date  <= :periodEnd" else null,
+            if (searchTerms.isNotBlank())
+                freeTextSearchPredicate(listOf("head", "child"), searchTerms)
+            else null,
+            if (periodStart != null) PredicateSql { where("invoice_date  >= ${bind(periodStart)}") }
+            else null,
+            if (periodEnd != null) PredicateSql { where("invoice_date  <= ${bind(periodEnd)}") }
+            else null,
         )
 
-    val sql =
-        """
-        WITH invoice_ids AS (
-            SELECT invoice.id, sum(amount * unit_price), count(*) OVER ()
-            FROM invoice
-            LEFT JOIN invoice_row AS row ON invoice.id = row.invoice_id
-            LEFT JOIN person AS head ON invoice.head_of_family = head.id
-            LEFT JOIN person AS child ON row.child = child.id
-            ${if (conditions.isNotEmpty()) {
-            """
-            WHERE ${conditions.joinToString("\nAND ")}
-            """.trimIndent()
-        } else {
-            ""
-        }}
-            GROUP BY invoice.id
-            ORDER BY ${sortColumn.first} ${sortDirection.name}, invoice.id
-            LIMIT :pageSize OFFSET (:page - 1) * :pageSize
-        )
-        SELECT
-            invoice_ids.count,
-            invoice.id,
-            invoice.status,
-            invoice.period_start,
-            invoice.period_end,
-            invoice.sent_at,
-            invoice.sent_by,
-            invoice.created_at,
-            jsonb_build_object(
-                'id', invoice.head_of_family,
-                'dateOfBirth', head.date_of_birth,
-                'firstName', head.first_name,
-                'lastName', head.last_name,
-                'ssn', head.social_security_number,
-                'streetAddress', head.street_address,
-                'postalCode', head.postal_code,
-                'postOffice', head.post_office,
-                'restrictedDetailsEnabled', head.restricted_details_enabled
-            ) as head_of_family,
-            rows_summary.children,
-            rows_summary.total_price
-        FROM invoice_ids
-        JOIN invoice ON invoice_ids.id = invoice.id
-        JOIN person as head ON invoice.head_of_family = head.id
-        JOIN LATERAL (
-            SELECT
-                jsonb_agg(jsonb_build_object(
-                    'id', row.child,
-                    'dateOfBirth', child.date_of_birth,
-                    'firstName', child.first_name,
-                    'lastName', child.last_name,
-                    'ssn', child.social_security_number
-                ) ORDER BY row.idx) AS children,
-                SUM(row.amount * row.unit_price) AS total_price
-            FROM invoice_row AS row
-            JOIN person AS child ON row.child = child.id
-            WHERE row.invoice_id = invoice.id
-        ) AS rows_summary ON true
-        ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .addBindings(params)
-        .addBindings(freeTextParams)
+    return createQuery {
+            sql(
+                """
+WITH invoice_ids AS (
+    SELECT invoice.id, sum(amount * unit_price), count(*) OVER ()
+    FROM invoice
+    LEFT JOIN invoice_row AS row ON invoice.id = row.invoice_id
+    LEFT JOIN person AS head ON invoice.head_of_family = head.id
+    LEFT JOIN person AS child ON row.child = child.id
+    WHERE ${predicate(conditions)}
+    GROUP BY invoice.id
+    ORDER BY ${sortColumn.first} ${sortDirection.name}, invoice.id
+    LIMIT ${bind(pageSize)} OFFSET (${bind(page)} - 1) * ${bind(pageSize)}
+)
+SELECT
+    invoice_ids.count,
+    invoice.id,
+    invoice.status,
+    invoice.period_start,
+    invoice.period_end,
+    invoice.sent_at,
+    invoice.sent_by,
+    invoice.created_at,
+    jsonb_build_object(
+        'id', invoice.head_of_family,
+        'dateOfBirth', head.date_of_birth,
+        'firstName', head.first_name,
+        'lastName', head.last_name,
+        'ssn', head.social_security_number,
+        'streetAddress', head.street_address,
+        'postalCode', head.postal_code,
+        'postOffice', head.post_office,
+        'restrictedDetailsEnabled', head.restricted_details_enabled
+    ) as head_of_family,
+    rows_summary.children,
+    rows_summary.total_price
+FROM invoice_ids
+JOIN invoice ON invoice_ids.id = invoice.id
+JOIN person as head ON invoice.head_of_family = head.id
+JOIN LATERAL (
+    SELECT
+        jsonb_agg(jsonb_build_object(
+            'id', row.child,
+            'dateOfBirth', child.date_of_birth,
+            'firstName', child.first_name,
+            'lastName', child.last_name,
+            'ssn', child.social_security_number
+        ) ORDER BY row.idx) AS children,
+        SUM(row.amount * row.unit_price) AS total_price
+    FROM invoice_row AS row
+    JOIN person AS child ON row.child = child.id
+    WHERE row.invoice_id = invoice.id
+) AS rows_summary ON true
+ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
+"""
+            )
+        }
         .mapToPaged(::PagedInvoiceSummaries, pageSize)
 }
 
