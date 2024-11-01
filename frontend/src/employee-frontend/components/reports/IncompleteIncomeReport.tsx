@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 import { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
 import { useQueryResult } from 'lib-common/query'
@@ -14,9 +15,9 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../state/i18n'
 
+import ReportDownload from './ReportDownload'
 import { TableScrollable } from './common'
 import { incompleteIncomeReportQuery } from './queries'
-import ReportDownload from './ReportDownload'
 
 export default React.memo(function IncompleteIncomes() {
   const { i18n } = useTranslation()
@@ -56,7 +57,9 @@ export default React.memo(function IncompleteIncomes() {
                   // eslint-disable-next-line react/jsx-key
                   <Tr>
                     <Td>
-                      {row.firstName} {row.lastName}
+                      <Link to={`/profile/${row.personId}`}>
+                        {row.firstName} {row.lastName}
+                      </Link>
                     </Td>
                     <Td>{row.validFrom.toString()}</Td>
                     <Td>{row.daycareName}</Td>
