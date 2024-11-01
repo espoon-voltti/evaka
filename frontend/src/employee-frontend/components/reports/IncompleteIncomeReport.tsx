@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React from 'react'
 
 import { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
@@ -41,8 +45,7 @@ export default React.memo(function IncompleteIncomes() {
             <TableScrollable>
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.incompleteIncomes.firstName}</Th>
-                  <Th>{i18n.reports.incompleteIncomes.lastName}</Th>
+                  <Th>{i18n.reports.incompleteIncomes.fullName}</Th>
                   <Th>{i18n.reports.incompleteIncomes.validFrom}</Th>
                   <Th>{i18n.reports.incompleteIncomes.daycareName}</Th>
                   <Th>{i18n.reports.incompleteIncomes.careareaName}</Th>
@@ -52,8 +55,9 @@ export default React.memo(function IncompleteIncomes() {
                 {report.value.map((row: IncompleteIncomeDbRow) => (
                   // eslint-disable-next-line react/jsx-key
                   <Tr>
-                    <Td>{row.firstName}</Td>
-                    <Td>{row.lastName}</Td>
+                    <Td>
+                      {row.firstName} {row.lastName}
+                    </Td>
                     <Td>{row.validFrom.toString()}</Td>
                     <Td>{row.daycareName}</Td>
                     <Td>{row.careareaName}</Td>

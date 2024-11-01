@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -31,19 +32,19 @@ class IncompleteIncomeReport(private val accessControl: AccessControl) {
                         Action.Global.READ_INCOMPLETE_INCOMES_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getIncompleteReport()
+                    it.getIncompleteReport(clock.today())
                 }
             }
             .also { Audit.TitaniaReportRead.log() }
     }
 }
 
-fun Database.Read.getIncompleteReport(): List<IncompleteIncomeDbRow> {
+fun Database.Read.getIncompleteReport(today: LocalDate): List<IncompleteIncomeDbRow> {
     val dbRows =
         createQuery {
                 sql(
                     """
-                SELECT DISTINCT pe.first_name as firstName, pe.last_name as lastName, ie.valid_from as validFrom, pl.unit_id as daycareId, dg.name as daycareName, ca.id as careareaId, ca.name as careareaName
+                SELECT DISTINCT pe.id as personId, pe.first_name as firstName, pe.last_name as lastName, ie.valid_from as validFrom, pl.unit_id as daycareId, dg.name as daycareName, ca.id as careareaId, ca.name as careareaName
                 FROM income ie
                 INNER JOIN guardian gu
                         ON ie.person_id = gu.guardian_id
@@ -59,8 +60,8 @@ fun Database.Read.getIncompleteReport(): List<IncompleteIncomeDbRow> {
                 AND ie.valid_to is null
                 AND ie.updated_by = '00000000-0000-0000-0000-000000000000'
                   AND pl.child_id = gu.child_id
-                  AND pl.start_date <= NOW()
-                  AND pl.end_date >= NOW()
+                  AND pl.start_date <= ${bind(today)}
+                  AND pl.end_date >= ${bind(today)}
                 ORDER BY ie.valid_from;
             """
                         .trimIndent()
@@ -72,6 +73,7 @@ fun Database.Read.getIncompleteReport(): List<IncompleteIncomeDbRow> {
 }
 
 data class IncompleteIncomeDbRow(
+    val personId: PersonId,
     val firstName: String,
     val lastName: String,
     val validFrom: LocalDate,

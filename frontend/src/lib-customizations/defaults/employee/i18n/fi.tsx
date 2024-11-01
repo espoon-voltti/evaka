@@ -3913,8 +3913,7 @@ export const fi = {
       description:
         'Raportti vanhemmista, joiden tulotiedot ovat vanhentuneet, mutta lapsella on vielä sijoitus aktiivinen.',
       validFrom: 'Alkupäivämäärä',
-      firstName: 'Etunimi',
-      lastName: 'Sukunimi',
+      fullName: 'Nimi',
       daycareName: 'Päiväkoti',
       careareaName: 'Palvelualue'
     },

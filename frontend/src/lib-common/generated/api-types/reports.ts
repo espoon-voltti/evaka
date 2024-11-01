@@ -453,6 +453,7 @@ export interface IncompleteIncomeDbRow {
   daycareName: string
   firstName: string
   lastName: string
+  personId: UUID
   validFrom: LocalDate
 }
 
