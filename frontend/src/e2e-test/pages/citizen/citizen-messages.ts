@@ -97,6 +97,9 @@ export default class CitizenMessagesPage {
       )
       .assertTextEquals('Viesti lähetetty')
   }
+  async assertThreadMessagesEqual(messages: string[]) {
+    await this.#threadContent.assertTextsEqual(messages)
+  }
 
   async assertThreadContent(message: {
     title: string
@@ -148,14 +151,28 @@ export default class CitizenMessagesPage {
   async assertReplyContentIsEmpty() {
     return this.#messageReplyContent.assertTextEquals('')
   }
-
   async replyToFirstThread(content: string) {
+    await this.startReplyToFirstThread()
+    await this.#messageReplyContent.fill(content)
+    await this.sendReply()
+  }
+  async startReplyToFirstThread() {
     await this.#threadListItem.click()
     await this.#openReplyEditorButton.click()
-    await this.#messageReplyContent.fill(content)
+  }
+  getReplyContentElement() {
+    return this.#messageReplyContent
+  }
+  async sendReply() {
     await this.#sendReplyButton.click()
     // the editor is hidden after sending the reply
     await this.#sendReplyButton.waitUntilHidden()
+  }
+
+  async getSessionExpiry() {
+    const cookies = await this.page.page.context().cookies()
+    const sessionCookie = cookies.find((c) => c.name === 'evaka.eugw.session')
+    return sessionCookie?.expires ?? 0
   }
 
   async deleteFirstThread() {

@@ -7,7 +7,8 @@ import { useState, useEffect, useMemo } from 'react'
 
 export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
-
+  const throttleTime =
+    window.evaka?.keepSessionAliveThrottleTime ?? 2 * 60 * 1000
   const keepSessionAlive = useMemo(
     () =>
       throttle(
@@ -23,13 +24,13 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
           }
         },
         // Default to 2 minutes and allow overriding this in automated tests
-        window.evaka?.keepSessionAliveThrottleTime ?? 2 * 60 * 1000,
+        throttleTime,
         {
           leading: true,
           trailing: true
         }
       ),
-    [sessionKeepAlive]
+    [sessionKeepAlive, throttleTime]
   )
 
   useEffect(() => {
