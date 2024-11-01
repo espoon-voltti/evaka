@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,8 +9,13 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import {
+  constantQuery,
+  useChainedQuery,
+  useMutation,
+  useQueryResult
+} from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -35,7 +40,6 @@ import { groupNotesQuery } from '../child-notes/queries'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
 import { BackButton, TallContentArea } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
@@ -50,31 +54,26 @@ import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted
 import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
 
 export default React.memo(function AttendanceChildPage({
-  unitOrGroup
+  unitId,
+  childId
 }: {
-  unitOrGroup: UnitOrGroup
+  unitId: UUID
+  childId: UUID
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { childId } = useRouteParams(['childId'])
-
-  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
-  const { data: groupNotes } = useQuery(
-    groupNotesQuery({
-      groupId: unitOrGroup.type === 'group' ? unitOrGroup.id : ''
-    }),
-    {
-      enabled: unitOrGroup.type === 'group'
-    }
-  )
-  const groupHasNotes =
-    unitOrGroup.type === 'unit'
-      ? false
-      : !!(groupNotes && groupNotes.length > 1)
-  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+  const groupNotes = useChainedQuery(
+    child.map((child) =>
+      child.groupId
+        ? groupNotesQuery({ groupId: child.groupId })
+        : constantQuery(null)
+    )
+  ).getOrElse(null)
+  const groupHasNotes = groupNotes === null ? false : groupNotes.length > 0
 
   const [uiMode, setUiMode] = useState<
     | 'default'
@@ -200,7 +199,7 @@ export default React.memo(function AttendanceChildPage({
                     </ChildBackground>
 
                     <ChildButtons
-                      unitOrGroup={unitOrGroup}
+                      unitId={unitId}
                       groupHasNotes={groupHasNotes}
                       child={child}
                     />
@@ -235,22 +234,16 @@ export default React.memo(function AttendanceChildPage({
                     <Gap size="xs" />
                     {childAttendance.status === 'COMING' && (
                       <AttendanceChildComing
-                        unitOrGroup={unitOrGroup}
+                        unitId={unitId}
                         child={child}
                         attendances={childAttendance.attendances}
                       />
                     )}
                     {childAttendance.status === 'PRESENT' && (
-                      <AttendanceChildPresent
-                        unitOrGroup={unitOrGroup}
-                        child={child}
-                      />
+                      <AttendanceChildPresent unitId={unitId} child={child} />
                     )}
                     {childAttendance.status === 'DEPARTED' && (
-                      <AttendanceChildDeparted
-                        unitOrGroup={unitOrGroup}
-                        child={child}
-                      />
+                      <AttendanceChildDeparted unitId={unitId} child={child} />
                     )}
                     {childAttendance.status === 'ABSENT' &&
                       child.scheduleType !== 'TERM_BREAK' && (
@@ -267,7 +260,7 @@ export default React.memo(function AttendanceChildPage({
                     .getOrElse(false) ? (
                     <LinkButtonWithIcon
                       data-qa="mark-reservations"
-                      to={routes.markReservations(unitOrGroup, childId).value}
+                      to={routes.markReservations(unitId, childId).value}
                     >
                       <RoundIcon
                         size="L"
@@ -282,7 +275,7 @@ export default React.memo(function AttendanceChildPage({
                     <LinkButtonWithIcon
                       data-qa="mark-absent-beforehand"
                       to={
-                        routes.markAbsentBeforehand(unitOrGroup, childId).value
+                        routes.childMarkAbsentBeforehand(unitId, childId).value
                       }
                     >
                       <RoundIcon

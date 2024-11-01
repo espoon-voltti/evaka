@@ -23,7 +23,6 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -314,8 +313,13 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   )
 })
 
-export default React.memo(function MarkDeparted({ unitId }: { unitId: UUID }) {
-  const { childId } = useRouteParams(['childId'])
+export default React.memo(function MarkDeparted({
+  unitId,
+  childId
+}: {
+  unitId: UUID
+  childId: UUID
+}) {
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
 

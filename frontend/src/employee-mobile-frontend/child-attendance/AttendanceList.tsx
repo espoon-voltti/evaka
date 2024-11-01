@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -80,22 +80,22 @@ export default React.memo(function AttendanceList({
     return [
       {
         id: 'coming',
-        link: routes.childAttendanceList(unitOrGroup, 'coming'),
+        link: routes.childAttendanceListState(unitOrGroup, 'coming'),
         label: getLabel(i18n.attendances.types.COMING, totalComing)
       },
       {
         id: 'present',
-        link: routes.childAttendanceList(unitOrGroup, 'present'),
+        link: routes.childAttendanceListState(unitOrGroup, 'present'),
         label: getLabel(i18n.attendances.types.PRESENT, totalPresent)
       },
       {
         id: 'departed',
-        link: routes.childAttendanceList(unitOrGroup, 'departed'),
+        link: routes.childAttendanceListState(unitOrGroup, 'departed'),
         label: getLabel(i18n.attendances.types.DEPARTED, totalDeparted)
       },
       {
         id: 'absent',
-        link: routes.childAttendanceList(unitOrGroup, 'absent'),
+        link: routes.childAttendanceListState(unitOrGroup, 'absent'),
         label: getLabel(i18n.attendances.types.ABSENT, totalAbsent)
       }
     ]

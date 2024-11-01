@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -19,7 +19,7 @@ import colors from 'lib-customizations/common'
 
 import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import ChildListItem from './ChildListItem'
 
@@ -57,12 +57,7 @@ export default React.memo(function ChildList({
                 type={type}
                 key={ac.id}
                 child={ac}
-                childAttendanceUrl={
-                  routes.childAttendance(
-                    toUnitOrGroup(unitId, ac.groupId),
-                    ac.id
-                  ).value
-                }
+                childAttendanceUrl={routes.child(unitId, ac.id).value}
               />
             </Li>
           ))

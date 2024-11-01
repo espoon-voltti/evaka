@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,7 +8,6 @@ import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -24,11 +23,16 @@ import { TallContentArea } from '../pairing/components'
 import ChildBasicInfo from './ChildBasicInfo'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
 
-export default React.memo(function ChildInfoPage({ unitId }: { unitId: UUID }) {
+export default React.memo(function ChildInfoPage({
+  unitId,
+  childId
+}: {
+  unitId: UUID
+  childId: UUID
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { childId } = useRouteParams(['childId'])
   const childBasicInfo = useQueryResult(childBasicInfoQuery({ childId }))
   const childName = useMemo(
     () =>
