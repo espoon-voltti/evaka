@@ -304,6 +304,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         siblingBasis = true,
                                         siblingSsn = "secret",
                                         siblingName = "secret",
+                                        siblingUnit = "secret",
                                     ),
                                 hasOtherChildren = true,
                                 otherChildren =
@@ -333,7 +334,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             guardianResult.form.preferences.preferredUnits,
         )
         assertEquals(
-            SiblingBasis(siblingName = "secret", siblingSsn = "secret"),
+            SiblingBasis(siblingName = "secret", siblingSsn = "secret", siblingUnit = "secret"),
             guardianResult.form.preferences.siblingBasis,
         )
         assertEquals(
@@ -357,7 +358,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             otherGuardianResult.form.preferences.preferredUnits,
         )
         assertEquals(
-            SiblingBasis(siblingName = "", siblingSsn = ""),
+            SiblingBasis(siblingName = "", siblingSsn = "", siblingUnit = ""),
             otherGuardianResult.form.preferences.siblingBasis,
         )
         assertEquals(emptyList(), otherGuardianResult.form.otherChildren)

@@ -856,7 +856,8 @@ export default {
             siblingBasisYes:
               'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa',
             name: 'Sisaruksen nimi',
-            ssn: 'Sisaruksen henkilötunnus'
+            ssn: 'Sisaruksen henkilötunnus',
+            unit: 'Sisaruksen koulu'
           },
           units: {
             title: 'Hakutoiveet',
@@ -1195,7 +1196,9 @@ export default {
           names: 'Sisaruksen etunimet ja sukunimi',
           namesPlaceholder: 'Etunimet ja sukunimi',
           ssn: 'Sisaruksen henkilötunnus',
-          ssnPlaceholder: 'Henkilötunnus'
+          ssnPlaceholder: 'Henkilötunnus',
+          unit: 'Sisaruksen koulu',
+          unitPlaceholder: 'Koulun nimi'
         },
         units: {
           title: (maxUnits: number): string =>

@@ -365,6 +365,12 @@ export default React.memo(function ApplicationReadView({
               <span>{siblingBasis.siblingName}</span>
               <Label>{i18n.application.preferences.siblingSsn}</Label>
               <span>{siblingBasis.siblingSsn}</span>
+              {type === 'PRESCHOOL' && (
+                <>
+                  <Label>{i18n.application.preferences.siblingUnit}</Label>
+                  <span>{siblingBasis.siblingUnit}</span>
+                </>
+              )}
             </>
           )}
         </ListGrid>

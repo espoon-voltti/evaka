@@ -663,6 +663,7 @@ export const fullPreschoolForm: {
       siblingBasis: true,
       siblingName: 'Anna Karhula',
       siblingSsn: '110814A812B',
+      siblingUnit: 'Kilon koulu',
       preferredUnits: [
         {
           id: testDaycare.id,
@@ -767,6 +768,7 @@ export const fullPreschoolForm: {
     assertFalse(res.form.preferences.serviceNeed?.partTime)
     assertEquals('Anna Karhula', res.form.preferences.siblingBasis?.siblingName)
     assertEquals('110814A812B', res.form.preferences.siblingBasis?.siblingSsn)
+    assertEquals('Kilon koulu', res.form.preferences.siblingBasis?.siblingUnit)
     assertTrue(res.form.preferences.preparatory)
     assertFalse(res.form.preferences.urgent)
 

@@ -888,7 +888,8 @@ const en: Translations = {
             siblingBasisYes:
               'I primarily apply for a place at the same early childhood education location attended by the child’s sibling.',
             name: 'First and last name of the sibling',
-            ssn: 'Personal identity code of the sibling'
+            ssn: 'Personal identity code of the sibling',
+            unit: "Sibling's school"
           },
           units: {
             title: 'Preferred units',
@@ -1236,7 +1237,9 @@ const en: Translations = {
           names: 'First and last name of the sibling',
           namesPlaceholder: 'First and last name',
           ssn: 'Personal identity code of the sibling',
-          ssnPlaceholder: 'e.g. 010110A000P'
+          ssnPlaceholder: 'e.g. 010110A000P',
+          unit: "Sibling's school",
+          unitPlaceholder: 'The name of the school'
         },
         units: {
           title: (maxUnits: number) =>

@@ -125,6 +125,7 @@ data class ClubFormV0(
                         siblingBasis = form.preferences.siblingBasis != null,
                         siblingName = form.preferences.siblingBasis?.siblingName ?: "",
                         siblingSsn = form.preferences.siblingBasis?.siblingSsn ?: "",
+                        siblingUnit = form.preferences.siblingBasis?.siblingUnit ?: "",
                     ),
                 preferredStartDate = form.preferences.preferredStartDate,
                 clubCare =
@@ -181,6 +182,7 @@ data class Apply(
     val siblingBasis: Boolean = false,
     val siblingName: String = "",
     val siblingSsn: String = "",
+    val siblingUnit: String = "",
 )
 
 data class ClubCare(

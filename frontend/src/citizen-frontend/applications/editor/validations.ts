@@ -136,6 +136,10 @@ export const validateApplication = (
         form.unitPreference.siblingBasis && !siblingSelected
           ? validate(form.unitPreference.siblingSsn, required, ssn)
           : undefined,
+      siblingUnit:
+        form.unitPreference.siblingBasis && apiData.type === 'PRESCHOOL'
+          ? validate(form.unitPreference.siblingUnit, required)
+          : undefined,
       preferredUnits: {
         arrayErrors:
           form.unitPreference.preferredUnits.length === 0

@@ -40,6 +40,7 @@ export type UnitPreferenceFormData = {
   vtjSiblings: VtjSibling[]
   siblingName: string
   siblingSsn: string
+  siblingUnit: string
   preferredUnits: { id: string; name: string }[]
 }
 
@@ -215,6 +216,7 @@ export function apiDataToFormData(
       siblingSsn: siblingBasisFromVtj
         ? ''
         : application.form.preferences.siblingBasis?.siblingSsn ?? '',
+      siblingUnit: application.form.preferences.siblingBasis?.siblingUnit ?? '',
       preferredUnits: application.form.preferences.preferredUnits
     },
     contactInfo: {
@@ -386,7 +388,8 @@ export function formDataToApiData(
               : form.unitPreference.siblingName,
             siblingSsn:
               selectedSibling?.socialSecurityNumber ??
-              form.unitPreference.siblingSsn
+              form.unitPreference.siblingSsn,
+            siblingUnit: form.unitPreference.siblingUnit
           }
         : null,
       preparatory: type === 'PRESCHOOL' && form.serviceNeed.preparatory,

@@ -874,7 +874,8 @@ const sv: Translations = {
             siblingBasisYes:
               'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats inom småbarnspedagogik',
             name: 'Syskonets för- och efternamn',
-            ssn: 'Syskonets personbeteckning'
+            ssn: 'Syskonets personbeteckning',
+            unit: 'Syskonets skola'
           },
           units: {
             title: 'Ansökningsönskemål',
@@ -1200,7 +1201,9 @@ const sv: Translations = {
           names: 'Syskonets för- och efternamn',
           namesPlaceholder: 'För- och efternamn',
           ssn: 'Syskonets personbeteckning',
-          ssnPlaceholder: 'Personbeteckning'
+          ssnPlaceholder: 'Personbeteckning',
+          unit: 'Syskonets skola',
+          unitPlaceholder: 'Skolans namn'
         },
         units: {
           title: () => 'Ansökningsönskemål',
