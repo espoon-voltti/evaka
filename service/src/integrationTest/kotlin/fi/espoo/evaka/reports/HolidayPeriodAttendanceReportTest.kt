@@ -279,13 +279,10 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     listOf(testData[2].first).map {
                         ChildWithName(it.id, it.firstName, it.lastName)
                     },
-                assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
-                    },
+                assistanceChildren = emptyList(),
                 noResponseChildren = emptyList(),
                 date = holidayPeriod.period.start.plusDays(4),
-                presentOccupancyCoefficient = 5.5,
+                presentOccupancyCoefficient = 1.0,
             )
 
         listOf(expectedMonday, expectedTuesday, expectedWednesday, expectedThursday, expectedFriday)
@@ -382,13 +379,10 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     listOf(testData[2].first).map {
                         ChildWithName(it.id, it.firstName, it.lastName)
                     },
-                assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
-                    },
+                assistanceChildren = emptyList(),
                 noResponseChildren = emptyList(),
                 date = monday.plusDays(4),
-                presentOccupancyCoefficient = 5.5,
+                presentOccupancyCoefficient = 1.0,
             )
 
         val expectedSaturday =
@@ -538,13 +532,10 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     listOf(testData[2].first).map {
                         ChildWithName(it.id, it.firstName, it.lastName)
                     },
-                assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
-                    },
+                assistanceChildren = emptyList(),
                 noResponseChildren = emptyList(),
                 date = monday.plusDays(4),
-                presentOccupancyCoefficient = 5.5,
+                presentOccupancyCoefficient = 1.0,
             )
 
         listOf(expectedMonday, expectedTuesday, expectedWednesday, expectedThursday, expectedFriday)
@@ -728,7 +719,10 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 DevAssistanceFactor(
                     id = AssistanceFactorId(UUID.randomUUID()),
                     testChildCecil.id,
-                    holidayPeriod.period,
+                    FiniteDateRange(
+                        holidayPeriod.period.start,
+                        holidayPeriod.period.end.minusDays(3),
+                    ),
                     capacityFactor = 5.50,
                 )
             )
@@ -749,12 +743,14 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
 
             createNullReservation(wednesday, testChildAapo.id, tx)
 
-            // Thursday - 2 no response, 1 absent
+            // Thursday - 2 no response, 1 absent (Ville no longer incoming bc)
 
             listOf(testChildAapo, testChildBertil).forEach {
                 createNullReservation(thursday, it.id, tx)
             }
-            createOtherAbsence(thursday, testChildCecil.id, AbsenceCategory.BILLABLE, tx)
+            listOf(testChildCecil, testChildVille).forEach {
+                createOtherAbsence(thursday, it.id, AbsenceCategory.BILLABLE, tx)
+            }
 
             // Friday - Cecil present, 2 (+ bc Ville) absent
             listOf(testChildAapo, testChildBertil, testChildVille).forEach {

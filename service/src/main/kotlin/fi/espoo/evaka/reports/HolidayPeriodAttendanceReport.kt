@@ -143,7 +143,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                             backupCareIncoming
                                 .filter { it.period.includes(date) }
                                 .mapNotNull {
-                                    backupChildDataByChild[it.child.id]?.first { sn ->
+                                    backupChildDataByChild[it.child.id]?.firstOrNull { sn ->
                                         sn.validity.includes(date)
                                     }
                                 }
@@ -156,7 +156,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                 ?.groupBy { it.childId }
                                 ?.filter { (key, childDailyAbsenceData) ->
                                     val childDailyPlacementData =
-                                        dailyPlacedDataByChild[key]?.first {
+                                        dailyPlacedDataByChild[key]?.firstOrNull {
                                             it.validity.includes(date)
                                         } ?: return@filter false
                                     childDailyAbsenceData.map { a -> a.category }.toSet() ==
@@ -178,7 +178,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                             confirmedPresent.map { sn ->
                                 val af =
                                     assistanceFactorsByChild[sn.child.id]
-                                        ?.first { af -> af.validDuring.includes(date) }
+                                        ?.firstOrNull { af -> af.validDuring.includes(date) }
                                         ?.capacityFactor
                                 Pair(sn, af)
                             }
