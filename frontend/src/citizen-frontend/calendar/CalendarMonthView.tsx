@@ -56,7 +56,7 @@ import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { BackgroundHighlightType, Reservations } from './calendar-elements'
-import { useSummaryInfo } from './hooks'
+import { useMonthlySummaryInfo } from './hooks'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'
 
@@ -197,14 +197,17 @@ export default React.memo(function CalendarMonthView({
   )
 
   const childImages = useMemo(() => getChildImages(childData), [childData])
-
-  const childSummaries = getSummaryForMonth(
-    childData,
-    selectedMonthData.year,
-    selectedMonthData.month
+  const childSummaries = useMemo(
+    () =>
+      getSummaryForMonth(
+        childData,
+        selectedMonthData.year,
+        selectedMonthData.month
+      ),
+    [childData, selectedMonthData.month, selectedMonthData.year]
   )
   const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
-    useSummaryInfo(childSummaries)
+    useMonthlySummaryInfo(childSummaries, selectedMonthIndex)
 
   return (
     <>
