@@ -7,7 +7,6 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { wrapResult } from 'lib-common/api'
-import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -58,20 +57,18 @@ export default React.memo(function PersonInvoices({
               </Tr>
             </Thead>
             <Tbody>
-              {orderBy(invoices, ['sentAt'], ['desc']).map(
-                (invoice: Invoice) => (
-                  <Tr key={invoice.id} data-qa="table-invoice-row">
-                    <Td>
-                      <Link to={`/finance/invoices/${invoice.id}`}>
-                        Lasku{' '}
-                        {`${invoice.periodStart.format()} - ${invoice.periodEnd.format()}`}
-                      </Link>
-                    </Td>
-                    <Td>{formatCents(invoice.totalPrice)}</Td>
-                    <StatusTd>{i18n.invoice.status[invoice.status]}</StatusTd>
-                  </Tr>
-                )
-              )}
+              {orderBy(invoices, ['sentAt'], ['desc']).map((invoice) => (
+                <Tr key={invoice.id} data-qa="table-invoice-row">
+                  <Td>
+                    <Link to={`/finance/invoices/${invoice.id}`}>
+                      Lasku{' '}
+                      {`${invoice.periodStart.format()} - ${invoice.periodEnd.format()}`}
+                    </Link>
+                  </Td>
+                  <Td>{formatCents(invoice.totalPrice)}</Td>
+                  <StatusTd>{i18n.invoice.status[invoice.status]}</StatusTd>
+                </Tr>
+              ))}
             </Tbody>
           </Table>
         ))}

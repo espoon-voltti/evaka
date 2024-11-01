@@ -6,11 +6,9 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.TestInvoiceProductProvider
-import fi.espoo.evaka.invoicing.createInvoiceFixture
-import fi.espoo.evaka.invoicing.createInvoiceRowFixture
-import fi.espoo.evaka.invoicing.data.insertInvoices
-import fi.espoo.evaka.invoicing.domain.Invoice
-import fi.espoo.evaka.invoicing.domain.InvoiceStatus
+import fi.espoo.evaka.invoicing.data.insertDraftInvoices
+import fi.espoo.evaka.invoicing.domain.DraftInvoice
+import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeatureConfig
@@ -409,39 +407,46 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(0, invoicesWithCorrections.size)
     }
 
-    private fun applyCorrections(invoice: Invoice, month: YearMonth): Invoice =
+    private fun applyCorrections(invoice: DraftInvoice, month: YearMonth): DraftInvoice =
         applyCorrections(listOf(invoice), month).single()
 
-    private fun applyCorrections(invoices: List<Invoice>, month: YearMonth): List<Invoice> =
+    private fun applyCorrections(
+        invoices: List<DraftInvoice>,
+        month: YearMonth,
+    ): List<DraftInvoice> =
         db.read { tx ->
             generator.applyCorrections(tx, invoices, month, mapOf(daycare.id to area.id)).shuffled()
         }
 
-    private fun createTestInvoice(total: Int, month: YearMonth): Invoice =
-        createInvoiceFixture(
-            status = InvoiceStatus.DRAFT,
-            headOfFamilyId = adult.id,
+    private fun createTestInvoice(total: Int, month: YearMonth): DraftInvoice =
+        DraftInvoice(
+            headOfFamily = adult.id,
             areaId = area.id,
-            period = FiniteDateRange.ofMonth(month),
+            periodStart = month.atDay(1),
+            periodEnd = month.atEndOfMonth(),
+            codebtor = null,
             rows =
                 listOf(
-                    createInvoiceRowFixture(
+                    DraftInvoiceRow(
                         childId = child.id,
                         unitId = daycare.id,
                         amount = 1,
                         unitPrice = total,
+                        periodStart = month.atDay(1),
+                        periodEnd = month.atEndOfMonth(),
+                        product = productProvider.mapToProduct(PlacementType.DAYCARE),
                     )
                 ),
         )
 
-    private fun insertAndSendInvoice(invoice: Invoice) {
+    private fun insertAndSendInvoice(invoice: DraftInvoice) {
         db.transaction { tx ->
-            tx.insertInvoices(listOf(invoice))
+            val invoiceId = tx.insertDraftInvoices(listOf(invoice)).single()
             invoiceService.sendInvoices(
                 tx,
                 employee.evakaUserId,
                 clock.now(),
-                listOf(invoice.id),
+                listOf(invoiceId),
                 null,
                 null,
             )

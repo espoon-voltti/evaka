@@ -496,26 +496,6 @@ export interface IncomeWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.Invoice
-*/
-export interface Invoice {
-  areaId: UUID
-  codebtor: UUID | null
-  dueDate: LocalDate
-  headOfFamily: UUID
-  id: UUID
-  invoiceDate: LocalDate
-  number: number | null
-  periodEnd: LocalDate
-  periodStart: LocalDate
-  rows: InvoiceRow[]
-  sentAt: HelsinkiDateTime | null
-  sentBy: UUID | null
-  status: InvoiceStatus
-  totalPrice: number
-}
-
-/**
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceCodes
 */
 export interface InvoiceCodes {
@@ -622,23 +602,6 @@ export interface InvoicePayload {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceRow
-*/
-export interface InvoiceRow {
-  amount: number
-  child: UUID
-  correctionId: UUID | null
-  description: string
-  id: UUID | null
-  periodEnd: LocalDate
-  periodStart: LocalDate
-  price: number
-  product: string
-  unitId: UUID
-  unitPrice: number
-}
-
-/**
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 */
 export interface InvoiceRowDetailed {
@@ -660,17 +623,6 @@ export interface InvoiceRowDetailed {
   unitName: string
   unitPrice: number
   unitProviderType: ProviderType
-}
-
-/**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
-*/
-export interface InvoiceRowSummary {
-  amount: number
-  child: PersonBasic
-  id: UUID
-  price: number
-  unitPrice: number
 }
 
 /**
@@ -698,14 +650,12 @@ export type InvoiceStatus =
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceSummary
 */
 export interface InvoiceSummary {
-  account: number
-  codebtor: PersonDetailed | null
+  children: PersonBasic[]
   createdAt: HelsinkiDateTime | null
   headOfFamily: PersonDetailed
   id: UUID
   periodEnd: LocalDate
   periodStart: LocalDate
-  rows: InvoiceRowSummary[]
   sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
   status: InvoiceStatus
@@ -1298,19 +1248,6 @@ export function deserializeJsonIncomeWithPermittedActions(json: JsonOf<IncomeWit
 }
 
 
-export function deserializeJsonInvoice(json: JsonOf<Invoice>): Invoice {
-  return {
-    ...json,
-    dueDate: LocalDate.parseIso(json.dueDate),
-    invoiceDate: LocalDate.parseIso(json.invoiceDate),
-    periodEnd: LocalDate.parseIso(json.periodEnd),
-    periodStart: LocalDate.parseIso(json.periodStart),
-    rows: json.rows.map(e => deserializeJsonInvoiceRow(e)),
-    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
-  }
-}
-
-
 export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>): InvoiceCorrection {
   return {
     ...json,
@@ -1370,15 +1307,6 @@ export function deserializeJsonInvoicePayload(json: JsonOf<InvoicePayload>): Inv
 }
 
 
-export function deserializeJsonInvoiceRow(json: JsonOf<InvoiceRow>): InvoiceRow {
-  return {
-    ...json,
-    periodEnd: LocalDate.parseIso(json.periodEnd),
-    periodStart: LocalDate.parseIso(json.periodStart)
-  }
-}
-
-
 export function deserializeJsonInvoiceRowDetailed(json: JsonOf<InvoiceRowDetailed>): InvoiceRowDetailed {
   return {
     ...json,
@@ -1389,23 +1317,14 @@ export function deserializeJsonInvoiceRowDetailed(json: JsonOf<InvoiceRowDetaile
 }
 
 
-export function deserializeJsonInvoiceRowSummary(json: JsonOf<InvoiceRowSummary>): InvoiceRowSummary {
-  return {
-    ...json,
-    child: deserializeJsonPersonBasic(json.child)
-  }
-}
-
-
 export function deserializeJsonInvoiceSummary(json: JsonOf<InvoiceSummary>): InvoiceSummary {
   return {
     ...json,
-    codebtor: (json.codebtor != null) ? deserializeJsonPersonDetailed(json.codebtor) : null,
+    children: json.children.map(e => deserializeJsonPersonBasic(e)),
     createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
     headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
     periodEnd: LocalDate.parseIso(json.periodEnd),
     periodStart: LocalDate.parseIso(json.periodStart),
-    rows: json.rows.map(e => deserializeJsonInvoiceRowSummary(e)),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
   }
 }

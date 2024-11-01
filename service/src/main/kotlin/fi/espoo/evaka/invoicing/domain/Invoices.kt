@@ -30,26 +30,6 @@ interface RowWithPrice {
     val price: Int
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Invoice(
-    val id: InvoiceId,
-    val status: InvoiceStatus,
-    val periodStart: LocalDate,
-    val periodEnd: LocalDate,
-    val dueDate: LocalDate = getDueDate(periodEnd),
-    val invoiceDate: LocalDate = dueDate.minusWeeks(2),
-    val areaId: AreaId,
-    val headOfFamily: PersonId,
-    val codebtor: PersonId?,
-    val rows: List<InvoiceRow>,
-    val number: Long? = null,
-    val sentBy: EvakaUserId? = null,
-    val sentAt: HelsinkiDateTime? = null,
-) {
-    val totalPrice
-        get() = invoiceRowTotal(rows)
-}
-
 enum class InvoiceStatus : DatabaseEnum {
     DRAFT,
     WAITING_FOR_SENDING,
@@ -57,23 +37,6 @@ enum class InvoiceStatus : DatabaseEnum {
     CANCELED;
 
     override val sqlType: String = "invoice_status"
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class InvoiceRow(
-    val id: InvoiceRowId?,
-    @Nested val child: ChildId,
-    val amount: Int,
-    val unitPrice: Int,
-    val periodStart: LocalDate,
-    val periodEnd: LocalDate,
-    val product: ProductKey,
-    val unitId: DaycareId,
-    val description: String = "",
-    val correctionId: InvoiceCorrectionId?,
-) : RowWithPrice {
-    override val price
-        get() = amount * unitPrice
 }
 
 data class RelatedFeeDecision(val id: FeeDecisionId, val decisionNumber: Long)
@@ -127,34 +90,18 @@ data class InvoiceRowDetailed(
         get() = amount * unitPrice
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceSummary(
     val id: InvoiceId,
     val status: InvoiceStatus,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
-    val headOfFamily: PersonDetailed,
-    val codebtor: PersonDetailed?,
-    val rows: List<InvoiceRowSummary>,
+    @Json val headOfFamily: PersonDetailed,
+    @Json val children: List<PersonBasic>,
+    val totalPrice: Int,
     val sentBy: EvakaUserId?,
     val sentAt: HelsinkiDateTime?,
-    val createdAt: HelsinkiDateTime? = null,
-) {
-    val account: Int = 3295
-    val totalPrice
-        get() = invoiceRowTotal(rows)
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class InvoiceRowSummary(
-    val id: InvoiceRowId,
-    val child: PersonBasic,
-    val amount: Int,
-    val unitPrice: Int,
-) : RowWithPrice {
-    override val price
-        get() = amount * unitPrice
-}
+    val createdAt: HelsinkiDateTime?,
+)
 
 fun getDueDate(periodEnd: LocalDate): LocalDate {
     val lastDayOfMonth = periodEnd.plusMonths(1).with(TemporalAdjusters.lastDayOfMonth())
@@ -166,3 +113,32 @@ fun getDueDate(periodEnd: LocalDate): LocalDate {
 }
 
 fun invoiceRowTotal(rows: List<RowWithPrice>): Int = rows.sumOf { it.price }
+
+data class DraftInvoice(
+    val periodStart: LocalDate,
+    val periodEnd: LocalDate,
+    val dueDate: LocalDate = getDueDate(periodEnd),
+    val invoiceDate: LocalDate = dueDate.minusWeeks(2),
+    val areaId: AreaId,
+    val headOfFamily: PersonId,
+    val codebtor: PersonId?,
+    val rows: List<DraftInvoiceRow>,
+) {
+    val totalPrice
+        get() = invoiceRowTotal(rows)
+}
+
+data class DraftInvoiceRow(
+    val childId: ChildId,
+    val amount: Int,
+    val unitPrice: Int,
+    val periodStart: LocalDate,
+    val periodEnd: LocalDate,
+    val product: ProductKey,
+    val unitId: DaycareId,
+    val description: String = "",
+    val correctionId: InvoiceCorrectionId? = null,
+) : RowWithPrice {
+    override val price: Int
+        get() = amount * unitPrice
+}

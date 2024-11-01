@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import uniqBy from 'lodash/uniqBy'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -325,12 +324,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
               <NameWithSsn {...item.headOfFamily} i18n={i18n} />
             </Td>
             <Td>
-              <ChildrenCell
-                people={uniqBy(
-                  item.rows.map(({ child }) => child),
-                  ({ id }) => id
-                )}
-              />
+              <ChildrenCell people={item.children} />
             </Td>
             <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
             <Td data-qa="invoice-created-at">

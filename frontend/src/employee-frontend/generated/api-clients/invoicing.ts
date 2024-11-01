@@ -20,10 +20,10 @@ import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { IncomeRequest } from 'lib-common/generated/api-types/invoicing'
 import { IncomeTypeOptions } from 'lib-common/generated/api-types/invoicing'
 import { IncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
-import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCodes } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCorrectionInsert } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCorrectionWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
 import { InvoicePayload } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
@@ -53,8 +53,8 @@ import { deserializeJsonFeeDecisionDetailed } from 'lib-common/generated/api-typ
 import { deserializeJsonFeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonInvoice } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonInvoiceCorrectionWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonInvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonInvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonPagedFeeDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonPagedInvoiceSummaryResponses } from 'lib-common/generated/api-types/invoicing'
@@ -587,12 +587,12 @@ export async function getHeadOfFamilyInvoices(
   request: {
     id: UUID
   }
-): Promise<Invoice[]> {
-  const { data: json } = await client.request<JsonOf<Invoice[]>>({
+): Promise<InvoiceDetailed[]> {
+  const { data: json } = await client.request<JsonOf<InvoiceDetailed[]>>({
     url: uri`/employee/invoices/head-of-family/${request.id}`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonInvoice(e))
+  return json.map(e => deserializeJsonInvoiceDetailed(e))
 }
 
 

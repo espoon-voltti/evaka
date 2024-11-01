@@ -8,12 +8,12 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
-import fi.espoo.evaka.invoicing.data.insertInvoices
+import fi.espoo.evaka.invoicing.data.insertDraftInvoices
 import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
+import fi.espoo.evaka.invoicing.domain.DraftInvoice
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
-import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
@@ -38,7 +37,6 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Month
 import java.time.YearMonth
-import java.util.UUID
 import kotlin.math.abs
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Component
@@ -62,11 +60,11 @@ class InvoiceGenerator(
                 applyCorrections(tx, invoices, month, invoiceCalculationData.areaIds)
             }
         tx.deleteDraftInvoicesByDateRange(FiniteDateRange.ofMonth(month))
-        tx.insertInvoices(
+        tx.insertDraftInvoices(
             invoices = invoicesWithCorrections,
             relatedFeeDecisions =
                 invoicesWithCorrections.associate { invoice ->
-                    invoice.id to
+                    invoice.headOfFamily to
                         invoiceCalculationData.decisions
                             .getOrDefault(invoice.headOfFamily, emptyList())
                             .map { it.id }
@@ -184,10 +182,10 @@ class InvoiceGenerator(
 
     fun applyCorrections(
         tx: Database.Read,
-        invoices: List<Invoice>,
+        invoices: List<DraftInvoice>,
         targetMonth: YearMonth,
         areaIds: Map<DaycareId, AreaId>,
-    ): List<Invoice> {
+    ): List<DraftInvoice> {
         val corrections = tx.getUnappliedInvoiceCorrections().groupBy { it.headOfFamilyId }
 
         val invoicesWithCorrections =
@@ -195,9 +193,7 @@ class InvoiceGenerator(
                 .map { (headOfFamily, headOfFamilyCorrections) ->
                     val invoice =
                         invoices.find { it.headOfFamily == headOfFamily }
-                            ?: Invoice(
-                                id = InvoiceId(UUID.randomUUID()),
-                                status = InvoiceStatus.DRAFT,
+                            ?: DraftInvoice(
                                 periodStart = targetMonth.atDay(1),
                                 periodEnd = targetMonth.atEndOfMonth(),
                                 areaId =
@@ -214,7 +210,7 @@ class InvoiceGenerator(
                             .sortedByDescending { abs(it.amount * it.unitPrice) }
                             .partition { it.unitPrice > 0 }
                     val withAdditions =
-                        invoice.copy(rows = invoice.rows + additions.map { it.toInvoiceRow() })
+                        invoice.copy(rows = invoice.rows + additions.map { it.toDraftInvoiceRow() })
 
                     subtractions.fold(withAdditions) { invoiceWithSubtractions, subtraction ->
                         if (invoiceWithSubtractions.totalPrice == 0)
@@ -234,7 +230,7 @@ class InvoiceGenerator(
                             invoiceWithSubtractions.copy(
                                 rows =
                                     invoiceWithSubtractions.rows +
-                                        subtractionWithMaxApplicableAmount.toInvoiceRow()
+                                        subtractionWithMaxApplicableAmount.toDraftInvoiceRow()
                             )
                         } else { // apply partial unit price
                             val maxUnitPrice =
@@ -246,17 +242,19 @@ class InvoiceGenerator(
                             invoiceWithSubtractions.copy(
                                 rows =
                                     invoiceWithSubtractions.rows +
-                                        subtractionWithMaxUnitPrice.toInvoiceRow()
+                                        subtractionWithMaxUnitPrice.toDraftInvoiceRow()
                             )
                         }
                     }
                 }
                 .filter { it.rows.isNotEmpty() }
 
-        return invoicesWithCorrections +
+        val invoicesWithoutCorrections =
             invoices.filterNot { invoice ->
-                invoicesWithCorrections.any { correction -> invoice.id == correction.id }
+                invoicesWithCorrections.any { it.headOfFamily == invoice.headOfFamily }
             }
+
+        return invoicesWithCorrections + invoicesWithoutCorrections
     }
 }
 

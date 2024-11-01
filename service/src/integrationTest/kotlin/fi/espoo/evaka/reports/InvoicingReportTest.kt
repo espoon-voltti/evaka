@@ -4,32 +4,32 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.invoicing.createInvoiceFixture
-import fi.espoo.evaka.invoicing.createInvoiceRowFixture
-import fi.espoo.evaka.invoicing.data.insertInvoices
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevInvoice
+import fi.espoo.evaka.shared.dev.DevInvoiceRow
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var invoiceReportController: InvoiceReportController
+
     private val area1 = DevCareArea(areaCode = 100, name = "Area 1", shortName = "area1")
     private val area2 = DevCareArea(areaCode = 200, name = "Area 2", shortName = "area2")
     private val daycare1 = DevDaycare(areaId = area1.id)
@@ -82,36 +82,31 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
 
     private fun getAndAssert(date: LocalDate, expected: InvoiceReport) {
-        val (_, response, result) =
-            http
-                .get(
-                    "/employee/reports/invoices",
-                    listOf("date" to date.format(DateTimeFormatter.ISO_DATE)),
-                )
-                .asUser(testUser)
-                .responseObject<InvoiceReport>(jsonMapper)
-
-        assertEquals(200, response.statusCode)
-        assertEquals(expected, result.get())
+        val result =
+            invoiceReportController.getInvoiceReport(
+                dbInstance(),
+                testUser,
+                MockEvakaClock(2024, 10, 31, 12, 0, 0),
+                date,
+            )
+        assertEquals(expected, result)
     }
 
     private val testInvoices =
         listOf(
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = area1.id,
-                rows =
-                    listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = daycare1.id)),
+                rows = listOf(DevInvoiceRow(childId = testChild_1.id, unitId = daycare1.id)),
             ),
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_2.id,
                 areaId = area2.id,
-                rows =
-                    listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = daycare2.id)),
+                rows = listOf(DevInvoiceRow(childId = testChild_2.id, unitId = daycare2.id)),
             ),
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_2.id,
                 areaId = area2.id,
@@ -121,7 +116,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun insertInvoices(date: LocalDate) {
         db.transaction {
-            it.insertInvoices(testInvoices)
+            it.insert(testInvoices)
             it.execute { sql("UPDATE invoice SET sent_at = ${bind(date)}") }
         }
     }

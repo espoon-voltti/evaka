@@ -13,17 +13,14 @@ import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
-import fi.espoo.evaka.invoicing.data.insertInvoices
 import fi.espoo.evaka.invoicing.data.paginatedSearch
 import fi.espoo.evaka.invoicing.data.searchInvoices
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
-import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
@@ -35,6 +32,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevFeeDecision
+import fi.espoo.evaka.shared.dev.DevInvoice
+import fi.espoo.evaka.shared.dev.DevInvoiceRow
+import fi.espoo.evaka.shared.dev.DevInvoicedFeeDecision
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -99,35 +99,28 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val testInvoices =
         listOf(
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = testArea.id,
-                rows =
-                    listOf(
-                        createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
-                    ),
+                rows = listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
             ),
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = testArea.id,
                 number = 5000000001L,
-                period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
-                rows =
-                    listOf(
-                        createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
-                    ),
+                periodStart = LocalDate.of(2020, 1, 1),
+                periodEnd = LocalDate.of(2020, 1, 31),
+                rows = listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
             ),
-            createInvoiceFixture(
+            DevInvoice(
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_2.id,
                 areaId = testArea.id,
-                period = FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
-                rows =
-                    listOf(
-                        createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
-                    ),
+                periodStart = LocalDate.of(2018, 1, 1),
+                periodEnd = LocalDate.of(2018, 1, 31),
+                rows = listOf(DevInvoiceRow(childId = testChild_2.id, unitId = testDaycare.id)),
             ),
         )
 
@@ -206,7 +199,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works with draft status parameter`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val drafts =
             testInvoices.filter { it.status == InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
@@ -217,7 +210,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works with sent status parameter`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val sent = testInvoices.filter { it.status == InvoiceStatus.SENT }
 
         val result =
@@ -227,7 +220,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works with canceled status parameter`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val canceled = testInvoices.filter { it.status == InvoiceStatus.CANCELED }
 
         val result =
@@ -238,7 +231,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works with multiple status parameters`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val sentAndCanceled =
             testInvoices.filter {
                 it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.CANCELED
@@ -257,7 +250,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `search works with all status parameters`() {
         val testInvoiceSubset = testInvoices.take(2)
-        db.transaction { tx -> tx.insertInvoices(testInvoiceSubset) }
+        db.transaction { tx -> tx.insert(testInvoiceSubset) }
         val invoices = testInvoiceSubset.sortedBy { it.status }.reversed()
 
         val result =
@@ -272,7 +265,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with existing area param`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
         val result = searchInvoices(SearchInvoicesRequest(page = 1, area = listOf("test_area")))
@@ -281,7 +274,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with area and status params`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
         val result =
@@ -302,7 +295,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with non-existent area param`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
 
         val result = searchInvoices(SearchInvoicesRequest(page = 1, area = listOf("non_existent")))
         assertEqualEnough(listOf(), result)
@@ -310,7 +303,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with multiple partial search terms`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
 
         val result =
             searchInvoices(
@@ -325,7 +318,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with multiple more specific search terms`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
 
         val result =
             searchInvoices(
@@ -339,7 +332,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with multiple search terms where one does not match anything`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
 
         val result =
             searchInvoices(
@@ -353,7 +346,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with child name as search term`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
 
         val result =
             searchInvoices(SearchInvoicesRequest(page = 1, searchTerms = testChild_2.firstName))
@@ -362,7 +355,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with ssn as search term`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
 
         val result = searchInvoices(SearchInvoicesRequest(page = 1, searchTerms = testAdult_1.ssn))
         assertEqualEnough(testInvoices.take(2).map(::toSummary), result)
@@ -370,7 +363,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with date of birth as search term`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
 
         val result =
             searchInvoices(
@@ -381,7 +374,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search gives correct total and page composition when using filters`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val sent =
             testInvoices
                 .filter { it.status == InvoiceStatus.DRAFT }
@@ -407,29 +400,27 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `getInvoice works with existing invoice`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        val invoiceIds = db.transaction { tx -> tx.insert(testInvoices) }
         val invoice = testInvoices[0]
 
-        val result = getInvoice(invoice.id)
+        val result = getInvoice(invoiceIds[0])
         assertDetailedEqualEnough(listOf(toDetailed(invoice)), listOf(result))
     }
 
     @Test
     fun `getInvoice works with existing invoice with related fee decisions`() {
         val invoice = testInvoices[0]
-        val feeDecisionId =
-            db.transaction {
-                it.insert(
-                    DevFeeDecision(
-                        validDuring = FiniteDateRange(invoice.periodStart, invoice.periodEnd),
-                        headOfFamilyId = invoice.headOfFamily,
-                        status = FeeDecisionStatus.SENT,
-                        decisionNumber = 123,
-                    )
-                )
-            }
+        val feeDecision =
+            DevFeeDecision(
+                validDuring = FiniteDateRange(invoice.periodStart, invoice.periodEnd),
+                headOfFamilyId = invoice.headOfFamilyId,
+                status = FeeDecisionStatus.SENT,
+                decisionNumber = 123,
+            )
         db.transaction { tx ->
-            tx.insertInvoices(listOf(invoice), mapOf(invoice.id to listOf(feeDecisionId)))
+            tx.insert(feeDecision)
+            tx.insert(invoice)
+            tx.insert(DevInvoicedFeeDecision(invoice.id, feeDecision.id))
         }
 
         val result = getInvoice(invoice.id)
@@ -439,7 +430,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     toDetailed(invoice)
                         .copy(
                             relatedFeeDecisions =
-                                listOf(RelatedFeeDecision(id = feeDecisionId, decisionNumber = 123))
+                                listOf(
+                                    RelatedFeeDecision(id = feeDecision.id, decisionNumber = 123)
+                                )
                         )
                 ),
             actual = listOf(result),
@@ -448,7 +441,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `getInvoice returns not found with non-existent invoice`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
 
         assertThrows<NotFound> {
             getInvoice(InvoiceId(UUID.fromString("00000000-0000-0000-0000-000000000000")))
@@ -457,7 +450,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `send works with draft invoice`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         sendInvoices(listOf(draft.id))
@@ -465,7 +458,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `send returns bad request for sent status invoice`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
         assertThrows<BadRequest> { sendInvoices(listOf(sent.id)) }
@@ -473,7 +466,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `send updates invoice status and number and sent fields`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insert(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         sendInvoices(listOf(draft.id))
@@ -496,21 +489,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `send sets distinct numbers`() {
         val drafts =
             (1..5).map {
-                createInvoiceFixture(
+                DevInvoice(
                     status = InvoiceStatus.DRAFT,
                     headOfFamilyId = testAdult_1.id,
                     areaId = testArea.id,
-                    rows =
-                        listOf(
-                            createInvoiceRowFixture(
-                                childId = testChild_1.id,
-                                unitId = testDaycare.id,
-                            )
-                        ),
+                    rows = listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
                 )
             }
 
-        db.transaction { tx -> tx.insertInvoices(drafts) }
+        db.transaction { tx -> tx.insert(drafts) }
 
         sendInvoices(drafts.map { it.id })
 
@@ -536,7 +523,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
             }
 
-        db.transaction { tx -> tx.insertInvoices(drafts + sentInvoice) }
+        db.transaction { tx -> tx.insert(drafts + sentInvoice) }
 
         sendInvoices(drafts.map { it.id })
 
@@ -562,7 +549,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
 
         val draft = testInvoices[0]
-        db.transaction { tx -> tx.insertInvoices(listOf(draft)) }
+        db.transaction { tx -> tx.insert(listOf(draft)) }
 
         sendInvoices(listOf(draft.id))
 
@@ -575,7 +562,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `mark as sent updates invoice status and sent fields`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.WAITING_FOR_SENDING)
         db.transaction { tx ->
-            tx.insertInvoices(listOf(invoice))
+            tx.insert(listOf(invoice))
             tx.execute { sql("UPDATE invoice_row SET saved_cost_center = '31500'") }
         }
 
@@ -598,7 +585,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `mark as sent returns bad request if invoice status is wrong`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.DRAFT)
-        db.transaction { tx -> tx.insertInvoices(listOf(invoice)) }
+        db.transaction { tx -> tx.insert(listOf(invoice)) }
 
         assertThrows<BadRequest> { markInvoicesAsSent(listOf(invoice.id)) }
     }
@@ -606,7 +593,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `mark as sent returns bad request if one of the ids is incorrect`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.DRAFT)
-        db.transaction { tx -> tx.insertInvoices(listOf(invoice)) }
+        db.transaction { tx -> tx.insert(listOf(invoice)) }
 
         assertThrows<BadRequest> {
             markInvoicesAsSent(listOf(invoice.id, InvoiceId(UUID.randomUUID())))
@@ -764,7 +751,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = part.child.id,
                             unitId = part.placement.unitId,
                             startDate = decision.validFrom,
-                            endDate = decision.validTo!!,
+                            endDate = decision.validTo,
                         )
                     )
                     tx.insert(
@@ -772,7 +759,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = part.child.id,
                             headOfChildId = decision.headOfFamilyId,
                             startDate = decision.validFrom,
-                            endDate = decision.validTo!!,
+                            endDate = decision.validTo,
                         )
                     )
                 }
@@ -812,7 +799,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
         db.transaction { tx -> tx.searchInvoices(status) }
 
-    private fun toDetailed(invoice: Invoice): InvoiceDetailed =
+    private fun toDetailed(invoice: DevInvoice): InvoiceDetailed =
         InvoiceDetailed(
             id = invoice.id,
             status = invoice.status,
@@ -822,14 +809,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             invoiceDate = invoice.invoiceDate,
             agreementType = allAreas.find { it.id == invoice.areaId }?.areaCode!!,
             areaId = invoice.areaId,
-            headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
+            headOfFamily = allAdults.find { it.id == invoice.headOfFamilyId }!!.toPersonDetailed(),
             codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
             rows =
                 invoice.rows.map { row ->
                     val unit = allDaycares.find { it.id == row.unitId }!!
                     InvoiceRowDetailed(
-                        id = row.id!!,
-                        child = allChildren.find { it.id == row.child }!!.toPersonDetailed(),
+                        id = row.id,
+                        child = allChildren.find { it.id == row.childId }!!.toPersonDetailed(),
                         amount = row.amount,
                         unitPrice = row.unitPrice,
                         periodStart = row.periodStart,
@@ -859,24 +846,20 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             relatedFeeDecisions = emptyList(),
         )
 
-    private fun toSummary(invoice: Invoice): InvoiceSummary =
+    private fun toSummary(invoice: DevInvoice): InvoiceSummary =
         InvoiceSummary(
             id = invoice.id,
             status = invoice.status,
             periodStart = invoice.periodStart,
             periodEnd = invoice.periodEnd,
-            headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
-            codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
-            rows =
+            headOfFamily = allAdults.find { it.id == invoice.headOfFamilyId }!!.toPersonDetailed(),
+            children =
                 invoice.rows.map { row ->
-                    InvoiceRowSummary(
-                        id = row.id!!,
-                        child = allChildren.find { it.id == row.child }!!.toPersonBasic(),
-                        amount = row.amount,
-                        unitPrice = row.unitPrice,
-                    )
+                    allChildren.find { it.id == row.childId }!!.toPersonBasic()
                 },
+            totalPrice = invoice.rows.sumOf { it.amount * it.unitPrice },
             sentBy = invoice.sentBy,
             sentAt = invoice.sentAt,
+            createdAt = invoice.createdAt,
         )
 }

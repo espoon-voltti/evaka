@@ -33,7 +33,7 @@ import {
   FeeDecisionStatus,
   FeeThresholds,
   IncomeNotification,
-  Invoice
+  InvoiceStatus
 } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
@@ -130,6 +130,7 @@ import {
   DevFridgeChild,
   DevHoliday,
   DevIncome,
+  DevInvoice,
   DevParentship,
   DevPayment,
   DevPedagogicalDocument,
@@ -3017,13 +3018,13 @@ export const invoiceFixture = (
   childId: UUID,
   areaId: UUID,
   unitId: UUID,
-  status: Invoice['status'],
+  status: InvoiceStatus,
   periodStart = LocalDate.of(2019, 1, 1),
   periodEnd = LocalDate.of(2019, 1, 1)
-): Invoice => ({
+): DevInvoice => ({
   id: uuidv4(),
   status,
-  headOfFamily: adultId,
+  headOfFamilyId: adultId,
   codebtor: null,
   areaId,
   periodStart,
@@ -3033,10 +3034,12 @@ export const invoiceFixture = (
   number: null,
   sentAt: null,
   sentBy: null,
+  createdAt: null,
   rows: [
     {
       id: uuidv4(),
-      child: childId,
+      idx: 1,
+      childId,
       amount: 1,
       unitPrice: 10000,
       periodStart: periodStart,
@@ -3044,11 +3047,9 @@ export const invoiceFixture = (
       product: 'DAYCARE',
       unitId,
       description: '',
-      price: 10000,
       correctionId: null
     }
-  ],
-  totalPrice: 10000
+  ]
 })
 
 export const testDaycareGroup: DevDaycareGroup = {
