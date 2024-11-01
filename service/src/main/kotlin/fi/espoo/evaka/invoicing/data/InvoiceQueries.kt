@@ -10,22 +10,17 @@ import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.domain.DraftInvoice
 import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
-import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
-import fi.espoo.evaka.invoicing.domain.PersonBasic
-import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.InvoiceId
-import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.QuerySql
-import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -260,46 +255,42 @@ fun Database.Read.paginatedSearch(
             invoice_ids.count,
             invoice.id,
             invoice.status,
-            invoice.period_start as invoice_period_start,
-            invoice.period_end as invoice_period_end,
-            invoice.head_of_family,
-            invoice.codebtor,
+            invoice.period_start,
+            invoice.period_end,
             invoice.sent_at,
             invoice.sent_by,
-            invoice.area_id,
             invoice.created_at,
-            head.date_of_birth as head_date_of_birth,
-            head.first_name as head_first_name,
-            head.last_name as head_last_name,
-            head.social_security_number as head_ssn,
-            head.street_address as head_street_address,
-            head.postal_code as head_postal_code,
-            head.post_office as head_post_office,
-            head.restricted_details_enabled as head_restricted_details_enabled,
-            codebtor.date_of_birth as codebtor_date_of_birth,
-            codebtor.first_name as codebtor_first_name,
-            codebtor.last_name as codebtor_last_name,
-            codebtor.social_security_number as codebtor_ssn,
-            codebtor.street_address as codebtor_street_address,
-            codebtor.postal_code as codebtor_postal_code,
-            codebtor.post_office as codebtor_post_office,
-            codebtor.restricted_details_enabled as codebtor_restricted_details_enabled,
-            row.id as invoice_row_id,
-            row.child,
-            row.amount,
-            row.unit_price,
-            row.price,
-            child.date_of_birth as child_date_of_birth,
-            child.first_name as child_first_name,
-            child.last_name as child_last_name,
-            child.social_security_number as child_ssn
+            jsonb_build_object(
+                'id', invoice.head_of_family,
+                'dateOfBirth', head.date_of_birth,
+                'firstName', head.first_name,
+                'lastName', head.last_name,
+                'ssn', head.social_security_number,
+                'streetAddress', head.street_address,
+                'postalCode', head.postal_code,
+                'postOffice', head.post_office,
+                'restrictedDetailsEnabled', head.restricted_details_enabled
+            ) as head_of_family,
+            rows_summary.children,
+            rows_summary.total_price
         FROM invoice_ids
-            LEFT JOIN invoice as invoice ON invoice_ids.id = invoice.id
-            LEFT JOIN person as head ON invoice.head_of_family = head.id
-            LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
-            LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
-            LEFT JOIN person as child ON row.child = child.id
-        ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id, row.idx
+        JOIN invoice ON invoice_ids.id = invoice.id
+        JOIN person as head ON invoice.head_of_family = head.id
+        JOIN LATERAL (
+            SELECT
+                jsonb_agg(jsonb_build_object(
+                    'id', row.child,
+                    'dateOfBirth', child.date_of_birth,
+                    'firstName', child.first_name,
+                    'lastName', child.last_name,
+                    'ssn', child.social_security_number
+                ) ORDER BY row.idx) AS children,
+                SUM(row.amount * row.unit_price) AS total_price
+            FROM invoice_row AS row
+            JOIN person AS child ON row.child = child.id
+            WHERE row.invoice_id = invoice.id
+        ) AS rows_summary ON true
+        ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
         """
             .trimIndent()
 
@@ -307,8 +298,7 @@ fun Database.Read.paginatedSearch(
     return createQuery(sql)
         .addBindings(params)
         .addBindings(freeTextParams)
-        .mapToPaged(::PagedInvoiceSummaries, pageSize, Row::toInvoiceSummary)
-        .let { it.copy(data = flattenSummary(it.data)) }
+        .mapToPaged(::PagedInvoiceSummaries, pageSize)
 }
 
 fun Database.Read.searchInvoices(
@@ -540,73 +530,4 @@ private fun Database.Transaction.insertInvoicedFeeDecisions(
     """
         )
     }
-}
-
-fun Row.toInvoiceSummary() =
-    InvoiceSummary(
-        id = column("id"),
-        status = column("status"),
-        periodStart = column("invoice_period_start"),
-        periodEnd = column("invoice_period_end"),
-        rows =
-            column<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
-                listOf(
-                    InvoiceRowSummary(
-                        id = rowId,
-                        child =
-                            PersonBasic(
-                                id = column("child"),
-                                dateOfBirth = column("child_date_of_birth"),
-                                firstName = column("child_first_name"),
-                                lastName = column("child_last_name"),
-                                ssn = column("child_ssn"),
-                            ),
-                        amount = column("amount"),
-                        unitPrice = column("unit_price"),
-                    )
-                )
-            } ?: listOf(),
-        headOfFamily =
-            PersonDetailed(
-                id = column("head_of_family"),
-                dateOfBirth = column("head_date_of_birth"),
-                firstName = column("head_first_name"),
-                lastName = column("head_last_name"),
-                ssn = column("head_ssn"),
-                streetAddress = column("head_street_address"),
-                postalCode = column("head_postal_code"),
-                postOffice = column("head_post_office"),
-                restrictedDetailsEnabled = column("head_restricted_details_enabled"),
-            ),
-        codebtor =
-            column<PersonId?>("codebtor")?.let { id ->
-                PersonDetailed(
-                    id = id,
-                    dateOfBirth = column("codebtor_date_of_birth"),
-                    firstName = column("codebtor_first_name"),
-                    lastName = column("codebtor_last_name"),
-                    ssn = column("codebtor_ssn"),
-                    streetAddress = column("codebtor_street_address"),
-                    postalCode = column("codebtor_postal_code"),
-                    postOffice = column("codebtor_post_office"),
-                    restrictedDetailsEnabled = column("codebtor_restricted_details_enabled"),
-                )
-            },
-        sentBy = column("sent_by"),
-        sentAt = column("sent_at"),
-        createdAt = column("created_at"),
-    )
-
-fun flattenSummary(invoices: List<InvoiceSummary>): List<InvoiceSummary> {
-    val map = mutableMapOf<InvoiceId, InvoiceSummary>()
-    for (invoice in invoices) {
-        val id = invoice.id
-        if (map.containsKey(id)) {
-            val existing = map.getValue(id)
-            map[id] = existing.copy(rows = existing.rows + invoice.rows)
-        } else {
-            map[id] = invoice
-        }
-    }
-    return map.values.toList()
 }

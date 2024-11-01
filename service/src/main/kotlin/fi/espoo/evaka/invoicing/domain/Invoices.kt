@@ -90,33 +90,18 @@ data class InvoiceRowDetailed(
         get() = amount * unitPrice
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceSummary(
     val id: InvoiceId,
     val status: InvoiceStatus,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
-    val headOfFamily: PersonDetailed,
-    val codebtor: PersonDetailed?,
-    val rows: List<InvoiceRowSummary>,
+    @Json val headOfFamily: PersonDetailed,
+    @Json val children: List<PersonBasic>,
+    val totalPrice: Int,
     val sentBy: EvakaUserId?,
     val sentAt: HelsinkiDateTime?,
-    val createdAt: HelsinkiDateTime? = null,
-) {
-    val totalPrice
-        get() = invoiceRowTotal(rows)
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class InvoiceRowSummary(
-    val id: InvoiceRowId,
-    val child: PersonBasic,
-    val amount: Int,
-    val unitPrice: Int,
-) : RowWithPrice {
-    override val price
-        get() = amount * unitPrice
-}
+    val createdAt: HelsinkiDateTime?,
+)
 
 fun getDueDate(periodEnd: LocalDate): LocalDate {
     val lastDayOfMonth = periodEnd.plusMonths(1).with(TemporalAdjusters.lastDayOfMonth())

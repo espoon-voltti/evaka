@@ -21,7 +21,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
-import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
@@ -854,17 +853,13 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             periodStart = invoice.periodStart,
             periodEnd = invoice.periodEnd,
             headOfFamily = allAdults.find { it.id == invoice.headOfFamilyId }!!.toPersonDetailed(),
-            codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
-            rows =
+            children =
                 invoice.rows.map { row ->
-                    InvoiceRowSummary(
-                        id = row.id,
-                        child = allChildren.find { it.id == row.childId }!!.toPersonBasic(),
-                        amount = row.amount,
-                        unitPrice = row.unitPrice,
-                    )
+                    allChildren.find { it.id == row.childId }!!.toPersonBasic()
                 },
+            totalPrice = invoice.rows.sumOf { it.amount * it.unitPrice },
             sentBy = invoice.sentBy,
             sentAt = invoice.sentAt,
+            createdAt = invoice.createdAt,
         )
 }

@@ -626,17 +626,6 @@ export interface InvoiceRowDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
-*/
-export interface InvoiceRowSummary {
-  amount: number
-  child: PersonBasic
-  id: UUID
-  price: number
-  unitPrice: number
-}
-
-/**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 */
 export type InvoiceSortParam =
@@ -661,13 +650,12 @@ export type InvoiceStatus =
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceSummary
 */
 export interface InvoiceSummary {
-  codebtor: PersonDetailed | null
+  children: PersonBasic[]
   createdAt: HelsinkiDateTime | null
   headOfFamily: PersonDetailed
   id: UUID
   periodEnd: LocalDate
   periodStart: LocalDate
-  rows: InvoiceRowSummary[]
   sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
   status: InvoiceStatus
@@ -1329,23 +1317,14 @@ export function deserializeJsonInvoiceRowDetailed(json: JsonOf<InvoiceRowDetaile
 }
 
 
-export function deserializeJsonInvoiceRowSummary(json: JsonOf<InvoiceRowSummary>): InvoiceRowSummary {
-  return {
-    ...json,
-    child: deserializeJsonPersonBasic(json.child)
-  }
-}
-
-
 export function deserializeJsonInvoiceSummary(json: JsonOf<InvoiceSummary>): InvoiceSummary {
   return {
     ...json,
-    codebtor: (json.codebtor != null) ? deserializeJsonPersonDetailed(json.codebtor) : null,
+    children: json.children.map(e => deserializeJsonPersonBasic(e)),
     createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
     headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
     periodEnd: LocalDate.parseIso(json.periodEnd),
     periodStart: LocalDate.parseIso(json.periodStart),
-    rows: json.rows.map(e => deserializeJsonInvoiceRowSummary(e)),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
   }
 }
