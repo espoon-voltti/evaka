@@ -210,7 +210,7 @@ class InvoiceGenerator(
                             .sortedByDescending { abs(it.amount * it.unitPrice) }
                             .partition { it.unitPrice > 0 }
                     val withAdditions =
-                        invoice.copy(rows = invoice.rows + additions.map { it.toInvoiceRow() })
+                        invoice.copy(rows = invoice.rows + additions.map { it.toDraftInvoiceRow() })
 
                     subtractions.fold(withAdditions) { invoiceWithSubtractions, subtraction ->
                         if (invoiceWithSubtractions.totalPrice == 0)
@@ -230,7 +230,7 @@ class InvoiceGenerator(
                             invoiceWithSubtractions.copy(
                                 rows =
                                     invoiceWithSubtractions.rows +
-                                        subtractionWithMaxApplicableAmount.toInvoiceRow()
+                                        subtractionWithMaxApplicableAmount.toDraftInvoiceRow()
                             )
                         } else { // apply partial unit price
                             val maxUnitPrice =
@@ -242,7 +242,7 @@ class InvoiceGenerator(
                             invoiceWithSubtractions.copy(
                                 rows =
                                     invoiceWithSubtractions.rows +
-                                        subtractionWithMaxUnitPrice.toInvoiceRow()
+                                        subtractionWithMaxUnitPrice.toDraftInvoiceRow()
                             )
                         }
                     }

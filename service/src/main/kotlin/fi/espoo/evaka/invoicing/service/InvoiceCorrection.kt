@@ -34,7 +34,7 @@ data class InvoiceCorrection(
     val note: String,
     @Nested("invoice") val invoice: InvoiceWithCorrection?, // should later be a list?
 ) {
-    fun toInvoiceRow() =
+    fun toDraftInvoiceRow() =
         DraftInvoiceRow(
             childId = childId,
             amount = amount,

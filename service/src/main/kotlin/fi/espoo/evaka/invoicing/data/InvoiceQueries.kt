@@ -410,6 +410,8 @@ fun Database.Transaction.insertDraftInvoices(
     relatedFeeDecisions: Map<PersonId, List<FeeDecisionId>> = emptyMap(),
 ): List<InvoiceId> {
     val invoiceIds = insertInvoicesWithoutRows(invoices)
+    check(invoiceIds.size == invoices.size)
+
     insertInvoiceRows(
         invoices.zip(invoiceIds).map { (invoice, invoiceId) -> invoiceId to invoice.rows }
     )
