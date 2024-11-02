@@ -163,6 +163,7 @@ function UnitRouter() {
         path="/children/:childId/*"
         element={<ChildRouter unitId={unitId} />}
       />
+      <Route path="/mark-present" element={<MarkPresent unitId={unitId} />} />
       <Route index element={<Navigate replace to="groups/all" />} />
     </Routes>
   )
@@ -265,10 +266,6 @@ function ChildRouter({ unitId }: { unitId: UUID }) {
         path="/"
         index
         element={<AttendanceChildPage unitId={unitId} childId={childId} />}
-      />
-      <Route
-        path="/mark-present"
-        element={<MarkPresent unitId={unitId} childId={childId} />}
       />
       <Route
         path="/mark-absent"
@@ -402,6 +399,9 @@ export const routes = {
   settings(unitId: UUID): Uri {
     return uri`${this.unit(unitId)}/settings`
   },
+  markPresent(unitId: UUID, childIds: UUID[]): Uri {
+    return uri`${this.unit(unitId)}/mark-present?children=${childIds.join(',')}`
+  },
   unitOrGroup(unitOrGroup: UnitOrGroup): Uri {
     const id = unitOrGroup.type === 'unit' ? 'all' : unitOrGroup.id
     return uri`${this.unit(unitOrGroup.unitId)}/groups/${id}`
@@ -426,9 +426,6 @@ export const routes = {
   },
   childMarkAbsentBeforehand(unitId: UUID, child: UUID): Uri {
     return uri`${this.child(unitId, child)}/mark-absent-beforehand`
-  },
-  markPresent(unitId: UUID, child: UUID): Uri {
-    return uri`${this.child(unitId, child)}/mark-present`
   },
   markAbsent(unitId: UUID, child: UUID): Uri {
     return uri`${this.child(unitId, child)}/mark-absent`

@@ -4,7 +4,7 @@
 
 import { isAfter } from 'date-fns'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -28,6 +28,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 
+import { routes } from '../../App'
 import { renderResult } from '../../async-rendering'
 import { groupNotesQuery } from '../../child-notes/queries'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
@@ -171,13 +172,16 @@ const JustifyContainer = styled.div`
   justify-content: center;
 `
 
-export default React.memo(function MarkPresent({
+const MarkPresentWithChildIds = React.memo(function MarkPresentWithChildIds({
   unitId,
-  childId
+  childIds
 }: {
   unitId: UUID
-  childId: UUID
+  childIds: UUID[]
 }) {
+  // TODO: using first child for now, need to implement multi-child support
+  const childId = childIds[0]
+
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
 
@@ -191,4 +195,16 @@ export default React.memo(function MarkPresent({
       />
     )
   )
+})
+
+export default React.memo(function MarkPresent({ unitId }: { unitId: UUID }) {
+  const [searchParams] = useSearchParams()
+  const children = searchParams.get('children')
+  if (children === null)
+    return <Navigate replace to={routes.unit(unitId).value} />
+  const childIds = children.split(',').filter((id) => id.length > 0)
+  if (childIds.length === 0)
+    return <Navigate replace to={routes.unit(unitId).value} />
+
+  return <MarkPresentWithChildIds unitId={unitId} childIds={childIds} />
 })
