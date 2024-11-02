@@ -12,7 +12,7 @@ import {
   cancelFullDayAbsence,
   getAttendanceStatuses,
   getChildExpectedAbsencesOnDeparture,
-  postArrival,
+  postArrivals,
   postDeparture,
   postFullDayAbsence,
   returnToComing,
@@ -129,7 +129,7 @@ export const createFullDayAbsenceMutation = mutation({
 })
 
 export const createArrivalMutation = mutation({
-  api: postArrival,
+  api: postArrivals,
   invalidateQueryKeys: ({ unitId }) => [
     attendanceStatusesQuery({ unitId }).queryKey
   ]

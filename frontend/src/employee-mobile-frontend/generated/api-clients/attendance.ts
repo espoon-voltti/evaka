@@ -151,9 +151,9 @@ export async function postAbsenceRange(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postArrival
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postArrivalDeprecated
 */
-export async function postArrival(
+export async function postArrivalDeprecated(
   request: {
     unitId: UUID,
     childId: UUID,
@@ -164,6 +164,24 @@ export async function postArrival(
     url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/arrival`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ArrivalRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postArrivals
+*/
+export async function postArrivals(
+  request: {
+    unitId: UUID,
+    body: Record<UUID, ArrivalRequest>
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/arrivals`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<Record<UUID, ArrivalRequest>>
   })
   return json
 }

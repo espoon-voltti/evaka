@@ -184,8 +184,49 @@ class ChildAttendanceController(
         @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )
 
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/arrivals")
+    fun postArrivals(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestBody body: Map<ChildId, ArrivalRequest>,
+    ) {
+        val today = clock.today()
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId,
+                )
+                body.entries.forEach { (childId, arrival) ->
+                    tx.fetchChildPlacementBasics(childId, unitId, today)
+                    try {
+                        tx.insertAttendance(
+                            childId = childId,
+                            unitId = unitId,
+                            date = today,
+                            range = TimeInterval(arrival.arrived, null),
+                        )
+                    } catch (e: Exception) {
+                        throw mapPSQLException(e)
+                    }
+                }
+            }
+        }
+        body.keys.forEach { childId ->
+            Audit.ChildAttendancesArrivalCreate.log(
+                targetId = AuditId(childId),
+                objectId = AuditId(unitId),
+            )
+        }
+    }
+
     @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/arrival")
-    fun postArrival(
+    fun postArrivalDeprecated(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,

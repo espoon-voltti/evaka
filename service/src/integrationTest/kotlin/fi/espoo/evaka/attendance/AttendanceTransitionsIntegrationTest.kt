@@ -514,13 +514,12 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     private fun markArrived(arrived: LocalTime) {
-        childAttendanceController.postArrival(
+        childAttendanceController.postArrivals(
             dbInstance(),
             mobileUser,
             mockClock,
             testDaycare.id,
-            testChild_1.id,
-            ChildAttendanceController.ArrivalRequest(arrived),
+            mapOf(testChild_1.id to ChildAttendanceController.ArrivalRequest(arrived)),
         )
     }
 
