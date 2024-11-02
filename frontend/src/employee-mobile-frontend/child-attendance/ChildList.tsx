@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import {
@@ -10,8 +11,12 @@ import {
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import {
   defaultMargins,
   isSpacingSize,
@@ -46,6 +51,7 @@ export default React.memo(function ChildList({
   type
 }: Props) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
   const unitId = unitOrGroup.unitId
 
   const [multiSelectMode, setMultiSelectMode] = useState(false)
@@ -66,52 +72,84 @@ export default React.memo(function ChildList({
   }, [type])
 
   return (
-    <FixedSpaceColumn>
-      <OrderedList spacing="zero">
-        {items.length > 0 ? (
-          <>
-            {type === 'COMING' && (
-              <Li>
-                <MultiselectToggleBox>
-                  <Checkbox
-                    checked={multiSelectMode}
-                    onChange={(checked) =>
-                      checked ? enterMultiSelectMode() : exitMultiSelectMode()
+    <>
+      <FixedSpaceColumn>
+        <OrderedList spacing="zero">
+          {items.length > 0 ? (
+            <>
+              {type === 'COMING' && (
+                <Li>
+                  <MultiselectToggleBox>
+                    <Checkbox
+                      checked={multiSelectMode}
+                      onChange={(checked) =>
+                        checked ? enterMultiSelectMode() : exitMultiSelectMode()
+                      }
+                      label="Kirjaa useampi lapsi"
+                    />
+                  </MultiselectToggleBox>
+                </Li>
+              )}
+              {items.map((ac) => (
+                <Li key={ac.id}>
+                  <ChildListItem
+                    unitOrGroup={unitOrGroup}
+                    type={type}
+                    key={ac.id}
+                    child={ac}
+                    childAttendanceUrl={routes.child(unitId, ac.id).value}
+                    selected={
+                      multiSelectMode ? selectedChildren.includes(ac.id) : null
                     }
-                    label="Kirjaa useampi lapsi"
+                    onChangeSelected={(selected) => {
+                      setSelectedChildren((prev) =>
+                        selected
+                          ? [...prev, ac.id]
+                          : prev.filter((id) => id !== ac.id)
+                      )
+                    }}
                   />
-                </MultiselectToggleBox>
-              </Li>
-            )}
-            {items.map((ac) => (
-              <Li key={ac.id}>
-                <ChildListItem
-                  unitOrGroup={unitOrGroup}
-                  type={type}
-                  key={ac.id}
-                  child={ac}
-                  childAttendanceUrl={routes.child(unitId, ac.id).value}
-                  selected={
-                    multiSelectMode ? selectedChildren.includes(ac.id) : null
-                  }
-                  onChangeSelected={(selected) => {
-                    setSelectedChildren((prev) =>
-                      selected
-                        ? [...prev, ac.id]
-                        : prev.filter((id) => id !== ac.id)
-                    )
-                  }}
-                />
-              </Li>
-            ))}
-          </>
-        ) : (
-          <NoChildrenOnList data-qa="no-children-indicator">
-            {i18n.mobile.emptyList(type || 'ABSENT')}
-          </NoChildrenOnList>
-        )}
-      </OrderedList>
-    </FixedSpaceColumn>
+                </Li>
+              ))}
+            </>
+          ) : (
+            <NoChildrenOnList data-qa="no-children-indicator">
+              {i18n.mobile.emptyList(type || 'ABSENT')}
+            </NoChildrenOnList>
+          )}
+        </OrderedList>
+      </FixedSpaceColumn>
+      {multiSelectMode && (
+        <MultiselectActions>
+          <FixedSpaceRow
+            spacing="s"
+            alignItems="center"
+            justifyContent="space-evenly"
+          >
+            <Button
+              appearance="inline"
+              text={i18n.common.cancel}
+              onClick={exitMultiSelectMode}
+            />
+            <FloatingActionButton
+              appearance="button"
+              primary
+              text={`Merkitse saapuneeksi${
+                selectedChildren.length > 1
+                  ? `: ${selectedChildren.length} lasta`
+                  : selectedChildren.length === 1
+                    ? ': 1 lapsi'
+                    : ''
+              }`}
+              disabled={selectedChildren.length === 0}
+              onClick={() =>
+                navigate(routes.markPresent(unitId, selectedChildren).value)
+              }
+            />
+          </FixedSpaceRow>
+        </MultiselectActions>
+      )}
+    </>
   )
 })
 
@@ -153,4 +191,21 @@ const MultiselectToggleBox = styled.div`
   padding: ${defaultMargins.s} ${defaultMargins.m};
   border-radius: 2px;
   background-color: ${colors.grayscale.g0};
+`
+
+const MultiselectActions = styled.div`
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: ${defaultMargins.xs} ${defaultMargins.s};
+  min-height: 30px;
+  background-color: rgba(255, 255, 255, 0.9);
+`
+
+const FloatingActionButton = styled(Button)`
+  border-radius: 40px;
+  max-width: 240px;
+  white-space: break-spaces;
 `
