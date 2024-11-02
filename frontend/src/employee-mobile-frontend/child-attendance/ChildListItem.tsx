@@ -250,18 +250,18 @@ export default React.memo(function ChildListItem({
   )
 })
 
-const ChildImage = React.memo(function ChildImage({
+export const ChildImage = React.memo(function ChildImage({
   child,
   type
 }: {
-  child: ListItem
+  child: AttendanceChild
   type?: AttendanceStatus
 }) {
   const childAge = LocalDate.todayInHelsinkiTz().differenceInYears(
     child.dateOfBirth
   )
   return (
-    <IconBox type={child.status}>
+    <IconBox type={type ?? 'COMING'}>
       {child.imageUrl ? (
         <RoundImage src={child.imageUrl} />
       ) : (

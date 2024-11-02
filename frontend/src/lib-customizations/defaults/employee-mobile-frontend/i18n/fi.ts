@@ -169,7 +169,10 @@ export const fi = {
     actions: {
       markAbsent: 'Merkitse poissaolevaksi',
       cancelAbsence: 'Peruuta poissaolo',
-      markPresent: 'Merkitse saapuneeksi',
+      markPresent: (count: number) =>
+        count > 1
+          ? `Merkitse saapuneeksi ${count} lasta`
+          : 'Merkitse saapuneeksi',
       markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',
       returnToPresent: 'Palauta läsnäolevaksi',
