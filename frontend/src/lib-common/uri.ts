@@ -25,11 +25,10 @@ function* uriParts(
 }
 
 class Uri {
-  readonly value: string
-  constructor(template: TemplateStringsArray, params: PathParam[]) {
-    this.value = Array.from(
-      uriParts(template[Symbol.iterator](), params[Symbol.iterator]())
-    ).join('')
+  constructor(readonly value: string) {}
+
+  appendQuery(params: URLSearchParams): Uri {
+    return params.size > 0 ? new Uri(`${this.value}?${params}`) : this
   }
 
   toString(): string {
@@ -42,4 +41,9 @@ export type { Uri }
 export const uri = (
   template: TemplateStringsArray,
   ...params: PathParam[]
-): Uri => new Uri(template, params)
+): Uri =>
+  new Uri(
+    Array.from(
+      uriParts(template[Symbol.iterator](), params[Symbol.iterator]())
+    ).join('')
+  )

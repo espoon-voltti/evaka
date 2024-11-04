@@ -23,4 +23,28 @@ describe('uri template', () => {
   it('escapes parameters', () => {
     expect(uri`foo/${'/'}/${'ö'}/${' '}`.value).toBe('foo/%2F/%C3%B6/%20')
   })
+  describe('appendQuery', () => {
+    it('doesnt add a question mark if the params are empty', () => {
+      const params = new URLSearchParams()
+      expect(uri`/something`.appendQuery(params).value).toBe('/something')
+    })
+    it('adds and escapes query parameters correctly', () => {
+      const params = new URLSearchParams()
+      params.set('first', 'value')
+      params.set('second', 'with space')
+      params.set('third', '?!"=&')
+      expect(uri`/something`.appendQuery(params).value).toBe(
+        '/something?first=value&second=with+space&third=%3F%21%22%3D%26'
+      )
+    })
+    it('adds multiple values of the same parameter correctly', () => {
+      const params = new URLSearchParams()
+      params.append('multi', 'value1')
+      params.append('multi', 'value2')
+      params.append('multi', 'value3')
+      expect(uri`/something`.appendQuery(params).value).toBe(
+        '/something?multi=value1&multi=value2&multi=value3'
+      )
+    })
+  })
 })
