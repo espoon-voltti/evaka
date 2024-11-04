@@ -299,8 +299,8 @@ export function AreaFilter({
 }
 
 interface UnitFilterProps {
-  units: { id: string; label: string }[]
-  selected?: { id: string; label: string }
+  units: { id: string; name: string }[]
+  selected?: { id: string; name: string }
   select: (unit?: string) => void
 }
 
@@ -321,7 +321,7 @@ export const UnitFilter = React.memo(function UnitFilter({
         onChange={(option) => select(option?.id)}
         clearable
         fullWidth
-        getItemLabel={(item) => item.label}
+        getItemLabel={(item) => item.name}
       />
     </>
   )

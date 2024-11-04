@@ -101,11 +101,9 @@ export default React.memo(function IncomeStatementsFilters({
           <Gap size="L" />
           {renderResult(unitsResult, (units) => (
             <UnitFilter
-              units={units.map(({ id, name }) => ({ id, label: name }))}
+              units={units}
               select={setUnit}
-              selected={units
-                .map(({ id, name }) => ({ id, label: name }))
-                .find(({ id }) => id === searchFilters.unit)}
+              selected={units.find(({ id }) => id === searchFilters.unit)}
             />
           ))}
         </>

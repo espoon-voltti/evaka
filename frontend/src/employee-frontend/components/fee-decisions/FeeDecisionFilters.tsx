@@ -186,15 +186,9 @@ function FeeDecisionFilters() {
           />
           <Gap size="L" />
           <UnitFilter
-            units={units
-              .map((us) => us.map(({ id, name }) => ({ id, label: name })))
-              .getOrElse([])}
+            units={units.getOrElse([])}
             selected={units
-              .map((us) =>
-                us
-                  .map(({ id, name }) => ({ id, label: name }))
-                  .find((unit) => unit.id === searchFilters.unit)
-              )
+              .map((us) => us.find((unit) => unit.id === searchFilters.unit))
               .getOrElse(undefined)}
             select={selectUnit}
           />
