@@ -193,6 +193,7 @@ const MultiselectToggleBox = styled.div`
 
 const MultiselectActions = styled.div`
   position: sticky;
+  z-index: 10;
   bottom: 0;
   left: 0;
   right: 0;
