@@ -271,6 +271,31 @@ describe('Child mobile attendance list', () => {
     await listPage.assertChildExists(child1)
   })
 
+  test('Multiple children can be marked as present', async () => {
+    await openPage()
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await createPlacements(testChildRestricted.id)
+
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+    await page.goto(mobileSignupUrl)
+    await assertAttendanceCounts(3, 0, 0, 0, 3)
+    await listPage.comingChildrenTab.click()
+
+    await listPage.multiselectToggle.check()
+    await listPage.selectChild(testChild.id)
+    await listPage.selectChild(testChild2.id)
+    await listPage.markMultipleArrivedButton.click()
+    await childAttendancePage.setTime('08:00')
+    await childAttendancePage.selectMarkPresent()
+
+    await assertAttendanceCounts(1, 2, 0, 0, 3)
+
+    await listPage.presentChildrenTab.click()
+    await listPage.assertChildExists(testChild.id)
+    await listPage.assertChildExists(testChild2.id)
+  })
+
   test('Child can be marked as absent for the whole day', async () => {
     await openPage()
     const child = testChild2.id

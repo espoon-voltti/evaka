@@ -42,7 +42,7 @@ export default React.memo(function AttendanceChildComing({
         <WideLinkButton
           $primary
           data-qa="mark-present-link"
-          to={routes.markPresent(unitId, [child.id]).value}
+          to={routes.markPresent(unitId, [child.id], false).value}
         >
           {i18n.attendances.actions.markPresent(1)}
         </WideLinkButton>

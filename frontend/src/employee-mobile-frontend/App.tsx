@@ -399,8 +399,11 @@ export const routes = {
   settings(unitId: UUID): Uri {
     return uri`${this.unit(unitId)}/settings`
   },
-  markPresent(unitId: UUID, childIds: UUID[]): Uri {
-    return uri`${this.unit(unitId)}/mark-present?children=${childIds.join(',')}`
+  markPresent(unitId: UUID, childIds: UUID[], multiselect: boolean): Uri {
+    const params = new URLSearchParams()
+    params.set('children', childIds.join(','))
+    if (multiselect) params.set('multiselect', 'true')
+    return uri`${this.unit(unitId)}/mark-present`.appendQuery(params)
   },
   unitOrGroup(unitOrGroup: UnitOrGroup): Uri {
     const id = unitOrGroup.type === 'unit' ? 'all' : unitOrGroup.id

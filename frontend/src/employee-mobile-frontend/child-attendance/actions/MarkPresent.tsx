@@ -50,13 +50,15 @@ import { childAttendanceStatus } from '../utils'
 
 const MarkPresentInner = React.memo(function MarkPresentInner({
   unitId,
-  childList
+  childList,
+  multiselect
 }: {
   unitId: UUID
   childList: {
     child: AttendanceChild
     attendanceStatus: ChildAttendanceStatusResponse
   }[]
+  multiselect: boolean
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
@@ -143,7 +145,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
                 })
               }
               onSuccess={() => {
-                navigate(-2)
+                navigate(multiselect ? -1 : -2)
               }}
               data-qa="mark-present-btn"
             />
@@ -186,12 +188,14 @@ const JustifyContainer = styled.div`
   justify-content: center;
 `
 
-const MarkPresentWithChildIds = React.memo(function MarkPresentWithChildIds({
+const MarkPresentWithParams = React.memo(function MarkPresentWithParams({
   unitId,
-  childIds
+  childIds,
+  multiselect
 }: {
   unitId: UUID
   childIds: UUID[]
+  multiselect: boolean
 }) {
   const children = useQueryResult(childrenQuery(unitId)).map((children) =>
     children.filter((child) => childIds.includes(child.id))
@@ -208,6 +212,7 @@ const MarkPresentWithChildIds = React.memo(function MarkPresentWithChildIds({
           child,
           attendanceStatus: childAttendanceStatus(child, attendanceStatuses)
         }))}
+        multiselect={multiselect}
       />
     )
   )
@@ -216,11 +221,18 @@ const MarkPresentWithChildIds = React.memo(function MarkPresentWithChildIds({
 export default React.memo(function MarkPresent({ unitId }: { unitId: UUID }) {
   const [searchParams] = useSearchParams()
   const children = searchParams.get('children')
+  const multiselect = searchParams.get('multiselect') === 'true'
   if (children === null)
     return <Navigate replace to={routes.unit(unitId).value} />
   const childIds = children.split(',').filter((id) => id.length > 0)
   if (childIds.length === 0)
     return <Navigate replace to={routes.unit(unitId).value} />
 
-  return <MarkPresentWithChildIds unitId={unitId} childIds={childIds} />
+  return (
+    <MarkPresentWithParams
+      unitId={unitId}
+      childIds={childIds}
+      multiselect={multiselect}
+    />
+  )
 })

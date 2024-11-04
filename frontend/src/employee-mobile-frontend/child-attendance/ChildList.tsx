@@ -87,6 +87,7 @@ export default React.memo(function ChildList({
                         checked ? enterMultiSelectMode() : exitMultiSelectMode()
                       }
                       label={i18n.attendances.actions.arrivalMultiselect.toggle}
+                      data-qa="multiselect-toggle"
                     />
                   </MultiselectToggleBox>
                 </Li>
@@ -141,8 +142,11 @@ export default React.memo(function ChildList({
               )}
               disabled={selectedChildren.length === 0}
               onClick={() =>
-                navigate(routes.markPresent(unitId, selectedChildren).value)
+                navigate(
+                  routes.markPresent(unitId, selectedChildren, true).value
+                )
               }
+              data-qa="mark-multiple-arrived"
             />
           </FixedSpaceRow>
         </MultiselectActions>
