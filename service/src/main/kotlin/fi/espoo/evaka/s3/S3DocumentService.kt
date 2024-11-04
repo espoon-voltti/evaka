@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.s3
 
-import com.github.kittinunf.fuel.core.Response
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.shared.domain.NotFound
+import java.io.InputStream
 import java.net.URL
 import java.time.Duration
 import org.springframework.http.ContentDisposition
@@ -29,20 +29,36 @@ class S3DocumentService(
     private val s3Presigner: S3Presigner,
     private val env: BucketEnv,
 ) : DocumentService {
-    override fun get(bucketName: String, key: String): Document {
-        val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
+    override fun locate(key: DocumentKey): DocumentLocation =
+        DocumentLocation(
+            bucket =
+                when (key) {
+                    is DocumentKey.AssistanceNeedDecision -> env.data
+                    is DocumentKey.AssistanceNeedPreschoolDecision -> env.data
+                    is DocumentKey.Attachment -> env.attachments
+                    is DocumentKey.ChildDocument -> env.data
+                    is DocumentKey.ChildImage -> env.data
+                    is DocumentKey.Decision -> env.decisions
+                    is DocumentKey.FeeDecision -> env.feeDecisions
+                    is DocumentKey.VoucherValueDecision -> env.voucherValueDecisions
+                },
+            key = key.value,
+        )
+
+    override fun get(location: DocumentLocation): Document {
+        val request = GetObjectRequest.builder().bucket(location.bucket).key(location.key).build()
         val stream = s3Client.getObject(request) ?: throw NotFound("File not found")
         return stream.use {
             Document(
-                name = key,
+                name = location.key,
                 bytes = it.readAllBytes(),
                 contentType = it.response().contentType(),
             )
         }
     }
 
-    private fun presignedGetUrl(bucketName: String, key: String): URL {
-        val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
+    private fun presignedGetUrl(location: DocumentLocation): URL {
+        val request = GetObjectRequest.builder().bucket(location.bucket).key(location.key).build()
 
         val getObjectPresignRequest =
             GetObjectPresignRequest.builder()
@@ -54,11 +70,10 @@ class S3DocumentService(
     }
 
     override fun response(
-        bucketName: String,
-        key: String,
+        location: DocumentLocation,
         contentDisposition: ContentDisposition,
     ): ResponseEntity<Any> {
-        val presignedUrl = presignedGetUrl(bucketName, key)
+        val presignedUrl = presignedGetUrl(location)
 
         return if (env.proxyThroughNginx) {
             val url = "$INTERNAL_REDIRECT_PREFIX$presignedUrl"
@@ -75,29 +90,28 @@ class S3DocumentService(
         }
     }
 
-    override fun upload(bucketName: String, document: Document): DocumentLocation {
-        val key = document.name
+    override fun upload(
+        location: DocumentLocation,
+        inputStream: InputStream,
+        size: Long,
+        contentType: String,
+    ) {
         val request =
             PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .contentType(document.contentType)
+                .bucket(location.bucket)
+                .key(location.key)
+                .contentType(contentType)
                 .build()
 
-        val body = RequestBody.fromBytes(document.bytes)
-
+        val body = RequestBody.fromInputStream(inputStream, size)
         s3Client.putObject(request, body)
-        return DocumentLocation(bucket = bucketName, key = key)
     }
 
-    override fun delete(bucketName: String, key: String) {
-        val request = DeleteObjectRequest.builder().bucket(bucketName).key(key).build()
+    override fun delete(location: DocumentLocation) {
+        val request =
+            DeleteObjectRequest.builder().bucket(location.bucket).key(location.key).build()
         s3Client.deleteObject(request)
     }
-}
-
-fun fuelResponseToS3URL(response: Response): String {
-    return response.headers["X-Accel-Redirect"].first().replace(INTERNAL_REDIRECT_PREFIX, "")
 }
 
 fun responseEntityToS3URL(response: ResponseEntity<Any>): String {

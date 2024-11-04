@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
@@ -100,7 +101,7 @@ class Config(env: SfiEnv) {
 
 class SfiMessagesRestClient(
     env: SfiEnv,
-    private val getDocument: (bucketName: String, key: String) -> Document,
+    private val getDocument: (location: DocumentLocation) -> Document,
     private val passwordStore: PasswordStore,
 ) : SfiMessagesClient {
     private val config = Config(env)
@@ -211,7 +212,7 @@ class SfiMessagesRestClient(
     }
 
     override fun send(msg: SfiMessage) {
-        val pdfBytes = getDocument(msg.documentBucket, msg.documentKey).bytes
+        val pdfBytes = getDocument(DocumentLocation(msg.documentBucket, msg.documentKey)).bytes
 
         logger.info(
             mapOf("meta" to mapOf("documentId" to msg.documentId, "messageId" to msg.messageId))

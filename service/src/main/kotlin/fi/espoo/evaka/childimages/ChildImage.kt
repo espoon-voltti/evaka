@@ -5,7 +5,7 @@
 package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.s3.ContentTypePattern
-import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -15,14 +15,11 @@ import org.springframework.web.multipart.MultipartFile
 
 data class ChildImage(val id: ChildImageId, val childId: ChildId, val updated: HelsinkiDateTime)
 
-const val childImagesBucketPrefix = "child-images/"
-
 val allowedContentTypes = setOf(ContentTypePattern.JPEG, ContentTypePattern.PNG)
 
 fun replaceImage(
     db: Database.Connection,
     documentClient: DocumentService,
-    bucket: String,
     childId: ChildId,
     file: MultipartFile,
     contentType: String,
@@ -33,28 +30,18 @@ fun replaceImage(
             deletedId = tx.deleteChildImage(childId)
             val imageId = tx.insertChildImage(childId)
 
-            documentClient.upload(
-                bucket,
-                Document(
-                    name = "$childImagesBucketPrefix$imageId",
-                    bytes = file.bytes,
-                    contentType = contentType,
-                ),
-            )
+            documentClient.upload(DocumentKey.ChildImage(imageId), file.bytes, contentType)
             imageId
         }
-    if (deletedId != null) {
-        documentClient.delete(bucket, "$childImagesBucketPrefix$deletedId")
-    }
+    deletedId?.let { documentClient.delete(DocumentKey.ChildImage(it)) }
     return imageId
 }
 
 fun removeImage(
     tx: Database.Transaction,
     documentClient: DocumentService,
-    bucket: String,
     childId: ChildId,
 ): ChildImageId? =
     tx.deleteChildImage(childId)?.also { imageId ->
-        documentClient.delete(bucket, "$childImagesBucketPrefix$imageId")
+        documentClient.delete(DocumentKey.ChildImage(imageId))
     }

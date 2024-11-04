@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.decision
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.fetchApplicationDetails
@@ -20,7 +19,7 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
-import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
@@ -53,10 +52,7 @@ class DecisionService(
     private val pdfGenerator: PdfGenerator,
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    env: BucketEnv,
 ) {
-    private val decisionBucket = env.decisions
-
     fun finalizeDecisions(
         tx: Database.Transaction,
         user: AuthenticatedUser,
@@ -122,8 +118,7 @@ class DecisionService(
             )
 
         return uploadPdfToS3(
-            decisionBucket,
-            constructObjectKey(decision, decisionLanguage),
+            DocumentKey.Decision(decision.id, decision.type, decisionLanguage),
             decisionBytes,
         )
     }
@@ -147,22 +142,10 @@ class DecisionService(
         }
     }
 
-    private fun constructObjectKey(decision: Decision, lang: OfficialLanguage): String {
-        return when (decision.type) {
-            DecisionType.CLUB -> "clubdecision"
-            DecisionType.DAYCARE,
-            DecisionType.DAYCARE_PART_TIME -> "daycaredecision"
-            DecisionType.PRESCHOOL -> "preschooldecision"
-            DecisionType.PRESCHOOL_DAYCARE,
-            DecisionType.PRESCHOOL_CLUB -> "connectingdaycaredecision"
-            DecisionType.PREPARATORY_EDUCATION -> "preparatorydecision"
-        }.let { "${it}_${decision.id}_$lang" }
-    }
-
-    private fun uploadPdfToS3(bucket: String, key: String, document: ByteArray): DocumentLocation =
-        documentClient
-            .upload(bucket, Document(name = key, bytes = document, contentType = "application/pdf"))
-            .also { logger.debug { "PDF (object name: $key) uploaded to S3 with $it." } }
+    private fun uploadPdfToS3(document: DocumentKey, bytes: ByteArray): DocumentLocation =
+        documentClient.upload(document, bytes, "application/pdf").also {
+            logger.debug { "PDF (object name: ${it.key}) uploaded to S3" }
+        }
 
     fun deliverDecisionToGuardians(
         tx: Database.Transaction,
@@ -184,6 +167,7 @@ class DecisionService(
             "Decision ${decision.id} PDF has not been generated"
         }
 
+        val documentLocation = documentClient.locate(DocumentKey.Decision(decision.documentKey))
         val currentGuardians =
             tx.getChildGuardiansAndFosterParents(decision.childId, clock.today()).toSet()
 
@@ -191,13 +175,7 @@ class DecisionService(
             tx.getPersonById(application.guardianId)
                 ?: error("Guardian not found with id: ${application.guardianId}")
         if (currentGuardians.contains(applicationGuardian.id)) {
-            deliverDecisionToGuardian(
-                tx,
-                clock,
-                decision,
-                applicationGuardian,
-                decision.documentKey,
-            )
+            deliverDecisionToGuardian(tx, clock, decision, applicationGuardian, documentLocation)
         } else {
             logger.warn(
                 "Skipping sending decision $decisionId to application guardian ${applicationGuardian.id} - not a current guardian or foster parent"
@@ -220,7 +198,7 @@ class DecisionService(
                             clock,
                             decision,
                             otherGuardian,
-                            decision.documentKey,
+                            documentLocation,
                         )
                     } else {
                         logger.warn(
@@ -238,7 +216,7 @@ class DecisionService(
         clock: EvakaClock,
         decision: Decision,
         guardian: PersonDTO,
-        documentKey: String,
+        documentLocation: DocumentLocation,
     ) {
         if (guardian.identity !is ExternalIdentifier.SSN) {
             logger.info {
@@ -257,8 +235,8 @@ class DecisionService(
                 messageId = uniqueId,
                 documentId = uniqueId,
                 documentDisplayName = calculateDecisionFileName(decision, lang),
-                documentBucket = decisionBucket,
-                documentKey = documentKey,
+                documentBucket = documentLocation.bucket,
+                documentKey = documentLocation.key,
                 firstName = guardian.firstName,
                 lastName = guardian.lastName,
                 streetAddress = sendAddress.street,
@@ -273,16 +251,22 @@ class DecisionService(
     }
 
     fun getDecisionPdf(dbc: Database.Connection, decision: Decision): ResponseEntity<Any> {
-        val (documentKey, fileName) =
+        val (documentLocation, fileName) =
             dbc.read { tx ->
-                val documentKey =
-                    decision.documentKey
-                        ?: throw NotFound("Document generation for ${decision.id} in progress")
+                val documentLocation =
+                    documentClient.locate(
+                        DocumentKey.Decision(
+                            decision.documentKey
+                                ?: throw NotFound(
+                                    "Document generation for ${decision.id} in progress"
+                                )
+                        )
+                    )
                 val lang = tx.getDecisionLanguage(decision.id)
                 val fileName = calculateDecisionFileName(decision, lang)
-                documentKey to fileName
+                documentLocation to fileName
             }
-        return documentClient.responseAttachment(decisionBucket, documentKey, fileName)
+        return documentClient.responseAttachment(documentLocation, fileName)
     }
 
     private fun calculateDecisionFileName(decision: Decision, lang: OfficialLanguage): String {

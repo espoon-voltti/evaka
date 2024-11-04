@@ -91,10 +91,10 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
         client =
             SfiMessagesRestClient(
                 sfiEnv,
-                getDocument = { bucketName, key ->
-                    assertEquals(message.documentBucket, bucketName)
-                    assertEquals(message.documentKey, key)
-                    Document(key, fileContent, contentType = "content-type")
+                getDocument = { location ->
+                    assertEquals(message.documentBucket, location.bucket)
+                    assertEquals(message.documentKey, location.key)
+                    Document(location.key, fileContent, contentType = "content-type")
                 },
                 passwordStore =
                     MockPasswordStore(
