@@ -137,6 +137,7 @@ export default React.memo(function ChildListItem({
   onChangeSelected,
   childAttendanceUrl
 }: ChildListItemProps) {
+  const { i18n } = useTranslation()
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
@@ -241,7 +242,11 @@ export default React.memo(function ChildListItem({
                 {child.preferredName ? ` (${child.preferredName})` : null}
               </Bold>
             </NameRow>
-            <DetailsText>{selected ? 'Valittu' : 'Valitse'}</DetailsText>
+            <DetailsText>
+              {selected
+                ? i18n.attendances.actions.arrivalMultiselect.selected
+                : i18n.attendances.actions.arrivalMultiselect.select}
+            </DetailsText>
           </MainInfoColumn>
           <RightColumn>{selected ? '[x]' : '[ ]'}</RightColumn>
         </MultiselectBox>

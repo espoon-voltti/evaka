@@ -85,7 +85,7 @@ export default React.memo(function ChildList({
                       onChange={(checked) =>
                         checked ? enterMultiSelectMode() : exitMultiSelectMode()
                       }
-                      label="Kirjaa useampi lapsi"
+                      label={i18n.attendances.actions.arrivalMultiselect.toggle}
                     />
                   </MultiselectToggleBox>
                 </Li>
@@ -134,13 +134,9 @@ export default React.memo(function ChildList({
             <FloatingActionButton
               appearance="button"
               primary
-              text={`Merkitse saapuneeksi${
-                selectedChildren.length > 1
-                  ? `: ${selectedChildren.length} lasta`
-                  : selectedChildren.length === 1
-                    ? ': 1 lapsi'
-                    : ''
-              }`}
+              text={i18n.attendances.actions.arrivalMultiselect.confirm(
+                selectedChildren.length
+              )}
               disabled={selectedChildren.length === 0}
               onClick={() =>
                 navigate(routes.markPresent(unitId, selectedChildren).value)
