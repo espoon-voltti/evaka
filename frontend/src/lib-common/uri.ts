@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-type PathParam = NonNullable<unknown>
+type PathParam = Uri | string | number | boolean
 
-const encode = (value: PathParam) => encodeURIComponent(String(value))
+const encode = (value: PathParam) => encodeURIComponent(value.toString())
 
 function* uriParts(
   templateIter: Iterator<string>,

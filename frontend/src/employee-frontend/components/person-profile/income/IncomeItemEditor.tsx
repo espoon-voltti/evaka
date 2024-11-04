@@ -205,7 +205,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
   )
   const [editedIncome, setEditedIncome] = useState<IncomeForm>(initialForm)
   const [validationErrors, setValidationErrors] = useState<
-    Partial<{ [K in keyof Income | 'dates']: boolean }>
+    Partial<Record<keyof Income | 'dates', boolean>>
   >({})
   const retroactive = useMemo(() => {
     const editedContent = omit(editedIncome, [

@@ -8,9 +8,7 @@ import { env, Env } from './env'
 
 type Features = {
   default: FeatureFlags
-} & {
-  [k in Env]: FeatureFlags
-}
+} & Record<Env, FeatureFlags>
 
 const features: Features = {
   default: {

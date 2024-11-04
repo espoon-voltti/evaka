@@ -64,7 +64,7 @@ export type Lang = 'fi' | 'sv'
 
 export type Translations = typeof fi
 
-export const translations: { [K in Lang]: Translations } = {
+export const translations: Record<Lang, Translations> = {
   fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer),
   sv: mergeWith({}, sv, customizations.translations.sv, mergeCustomizer)
 }

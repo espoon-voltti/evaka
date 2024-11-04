@@ -8,9 +8,7 @@ import { env, Env } from './env'
 
 type AppConfigs = {
   default: BaseAppConfig
-} & {
-  [k in Env]: BaseAppConfig
-}
+} & Record<Env, BaseAppConfig>
 
 const employeeConfigs: AppConfigs = {
   default: {

@@ -37,6 +37,6 @@ export { appConfig, featureFlags }
 export type Lang = 'fi'
 export type Translations = typeof fi
 
-export const translations: { [K in Lang]: Translations } = {
+export const translations: Record<Lang, Translations> = {
   fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer)
 }
