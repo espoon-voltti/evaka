@@ -577,6 +577,77 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
+    fun `list income statements awaiting handler - unit filter`() {
+        val placementId1 = PlacementId(UUID.randomUUID())
+        val placementId2 = PlacementId(UUID.randomUUID())
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = citizenId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    id = placementId1,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    id = placementId2,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = daycare2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        createTestIncomeStatement(citizenId)
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        incomeEndDate = null,
+                        handlerNote = "",
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Doe Joan",
+                        primaryCareArea = area2.name,
+                    )
+                ),
+                1,
+                1,
+            ),
+            getIncomeStatementsAwaitingHandler(SearchIncomeStatementsRequest(unit = daycare2.id)),
+        )
+    }
+
+    @Test
     fun `list income statements awaiting handler - provider type filter`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
@@ -1184,7 +1255,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     private fun getIncomeStatementsAwaitingHandler(
         body: SearchIncomeStatementsRequest =
-            SearchIncomeStatementsRequest(1, null, null, emptyList(), emptyList(), null, null),
+            SearchIncomeStatementsRequest(
+                1,
+                null,
+                null,
+                emptyList(),
+                null,
+                emptyList(),
+                null,
+                null,
+            ),
         clock: EvakaClock = MockEvakaClock(now),
     ): PagedIncomeStatementsAwaitingHandler {
         return incomeStatementController.getIncomeStatementsAwaitingHandler(

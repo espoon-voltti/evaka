@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
@@ -497,6 +498,7 @@ data class IncomeStatementAwaitingHandler(
 private fun awaitingHandlerQuery(
     today: LocalDate,
     areas: List<String>,
+    unit: DaycareId?,
     providerTypes: List<ProviderType>,
     sentStartDate: LocalDate?,
     sentEndDate: LocalDate?,
@@ -506,6 +508,7 @@ private fun awaitingHandlerQuery(
         PredicateSql.allNotNull(
             PredicateSql { where("ca.short_name = ANY(${bind(areas)})") }
                 .takeIf { areas.isNotEmpty() },
+            PredicateSql { where("d.id = ${bind(unit)}") }.takeIf { unit != null },
             PredicateSql { where("d.provider_type = ANY(${bind(providerTypes)})") }
                 .takeIf { providerTypes.isNotEmpty() },
             PredicateSql {
@@ -595,6 +598,7 @@ data class PagedIncomeStatementsAwaitingHandler(
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     today: LocalDate,
     areas: List<String>,
+    unit: DaycareId?,
     providerTypes: List<ProviderType>,
     sentStartDate: LocalDate?,
     sentEndDate: LocalDate?,
@@ -608,6 +612,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
         awaitingHandlerQuery(
             today,
             areas,
+            unit,
             providerTypes,
             sentStartDate,
             sentEndDate,

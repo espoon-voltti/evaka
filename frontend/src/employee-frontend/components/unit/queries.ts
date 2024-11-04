@@ -26,6 +26,7 @@ import {
   getGroups,
   getUnitGroupDetails,
   getUnitNotifications,
+  getUnits,
   updateDaycare,
   updateGroup
 } from '../../generated/api-clients/daycare'
@@ -51,6 +52,7 @@ import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('unit', {
   areas: () => ['areas'],
+  unitFilters: (arg: Arg0<typeof getUnits>) => ['unitFilters', arg],
   units: (arg: Arg0<typeof getDaycares>) => ['units', arg],
   unit: (unitId: UUID) => ['unit', unitId],
   unitNotifications: (unitId: UUID) => ['unitNotifications', unitId],
@@ -104,6 +106,11 @@ export const queryKeys = createQueryKeys('unit', {
 export const areaQuery = query({
   api: getAreas,
   queryKey: queryKeys.areas
+})
+
+export const unitFilterQuery = query({
+  api: getUnits,
+  queryKey: queryKeys.unitFilters
 })
 
 export const unitsQuery = query({

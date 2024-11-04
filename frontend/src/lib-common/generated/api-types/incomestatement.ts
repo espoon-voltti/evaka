@@ -294,6 +294,7 @@ export interface SearchIncomeStatementsRequest {
   sentStartDate: LocalDate | null
   sortBy: IncomeStatementSortParam | null
   sortDirection: SortDirection | null
+  unit: UUID | null
 }
 
 /**

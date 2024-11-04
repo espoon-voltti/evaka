@@ -156,6 +156,7 @@ export default React.memo(function IncomeStatementsPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
   const [searchParams, setSearchParams] = useState<{
     areas: string[] | null
+    unit: string | null
     providerTypes: ProviderType[] | null
     sentStartDate: LocalDate | null
     sentEndDate: LocalDate | null
@@ -182,6 +183,7 @@ export default React.memo(function IncomeStatementsPage() {
     ) {
       setSearchParams({
         areas: searchFilters.area.length > 0 ? searchFilters.area : null,
+        unit: searchFilters.unit ?? null,
         providerTypes:
           searchFilters.providerTypes.length > 0
             ? searchFilters.providerTypes
