@@ -961,6 +961,12 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childAttendances =
                     listOf(
                         ChildOccupancyAttendance(
+                            childId = testChild_3.id,
+                            arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 0)),
+                            departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
+                            capacity = 1.0,
+                        ),
+                        ChildOccupancyAttendance(
                             childId = testChild_1.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 15)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 55)),
@@ -972,12 +978,6 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             departed = null,
                             capacity = 0.5,
                         ),
-                        ChildOccupancyAttendance(
-                            childId = testChild_3.id,
-                            arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 0)),
-                            departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
-                            capacity = 1.0,
-                        ),
                     ),
                 staffAttendances =
                     listOf(
@@ -987,14 +987,14 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             capacity = 7.0,
                         ),
                         StaffOccupancyAttendance(
-                            arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
-                            departed = null,
-                            capacity = 0.0,
-                        ),
-                        StaffOccupancyAttendance(
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 30)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
                             capacity = 7.0,
+                        ),
+                        StaffOccupancyAttendance(
+                            arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
+                            departed = null,
+                            capacity = 0.0,
                         ),
                     ),
             ),
@@ -1092,11 +1092,24 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
 
     private fun getUnitRealizedOccupanciesForDay(date: LocalDate, groupIds: List<GroupId>?) =
-        occupancyController.getUnitRealizedOccupanciesForDay(
-            dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER)),
-            mockClock,
-            testDaycare.id,
-            OccupancyController.GetUnitOccupanciesForDayBody(date, groupIds),
-        )
+        occupancyController
+            .getUnitRealizedOccupanciesForDay(
+                dbInstance(),
+                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER)),
+                mockClock,
+                testDaycare.id,
+                OccupancyController.GetUnitOccupanciesForDayBody(date, groupIds),
+            )
+            .let { occupancies ->
+                occupancies.copy(
+                    childAttendances =
+                        occupancies.childAttendances.sortedWith(
+                            compareBy({ it.arrived }, { it.departed })
+                        ),
+                    staffAttendances =
+                        occupancies.staffAttendances.sortedWith(
+                            compareBy({ it.arrived }, { it.departed })
+                        ),
+                )
+            }
 }
