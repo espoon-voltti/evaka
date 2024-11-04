@@ -22,7 +22,7 @@ export function value<T>(): Form<T, never, T, unknown> {
   }
 }
 
-type AnyObjectFields = { [K in string]: AnyForm }
+type AnyObjectFields = Record<string, AnyForm>
 type ObjectOutput<Fields extends AnyObjectFields> = {
   [K in keyof Fields]: OutputOf<Fields[K]>
 }

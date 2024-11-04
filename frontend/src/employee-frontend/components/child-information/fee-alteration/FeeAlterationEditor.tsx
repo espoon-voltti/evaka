@@ -72,7 +72,7 @@ export default React.memo(function FeeAlterationEditor({
   )
 
   const [validationErrors, setValidationErrors] = useState<
-    Partial<{ [K in keyof FeeAlteration | 'dates']: boolean }>
+    Partial<Record<keyof FeeAlteration | 'dates', boolean>>
   >({})
 
   useEffect(() => {

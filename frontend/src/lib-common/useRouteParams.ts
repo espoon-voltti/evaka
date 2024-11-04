@@ -32,5 +32,5 @@ export default function useRouteParams<
   ]) as RequiredObject<Required> & OptionalObject<Optional>
 }
 
-type RequiredObject<T extends string[]> = { [K in T[number]]: string }
-type OptionalObject<T extends string[]> = { [K in T[number]]?: string }
+type RequiredObject<T extends string[]> = Record<T[number], string>
+type OptionalObject<T extends string[]> = Partial<Record<T[number], string>>

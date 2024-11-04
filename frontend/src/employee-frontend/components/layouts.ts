@@ -5,9 +5,7 @@
 import { AdRole } from 'lib-common/api-types/employee-auth'
 
 type Layout<Components> = { component: keyof Components; open: boolean }[]
-export type Layouts<Components> = {
-  [k in AdRole]?: Layout<Components>
-}
+export type Layouts<Components> = Partial<Record<AdRole, Layout<Components>>>
 
 export const getLayout = <Components>(
   layouts: Layouts<Components>,
