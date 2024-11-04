@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -19,6 +20,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { fasExclamation } from 'lib-icons'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
+import { faCheck } from 'lib-icons'
 
 import { routes } from '../App'
 import { groupNotesQuery } from '../child-notes/queries'
@@ -118,6 +120,22 @@ const IconPlacementBox = styled.div`
   &.m {
     font-size: 14px;
   }
+`
+
+const CheckCircleOff = styled.div`
+  height: 40px;
+  width: 40px;
+  border-radius: 100%;
+  border: 1px solid ${(p) => p.theme.colors.main.m1};
+`
+
+const CheckCircleOn = styled(CheckCircleOff)`
+  background-color: ${(p) => p.theme.colors.main.m1};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 24px;
 `
 
 interface ChildListItemProps {
@@ -248,7 +266,15 @@ export default React.memo(function ChildListItem({
                 : i18n.attendances.actions.arrivalMultiselect.select}
             </DetailsText>
           </MainInfoColumn>
-          <RightColumn>{selected ? '[x]' : '[ ]'}</RightColumn>
+          <RightColumn>
+            {selected ? (
+              <CheckCircleOn>
+                <FontAwesomeIcon icon={faCheck} color={colors.grayscale.g0} />
+              </CheckCircleOn>
+            ) : (
+              <CheckCircleOff />
+            )}
+          </RightColumn>
         </MultiselectBox>
       )}
     </ChildBox>

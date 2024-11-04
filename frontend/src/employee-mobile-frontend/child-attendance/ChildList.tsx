@@ -23,6 +23,7 @@ import {
   SpacingSize
 } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faTimes } from 'lib-icons'
 
 import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
@@ -129,6 +130,7 @@ export default React.memo(function ChildList({
             <Button
               appearance="inline"
               text={i18n.common.cancel}
+              icon={faTimes}
               onClick={exitMultiSelectMode}
             />
             <FloatingActionButton
