@@ -207,7 +207,7 @@ export default React.memo(function CalendarMonthView({
     [childData, selectedMonthData.month, selectedMonthData.year]
   )
   const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
-    useMonthlySummaryInfo(childSummaries, selectedMonthIndex)
+    useMonthlySummaryInfo(childSummaries, selectedMonthData)
 
   return (
     <>
