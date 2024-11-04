@@ -194,7 +194,8 @@ const CalendarPage = React.memo(function CalendarPage() {
                     }
                   />
                 )}
-                {featureFlags.calendarMonthView && overrideToUseCalendarList ? (
+                {featureFlags.calendarMonthView &&
+                !overrideToUseCalendarList ? (
                   <CalendarMonthView
                     childData={response.children}
                     calendarDays={response.days}
@@ -563,7 +564,7 @@ const CalendarToggle: React.FC<{
       tabIndex={-1}
       onClick={onClick}
     >
-      {value ? 'List view' : 'Month view'}
+      {value ? 'Month view' : 'List view'}
     </button>
   )
 }
