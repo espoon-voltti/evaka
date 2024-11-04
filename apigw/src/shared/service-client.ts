@@ -50,7 +50,9 @@ export type ServiceRequestHeader =
   | 'EvakaMockedTime'
   | 'X-User'
 
-export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }
+export type ServiceRequestHeaders = Partial<
+  Record<ServiceRequestHeader, string>
+>
 
 export function createServiceRequestHeaders(
   req: express.Request | undefined,
