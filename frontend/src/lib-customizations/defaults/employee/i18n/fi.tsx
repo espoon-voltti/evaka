@@ -1190,7 +1190,7 @@ export const fi = {
       legalInstructions: 'Sovelletut oikeusohjeet',
       legalInstructionsText: 'Varhaiskasvatuslaki, 3 a luku',
       jurisdiction: 'Toimivalta',
-      jurisdictionText:
+      jurisdictionText: (): React.ReactNode =>
         'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 3 kohta',
       personsResponsible: 'Vastuuhenkilöt',
       preparator: 'Päätöksen valmistelija',
