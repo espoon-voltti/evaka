@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.assistanceneed.decision
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.getSendAddress
@@ -24,7 +23,7 @@ import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedDecisionId
 import fi.espoo.evaka.process.insertProcessHistoryRow
-import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
@@ -46,8 +45,6 @@ import org.thymeleaf.context.Context
 
 private val logger = KotlinLogging.logger {}
 
-const val assistanceNeedDecisionsBucketPrefix = "assistance-need-decisions/"
-
 @Component
 class AssistanceNeedDecisionService(
     private val emailClient: EmailClient,
@@ -56,12 +53,9 @@ class AssistanceNeedDecisionService(
     private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
     private val messageProvider: IMessageProvider,
-    bucketEnv: BucketEnv,
     private val emailEnv: EmailEnv,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
-    private val bucket = bucketEnv.data
-
     init {
         asyncJobRunner.registerHandler(::runCreateAssistanceNeedDecisionPdf)
         asyncJobRunner.registerHandler(::runSendAssistanceNeedDecisionEmail)
@@ -84,14 +78,7 @@ class AssistanceNeedDecisionService(
             val pdf = generatePdf(clock.today(), decision)
             val key =
                 documentClient
-                    .upload(
-                        bucket,
-                        Document(
-                            "${assistanceNeedDecisionsBucketPrefix}assistance_need_decision_$decisionId.pdf",
-                            pdf,
-                            "application/pdf",
-                        ),
-                    )
+                    .upload(DocumentKey.AssistanceNeedDecision(decisionId), pdf, "application/pdf")
                     .key
             tx.updateAssistanceNeedDocumentKey(decision.id, key)
 
@@ -171,11 +158,15 @@ class AssistanceNeedDecisionService(
                 )
             }
 
-            val documentKey =
-                tx.getAssistanceNeedDecisionDocumentKey(decisionId)
-                    ?: throw IllegalStateException(
-                        "Assistance need decision pdf has not yet been generated"
+            val documentLocation =
+                documentClient.locate(
+                    DocumentKey.AssistanceNeedDecision(
+                        tx.getAssistanceNeedDecisionDocumentKey(decisionId)
+                            ?: throw IllegalStateException(
+                                "Assistance need decision pdf has not yet been generated"
+                            )
                     )
+                )
 
             val lang =
                 if (decision.language == OfficialLanguage.SV) OfficialLanguage.SV
@@ -206,8 +197,8 @@ class AssistanceNeedDecisionService(
                                     documentId = messageId,
                                     documentDisplayName =
                                         suomiFiDocumentFileName(decision.language),
-                                    documentKey = documentKey,
-                                    documentBucket = bucket,
+                                    documentKey = documentLocation.key,
+                                    documentBucket = documentLocation.bucket,
                                     firstName = guardian.firstName,
                                     lastName = guardian.lastName,
                                     streetAddress = sendAddress.street,
@@ -233,10 +224,14 @@ class AssistanceNeedDecisionService(
         dbc: Database.Connection,
         decisionId: AssistanceNeedDecisionId,
     ): ResponseEntity<Any> {
-        val documentKey =
-            dbc.read { it.getAssistanceNeedDecisionDocumentKey(decisionId) }
-                ?: throw NotFound("No assistance need decision found with ID ($decisionId)")
-        return documentClient.responseAttachment(bucket, documentKey, null)
+        val documentLocation =
+            documentClient.locate(
+                DocumentKey.AssistanceNeedDecision(
+                    dbc.read { it.getAssistanceNeedDecisionDocumentKey(decisionId) }
+                        ?: throw NotFound("No assistance need decision found with ID ($decisionId)")
+                )
+            )
+        return documentClient.responseAttachment(documentLocation, null)
     }
 
     fun generatePdf(sentDate: LocalDate, decision: AssistanceNeedDecision): ByteArray {

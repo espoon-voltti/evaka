@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.childimages.removeImage
 import fi.espoo.evaka.pis.getTransferablePersonReferences
 import fi.espoo.evaka.s3.DocumentService
@@ -25,10 +24,8 @@ import org.springframework.stereotype.Service
 class MergeService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val documentClient: DocumentService,
-    private val env: BucketEnv,
 ) {
     private val logger = KotlinLogging.logger {}
-    private val imageBucket = env.data
 
     fun mergePeople(
         tx: Database.Transaction,
@@ -163,7 +160,7 @@ SELECT
 
         // Does nothing if there is no image (also if the image was assigned from duplicate to
         // master in merge)
-        removeImage(tx, documentClient, imageBucket, ChildId(id.raw))
+        removeImage(tx, documentClient, ChildId(id.raw))
 
         tx.createUpdate {
                 sql(

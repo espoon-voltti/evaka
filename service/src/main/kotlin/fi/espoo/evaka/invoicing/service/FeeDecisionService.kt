@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
@@ -42,7 +41,7 @@ import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
@@ -75,13 +74,10 @@ class FeeDecisionService(
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val env: EvakaEnv,
-    private val bucketEnv: BucketEnv,
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
 ) {
-    val bucket = bucketEnv.feeDecisions
-
     init {
         asyncJobRunner.registerHandler(::runSendNewFeeDecisionEmail)
     }
@@ -256,14 +252,7 @@ class FeeDecisionService(
             pdfGenerator.generateFeeDecisionPdf(FeeDecisionPdfData(decision, settings, lang))
         val documentKey =
             documentClient
-                .upload(
-                    bucket,
-                    Document(
-                        "feedecision_${decision.id}_${lang.isoLanguage.alpha2}.pdf",
-                        pdfByteArray,
-                        "application/pdf",
-                    ),
-                )
+                .upload(DocumentKey.FeeDecision(decision.id, lang), pdfByteArray, "application/pdf")
                 .key
         tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
     }
@@ -298,13 +287,15 @@ class FeeDecisionService(
             if (lang == OfficialLanguage.SV) "Beslut_om_avgift_för_småbarnspedagogik.pdf"
             else "Varhaiskasvatuksen_maksupäätös.pdf"
 
+        val documentLocation = documentClient.locate(DocumentKey.FeeDecision(decision.documentKey))
+
         val message =
             SfiMessage(
                 messageId = decision.id.toString(),
                 documentId = decision.id.toString(),
                 documentDisplayName = feeDecisionDisplayName,
-                documentBucket = bucket,
-                documentKey = decision.documentKey,
+                documentBucket = documentLocation.bucket,
+                documentKey = documentLocation.key,
                 firstName = recipient.firstName,
                 lastName = recipient.lastName,
                 streetAddress = sendAddress.street,
@@ -340,10 +331,14 @@ class FeeDecisionService(
         dbc: Database.Connection,
         decisionId: FeeDecisionId,
     ): ResponseEntity<Any> {
-        val documentKey =
-            dbc.read { it.getFeeDecisionDocumentKey(decisionId) }
-                ?: throw NotFound("Document key not found for decision $decisionId")
-        return documentClient.responseAttachment(bucket, documentKey, null)
+        val documentLocation =
+            documentClient.locate(
+                DocumentKey.FeeDecision(
+                    dbc.read { it.getFeeDecisionDocumentKey(decisionId) }
+                        ?: throw NotFound("Document key not found for decision $decisionId")
+                )
+            )
+        return documentClient.responseAttachment(documentLocation, null)
     }
 
     fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {

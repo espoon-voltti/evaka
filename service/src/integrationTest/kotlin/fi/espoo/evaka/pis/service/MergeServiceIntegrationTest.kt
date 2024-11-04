@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.childimages.replaceImage
 import fi.espoo.evaka.messaging.MessageService
@@ -57,7 +56,6 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var messageService: MessageService
     @Autowired private lateinit var documentClient: DocumentService
-    @Autowired private lateinit var bucketEnv: BucketEnv
 
     private lateinit var mergeService: MergeService
     private lateinit var mergeServiceAsyncJobRunnerMock: AsyncJobRunner<AsyncJob>
@@ -71,7 +69,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @BeforeEach
     fun setUp() {
         mergeServiceAsyncJobRunnerMock = mock {}
-        mergeService = MergeService(mergeServiceAsyncJobRunnerMock, documentClient, bucketEnv)
+        mergeService = MergeService(mergeServiceAsyncJobRunnerMock, documentClient)
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(unit)
@@ -540,7 +538,6 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         replaceImage(
             db,
             documentClient,
-            bucketEnv.data,
             childId,
             MockMultipartFile("file", imageName, "image/jpeg", imageData),
             "image/jpeg",

@@ -6,7 +6,7 @@ package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.checkFileContentType
 import fi.espoo.evaka.shared.ChildId
@@ -34,10 +34,7 @@ const val maxImageSize = 512
 class ChildImageController(
     private val accessControl: AccessControl,
     private val documentClient: DocumentService,
-    env: BucketEnv,
 ) {
-    private val bucket = env.data
-
     @PutMapping(
         "/employee-mobile/children/{childId}/image",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -69,7 +66,7 @@ class ChildImageController(
                     )
                 }
 
-                replaceImage(dbc, documentClient, bucket, childId, file, contentType)
+                replaceImage(dbc, documentClient, childId, file, contentType)
             }
         Audit.ChildImageUpload.log(
             targetId = AuditId(childId),
@@ -96,7 +93,7 @@ class ChildImageController(
                         childId,
                     )
                 }
-                dbc.transaction { tx -> removeImage(tx, documentClient, bucket, childId) }
+                dbc.transaction { tx -> removeImage(tx, documentClient, childId) }
             }
         Audit.ChildImageDelete.log(
             targetId = AuditId(childId),
@@ -138,8 +135,8 @@ class ChildImageController(
             }
         }
 
-        val key = "$childImagesBucketPrefix$imageId"
-        return documentClient.responseInline(bucket, key, null).also {
+        val documentLocation = documentClient.locate(DocumentKey.ChildImage(imageId))
+        return documentClient.responseInline(documentLocation, null).also {
             Audit.ChildImageDownload.log(targetId = AuditId(imageId))
         }
     }

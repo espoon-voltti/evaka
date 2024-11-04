@@ -13,6 +13,7 @@ import fi.espoo.evaka.SfiContactPersonEnv
 import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.SfiPrintingEnv
 import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.sficlient.soap.KyselyWS1
 import fi.espoo.evaka.sficlient.soap.KyselyWS10
 import fi.espoo.evaka.sficlient.soap.KyselyWS2
@@ -95,10 +96,10 @@ class SoapStackIntegrationTest {
         )
     private val dummyContent = byteArrayOf(0x11, 0x22, 0x33, 0x44)
 
-    private fun dummyGetDocument(bucketName: String, key: String): Document {
-        assertEquals(message.documentBucket, bucketName)
-        assertEquals(message.documentKey, key)
-        return Document("name", dummyContent, "text/plain")
+    private fun dummyGetDocument(location: DocumentLocation): Document {
+        assertEquals(message.documentBucket, location.bucket)
+        assertEquals(message.documentKey, location.key)
+        return Document(location.key, dummyContent, "text/plain")
     }
 
     private fun defaultEnv() =

@@ -6,7 +6,6 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
@@ -15,6 +14,7 @@ import fi.espoo.evaka.messaging.getMessageAccountIdsByContentId
 import fi.espoo.evaka.messaging.messageAttachmentsAllowedForCitizen
 import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentNotificationService
 import fi.espoo.evaka.s3.ContentTypePattern
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.checkFileContentTypeAndExtension
 import fi.espoo.evaka.shared.ApplicationId
@@ -51,9 +51,7 @@ class AttachmentsController(
     private val accessControl: AccessControl,
     private val attachmentsService: AttachmentService,
     evakaEnv: EvakaEnv,
-    bucketEnv: BucketEnv,
 ) {
-    private val filesBucket = bucketEnv.attachments
     private val maxAttachmentsPerUser = evakaEnv.maxAttachmentsPerUser
 
     @PostMapping(
@@ -594,7 +592,8 @@ class AttachmentsController(
         if (requestedFilename != attachment.name)
             throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")
 
-        return documentClient.responseInline(filesBucket, "$attachmentId", attachment.name).also {
+        val documentLocation = documentClient.locate(DocumentKey.Attachment(attachmentId))
+        return documentClient.responseInline(documentLocation, attachment.name).also {
             Audit.AttachmentsRead.log(targetId = AuditId(attachmentId))
         }
     }

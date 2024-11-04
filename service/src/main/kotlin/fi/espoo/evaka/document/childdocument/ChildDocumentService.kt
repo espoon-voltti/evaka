@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.document.childdocument
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.Email
@@ -13,7 +12,7 @@ import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.process.updateDocumentProcessHistory
-import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -31,27 +30,22 @@ import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
-private const val childDocumentBucketPrefix = "child-documents/"
-
 @Service
 class ChildDocumentService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    bucketEnv: BucketEnv,
     private val documentClient: DocumentService,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
     private val pdfGenerator: PdfGenerator,
 ) {
-    private val bucket = bucketEnv.data
-
     init {
         asyncJobRunner.registerHandler<AsyncJob.CreateChildDocumentPdf> { db, _, msg ->
             createAndUploadPdf(db, msg.documentId)
         }
         asyncJobRunner.registerHandler(::sendChildDocumentNotificationEmail)
         asyncJobRunner.registerHandler<AsyncJob.DeleteChildDocumentPdf> { _, _, msg ->
-            documentClient.delete(bucketName = bucket, key = msg.key)
+            documentClient.delete(DocumentKey.ChildDocument(msg.key))
         }
     }
 
@@ -63,22 +57,22 @@ class ChildDocumentService(
         val pdfBytes = pdfGenerator.render(html)
         val key =
             documentClient.upload(
-                bucketName = bucket,
-                document =
-                    Document(
-                        name = "${childDocumentBucketPrefix}child_document_$documentId.pdf",
-                        bytes = pdfBytes,
-                        contentType = "application/pdf",
-                    ),
+                DocumentKey.ChildDocument(documentId),
+                pdfBytes,
+                "application/pdf",
             )
         db.transaction { tx -> tx.updateChildDocumentKey(documentId, key.key) }
     }
 
     fun getPdfResponse(tx: Database.Read, documentId: ChildDocumentId): ResponseEntity<Any> {
-        val documentKey =
-            tx.getChildDocumentKey(documentId)
-                ?: throw NotFound("Document $documentId not found or pdf not ready")
-        return documentClient.responseAttachment(bucket, documentKey, null)
+        val documentLocation =
+            documentClient.locate(
+                DocumentKey.ChildDocument(
+                    tx.getChildDocumentKey(documentId)
+                        ?: throw NotFound("Document $documentId not found or pdf not ready")
+                )
+            )
+        return documentClient.responseAttachment(documentLocation, null)
     }
 
     fun completeAndPublishChildDocumentsAtEndOfTerm(

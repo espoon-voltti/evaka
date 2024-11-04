@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -117,7 +116,7 @@ import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.ReservationInsert
 import fi.espoo.evaka.reservations.createReservationsAndAbsences
 import fi.espoo.evaka.reservations.insertValidReservations
-import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -249,11 +248,9 @@ class DevApi(
     private val decisionService: DecisionService,
     private val documentClient: DocumentService,
     private val env: EvakaEnv,
-    bucketEnv: BucketEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val featureConfig: FeatureConfig,
 ) {
-    private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
 
     private fun runAllAsyncJobs(clock: EvakaClock) {
@@ -1166,12 +1163,9 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             type = null,
                         )
                     documentClient.upload(
-                        filesBucket,
-                        Document(
-                            name = id.toString(),
-                            bytes = file.bytes,
-                            contentType = file.contentType ?: "image/jpeg",
-                        ),
+                        DocumentKey.Attachment(id),
+                        file.bytes,
+                        file.contentType ?: "image/jpeg",
                     )
                 }
             }

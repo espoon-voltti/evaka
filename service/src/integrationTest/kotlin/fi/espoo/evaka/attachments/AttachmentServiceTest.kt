@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attachments
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.AttachmentService
@@ -12,6 +11,7 @@ import fi.espoo.evaka.attachment.getAttachment
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attachment.userAttachmentCount
 import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -24,7 +24,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import java.net.URI
+import java.io.InputStream
 import java.time.Duration
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -39,38 +39,30 @@ import org.springframework.http.ResponseEntity
 class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    class MockDocumentService(
-        private val uploadFn: () -> DocumentLocation,
-        private val deleteFn: () -> Unit,
-    ) : DocumentService {
-        override fun get(bucketName: String, key: String): Document = error("Not implemented")
+    class MockDocumentService(private val uploadFn: () -> Unit, private val deleteFn: () -> Unit) :
+        DocumentService {
+        override fun locate(key: DocumentKey): DocumentLocation =
+            DocumentLocation(bucket = "bucket", key = key.value)
+
+        override fun get(location: DocumentLocation): Document = error("Not implemented")
 
         override fun response(
-            bucketName: String,
-            key: String,
+            location: DocumentLocation,
             contentDisposition: ContentDisposition,
         ): ResponseEntity<Any> = error("Not implemented")
 
-        override fun upload(bucketName: String, document: Document): DocumentLocation = uploadFn()
+        override fun upload(
+            location: DocumentLocation,
+            inputStream: InputStream,
+            size: Long,
+            contentType: String,
+        ) = uploadFn()
 
-        override fun delete(bucketName: String, key: String) = deleteFn()
+        override fun delete(location: DocumentLocation) = deleteFn()
     }
 
     private fun createAttachmentService(documentService: DocumentService) =
-        AttachmentService(
-            documentService,
-            asyncJobRunner,
-            BucketEnv(
-                // none of these values matter, because FailingDocumentService doesn't use them
-                s3MockUrl = URI(""),
-                proxyThroughNginx = false,
-                data = "",
-                attachments = "",
-                decisions = "",
-                feeDecisions = "",
-                voucherValueDecisions = "",
-            ),
-        )
+        AttachmentService(documentService, asyncJobRunner)
 
     @BeforeEach
     fun beforeEach() {

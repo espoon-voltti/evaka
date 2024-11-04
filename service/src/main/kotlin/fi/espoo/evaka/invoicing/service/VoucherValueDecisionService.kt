@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
@@ -27,7 +26,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
@@ -56,13 +55,10 @@ class VoucherValueDecisionService(
     private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    env: BucketEnv,
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
 ) {
-    private val bucket = env.voucherValueDecisions
-
     init {
         asyncJobRunner.registerHandler(::runSendNewVoucherValueDecisionEmail)
     }
@@ -78,7 +74,7 @@ class VoucherValueDecisionService(
         val pdf = generatePdf(decision, settings)
         val key =
             documentClient
-                .upload(bucket, Document("value_decision_$decisionId.pdf", pdf, "application/pdf"))
+                .upload(DocumentKey.VoucherValueDecision(decisionId), pdf, "application/pdf")
                 .key
         tx.updateVoucherValueDecisionDocumentKey(decision.id, key)
     }
@@ -87,10 +83,14 @@ class VoucherValueDecisionService(
         dbc: Database.Connection,
         decisionId: VoucherValueDecisionId,
     ): ResponseEntity<Any> {
-        val documentKey =
-            dbc.read { it.getVoucherValueDecisionDocumentKey(decisionId) }
-                ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
-        return documentClient.responseAttachment(bucket, documentKey, null)
+        val documentLocation =
+            documentClient.locate(
+                DocumentKey.VoucherValueDecision(
+                    dbc.read { it.getVoucherValueDecisionDocumentKey(decisionId) }
+                        ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
+                )
+            )
+        return documentClient.responseAttachment(documentLocation, null)
     }
 
     fun sendDecision(
@@ -123,6 +123,9 @@ class VoucherValueDecisionService(
             DecisionSendAddress.fromPerson(decision.headOfFamily)
                 ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
 
+        val documentLocation =
+            documentClient.locate(DocumentKey.VoucherValueDecision(decision.documentKey))
+
         val documentDisplayName = suomiFiDocumentFileName(lang)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(lang)
         val messageContent = messageProvider.getVoucherValueDecisionContent(lang)
@@ -134,8 +137,8 @@ class VoucherValueDecisionService(
                         messageId = decision.id.toString(),
                         documentId = decision.id.toString(),
                         documentDisplayName = documentDisplayName,
-                        documentBucket = bucket,
-                        documentKey = decision.documentKey,
+                        documentBucket = documentLocation.bucket,
+                        documentKey = documentLocation.key,
                         firstName = decision.headOfFamily.firstName,
                         lastName = decision.headOfFamily.lastName,
                         streetAddress = sendAddress.street,

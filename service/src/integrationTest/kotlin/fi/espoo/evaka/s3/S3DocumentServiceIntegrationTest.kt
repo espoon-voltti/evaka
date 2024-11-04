@@ -6,6 +6,8 @@ package fi.espoo.evaka.s3
 
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.shared.AttachmentId
+import java.util.UUID
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -26,6 +28,8 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private lateinit var documentClient: DocumentService
 
+    val documentRef = DocumentKey.Attachment(AttachmentId(UUID.randomUUID()))
+
     @BeforeEach
     fun beforeEach() {
         documentClient =
@@ -36,12 +40,10 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `redirects when not proxying through nginx`() {
         val documentClientNoProxy =
             S3DocumentService(s3Client, s3Presigner, bucketEnv.copy(proxyThroughNginx = false))
-        documentClientNoProxy.upload(
-            bucketEnv.data,
-            Document("test", byteArrayOf(0x11, 0x22, 0x33), "text/plain"),
-        )
+        val location =
+            documentClientNoProxy.upload(documentRef, byteArrayOf(0x11, 0x22, 0x33), "text/plain")
 
-        val response = documentClientNoProxy.responseAttachment(bucketEnv.data, "test", null)
+        val response = documentClientNoProxy.responseAttachment(location, null)
         assertEquals(HttpStatus.FOUND, response.statusCode)
         assertNotNull(response.headers["Location"])
         assertNull(response.headers["X-Accel-Redirect"])
@@ -49,12 +51,10 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `uses X-Accel-Redirect when proxying through nginx`() {
-        documentClient.upload(
-            bucketEnv.data,
-            Document("test", byteArrayOf(0x33, 0x22, 0x11), "text/plain"),
-        )
+        val location =
+            documentClient.upload(documentRef, byteArrayOf(0x33, 0x22, 0x11), "text/plain")
 
-        val response = documentClient.responseAttachment(bucketEnv.data, "test", null)
+        val response = documentClient.responseAttachment(location, null)
         assertEquals(HttpStatus.OK, response.statusCode)
         assertNull(response.headers["Location"])
         assertNotNull(response.headers["X-Accel-Redirect"])
@@ -62,24 +62,19 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `upload-download round trip with get`() {
-        documentClient.upload(
-            bucketEnv.data,
-            Document("test", byteArrayOf(0x11, 0x33, 0x22), "text/plain"),
-        )
+        val location =
+            documentClient.upload(documentRef, byteArrayOf(0x11, 0x33, 0x22), "text/plain")
 
-        val document = documentClient.get(bucketEnv.data, "test")
+        val document = documentClient.get(location)
 
         assertContentEquals(byteArrayOf(0x11, 0x33, 0x22), document.bytes)
     }
 
     @Test
     fun `responseAttachment works without filename`() {
-        documentClient.upload(
-            bucketEnv.data,
-            Document("test", byteArrayOf(0x22, 0x11, 0x33), "text/csv"),
-        )
+        val location = documentClient.upload(documentRef, byteArrayOf(0x22, 0x11, 0x33), "text/csv")
 
-        val response = documentClient.responseAttachment(bucketEnv.data, "test", null)
+        val response = documentClient.responseAttachment(location, null)
         val s3Url = responseEntityToS3URL(response)
         val (_, s3response, s3data) = http.get(s3Url).response()
 
@@ -90,13 +85,10 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `responseAttachment works with filename`() {
-        documentClient.upload(
-            bucketEnv.data,
-            Document("test", byteArrayOf(0x33, 0x11, 0x22), "application/pdf"),
-        )
+        val location =
+            documentClient.upload(documentRef, byteArrayOf(0x33, 0x11, 0x22), "application/pdf")
 
-        val response =
-            documentClient.responseAttachment(bucketEnv.data, "test", "overridden-filename.pdf")
+        val response = documentClient.responseAttachment(location, "overridden-filename.pdf")
         val s3Url = responseEntityToS3URL(response)
         val (_, s3response, s3data) = http.get(s3Url).response()
 
@@ -112,13 +104,10 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `responseInline works`() {
-        documentClient.upload(
-            bucketEnv.data,
-            Document("test", byteArrayOf(0x12, 0x34, 0x56), "text/plain"),
-        )
+        val location =
+            documentClient.upload(documentRef, byteArrayOf(0x12, 0x34, 0x56), "text/plain")
 
-        val response =
-            documentClient.responseInline(bucketEnv.data, "test", "overridden-filename.txt")
+        val response = documentClient.responseInline(location, "overridden-filename.txt")
         val s3Url = responseEntityToS3URL(response)
         val (_, s3response, s3data) = http.get(s3Url).response()
 

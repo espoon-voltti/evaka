@@ -4,8 +4,7 @@
 
 package fi.espoo.evaka.attachment
 
-import fi.espoo.evaka.BucketEnv
-import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -20,9 +19,7 @@ import org.springframework.stereotype.Service
 class AttachmentService(
     private val documentClient: DocumentService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    bucketEnv: BucketEnv,
 ) {
-    private val filesBucket = bucketEnv.attachments
     private val logger = KotlinLogging.logger {}
 
     init {
@@ -53,10 +50,7 @@ class AttachmentService(
                 )
             }
         dbc.close() // avoid hogging the connection while we access S3
-        documentClient.upload(
-            filesBucket,
-            Document(name = id.toString(), bytes = bytes, contentType = contentType),
-        )
+        documentClient.upload(DocumentKey.Attachment(id), bytes, contentType)
         return id
     }
 
@@ -71,7 +65,7 @@ class AttachmentService(
         dbc.close() // avoid hogging the connection while we access S3
         // AWS S3 client seems to be idempotent, so deleting a non-existing file doesn't throw an
         // error
-        documentClient.delete(filesBucket, "$id")
+        documentClient.delete(DocumentKey.Attachment(id))
         // We must remove the bookkeeping information *after* we are sure the S3 file has been
         // removed, or we could end up losing all bookkeeping info but have a leftover file.
         dbc.transaction {
