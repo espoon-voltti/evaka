@@ -43,8 +43,7 @@ CREATE OR REPLACE VIEW application_view (
   hideFromGuardian,
   transferApplication,
   additionalDaycareApplication,
-  duplicateApplicationIds,
-  hasActiveAssistanceNeed
+  duplicateApplicationIds
   ) AS
 SELECT
   id,
@@ -90,7 +89,6 @@ SELECT
   transferApplication,
   additionalDaycareApplication,
   duplicateApplicationIds,
-  hasActiveAssistanceNeed,
   otherGuardianAgreementStatus
 FROM (
 WITH dup_appl AS (
@@ -105,18 +103,6 @@ WITH dup_appl AS (
       AND r.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
     GROUP by
         l.id
-), active_assistance_need AS (
-    SELECT
-        application.child_id AS child_id,
-        count(*) AS active_count
-    FROM
-        application, assistance_need
-    WHERE
-        application.child_id = assistance_need.child_id
-        AND assistance_need.start_date <= current_date
-        AND assistance_need.end_date >= current_date
-    GROUP
-        BY application.child_id
 )
 SELECT
   appl.id,
@@ -168,10 +154,6 @@ SELECT
   appl.transferApplication,
   appl.additionalDaycareApplication,
   dup_appl.duplicate_application_ids                                                          AS duplicateApplicationIds,
-  CASE WHEN active_assistance_need.active_count > 0
-       THEN true
-       ELSE false
-  END                                                                                         AS hasActiveAssistanceNeed,
   (appl.document ->> 'otherGuardianAgreementStatus')                                          AS otherGuardianAgreementStatus
 FROM
   application appl
@@ -179,8 +161,6 @@ FROM
     ON (placement_plan.application_id = appl.id)
     LEFT JOIN dup_appl
     ON dup_appl.id = appl.id
-    LEFT JOIN active_assistance_need
-    ON (active_assistance_need.child_id = appl.child_id)
 WHERE document @> '{
 "docVersion": 0
 }' :: JSONB

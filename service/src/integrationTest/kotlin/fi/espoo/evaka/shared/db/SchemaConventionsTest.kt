@@ -36,10 +36,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "assistance_action",
                 "assistance_action_option",
                 "assistance_action_option_ref",
-                "assistance_basis_option",
-                "assistance_basis_option_ref",
                 "assistance_factor",
-                "assistance_need",
                 "assistance_need_decision",
                 "assistance_need_decision_guardian",
                 "assistance_need_preschool_decision",
@@ -136,9 +133,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "application_other_guardian",
                 "assistance_action",
                 "assistance_action_option",
-                "assistance_basis_option",
                 "assistance_factor",
-                "assistance_need",
                 "assistance_need_decision",
                 "assistance_need_preschool_decision",
                 "assistance_need_voucher_coefficient",
@@ -432,7 +427,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 ColumnRef("application_note", "updated_by"),
                 ColumnRef("assistance_action", "updated_by"),
-                ColumnRef("assistance_need", "updated_by"),
                 ColumnRef("fee_alteration", "updated_by"),
                 ColumnRef("income", "updated_by"),
             )
@@ -514,7 +508,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 ColumnRef("archived_process_history", "entered_by"),
                 ColumnRef("assistance_action_option_ref", "option_id"),
-                ColumnRef("assistance_basis_option_ref", "option_id"),
                 ColumnRef("assistance_factor", "modified_by"),
                 ColumnRef("child_document", "content_modified_by"),
                 ColumnRef("child_document_read", "person_id"),
