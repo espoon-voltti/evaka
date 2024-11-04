@@ -310,13 +310,12 @@ export const UnitFilter = React.memo(function UnitFilter({
   select
 }: UnitFilterProps) {
   const { i18n } = useTranslation()
-  const options = units.map(({ id, label }) => ({ id, label, value: id }))
   return (
     <>
       <Label>{i18n.filters.unit}</Label>
       <Gap size="xs" />
       <Combobox
-        items={options}
+        items={units}
         placeholder={i18n.filters.unitPlaceholder}
         selectedItem={selected ?? null}
         onChange={(option) => select(option?.id)}
