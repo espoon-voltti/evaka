@@ -93,7 +93,7 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
               <Label>{i18n.attendances.notes.childStickyNotes}</Label>
             </FixedSpaceRow>
             {child.stickyNotes.length === 1 ? (
-              <div>{child.stickyNotes[0].note}</div>
+              <div data-qa="sticky-note">{child.stickyNotes[0].note}</div>
             ) : (
               <NoMarginList>
                 {child.stickyNotes.map((note) => (
@@ -180,7 +180,7 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
               <Label>{i18n.attendances.notes.groupNote}</Label>
             </FixedSpaceRow>
             {activeGroupNotes.length === 1 ? (
-              <div>{activeGroupNotes[0].note}</div>
+              <div data-qa="group-note">{activeGroupNotes[0].note}</div>
             ) : (
               <NoMarginList>
                 {activeGroupNotes.map((note) => (
