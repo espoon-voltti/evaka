@@ -16,6 +16,7 @@ import {
 import { Employee } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { ParagraphDiv } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
@@ -625,7 +626,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
       <P noMargin>{t.legalInstructionsText}</P>
 
       <H2>{t.jurisdiction}</H2>
-      <P noMargin>{t.jurisdictionText}</P>
+      <ParagraphDiv>{t.jurisdictionText()}</ParagraphDiv>
 
       <H2>{t.personsResponsible}</H2>
       <FixedSpaceColumn>

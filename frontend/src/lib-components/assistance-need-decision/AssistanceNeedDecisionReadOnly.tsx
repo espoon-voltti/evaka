@@ -81,7 +81,7 @@ export interface AssistanceNeedDecisionTexts {
   legalInstructions: string
   legalInstructionsText: string
   jurisdiction: string
-  jurisdictionText: string
+  jurisdictionText: () => React.ReactNode
 }
 
 const List = styled.ul`
@@ -96,6 +96,11 @@ const LabelContainer = styled.div`
 
 const Value = styled.div`
   white-space: pre-line;
+`
+
+export const ParagraphDiv = styled.div`
+  max-width: 960px;
+  margin: 0;
 `
 
 const OptionalLabelledValue = React.memo(function OptionalLabelledValue({
@@ -367,7 +372,7 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
           <P noMargin>{t.legalInstructionsText}</P>
 
           <H2>{t.jurisdiction}</H2>
-          <P noMargin>{t.jurisdictionText}</P>
+          <ParagraphDiv>{t.jurisdictionText()}</ParagraphDiv>
 
           <H2>{t.personsResponsible}</H2>
 
