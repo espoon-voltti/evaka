@@ -323,7 +323,7 @@ export const fi = {
       },
       transfer: 'Siirtohakemus',
       paper: 'Paperihakemus',
-      name: 'Lapsen nimi/hetu',
+      name: 'Lapsen nimi/ikä',
       dueDate: 'Käsiteltävä',
       startDate: 'Aloitus',
       unit: 'Yksikkö',
