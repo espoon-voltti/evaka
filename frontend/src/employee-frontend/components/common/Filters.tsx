@@ -299,8 +299,8 @@ export function AreaFilter({
 }
 
 interface UnitFilterProps {
-  units: { id: string; label: string }[]
-  selected?: { id: string; label: string }
+  units: { id: string; name: string }[]
+  selected?: { id: string; name: string }
   select: (unit?: string) => void
 }
 
@@ -310,19 +310,18 @@ export const UnitFilter = React.memo(function UnitFilter({
   select
 }: UnitFilterProps) {
   const { i18n } = useTranslation()
-  const options = units.map(({ id, label }) => ({ id, label, value: id }))
   return (
     <>
       <Label>{i18n.filters.unit}</Label>
       <Gap size="xs" />
       <Combobox
-        items={options}
+        items={units}
         placeholder={i18n.filters.unitPlaceholder}
         selectedItem={selected ?? null}
         onChange={(option) => select(option?.id)}
         clearable
         fullWidth
-        getItemLabel={(item) => item.label}
+        getItemLabel={(item) => item.name}
       />
     </>
   )

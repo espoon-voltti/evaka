@@ -123,6 +123,7 @@ interface PaymentSearchFilterState {
 
 export interface IncomeStatementSearchFilters {
   area: string[]
+  unit: string | undefined
   providerTypes: ProviderType[]
   sentStartDate: LocalDate | undefined
   sentEndDate: LocalDate | undefined
@@ -224,6 +225,7 @@ const defaultState: UiState = {
   incomeStatements: {
     searchFilters: {
       area: [],
+      unit: undefined,
       providerTypes: [],
       sentStartDate: undefined,
       sentEndDate: undefined,

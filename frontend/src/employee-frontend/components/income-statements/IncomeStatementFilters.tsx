@@ -6,18 +6,22 @@ import React, { Fragment, useCallback, useContext } from 'react'
 
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { renderResult } from '../async-rendering'
 import {
   AreaFilter,
   DateFilter,
   Filters,
-  ProviderTypeFilter
+  ProviderTypeFilter,
+  UnitFilter
 } from '../common/Filters'
+import { unitFilterQuery } from '../unit/queries'
 
 export default React.memo(function IncomeStatementsFilters({
   onSearch
@@ -28,6 +32,9 @@ export default React.memo(function IncomeStatementsFilters({
     incomeStatements: { searchFilters, setSearchFilters, clearSearchFilters },
     shared: { availableAreas }
   } = useContext(InvoicingUiContext)
+  const unitsResult = useQueryResult(
+    unitFilterQuery({ areaIds: null, type: 'DAYCARE', from: null })
+  )
 
   const { i18n } = useTranslation()
 
@@ -45,6 +52,11 @@ export default React.memo(function IncomeStatementsFilters({
             }
       )
     },
+    [setSearchFilters]
+  )
+
+  const setUnit = useCallback(
+    (unit: string | undefined) => setSearchFilters((old) => ({ ...old, unit })),
     [setSearchFilters]
   )
 
@@ -80,11 +92,21 @@ export default React.memo(function IncomeStatementsFilters({
       clearFilters={clearSearchFilters}
       onSearch={onSearch}
       column1={
-        <AreaFilter
-          areas={availableAreas.getOrElse([])}
-          toggled={searchFilters.area}
-          toggle={toggleArea}
-        />
+        <>
+          <AreaFilter
+            areas={availableAreas.getOrElse([])}
+            toggled={searchFilters.area}
+            toggle={toggleArea}
+          />
+          <Gap size="L" />
+          {renderResult(unitsResult, (units) => (
+            <UnitFilter
+              units={units}
+              select={setUnit}
+              selected={units.find(({ id }) => id === searchFilters.unit)}
+            />
+          ))}
+        </>
       }
       column2={
         <Fragment>
