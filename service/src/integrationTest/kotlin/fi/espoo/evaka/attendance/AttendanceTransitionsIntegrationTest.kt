@@ -519,7 +519,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             mobileUser,
             mockClock,
             testDaycare.id,
-            mapOf(testChild_1.id to ChildAttendanceController.ArrivalRequest(arrived)),
+            ChildAttendanceController.ArrivalsRequest(
+                children = setOf(testChild_1.id),
+                arrived = arrived,
+            ),
         )
     }
 

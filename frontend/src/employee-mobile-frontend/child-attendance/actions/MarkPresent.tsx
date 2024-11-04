@@ -136,15 +136,10 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
               onClick={() =>
                 createArrival({
                   unitId,
-                  body: childList.reduce(
-                    (acc, { child }) => ({
-                      ...acc,
-                      [child.id]: {
-                        arrived: time
-                      }
-                    }),
-                    {}
-                  )
+                  body: {
+                    children: childList.map(({ child }) => child.id),
+                    arrived: time
+                  }
                 })
               }
               onSuccess={() => {

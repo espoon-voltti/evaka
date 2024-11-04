@@ -180,8 +180,9 @@ class ChildAttendanceController(
             }
     }
 
-    data class ArrivalRequest(
-        @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
+    data class ArrivalsRequest(
+        val children: Set<ChildId>,
+        @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime,
     )
 
     @PostMapping("/employee-mobile/attendances/units/{unitId}/arrivals")
@@ -190,40 +191,45 @@ class ChildAttendanceController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestBody body: Map<ChildId, ArrivalRequest>,
+        @RequestBody body: ArrivalsRequest,
     ) {
         val today = clock.today()
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId,
-                )
-                body.entries.forEach { (childId, arrival) ->
-                    tx.fetchChildPlacementBasics(childId, unitId, today)
-                    try {
-                        tx.insertAttendance(
-                            childId = childId,
-                            unitId = unitId,
-                            date = today,
-                            range = TimeInterval(arrival.arrived, null),
-                        )
-                    } catch (e: Exception) {
-                        throw mapPSQLException(e)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                        unitId,
+                    )
+                    body.children.map { childId ->
+                        tx.fetchChildPlacementBasics(childId, unitId, today)
+                        try {
+                            tx.insertAttendance(
+                                childId = childId,
+                                unitId = unitId,
+                                date = today,
+                                range = TimeInterval(body.arrived, null),
+                            )
+                        } catch (e: Exception) {
+                            throw mapPSQLException(e)
+                        }
                     }
                 }
             }
-        }
-        body.keys.forEach { childId ->
-            Audit.ChildAttendancesArrivalCreate.log(
-                targetId = AuditId(childId),
-                objectId = AuditId(unitId),
-            )
-        }
+            .also { attendanceIds ->
+                Audit.ChildAttendancesArrivalCreate.log(
+                    targetId = AuditId(body.children.toList()),
+                    objectId = AuditId(attendanceIds),
+                    meta = mapOf("unitId" to unitId),
+                )
+            }
     }
+
+    data class ArrivalRequest(
+        @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
+    )
 
     @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/arrival")
     fun postArrivalDeprecated(

@@ -42,6 +42,14 @@ export interface ArrivalRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ArrivalsRequest
+*/
+export interface ArrivalsRequest {
+  arrived: string
+  children: UUID[]
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.Attendance
 */
 export interface Attendance {

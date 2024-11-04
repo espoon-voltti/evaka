@@ -7,6 +7,7 @@
 import LocalDate from 'lib-common/local-date'
 import { AbsenceRangeRequest } from 'lib-common/generated/api-types/attendance'
 import { ArrivalRequest } from 'lib-common/generated/api-types/attendance'
+import { ArrivalsRequest } from 'lib-common/generated/api-types/attendance'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { ChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { CurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
@@ -175,13 +176,13 @@ export async function postArrivalDeprecated(
 export async function postArrivals(
   request: {
     unitId: UUID,
-    body: Record<UUID, ArrivalRequest>
+    body: ArrivalsRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee-mobile/attendances/units/${request.unitId}/arrivals`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<Record<UUID, ArrivalRequest>>
+    data: request.body satisfies JsonCompatible<ArrivalsRequest>
   })
   return json
 }
