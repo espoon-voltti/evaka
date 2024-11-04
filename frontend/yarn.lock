@@ -1996,10 +1996,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@date-fns/tz@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@date-fns/tz@npm:1.1.0"
-  checksum: 10/c3133ee4e7c64cc18c3a7fd1bb021367b7b589ccd530c51db71d25ec4bb8a6c5d3fb3602a8b4f92f54e532890449839e57d4949d677757f1558c23ea6ff78e0c
+"@date-fns/tz@npm:^1.1.2":
+  version: 1.2.0
+  resolution: "@date-fns/tz@npm:1.2.0"
+  checksum: 10/a9c2d32f98a5a5c655a7d3843046a5a36779b2ef0db803c608291976e6254e594a085777bf738379f50c7e9fc2ffebbf8bb836e9e9759a5ef2b703f91bb785de
   languageName: node
   linkType: hard
 
@@ -7214,7 +7214,7 @@ __metadata:
     react-chartjs-2: "npm:^5.2.0"
     react-csv: "npm:^2.2.2"
     react-datepicker: "npm:^7.5.0"
-    react-day-picker: "npm:^9.1.2"
+    react-day-picker: "npm:^9.2.1"
     react-dom: "npm:^18.3.1"
     react-focus-lock: "npm:2.13.2"
     react-focus-on: "npm:^3.9.4"
@@ -11232,15 +11232,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-day-picker@npm:^9.1.2":
-  version: 9.1.2
-  resolution: "react-day-picker@npm:9.1.2"
+"react-day-picker@npm:^9.2.1":
+  version: 9.2.1
+  resolution: "react-day-picker@npm:9.2.1"
   dependencies:
-    "@date-fns/tz": "npm:^1.1.0"
+    "@date-fns/tz": "npm:^1.1.2"
     date-fns: "npm:^4.1.0"
   peerDependencies:
     react: ">=16.8.0"
-  checksum: 10/a04f9541bb88ac087502d87e14d2657cd1a17b2a82ba155247efe186a3637f0f6d38ec7a3656f9929de0be2ab6005bdaa687d6cd31879fbe63ff05b39c9d510e
+  checksum: 10/39f6ce4c7554e0c9ecd7f6242d5f67d5217203ed05f6dbf06542127a32ccc364bb0e41f5ae38eb532029115433086d5870d5c9952a833ceef92d64c95df4e502
   languageName: node
   linkType: hard
 
