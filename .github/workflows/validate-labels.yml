@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2017-2024 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: 'Validate PR labels'
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+
+jobs:
+  validate-labels:
+    if: ${{ github.event.pull_request.state == 'open' && !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo '${{ toJSON(github.event.pull_request.labels[*].name) }}' | bin/validate-labels.js
