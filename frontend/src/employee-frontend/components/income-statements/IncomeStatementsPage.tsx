@@ -72,7 +72,12 @@ function IncomeStatementsList({
     <Table>
       <Thead>
         <Tr>
-          <Th>{i18n.incomeStatement.table.customer}</Th>
+          <SortableTh
+            sorted={isSorted('PERSON_NAME')}
+            onClick={toggleSort('PERSON_NAME')}
+          >
+            {i18n.incomeStatement.table.customer}
+          </SortableTh>
           <Th>{i18n.incomeStatement.table.area}</Th>
           <SortableTh
             sorted={isSorted('CREATED')}
@@ -92,9 +97,16 @@ function IncomeStatementsList({
           >
             {i18n.incomeStatement.table.incomeEndDate}
           </SortableTh>
-          <Th>{i18n.incomeStatement.table.type}</Th>
+          <SortableTh sorted={isSorted('TYPE')} onClick={toggleSort('TYPE')}>
+            {i18n.incomeStatement.table.type}
+          </SortableTh>
           <Th minimalWidth={true}>{i18n.incomeStatement.table.link}</Th>
-          <Th minimalWidth={true}>{i18n.incomeStatement.table.note}</Th>
+          <SortableTh
+            sorted={isSorted('HANDLER_NOTE')}
+            onClick={toggleSort('HANDLER_NOTE')}
+          >
+            {i18n.incomeStatement.table.note}
+          </SortableTh>
         </Tr>
       </Thead>
       <Tbody>

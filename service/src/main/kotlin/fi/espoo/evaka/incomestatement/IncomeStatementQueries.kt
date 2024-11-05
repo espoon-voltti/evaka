@@ -491,7 +491,9 @@ data class IncomeStatementAwaitingHandler(
     val handlerNote: String,
     val type: IncomeStatementType,
     val personId: PersonId,
-    val personName: String,
+    val personLastName: String,
+    val personFirstName: String,
+    val personName: String = "$personLastName $personFirstName",
     val primaryCareArea: String?,
 )
 
@@ -523,14 +525,15 @@ private fun awaitingHandlerQuery(
 
     sql(
         """
-SELECT DISTINCT ON (created, start_date, income_end_date, id)
+SELECT DISTINCT ON (created, start_date, income_end_date, type, handler_note, last_name, first_name, id)
     i.id,
     i.type,
     i.created,
     i.start_date,
     i.handler_note,
     person.id AS personId,
-    person.last_name || ' ' || person.first_name AS personName,
+    person.last_name AS person_last_name,
+    person.first_name AS person_first_name,
     ca.name AS primaryCareArea,
     (
         SELECT valid_to FROM income
@@ -622,18 +625,24 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     val sortColumn =
         when (sortBy) {
             IncomeStatementSortParam.CREATED ->
-                "i.created ${sortDirection.name}, i.start_date, income_end_date"
+                "i.created ${sortDirection.name}, i.start_date, income_end_date, i.type, i.handler_note, person.last_name, person.first_name"
             IncomeStatementSortParam.START_DATE ->
-                "i.start_date ${sortDirection.name}, i.created, income_end_date"
+                "i.start_date ${sortDirection.name}, i.created, income_end_date, i.type, i.handler_note, person.last_name, person.first_name"
             IncomeStatementSortParam.INCOME_END_DATE ->
-                "income_end_date ${sortDirection.name}, i.created, i.start_date"
+                "income_end_date ${sortDirection.name}, i.created, i.start_date, i.type, i.handler_note, person.last_name, person.first_name"
+            IncomeStatementSortParam.TYPE ->
+                "i.type ${sortDirection.name}, i.created, i.start_date, income_end_date, i.handler_note, person.last_name, person.first_name"
+            IncomeStatementSortParam.HANDLER_NOTE ->
+                "i.handler_note ${sortDirection.name}, i.created, i.start_date, income_end_date, i.type, person.last_name, person.first_name"
+            IncomeStatementSortParam.PERSON_NAME ->
+                "person.last_name ${sortDirection.name}, person.first_name ${sortDirection.name}, i.created, i.start_date, income_end_date, i.type, i.handler_note"
         }
     val rows =
         createQuery {
                 sql(
                     """
 ${subquery(query)}
-ORDER BY $sortColumn, i.id, ca.id, person.last_name, person.first_name  -- order by area to get the same result each time
+ORDER BY $sortColumn, i.id, ca.id  -- order by area to get the same result each time
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 """
                 )
