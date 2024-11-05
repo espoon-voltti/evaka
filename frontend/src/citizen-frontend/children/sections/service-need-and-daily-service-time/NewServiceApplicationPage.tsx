@@ -6,8 +6,15 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { localDate } from 'lib-common/form/fields'
-import { object, oneOf, required, value } from 'lib-common/form/form'
+import {
+  object,
+  oneOf,
+  required,
+  transformed,
+  value
+} from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -37,11 +44,19 @@ import {
   createServiceApplicationsMutation
 } from '../../queries'
 
-const form = object({
-  startDate: required(localDate()),
-  serviceNeed: required(oneOf<UUID>()),
-  additionalInfo: value<string>()
-})
+const form = transformed(
+  object({
+    startDate: required(localDate()),
+    serviceNeed: required(oneOf<UUID>()),
+    additionalInfo: value<string>()
+  }),
+  (res) => {
+    if (res.startDate.date !== 1 && res.additionalInfo === '') {
+      return ValidationError.field('additionalInfo', 'explainDate')
+    }
+    return ValidationSuccess.of(res)
+  }
+)
 
 export default React.memo(function NewServiceApplicationPage() {
   const { childId } = useRouteParams(['childId'])
@@ -60,7 +75,10 @@ export default React.memo(function NewServiceApplicationPage() {
       },
       additionalInfo: ''
     }),
-    i18n.validationErrors
+    {
+      ...i18n.validationErrors,
+      explainDate: i18n.children.serviceApplication.additionalInfoRequired
+    }
   )
 
   const { startDate, serviceNeed, additionalInfo } = useFormFields(boundForm)
@@ -90,6 +108,9 @@ export default React.memo(function NewServiceApplicationPage() {
     }
   }, [optionsResult, lang, update])
 
+  const startDateWarning =
+    startDate.isValid() && startDate.value().getDate() !== 1
+
   return (
     <>
       <Main>
@@ -113,7 +134,7 @@ export default React.memo(function NewServiceApplicationPage() {
                 />
                 <Gap size="s" />
                 <div aria-live="polite">
-                  {startDate.isValid() && startDate.value().getDate() !== 1 && (
+                  {startDateWarning && (
                     <>
                       <Gap size="s" />
                       <AlertBox
@@ -172,6 +193,7 @@ export default React.memo(function NewServiceApplicationPage() {
                 >
                   <Label>
                     {i18n.children.serviceApplication.additionalInfo}
+                    {startDateWarning && ' *'}
                   </Label>
                 </ExpandingInfo>
                 <InputFieldF bind={additionalInfo} data-qa="additional-info" />
