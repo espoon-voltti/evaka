@@ -34,9 +34,6 @@ export default React.memo(function TabApplicationProcess({ unitId }: Props) {
       <ContentArea opaque>
         <Title size={2}>{i18n.unit.applicationProcess.title}</Title>
       </ContentArea>
-      {permittedActions.includes('READ_APPLICATIONS_AND_PLACEMENT_PLANS') && (
-        <DaycareApplications unitId={unitId} />
-      )}
       {featureFlags.serviceApplications &&
         permittedActions.includes('READ_SERVICE_APPLICATIONS') && (
           <>
@@ -44,6 +41,9 @@ export default React.memo(function TabApplicationProcess({ unitId }: Props) {
             <TabServiceApplications unitId={unitId} />
           </>
         )}
+      {permittedActions.includes('READ_APPLICATIONS_AND_PLACEMENT_PLANS') && (
+        <DaycareApplications unitId={unitId} />
+      )}
     </div>
   ))
 })
