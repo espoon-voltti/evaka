@@ -262,6 +262,12 @@ interface BaseFeatureFlags {
    * Show the Titania errors report in the reports list
    */
   titaniaErrorsReport?: boolean
+
+  /**
+   * Display a single month in the citizen calendar view instead of multiple
+   * scrollable months.
+   */
+  calendarMonthView?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

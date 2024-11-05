@@ -25,7 +25,10 @@ let page: Page
 
 async function openCalendarPage() {
   page = await Page.open({
-    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)),
+    citizenCustomizations: {
+      featureFlags: { calendarMonthView: false }
+    }
   })
   await enduserLogin(page, testAdult)
   const header = new CitizenHeader(page, 'desktop')

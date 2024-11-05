@@ -39,7 +39,7 @@ export default React.memo(function TimedToast({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const location = useLocation()
   const initialUrlPath = useRef(location.pathname)
-  const onCLose_ = useStableCallback(onClose)
+  const onClose_ = useStableCallback(onClose)
 
   const stopTimer = () => {
     if (timerRef.current) {
@@ -49,20 +49,20 @@ export default React.memo(function TimedToast({
 
   useEffect(() => {
     timerRef.current = setTimeout(() => {
-      onCLose_()
+      onClose_()
     }, defaultDuration)
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current)
       }
     }
-  }, [onCLose_])
+  }, [onClose_])
 
   useEffect(() => {
     if (location.pathname !== initialUrlPath.current) {
-      onCLose_()
+      onClose_()
     }
-  }, [location.pathname, onCLose_])
+  }, [location.pathname, onClose_])
 
   return (
     <ToastRoot
@@ -104,9 +104,7 @@ const ToastRoot = styled.div`
   }
   background-color: ${(p) => p.theme.colors.grayscale.g0};
   border-radius: 16px;
-  box-shadow:
-    4px 4px 8px rgba(15, 15, 15, 0.15),
-    -2px 0 4px rgba(15, 15, 15, 0.15);
+  outline: 1px solid ${(p) => p.theme.colors.main.m1};
   z-index: ${modalZIndex - 5};
   cursor: pointer;
   pointer-events: auto;

@@ -44,3 +44,32 @@ export function useSummaryInfo(childSummaries: MonthlyTimeSummary[]) {
 
   return { summaryInfoOpen, displayAlert, toggleSummaryInfo }
 }
+
+export function useMonthlySummaryInfo(
+  childSummaries: MonthlyTimeSummary[],
+  selectedMonthData: { month: number; year: number }
+) {
+  const [summaryInfoOpen, setSummaryInfoOpen] = useState(false)
+  const [displayAlert, setDisplayAlert] = useState(false)
+
+  useEffect(() => {
+    setSummaryInfoOpen(false)
+
+    const shouldDisplayAlert = childSummaries.some(
+      ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes ||
+        usedServiceMinutes > serviceNeedMinutes
+    )
+
+    setDisplayAlert(shouldDisplayAlert)
+    if (shouldDisplayAlert) {
+      setSummaryInfoOpen(true)
+    }
+  }, [childSummaries, selectedMonthData.month, selectedMonthData.year])
+
+  const toggleSummaryInfo = useCallback(() => {
+    setSummaryInfoOpen((prev) => !prev)
+  }, [])
+
+  return { summaryInfoOpen, displayAlert, toggleSummaryInfo }
+}

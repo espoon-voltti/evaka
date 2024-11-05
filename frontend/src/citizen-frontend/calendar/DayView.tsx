@@ -777,7 +777,7 @@ function findAdjacentDates(
     return { navigateToPreviousDate: undefined, navigateToNextDate: undefined }
   }
   const previousDate =
-    todayIndex > 1 ? reservationsResponse.days[todayIndex - 1].date : undefined
+    todayIndex >= 1 ? reservationsResponse.days[todayIndex - 1].date : undefined
   const nextDate =
     todayIndex < reservationsResponse.days.length - 1
       ? reservationsResponse.days[todayIndex + 1].date

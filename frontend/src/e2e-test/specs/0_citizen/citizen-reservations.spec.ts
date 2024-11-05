@@ -61,7 +61,7 @@ async function openCalendarPage(
     mockedTime:
       options?.mockedTime ?? today.toHelsinkiDateTime(LocalTime.of(12, 0)),
     citizenCustomizations: {
-      featureFlags: options?.featureFlags
+      featureFlags: { calendarMonthView: false, ...options?.featureFlags }
     }
   })
   await enduserLogin(page, testAdult)
@@ -1201,7 +1201,10 @@ describe('Citizen calendar child visibility', () => {
     })
 
     page = await Page.open({
-      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)),
+      citizenCustomizations: {
+        featureFlags: { calendarMonthView: false }
+      }
     })
     await enduserLogin(page, testAdult)
     header = new CitizenHeader(page, 'desktop')

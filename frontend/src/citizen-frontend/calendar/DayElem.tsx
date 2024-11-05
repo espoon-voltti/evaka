@@ -117,7 +117,6 @@ export default React.memo(function DayElem({
         <Reservations
           data={calendarDay}
           childImages={childImages}
-          isReservable={isReservable}
           backgroundHighlight={highlight}
         />
       </ReservationsContainer>

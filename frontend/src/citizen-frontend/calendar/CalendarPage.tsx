@@ -31,6 +31,7 @@ import AbsenceModal from './AbsenceModal'
 import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'
 import CalendarListView from './CalendarListView'
+import CalendarMonthView from './CalendarMonthView'
 import CalendarNotifications from './CalendarNotifications'
 import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
@@ -72,6 +73,10 @@ function useEventsDefaultRange(): Result<CitizenCalendarEvent[]> {
 
 const CalendarPage = React.memo(function CalendarPage() {
   const user = useUser()
+
+  // TODO wip for featureFlags.calendarMonthView
+  const [overrideToUseCalendarList, setOverrideToUseCalendarList] =
+    useState(false)
 
   const data = useReservationsDefaultRange()
   const events = useEventsDefaultRange()
@@ -181,28 +186,62 @@ const CalendarPage = React.memo(function CalendarPage() {
                 </ContentArea>
               </RenderOnlyOn>
               <RenderOnlyOn desktop>
-                <CalendarGridView
-                  childData={response.children}
-                  calendarDays={response.days}
-                  onCreateReservationClicked={
-                    openReservationModalWithoutInitialRange
-                  }
-                  onCreateAbsencesClicked={(date) =>
-                    openAbsenceModal(date, false)
-                  }
-                  onOpenDiscussionReservationsClicked={
-                    openDiscussionSurveyModal
-                  }
-                  onReportHolidaysClicked={openHolidayModal}
-                  selectedDate={
-                    modalState?.type === 'day' ? modalState.date : undefined
-                  }
-                  selectDate={openDayModal}
-                  includeWeekends={true}
-                  dayIsReservable={dayIsReservable}
-                  events={events}
-                  isDiscussionActionVisible={showDiscussions}
-                />
+                {featureFlags.calendarMonthView && (
+                  <CalendarToggle
+                    value={overrideToUseCalendarList}
+                    onClick={() =>
+                      setOverrideToUseCalendarList(!overrideToUseCalendarList)
+                    }
+                  />
+                )}
+                {featureFlags.calendarMonthView &&
+                !overrideToUseCalendarList ? (
+                  <CalendarMonthView
+                    childData={response.children}
+                    calendarDays={response.days}
+                    onCreateReservationClicked={
+                      openReservationModalWithoutInitialRange
+                    }
+                    onCreateAbsencesClicked={(date) =>
+                      openAbsenceModal(date, false)
+                    }
+                    onOpenDiscussionReservationsClicked={
+                      openDiscussionSurveyModal
+                    }
+                    onReportHolidaysClicked={openHolidayModal}
+                    selectedDate={
+                      modalState?.type === 'day' ? modalState.date : undefined
+                    }
+                    selectDate={openDayModal}
+                    includeWeekends={true}
+                    dayIsReservable={dayIsReservable}
+                    events={events}
+                    isDiscussionActionVisible={showDiscussions}
+                  />
+                ) : (
+                  <CalendarGridView
+                    childData={response.children}
+                    calendarDays={response.days}
+                    onCreateReservationClicked={
+                      openReservationModalWithoutInitialRange
+                    }
+                    onCreateAbsencesClicked={(date) =>
+                      openAbsenceModal(date, false)
+                    }
+                    onOpenDiscussionReservationsClicked={
+                      openDiscussionSurveyModal
+                    }
+                    onReportHolidaysClicked={openHolidayModal}
+                    selectedDate={
+                      modalState?.type === 'day' ? modalState.date : undefined
+                    }
+                    selectDate={openDayModal}
+                    includeWeekends={true}
+                    dayIsReservable={dayIsReservable}
+                    events={events}
+                    isDiscussionActionVisible={showDiscussions}
+                  />
+                )}
               </RenderOnlyOn>
               {modalState?.type === 'day' && (
                 <DayView
@@ -505,3 +544,27 @@ export default React.memo(function CalendarPageWrapper() {
     </>
   )
 })
+
+const CalendarToggle: React.FC<{
+  value: boolean
+  onClick: () => void
+}> = ({ value, onClick }) => {
+  return (
+    <button
+      id="wip-calendar-toggle"
+      style={{
+        display: 'block',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        zIndex: 100,
+        padding: '4px 8px',
+        minWidth: '120px'
+      }}
+      tabIndex={-1}
+      onClick={onClick}
+    >
+      {value ? 'Month view' : 'List view'}
+    </button>
+  )
+}
