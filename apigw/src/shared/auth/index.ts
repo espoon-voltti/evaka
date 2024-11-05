@@ -69,11 +69,8 @@ export function createUserHeader(user: EvakaSessionUser): string {
 
 export const integrationUserHeader = JSON.stringify({ type: 'integration' })
 
-export function createLogoutToken(
-  nameID: Required<Profile>['nameID'],
-  sessionIndex: Profile['sessionIndex']
-) {
-  return `${nameID}:::${sessionIndex}`
+export function createLogoutToken(profile: Profile) {
+  return `${profile.nameID}:::${profile.sessionIndex}`
 }
 
 export const authenticate = async (

@@ -2,164 +2,38 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Profile } from '@node-saml/node-saml'
-import { Strategy as SamlStrategy } from '@node-saml/passport-saml'
-import type {
-  AuthenticateOptions,
-  RequestWithUser
-} from '@node-saml/passport-saml/lib/types.js'
+import * as url from 'node:url'
+
+import { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
 import { AxiosError } from 'axios'
 import express from 'express'
-import passport from 'passport'
+import _ from 'lodash'
 
 import { createLogoutToken, login, logout } from '../auth/index.js'
 import { toRequestHandler } from '../express.js'
 import { logAuditEvent, logDebug } from '../logging.js'
-import { fromCallback } from '../promise-utils.js'
-import { parseDescriptionFromSamlError } from '../saml/error-utils.js'
-import { parseRelayState } from '../saml/index.js'
+import {
+  parseDescriptionFromSamlError,
+  samlErrorSchema
+} from '../saml/error-utils.js'
+import {
+  AuthenticateProfile,
+  parseRelayState,
+  SamlProfileIdSchema,
+  SamlProfileSchema
+} from '../saml/index.js'
 import { Sessions } from '../session.js'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 
 export interface SamlEndpointConfig {
   sessions: Sessions
+  saml: SAML
   strategyName: string
-  strategy: SamlStrategy
   defaultPageUrl: string
+  authenticate: AuthenticateProfile
 }
 
-function createLoginHandler({
-  sessions,
-  strategyName,
-  defaultPageUrl
-}: SamlEndpointConfig): express.RequestHandler {
-  return (req, res, next) => {
-    logAuditEvent(
-      `evaka.saml.${strategyName}.sign_in_started`,
-      req,
-      'Login endpoint called'
-    )
-    const locale = req.query.locale
-    const options: AuthenticateOptions = {
-      additionalParams: typeof locale === 'string' ? { locale } : {}
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    passport.authenticate(
-      strategyName,
-      options,
-      (
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        err: any,
-        user: (Express.User & Profile) | undefined
-      ) => {
-        if (err || !user) {
-          const description =
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            parseDescriptionFromSamlError(err, req) ||
-            'Could not parse SAML message'
-
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          if (err.message === 'InResponseTo is not valid' && req.user) {
-            // When user uses browse back functionality after login we get invalid InResponseTo
-            // This will ignore the error
-            const redirectUrl = parseRelayState(req) ?? defaultPageUrl
-            logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
-            return res.redirect(redirectUrl)
-          }
-
-          logAuditEvent(
-            `evaka.saml.${strategyName}.sign_in_failed`,
-            req,
-            `Failed to authenticate user. Description: ${description}. Details: ${err}`
-          )
-
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          if (err instanceof AxiosError && err.response?.data?.errorCode) {
-            return res.redirect(
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-              `${defaultPageUrl}?loginError=true&errorCode=${err.response.data.errorCode}`
-            )
-          }
-
-          return res.redirect(`${defaultPageUrl}?loginError=true`)
-        }
-        ;(async () => {
-          await login(req, user)
-          logAuditEvent(
-            `evaka.saml.${strategyName}.sign_in`,
-            req,
-            'User logged in successfully'
-          )
-
-          if (!user.nameID) {
-            throw new Error('User unexpectedly missing nameID property')
-          }
-
-          // Persist in session to allow custom logic per strategy
-          req.session.idpProvider = strategyName
-          await sessions.saveLogoutToken(
-            req,
-            createLogoutToken(user.nameID, user.sessionIndex)
-          )
-
-          const redirectUrl = parseRelayState(req) ?? defaultPageUrl
-          logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
-          return res.redirect(redirectUrl)
-        })().catch((err) => {
-          logAuditEvent(
-            `evaka.saml.${strategyName}.sign_in_failed`,
-            req,
-            `Error logging user in. Error: ${err}`
-          )
-          if (!res.headersSent) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            if (err instanceof AxiosError && err.response?.data?.errorCode) {
-              res.redirect(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                `${defaultPageUrl}?loginError=true&errorCode=${err.response.data.errorCode}`
-              )
-            } else {
-              res.redirect(`${defaultPageUrl}?loginError=true`)
-            }
-          } else {
-            next(err)
-          }
-        })
-      }
-    )(req, res, next)
-  }
-}
-
-function createLogoutHandler({
-  sessions,
-  strategy,
-  strategyName,
-  defaultPageUrl
-}: SamlEndpointConfig): express.RequestHandler {
-  return toRequestHandler(async (req, res) => {
-    logAuditEvent(
-      `evaka.saml.${strategyName}.sign_out_requested`,
-      req,
-      'Logout endpoint called'
-    )
-    try {
-      const redirectUrl = await fromCallback<string | null>((cb) =>
-        req.user ? strategy.logout(req as RequestWithUser, cb) : cb(null, null)
-      )
-      logDebug('Logging user out from passport.', req)
-      await logout(sessions, req, res)
-      res.redirect(redirectUrl ?? defaultPageUrl)
-    } catch (err) {
-      logAuditEvent(
-        `evaka.saml.${strategyName}.sign_out_failed`,
-        req,
-        `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err?.toString()}.`
-      )
-      throw err
-    }
-  })
-}
 // Configures passport to use the given strategy, and returns an Express router
 // for handling SAML-related requests.
 //
@@ -170,33 +44,224 @@ function createLogoutHandler({
 export default function createSamlRouter(
   endpointConfig: SamlEndpointConfig
 ): express.Router {
-  const { strategyName, strategy } = endpointConfig
+  const { sessions, strategyName, saml, defaultPageUrl, authenticate } =
+    endpointConfig
 
-  passport.use(strategyName, strategy)
+  const eventCode = (name: string) => `evaka.saml.${strategyName}.${name}`
+  const errorRedirectUrl = (err: unknown) => {
+    let errorCode: string | undefined = undefined
+    if (err instanceof AxiosError) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+      errorCode = err.response?.data?.errorCode?.toString() ?? undefined
+    }
+    return errorCode
+      ? `${defaultPageUrl}?loginError=true&errorCode=${encodeURIComponent(errorCode)}`
+      : `${defaultPageUrl}?loginError=true`
+  }
+  const samlRequestOptions = (req: express.Request): AuthOptions => {
+    const locale = req.query.locale
+    return typeof locale === 'string' ? { additionalParams: { locale } } : {}
+  }
 
-  const loginHandler = createLoginHandler(endpointConfig)
-  const logoutHandler = createLogoutHandler(endpointConfig)
-  const logoutCallback: express.RequestHandler = (req, _, next) => {
-    logAuditEvent(
-      `evaka.saml.${strategyName}.sign_out`,
-      req,
-      'Logout callback called'
-    )
-    next()
+  const parseLoginResponse = async (req: express.Request): Promise<Profile> => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const samlMessage = await saml.validatePostResponseAsync(req.body)
+    if (samlMessage.loggedOut || !samlMessage.profile) {
+      throw new Error('Invalid SAML message type: expected login response')
+    }
+    return samlMessage.profile
   }
 
   const router = express.Router()
 
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.
-  router.get(`/login`, loginHandler)
+  router.get(
+    `/login`,
+    toRequestHandler(async (req, res) => {
+      logAuditEvent(eventCode('sign_in_started'), req, 'Login endpoint called')
+      try {
+        const idpLoginUrl = await saml.getAuthorizeUrlAsync(
+          parseRelayState(req) ?? '',
+          undefined,
+          samlRequestOptions(req)
+        )
+        return res.redirect(idpLoginUrl)
+      } catch (err) {
+        logAuditEvent(
+          eventCode('sign_in_failed'),
+          req,
+          `Error logging user in. Error: ${err?.toString()}`
+        )
+        if (!res.headersSent) {
+          return res.redirect(errorRedirectUrl(err))
+        } else {
+          throw err
+        }
+      }
+    })
+  )
   // The IDP makes the browser POST to this callback during login flow, and
   // a SAML LoginResponse is included in the request.
-  router.post(`/login/callback`, urlencodedParser, loginHandler)
+  router.post(
+    `/login/callback`,
+    urlencodedParser,
+    toRequestHandler(async (req, res) => {
+      logAuditEvent(eventCode('sign_in'), req, 'Login callback endpoint called')
+      let profile: Profile
+      try {
+        profile = await parseLoginResponse(req)
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          err.message === 'InResponseTo is not valid' &&
+          req.user
+        ) {
+          // When user uses browse back functionality after login we get invalid InResponseTo
+          // This will ignore the error
+          const redirectUrl = parseRelayState(req) ?? defaultPageUrl
+          logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
+          return res.redirect(redirectUrl)
+        }
+
+        const samlError = samlErrorSchema.safeParse(err)
+        const description =
+          (samlError.success
+            ? parseDescriptionFromSamlError(samlError.data, req)
+            : undefined) || 'Could not parse SAML message'
+        logAuditEvent(
+          eventCode('sign_in_failed'),
+          req,
+          `Failed to authenticate user. Description: ${description}. Error: ${err?.toString()}`
+        )
+        if (!res.headersSent) {
+          return res.redirect(errorRedirectUrl(err))
+        } else {
+          throw err
+        }
+      }
+      try {
+        const user = await authenticate(profile)
+        await login(req, {
+          ...user,
+          ...SamlProfileSchema.parse(profile)
+        })
+        logAuditEvent(
+          `evaka.saml.${strategyName}.sign_in`,
+          req,
+          'User logged in successfully'
+        )
+
+        // Persist in session to allow custom logic per strategy
+        req.session.idpProvider = strategyName
+        await sessions.saveLogoutToken(req, createLogoutToken(profile))
+
+        const redirectUrl = parseRelayState(req) ?? defaultPageUrl
+        logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
+        return res.redirect(redirectUrl)
+      } catch (err) {
+        logAuditEvent(
+          eventCode('sign_in_failed'),
+          req,
+          `Error logging user in. Error: ${err?.toString()}`
+        )
+        if (!res.headersSent) {
+          return res.redirect(errorRedirectUrl(err))
+        } else {
+          throw err
+        }
+      }
+    })
+  )
 
   // Our application directs the browser to one of these endpoints to start
   // the logout flow. We generate a LogoutRequest.
-  router.get(`/logout`, logoutHandler)
+  router.get(
+    `/logout`,
+    toRequestHandler(async (req, res) => {
+      logAuditEvent(
+        eventCode('sign_out_requested'),
+        req,
+        'Logout endpoint called'
+      )
+      try {
+        const profile = SamlProfileSchema.safeParse(req.user)
+        let url: string
+        if (profile.success) {
+          url = await saml.getLogoutUrlAsync(
+            profile.data,
+            parseRelayState(req) ?? '',
+            samlRequestOptions(req)
+          )
+        } else {
+          url = defaultPageUrl
+        }
+        logDebug('Logging user out from passport.', req)
+        await logout(sessions, req, res)
+        return res.redirect(url)
+      } catch (err) {
+        logAuditEvent(
+          eventCode('sign_out_failed'),
+          req,
+          `Logout failed. Error: ${err?.toString()}.`
+        )
+        if (!res.headersSent) {
+          return res.redirect(defaultPageUrl)
+        } else {
+          throw err
+        }
+      }
+    })
+  )
+  const logoutCallback = (
+    parseLogoutMessage: (req: express.Request) => Promise<Profile | null>
+  ) =>
+    toRequestHandler(async (req, res) => {
+      logAuditEvent(eventCode('sign_out'), req, 'Logout callback called')
+      try {
+        const profile = await parseLogoutMessage(req)
+        let url: string
+        if (profile) {
+          let user: unknown
+          if (req.user) {
+            const userId = SamlProfileIdSchema.safeParse(req.user)
+            user = userId.success ? userId.data : undefined
+
+            await logout(sessions, req, res)
+          } else {
+            // We're possibly doing SLO without a real session (e.g. browser has
+            // 3rd party cookies disabled)
+            const logoutToken = createLogoutToken(profile)
+            const sessionUser = await sessions.logoutWithToken(logoutToken)
+            const userId = SamlProfileIdSchema.safeParse(sessionUser)
+            user = userId.success ? userId.data : undefined
+          }
+          const profileId = SamlProfileIdSchema.safeParse(profile)
+          const success = profileId.success && _.isEqual(user, profileId.data)
+
+          url = await saml.getLogoutResponseUrlAsync(
+            profile,
+            parseRelayState(req) ?? '',
+            samlRequestOptions(req),
+            success
+          )
+        } else {
+          url = parseRelayState(req) ?? defaultPageUrl
+        }
+        return res.redirect(url)
+      } catch (err) {
+        logAuditEvent(
+          eventCode('sign_out_failed'),
+          req,
+          `Logout failed. Error: ${err?.toString()}.`
+        )
+        if (!res.headersSent) {
+          return res.redirect(defaultPageUrl)
+        } else {
+          throw err
+        }
+      }
+    })
   // The IDP makes the browser either GET or POST one of these endpoints in two
   // separate logout flows.
   // 1. SP-initiated logout. In this case the logout flow started from us
@@ -207,20 +272,33 @@ export default function createSamlRouter(
   //   request.
   router.get(
     `/logout/callback`,
-    logoutCallback,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    passport.authenticate(strategyName),
-    (req, res) =>
-      res.redirect(parseRelayState(req) ?? endpointConfig.defaultPageUrl)
+    logoutCallback(async (req) => {
+      const originalQuery = url.parse(req.url).query ?? ''
+      const { profile, loggedOut } = await saml.validateRedirectAsync(
+        req.query,
+        originalQuery
+      )
+      if (!loggedOut) {
+        throw new Error('Invalid SAML message type: expected logout response')
+      }
+      return profile
+    })
   )
   router.post(
     `/logout/callback`,
     urlencodedParser,
-    logoutCallback,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    passport.authenticate(strategyName),
-    (req, res) =>
-      res.redirect(parseRelayState(req) ?? endpointConfig.defaultPageUrl)
+    logoutCallback(async (req) => {
+      const { profile, loggedOut } =
+        'SAMLRequest' in req.body
+          ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            await saml.validatePostRequestAsync(req.body)
+          : // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            await saml.validatePostResponseAsync(req.body)
+      if (!loggedOut) {
+        throw new Error('Invalid SAML message type: expected logout response')
+      }
+      return profile
+    })
   )
 
   return router

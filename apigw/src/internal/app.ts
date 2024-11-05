@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { SAML } from '@node-saml/node-saml'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
@@ -24,9 +25,9 @@ import { createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/node-saml-cache-redis.js'
 import { sessionSupport } from '../shared/session.js'
 
-import { createAdSamlStrategy } from './ad-saml.js'
+import { authenticateAd } from './ad-saml.js'
 import { createDevAdRouter } from './dev-ad-auth.js'
-import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml.js'
+import { authenticateKeycloakEmployee } from './keycloak-employee-saml.js'
 import mobileDeviceSession, {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -81,14 +82,13 @@ export function internalGwRouter(
       createSamlRouter({
         sessions,
         strategyName: 'ead',
-        strategy: createAdSamlStrategy(
-          sessions,
-          config.ad,
+        saml: new SAML(
           createSamlConfig(
             config.ad.saml,
             redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
           )
         ),
+        authenticate: authenticateAd(config.ad),
         defaultPageUrl: '/employee'
       })
     )
@@ -96,19 +96,18 @@ export function internalGwRouter(
 
   if (!config.keycloakEmployee)
     throw new Error('Missing Keycloak SAML configuration (employee)')
-  const keycloakEmployeeConfig = createSamlConfig(
-    config.keycloakEmployee,
-    redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
-  )
   router.use(
     '/auth/evaka',
     createSamlRouter({
       sessions,
       strategyName: 'evaka',
-      strategy: createKeycloakEmployeeSamlStrategy(
-        sessions,
-        keycloakEmployeeConfig
+      saml: new SAML(
+        createSamlConfig(
+          config.keycloakEmployee,
+          redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
+        )
       ),
+      authenticate: authenticateKeycloakEmployee,
       defaultPageUrl: '/employee'
     })
   )
