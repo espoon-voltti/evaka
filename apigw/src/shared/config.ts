@@ -606,10 +606,7 @@ function sfiDefaultsForMode(mode: SfiMode):
           'https://tunnistautuminen.suomi.fi/idp/profile/SAML2/Redirect/SSO',
         logoutUrl:
           'https://tunnistautuminen.suomi.fi/idp/profile/SAML2/Redirect/SLO',
-        publicCert: [
-          'saml-signing.idp.tunnistautuminen.suomi.fi.2024.pem',
-          'saml-signing.idp.tunnistautuminen.suomi.fi.2022.pem'
-        ]
+        publicCert: ['saml-signing.idp.tunnistautuminen.suomi.fi.2024.pem']
       }
     case 'test':
       return {
@@ -617,10 +614,7 @@ function sfiDefaultsForMode(mode: SfiMode):
           'https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SSO',
         logoutUrl:
           'https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SLO',
-        publicCert: [
-          'saml-signing-testi.apro.tunnistus.fi.2024.pem',
-          'saml-signing-testi.apro.tunnistus.fi.2022.pem'
-        ]
+        publicCert: ['saml-signing-testi.apro.tunnistus.fi.2024.pem']
       }
     case 'mock':
       return undefined
