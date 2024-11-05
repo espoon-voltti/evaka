@@ -24,7 +24,6 @@ export function createDevAdRouter(sessions: Sessions): Router {
   return createDevAuthRouter({
     sessions,
     root: '/employee',
-    strategyName: 'dev-ad',
     loginFormHandler: async (req, res) => {
       const employees = _.sortBy(await getEmployees(), ({ id }) => id)
       const employeeInputs = employees

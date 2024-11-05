@@ -6,7 +6,6 @@ import { randomBytes } from 'node:crypto'
 
 import { Profile } from '@node-saml/node-saml'
 import express, { NextFunction, Request, Response } from 'express'
-import passport, { AuthenticateCallback } from 'passport'
 
 import { logAuditEvent } from '../logging.js'
 import { fromCallback } from '../promise-utils.js'
@@ -72,22 +71,6 @@ export const integrationUserHeader = JSON.stringify({ type: 'integration' })
 export function createLogoutToken(profile: Profile) {
   return `${profile.nameID}:::${profile.sessionIndex}`
 }
-
-export const authenticate = async (
-  strategyName: string,
-  req: express.Request,
-  res: express.Response
-): Promise<Express.User | undefined> =>
-  await new Promise<Express.User | undefined>((resolve, reject) => {
-    const cb: AuthenticateCallback = (err, user) =>
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-      err ? reject(err) : resolve(user || undefined)
-    const next: express.NextFunction = (err) =>
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-      err ? reject(err) : resolve(undefined)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    passport.authenticate(strategyName, cb)(req, res, next)
-  })
 
 export const login = async (
   req: express.Request,
