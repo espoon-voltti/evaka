@@ -23,6 +23,12 @@ import org.jdbi.v3.json.Json
 
 private val logger = KotlinLogging.logger {}
 
+sealed class AccountAccessLimit {
+    data object NoFurtherLimit : AccountAccessLimit()
+
+    data class AvailableFrom(val date: LocalDate) : AccountAccessLimit()
+}
+
 fun Database.Read.getUnreadMessagesCounts(
     idFilter: AccessControlFilter<MessageAccountId>
 ): Set<UnreadCountByAccount> =
@@ -430,18 +436,10 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
-/**
- * Returns the date when the employee was given access to the group account. Returns null when the
- * employee has no access, or the access is because of being a unit supervisor (supervisor has
- * access without being assigned to the group).
- * *
- */
-fun Database.Read.getStartDateOfGroupAccountAccess(
+fun Database.Read.getAccountAccessLimit(
     groupAccountId: MessageAccountId,
-    employeeId: EmployeeId?,
-): LocalDate? {
-    if (employeeId == null) return null
-
+    employeeId: EmployeeId,
+): AccountAccessLimit {
     return createQuery {
             sql(
                 """
@@ -457,6 +455,10 @@ WHERE ma.id = ${bind(groupAccountId)} AND dga.employee_id = ${bind(employeeId)} 
         }
         .mapTo<LocalDate>()
         .exactlyOneOrNull()
+        .let {
+            it?.let { AccountAccessLimit.AvailableFrom(it.minusWeeks(1)) }
+                ?: AccountAccessLimit.NoFurtherLimit
+        }
 }
 
 /** Return all threads in which the account has received messages */
@@ -467,13 +469,11 @@ fun Database.Read.getReceivedThreads(
     municipalAccountName: String,
     serviceWorkerAccountName: String,
     folderId: MessageThreadFolderId? = null,
-    groupAccountMessagesVisibleFrom: LocalDate? = null,
+    accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
 ): PagedMessageThreads {
-    val groupAccessPredicate =
-        if (groupAccountMessagesVisibleFrom != null)
-            Predicate {
-                where("$it.last_message_timestamp >= ${bind(groupAccountMessagesVisibleFrom)}")
-            }
+    val accountAccessPredicate =
+        if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
+            Predicate { where("$it.last_message_timestamp >= ${bind(accountAccessLimit.date)}") }
         else Predicate.alwaysTrue()
 
     val threads =
@@ -507,7 +507,7 @@ WHERE
     NOT t.is_copy AND
     tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)} AND 
     EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL) AND
-    ${predicate(groupAccessPredicate.forTable("tp"))}
+    ${predicate(accountAccessPredicate.forTable("tp"))}
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
         """
@@ -649,7 +649,12 @@ fun Database.Read.getMessageCopiesByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
+    accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
 ): PagedMessageCopies {
+    val accountAccessPredicate =
+        if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
+            Predicate { where("$it.sent_at >= ${bind(accountAccessLimit.date)}") }
+        else Predicate.alwaysTrue()
 
     return createQuery {
             sql(
@@ -688,7 +693,8 @@ JOIN message_account_view acc ON rec.recipient_id = acc.id
 JOIN message_account sender_acc ON sender_acc.id = m.sender_id
 JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
 JOIN message_thread t ON m.thread_id = t.id
-WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT NULL
+WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT NULL AND
+    ${predicate(accountAccessPredicate.forTable("m"))}
 ORDER BY m.sent_at DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 """
@@ -849,7 +855,13 @@ fun Database.Read.getMessagesSentByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
+    accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
 ): PagedSentMessages {
+    val accountAccessPredicate =
+        if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
+            Predicate { where("$it.sent_at >= ${bind(accountAccessLimit.date)}") }
+        else Predicate.alwaysTrue()
+
     return createQuery {
             sql(
                 """
@@ -865,7 +877,8 @@ WITH pageable_messages AS (
         COUNT(*) OVER () AS count
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
-    WHERE sender_id = ${bind(accountId)}
+    WHERE sender_id = ${bind(accountId)} AND
+        ${predicate(accountAccessPredicate.forTable("m"))}
     GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive
     ORDER BY sent_at DESC
     LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}

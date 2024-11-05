@@ -44,11 +44,7 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.*
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.test.validDaycareApplication
 import java.time.LocalDate
@@ -1434,40 +1430,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @ParameterizedTest(name = "replyDaysAgo={0}, userRole={1}")
     @MethodSource("groupAccountAccessParams")
-    fun `group account sees threads from before employee group assignment`(
+    fun `group account inbox visibility respects group assignment date`(
         replyDaysAgo: Int,
         userRole: UserRole,
         isVisible: Boolean,
     ) {
         val newEmployee =
             AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
-        db.transaction { tx ->
-            testChild_2.let {
-                insertChild(tx, it, groupId1)
-                tx.insertGuardian(person2.id, it.id)
-            }
-            val placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = testChild_2.id,
-                        unitId = testDaycare.id,
-                        startDate = clock.today().minusMonths(6),
-                        endDate = clock.today().plusMonths(6),
-                    )
-                )
-            tx.insert(
-                DevDaycareGroupPlacement(
-                    daycarePlacementId = placementId,
-                    daycareGroupId = groupId1,
-                    startDate = clock.today().minusMonths(6),
-                    endDate = clock.today().plusMonths(6),
-                )
-            )
-            tx.insert(DevEmployee(id = newEmployee.id, firstName = "New", lastName = "Staff"))
-            tx.insertDaycareAclRow(testDaycare.id, newEmployee.id, userRole)
-            tx.insertDaycareGroupAcl(testDaycare.id, newEmployee.id, listOf(groupId1))
-        }
-
+        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
         postNewThread(
             person2,
             "title",
@@ -1489,6 +1459,147 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val newEmployeeThreads =
             getEmployeeMessageThreads(group1Account, newEmployee, now = clock.now())
         assertEquals(if (isVisible) 1 else 0, newEmployeeThreads.size)
+    }
+
+    @ParameterizedTest(name = "sentDaysAgo={0}, userRole={1}")
+    @MethodSource("groupAccountAccessParams")
+    fun `sent message visibility respects group assignment date`(
+        sentDaysAgo: Int,
+        userRole: UserRole,
+        isVisible: Boolean,
+    ) {
+        val newEmployee =
+            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
+        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
+        postNewThread(
+            "title",
+            "content",
+            MessageType.MESSAGE,
+            group1Account,
+            listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_2.id)),
+            user = employee1,
+            now = clock.now().minusDays(sentDaysAgo.toLong()),
+        )
+
+        val sentMessages = getSentMessages(group1Account, newEmployee)
+        assertEquals(if (isVisible) 1 else 0, sentMessages.size)
+    }
+
+    @ParameterizedTest(name = "updatedDaysAgo={0}, userRole={1}")
+    @MethodSource("groupAccountAccessParams")
+    fun `draft message visibility respects group assignment date`(
+        updatedDaysAgo: Int,
+        userRole: UserRole,
+        isVisible: Boolean,
+    ) {
+        // `updated` timestamp in draft update always happens in current time (because `before
+        // update` trigger
+        // runs). We will mock all other times to future.
+        val dateAfterXDaysSinceDraftCreation = clock.now().plusDays(updatedDaysAgo.toLong())
+        val newEmployee =
+            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
+        prepareGroupAccountAccessTest(newEmployee.id, userRole, dateAfterXDaysSinceDraftCreation)
+
+        createDraft(
+            employee1,
+            group1Account,
+            "title",
+            "content",
+            setOf(person2Account),
+            emptyList(),
+            clock.now(),
+        )
+
+        val drafts = getDrafts(newEmployee, group1Account, dateAfterXDaysSinceDraftCreation)
+        assertEquals(if (isVisible) 1 else 0, drafts.size)
+    }
+
+    @ParameterizedTest(name = "copyDaysAgo={0}, userRole={1}")
+    @MethodSource("groupAccountAccessParams")
+    fun `message copy visibility respects group assignment date`(
+        copyDaysAgo: Int,
+        userRole: UserRole,
+        isVisible: Boolean,
+    ) {
+        val newEmployee =
+            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
+        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
+
+        postNewThread(
+            "title",
+            "content",
+            MessageType.MESSAGE,
+            employee1Account,
+            listOf(
+                MessageRecipient(MessageRecipientType.CHILD, testChild_2.id),
+                MessageRecipient(MessageRecipientType.GROUP, groupId1),
+            ),
+            user = employee1,
+            now = clock.now().minusDays(copyDaysAgo.toLong()),
+        )
+
+        val copiedThreads = getMessageCopies(newEmployee, group1Account, clock.now())
+        assertEquals(if (isVisible) 1 else 0, copiedThreads.size)
+    }
+
+    @ParameterizedTest(name = "messagesDaysAgo={0}, userRole={1}")
+    @MethodSource("groupAccountAccessParams")
+    fun `archived message visibility respects group assignment date`(
+        messagesDaysAgo: Int,
+        userRole: UserRole,
+        isVisible: Boolean,
+    ) {
+        val newEmployee =
+            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
+        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
+        val threadId =
+            postNewThread(
+                person2,
+                "title",
+                "content",
+                listOf(group1Account, employee1Account),
+                listOf(testChild_2.id),
+                now = clock.now().minusDays(messagesDaysAgo.toLong()),
+            )
+
+        archiveThread(employee1, group1Account, threadId, now = clock.now().minusDays(1))
+
+        val archivedThreads =
+            getEmployeeArchivedThreads(group1Account, newEmployee, now = clock.now())
+        assertEquals(if (isVisible) 1 else 0, archivedThreads.size)
+    }
+
+    private fun prepareGroupAccountAccessTest(
+        newEmployeeId: EmployeeId,
+        userRole: UserRole,
+        now: HelsinkiDateTime,
+    ) {
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId1)
+                tx.insertGuardian(person2.id, it.id)
+            }
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = now.toLocalDate().minusMonths(6),
+                        endDate = now.toLocalDate().plusMonths(6),
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId1,
+                    startDate = now.toLocalDate().minusMonths(6),
+                    endDate = now.toLocalDate().plusMonths(6),
+                )
+            )
+            tx.insert(DevEmployee(id = newEmployeeId, firstName = "New", lastName = "Staff"))
+            tx.insertDaycareAclRow(testDaycare.id, newEmployeeId, userRole)
+            tx.insertDaycareGroupAcl(testDaycare.id, newEmployeeId, listOf(groupId1), now)
+        }
     }
 
     private fun getUnreadReceivedMessages(
@@ -1694,6 +1805,83 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     ): List<SentMessage> {
         return messageController
             .getSentMessages(dbInstance(), user, MockEvakaClock(readTime), accountId, page = 1)
+            .data
+    }
+
+    private fun createDraft(
+        user: AuthenticatedUser.Employee,
+        accountId: MessageAccountId,
+        title: String,
+        content: String,
+        recipientIds: Set<MessageAccountId>,
+        recipientNames: List<String>,
+        now: HelsinkiDateTime,
+    ) {
+        val draftId =
+            messageController.initDraftMessage(dbInstance(), user, MockEvakaClock(now), accountId)
+        messageController.updateDraftMessage(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            accountId,
+            draftId,
+            UpdatableDraftContent(
+                MessageType.MESSAGE,
+                title,
+                content,
+                urgent = false,
+                sensitive = false,
+                recipientIds = recipientIds,
+                recipientNames = recipientNames,
+            ),
+        )
+    }
+
+    private fun getDrafts(
+        user: AuthenticatedUser.Employee,
+        accountId: MessageAccountId,
+        now: HelsinkiDateTime,
+    ): List<DraftContent> {
+        return messageController.getDraftMessages(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            accountId,
+        )
+    }
+
+    private fun getMessageCopies(
+        user: AuthenticatedUser.Employee,
+        accountId: MessageAccountId,
+        now: HelsinkiDateTime,
+    ): List<MessageCopy> {
+        return messageController
+            .getMessageCopies(dbInstance(), user, MockEvakaClock(now), accountId, page = 1)
+            .data
+    }
+
+    private fun archiveThread(
+        user: AuthenticatedUser.Employee,
+        accountId: MessageAccountId,
+        threadId: MessageThreadId,
+        now: HelsinkiDateTime,
+    ) {
+        messageController.archiveThread(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            accountId,
+            threadId,
+        )
+    }
+
+    private fun getEmployeeArchivedThreads(
+        accountId: MessageAccountId,
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = readTime,
+    ): List<MessageThread> {
+        return messageController
+            .getArchivedMessages(dbInstance(), user, MockEvakaClock(now), accountId, page = 1)
             .data
     }
 

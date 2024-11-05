@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 
 data class DaycareAclRow(
@@ -121,12 +122,13 @@ fun Database.Transaction.insertDaycareGroupAcl(
     daycareId: DaycareId,
     employeeId: EmployeeId,
     groupIds: Collection<GroupId>,
+    now: HelsinkiDateTime = HelsinkiDateTime.now(),
 ) =
     executeBatch(groupIds) {
         sql(
             """
 INSERT INTO daycare_group_acl
-SELECT id, ${bind(employeeId)}
+SELECT id, ${bind(employeeId)}, ${bind(now)}, ${bind(now)}
 FROM daycare_group
 WHERE id = ${bind { it }} AND daycare_id = ${bind(daycareId)}
 """

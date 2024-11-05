@@ -120,7 +120,7 @@ beforeEach(async () => {
   messenger = await Fixture.employee().messenger().save()
   staff = await Fixture.employee()
     .staff(testDaycare.id)
-    .withGroupAcl(testDaycareGroup.id)
+    .withGroupAcl(testDaycareGroup.id, messageSendTime, messageSendTime)
     .save()
 })
 

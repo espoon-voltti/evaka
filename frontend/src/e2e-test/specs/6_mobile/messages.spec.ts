@@ -132,9 +132,9 @@ beforeEach(async () => {
     roles: []
   })
     .withDaycareAcl(testDaycare.id, 'STAFF')
-    .withGroupAcl(daycareGroup.id)
-    .withGroupAcl(daycareGroup2.id)
-    .withGroupAcl(daycareGroup3.id)
+    .withGroupAcl(daycareGroup.id, mockedDateAt10)
+    .withGroupAcl(daycareGroup2.id, mockedDateAt10)
+    .withGroupAcl(daycareGroup3.id, mockedDateAt10)
     .save()
 
   const staff2 = await Fixture.employee({
