@@ -286,13 +286,11 @@ class SfiMessagesRestClient(
                 }
             }
 
-        val authorization = authorizationHeader.get()
-        val accessToken = authorization.value.removePrefix("Bearer ")
+        val accessToken = getAccessToken(current.password)
         httpClient
             .newCall(
                 Request.Builder()
                     .url(config.urls.changePassword)
-                    .header("Authorization", authorizationHeader.get().value)
                     .header("Accept", "application/json")
                     .post(
                         jsonRequestBody(

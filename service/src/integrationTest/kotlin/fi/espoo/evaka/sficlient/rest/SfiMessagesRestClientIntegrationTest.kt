@@ -195,4 +195,19 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
         client.send(message)
         assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
     }
+
+    @Test
+    fun `password change handles access token expiry gracefully`() {
+        client.send(message)
+        assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
+        MockSfiMessagesRestEndpoint.clearTokens()
+        val oldPassword = MockSfiMessagesRestEndpoint.getCurrentPassword()
+        client.rotatePassword()
+        val newPassword = MockSfiMessagesRestEndpoint.getCurrentPassword()
+        assertNotEquals(oldPassword, newPassword)
+
+        // sending a message should still work after password change
+        client.send(message)
+        assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
+    }
 }
