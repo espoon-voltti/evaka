@@ -33,7 +33,10 @@ let guardian: DevPerson
 beforeEach(async () => {
   await resetServiceState()
   page = await Page.open({
-    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0)),
+    citizenCustomizations: {
+      featureFlags: { calendarMonthView: false }
+    }
   })
 
   const area = await Fixture.careArea(testCareArea).save()
