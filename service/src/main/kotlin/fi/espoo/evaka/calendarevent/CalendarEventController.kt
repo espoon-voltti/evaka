@@ -342,7 +342,7 @@ class CalendarEventController(
                     val updated = resolveAttendeeChildIds(tx, event.unitId, body.tree, event.period)
                     val removed = current.minus(updated.toSet())
                     removed.forEach { childId ->
-                        tx.deleteCalendarEventTimeReservationsByChildAndEvent(
+                        tx.freeCalendarEventTimeReservationsByChildAndEvent(
                             user,
                             clock.now(),
                             calendarEventId = event.id,
@@ -481,11 +481,7 @@ class CalendarEventController(
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
                             ?: throw BadRequest("Calendar event time not found")
 
-                    tx.deleteCalendarEventTimeReservation(
-                        user,
-                        clock.now(),
-                        body.calendarEventTimeId,
-                    )
+                    tx.freeCalendarEventTimeReservation(user, clock.now(), body.calendarEventTimeId)
 
                     if (body.childId != null) {
                         val reservationRecipients = getRecipientsForChild(tx, body.childId)
@@ -573,7 +569,7 @@ class CalendarEventController(
                             ?: throw BadRequest("Calendar event not found")
                     val cancellationRecipients = getRecipientsForChild(tx, body.childId)
 
-                    tx.deleteCalendarEventTimeReservations(
+                    tx.freeCalendarEventTimeReservations(
                         user,
                         clock.now(),
                         eventTimesToRemove.map { it.id }.toSet(),
@@ -851,11 +847,7 @@ class CalendarEventController(
                     val eventTimeDetails =
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
                             ?: throw BadRequest("Calendar event time not found")
-                    tx.deleteCalendarEventTimeReservation(
-                        user,
-                        clock.now(),
-                        body.calendarEventTimeId,
-                    )
+                    tx.freeCalendarEventTimeReservation(user, clock.now(), body.calendarEventTimeId)
                     val recipients = getRecipientsForChild(tx, body.childId)
                     asyncJobRunner.plan(
                         tx,
