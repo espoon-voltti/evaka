@@ -664,18 +664,18 @@ export function configFromEnv(): Config {
             entryPoint: nonNullable(
               optional('SFI_SAML_ENTRYPOINT', unchanged) ??
                 sfiDefaults?.entryPoint,
-              'Either SFI_ENV or SFI_SAML_ENTRYPOINT must be set'
+              'Either SFI_MODE or SFI_SAML_ENTRYPOINT must be set'
             ),
             logoutUrl: nonNullable(
               optional('SFI_SAML_LOGOUT_URL', unchanged) ??
                 sfiDefaults?.logoutUrl,
-              'Either SFI_ENV or SFI_SAML_LOGOUT_URL must be set'
+              'Either SFI_MODE or SFI_SAML_LOGOUT_URL must be set'
             ),
             issuer: required('SFI_SAML_ISSUER', unchanged),
             publicCert: nonNullable(
               optional('SFI_SAML_PUBLIC_CERT', parseArray(unchanged)) ??
                 sfiDefaults?.publicCert,
-              'Either SFI_ENV or SFI_SAML_PUBLIC_CERT must be set'
+              'Either SFI_MODE or SFI_SAML_PUBLIC_CERT must be set'
             ),
             privateCert: required('SFI_SAML_PRIVATE_CERT', unchanged),
             validateInResponseTo: ValidateInResponseTo.always,
