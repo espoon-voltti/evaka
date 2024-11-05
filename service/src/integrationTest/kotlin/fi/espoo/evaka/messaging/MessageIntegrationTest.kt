@@ -276,7 +276,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             employee1Account = tx.upsertEmployeeMessageAccount(employee1.id)
             tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee1.id, listOf(groupId1, groupId2))
+            tx.insertDaycareGroupAcl(
+                testDaycare.id,
+                employee1.id,
+                listOf(groupId1, groupId2),
+                clock.now(),
+            )
 
             tx.insert(DevEmployee(id = employee2.id, firstName = "Foo", lastName = "Supervisor"))
             employee2Account = tx.upsertEmployeeMessageAccount(employee2.id)

@@ -122,7 +122,7 @@ fun Database.Transaction.insertDaycareGroupAcl(
     daycareId: DaycareId,
     employeeId: EmployeeId,
     groupIds: Collection<GroupId>,
-    now: HelsinkiDateTime = HelsinkiDateTime.now(),
+    now: HelsinkiDateTime,
 ) =
     executeBatch(groupIds) {
         sql(

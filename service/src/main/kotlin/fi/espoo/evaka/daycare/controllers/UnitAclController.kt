@@ -36,10 +36,7 @@ import fi.espoo.evaka.shared.auth.hasAnyDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.*
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
@@ -234,7 +231,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         )
                         validateIsPermanentEmployee(tx, employeeId)
                         tx.clearDaycareGroupAcl(daycareId, employeeId)
-                        tx.insertDaycareGroupAcl(daycareId, employeeId, it)
+                        tx.insertDaycareGroupAcl(daycareId, employeeId, it, clock.now())
                     }
 
                     val occupancyCoefficientId =
@@ -298,7 +295,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                             Action.Unit.UPDATE_STAFF_GROUP_ACL,
                             daycareId,
                         )
-                        tx.insertDaycareGroupAcl(daycareId, employeeId, it)
+                        tx.insertDaycareGroupAcl(daycareId, employeeId, it, clock.now())
                     }
                     val occupancyCoefficientId =
                         aclInfo.update.hasStaffOccupancyEffect?.let {
@@ -403,7 +400,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 active = true,
                             )
                         )
-                    setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
+                    setTemporaryEmployeeDetails(tx, unitId, employee.id, input, clock.now())
                     employee.id
                 }
             }
@@ -484,7 +481,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     firstName = input.firstName,
                     lastName = input.lastName,
                 )
-                setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
+                setTemporaryEmployeeDetails(tx, unitId, employee.id, input, clock.now())
             }
         }
         Audit.TemporaryEmployeeUpdate.log(
@@ -553,6 +550,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         unitId: DaycareId,
         employeeId: EmployeeId,
         input: TemporaryEmployee,
+        now: HelsinkiDateTime,
     ) {
         if (
             input.groupIds.isNotEmpty() &&
@@ -563,7 +561,7 @@ class UnitAclController(private val accessControl: AccessControl) {
 
         tx.clearDaycareGroupAcl(unitId, employeeId)
         tx.insertDaycareAclRow(unitId, employeeId, UserRole.STAFF)
-        tx.insertDaycareGroupAcl(unitId, employeeId, input.groupIds.toList())
+        tx.insertDaycareGroupAcl(unitId, employeeId, input.groupIds.toList(), now)
 
         tx.upsertEmployeeMessageAccount(employeeId)
         tx.upsertOccupancyCoefficient(

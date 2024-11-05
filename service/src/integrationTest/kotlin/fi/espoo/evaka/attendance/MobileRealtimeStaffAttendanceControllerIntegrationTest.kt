@@ -84,8 +84,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
             tx.insertDaycareAclRow(testDaycare2.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
-            tx.insertDaycareGroupAcl(testDaycare2.id, employee.id, listOf(groupId2))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
+            tx.insertDaycareGroupAcl(testDaycare2.id, employee.id, listOf(groupId2), now)
 
             tx.markStaffArrival(
                 employee.id,
@@ -110,7 +110,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
         }
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
@@ -146,7 +146,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
         }
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
@@ -176,7 +176,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
         }
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
@@ -211,7 +211,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -243,7 +243,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -276,7 +276,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -309,7 +309,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -351,7 +351,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -376,7 +376,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
         }
 
         val lastLoginBeforeArrival = db.read { db -> db.getEmployeeLastLogin(employee.id) }
@@ -402,7 +402,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -438,7 +438,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -464,7 +464,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -488,7 +488,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -531,7 +531,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -570,7 +570,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -596,7 +596,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -629,7 +629,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -671,7 +671,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -708,7 +708,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -757,7 +757,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -792,7 +792,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -828,7 +828,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -873,7 +873,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
@@ -908,7 +908,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(employee)
             tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
             tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId), now)
             tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
