@@ -79,6 +79,14 @@ export interface CalendarEventTimeCitizenReservationForm {
 }
 
 /**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeClearingForm
+*/
+export interface CalendarEventTimeClearingForm {
+  calendarEventId: UUID
+  childId: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeEmployeeReservationForm
 */
 export interface CalendarEventTimeEmployeeReservationForm {

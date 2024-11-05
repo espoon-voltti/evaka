@@ -92,6 +92,7 @@ enum class Audit(
     CalendarEventTimeCreate,
     CalendarEventTimeDelete,
     CalendarEventTimeRead,
+    CalendarEventChildTimesCancellation,
     CalendarEventTimeReservationCreate,
     CalendarEventTimeReservationDelete,
     CalendarEventTimeReservationUpdate,

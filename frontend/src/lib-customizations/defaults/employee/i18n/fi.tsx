@@ -2409,7 +2409,10 @@ export const fi = {
           eventTime: {
             addError: 'Keskusteluajan lisääminen epäonnistui',
             deleteError: 'Keskusteluajan poistaminen epäonnistui'
-          }
+          },
+          reservationClearConfirmationTitle:
+            'Poistetaanko seuraavat varaukset?',
+          clearReservationButtonLabel: 'Poista varaukset'
         },
         reservedTimesLabel: 'varattua',
         freeTimesLabel: 'vapaata'

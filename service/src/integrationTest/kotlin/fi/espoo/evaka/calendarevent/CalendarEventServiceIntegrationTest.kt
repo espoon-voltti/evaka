@@ -40,6 +40,9 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCalendarEvent
+import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
+import fi.espoo.evaka.shared.dev.DevCalendarEventTime
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -54,6 +57,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
@@ -1844,7 +1848,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
 
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
-        val mails = MockEmailClient.emails
         assertEquals(2, MockEmailClient.emails.size)
         assertAllEmailsFor(
             testAdult_1.copy(email = email),
@@ -2803,6 +2806,174 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(1, fosterParentEventResult.size)
         assertThat(fosterParentEventResult[0].timesByChild[testChild_4.id])
             .containsExactlyInAnyOrderElementsOf(expectedFosterParentEventTimes)
+    }
+
+    @Test
+    fun `only employee from same group is allowed to clear child reservations from calendar event`() {
+        val daycare1Employee = DevEmployee()
+        val daycare2Employee = DevEmployee()
+        val event =
+            DevCalendarEvent(
+                title = "Testieventti",
+                description = "Eventin kuvaus",
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                modifiedAt = now,
+            )
+        val eventTime =
+            DevCalendarEventTime(
+                calendarEventId = event.id,
+                childId = testChild_1.id,
+                date = today.plusDays(3),
+                modifiedAt = now,
+                start = LocalTime.of(8, 0),
+                end = LocalTime.of(9, 0),
+                modifiedBy = admin.evakaUserId,
+            )
+        db.transaction { tx ->
+            tx.insert(
+                daycare1Employee,
+                unitRoles = mapOf(testDaycare.id to UserRole.STAFF),
+                groupAcl = mapOf(testDaycare.id to listOf(groupId)),
+            )
+            tx.insert(
+                daycare2Employee,
+                unitRoles = mapOf(testDaycare2.id to UserRole.STAFF),
+                groupAcl = mapOf(testDaycare2.id to listOf(groupId2)),
+            )
+
+            tx.insert(event)
+            tx.insert(
+                DevCalendarEventAttendee(
+                    unitId = testDaycare.id,
+                    groupId = groupId,
+                    calendarEventId = event.id,
+                )
+            )
+            tx.insert(eventTime)
+        }
+
+        val clearingForm =
+            CalendarEventTimeClearingForm(calendarEventId = event.id, childId = testChild_1.id)
+
+        assertThrows<Forbidden> {
+            calendarEventController.clearEventTimesInEventForChild(
+                dbInstance(),
+                daycare2Employee.user,
+                clock,
+                clearingForm,
+            )
+        }
+
+        calendarEventController.clearEventTimesInEventForChild(
+            dbInstance(),
+            daycare1Employee.user,
+            clock,
+            clearingForm,
+        )
+
+        val eventResult =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, event.id)
+
+        assertEquals(1, eventResult.times.size)
+        assertThat(eventResult.times.first().id).isEqualTo(eventTime.id)
+        assertThat(eventResult.times.first().childId).isNull()
+    }
+
+    @Test
+    fun `guardian receives notifications for only future reservations after mass cancellation`() {
+        val event =
+            DevCalendarEvent(
+                title = "Testieventti",
+                description = "Eventin kuvaus",
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                modifiedAt = now,
+            )
+        val pastEventTime =
+            DevCalendarEventTime(
+                calendarEventId = event.id,
+                childId = testChild_3.id,
+                date = today.minusDays(3),
+                modifiedAt = now,
+                start = LocalTime.of(8, 0),
+                end = LocalTime.of(9, 0),
+                modifiedBy = admin.evakaUserId,
+            )
+        val futureEventTime =
+            DevCalendarEventTime(
+                calendarEventId = event.id,
+                childId = testChild_3.id,
+                date = today.plusDays(3),
+                modifiedAt = now,
+                start = LocalTime.of(9, 0),
+                end = LocalTime.of(10, 0),
+                modifiedBy = admin.evakaUserId,
+            )
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_2.id, testChild_3.id)
+            val placementId3 =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId3,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            tx.insert(event)
+            tx.insert(
+                DevCalendarEventAttendee(
+                    unitId = testDaycare.id,
+                    groupId = groupId,
+                    calendarEventId = event.id,
+                )
+            )
+            tx.insert(pastEventTime)
+            tx.insert(futureEventTime)
+        }
+
+        val clearingForm =
+            CalendarEventTimeClearingForm(calendarEventId = event.id, childId = testChild_3.id)
+
+        calendarEventController.clearEventTimesInEventForChild(
+            dbInstance(),
+            admin,
+            clock,
+            clearingForm,
+        )
+
+        val emailDetails =
+            DiscussionSurveyReservationNotificationData(
+                calendarEventTime =
+                    CalendarEventTime(
+                        id = futureEventTime.id,
+                        date = futureEventTime.date,
+                        startTime = futureEventTime.start,
+                        endTime = futureEventTime.end,
+                        childId = testChild_3.id,
+                    )
+            )
+
+        val cancellationEmailContent =
+            emailMessageProvider.discussionSurveyReservationCancellationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails,
+            )
+
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertAllEmailsFor(testAdult_2, listOf(cancellationEmailContent), expectedFromAddress)
     }
 
     private fun reserveEventTime(id: CalendarEventTimeId, childId: ChildId) {

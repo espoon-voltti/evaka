@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
@@ -341,7 +342,9 @@ class CalendarEventController(
                     val updated = resolveAttendeeChildIds(tx, event.unitId, body.tree, event.period)
                     val removed = current.minus(updated.toSet())
                     removed.forEach { childId ->
-                        tx.deleteCalendarEventTimeReservations(
+                        tx.freeCalendarEventTimeReservationsByChildAndEvent(
+                            user,
+                            clock.now(),
                             calendarEventId = event.id,
                             childId = childId,
                         )
@@ -478,7 +481,7 @@ class CalendarEventController(
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
                             ?: throw BadRequest("Calendar event time not found")
 
-                    tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
+                    tx.freeCalendarEventTimeReservation(user, clock.now(), body.calendarEventTimeId)
 
                     if (body.childId != null) {
                         val reservationRecipients = getRecipientsForChild(tx, body.childId)
@@ -533,6 +536,73 @@ class CalendarEventController(
                     )
                 }
         }
+    }
+
+    @PostMapping("/employee/calendar-event/clear-survey-reservations-for-child")
+    fun clearEventTimesInEventForChild(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody body: CalendarEventTimeClearingForm,
+    ) {
+        val removedIds =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.CalendarEvent.UPDATE,
+                        body.calendarEventId,
+                    )
+                    val eventTimesToRemove =
+                        tx.getCalendarEventTimesByChildAndEvent(body.childId, body.calendarEventId)
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.CalendarEventTime.UPDATE_RESERVATION,
+                        eventTimesToRemove.map { it.id },
+                    )
+                    val discussionSurvey =
+                        tx.getCalendarEventById(body.calendarEventId)
+                            ?: throw BadRequest("Calendar event not found")
+                    val cancellationRecipients = getRecipientsForChild(tx, body.childId)
+
+                    tx.freeCalendarEventTimeReservations(
+                        user,
+                        clock.now(),
+                        eventTimesToRemove.map { it.id }.toSet(),
+                    )
+
+                    // only discussion times in the future should result in cancellation messages
+                    asyncJobRunner.plan(
+                        tx,
+                        eventTimesToRemove
+                            .filter {
+                                HelsinkiDateTime.of(it.date, it.endTime).isAfter(clock.now())
+                            }
+                            .flatMap { time ->
+                                cancellationRecipients.map { recipient ->
+                                    AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
+                                        eventTitle = discussionSurvey.title,
+                                        childId = body.childId,
+                                        language = Language.fi,
+                                        calendarEventTime = time,
+                                        recipientId = recipient.id,
+                                    )
+                                }
+                            },
+                        runAt = clock.now(),
+                    )
+                    eventTimesToRemove.map { it.id }
+                }
+            }
+        Audit.CalendarEventChildTimesCancellation.log(
+            targetId = AuditId(body.calendarEventId),
+            objectId = AuditId(body.childId),
+            meta = mapOf("eventTimes" to removedIds),
+        )
     }
 
     @GetMapping("/citizen/calendar-events")
@@ -777,7 +847,7 @@ class CalendarEventController(
                     val eventTimeDetails =
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
                             ?: throw BadRequest("Calendar event time not found")
-                    tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
+                    tx.freeCalendarEventTimeReservation(user, clock.now(), body.calendarEventTimeId)
                     val recipients = getRecipientsForChild(tx, body.childId)
                     asyncJobRunner.plan(
                         tx,

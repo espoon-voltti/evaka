@@ -60,11 +60,6 @@ data class AttendingChild(
     val unitName: String?,
 )
 
-data class CitizenCalendarEventResult(
-    val daycareEvents: List<CitizenCalendarEvent>,
-    val discussionSurveys: List<CitizenDiscussionSurvey>,
-)
-
 data class CitizenDiscussionSurvey(
     val id: CalendarEventId,
     val title: String,
@@ -108,6 +103,11 @@ data class CalendarEventTimeForm(val date: LocalDate, val timeRange: TimeRange)
 data class CalendarEventTimeEmployeeReservationForm(
     val calendarEventTimeId: CalendarEventTimeId,
     val childId: ChildId?,
+)
+
+data class CalendarEventTimeClearingForm(
+    val calendarEventId: CalendarEventId,
+    val childId: ChildId,
 )
 
 data class CalendarEventTimeCitizenReservationForm(
