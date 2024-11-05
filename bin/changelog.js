@@ -62,7 +62,7 @@ function parseArgs() {
 const ignoreLabels = ['no-changelog']
 
 const labels = {
-  breaking: 'Rikkovat muutokset',
+  breaking: 'Toimia vaativat muutokset',
   enhancement: 'Uudet ominaisuudet ja parannukset',
   bug: 'Bugikorjaukset',
   unknown: 'Muut',
