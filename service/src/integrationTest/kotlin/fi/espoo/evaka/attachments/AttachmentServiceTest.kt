@@ -147,7 +147,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             insert(
                 DevIncome(
                     personId = insert(DevPerson(), DevPersonType.ADULT),
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             )
         )

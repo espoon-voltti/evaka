@@ -131,7 +131,7 @@ class IncomeController(
 
                     val incomeTypes = incomeTypesProvider.get()
                     val validIncome = validateIncome(income, incomeTypes)
-                    tx.splitEarlierIncome(validIncome.personId, period)
+                    tx.splitEarlierIncome(clock, validIncome.personId, period, user.evakaUserId)
                     val id = tx.insertIncome(clock, mapper, validIncome, user.evakaUserId)
                     tx.associateOrphanAttachments(
                         user.evakaUserId,

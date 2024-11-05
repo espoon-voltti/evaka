@@ -134,7 +134,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     adultIdDuplicate,
                     validFrom = validFrom,
                     validTo = validTo,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             )
         }

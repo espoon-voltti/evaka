@@ -6,5 +6,5 @@ import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 
 export type PartialFeeAlteration = Omit<
   FeeAlteration,
-  'updatedAt' | 'updatedBy'
+  'modifiedAt' | 'modifiedBy'
 >

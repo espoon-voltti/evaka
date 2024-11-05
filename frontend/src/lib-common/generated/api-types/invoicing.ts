@@ -11,6 +11,7 @@ import LocalDate from '../../local-date'
 import YearMonth from '../../year-month'
 import { Action } from '../action'
 import { CareType } from './daycare'
+import { EvakaUser } from './user'
 import { IncomeAttachment } from './attachment'
 import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
@@ -75,11 +76,11 @@ export interface FeeAlteration {
   attachments: FeeAlterationAttachment[]
   id: UUID | null
   isAbsolute: boolean
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: EvakaUser | null
   notes: string
   personId: UUID
   type: FeeAlterationType
-  updatedAt: HelsinkiDateTime | null
-  updatedBy: UUID | null
   validFrom: LocalDate
   validTo: LocalDate | null
 }
@@ -389,13 +390,13 @@ export interface Income {
   effect: IncomeEffect
   id: UUID
   isEntrepreneur: boolean
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
   notes: string
   personId: UUID
   total: number
   totalExpenses: number
   totalIncome: number
-  updatedAt: HelsinkiDateTime
-  updatedBy: string
   validFrom: LocalDate
   validTo: LocalDate | null
   worksAtECHA: boolean
@@ -1125,7 +1126,7 @@ export function deserializeJsonCreateRetroactiveFeeDecisionsBody(json: JsonOf<Cr
 export function deserializeJsonFeeAlteration(json: JsonOf<FeeAlteration>): FeeAlteration {
   return {
     ...json,
-    updatedAt: (json.updatedAt != null) ? HelsinkiDateTime.parseIso(json.updatedAt) : null,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
@@ -1216,7 +1217,7 @@ export function deserializeJsonFeeThresholdsWithId(json: JsonOf<FeeThresholdsWit
 export function deserializeJsonIncome(json: JsonOf<Income>): Income {
   return {
     ...json,
-    updatedAt: HelsinkiDateTime.parseIso(json.updatedAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }

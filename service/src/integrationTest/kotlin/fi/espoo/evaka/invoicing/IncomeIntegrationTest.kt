@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeRequest
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -25,6 +26,8 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -40,6 +43,12 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     val mockClock = MockEvakaClock(2023, 5, 1, 10, 0)
+    val mockUser =
+        EvakaUser(
+            EvakaUserId(UUID.fromString("00000000-0000-0000-0000-000000000000")),
+            "",
+            EvakaUserType.EMPLOYEE,
+        )
 
     private fun assertEqualEnough(expected: List<IncomeRequest>, actual: List<Income>) {
         val nullId = IncomeId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
@@ -57,8 +66,8 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         validFrom = it.validFrom,
                         validTo = it.validTo,
                         notes = it.notes,
-                        updatedAt = nullTime,
-                        updatedBy = "",
+                        modifiedAt = nullTime,
+                        modifiedBy = mockUser,
                         attachments = it.attachments,
                         totalIncome = calculateTotalIncome(it.data, coefficientMultiplierProvider),
                         totalExpenses =
@@ -67,7 +76,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
                 .toSet(),
-            actual.map { it.copy(id = nullId, updatedAt = nullTime, updatedBy = "") }.toSet(),
+            actual
+                .map { it.copy(id = nullId, modifiedAt = nullTime, modifiedBy = mockUser) }
+                .toSet(),
         )
     }
 
@@ -220,7 +231,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val incomes = getPersonIncomes(testIncomeRequest().personId)
         assertEquals(1, incomes.size)
         with(incomes.first()) {
-            assertEquals(financeUserName, updatedBy)
+            assertEquals(financeUserName, modifiedBy.name)
             assertEquals(0, totalIncome)
             assertEquals(0, totalExpenses)
             assertEquals(0, total)
@@ -318,7 +329,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val incomes = getPersonIncomes(testAdult_1.id)
         assertEquals(1, incomes.size)
         with(incomes.first()) {
-            assertEquals(financeUserName, updatedBy)
+            assertEquals(financeUserName, modifiedBy.name)
             assertEquals(0, totalIncome)
             assertEquals(0, totalExpenses)
             assertEquals(0, total)

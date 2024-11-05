@@ -211,7 +211,7 @@ describe('Employee - Head of family details', () => {
           coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
         }
       },
-      updatedBy: employee.id
+      modifiedBy: employee.id
     }).save()
 
     const totalChildIncome = 1234
@@ -229,7 +229,7 @@ describe('Employee - Head of family details', () => {
           coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
         }
       },
-      updatedBy: employee.id
+      modifiedBy: employee.id
     }).save()
 
     await guardianInformation.navigateToGuardian(regularPerson.id)

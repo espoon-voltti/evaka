@@ -139,7 +139,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today(),
                 )
@@ -148,7 +148,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().plusDays(1),
                     validTo = clock.today().plusMonths(6),
                 )
@@ -164,7 +164,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
                 )
@@ -190,7 +190,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgePartnerId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
                 )
@@ -239,7 +239,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgePartnerId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
                 )
@@ -285,7 +285,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().minusDays(1),
                 )
@@ -303,7 +303,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
                     validTo = incomeExpirationDate,
                 )
@@ -332,7 +332,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
                     validTo = incomeExpirationDate,
                 )
@@ -361,7 +361,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
                     validTo = incomeExpirationDate,
                 )
@@ -388,7 +388,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = expirationDate,
                 )
@@ -425,7 +425,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusDays(13),
                 )
@@ -447,7 +447,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
                 )
@@ -489,7 +489,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusDays(6),
                 )
@@ -540,7 +540,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today(),
                     effect = IncomeEffect.INCOME,
@@ -670,7 +670,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             tx.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
                 )

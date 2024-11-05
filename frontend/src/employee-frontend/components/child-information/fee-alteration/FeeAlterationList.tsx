@@ -14,6 +14,7 @@ import {
   FeeAlterationWithPermittedActions
 } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
@@ -87,6 +88,22 @@ export default React.memo(function FeeAlterationList({
                 }`}</Dates>
                 <span>{feeAlteration.notes}</span>
               </FixedSpaceRow>
+              {feeAlteration.modifiedAt && (
+                <FixedSpaceRow spacing="L">
+                  <Tooltip
+                    tooltip={
+                      feeAlteration.modifiedBy &&
+                      i18n.childInformation.feeAlteration.lastModifiedBy(
+                        feeAlteration.modifiedBy.name
+                      )
+                    }
+                  >
+                    {i18n.childInformation.feeAlteration.lastModifiedAt(
+                      feeAlteration.modifiedAt.format()
+                    )}
+                  </Tooltip>
+                </FixedSpaceRow>
+              )}
               <FixedSpaceRow>
                 {permittedActions.includes('UPDATE') && (
                   <IconOnlyButton

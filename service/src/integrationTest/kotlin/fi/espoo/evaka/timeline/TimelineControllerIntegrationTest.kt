@@ -99,7 +99,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     validFrom = childRange.start,
                     validTo = childRange.end,
                     effect = IncomeEffect.INCOME,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }

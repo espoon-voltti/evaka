@@ -14,7 +14,6 @@ import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlterationAttachment
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -26,6 +25,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toEvakaUser
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -43,8 +43,8 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
         val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
-            expected.map { it.copy(id = nullId, updatedAt = null) }.toSet(),
-            actual.map { it.copy(id = nullId, updatedAt = null) }.toSet(),
+            expected.map { it.copy(id = nullId, modifiedAt = null) }.toSet(),
+            actual.map { it.copy(id = nullId, modifiedAt = null) }.toSet(),
         )
     }
 
@@ -72,7 +72,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
             notes = "",
-            updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+            modifiedBy = testDecisionMaker_1.toEvakaUser(),
         )
 
     @Test
@@ -83,7 +83,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `getFeeAlterations works with single fee alteration in DB`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, user.evakaUserId, testFeeAlteration) }
 
         val result = getFeeAlterations(personId)
         assertEqualEnough(listOf(testFeeAlteration), result.map { it.data })
@@ -100,7 +100,9 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 ),
                 testFeeAlteration,
             )
-        db.transaction { tx -> feeAlterations.forEach { tx.upsertFeeAlteration(clock, it) } }
+        db.transaction { tx ->
+            feeAlterations.forEach { tx.upsertFeeAlteration(clock, user.evakaUserId, it) }
+        }
 
         val result = getFeeAlterations(personId)
         assertEqualEnough(feeAlterations, result.map { it.data })
@@ -112,7 +114,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
         val result = getFeeAlterations(personId)
         assertEqualEnough(
-            listOf(testFeeAlteration.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
+            listOf(testFeeAlteration.copy(modifiedBy = testDecisionMaker_1.toEvakaUser())),
             result.map { it.data },
         )
     }
@@ -126,21 +128,21 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `updateFeeAlteration works with valid fee alteration`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, user.evakaUserId, testFeeAlteration) }
 
         val updated = testFeeAlteration.copy(amount = 100)
         updateFeeAlteration(testFeeAlteration.id!!, updated)
 
         val result = getFeeAlterations(personId)
         assertEqualEnough(
-            listOf(updated.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
+            listOf(updated.copy(modifiedBy = testDecisionMaker_1.toEvakaUser())),
             result.map { it.data },
         )
     }
 
     @Test
     fun `updateFeeAlteration throws with invalid date rage`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, user.evakaUserId, testFeeAlteration) }
 
         val updated = testFeeAlteration.copy(validTo = testFeeAlteration.validFrom.minusDays(1))
         assertThrows<BadRequest> { updateFeeAlteration(testFeeAlteration.id!!, updated) }
@@ -150,8 +152,8 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     fun `delete works with existing fee alteration`() {
         val deletedId = FeeAlterationId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
-            tx.upsertFeeAlteration(clock, testFeeAlteration.copy(id = deletedId))
+            tx.upsertFeeAlteration(clock, user.evakaUserId, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, user.evakaUserId, testFeeAlteration.copy(id = deletedId))
         }
 
         deleteFeeAlteration(deletedId)
@@ -163,7 +165,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `delete does nothing with non-existent id`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, user.evakaUserId, testFeeAlteration) }
 
         deleteFeeAlteration(FeeAlterationId(UUID.randomUUID()))
 
@@ -173,7 +175,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `add an attachment`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, user.evakaUserId, testFeeAlteration) }
 
         val attachmentId = uploadAttachment(testFeeAlterationId)
 
@@ -191,7 +193,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `attachment gets orphaned on fee alteration deletion`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, user.evakaUserId, testFeeAlteration) }
         val attachmentId = uploadAttachment(testFeeAlterationId)
 
         val result = getFeeAlterations(personId)

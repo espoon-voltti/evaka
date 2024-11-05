@@ -1109,7 +1109,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                                 )
                         ),
                     effect = IncomeEffect.INCOME,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -1462,7 +1462,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                                     ),
                                 )
                         ),
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -1479,7 +1479,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     isAbsolute = false,
                     validFrom = period.start,
                     validTo = period.end,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }

@@ -13,7 +13,9 @@ import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -27,8 +29,8 @@ data class Income(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
-    val updatedAt: HelsinkiDateTime,
-    val updatedBy: String,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
     // applicationId is no longer used, but left here for historical reasons
     val applicationId: ApplicationId? = null,
     @Json val attachments: List<IncomeAttachment>,

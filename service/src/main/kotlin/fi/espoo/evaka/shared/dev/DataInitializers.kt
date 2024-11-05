@@ -528,16 +528,16 @@ data class DevIncome(
     val effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
     val isEntrepreneur: Boolean = false,
     val worksAtEcha: Boolean = false,
-    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val updatedBy: EvakaUserId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId,
 )
 
 fun Database.Transaction.insert(row: DevIncome): IncomeId =
     createUpdate {
             sql(
                 """
-INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, updated_at, updated_by)
-VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bindJson(row.data)}, ${bind(row.effect)}::income_effect, ${bind(row.isEntrepreneur)}, ${bind(row.worksAtEcha)}, ${bind(row.updatedAt)}, ${bind(row.updatedBy)})
+INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bindJson(row.data)}, ${bind(row.effect)}::income_effect, ${bind(row.isEntrepreneur)}, ${bind(row.worksAtEcha)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 """
             )
         }
@@ -575,16 +575,16 @@ data class DevFeeAlteration(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String = "",
-    val updatedBy: EvakaUserId,
-    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
 fun Database.Transaction.insert(row: DevFeeAlteration): FeeAlterationId =
     createUpdate {
             sql(
                 """
-INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, updated_at, updated_by)
-VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.type)}::fee_alteration_type, ${bind(row.amount)}, ${bind(row.isAbsolute)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bind(row.notes)}, ${bind(row.updatedAt)}, ${bind(row.updatedBy)})
+INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.type)}::fee_alteration_type, ${bind(row.amount)}, ${bind(row.isAbsolute)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bind(row.notes)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 """
             )
         }

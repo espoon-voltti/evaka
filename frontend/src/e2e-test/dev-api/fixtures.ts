@@ -791,7 +791,7 @@ export class Fixture {
   }
 
   static income(
-    initial: SemiPartial<DevIncome, 'personId' | 'updatedBy'>
+    initial: SemiPartial<DevIncome, 'personId' | 'modifiedBy'>
   ): IncomeBuilder {
     return new IncomeBuilder({
       id: uuidv4(),
@@ -806,7 +806,7 @@ export class Fixture {
         }
       },
       effect: 'INCOME',
-      updatedAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
       isEntrepreneur: false,
       worksAtEcha: false,
       ...initial

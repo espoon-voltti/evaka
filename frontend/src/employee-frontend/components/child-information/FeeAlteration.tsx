@@ -99,7 +99,7 @@ export default React.memo(function FeeAlteration({
             cancel={() => clearUiMode()}
             create={(data) =>
               createFeeAlteration({
-                body: { ...data, updatedBy: null, updatedAt: null }
+                body: { ...data, modifiedBy: null, modifiedAt: null }
               })
             }
             onSuccess={clearUiMode}

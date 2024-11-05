@@ -3345,7 +3345,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     ),
                                 )
                         ),
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -3361,7 +3361,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     effect = IncomeEffect.MAX_FEE_ACCEPTED,
                     data = mapOf(),
                     worksAtEcha = true,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -3382,7 +3382,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     isAbsolute = false,
                     validFrom = period.start,
                     validTo = period.end,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }

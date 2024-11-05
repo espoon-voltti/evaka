@@ -427,8 +427,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 ColumnRef("application_note", "updated_by"),
                 ColumnRef("assistance_action", "updated_by"),
-                ColumnRef("fee_alteration", "updated_by"),
-                ColumnRef("income", "updated_by"),
             )
         val violations = columns.filter { it.ref.columnName == "updated_by" }.map { it.ref }.toSet()
         assertEquals(permittedViolations, violations)

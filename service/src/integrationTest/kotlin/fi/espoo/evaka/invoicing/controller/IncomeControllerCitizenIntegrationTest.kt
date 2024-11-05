@@ -109,7 +109,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
             it.insert(
                 DevIncome(
                     personId = guardianId,
-                    updatedBy = employeeEvakaUserId,
+                    modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(6),
                     validTo = expirationDate,
                 )

@@ -101,8 +101,9 @@ class FeeAlterationController(
                     feeAlteration.personId,
                 )
                 tx.upsertFeeAlteration(
-                    clock,
-                    feeAlteration.copy(id = id, updatedBy = user.evakaUserId),
+                    clock = clock,
+                    modifiedBy = user.evakaUserId,
+                    feeAlteration = feeAlteration.copy(id = id),
                 )
                 tx.associateOrphanAttachments(
                     user.evakaUserId,
@@ -146,8 +147,9 @@ class FeeAlterationController(
                 )
                 val existing = tx.getFeeAlteration(feeAlterationId)
                 tx.upsertFeeAlteration(
-                    clock,
-                    feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId),
+                    clock = clock,
+                    modifiedBy = user.evakaUserId,
+                    feeAlteration = feeAlteration.copy(id = feeAlterationId),
                 )
 
                 val expandedPeriod =

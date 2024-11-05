@@ -304,7 +304,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevIncome(
                     personId = citizenId,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate1.minusYears(1),
                     validTo = incomeDate1.minusMonths(1).minusDays(1),
                 )
@@ -312,7 +312,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevIncome(
                     personId = citizenId,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate1.minusMonths(1),
                     validTo = incomeDate1,
                 )
@@ -366,7 +366,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevIncome(
                     personId = testAdult_2.id,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate2.minusMonths(1),
                     validTo = incomeDate2.minusDays(1),
                 )
@@ -374,7 +374,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevIncome(
                     personId = testAdult_2.id,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     effect = IncomeEffect.MAX_FEE_ACCEPTED,
                     validFrom = incomeDate2,
                     validTo = null,
@@ -1138,7 +1138,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevIncome(
                     personId = citizenId,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeRange1.start,
                     validTo = incomeRange1.end,
                 )
@@ -1164,7 +1164,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevIncome(
                     personId = testAdult_2.id,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeRange2.start,
                     validTo = incomeRange2.end,
                 )
