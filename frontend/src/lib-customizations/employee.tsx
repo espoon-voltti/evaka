@@ -44,7 +44,8 @@ const {
   placementTypes,
   placementPlanRejectReasons,
   unitProviderTypes,
-  voucherValueDecisionTypes
+  voucherValueDecisionTypes,
+  getPaymentsDueDate
 }: EmployeeCustomizations = customizations
 export {
   appConfig,
@@ -57,7 +58,8 @@ export {
   placementPlanRejectReasons,
   preschoolAssistanceLevels,
   unitProviderTypes,
-  voucherValueDecisionTypes
+  voucherValueDecisionTypes,
+  getPaymentsDueDate
 }
 
 export type Lang = 'fi' | 'sv'
