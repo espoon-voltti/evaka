@@ -11,7 +11,6 @@ import LocalDate from 'lib-common/local-date'
 import { H3, P } from 'lib-components/typography'
 
 import components from '../../components/i18n/fi'
-import {Td} from "../../../../lib-components/layout/Table";
 
 export const fi = {
   titles: {

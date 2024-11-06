@@ -175,12 +175,9 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `adults that have expired incomes but their children does not have any placements, are not found in report`() {
-        db.transaction { tx ->
-            tx.insert(testIncome)
-        }
+        db.transaction { tx -> tx.insert(testIncome) }
         val report = getIncompleteIncomeReport(LocalDate.of(2024, 10, 20))
         assertEquals(0, report.size)
-
     }
 
     @Test
