@@ -2347,6 +2347,7 @@ const en: Translations = {
       additionalInfo: 'Lisätiedot',
       additionalInfoInfo:
         'Kirjoita tähän lisätietoja esim. miksi vaihdat palveluntarvetta',
+      additionalInfoRequired: 'Perustele tavallisesta poikkeava aloituspäivä',
       cancelApplication: 'Peru hakemus',
       status: 'Tila',
       decision: {
