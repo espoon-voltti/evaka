@@ -1470,6 +1470,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         discussionTimeCancellation,
         discussionSurveyCreation,
         discussionTimeReservationReminder,
+        serviceApplicationAcceptedNotification,
+        serviceApplicationRejectedNotification,
     }
 
     @GetMapping("/email-content", produces = [MediaType.TEXT_HTML_VALUE])
@@ -1587,6 +1589,16 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                     "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki."
                                 ),
                         ),
+                    )
+                EmailMessageType.serviceApplicationAcceptedNotification ->
+                    emailMessageProvider.serviceApplicationDecidedNotification(
+                        accepted = true,
+                        startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
+                    )
+                EmailMessageType.serviceApplicationRejectedNotification ->
+                    emailMessageProvider.serviceApplicationDecidedNotification(
+                        accepted = false,
+                        startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
                     )
             }
         val content =

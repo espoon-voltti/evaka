@@ -123,6 +123,8 @@ interface IEmailMessageProvider {
     ): EmailContent
 
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
+
+    fun serviceApplicationDecidedNotification(accepted: Boolean, startDate: LocalDate): EmailContent
 }
 
 data class MessageThreadData(

@@ -229,7 +229,8 @@ class ServiceApplicationController(
                             AsyncJob.GenerateFinanceDecisions.forChild(
                                 application.childId,
                                 range.asDateRange(),
-                            )
+                            ),
+                            AsyncJob.SendServiceApplicationDecidedEmail(id),
                         ),
                         runAt = now,
                     )
@@ -271,6 +272,13 @@ class ServiceApplicationController(
                     }
 
                     tx.setServiceApplicationRejected(id, clock.now(), user, body.reason)
+
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(AsyncJob.SendServiceApplicationDecidedEmail(id)),
+                        runAt = clock.now(),
+                    )
+
                     application.childId
                 }
             }
