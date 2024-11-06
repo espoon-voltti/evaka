@@ -488,5 +488,5 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction { it.cleanTitaniaErrors(clock.now()) }
 
     fun generateReplacementDraftInvoices(db: Database.Connection, clock: EvakaClock) =
-        invoiceGenerator.createAllReplacementDraftInvoices(db, clock.today())
+        invoiceGenerator.generateAllReplacementDraftInvoices(db, clock.today())
 }

@@ -134,7 +134,7 @@ class InvoiceController(
                     Action.Global.CREATE_DRAFT_INVOICES,
                 )
                 val firstOfLastMonth = clock.today().withDayOfMonth(1).minusMonths(1)
-                generator.createAndStoreAllDraftInvoices(
+                generator.generateAllDraftInvoices(
                     it,
                     YearMonth.of(firstOfLastMonth.year, firstOfLastMonth.month),
                 )

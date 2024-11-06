@@ -209,7 +209,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     private fun generateReplacementDrafts(today: LocalDate = this.today): List<InvoiceDetailed> {
-        invoiceGenerator.createAllReplacementDraftInvoices(db, today)
+        invoiceGenerator.generateAllReplacementDraftInvoices(db, today)
         return db.read { tx -> tx.searchInvoices(InvoiceStatus.REPLACEMENT_DRAFT) }
     }
 
@@ -252,7 +252,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     fun generateTestInvoice(): InvoiceDetailed =
         db.transaction { tx ->
-            invoiceGenerator.createAndStoreAllDraftInvoices(tx, previousMonth)
+            invoiceGenerator.generateAllDraftInvoices(tx, previousMonth)
             invoiceService.sendInvoices(
                 tx,
                 AuthenticatedUser.SystemInternalUser.evakaUserId,

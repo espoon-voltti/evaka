@@ -54,7 +54,7 @@ class InvoiceGenerator(
     private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser,
     private val tracer: Tracer = noopTracer(),
 ) {
-    fun createAndStoreAllDraftInvoices(tx: Database.Transaction, month: YearMonth) {
+    fun generateAllDraftInvoices(tx: Database.Transaction, month: YearMonth) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
@@ -82,7 +82,7 @@ class InvoiceGenerator(
         )
     }
 
-    fun createAllReplacementDraftInvoices(dbc: Database.Connection, today: LocalDate) {
+    fun generateAllReplacementDraftInvoices(dbc: Database.Connection, today: LocalDate) {
         val replacementInvoicesStart = env.replacementInvoicesStart
         if (replacementInvoicesStart == null) {
             logger.info("Replacement invoices are not enabled")
@@ -105,7 +105,7 @@ class InvoiceGenerator(
         }
     }
 
-    fun createReplacementDraftInvoices(tx: Database.Transaction, month: YearMonth) {
+    private fun createReplacementDraftInvoices(tx: Database.Transaction, month: YearMonth) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
