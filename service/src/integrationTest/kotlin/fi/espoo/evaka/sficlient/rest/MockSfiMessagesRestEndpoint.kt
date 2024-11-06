@@ -50,11 +50,9 @@ class MockSfiMessagesRestEndpoint {
         @RequestBody body: ChangePasswordRequestBody,
     ): ResponseEntity<Any> =
         lock.withLock {
-            val accessToken = authorization?.removePrefix("Bearer ")
+            val accessToken = body.accessToken
             if (!tokens.contains(accessToken)) {
-                ResponseEntity.status(401).body(ApiError("Invalid token"))
-            } else if (body.accessToken != accessToken) {
-                ResponseEntity.status(400).body(ApiError("Invalid token in body"))
+                ResponseEntity.status(400).body(ApiError("Invalid token"))
             } else if (body.currentPassword != password) {
                 ResponseEntity.status(400).body(ApiError("Invalid password"))
             } else {
