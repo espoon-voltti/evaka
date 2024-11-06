@@ -93,6 +93,16 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             updatedBy = EvakaUserId(UUID.fromString("00000000-0000-0000-0000-000000000000")),
         )
 
+    val testIncomeUserEdited =
+        DevIncome(
+            id = IncomeId(UUID.randomUUID()),
+            personId = testAdult_1.id,
+            effect = IncomeEffect.INCOMPLETE,
+            validFrom = LocalDate.of(2024, 10, 15),
+            validTo = null,
+            updatedBy = testDecisionMaker_2.evakaUserId,
+        )
+
     val children =
         setOf(
             DevPerson(
@@ -164,10 +174,33 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `adults that have expired incomes but their children does not have any placements, are not found in report`() {}
+    fun `adults that have expired incomes but their children does not have any placements, are not found in report`() {
+        db.transaction { tx ->
+            tx.insert(testIncome)
+        }
+        val report = getIncompleteIncomeReport(LocalDate.of(2024, 10, 20))
+        assertEquals(0, report.size)
+
+    }
 
     @Test
-    fun `after editing expired incomes by evaka employee, persons are not found in report`() {}
+    fun `after editing expired incomes by evaka employee, persons are not found in report`() {
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testIncomeUserEdited)
+            children.forEach { it ->
+                tx.insert(
+                    DevPlacement(
+                        childId = it.id,
+                        unitId = testDaycare.id,
+                        endDate = LocalDate.of(2024, 12, 31),
+                    )
+                )
+            }
+        }
+        val report = getIncompleteIncomeReport(LocalDate.of(2024, 10, 20))
+        assertEquals(0, report.size)
+    }
 
     private fun getIncompleteIncomeReport(date: LocalDate): List<IncompleteIncomeDbRow> {
 
