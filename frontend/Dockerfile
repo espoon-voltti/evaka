@@ -24,7 +24,7 @@ RUN yarn install --immutable
 COPY . .
 
 ARG EVAKA_CUSTOMIZATIONS=espoo
-COPY --from=customizations . src/lib-customizations/${EVAKA_CUSTOMIZATIONS}
+COPY --from=customizations . src/lib-customizations/${EVAKA_CUSTOMIZATIONS}/
 
 ARG ICONS=free
 ARG SENTRY_PUBLISH_ENABLED="false"
