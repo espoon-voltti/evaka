@@ -127,7 +127,7 @@ enum class ScheduledJob(
     ),
     SyncJamixDiets(
         ScheduledJobs::syncJamixDiets,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 */10 7-18 * * *")),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 */10 7-17 * * *")),
     ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
