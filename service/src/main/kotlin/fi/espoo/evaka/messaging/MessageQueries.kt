@@ -6,28 +6,15 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.MessageAttachment
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageContentId
-import fi.espoo.evaka.shared.MessageId
-import fi.espoo.evaka.shared.MessageRecipientId
-import fi.espoo.evaka.shared.MessageThreadFolderId
-import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.PagedFactory
-import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.formatName
-import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
@@ -35,6 +22,12 @@ import mu.KotlinLogging
 import org.jdbi.v3.json.Json
 
 private val logger = KotlinLogging.logger {}
+
+sealed class AccountAccessLimit {
+    data object NoFurtherLimit : AccountAccessLimit()
+
+    data class AvailableFrom(val date: LocalDate) : AccountAccessLimit()
+}
 
 fun Database.Read.getUnreadMessagesCounts(
     idFilter: AccessControlFilter<MessageAccountId>
@@ -443,6 +436,31 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
+fun Database.Read.getAccountAccessLimit(
+    groupAccountId: MessageAccountId,
+    employeeId: EmployeeId,
+): AccountAccessLimit {
+    return createQuery {
+            sql(
+                """
+SELECT
+    dga.created::date
+FROM daycare_group_acl dga
+JOIN message_account ma ON ma.daycare_group_id = dga.daycare_group_id
+JOIN daycare_group dg ON dga.daycare_group_id = dg.id
+JOIN daycare_acl da ON da.employee_id = dga.employee_id AND da.daycare_id = dg.daycare_id
+WHERE ma.id = ${bind(groupAccountId)} AND dga.employee_id = ${bind(employeeId)} AND da.role != 'UNIT_SUPERVISOR'
+"""
+            )
+        }
+        .mapTo<LocalDate>()
+        .exactlyOneOrNull()
+        .let {
+            it?.let { AccountAccessLimit.AvailableFrom(it.minusWeeks(1)) }
+                ?: AccountAccessLimit.NoFurtherLimit
+        }
+}
+
 /** Return all threads in which the account has received messages */
 fun Database.Read.getReceivedThreads(
     accountId: MessageAccountId,
@@ -451,7 +469,13 @@ fun Database.Read.getReceivedThreads(
     municipalAccountName: String,
     serviceWorkerAccountName: String,
     folderId: MessageThreadFolderId? = null,
+    accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
 ): PagedMessageThreads {
+    val accountAccessPredicate =
+        if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
+            Predicate { where("$it.last_message_timestamp >= ${bind(accountAccessLimit.date)}") }
+        else Predicate.alwaysTrue()
+
     val threads =
         createQuery {
                 sql(
@@ -481,14 +505,9 @@ WHERE
     tp.participant_id = ${bind(accountId)} AND
     tp.last_received_timestamp IS NOT NULL AND
     NOT t.is_copy AND
-    ${
-        if (folderId == null) {
-            "tp.folder_id IS NULL"
-        } else {
-            "tp.folder_id = ${bind(folderId)}"
-        }
-    } AND
-    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL)
+    tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)} AND 
+    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL) AND
+    ${predicate(accountAccessPredicate.forTable("tp"))}
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
         """
@@ -630,7 +649,12 @@ fun Database.Read.getMessageCopiesByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
+    accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
 ): PagedMessageCopies {
+    val accountAccessPredicate =
+        if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
+            Predicate { where("$it.sent_at >= ${bind(accountAccessLimit.date)}") }
+        else Predicate.alwaysTrue()
 
     return createQuery {
             sql(
@@ -669,7 +693,8 @@ JOIN message_account_view acc ON rec.recipient_id = acc.id
 JOIN message_account sender_acc ON sender_acc.id = m.sender_id
 JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
 JOIN message_thread t ON m.thread_id = t.id
-WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT NULL
+WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT NULL AND
+    ${predicate(accountAccessPredicate.forTable("m"))}
 ORDER BY m.sent_at DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 """
@@ -830,7 +855,13 @@ fun Database.Read.getMessagesSentByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
+    accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
 ): PagedSentMessages {
+    val accountAccessPredicate =
+        if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
+            Predicate { where("$it.sent_at >= ${bind(accountAccessLimit.date)}") }
+        else Predicate.alwaysTrue()
+
     return createQuery {
             sql(
                 """
@@ -846,7 +877,8 @@ WITH pageable_messages AS (
         COUNT(*) OVER () AS count
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
-    WHERE sender_id = ${bind(accountId)}
+    WHERE sender_id = ${bind(accountId)} AND
+        ${predicate(accountAccessPredicate.forTable("m"))}
     GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive
     ORDER BY sent_at DESC
     LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}

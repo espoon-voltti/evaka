@@ -7,9 +7,19 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
-fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
-    createQuery {
+fun Database.Read.getDrafts(
+    accountId: MessageAccountId,
+    accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
+): List<DraftContent> {
+    val accountAccessPredicate =
+        if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
+            Predicate { where("$it.updated >= ${bind(accountAccessLimit.date)}") }
+        else Predicate.alwaysTrue()
+
+    return createQuery {
             sql(
                 """
 SELECT
@@ -25,18 +35,23 @@ SELECT
         ORDER BY a.created
     ) s) AS attachments
 FROM message_draft draft
-WHERE draft.account_id = ${bind(accountId)}
+WHERE draft.account_id = ${bind(accountId)} AND
+    ${predicate(accountAccessPredicate.forTable("draft"))}
 ORDER BY draft.created DESC
 """
             )
         }
         .toList<DraftContent>()
+}
 
-fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId {
+fun Database.Transaction.initDraft(
+    accountId: MessageAccountId,
+    now: HelsinkiDateTime = HelsinkiDateTime.now(),
+): MessageDraftId {
     return createQuery {
             sql(
                 """
-INSERT INTO message_draft (account_id) VALUES (${bind(accountId)}) RETURNING id
+INSERT INTO message_draft (account_id, created, updated) VALUES (${bind(accountId)}, ${bind(now)}, ${bind(now)}) RETURNING id
 """
             )
         }

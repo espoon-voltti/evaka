@@ -7,17 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.personHasSentApplicationWithId
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageContentId
-import fi.espoo.evaka.shared.MessageDraftId
-import fi.espoo.evaka.shared.MessageId
-import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -131,8 +121,12 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam page: Int,
-    ): PagedMessageThreads =
-        getReceivedMessages(db, user as AuthenticatedUser, clock, accountId, page)
+    ): PagedMessageThreads {
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            getReceivedMessages(dbc, user.id, accountId, page)
+        }
+    }
 
     @GetMapping("/employee-mobile/messages/{accountId}/received")
     fun getReceivedMessages(
@@ -141,27 +135,29 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam page: Int,
-    ): PagedMessageThreads =
-        getReceivedMessages(db, user as AuthenticatedUser, clock, accountId, page)
-
-    private fun getReceivedMessages(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @RequestParam page: Int,
     ): PagedMessageThreads {
         return db.connect { dbc ->
-                requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read {
-                    it.getReceivedThreads(
-                        accountId,
-                        pageSize = 20,
-                        page,
-                        featureConfig.municipalMessageAccountName,
-                        featureConfig.serviceWorkerMessageAccountName,
-                    )
-                }
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            getReceivedMessages(dbc, user.employeeId!!, accountId, page)
+        }
+    }
+
+    private fun getReceivedMessages(
+        dbc: Database.Connection,
+        employeeId: EmployeeId,
+        accountId: MessageAccountId,
+        page: Int,
+    ): PagedMessageThreads {
+        return dbc.read {
+                val accountAccessLimit = it.getAccountAccessLimit(accountId, employeeId)
+                it.getReceivedThreads(
+                    accountId,
+                    pageSize = 20,
+                    page,
+                    featureConfig.municipalMessageAccountName,
+                    featureConfig.serviceWorkerMessageAccountName,
+                    accountAccessLimit = accountAccessLimit,
+                )
             }
             .also {
                 Audit.MessagingReceivedMessagesRead.log(
@@ -186,6 +182,8 @@ class MessageController(
                     if (archiveFolderId == null) {
                         PagedMessageThreads(emptyList(), 0, 0)
                     } else {
+                        val accountAccessLimit = it.getAccountAccessLimit(accountId, user.id)
+
                         it.getReceivedThreads(
                             accountId,
                             pageSize = 20,
@@ -193,6 +191,7 @@ class MessageController(
                             featureConfig.municipalMessageAccountName,
                             featureConfig.serviceWorkerMessageAccountName,
                             archiveFolderId,
+                            accountAccessLimit,
                         )
                     }
                 }
@@ -215,7 +214,10 @@ class MessageController(
     ): PagedMessageCopies {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read { it.getMessageCopiesByAccount(accountId, pageSize = 20, page) }
+                dbc.read {
+                    val accountAccessLimit = it.getAccountAccessLimit(accountId, user.id)
+                    it.getMessageCopiesByAccount(accountId, pageSize = 20, page, accountAccessLimit)
+                }
             }
             .also {
                 Audit.MessagingReceivedMessageCopiesRead.log(
@@ -232,7 +234,12 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam page: Int,
-    ): PagedSentMessages = getSentMessages(db, user as AuthenticatedUser, clock, accountId, page)
+    ): PagedSentMessages {
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            getSentMessages(dbc, user.id, accountId, page)
+        }
+    }
 
     @GetMapping("/employee-mobile/messages/{accountId}/sent")
     fun getSentMessages(
@@ -241,18 +248,22 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam page: Int,
-    ): PagedSentMessages = getSentMessages(db, user as AuthenticatedUser, clock, accountId, page)
-
-    private fun getSentMessages(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @RequestParam page: Int,
     ): PagedSentMessages {
         return db.connect { dbc ->
-                requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read { it.getMessagesSentByAccount(accountId, pageSize = 20, page) }
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            getSentMessages(dbc, user.employeeId!!, accountId, page)
+        }
+    }
+
+    private fun getSentMessages(
+        dbc: Database.Connection,
+        employeeId: EmployeeId,
+        accountId: MessageAccountId,
+        page: Int,
+    ): PagedSentMessages {
+        return dbc.read {
+                val accountAccessLimit = it.getAccountAccessLimit(accountId, employeeId)
+                it.getMessagesSentByAccount(accountId, pageSize = 20, page, accountAccessLimit)
             }
             .also {
                 Audit.MessagingSentMessagesRead.log(
@@ -592,7 +603,12 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-    ): List<DraftContent> = getDraftMessages(db, user as AuthenticatedUser, clock, accountId)
+    ): List<DraftContent> {
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            getDraftMessages(dbc, accountId, user.id)
+        }
+    }
 
     @GetMapping("/employee-mobile/messages/{accountId}/drafts")
     fun getDraftMessages(
@@ -600,17 +616,21 @@ class MessageController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-    ): List<DraftContent> = getDraftMessages(db, user as AuthenticatedUser, clock, accountId)
-
-    private fun getDraftMessages(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
     ): List<DraftContent> {
         return db.connect { dbc ->
-                requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.transaction { it.getDrafts(accountId) }
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            getDraftMessages(dbc, accountId, user.employeeId!!)
+        }
+    }
+
+    private fun getDraftMessages(
+        dbc: Database.Connection,
+        accountId: MessageAccountId,
+        employeeId: EmployeeId,
+    ): List<DraftContent> {
+        return dbc.transaction {
+                val accountAccessLimit = it.getAccountAccessLimit(accountId, employeeId)
+                it.getDrafts(accountId, accountAccessLimit)
             }
             .also {
                 Audit.MessagingDraftsRead.log(
@@ -644,7 +664,7 @@ class MessageController(
     ): MessageDraftId {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.transaction { it.initDraft(accountId) }
+                dbc.transaction { it.initDraft(accountId, clock.now()) }
             }
             .also { messageDraftId ->
                 Audit.MessagingCreateDraft.log(

@@ -160,6 +160,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     daycareId = unitId,
                     employeeId = employeeId,
                     groupIds = listOf(groupId),
+                    firstOfAugust2021,
                 )
                 it.setDaycareGroupAclUpdated(groupId, employeeId, firstOfAugust2021.minusDays(5))
                 employeeId

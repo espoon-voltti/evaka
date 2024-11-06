@@ -84,7 +84,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertDaycareAclRow(daycareId, supervisorId, UserRole.UNIT_SUPERVISOR)
 
             it.insertDaycareAclRow(daycareId, employee1Id, UserRole.STAFF)
-            it.insertDaycareGroupAcl(daycareId, employee1Id, listOf(groupId))
+            it.insertDaycareGroupAcl(daycareId, employee1Id, listOf(groupId), clock.now())
 
             // employee2 has no groups
             it.insertDaycareAclRow(daycareId, employee2Id, UserRole.STAFF)
