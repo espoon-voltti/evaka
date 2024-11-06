@@ -16,7 +16,7 @@ fun Database.Read.getDrafts(
 ): List<DraftContent> {
     val accountAccessPredicate =
         if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
-            Predicate { where("$it.updated >= ${bind(accountAccessLimit.date)}") }
+            Predicate { where("$it.modified_at >= ${bind(accountAccessLimit.date)}") }
         else Predicate.alwaysTrue()
 
     return createQuery {
@@ -37,7 +37,7 @@ SELECT
 FROM message_draft draft
 WHERE draft.account_id = ${bind(accountId)} AND
     ${predicate(accountAccessPredicate.forTable("draft"))}
-ORDER BY draft.created DESC
+ORDER BY draft.created_at DESC
 """
             )
         }
@@ -51,7 +51,9 @@ fun Database.Transaction.initDraft(
     return createQuery {
             sql(
                 """
-INSERT INTO message_draft (account_id, created, updated) VALUES (${bind(accountId)}, ${bind(now)}, ${bind(now)}) RETURNING id
+INSERT INTO message_draft (account_id, modified_at)
+VALUES (${bind(accountId)}, ${bind(now)})
+RETURNING id
 """
             )
         }
@@ -62,6 +64,7 @@ fun Database.Transaction.updateDraft(
     accountId: MessageAccountId,
     id: MessageDraftId,
     draft: UpdatableDraftContent,
+    now: HelsinkiDateTime,
 ) =
     createUpdate {
             sql(
@@ -75,7 +78,8 @@ SET
     sensitive = ${bind(draft.sensitive)},
     type = ${bind(draft.type)},
     recipient_ids = ${bind(draft.recipientIds)},
-    recipient_names = ${bind(draft.recipientNames)}
+    recipient_names = ${bind(draft.recipientNames)},
+    modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
 """
             )

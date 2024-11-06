@@ -88,7 +88,7 @@ export interface CreateMessageResponse {
 export interface DraftContent {
   attachments: MessageAttachment[]
   content: string
-  created: HelsinkiDateTime
+  createdAt: HelsinkiDateTime
   id: UUID
   recipientIds: UUID[]
   recipientNames: string[]
@@ -403,7 +403,7 @@ export function deserializeJsonCitizenMessageThread(json: JsonOf<CitizenMessageT
 export function deserializeJsonDraftContent(json: JsonOf<DraftContent>): DraftContent {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created)
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt)
   }
 }
 

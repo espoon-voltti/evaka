@@ -14,11 +14,11 @@ import { JsonOf } from 'lib-common/json'
 import { formatFirstName } from './names'
 
 export const deserializeDraftContent = ({
-  created,
+  createdAt,
   ...rest
 }: JsonOf<DraftContent>): DraftContent => ({
   ...rest,
-  created: HelsinkiDateTime.parseIso(created)
+  createdAt: HelsinkiDateTime.parseIso(createdAt)
 })
 
 export const deserializeSentMessage = ({

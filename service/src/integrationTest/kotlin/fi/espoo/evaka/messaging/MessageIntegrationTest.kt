@@ -1497,13 +1497,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         userRole: UserRole,
         isVisible: Boolean,
     ) {
-        // `updated` timestamp in draft update always happens in current time (because `before
-        // update` trigger
-        // runs). We will mock all other times to future.
-        val dateAfterXDaysSinceDraftCreation = clock.now().plusDays(updatedDaysAgo.toLong())
         val newEmployee =
             AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
-        prepareGroupAccountAccessTest(newEmployee.id, userRole, dateAfterXDaysSinceDraftCreation)
+        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
 
         createDraft(
             employee1,
@@ -1512,10 +1508,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             "content",
             setOf(person2Account),
             emptyList(),
-            clock.now(),
+            clock.now().minusDays(updatedDaysAgo.toLong()),
         )
 
-        val drafts = getDrafts(newEmployee, group1Account, dateAfterXDaysSinceDraftCreation)
+        val drafts = getDrafts(newEmployee, group1Account, clock.now())
         assertEquals(if (isVisible) 1 else 0, drafts.size)
     }
 
@@ -1823,7 +1819,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         now: HelsinkiDateTime,
     ) {
         val draftId =
-            messageController.initDraftMessage(dbInstance(), user, MockEvakaClock(now), accountId)
+            messageController.initDraftMessage(
+                dbInstance(),
+                user,
+                MockEvakaClock(now.minusMinutes(1)),
+                accountId,
+            )
         messageController.updateDraftMessage(
             dbInstance(),
             user,
