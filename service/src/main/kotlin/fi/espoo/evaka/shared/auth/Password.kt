@@ -99,17 +99,19 @@ sealed class PasswordHashAlgorithm {
 
     abstract fun hash(salt: EncodedPassword.Salt, password: Sensitive<String>): EncodedPassword.Hash
 
-    data class Argon2id(val m: Int, val t: Int, val p: Int) : PasswordHashAlgorithm() {
-        override val id: Id = Id("argon2id;m=$m;t=$t;p=$p")
+    data class Argon2id(val hashLength: Int, val version: Int, val m: Int, val t: Int, val p: Int) :
+        PasswordHashAlgorithm() {
+        override val id: Id = Id("argon2id;$hashLength;${version.toString(radix = 16)};$m;$t;$p")
 
         override fun hash(
             salt: EncodedPassword.Salt,
             password: Sensitive<String>,
         ): EncodedPassword.Hash {
-            val output = ByteArray(size = 32)
+            val output = ByteArray(size = hashLength)
             val generator = Argon2BytesGenerator()
             generator.init(
                 Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+                    .withVersion(this.version)
                     .withMemoryAsKB(this.m)
                     .withIterations(this.t)
                     .withParallelism(this.p)
@@ -119,20 +121,38 @@ sealed class PasswordHashAlgorithm {
             generator.generateBytes(password.value.toByteArray(Charsets.UTF_8), output)
             return EncodedPassword.Hash(output)
         }
+
+        companion object {
+            fun parse(id: Id): Argon2id {
+                val parts = id.value.split(';')
+                require(parts.size == 6)
+                require(parts[0] == "argon2id")
+                return Argon2id(
+                    hashLength = parts[1].toInt(radix = 10),
+                    version = parts[2].toInt(radix = 16),
+                    m = parts[3].toInt(radix = 10),
+                    t = parts[4].toInt(radix = 10),
+                    p = parts[5].toInt(radix = 10),
+                )
+            }
+        }
     }
 
     companion object {
         // OWASP recommendation: Argon2id, m=19456 (19 MiB), t=2, p=1
         // Reference: OWASP Password Storage Cheat Sheet
         // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
-        val DEFAULT: PasswordHashAlgorithm = Argon2id(m = 19_456, t = 2, p = 1)
+        val DEFAULT: PasswordHashAlgorithm =
+            Argon2id(
+                hashLength = 32,
+                version = Argon2Parameters.ARGON2_VERSION_13,
+                m = 19_456,
+                t = 2,
+                p = 1,
+            )
 
         private val SECURE_RANDOM: SecureRandom = SecureRandom()
 
-        fun byId(id: Id): PasswordHashAlgorithm {
-            // We currently only support one specific algorithm with specific parameters
-            require(id == DEFAULT.id)
-            return DEFAULT
-        }
+        fun byId(id: Id): PasswordHashAlgorithm = Argon2id.parse(id)
     }
 }
