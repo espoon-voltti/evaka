@@ -35,13 +35,6 @@ export interface AbsenceRangeRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ArrivalRequest
-*/
-export interface ArrivalRequest {
-  arrived: string
-}
-
-/**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ArrivalsRequest
 */
 export interface ArrivalsRequest {
