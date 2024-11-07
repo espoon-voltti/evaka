@@ -32,7 +32,9 @@ export default React.memo(function AttendanceChildDeparted({
     <ReturnToPresentButton
       icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
-      onClick={() => navigate(routes.markPresent(unitId, child.id).value)}
+      onClick={() =>
+        navigate(routes.markPresent(unitId, [child.id], false).value)
+      }
       data-qa="return-to-present-btn"
     />
   )

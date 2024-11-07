@@ -180,12 +180,59 @@ class ChildAttendanceController(
             }
     }
 
+    data class ArrivalsRequest(
+        val children: Set<ChildId>,
+        @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime,
+    )
+
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/arrivals")
+    fun postArrivals(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestBody body: ArrivalsRequest,
+    ) {
+        val today = clock.today()
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                        unitId,
+                    )
+                    body.children.map { childId ->
+                        tx.fetchChildPlacementBasics(childId, unitId, today)
+                        try {
+                            tx.insertAttendance(
+                                childId = childId,
+                                unitId = unitId,
+                                date = today,
+                                range = TimeInterval(body.arrived, null),
+                            )
+                        } catch (e: Exception) {
+                            throw mapPSQLException(e)
+                        }
+                    }
+                }
+            }
+            .also { attendanceIds ->
+                Audit.ChildAttendancesArrivalCreate.log(
+                    targetId = AuditId(body.children.toList()),
+                    objectId = AuditId(attendanceIds),
+                    meta = mapOf("unitId" to unitId),
+                )
+            }
+    }
+
     data class ArrivalRequest(
         @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )
 
     @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/arrival")
-    fun postArrival(
+    fun postArrivalDeprecated(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,

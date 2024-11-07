@@ -6,12 +6,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
-import {
-  constantQuery,
-  useMutationResult,
-  useQueryResult
-} from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -23,7 +18,6 @@ import {
 import { Gap } from 'lib-components/white-space'
 
 import { renderResult } from '../../async-rendering'
-import { groupNotesQuery } from '../../child-notes/queries'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, CustomTitle } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
@@ -54,18 +48,13 @@ export default React.memo(function MarkAbsent({
     createFullDayAbsenceMutation
   )
 
-  const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
-  const groupNotes = useQueryResult(
-    groupId ? groupNotesQuery({ groupId }) : constantQuery([])
-  )
-
   return (
     <TallContentArea
       opaque={false}
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      {renderResult(combine(child, groupNotes), ([child, groupNotes]) => (
+      {renderResult(child, (child) => (
         <>
           <ChildNameBackButton child={child} onClick={() => navigate(-2)} />
           <ContentArea
@@ -127,7 +116,7 @@ export default React.memo(function MarkAbsent({
             </Actions>
           </ContentArea>
           <Gap size="s" />
-          <ChildNotesSummary child={child} groupNotes={groupNotes} />
+          <ChildNotesSummary child={child} />
         </>
       ))}
     </TallContentArea>

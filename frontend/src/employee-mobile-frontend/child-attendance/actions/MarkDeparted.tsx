@@ -37,7 +37,6 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { renderResult } from '../../async-rendering'
-import { groupNotesQuery } from '../../child-notes/queries'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, CustomTitle, TimeWrapper } from '../../common/components'
 import { Translations, useTranslation } from '../../common/i18n'
@@ -105,11 +104,6 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const groupId = child.groupId
-  const groupNotes = useQueryResult(
-    groupId ? groupNotesQuery({ groupId }) : constantQuery([])
-  )
-
   const [time, setTime] = useState(() =>
     HelsinkiDateTime.now().toLocalTime().format()
   )
@@ -162,153 +156,138 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      {renderResult(groupNotes, (groupNotes) => (
-        <>
-          <div>
-            <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
-          </div>
+      <div>
+        <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
+      </div>
 
-          <ContentArea
-            shadow
-            opaque={true}
-            paddingHorizontal="s"
-            paddingVertical="m"
-          >
-            <TimeWrapper>
-              <CustomTitle>{i18n.attendances.actions.markDeparted}</CustomTitle>
-              <TimeInput
-                onChange={setTime}
-                value={time}
-                data-qa="set-time"
-                info={
-                  timeError ? { text: timeError, status: 'warning' } : undefined
-                }
-              />
-            </TimeWrapper>
+      <ContentArea
+        shadow
+        opaque={true}
+        paddingHorizontal="s"
+        paddingVertical="m"
+      >
+        <TimeWrapper>
+          <CustomTitle>{i18n.attendances.actions.markDeparted}</CustomTitle>
+          <TimeInput
+            onChange={setTime}
+            value={time}
+            data-qa="set-time"
+            info={
+              timeError ? { text: timeError, status: 'warning' } : undefined
+            }
+          />
+        </TimeWrapper>
 
-            <Gap size="xs" />
+        <Gap size="xs" />
 
-            {renderResult(expectedAbsences, (expectedAbsences) =>
-              expectedAbsences?.categories &&
-              expectedAbsences.categories.length > 0 ? (
-                <FixedSpaceColumn>
-                  <AbsenceTitle size={2}>
-                    {i18n.attendances.absenceTitle}
-                  </AbsenceTitle>
-                  {expectedAbsences.categories.includes('NONBILLABLE') && (
-                    <FixedSpaceColumn
-                      spacing="xs"
-                      data-qa="absence-NONBILLABLE"
-                    >
-                      <div>
-                        {formatCategory(
-                          'NONBILLABLE',
-                          child.placementType,
-                          i18n
-                        )}
-                      </div>
-                      <AbsenceSelector
-                        absenceTypes={[
-                          ...basicAbsenceTypes,
-                          ...attendanceStatus.absences
-                            .filter(
-                              (a) =>
-                                a.category === 'NONBILLABLE' &&
-                                !basicAbsenceTypes.includes(a.type)
-                            )
-                            .map((a) => a.type),
-                          ...(featureFlags.noAbsenceType
-                            ? (['NO_ABSENCE'] as const)
-                            : ([] as const))
-                        ]}
-                        selectedAbsenceType={selectedAbsenceTypeNonbillable}
-                        setSelectedAbsenceType={
-                          setSelectedAbsenceTypeNonbillable
-                        }
-                      />
-                    </FixedSpaceColumn>
-                  )}
-                  {expectedAbsences.categories.includes('BILLABLE') && (
-                    <FixedSpaceColumn spacing="xs" data-qa="absence-BILLABLE">
-                      <div>
-                        {formatCategory('BILLABLE', child.placementType, i18n)}
-                      </div>
-                      <AbsenceSelector
-                        absenceTypes={[
-                          ...basicAbsenceTypes,
-                          ...attendanceStatus.absences
-                            .filter(
-                              (a) =>
-                                a.category === 'BILLABLE' &&
-                                !basicAbsenceTypes.includes(a.type)
-                            )
-                            .map((a) => a.type),
-                          ...(featureFlags.noAbsenceType
-                            ? (['NO_ABSENCE'] as const)
-                            : ([] as const))
-                        ]}
-                        selectedAbsenceType={selectedAbsenceTypeBillable}
-                        setSelectedAbsenceType={setSelectedAbsenceTypeBillable}
-                      />
-                    </FixedSpaceColumn>
-                  )}
+        {renderResult(expectedAbsences, (expectedAbsences) =>
+          expectedAbsences?.categories &&
+          expectedAbsences.categories.length > 0 ? (
+            <FixedSpaceColumn>
+              <AbsenceTitle size={2}>
+                {i18n.attendances.absenceTitle}
+              </AbsenceTitle>
+              {expectedAbsences.categories.includes('NONBILLABLE') && (
+                <FixedSpaceColumn spacing="xs" data-qa="absence-NONBILLABLE">
+                  <div>
+                    {formatCategory('NONBILLABLE', child.placementType, i18n)}
+                  </div>
+                  <AbsenceSelector
+                    absenceTypes={[
+                      ...basicAbsenceTypes,
+                      ...attendanceStatus.absences
+                        .filter(
+                          (a) =>
+                            a.category === 'NONBILLABLE' &&
+                            !basicAbsenceTypes.includes(a.type)
+                        )
+                        .map((a) => a.type),
+                      ...(featureFlags.noAbsenceType
+                        ? (['NO_ABSENCE'] as const)
+                        : ([] as const))
+                    ]}
+                    selectedAbsenceType={selectedAbsenceTypeNonbillable}
+                    setSelectedAbsenceType={setSelectedAbsenceTypeNonbillable}
+                  />
                 </FixedSpaceColumn>
-              ) : null
-            )}
+              )}
+              {expectedAbsences.categories.includes('BILLABLE') && (
+                <FixedSpaceColumn spacing="xs" data-qa="absence-BILLABLE">
+                  <div>
+                    {formatCategory('BILLABLE', child.placementType, i18n)}
+                  </div>
+                  <AbsenceSelector
+                    absenceTypes={[
+                      ...basicAbsenceTypes,
+                      ...attendanceStatus.absences
+                        .filter(
+                          (a) =>
+                            a.category === 'BILLABLE' &&
+                            !basicAbsenceTypes.includes(a.type)
+                        )
+                        .map((a) => a.type),
+                      ...(featureFlags.noAbsenceType
+                        ? (['NO_ABSENCE'] as const)
+                        : ([] as const))
+                    ]}
+                    selectedAbsenceType={selectedAbsenceTypeBillable}
+                    setSelectedAbsenceType={setSelectedAbsenceTypeBillable}
+                  />
+                </FixedSpaceColumn>
+              )}
+            </FixedSpaceColumn>
+          ) : null
+        )}
 
-            <Gap size="s" />
+        <Gap size="s" />
 
-            <Actions>
-              <FixedSpaceRow fullWidth>
-                <LegacyButton
-                  text={i18n.common.cancel}
-                  onClick={() => navigate(-1)}
-                />
-                <AsyncButton
-                  primary
-                  text={i18n.common.confirm}
-                  disabled={!formIsValid}
-                  onClick={() => {
-                    if (!expectedAbsences.isSuccess) return undefined
+        <Actions>
+          <FixedSpaceRow fullWidth>
+            <LegacyButton
+              text={i18n.common.cancel}
+              onClick={() => navigate(-1)}
+            />
+            <AsyncButton
+              primary
+              text={i18n.common.confirm}
+              disabled={!formIsValid}
+              onClick={() => {
+                if (!expectedAbsences.isSuccess) return undefined
 
-                    return createDeparture({
-                      unitId,
-                      childId,
-                      body: {
-                        absenceTypeNonbillable:
-                          expectedAbsences.value?.categories?.includes(
-                            'NONBILLABLE'
-                          ) && selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
-                            ? selectedAbsenceTypeNonbillable ?? null
-                            : null,
-                        absenceTypeBillable:
-                          expectedAbsences.value?.categories?.includes(
-                            'BILLABLE'
-                          ) && selectedAbsenceTypeBillable !== 'NO_ABSENCE'
-                            ? selectedAbsenceTypeBillable ?? null
-                            : null,
-                        departed: LocalTime.parse(time)
-                      }
-                    })
-                  }}
-                  onSuccess={() => {
-                    const absenceMarked = expectedAbsences
-                      .map(
-                        (exp) => exp?.categories && exp.categories.length > 0
-                      )
-                      .getOrElse(false)
-                    navigate(absenceMarked ? -1 : -2)
-                  }}
-                  data-qa="mark-departed-btn"
-                />
-              </FixedSpaceRow>
-            </Actions>
-          </ContentArea>
+                return createDeparture({
+                  unitId,
+                  childId,
+                  body: {
+                    absenceTypeNonbillable:
+                      expectedAbsences.value?.categories?.includes(
+                        'NONBILLABLE'
+                      ) && selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
+                        ? selectedAbsenceTypeNonbillable ?? null
+                        : null,
+                    absenceTypeBillable:
+                      expectedAbsences.value?.categories?.includes(
+                        'BILLABLE'
+                      ) && selectedAbsenceTypeBillable !== 'NO_ABSENCE'
+                        ? selectedAbsenceTypeBillable ?? null
+                        : null,
+                    departed: LocalTime.parse(time)
+                  }
+                })
+              }}
+              onSuccess={() => {
+                const absenceMarked = expectedAbsences
+                  .map((exp) => exp?.categories && exp.categories.length > 0)
+                  .getOrElse(false)
+                navigate(absenceMarked ? -1 : -2)
+              }}
+              data-qa="mark-departed-btn"
+            />
+          </FixedSpaceRow>
+        </Actions>
+      </ContentArea>
 
-          <Gap size="s" />
-          <ChildNotesSummary child={child} groupNotes={groupNotes} />
-        </>
-      ))}
+      <Gap size="s" />
+      <ChildNotesSummary child={child} />
     </TallContentArea>
   )
 })

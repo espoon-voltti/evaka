@@ -167,9 +167,21 @@ export const fi = {
     },
     groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
     actions: {
+      arrivalMultiselect: {
+        toggle: 'Kirjaa useampi lapsi',
+        confirm: (count: number) =>
+          `Merkitse saapuneeksi${
+            count > 1 ? `: ${count} lasta` : count === 1 ? ': 1 lapsi' : ''
+          }`,
+        select: 'Valitse',
+        selected: 'Valittu'
+      },
       markAbsent: 'Merkitse poissaolevaksi',
       cancelAbsence: 'Peruuta poissaolo',
-      markPresent: 'Merkitse saapuneeksi',
+      markPresent: (count: number) =>
+        count > 1
+          ? `Merkitse saapuneeksi ${count} lasta`
+          : 'Merkitse saapuneeksi',
       markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',
       returnToPresent: 'Palauta läsnäolevaksi',

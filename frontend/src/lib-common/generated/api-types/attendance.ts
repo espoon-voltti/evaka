@@ -42,6 +42,14 @@ export interface ArrivalRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ArrivalsRequest
+*/
+export interface ArrivalsRequest {
+  arrived: LocalTime
+  children: UUID[]
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.Attendance
 */
 export interface Attendance {
@@ -431,6 +439,14 @@ export function deserializeJsonAbsenceRangeRequest(json: JsonOf<AbsenceRangeRequ
   return {
     ...json,
     range: FiniteDateRange.parseJson(json.range)
+  }
+}
+
+
+export function deserializeJsonArrivalsRequest(json: JsonOf<ArrivalsRequest>): ArrivalsRequest {
+  return {
+    ...json,
+    arrived: LocalTime.parseIso(json.arrived)
   }
 }
 

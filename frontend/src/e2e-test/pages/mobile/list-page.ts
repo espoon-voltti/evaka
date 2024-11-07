@@ -4,7 +4,7 @@
 
 import { UUID } from 'lib-common/types'
 
-import { Page, Element } from '../../utils/page'
+import { Page, Element, Checkbox } from '../../utils/page'
 
 export default class MobileListPage {
   unreadMessagesIndicator: Element
@@ -14,6 +14,8 @@ export default class MobileListPage {
   departedChildrenTab: Element
   absentChildrenTab: Element
   groupSelectorButton: Element
+  multiselectToggle: Checkbox
+  markMultipleArrivedButton: Element
   constructor(private readonly page: Page) {
     this.unreadMessagesIndicator = page.findByDataQa(
       'unread-messages-indicator'
@@ -24,6 +26,10 @@ export default class MobileListPage {
     this.departedChildrenTab = page.findByDataQa('departed-tab')
     this.absentChildrenTab = page.findByDataQa('absent-tab')
     this.groupSelectorButton = page.findByDataQa('group-selector-button')
+    this.multiselectToggle = new Checkbox(
+      page.findByDataQa('multiselect-toggle')
+    )
+    this.markMultipleArrivedButton = page.findByDataQa('mark-multiple-arrived')
   }
 
   childRow = (childId: UUID) => this.page.findByDataQa(`child-${childId}`)
