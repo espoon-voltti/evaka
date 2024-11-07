@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
@@ -80,8 +81,8 @@ fun Database.Transaction.insertApplication(
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified)
-VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)})
+INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified, status_modified_at, status_modified_by)
+VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)}, ${bind(now)}, ${bind(createdBy)})
 RETURNING id
 """
             )
@@ -457,10 +458,15 @@ fun Database.Read.fetchApplicationSummaries(
             cpu.id AS current_placement_unit_id,
             cpu.name AS current_placement_unit_name,
             count(*) OVER () AS total,
-            pu.preferredUnits
+            pu.preferredUnits,
+            a.status_modified_at,
+            e.id AS status_modified_by_id,
+            e.name AS status_modified_by_name,
+            e.type AS status_modified_by_type
         FROM application a
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
+        LEFT JOIN evaka_user e ON e.id = a.status_modified_by
         JOIN daycare d ON COALESCE(pp.unit_id, (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
         JOIN care_area ca ON d.care_area_id = ca.id
         JOIN (
@@ -553,15 +559,20 @@ fun Database.Read.fetchApplicationSummaries(
                     attachmentCount = column("attachmentCount"),
                     additionalDaycareApplication = column("additionaldaycareapplication"),
                     placementProposalStatus =
-                        column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
-                            ?.takeIf { status == ApplicationStatus.WAITING_UNIT_CONFIRMATION }
-                            ?.let {
-                                PlacementProposalStatus(
-                                    unitConfirmationStatus = it,
-                                    unitRejectReason = column("unit_reject_reason"),
-                                    unitRejectOtherReason = column("unit_reject_other_reason"),
-                                )
-                            },
+                        column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")?.let {
+                            PlacementProposalStatus(
+                                unitConfirmationStatus = it,
+                                unitRejectReason = column("unit_reject_reason"),
+                                unitRejectOtherReason = column("unit_reject_other_reason"),
+                                modifiedAt = column("status_modified_at"),
+                                modifiedBy =
+                                    EvakaUser(
+                                        id = column("status_modified_by_id"),
+                                        name = column("status_modified_by_name"),
+                                        type = column("status_modified_by_type"),
+                                    ),
+                            )
+                        },
                     placementPlanStartDate = column("placement_plan_start_date"),
                     placementPlanUnitName = column("placement_plan_unit_name"),
                     currentPlacementUnit =
@@ -1003,8 +1014,21 @@ fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: App
     }
 }
 
-fun Database.Transaction.updateApplicationStatus(id: ApplicationId, status: ApplicationStatus) {
-    execute { sql("UPDATE application SET status = ${bind(status)} WHERE id = ${bind(id)}") }
+fun Database.Transaction.updateApplicationStatus(
+    id: ApplicationId,
+    status: ApplicationStatus,
+    modifiedBy: EvakaUserId,
+    now: HelsinkiDateTime,
+) = execute {
+    sql(
+        """
+        UPDATE application SET
+            status = ${bind(status)},
+            status_modified_by = ${bind(modifiedBy)},
+            status_modified_at = ${bind(now)}
+        WHERE id = ${bind(id)}
+        """
+    )
 }
 
 fun Database.Transaction.updateApplicationDates(
@@ -1128,7 +1152,8 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
 }
 
 fun Database.Transaction.cancelOutdatedSentTransferApplications(
-    clock: EvakaClock
+    clock: EvakaClock,
+    evakaUserId: EvakaUserId,
 ): List<ApplicationId> {
     val yesterday = clock.today().minusDays(1)
     val notDaycarePlacements =
@@ -1175,7 +1200,10 @@ fun Database.Transaction.cancelOutdatedSentTransferApplications(
             // does not cause the cancellation of applications that shouldn't be cancelled
             sql(
                 """
-UPDATE application SET status = ${bind(ApplicationStatus.CANCELLED)}
+UPDATE application SET
+    status = ${bind(ApplicationStatus.CANCELLED)},
+    status_modified_by = ${bind(evakaUserId)},
+    status_modified_at = ${bind(clock.now())}
 WHERE transferapplication
 AND status = ANY('{SENT}')
 AND NOT EXISTS (
@@ -1217,13 +1245,17 @@ WHERE application_id = ${bind(applicationId)}
         .toList<ApplicationAttachment>()
 
 fun Database.Transaction.cancelAllActiveTransferApplications(
-    childId: ChildId
+    childId: ChildId,
+    clock: EvakaClock,
+    evakaUserId: EvakaUserId,
 ): List<ApplicationId> =
     createUpdate {
             sql(
                 """
-UPDATE application
-SET status = 'CANCELLED'
+UPDATE application SET
+    status = 'CANCELLED',
+    status_modified_by = ${bind(evakaUserId)},
+    status_modified_at = ${bind(clock.now())}
 WHERE transferapplication
 AND child_id = ${bind(childId)}
 AND status = ANY(${bind(arrayOf(ApplicationStatus.SENT))}::application_status_type[])

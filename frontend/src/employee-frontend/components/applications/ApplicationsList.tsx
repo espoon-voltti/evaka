@@ -279,164 +279,185 @@ const ApplicationsList = React.memo(function Applications({
     )
   }
 
-  const rows = applications.map((application) => (
-    <Tr
-      key={application.id}
-      data-qa="table-application-row"
-      data-application-id={application.id}
-      onClick={() =>
-        window.open(
-          `${getEmployeeUrlPrefix()}/employee/applications/${application.id}`,
-          '_blank'
-        )
-      }
-    >
-      <StatusColorTd color={getAccentColor(application)}>
-        <FixedSpaceColumn spacing="xs" alignItems="flex-start">
-          <CareTypeChip type={application.placementType} />
-          {application.transferApplication && (
-            <Light>{i18n.applications.list.transfer}</Light>
-          )}
-          {application.origin === 'PAPER' && (
-            <Light>{i18n.applications.list.paper}</Light>
-          )}
-        </FixedSpaceColumn>
-      </StatusColorTd>
-      <Td>
-        <PlacementCircle
-          type={isPartDayPlacement(application.placementType) ? 'half' : 'full'}
-          label={
-            application.serviceNeed !== null
-              ? application.serviceNeed.nameFi
-              : i18n.placement.type[application.placementType]
-          }
-        />
-      </Td>
-      <Td>
-        <FixedSpaceColumn spacing="xs">
-          <Bold>
-            {formatName(
-              application.firstName,
-              application.lastName,
-              i18n,
-              true
+  const rows = applications.map((application) => {
+    const placementProposalStatusMetadataTooltip =
+      i18n.unit.placementProposals.statusLastModified(
+        application.placementProposalStatus?.modifiedBy?.name ||
+          i18n.unit.placementProposals.unknown,
+        application.placementProposalStatus?.modifiedAt?.format() ||
+          i18n.unit.placementProposals.unknown
+      )
+
+    return (
+      <Tr
+        key={application.id}
+        data-qa="table-application-row"
+        data-application-id={application.id}
+        onClick={() =>
+          window.open(
+            `${getEmployeeUrlPrefix()}/employee/applications/${application.id}`,
+            '_blank'
+          )
+        }
+      >
+        <StatusColorTd color={getAccentColor(application)}>
+          <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+            <CareTypeChip type={application.placementType} />
+            {application.transferApplication && (
+              <Light>{i18n.applications.list.transfer}</Light>
             )}
-          </Bold>
-          {dateOfBirthInfo(application)}
-        </FixedSpaceColumn>
-      </Td>
-      <Td>
-        <Bold>{application.dueDate?.format()}</Bold>
-      </Td>
-      <Td data-qa="start-date">
-        {application.placementPlanStartDate?.format() ??
-          application.startDate?.format() ??
-          '-'}
-      </Td>
-      <Td>
-        <FixedSpaceRow spacing="xs">
-          {application.additionalInfo && (
-            <RoundIcon
-              content="L"
-              color={applicationBasisColors.ADDITIONAL_INFO}
-              size="s"
-            />
-          )}
-          {application.siblingBasis && (
-            <RoundIcon
-              content="S"
-              color={applicationBasisColors.SIBLING_BASIS}
-              size="s"
-            />
-          )}
-          {application.assistanceNeed && (
-            <RoundIcon
-              content="T"
-              color={applicationBasisColors.ASSISTANCE_NEED}
-              size="s"
-            />
-          )}
-          {application.wasOnClubCare && (
-            <RoundIcon
-              content="K"
-              color={applicationBasisColors.CLUB_CARE}
-              size="s"
-            />
-          )}
-          {application.wasOnDaycare && (
-            <RoundIcon
-              content="P"
-              color={applicationBasisColors.DAYCARE}
-              size="s"
-            />
-          )}
-          {application.extendedCare && (
-            <RoundIcon
-              content="V"
-              color={applicationBasisColors.EXTENDED_CARE}
-              size="s"
-            />
-          )}
-          {application.duplicateApplication && (
-            <RoundIcon
-              content="2"
-              color={applicationBasisColors.DUPLICATE_APPLICATION}
-              size="s"
-            />
-          )}
-          {application.urgent && (
-            <RoundIcon
-              content="!"
-              color={applicationBasisColors.URGENT}
-              size="s"
-            />
-          )}
-          {(application.urgent || application.extendedCare) &&
-            application.attachmentCount > 0 && (
+            {application.origin === 'PAPER' && (
+              <Light>{i18n.applications.list.paper}</Light>
+            )}
+          </FixedSpaceColumn>
+        </StatusColorTd>
+        <Td>
+          <PlacementCircle
+            type={
+              isPartDayPlacement(application.placementType) ? 'half' : 'full'
+            }
+            label={
+              application.serviceNeed !== null
+                ? application.serviceNeed.nameFi
+                : i18n.placement.type[application.placementType]
+            }
+          />
+        </Td>
+        <Td>
+          <FixedSpaceColumn spacing="xs">
+            <Bold>
+              {formatName(
+                application.firstName,
+                application.lastName,
+                i18n,
+                true
+              )}
+            </Bold>
+            {dateOfBirthInfo(application)}
+          </FixedSpaceColumn>
+        </Td>
+        <Td>
+          <Bold>{application.dueDate?.format()}</Bold>
+        </Td>
+        <Td data-qa="start-date">
+          {application.placementPlanStartDate?.format() ??
+            application.startDate?.format() ??
+            '-'}
+        </Td>
+        <Td>
+          <FixedSpaceRow spacing="xs">
+            {application.additionalInfo && (
               <RoundIcon
-                content={faPaperclip}
-                color={applicationBasisColors.HAS_ATTACHMENTS}
+                content="L"
+                color={applicationBasisColors.ADDITIONAL_INFO}
                 size="s"
               />
             )}
-        </FixedSpaceRow>
-      </Td>
-      <Td>
-        <span>
-          <Tooltip
-            tooltip={
-              <div>
-                {application.preferredUnits.map((unit, i) => (
-                  <p key={`unit-pref-${i}`}>{unit.name}</p>
-                ))}
-                {application.currentPlacementUnit && (
-                  <Italic>
-                    {i18n.applications.list.currentUnit}{' '}
-                    {application.currentPlacementUnit.name}
-                  </Italic>
-                )}
-              </div>
-            }
-          >
-            {application.placementPlanUnitName ||
-              application.preferredUnits[0]?.name}
-          </Tooltip>
-        </span>
-      </Td>
-      <Td data-qa="application-status">
-        <FixedSpaceRow>
-          <Bold>{i18n.application.statuses[application.status]}</Bold>
+            {application.siblingBasis && (
+              <RoundIcon
+                content="S"
+                color={applicationBasisColors.SIBLING_BASIS}
+                size="s"
+              />
+            )}
+            {application.assistanceNeed && (
+              <RoundIcon
+                content="T"
+                color={applicationBasisColors.ASSISTANCE_NEED}
+                size="s"
+              />
+            )}
+            {application.wasOnClubCare && (
+              <RoundIcon
+                content="K"
+                color={applicationBasisColors.CLUB_CARE}
+                size="s"
+              />
+            )}
+            {application.wasOnDaycare && (
+              <RoundIcon
+                content="P"
+                color={applicationBasisColors.DAYCARE}
+                size="s"
+              />
+            )}
+            {application.extendedCare && (
+              <RoundIcon
+                content="V"
+                color={applicationBasisColors.EXTENDED_CARE}
+                size="s"
+              />
+            )}
+            {application.duplicateApplication && (
+              <RoundIcon
+                content="2"
+                color={applicationBasisColors.DUPLICATE_APPLICATION}
+                size="s"
+              />
+            )}
+            {application.urgent && (
+              <RoundIcon
+                content="!"
+                color={applicationBasisColors.URGENT}
+                size="s"
+              />
+            )}
+            {(application.urgent || application.extendedCare) &&
+              application.attachmentCount > 0 && (
+                <RoundIcon
+                  content={faPaperclip}
+                  color={applicationBasisColors.HAS_ATTACHMENTS}
+                  size="s"
+                />
+              )}
+          </FixedSpaceRow>
+        </Td>
+        <Td>
+          <span>
+            <Tooltip
+              tooltip={
+                <div>
+                  {application.preferredUnits.map((unit, i) => (
+                    <p key={`unit-pref-${i}`}>{unit.name}</p>
+                  ))}
+                  {application.currentPlacementUnit && (
+                    <Italic>
+                      {i18n.applications.list.currentUnit}{' '}
+                      {application.currentPlacementUnit.name}
+                    </Italic>
+                  )}
+                </div>
+              }
+            >
+              {application.placementPlanUnitName ||
+                application.preferredUnits[0]?.name}
+            </Tooltip>
+          </span>
+        </Td>
+        <Td data-qa="application-status">
           {application.placementProposalStatus?.unitConfirmationStatus ===
-            'ACCEPTED' && (
-            <CircleIconGreen>
-              <FontAwesomeIcon icon={faCheck} />
-            </CircleIconGreen>
-          )}
-          {application.placementProposalStatus?.unitConfirmationStatus ===
-            'REJECTED' && (
-            <div data-qa="placement-proposal-status">
-              <Tooltip
-                tooltip={
+          'ACCEPTED' ? (
+            <Tooltip
+              tooltip={
+                <p data-qa="placement-proposal-status-metadata-tooltip">
+                  {placementProposalStatusMetadataTooltip}
+                </p>
+              }
+            >
+              <FixedSpaceRow>
+                <Bold>{i18n.application.statuses[application.status]}</Bold>
+                <div data-qa="placement-proposal-status">
+                  <CircleIconGreen>
+                    <FontAwesomeIcon icon={faCheck} />
+                  </CircleIconGreen>
+                </div>
+              </FixedSpaceRow>
+            </Tooltip>
+          ) : application.placementProposalStatus?.unitConfirmationStatus ===
+            'REJECTED' ? (
+            <Tooltip
+              tooltip={
+                <div>
                   <p data-qa="placement-proposal-status-tooltip">
                     {application.placementProposalStatus
                       ? application.placementProposalStatus.unitRejectReason ===
@@ -449,58 +470,70 @@ const ApplicationsList = React.memo(function Applications({
                           ]
                       : ''}
                   </p>
-                }
-              >
-                <CircleIconRed>
-                  <FontAwesomeIcon icon={faTimes} />
-                </CircleIconRed>
-              </Tooltip>
-            </div>
+                  <p data-qa="placement-proposal-status-metadata-tooltip">
+                    {placementProposalStatusMetadataTooltip}
+                  </p>
+                </div>
+              }
+            >
+              <FixedSpaceRow>
+                <Bold>{i18n.application.statuses[application.status]}</Bold>
+                <div data-qa="placement-proposal-status">
+                  <CircleIconRed>
+                    <FontAwesomeIcon icon={faTimes} />
+                  </CircleIconRed>
+                </div>
+              </FixedSpaceRow>
+            </Tooltip>
+          ) : (
+            <FixedSpaceRow>
+              <Bold>{i18n.application.statuses[application.status]}</Bold>
+            </FixedSpaceRow>
           )}
-        </FixedSpaceRow>
-      </Td>
-
-      <RequireRole oneOf={['SERVICE_WORKER']}>
-        <Td>
-          <Tooltip
-            tooltip={
-              application.serviceWorkerNote ? (
-                <span>{application.serviceWorkerNote}</span>
-              ) : (
-                <i>{i18n.applications.list.addNote}</i>
-              )
-            }
-          >
-            <IconOnlyButton
-              icon={
-                application.serviceWorkerNote
-                  ? fasCommentAltLines
-                  : faCommentAlt
-              }
-              onClick={(e) => {
-                e.stopPropagation()
-                setEditedNoteText(application.serviceWorkerNote)
-                setEditedNote(application.id)
-              }}
-              aria-label={
-                application.serviceWorkerNote
-                  ? i18n.common.edit
-                  : i18n.applications.list.addNote
-              }
-            />
-          </Tooltip>
         </Td>
-      </RequireRole>
-      <Td>
-        {enableApplicationActions && (
-          <ApplicationActions
-            application={application}
-            reloadApplications={reloadApplications}
-          />
-        )}
-      </Td>
-    </Tr>
-  ))
+
+        <RequireRole oneOf={['SERVICE_WORKER']}>
+          <Td>
+            <Tooltip
+              tooltip={
+                application.serviceWorkerNote ? (
+                  <span>{application.serviceWorkerNote}</span>
+                ) : (
+                  <i>{i18n.applications.list.addNote}</i>
+                )
+              }
+            >
+              <IconOnlyButton
+                icon={
+                  application.serviceWorkerNote
+                    ? fasCommentAltLines
+                    : faCommentAlt
+                }
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setEditedNoteText(application.serviceWorkerNote)
+                  setEditedNote(application.id)
+                }}
+                aria-label={
+                  application.serviceWorkerNote
+                    ? i18n.common.edit
+                    : i18n.applications.list.addNote
+                }
+              />
+            </Tooltip>
+          </Td>
+        </RequireRole>
+        <Td>
+          {enableApplicationActions && (
+            <ApplicationActions
+              application={application}
+              reloadApplications={reloadApplications}
+            />
+          )}
+        </Td>
+      </Tr>
+    )
+  })
 
   return (
     <div data-qa="applications-list">

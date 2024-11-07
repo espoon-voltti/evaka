@@ -304,7 +304,7 @@ class ApplicationStateService(
         }
 
         tx.syncApplicationOtherGuardians(application.id, clock.today())
-        tx.updateApplicationStatus(application.id, SENT)
+        tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
 
         featureConfig.archiveMetadataConfigs[
                 ArchiveProcessType.fromApplicationType(application.type)]
@@ -370,7 +370,7 @@ class ApplicationStateService(
             )
         }
 
-        tx.updateApplicationStatus(application.id, SENT)
+        tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
     }
 
     fun moveToWaitingPlacement(
@@ -409,7 +409,7 @@ class ApplicationStateService(
             runAt = clock.now(),
         )
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
-        tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
+        tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
 
         tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
             if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
@@ -451,7 +451,7 @@ class ApplicationStateService(
         }
 
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
-        tx.updateApplicationStatus(application.id, SENT)
+        tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
         Audit.ApplicationReturnToSent.log(targetId = AuditId(applicationId))
     }
 
@@ -471,7 +471,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
-        tx.updateApplicationStatus(application.id, CANCELLED)
+        tx.updateApplicationStatus(application.id, CANCELLED, user.evakaUserId, clock.now())
 
         tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
             if (process.history.none { it.state == ArchivedProcessState.COMPLETED }) {
@@ -543,7 +543,7 @@ class ApplicationStateService(
 
         personService.getGuardians(tx, user, application.childId)
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
-        tx.updateApplicationStatus(application.id, WAITING_DECISION)
+        tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
         return placementPlanId
     }
 
@@ -566,7 +566,7 @@ class ApplicationStateService(
         tx.deletePlacementPlans(listOf(application.id))
         tx.clearDecisionDrafts(listOf(application.id))
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
-        tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
+        tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
         Audit.ApplicationReturnToWaitingPlacement.log(targetId = AuditId(applicationId))
     }
 
@@ -610,7 +610,12 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
-        tx.updateApplicationStatus(application.id, WAITING_UNIT_CONFIRMATION)
+        tx.updateApplicationStatus(
+            application.id,
+            WAITING_UNIT_CONFIRMATION,
+            user.evakaUserId,
+            clock.now(),
+        )
         Audit.PlacementProposalCreate.log(targetId = AuditId(applicationId))
     }
 
@@ -631,7 +636,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
-        tx.updateApplicationStatus(application.id, WAITING_DECISION)
+        tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
         Audit.ApplicationReturnToWaitingDecision.log(targetId = AuditId(applicationId))
     }
 
@@ -746,7 +751,12 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
-        tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
+        tx.updateApplicationStatus(
+            application.id,
+            WAITING_CONFIRMATION,
+            user.evakaUserId,
+            clock.now(),
+        )
         tx.markApplicationDecisionsSent(application.id, clock.today())
         Audit.ApplicationConfirmDecisionsMailed.log(targetId = AuditId(applicationId))
     }
@@ -845,7 +855,7 @@ class ApplicationStateService(
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
-            tx.updateApplicationStatus(application.id, ACTIVE)
+            tx.updateApplicationStatus(application.id, ACTIVE, user.evakaUserId, clock.now())
 
             tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
                 if (process.history.none { it.state == ArchivedProcessState.COMPLETED }) {
@@ -916,7 +926,7 @@ class ApplicationStateService(
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
-            tx.updateApplicationStatus(application.id, REJECTED)
+            tx.updateApplicationStatus(application.id, REJECTED, user.evakaUserId, clock.now())
         }
 
         tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
@@ -1296,6 +1306,8 @@ class ApplicationStateService(
             tx.updateApplicationStatus(
                 application.id,
                 if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING,
+                user.evakaUserId,
+                clock.now(),
             )
 
             tx.getArchiveProcessByApplicationId(application.id)?.also { process ->
