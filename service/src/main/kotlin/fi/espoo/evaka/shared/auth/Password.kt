@@ -8,12 +8,16 @@ import fi.espoo.evaka.Sensitive
 import java.security.SecureRandom
 import java.util.*
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator
+import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
 import org.bouncycastle.crypto.params.Argon2Parameters
+import org.bouncycastle.crypto.params.KeyParameter
+import org.bouncycastle.crypto.util.DigestFactory
 import org.bouncycastle.util.Arrays
 
 // Password encoding/hashing
 // The Bouncy Castle library handles all heavy lifting, such as:
 // - Argon2 hash implementation
+// - PBKDF2 key derivation implementation
 // - constant-time byte array comparison
 
 /** A hashed and encoded password */
@@ -138,6 +142,45 @@ sealed class PasswordHashAlgorithm {
         }
     }
 
+    data class Pbkdf2(val hashType: HashType, val keySize: Int, val iterationCount: Int) :
+        PasswordHashAlgorithm() {
+        override val id: Id = Id("pbkdf2;$hashType;$keySize;$iterationCount")
+
+        enum class HashType {
+            SHA256,
+            SHA512,
+        }
+
+        override fun hash(
+            salt: EncodedPassword.Salt,
+            password: Sensitive<String>,
+        ): EncodedPassword.Hash {
+            val gen =
+                PKCS5S2ParametersGenerator(
+                    when (hashType) {
+                        HashType.SHA256 -> DigestFactory.createSHA256()
+                        HashType.SHA512 -> DigestFactory.createSHA512()
+                    }
+                )
+            gen.init(password.value.toByteArray(Charsets.UTF_8), salt.value, iterationCount)
+            val parameters = gen.generateDerivedParameters(keySize)
+            return EncodedPassword.Hash((parameters as KeyParameter).key)
+        }
+
+        companion object {
+            fun parse(id: Id): Pbkdf2 {
+                val parts = id.value.split(';')
+                require(parts.size == 4)
+                require(parts[0] == "pbkdf2")
+                return Pbkdf2(
+                    hashType = HashType.valueOf(parts[1]),
+                    keySize = parts[2].toInt(radix = 10),
+                    iterationCount = parts[3].toInt(radix = 10),
+                )
+            }
+        }
+    }
+
     companion object {
         // OWASP recommendation: Argon2id, m=19456 (19 MiB), t=2, p=1
         // Reference: OWASP Password Storage Cheat Sheet
@@ -153,6 +196,11 @@ sealed class PasswordHashAlgorithm {
 
         private val SECURE_RANDOM: SecureRandom = SecureRandom()
 
-        fun byId(id: Id): PasswordHashAlgorithm = Argon2id.parse(id)
+        fun byId(id: Id): PasswordHashAlgorithm =
+            when {
+                id.value.startsWith("argon2id;") -> Argon2id.parse(id)
+                id.value.startsWith("pbkdf2;") -> Pbkdf2.parse(id)
+                else -> throw IllegalArgumentException("Unsupported password hash $id")
+            }
     }
 }
