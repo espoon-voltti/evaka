@@ -818,6 +818,7 @@ internal class AttendanceReservationReportByChildTest :
             child.id,
             child.lastName,
             child.firstName,
+            child.dateOfBirth,
             reservation,
             fullDayAbsence,
             backupCare,

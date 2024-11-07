@@ -5,7 +5,7 @@
 import { groupBy } from 'lodash/fp'
 import sortBy from 'lodash/sortBy'
 import unzip from 'lodash/unzip'
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTheme } from 'styled-components'
 
@@ -32,15 +32,17 @@ import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { Translations, useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { unitGroupsQuery, unitsQuery } from '../unit/queries'
 
 import { AttendanceReservationReportTd } from './AttendanceReservation'
-import ReportDownload from './ReportDownload'
+import ReportDownload, { BackendReportDownload } from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { attendanceReservationReportByChildQuery } from './queries'
 
@@ -57,6 +59,7 @@ const orderByOptions: OrderBy[] = ['start', 'end']
 
 export default React.memo(function AttendanceReservationByChild() {
   const { lang, i18n } = useTranslation()
+  const { roles } = useContext(UserContext)
 
   const [unitId, setUnitId] = useState<UUID | null>(null)
   const [range, setRange] = useState(() => {
@@ -248,6 +251,18 @@ export default React.memo(function AttendanceReservationByChild() {
             data-qa="search-button"
           />
         </FilterRow>
+
+        {featureFlags.aromiIntegration && roles.includes('ADMIN') && (
+          <BackendReportDownload
+            href={`/api/internal/employee/aromi?${new URLSearchParams({
+              start: range.start.formatIso(),
+              end: range.end.formatIso(),
+              groupIds: groupIds.join(',')
+            }).toString()}`}
+            text="Lataa Aromi-raportti"
+            enabled={groupIds.length > 0}
+          />
+        )}
 
         {renderResult(report, (report) => {
           if (activeParams === null || report === null) return null

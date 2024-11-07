@@ -242,6 +242,11 @@ interface BaseFeatureFlags {
   jamixIntegration?: boolean
 
   /**
+   * Display Aromi food ordering service related functions
+   */
+  aromiIntegration?: boolean
+
+  /**
    * Allow admin to force unpublish document templates.
    * Do not set in production.
    * Note the corresponding backend environment variable feature flag.

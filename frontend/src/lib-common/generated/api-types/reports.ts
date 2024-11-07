@@ -137,6 +137,7 @@ export interface AttendanceReservationReportByChildGroup {
 */
 export interface AttendanceReservationReportByChildItem {
   backupCare: boolean
+  childDateOfBirth: LocalDate
   childFirstName: string
   childId: UUID
   childLastName: string
@@ -1067,6 +1068,7 @@ export function deserializeJsonAttendanceReservationReportByChildGroup(json: Jso
 export function deserializeJsonAttendanceReservationReportByChildItem(json: JsonOf<AttendanceReservationReportByChildItem>): AttendanceReservationReportByChildItem {
   return {
     ...json,
+    childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth),
     date: LocalDate.parseIso(json.date),
     reservation: (json.reservation != null) ? TimeRange.parseJson(json.reservation) : null
   }

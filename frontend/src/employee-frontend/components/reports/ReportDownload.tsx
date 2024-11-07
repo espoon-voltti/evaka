@@ -89,3 +89,29 @@ function ReportDownload<T extends object>({
 }
 
 export default ReportDownload
+
+export const BackendReportDownload = ({
+  href,
+  text,
+  enabled
+}: {
+  href: string
+  text: string
+  enabled: boolean
+}) => {
+  return (
+    <RowRightAligned>
+      {enabled ? (
+        <a href={href}>
+          <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
+          <LinkText>{text}</LinkText>
+        </a>
+      ) : (
+        <DisabledLink>
+          <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
+          <LinkText>{text}</LinkText>
+        </DisabledLink>
+      )}
+    </RowRightAligned>
+  )
+}
