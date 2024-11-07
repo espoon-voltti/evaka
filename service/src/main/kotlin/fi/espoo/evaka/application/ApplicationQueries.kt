@@ -566,11 +566,13 @@ fun Database.Read.fetchApplicationSummaries(
                                 unitRejectOtherReason = column("unit_reject_other_reason"),
                                 modifiedAt = column("status_modified_at"),
                                 modifiedBy =
-                                    EvakaUser(
-                                        id = column("status_modified_by_id"),
-                                        name = column("status_modified_by_name"),
-                                        type = column("status_modified_by_type"),
-                                    ),
+                                    column<EvakaUserId?>("status_modified_by_id")?.let {
+                                        EvakaUser(
+                                            id = it,
+                                            name = column("status_modified_by_name"),
+                                            type = column("status_modified_by_type"),
+                                        )
+                                    },
                             )
                         },
                     placementPlanStartDate = column("placement_plan_start_date"),
