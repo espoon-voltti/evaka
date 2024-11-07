@@ -51,8 +51,7 @@ const customizations: CitizenCustomizations = {
               target="_blank"
               rel="noreferrer"
             >
-              Lasten varhaiskasvatuksesta perittävät maksut |
-              Espoon kaupunki
+              Lasten varhaiskasvatuksesta perittävät maksut | Espoon kaupunki
             </a>
           </MultiLineCheckboxLabel>
         ),
@@ -94,15 +93,13 @@ const customizations: CitizenCustomizations = {
           <MultiLineCheckboxLabel>
             <span>
               Jag försäkrar att de uppgifter jag lämnat in är riktiga och jag
-              har bekantat mig med avgifter för
-              småbarnspedagogik:{' '}
+              har bekantat mig med avgifter för småbarnspedagogik:{' '}
               <a
                 href="https://www.espoo.fi/sv/artiklar/avgifter-smabarnspedagogik-fran-182023"
                 target="_blank"
                 rel="noreferrer"
               >
-                Avgifter för småbarnspedagogik | Esbo stad
-                (espoo.fi)
+                Avgifter för småbarnspedagogik | Esbo stad (espoo.fi)
               </a>
             </span>
           </MultiLineCheckboxLabel>
