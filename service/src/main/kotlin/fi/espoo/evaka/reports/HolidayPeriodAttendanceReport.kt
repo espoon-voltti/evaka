@@ -228,16 +228,16 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                             requiredStaff = staffNeedAtDate,
                             noResponseChildren =
                                 noResponses
-                                    // don't expect a response when:
-                                    // - it's not an operation day for child
-                                    // - child is on a term break
+                                    // expect a response when:
+                                    // - it's an operation day for the child
+                                    // - reservation is required for the child
                                     .filter {
                                         operationDaysByChild[it.child.id]?.contains(date) == true &&
                                             it.placementType.scheduleType(
                                                 date,
                                                 emptyList(),
                                                 preschoolTerms,
-                                            ) != ScheduleType.TERM_BREAK
+                                            ) == ScheduleType.RESERVATION_REQUIRED
                                     }
                                     .map { (child) ->
                                         ChildWithName(
