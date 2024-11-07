@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -39,6 +39,8 @@ interface Props {
   unitOrGroup: UnitOrGroup
   items: ListItem[]
   type?: AttendanceStatus
+  multiselectChildren: UUID[] | null
+  setMultiselectChildren: (selected: UUID[] | null) => void
 }
 
 const NoChildrenOnList = styled.div`
@@ -49,28 +51,13 @@ const NoChildrenOnList = styled.div`
 export default React.memo(function ChildList({
   unitOrGroup,
   items,
-  type
+  type,
+  multiselectChildren,
+  setMultiselectChildren
 }: Props) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const unitId = unitOrGroup.unitId
-
-  const [multiSelectMode, setMultiSelectMode] = useState(false)
-  const [selectedChildren, setSelectedChildren] = useState<UUID[]>([])
-
-  const enterMultiSelectMode = () => {
-    setMultiSelectMode(true)
-    setSelectedChildren([])
-  }
-
-  const exitMultiSelectMode = () => {
-    setMultiSelectMode(false)
-    setSelectedChildren([])
-  }
-
-  useEffect(() => {
-    if (type !== 'COMING') exitMultiSelectMode()
-  }, [type])
 
   return (
     <>
@@ -82,9 +69,11 @@ export default React.memo(function ChildList({
                 <Li>
                   <MultiselectToggleBox>
                     <Checkbox
-                      checked={multiSelectMode}
+                      checked={multiselectChildren !== null}
                       onChange={(checked) =>
-                        checked ? enterMultiSelectMode() : exitMultiSelectMode()
+                        checked
+                          ? setMultiselectChildren([])
+                          : setMultiselectChildren(null)
                       }
                       label={i18n.attendances.actions.arrivalMultiselect.toggle}
                       data-qa="multiselect-toggle"
@@ -101,14 +90,18 @@ export default React.memo(function ChildList({
                     child={ac}
                     childAttendanceUrl={routes.child(unitId, ac.id).value}
                     selected={
-                      multiSelectMode ? selectedChildren.includes(ac.id) : null
+                      multiselectChildren
+                        ? multiselectChildren.includes(ac.id)
+                        : null
                     }
                     onChangeSelected={(selected) => {
-                      setSelectedChildren((prev) =>
-                        selected
-                          ? [...prev, ac.id]
-                          : prev.filter((id) => id !== ac.id)
-                      )
+                      if (multiselectChildren) {
+                        setMultiselectChildren(
+                          selected
+                            ? [...multiselectChildren, ac.id]
+                            : multiselectChildren.filter((id) => id !== ac.id)
+                        )
+                      }
                     }}
                   />
                 </Li>
@@ -121,7 +114,7 @@ export default React.memo(function ChildList({
           )}
         </OrderedList>
       </FixedSpaceColumn>
-      {multiSelectMode && (
+      {multiselectChildren && (
         <MultiselectActions>
           <FixedSpaceRow
             spacing="s"
@@ -132,18 +125,18 @@ export default React.memo(function ChildList({
               appearance="inline"
               text={i18n.common.cancel}
               icon={faTimes}
-              onClick={exitMultiSelectMode}
+              onClick={() => setMultiselectChildren(null)}
             />
             <FloatingActionButton
               appearance="button"
               primary
               text={i18n.attendances.actions.arrivalMultiselect.confirm(
-                selectedChildren.length
+                multiselectChildren.length
               )}
-              disabled={selectedChildren.length === 0}
+              disabled={multiselectChildren.length === 0}
               onClick={() =>
                 navigate(
-                  routes.markPresent(unitId, selectedChildren, true).value
+                  routes.markPresent(unitId, multiselectChildren, true).value
                 )
               }
               data-qa="mark-multiple-arrived"

@@ -206,7 +206,12 @@ const ChildSearch = React.memo(function Search({
           setShowSearch={toggleShow}
           searchResults={searchResults}
         />
-        <ChildList unitOrGroup={unitOrGroup} items={searchResults} />
+        <ChildList
+          unitOrGroup={unitOrGroup}
+          items={searchResults}
+          multiselectChildren={null}
+          setMultiselectChildren={() => undefined}
+        />
       </ContentArea>
     </SearchContainer>
   )

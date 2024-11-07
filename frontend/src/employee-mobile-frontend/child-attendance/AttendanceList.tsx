@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
+import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 
@@ -32,6 +33,10 @@ export default React.memo(function AttendanceList({
   attendanceStatuses
 }: Props) {
   const { i18n } = useTranslation()
+
+  const [multiselectChildren, setMultiselectChildren] = useState<UUID[] | null>(
+    null
+  )
 
   const groupChildren = useMemo(
     () =>
@@ -118,6 +123,12 @@ export default React.memo(function AttendanceList({
     [activeStatus, childrenWithStatus]
   )
 
+  // this resetting should be done as a tab change side effect but
+  // that would require changing tabs from NavLinks to buttons
+  useEffect(() => {
+    setMultiselectChildren(null)
+  }, [activeStatus])
+
   return (
     <>
       <TabLinks tabs={tabs} mobile sticky topOffset={64} />
@@ -130,6 +141,8 @@ export default React.memo(function AttendanceList({
           unitOrGroup={unitOrGroup}
           items={filteredChildren}
           type={activeStatus}
+          multiselectChildren={multiselectChildren}
+          setMultiselectChildren={setMultiselectChildren}
         />
       </ContentArea>
     </>
