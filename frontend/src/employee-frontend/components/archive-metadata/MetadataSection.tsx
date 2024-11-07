@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
@@ -11,7 +12,7 @@ import {
   ProcessMetadataResponse
 } from 'lib-common/generated/api-types/process'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { CollapsibleContentArea as Collapsible } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -147,3 +148,9 @@ export default React.memo(function MetadataSection({
     </CollapsibleContentArea>
   )
 })
+
+const CollapsibleContentArea = styled(Collapsible)`
+  @media print {
+    display: none;
+  }
+`
