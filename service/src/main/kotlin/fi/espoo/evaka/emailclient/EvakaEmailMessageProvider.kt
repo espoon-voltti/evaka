@@ -12,6 +12,7 @@ import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
@@ -712,6 +713,27 @@ $unsubscribeEn
 <hr>
             """
                     .trimIndent(),
+        )
+    }
+
+    override fun serviceApplicationDecidedNotification(
+        accepted: Boolean,
+        startDate: LocalDate,
+    ): EmailContent {
+        val start = startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        return EmailContent.fromHtml(
+            subject = "Palveluntarpeen muutoshakemuksesi on käsitelty",
+            html =
+                if (accepted)
+                    """
+                <p>Ehdottamasi palveluntarve on hyväksytty $start alkaen.</p>
+            """
+                        .trimIndent()
+                else
+                    """
+                <p>Ehdottamasi palveluntarve on hylätty, lue lisätiedot hylkäyksestä eVakassa.</p>
+            """
+                        .trimIndent(),
         )
     }
 }

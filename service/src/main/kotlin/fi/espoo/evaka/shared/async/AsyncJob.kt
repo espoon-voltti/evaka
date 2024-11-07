@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -389,6 +390,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendServiceApplicationDecidedEmail(val serviceApplicationId: ServiceApplicationId) :
+        AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendSpecialDietNullificationWarningEmail(
         val unitId: DaycareId,
         val employeeId: EmployeeId,
@@ -463,19 +469,20 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendAssistanceNeedPreschoolDecisionEmail::class,
                     SendCalendarEventDigestEmail::class,
                     SendChildDocumentNotificationEmail::class,
-                    SendMessageNotificationEmail::class,
-                    SendMissingReservationsReminder::class,
-                    SendMissingHolidayReservationsReminder::class,
-                    SendOutdatedIncomeNotificationEmail::class,
-                    SendPedagogicalDocumentNotificationEmail::class,
-                    SendPendingDecisionEmail::class,
-                    SendNewCustomerIncomeNotificationEmail::class,
-                    SendNewFeeDecisionEmail::class,
-                    SendNewVoucherValueDecisionEmail::class,
                     SendDiscussionSurveyReservationEmail::class,
                     SendDiscussionSurveyReservationCancellationEmail::class,
                     SendDiscussionSurveyCreationNotificationEmail::class,
                     SendDiscussionReservationReminderEmail::class,
+                    SendMessageNotificationEmail::class,
+                    SendMissingReservationsReminder::class,
+                    SendMissingHolidayReservationsReminder::class,
+                    SendNewCustomerIncomeNotificationEmail::class,
+                    SendNewFeeDecisionEmail::class,
+                    SendNewVoucherValueDecisionEmail::class,
+                    SendOutdatedIncomeNotificationEmail::class,
+                    SendPedagogicalDocumentNotificationEmail::class,
+                    SendPendingDecisionEmail::class,
+                    SendServiceApplicationDecidedEmail::class,
                     SendSpecialDietNullificationWarningEmail::class,
                 ),
             )

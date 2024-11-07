@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneed.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
@@ -13,6 +14,8 @@ import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -40,6 +43,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -48,13 +52,14 @@ import org.springframework.beans.factory.annotation.Autowired
 class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var citizenController: ServiceApplicationControllerCitizen
     @Autowired lateinit var employeeController: ServiceApplicationController
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val today: LocalDate = LocalDate.of(2024, 1, 16)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
     private val clock = MockEvakaClock(now)
     private val startDate: LocalDate = today.plusMonths(2).withDayOfMonth(1)
     private val child = DevPerson(firstName = "Tupu", lastName = "Ankka")
-    private val adult = DevPerson(firstName = "Minni", lastName = "Hiiri")
+    private val adult = DevPerson(firstName = "Minni", lastName = "Hiiri", email = "test@test.fi")
     private val area = DevCareArea()
     private val daycare =
         DevDaycare(
@@ -225,6 +230,8 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Test
     fun `employee reads and accepts an application`() {
+        MockEmailClient.clear()
+
         db.transaction { tx ->
             tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
             tx.insert(
@@ -341,10 +348,18 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             assertEquals(it.shiftCare, ShiftCareType.NONE)
             assertFalse(it.partWeek)
         }
+
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(1, MockEmailClient.emails.size)
+        val emailContent = MockEmailClient.emails.first().content
+        assertEquals("Palveluntarpeen muutoshakemuksesi on käsitelty", emailContent.subject)
+        assertTrue(emailContent.text.contains("palveluntarve on hyväksytty 01.03.2024 alkaen"))
     }
 
     @Test
     fun `employee rejects an application`() {
+        MockEmailClient.clear()
+
         val applicationId =
             db.transaction { tx ->
                 tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
@@ -387,6 +402,12 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             assertEquals(it.endDate, serviceNeed.endDate)
             assertEquals(it.option.id, serviceNeed.optionId)
         }
+
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(1, MockEmailClient.emails.size)
+        val emailContent = MockEmailClient.emails.first().content
+        assertEquals("Palveluntarpeen muutoshakemuksesi on käsitelty", emailContent.subject)
+        assertTrue(emailContent.text.contains("palveluntarve on hylätty"))
     }
 
     @Test
