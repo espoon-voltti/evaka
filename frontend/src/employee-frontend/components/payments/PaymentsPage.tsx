@@ -14,6 +14,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { getPaymentsDueDate } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -98,7 +99,7 @@ const Modal = React.memo(function Modal({
   const { i18n } = useTranslation()
   const [paymentDate, setPaymentDate] = useState(LocalDate.todayInHelsinkiTz())
   const [dueDate, setDueDate] = useState(
-    LocalDate.todayInHelsinkiTz().addBusinessDays(10)
+    getPaymentsDueDate ?? LocalDate.todayInHelsinkiTz().addBusinessDays(10)
   )
 
   return (

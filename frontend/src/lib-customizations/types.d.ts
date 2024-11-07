@@ -18,6 +18,7 @@ import {
   PlacementPlanRejectReason,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
+import LocalDate from 'lib-common/local-date'
 import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
 
@@ -287,6 +288,7 @@ export interface EmployeeCustomizations {
   preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   unitProviderTypes: ProviderType[]
   voucherValueDecisionTypes: VoucherValueDecisionType[]
+  getPaymentsDueDate?: () => LocalDate
 }
 
 export interface EmployeeMobileCustomizations {
