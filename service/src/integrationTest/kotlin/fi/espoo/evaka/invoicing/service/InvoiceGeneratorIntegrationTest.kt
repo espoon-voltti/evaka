@@ -71,11 +71,13 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var generator: InvoiceGenerator
+
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
 
     private fun invoiceGenerator(
@@ -88,13 +90,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             evakaEnv,
             invoiceGenerationLogicChooser,
         )
-
-    private lateinit var generator: InvoiceGenerator
-
-    @BeforeAll
-    fun init() {
-        generator = invoiceGenerator()
-    }
 
     @BeforeEach
     fun beforeEach() {
