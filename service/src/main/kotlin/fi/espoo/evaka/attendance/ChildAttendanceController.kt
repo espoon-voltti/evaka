@@ -182,7 +182,7 @@ class ChildAttendanceController(
 
     data class ArrivalsRequest(
         val children: Set<ChildId>,
-        @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime,
+        @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime,
     )
 
     @PostMapping("/employee-mobile/attendances/units/{unitId}/arrivals")

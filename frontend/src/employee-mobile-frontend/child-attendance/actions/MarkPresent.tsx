@@ -69,8 +69,9 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
     createArrivalMutation
   )
 
+  const parsedTime = LocalTime.tryParse(time)
+
   const isValidTime = useMemo(() => {
-    const parsedTime = LocalTime.tryParse(time)
     if (!parsedTime) return false
 
     return childList.every(({ attendanceStatus }) => {
@@ -84,7 +85,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
         childLatestDeparture.toSystemTzDate()
       )
     })
-  }, [childList, time])
+  }, [childList, parsedTime])
 
   const singeDepartedChild =
     childList.length === 1 &&
@@ -136,13 +137,15 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
               text={i18n.common.confirm}
               disabled={!isValidTime}
               onClick={() =>
-                createArrival({
-                  unitId,
-                  body: {
-                    children: childList.map(({ child }) => child.id),
-                    arrived: time
-                  }
-                })
+                parsedTime
+                  ? createArrival({
+                      unitId,
+                      body: {
+                        children: childList.map(({ child }) => child.id),
+                        arrived: parsedTime
+                      }
+                    })
+                  : Promise.reject()
               }
               onSuccess={() => {
                 navigate(multiselect ? -1 : -2)
