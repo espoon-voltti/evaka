@@ -44,14 +44,14 @@ const customizations: CitizenCustomizations = {
           <MultiLineCheckboxLabel>
             <span>
               Vakuutan antamani tiedot oikeiksi ja olen tutustunut
-              asiakasmaksutiedotteeseen:
+              asiakasmaksuperusteisiin:
             </span>
             <a
               href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-asiakasmaksut#section-59617"
               target="_blank"
               rel="noreferrer"
             >
-              Lasten varhaiskasvatuksesta perittävät maksut 1.8.2023 alkaen |
+              Lasten varhaiskasvatuksesta perittävät maksut |
               Espoon kaupunki
             </a>
           </MultiLineCheckboxLabel>
@@ -94,14 +94,14 @@ const customizations: CitizenCustomizations = {
           <MultiLineCheckboxLabel>
             <span>
               Jag försäkrar att de uppgifter jag lämnat in är riktiga och jag
-              har bekantat mig med kundcirkuläret gällande avgifter för
+              har bekantat mig med avgifter för
               småbarnspedagogik:{' '}
               <a
                 href="https://www.espoo.fi/sv/artiklar/avgifter-smabarnspedagogik-fran-182023"
                 target="_blank"
                 rel="noreferrer"
               >
-                Avgifter för småbarnspedagogik från 1.8.2023 | Esbo stad
+                Avgifter för småbarnspedagogik | Esbo stad
                 (espoo.fi)
               </a>
             </span>
@@ -151,7 +151,7 @@ const customizations: CitizenCustomizations = {
               target="_blank"
               rel="noreferrer"
             >
-              Early education fees as of 1 August 2023 | City of Espoo
+              Early education fees | City of Espoo
             </a>
           </MultiLineCheckboxLabel>
         ),
