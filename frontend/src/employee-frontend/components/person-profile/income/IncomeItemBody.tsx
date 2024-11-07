@@ -65,12 +65,12 @@ const IncomeItemBody = React.memo(function IncomeItemBody({
         <Label>{i18n.personProfile.income.details.notes}</Label>
         <span>{income.notes}</span>
         <Label>{i18n.personProfile.income.details.updated}</Label>
-        <span>{income.updatedAt?.toLocalDate().format()}</span>
+        <span>{income.modifiedAt?.toLocalDate().format()}</span>
         <Label>{i18n.personProfile.income.details.handler}</Label>
         <span>
           {income.applicationId
             ? i18n.personProfile.income.details.originApplication
-            : income.updatedBy}
+            : income.modifiedBy.name}
         </span>
         {income.applicationId !== null && (
           <>

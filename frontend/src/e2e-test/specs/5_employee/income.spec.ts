@@ -270,8 +270,8 @@ describe('Income', () => {
       personId: personId,
       validFrom: placementStart,
       validTo: incomeEndDate,
-      updatedBy: financeAdminId,
-      updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+      modifiedBy: financeAdminId,
+      modifiedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
     }).save()
 
     await Fixture.incomeNotification({
@@ -312,8 +312,8 @@ describe('Income', () => {
       personId: personId,
       validFrom: placementStart,
       validTo: incomeEndDate,
-      updatedBy: financeAdminId,
-      updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+      modifiedBy: financeAdminId,
+      modifiedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
     }).save()
 
     await page.reload()

@@ -398,7 +398,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     validTo = originalRange.end,
                     data = emptyMap(),
                     effect = IncomeEffect.INCOMPLETE,
-                    updatedBy = EvakaUserId(testDecisionMaker_2.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_2.id.raw),
                 )
             )
         }

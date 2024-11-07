@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toEvakaUser
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -44,14 +45,15 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
             notes = "",
-            updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+            modifiedBy = testDecisionMaker_1.toEvakaUser(),
         )
     private val clock = RealEvakaClock()
+    private val modifiedById = EvakaUserId(testDecisionMaker_1.id.raw)
 
     @Test
     fun `insert valid fee alteration`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
 
             val result =
                 tx.createQuery { sql("SELECT * FROM fee_alteration") }.toList<FeeAlteration>()
@@ -61,14 +63,14 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `insert adds updatedAt`() {
+    fun `insert adds modifiedAt`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
 
             val result =
                 tx.createQuery { sql("SELECT * FROM fee_alteration") }.toList<FeeAlteration>()
 
-            with(result[0]) { assertNotNull(updatedAt) }
+            with(result[0]) { assertNotNull(modifiedAt) }
         }
     }
 
@@ -80,7 +82,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     validFrom = LocalDate.of(2000, 1, 1),
                     validTo = LocalDate.of(1900, 1, 1),
                 )
-            assertThrows<BadRequest> { tx.upsertFeeAlteration(clock, feeAlteration) }
+            assertThrows<BadRequest> { tx.upsertFeeAlteration(clock, modifiedById, feeAlteration) }
         }
     }
 
@@ -96,7 +98,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `getFeeAlteration with single fee alteration`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
 
             val result = tx.getFeeAlteration(testFeeAlteration.id!!)
 
@@ -107,7 +109,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `getFeeAlterationsForPerson with single fee alteration`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
 
             val result = tx.getFeeAlterationsForPerson(personId)
 
@@ -118,10 +120,11 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `getFeeAlterationsForPerson with multiple fee alterations`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
             with(testFeeAlteration) {
                 tx.upsertFeeAlteration(
                     clock,
+                    modifiedById,
                     this.copy(
                         id = FeeAlterationId(UUID.randomUUID()),
                         validFrom = validFrom.plusYears(1),
@@ -132,6 +135,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             with(testFeeAlteration) {
                 tx.upsertFeeAlteration(
                     clock,
+                    modifiedById,
                     this.copy(
                         id = FeeAlterationId(UUID.randomUUID()),
                         validFrom = validFrom.plusYears(2),
@@ -149,10 +153,10 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `update valid fee alteration`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
 
             val updated = testFeeAlteration.copy(amount = 500)
-            tx.upsertFeeAlteration(clock, updated)
+            tx.upsertFeeAlteration(clock, modifiedById, updated)
 
             val result = tx.getFeeAlterationsForPerson(personId)
 
@@ -164,11 +168,11 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `update with invalid date range`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
 
             val updated = with(testFeeAlteration) { this.copy(validTo = validFrom.minusDays(1)) }
 
-            assertThrows<BadRequest> { tx.upsertFeeAlteration(clock, updated) }
+            assertThrows<BadRequest> { tx.upsertFeeAlteration(clock, modifiedById, updated) }
         }
     }
 
@@ -192,12 +196,12 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
 
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
-            tx.upsertFeeAlteration(clock, secondFeeAlteration)
-            tx.upsertFeeAlteration(clock, thirdFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, secondFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, thirdFeeAlteration)
 
             val updated = testFeeAlteration.copy(amount = 500)
-            tx.upsertFeeAlteration(clock, updated)
+            tx.upsertFeeAlteration(clock, modifiedById, updated)
 
             val result = tx.getFeeAlterationsForPerson(personId)
 
@@ -210,9 +214,10 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `getFeeAlterationsFrom with from date before both`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
             tx.upsertFeeAlteration(
                 clock,
+                modifiedById,
                 testFeeAlteration.copy(
                     id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),
@@ -233,9 +238,10 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `getFeeAlterationsFrom with from after second`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
             tx.upsertFeeAlteration(
                 clock,
+                modifiedById,
                 testFeeAlteration.copy(
                     id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),
@@ -256,9 +262,10 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `getFeeAlterationsFrom with from after both`() {
         db.transaction { tx ->
-            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, modifiedById, testFeeAlteration)
             tx.upsertFeeAlteration(
                 clock,
+                modifiedById,
                 testFeeAlteration.copy(
                     id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),

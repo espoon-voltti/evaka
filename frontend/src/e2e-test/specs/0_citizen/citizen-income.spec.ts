@@ -113,8 +113,8 @@ describe.each(e)('Citizen income (%s)', (env) => {
       personId: guardian.id,
       validFrom: placementStart,
       validTo: incomeEndDate,
-      updatedBy: financeAdminId,
-      updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+      modifiedBy: financeAdminId,
+      modifiedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
     }).save()
 
     await Fixture.fridgeChild({

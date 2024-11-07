@@ -166,7 +166,7 @@ class OutdatedIncomeNotifications(
                             data = emptyMap(),
                             notes = "Created automatically because previous income expired",
                         ),
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
 
                 asyncJobRunner.plan(

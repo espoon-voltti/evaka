@@ -215,7 +215,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     ),
                                 )
                         ),
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }

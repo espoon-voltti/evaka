@@ -151,6 +151,8 @@ const IncomeList = React.memo(function IncomeList({
             startEditing={() => setEditing(item.id)}
             startDeleting={() => setDeleting(item.id)}
             permittedActions={permittedActions}
+            modifiedBy={item.modifiedBy}
+            modifiedAt={item.modifiedAt}
           />
           {incomeNotificationsForIncome(item).length > 0 && (
             <IncomeNotifications

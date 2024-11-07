@@ -7,8 +7,11 @@ import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Action } from 'lib-common/generated/action'
+import { EvakaUser } from 'lib-common/generated/api-types/user'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
@@ -47,11 +50,15 @@ interface Props {
   startEditing: () => void
   startDeleting: () => void
   permittedActions: Action.Income[]
+  modifiedBy?: EvakaUser | null
+  modifiedAt?: HelsinkiDateTime | null
   children?: React.JSX.Element[] | React.JSX.Element
 }
 
 const IncomeItemHeader = React.memo(function IncomeItemHeader({
   title: period,
+  modifiedBy,
+  modifiedAt,
   isOpen,
   toggle,
   editable,
@@ -76,6 +83,18 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           <span>{period}</span>
         </Title>
       </ItemTitle>
+      {modifiedAt && (
+        <Row>
+          <Tooltip
+            tooltip={
+              modifiedBy &&
+              i18n.personProfile.income.lastModifiedBy(modifiedBy.name)
+            }
+          >
+            {i18n.personProfile.income.lastModifiedAt(modifiedAt.format())}
+          </Tooltip>
+        </Row>
+      )}
       <Row>
         {permittedActions.includes('UPDATE') && (
           <Button

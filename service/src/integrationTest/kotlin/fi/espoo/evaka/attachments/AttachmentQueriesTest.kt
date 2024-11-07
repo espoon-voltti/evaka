@@ -66,7 +66,7 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             income =
                 AttachmentParent.Income(
-                    tx.insert(DevIncome(personId = guardian.id, updatedBy = admin.evakaUserId))
+                    tx.insert(DevIncome(personId = guardian.id, modifiedBy = admin.evakaUserId))
                 )
         }
     }

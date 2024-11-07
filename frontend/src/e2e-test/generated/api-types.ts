@@ -626,9 +626,9 @@ export interface DevIncome {
   effect: IncomeEffect
   id: UUID
   isEntrepreneur: boolean
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
   personId: UUID
-  updatedAt: HelsinkiDateTime
-  updatedBy: UUID
   validFrom: LocalDate
   validTo: LocalDate | null
   worksAtEcha: boolean
@@ -1391,7 +1391,7 @@ export function deserializeJsonDevHoliday(json: JsonOf<DevHoliday>): DevHoliday 
 export function deserializeJsonDevIncome(json: JsonOf<DevIncome>): DevIncome {
   return {
     ...json,
-    updatedAt: HelsinkiDateTime.parseIso(json.updatedAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }

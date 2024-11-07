@@ -346,10 +346,10 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           <Gap size="L" />
           <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
             <Label>{i18n.personProfile.income.details.updated}</Label>
-            <span>{props.baseIncome.updatedAt.toLocalDate().format()}</span>
+            <span>{props.baseIncome.modifiedAt.toLocalDate().format()}</span>
 
             <Label>{i18n.personProfile.income.details.handler}</Label>
-            <span>{props.baseIncome.updatedBy}</span>
+            <span>{props.baseIncome.modifiedBy.name}</span>
           </ListGrid>
         </>
       ) : null}

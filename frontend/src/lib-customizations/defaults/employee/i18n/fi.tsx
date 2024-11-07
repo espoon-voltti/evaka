@@ -1419,6 +1419,8 @@ export const fi = {
       updateError: 'Maksumuutoksen tallennus epäonnistui',
       deleteError: 'Maksumuutoksen poisto epäonnistui',
       confirmDelete: 'Haluatko poistaa maksumuutoksen?',
+      lastModifiedAt: (date: string) => `Viimeksi muokattu ${date}`,
+      lastModifiedBy: (name: string) => `Muokkaaja: ${name}`,
       editor: {
         titleNew: 'Lisää uusi alennus tai korotus',
         titleEdit: 'Muokkaa alennusta tai korotusta',
@@ -1869,6 +1871,8 @@ export const fi = {
       title: 'Tulotiedot',
       itemHeader: 'Tulotiedot ajalle',
       itemHeaderNew: 'Uusi tulotieto',
+      lastModifiedAt: (date: string) => `Viimeksi muokattu ${date}`,
+      lastModifiedBy: (name: string) => `Muokkaaja: ${name}`,
       details: {
         attachments: 'Liitteet',
         name: 'Nimi',
