@@ -86,6 +86,7 @@ import ReportFamilyContacts from './components/reports/FamilyContacts'
 import FamilyDaycareMealCount from './components/reports/FamilyDaycareMealCount'
 import FuturePreschoolersReport from './components/reports/FuturePreschoolersReport'
 import HolidayPeriodAttendanceReport from './components/reports/HolidayPeriodAttendanceReport'
+import IncompleteIncomes from './components/reports/IncompleteIncomeReport'
 import ReportInvoices from './components/reports/Invoices'
 import ManualDuplicationReport from './components/reports/ManualDuplicationReport'
 import MealReport from './components/reports/MealReport'
@@ -853,6 +854,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <TitaniaErrors />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/incomplete-income',
+          element: (
+            <EmployeeRoute title="reports">
+              <IncompleteIncomes />
             </EmployeeRoute>
           )
         },

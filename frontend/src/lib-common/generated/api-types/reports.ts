@@ -444,6 +444,18 @@ export interface HolidayPeriodAttendanceReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.IncompleteIncomeDbRow
+*/
+export interface IncompleteIncomeDbRow {
+  careareaName: string
+  daycareName: string
+  firstName: string
+  lastName: string
+  personId: UUID
+  validFrom: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.InvoiceReport
 */
 export interface InvoiceReport {
@@ -796,6 +808,7 @@ export type Report =
   | 'FAMILY_DAYCARE_MEAL_REPORT'
   | 'HOLIDAY_PERIOD_ATTENDANCE'
   | 'INVOICE'
+  | 'INCOMPLETE_INCOMES'
   | 'MANUAL_DUPLICATION'
   | 'MISSING_HEAD_OF_FAMILY'
   | 'MISSING_SERVICE_NEED'
@@ -1122,6 +1135,14 @@ export function deserializeJsonHolidayPeriodAttendanceReportRow(json: JsonOf<Hol
   return {
     ...json,
     date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonIncompleteIncomeDbRow(json: JsonOf<IncompleteIncomeDbRow>): IncompleteIncomeDbRow {
+  return {
+    ...json,
+    validFrom: LocalDate.parseIso(json.validFrom)
   }
 }
 

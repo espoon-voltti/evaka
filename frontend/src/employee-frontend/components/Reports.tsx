@@ -218,6 +218,19 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
+            reports.has('INCOMPLETE_INCOMES')
+              ? {
+                  name: i18n.reports.incompleteIncomes.title,
+                  item: (
+                    <Report
+                      path="/reports/incomplete-income"
+                      color={colors.status.warning}
+                      icon={faEuroSign}
+                      i18n={i18n.reports.incompleteIncomes}
+                    />
+                  )
+                }
+              : null,
             reports.has('UNITS')
               ? {
                   name: i18n.reports.units.title,

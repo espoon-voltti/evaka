@@ -3911,6 +3911,15 @@ export const fi = {
       caretakers: 'Kasvattajia',
       missingCaretakersLegend: 'kasvattajien lukumäärä puuttuu'
     },
+    incompleteIncomes: {
+      title: 'Puuttuvat tulotiedot',
+      description:
+        'Raportti vanhemmista, joiden tulotiedot ovat vanhentuneet, mutta lapsella on vielä sijoitus aktiivinen.',
+      validFrom: 'Alkupäivämäärä',
+      fullName: 'Nimi',
+      daycareName: 'Päiväkoti',
+      careareaName: 'Palvelualue'
+    },
     invoices: {
       title: 'Laskujen täsmäytys',
       description:

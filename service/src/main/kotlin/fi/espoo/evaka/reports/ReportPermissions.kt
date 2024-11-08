@@ -29,6 +29,7 @@ enum class Report {
     FAMILY_DAYCARE_MEAL_REPORT,
     HOLIDAY_PERIOD_ATTENDANCE,
     INVOICE,
+    INCOMPLETE_INCOMES,
     MANUAL_DUPLICATION,
     MISSING_HEAD_OF_FAMILY,
     MISSING_SERVICE_NEED,
@@ -135,6 +136,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     Report.FAMILY_DAYCARE_MEAL_REPORT.takeIf {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_FAMILY_DAYCARE_MEAL_REPORT
+                        )
+                    },
+                    Report.INCOMPLETE_INCOMES.takeIf {
+                        permittedGlobalActions.contains(
+                            Action.Global.READ_INCOMPLETE_INCOMES_REPORT
                         )
                     },
                     Report.INVOICE.takeIf {

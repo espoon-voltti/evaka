@@ -30,6 +30,7 @@ import { FamilyDaycareMealReportResult } from 'lib-common/generated/api-types/re
 import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { FuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import { HolidayPeriodAttendanceReportRow } from 'lib-common/generated/api-types/reports'
+import { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
 import { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -74,6 +75,7 @@ import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/ap
 import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonHolidayPeriodAttendanceReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonIncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
@@ -512,6 +514,18 @@ export async function getHolidayPeriodAttendanceReport(
     params
   })
   return json.map(e => deserializeJsonHolidayPeriodAttendanceReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.IncompleteIncomeReport.getIncompleteIncomeReport
+*/
+export async function getIncompleteIncomeReport(): Promise<IncompleteIncomeDbRow[]> {
+  const { data: json } = await client.request<JsonOf<IncompleteIncomeDbRow[]>>({
+    url: uri`/employee/reports/incomplete-income`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonIncompleteIncomeDbRow(e))
 }
 
 
