@@ -326,6 +326,7 @@ enum class Audit(
     IncomeStatementsOfChild,
     IncomeStatementStartDates,
     IncomeStatementStartDatesOfChild,
+    IncompleteIncomeReportRead,
     InvoiceCorrectionsCreate,
     InvoiceCorrectionsDelete,
     InvoiceCorrectionsNoteUpdate,

@@ -447,9 +447,7 @@ export interface HolidayPeriodAttendanceReportRow {
 * Generated from fi.espoo.evaka.reports.IncompleteIncomeDbRow
 */
 export interface IncompleteIncomeDbRow {
-  careareaId: string
   careareaName: string
-  daycareId: string
   daycareName: string
   firstName: string
   lastName: string

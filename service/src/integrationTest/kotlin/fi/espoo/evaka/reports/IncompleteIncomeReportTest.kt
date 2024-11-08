@@ -6,13 +6,12 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -31,7 +30,7 @@ import org.junit.jupiter.api.Test
 
 class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
 
-    val testArea = DevCareArea(id = AreaId(UUID.randomUUID()), name = "Test Area", areaCode = 200)
+    val testArea = DevCareArea()
 
     val testDaycare =
         DevDaycare(
@@ -90,7 +89,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             effect = IncomeEffect.INCOMPLETE,
             validFrom = LocalDate.of(2024, 10, 15),
             validTo = null,
-            updatedBy = EvakaUserId(UUID.fromString("00000000-0000-0000-0000-000000000000")),
+            modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
         )
 
     val testIncomeUserEdited =
@@ -100,7 +99,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             effect = IncomeEffect.INCOMPLETE,
             validFrom = LocalDate.of(2024, 10, 15),
             validTo = null,
-            updatedBy = testDecisionMaker_2.evakaUserId,
+            modifiedBy = testDecisionMaker_2.evakaUserId,
         )
 
     val children =
