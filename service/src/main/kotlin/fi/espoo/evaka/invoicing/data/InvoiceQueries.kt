@@ -274,13 +274,13 @@ JOIN invoice ON invoice_ids.id = invoice.id
 JOIN person as head ON invoice.head_of_family = head.id
 JOIN LATERAL (
     SELECT
-        jsonb_agg(jsonb_build_object(
+        jsonb_agg(DISTINCT jsonb_build_object(
             'id', row.child,
             'dateOfBirth', child.date_of_birth,
             'firstName', child.first_name,
             'lastName', child.last_name,
             'ssn', child.social_security_number
-        ) ORDER BY row.idx) AS children,
+        )) AS children,
         SUM(row.amount * row.unit_price) AS total_price
     FROM invoice_row AS row
     JOIN person AS child ON row.child = child.id
