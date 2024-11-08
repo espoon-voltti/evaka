@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -34,7 +34,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -74,10 +73,12 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
-class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var generator: InvoiceGenerator
+
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
-    private val featureConfig: FeatureConfig = testFeatureConfig
 
     private fun invoiceGenerator(
         featureConfig: FeatureConfig = this.featureConfig,
@@ -86,10 +87,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         InvoiceGenerator(
             DraftInvoiceGenerator(productProvider, featureConfig),
             featureConfig,
+            evakaEnv,
             invoiceGenerationLogicChooser,
         )
-
-    private val generator: InvoiceGenerator = invoiceGenerator()
 
     @BeforeEach
     fun beforeEach() {
@@ -132,7 +132,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -170,7 +170,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -202,7 +202,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -245,7 +245,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -292,7 +292,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -347,7 +347,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -402,7 +402,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result =
             db.read { it.getAllInvoices() }.sortedBy { it.headOfFamily.id == testAdult_2.id }
@@ -448,7 +448,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -467,7 +467,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val nonTemporaryPeriod = FiniteDateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
         db.transaction(insertPlacement(testChild_1.id, nonTemporaryPeriod))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -526,7 +526,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -592,7 +592,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -676,7 +676,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -753,7 +753,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -840,7 +840,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -927,7 +927,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1010,7 +1010,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1086,7 +1086,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1161,7 +1161,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1244,7 +1244,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1323,7 +1323,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1408,7 +1408,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1441,7 +1441,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1483,7 +1483,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1522,7 +1522,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), forceMajeure + sickLeave)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -1570,7 +1570,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1596,7 +1596,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1630,7 +1630,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1670,7 +1670,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1713,7 +1713,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1739,7 +1739,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1773,7 +1773,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays, child = testChild_2)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1813,7 +1813,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(periods, absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, YearMonth.of(2019, 1)) }
+        db.transaction { generator.generateAllDraftInvoices(it, YearMonth.of(2019, 1)) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1878,7 +1878,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         initDataForAbsences(periods, absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, YearMonth.of(2019, 1)) }
+        db.transaction { generator.generateAllDraftInvoices(it, YearMonth.of(2019, 1)) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -1946,7 +1946,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -1993,7 +1993,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2065,7 +2065,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 2 more operational days
         insertAbsences(testChild_1.id, plannedAbsenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2121,7 +2121,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2168,7 +2168,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator =
             invoiceGenerator(featureConfig.copy(unplannedAbsencesAreContractSurplusDays = false))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2225,7 +2225,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .map { it to AbsenceType.PLANNED_ABSENCE },
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2275,7 +2275,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2317,7 +2317,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2353,7 +2353,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2423,7 +2423,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2476,7 +2476,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
@@ -2494,7 +2494,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -2536,7 +2536,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2570,7 +2570,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2605,7 +2605,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2679,7 +2679,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             },
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2728,7 +2728,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
@@ -2761,7 +2761,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2806,7 +2806,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             shiftCare = ShiftCareType.FULL,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2848,7 +2848,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2890,7 +2890,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2935,7 +2935,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             shiftCare = ShiftCareType.FULL,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -2980,7 +2980,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3041,7 +3041,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions, shiftCare = ShiftCareType.FULL)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3114,7 +3114,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions, shiftCare = ShiftCareType.FULL)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3170,7 +3170,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(LocalDate.of(2021, 1, 5) to AbsenceType.FORCE_MAJEURE),
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3224,7 +3224,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(LocalDate.of(2021, 1, 31) to AbsenceType.FORCE_MAJEURE),
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3275,7 +3275,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             datesBetween(period.start, period.end).map { it to AbsenceType.FORCE_MAJEURE },
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3307,7 +3307,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(weekEnd), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
@@ -3559,7 +3559,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(period, PlacementType.PRESCHOOL)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -3574,7 +3574,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(period, PlacementType.PREPARATORY)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -3589,7 +3589,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(period, PlacementType.CLUB)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -3606,7 +3606,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertGuardian(testAdult_2.id, testChild_1.id)
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -3622,7 +3622,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initByPeriodAndPlacementType(period, PlacementType.DAYCARE, partner = testAdult_2.id)
         db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -3646,7 +3646,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertGuardian(testAdult_1.id, testChild_2.id)
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -3673,7 +3673,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3736,7 +3736,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3795,7 +3795,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 },
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3862,7 +3862,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // freeSickLeaveOnContractDays = false
         // ==> 50 % discount because this case is considered a normal full month of absences
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3930,7 +3930,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // freeSickLeaveOnContractDays = true
         // ==> 100 % discount because this case is considered a full month of sick leaves
         val generator = invoiceGenerator(featureConfig.copy(freeSickLeaveOnContractDays = true))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -3987,7 +3987,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator =
             invoiceGenerator(featureConfig.copy(useContractDaysAsDailyFeeDivisor = false))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4046,7 +4046,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // Override useContractDaysAsDailyFeeDivisor
         val generator =
             invoiceGenerator(featureConfig.copy(useContractDaysAsDailyFeeDivisor = false))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4108,7 +4108,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // Override useContractDaysAsDailyFeeDivisor
         val generator =
             invoiceGenerator(featureConfig.copy(useContractDaysAsDailyFeeDivisor = false))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4177,7 +4177,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoiceGenerator(featureConfig.copy(useContractDaysAsDailyFeeDivisor = false))
         // freeSickLeaveOnContractDays = false
         // ==> 50 % discount because this case is considered a normal full month of absences
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4244,7 +4244,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // Override useContractDaysAsDailyFeeDivisor
         val generator =
             invoiceGenerator(featureConfig.copy(useContractDaysAsDailyFeeDivisor = false))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4314,7 +4314,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4364,7 +4364,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4405,7 +4405,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // Override to use 20 as the daily fee divisor
         val generator =
             invoiceGenerator(featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4447,7 +4447,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // Override to use 20 as the daily fee divisor
         val generator =
             invoiceGenerator(featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4497,7 +4497,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // Override to use 20 as the daily fee divisor
         val generator =
             invoiceGenerator(featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4590,9 +4590,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
         assertResult(db.read { it.getAllInvoices() })
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
         assertResult(db.read { it.getAllInvoices() })
     }
 
@@ -4642,7 +4642,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4692,7 +4692,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays15,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4762,7 +4762,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // ==> 100 % discount because this case is considered a full month of sick leaves
         val generator = invoiceGenerator(featureConfig.copy(freeSickLeaveOnContractDays = true))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4828,7 +4828,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             serviceNeed = snDaycareContractDays10,
         )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4864,7 +4864,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // no planned absences
         initDataForAbsences(listOf(period), listOf(), serviceNeed = snDaycareContractDays15)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -4922,7 +4922,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     useContractDaysAsDailyFeeDivisor = false,
                 )
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5000,7 +5000,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     useContractDaysAsDailyFeeDivisor = false,
                 )
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5051,7 +5051,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5114,7 +5114,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5175,7 +5175,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // Override maxContractDaySurplusThreshold feature config
         val generator = invoiceGenerator(featureConfig.copy(maxContractDaySurplusThreshold = 16))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5223,7 +5223,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // Override maxContractDaySurplusThreshold feature config
         val generator = invoiceGenerator(featureConfig.copy(maxContractDaySurplusThreshold = 16))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5273,7 +5273,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5332,7 +5332,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     maxContractDaySurplusThreshold = 16,
                 )
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5391,7 +5391,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     maxContractDaySurplusThreshold = 16,
                 )
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5457,7 +5457,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     maxContractDaySurplusThreshold = 16,
                 )
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5535,7 +5535,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     maxContractDaySurplusThreshold = 16,
                 )
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5579,7 +5579,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), forceMajeure + free)
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5612,7 +5612,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // Override freeAbsenceGivesADailyRefund feature config
         val generator = invoiceGenerator(featureConfig.copy(freeAbsenceGivesADailyRefund = false))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5644,7 +5644,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // Override freeAbsenceGivesADailyRefund feature config
         val generator = invoiceGenerator(featureConfig.copy(freeAbsenceGivesADailyRefund = false))
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(1, result.size)
@@ -5680,7 +5680,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     }
             )
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
         assertEquals(0, result.size)
@@ -5724,7 +5724,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, month) }
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
 
         val result = db.read { it.getAllInvoices() }
 
@@ -5857,7 +5857,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoiceGenerator(
                 featureConfig.copy(freeJulyStartOnSeptember = freeJulyStartOnSeptember)
             )
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, invoicingMonth) }
+        db.transaction { generator.generateAllDraftInvoices(it, invoicingMonth) }
     }
 
     private fun initDataForAbsences(

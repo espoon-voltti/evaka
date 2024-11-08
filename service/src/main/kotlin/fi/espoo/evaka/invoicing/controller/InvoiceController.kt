@@ -79,7 +79,12 @@ class InvoiceController(
                             pageSize = 200,
                             body.sortBy ?: InvoiceSortParam.STATUS,
                             body.sortDirection ?: SortDirection.DESC,
-                            body.status ?: emptyList(),
+                            body.status
+                                ?: listOf(
+                                    InvoiceStatus.DRAFT,
+                                    InvoiceStatus.WAITING_FOR_SENDING,
+                                    InvoiceStatus.SENT,
+                                ),
                             body.area ?: emptyList(),
                             body.unit,
                             body.distinctions ?: emptyList(),
@@ -129,7 +134,7 @@ class InvoiceController(
                     Action.Global.CREATE_DRAFT_INVOICES,
                 )
                 val firstOfLastMonth = clock.today().withDayOfMonth(1).minusMonths(1)
-                generator.createAndStoreAllDraftInvoices(
+                generator.generateAllDraftInvoices(
                     it,
                     YearMonth.of(firstOfLastMonth.year, firstOfLastMonth.month),
                 )

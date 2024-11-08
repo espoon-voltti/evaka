@@ -235,48 +235,21 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `search works with canceled status parameter`() {
-        db.transaction { tx -> tx.insert(testInvoices) }
-        val canceled = testInvoices.filter { it.status == InvoiceStatus.CANCELED }
-
-        val result =
-            searchInvoices(SearchInvoicesRequest(page = 1, status = listOf(InvoiceStatus.CANCELED)))
-
-        assertEqualEnough(canceled.map(::toSummary), result)
-    }
-
-    @Test
     fun `search works with multiple status parameters`() {
         db.transaction { tx -> tx.insert(testInvoices) }
-        val sentAndCanceled =
+        val sentAndDraft =
             testInvoices.filter {
-                it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.CANCELED
+                it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.DRAFT
             }
 
         val result =
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
-                    status = listOf(InvoiceStatus.SENT, InvoiceStatus.CANCELED),
+                    status = listOf(InvoiceStatus.SENT, InvoiceStatus.DRAFT),
                 )
             )
-        assertEqualEnough(sentAndCanceled.map(::toSummary), result)
-    }
-
-    @Test
-    fun `search works with all status parameters`() {
-        val testInvoiceSubset = testInvoices.take(2)
-        db.transaction { tx -> tx.insert(testInvoiceSubset) }
-        val invoices = testInvoiceSubset.sortedBy { it.status }.reversed()
-
-        val result =
-            searchInvoices(
-                SearchInvoicesRequest(
-                    page = 1,
-                    status = listOf(InvoiceStatus.DRAFT, InvoiceStatus.SENT, InvoiceStatus.CANCELED),
-                )
-            )
-        assertEqualEnough(invoices.map(::toSummary), result)
+        assertEqualEnough(sentAndDraft.map(::toSummary), result)
     }
 
     @Test
@@ -819,6 +792,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         InvoiceDetailed(
             id = invoice.id,
             status = invoice.status,
+            revisionNumber = invoice.revisionNumber,
+            replacedInvoiceId = invoice.replacedInvoiceId,
             periodStart = invoice.periodStart,
             periodEnd = invoice.periodEnd,
             dueDate = invoice.dueDate,
@@ -866,6 +841,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         InvoiceSummary(
             id = invoice.id,
             status = invoice.status,
+            revisionNumber = invoice.revisionNumber,
             periodStart = invoice.periodStart,
             periodEnd = invoice.periodEnd,
             headOfFamily = allAdults.find { it.id == invoice.headOfFamilyId }!!.toPersonDetailed(),

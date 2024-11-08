@@ -648,6 +648,8 @@ export interface DevInvoice {
   number: number | null
   periodEnd: LocalDate
   periodStart: LocalDate
+  replacedInvoiceId: UUID | null
+  revisionNumber: number
   rows: DevInvoiceRow[]
   sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
