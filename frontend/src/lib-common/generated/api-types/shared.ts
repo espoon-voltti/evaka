@@ -74,6 +74,7 @@ export interface EmployeeFeatures {
   personalMobileDevice: boolean
   pinCode: boolean
   placementTool: boolean
+  replacementInvoices: boolean
   reports: boolean
   settings: boolean
   submitPatuReport: boolean

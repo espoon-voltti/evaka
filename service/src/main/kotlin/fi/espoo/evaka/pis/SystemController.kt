@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.anyUnitHasFeature
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -51,6 +52,7 @@ class SystemController(
     private val personService: PersonService,
     private val accessControl: AccessControl,
     private val accessControlCitizen: AccessControlCitizen,
+    private val env: EvakaEnv,
     private val webPush: WebPush?,
 ) {
     @PostMapping("/system/citizen-login")
@@ -226,6 +228,7 @@ class SystemController(
                                 permittedGlobalActions.contains(Action.Global.SUBMIT_PATU_REPORT),
                             placementTool =
                                 permittedGlobalActions.contains(Action.Global.PLACEMENT_TOOL),
+                            replacementInvoices = env.replacementInvoicesStart != null,
                         )
 
                     EmployeeUserResponse(
