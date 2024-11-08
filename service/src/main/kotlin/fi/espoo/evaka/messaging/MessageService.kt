@@ -250,7 +250,7 @@ class MessageService(
             val isApplication = applicationId != null
             val validRecipients =
                 db.read { it.getCitizenReceivers(today, senderAccount) }
-                    .mapValues { entry -> entry.value.map { it.id }.toSet() }
+                    .mapValues { entry -> entry.value.reply.map { it.id }.toSet() }
             val allRecipientsValid =
                 recipientAccountIds.all { recipient ->
                     children.any { child -> validRecipients[child]?.contains(recipient) ?: false }

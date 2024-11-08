@@ -171,9 +171,9 @@ export default React.memo(function MessageEditor({
         selectedChildrenInSameUnit &&
         message.children.some(
           (childId) =>
-            receiverOptions.childrenToMessageAccounts[childId]?.includes(
-              account.id
-            ) ?? false
+            receiverOptions.childrenToMessageAccounts[
+              childId
+            ]?.newMessage.includes(account.id) ?? false
         )
     )
     const [primary, secondary] = partition(accounts, isPrimaryRecipient)
@@ -259,7 +259,8 @@ export default React.memo(function MessageEditor({
                                       (childId) =>
                                         receiverOptions.childrenToMessageAccounts[
                                           childId
-                                        ]?.includes(accountId) ?? false
+                                        ]?.newMessage.includes(accountId) ??
+                                        false
                                     )
                                 )
                                 setMessage((message) => ({

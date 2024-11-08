@@ -16,6 +16,7 @@ import styled, { css } from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import {
+  ChildMessageAccountAccess,
   CitizenMessageThread,
   Message,
   MessageAccount
@@ -211,7 +212,7 @@ const SingleMessage = React.memo(
 interface Props {
   accountId: UUID
   thread: CitizenMessageThread.Regular
-  allowedReplyAccounts: Record<string, string[]>
+  allowedAccounts: Record<UUID, ChildMessageAccountAccess>
   closeThread: () => void
   onThreadDeleted: () => void
 }
@@ -233,7 +234,7 @@ export default React.memo(
         sensitive,
         children
       },
-      allowedReplyAccounts,
+      allowedAccounts,
       closeThread,
       onThreadDeleted
     }: Props,
@@ -290,11 +291,11 @@ export default React.memo(
       // applications don't have children, enable reply for them
       if (children.length === 0) return true
 
-      const allowedAccounts = new Set(
-        children.flatMap((c) => allowedReplyAccounts[c.childId])
+      const allowedReplyAccounts = new Set(
+        children.flatMap((c) => allowedAccounts[c.childId]?.reply ?? [])
       )
-      return recipients.every((r) => allowedAccounts.has(r.id))
-    }, [allowedReplyAccounts, children, recipients])
+      return recipients.every((r) => allowedReplyAccounts.has(r.id))
+    }, [allowedAccounts, children, recipients])
 
     return (
       <ThreadContainer data-qa="thread-reader">
