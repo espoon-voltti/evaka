@@ -302,37 +302,38 @@ export const fi = {
   },
   applications: {
     list: {
-      title: 'Hakemukset',
-      resultCount: 'Hakutuloksia',
-      noResults: 'Ei hakutuloksia',
-      type: 'Hakutyyppi',
-      subtype: 'Osa / Koko',
+      addNote: 'Lisää muistiinpano',
       areaPlaceholder: 'Valitse alue',
+      basis: 'Perusteet',
+      currentUnit: 'Nyk.',
+      dueDate: 'Käsiteltävä',
+      name: 'Lapsen nimi/ikä',
+      noResults: 'Ei hakutuloksia',
+      note: 'Huom',
+      paper: 'Paperihakemus',
+      resultCount: 'Hakutuloksia',
+      serviceWorkerNote: 'Palveluohjauksen huomio',
+      startDate: 'Aloitus',
+      status: 'Tila',
+      statusLastModified: 'Tila viimeksi muokattu',
+      subtype: 'Osa / Koko',
+      title: 'Hakemukset',
+      transfer: 'Siirtohakemus',
       transferFilter: {
         title: 'Siirtohakemukset',
         transferOnly: 'Näytä vain siirtohakemukset',
         hideTransfer: 'Piilota siirtohakemukset',
         all: 'Ei rajausta'
       },
+      type: 'Hakutyyppi',
+      unit: 'Yksikkö',
       voucherFilter: {
         title: 'Palvelusetelihakemukset',
         firstChoice: 'Näytä jos 1. hakutoiveena',
         allVoucher: 'Näytä kaikki palvelusetelihakemukset',
         hideVoucher: 'Piilota palvelusetelihakemukset',
         noFilter: 'Ei rajausta'
-      },
-      transfer: 'Siirtohakemus',
-      paper: 'Paperihakemus',
-      name: 'Lapsen nimi/ikä',
-      dueDate: 'Käsiteltävä',
-      startDate: 'Aloitus',
-      unit: 'Yksikkö',
-      status: 'Tila',
-      note: 'Huom',
-      basis: 'Perusteet',
-      currentUnit: 'Nyk.',
-      addNote: 'Lisää muistiinpano',
-      serviceWorkerNote: 'Palveluohjauksen huomio'
+      }
     },
     actions: {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
@@ -2220,15 +2221,17 @@ export const fi = {
       application: 'Hakemus'
     },
     placementProposals: {
-      title: 'Sijoitusehdotukset',
-      name: 'Nimi',
-      birthday: 'Syntymäaika',
-      placementDuration: 'Sijoitettu yksikköön',
-      type: 'Toimintamuoto',
-      subtype: 'Osa/Koko',
-      application: 'Hakemus',
-      confirmation: 'Hyväksyntä',
       acceptAllButton: 'Vahvista valinnat',
+      application: 'Hakemus',
+      birthday: 'Syntymäaika',
+      citizenHasRejectedPlacement: 'Paikka hylätty',
+      confirmation: 'Hyväksyntä',
+      describeOtherReason: 'Kirjoita perustelu',
+      infoText:
+        'Merkitse lapset, jotka pystyt ottamaan vastaan. Kun olet hyväksynyt kaikki lapset voit painaa Vahvista hyväksytyt -nappia. Mikäli et pysty hyväksymään kaikkia lapsia, merkitse rasti ja lisää perustelu. Palveluohjaus tekee tällöin uuden sijoitusehdotuksen tai ottaa yhteyttä.',
+      infoTitle: 'Hyväksytyksi / hylätyksi merkitseminen',
+      name: 'Nimi',
+      placementDuration: 'Sijoitettu yksikköön',
       rejectTitle: 'Valitse palautuksen syy',
       rejectReasons: {
         REASON_1:
@@ -2238,11 +2241,12 @@ export const fi = {
         REASON_3: '',
         OTHER: 'Muu syy'
       },
-      infoTitle: 'Hyväksytyksi / hylätyksi merkitseminen',
-      infoText:
-        'Merkitse lapset, jotka pystyt ottamaan vastaan. Kun olet hyväksynyt kaikki lapset voit painaa Vahvista hyväksytyt -nappia. Mikäli et pysty hyväksymään kaikkia lapsia, merkitse rasti ja lisää perustelu. Palveluohjaus tekee tällöin uuden sijoitusehdotuksen tai ottaa yhteyttä.',
-      describeOtherReason: 'Kirjoita perustelu',
-      citizenHasRejectedPlacement: 'Paikka hylätty'
+      statusLastModified: (name: string, date: string) =>
+        `Viimeksi muokattu ${date}. Muokkaaja: ${name}`,
+      subtype: 'Osa/Koko',
+      title: 'Sijoitusehdotukset',
+      type: 'Toimintamuoto',
+      unknown: 'Ei tiedossa'
     },
     applications: {
       title: 'Hakemukset',

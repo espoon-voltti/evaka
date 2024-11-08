@@ -15,6 +15,7 @@ import { DecisionDraft } from './decision'
 import { DecisionStatus } from './decision'
 import { DecisionType } from './decision'
 import { DecisionUnit } from './decision'
+import { EvakaUser } from './user'
 import { FinanceDecisionType } from './invoicing'
 import { JsonOf } from '../../json'
 import { PersonJSON } from './pis'
@@ -638,6 +639,8 @@ export interface PlacementProposalConfirmationUpdate {
 * Generated from fi.espoo.evaka.application.PlacementProposalStatus
 */
 export interface PlacementProposalStatus {
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: EvakaUser | null
   unitConfirmationStatus: PlacementPlanConfirmationStatus
   unitRejectOtherReason: string | null
   unitRejectReason: PlacementPlanRejectReason | null
@@ -859,6 +862,7 @@ export function deserializeJsonApplicationSummary(json: JsonOf<ApplicationSummar
     dateOfBirth: (json.dateOfBirth != null) ? LocalDate.parseIso(json.dateOfBirth) : null,
     dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
     placementPlanStartDate: (json.placementPlanStartDate != null) ? LocalDate.parseIso(json.placementPlanStartDate) : null,
+    placementProposalStatus: (json.placementProposalStatus != null) ? deserializeJsonPlacementProposalStatus(json.placementProposalStatus) : null,
     startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
   }
 }
@@ -1025,6 +1029,14 @@ export function deserializeJsonPersonApplicationSummary(json: JsonOf<PersonAppli
     ...json,
     preferredStartDate: (json.preferredStartDate != null) ? LocalDate.parseIso(json.preferredStartDate) : null,
     sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
+  }
+}
+
+
+export function deserializeJsonPlacementProposalStatus(json: JsonOf<PlacementProposalStatus>): PlacementProposalStatus {
+  return {
+    ...json,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
   }
 }
 

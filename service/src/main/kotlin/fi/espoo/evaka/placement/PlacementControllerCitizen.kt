@@ -149,7 +149,7 @@ class PlacementControllerCitizen(
                         }
 
                         val cancelableTransferApplicationIds =
-                            tx.cancelAllActiveTransferApplications(childId)
+                            tx.cancelAllActiveTransferApplications(childId, clock, user.evakaUserId)
 
                         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                             childId,
