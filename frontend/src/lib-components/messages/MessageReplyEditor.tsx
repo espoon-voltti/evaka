@@ -138,10 +138,11 @@ function MessageReplyEditor<T, R>({
           />
         </ButtonContainer>
       </EditorRow>
-      <SessionExpiredModal
-        isOpen={showSessionExpiredModal}
-        onClose={() => setShowSessionExpiredModal(false)}
-      />
+      {showSessionExpiredModal && (
+        <SessionExpiredModal
+          onClose={() => setShowSessionExpiredModal(false)}
+        />
+      )}
     </>
   )
 }

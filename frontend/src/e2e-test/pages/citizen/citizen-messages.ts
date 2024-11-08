@@ -23,7 +23,7 @@ export class MockStrongAuthPage {
   }
 }
 export default class CitizenMessagesPage {
-  #messageReplyContent: TextInput
+  messageReplyContent: TextInput
   #threadListItem: Element
   #threadTitle: Element
   #redactedThreadTitle: Element
@@ -38,7 +38,7 @@ export default class CitizenMessagesPage {
   newMessageButton: Element
   fileUpload: Element
   constructor(private readonly page: Page) {
-    this.#messageReplyContent = new TextInput(
+    this.messageReplyContent = new TextInput(
       page.findByDataQa('message-reply-content')
     )
     this.#threadListItem = page.findByDataQa('thread-list-item')
@@ -97,9 +97,6 @@ export default class CitizenMessagesPage {
       )
       .assertTextEquals('Viesti lähetetty')
   }
-  async assertThreadMessagesEqual(messages: string[]) {
-    await this.#threadContent.assertTextsEqual(messages)
-  }
 
   async assertThreadContent(message: {
     title: string
@@ -144,24 +141,14 @@ export default class CitizenMessagesPage {
     await this.discardMessageButton.click()
   }
 
-  async fillReplyContent(content: string) {
-    await this.#messageReplyContent.fill(content)
-  }
-
-  async assertReplyContentIsEmpty() {
-    return this.#messageReplyContent.assertTextEquals('')
-  }
   async replyToFirstThread(content: string) {
     await this.startReplyToFirstThread()
-    await this.#messageReplyContent.fill(content)
+    await this.messageReplyContent.fill(content)
     await this.sendReply()
   }
   async startReplyToFirstThread() {
     await this.#threadListItem.click()
     await this.#openReplyEditorButton.click()
-  }
-  getReplyContentElement() {
-    return this.#messageReplyContent
   }
   async sendReply() {
     await this.#sendReplyButton.click()

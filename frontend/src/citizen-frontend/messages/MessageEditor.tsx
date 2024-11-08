@@ -443,10 +443,11 @@ export default React.memo(function MessageEditor({
           </FormArea>
         </Container>
       </FocusLock>
-      <SessionExpiredModal
-        isOpen={showSessionExpiredModal}
-        onClose={() => setShowSessionExpiredModal(false)}
-      />
+      {showSessionExpiredModal && (
+        <SessionExpiredModal
+          onClose={() => setShowSessionExpiredModal(false)}
+        />
+      )}
     </ModalAccessibilityWrapper>
   )
 })

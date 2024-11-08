@@ -686,11 +686,11 @@ describe('Sending and receiving messages', () => {
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.openFirstThreadReplyEditor()
         await citizenMessagesPage.discardMessageButton.waitUntilVisible()
-        await citizenMessagesPage.fillReplyContent(defaultContent)
+        await citizenMessagesPage.messageReplyContent.fill(defaultContent)
         await citizenMessagesPage.discardReplyEditor()
         await citizenMessagesPage.discardMessageButton.waitUntilHidden()
         await citizenMessagesPage.openFirstThreadReplyEditor()
-        await citizenMessagesPage.assertReplyContentIsEmpty()
+        await citizenMessagesPage.messageReplyContent.assertTextEquals('')
       })
 
       test('Citizen can reply to a thread and receive a notification on success', async () => {
@@ -745,11 +745,12 @@ describe('Sending and receiving messages', () => {
           }
         })
         // typing this takes so long that session keepalive mechanism should renew the session
-        await citizenMessagesPage
-          .getReplyContentElement()
-          .locator.pressSequentially(slowTypedText, {
+        await citizenMessagesPage.messageReplyContent.locator.pressSequentially(
+          slowTypedText,
+          {
             delay: msDelayPerCharToTypeSlowly
-          })
+          }
+        )
 
         const finalExpiry = await citizenMessagesPage.getSessionExpiry()
         expect(authStatusRequests.length).toBeGreaterThanOrEqual(3)

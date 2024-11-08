@@ -895,10 +895,11 @@ export default React.memo(function MessageEditor({
         </Container>
       </FullScreenContainer>
 
-      <SessionExpiredModal
-        isOpen={showSessionExpiredModal}
-        onClose={() => setShowSessionExpiredModal(false)}
-      />
+      {showSessionExpiredModal && (
+        <SessionExpiredModal
+          onClose={() => setShowSessionExpiredModal(false)}
+        />
+      )}
     </>
   )
 })
