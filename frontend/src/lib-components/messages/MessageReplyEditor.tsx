@@ -9,6 +9,7 @@ import { AccountType } from 'lib-common/generated/api-types/messaging'
 import { type cancelMutation, MutationDescription } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
 import { faTrash } from 'lib-icons'
 
 import { MutateButton } from '../atoms/buttons/MutateButton'
@@ -16,6 +17,7 @@ import TextArea from '../atoms/form/TextArea'
 import { useTranslations } from '../i18n'
 import ButtonContainer from '../layout/ButtonContainer'
 import { Label } from '../typography'
+import { useKeepSessionAlive } from '../useKeepSessionAlive'
 import { defaultMargins } from '../white-space'
 
 import { ToggleableRecipient } from './ToggleableRecipient'
@@ -54,6 +56,7 @@ interface Props<T, R> {
   replyContent: string
   sendEnabled: boolean
   messageThreadSensitive?: boolean
+  sessionKeepAlive?: () => Promise<boolean>
 }
 
 function MessageReplyEditor<T, R>({
@@ -66,9 +69,16 @@ function MessageReplyEditor<T, R>({
   recipients,
   replyContent,
   sendEnabled,
-  messageThreadSensitive = false
+  messageThreadSensitive = false,
+  sessionKeepAlive
 }: Props<T, R>) {
   const i18n = useTranslations()
+  const {
+    keepSessionAlive,
+    showSessionExpiredModal,
+    setShowSessionExpiredModal
+  } = useKeepSessionAlive(sessionKeepAlive ?? (() => Promise.resolve(true)))
+
   const handleSuccess = useCallback(
     (response: R) => {
       onUpdateContent('')
@@ -76,6 +86,7 @@ function MessageReplyEditor<T, R>({
     },
     [onUpdateContent, onSuccess]
   )
+
   return (
     <>
       <EditorRow>
@@ -100,6 +111,7 @@ function MessageReplyEditor<T, R>({
           }
           value={replyContent}
           onChange={(value) => onUpdateContent(value)}
+          onKeyUp={keepSessionAlive}
           data-qa="message-reply-content"
           autoFocus
           preventAutoFocusScroll={true}
@@ -126,6 +138,11 @@ function MessageReplyEditor<T, R>({
           />
         </ButtonContainer>
       </EditorRow>
+      {showSessionExpiredModal && (
+        <SessionExpiredModal
+          onClose={() => setShowSessionExpiredModal(false)}
+        />
+      )}
     </>
   )
 }

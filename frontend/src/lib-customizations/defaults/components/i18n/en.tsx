@@ -116,6 +116,13 @@ const components: Translations = {
     messagePlaceholder: undefined,
     messagePlaceholderSensitiveThread: undefined
   },
+  sessionTimeout: {
+    sessionExpiredTitle: 'Your session has timed out',
+    sessionExpiredMessage:
+      'Please make note of any message you have typed and log in again.',
+    goToLoginPage: 'Go to login page',
+    cancel: 'Cancel'
+  },
   notifications: {
     close: 'Close'
   },

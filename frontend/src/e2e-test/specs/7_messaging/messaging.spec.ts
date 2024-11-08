@@ -686,11 +686,11 @@ describe('Sending and receiving messages', () => {
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.openFirstThreadReplyEditor()
         await citizenMessagesPage.discardMessageButton.waitUntilVisible()
-        await citizenMessagesPage.fillReplyContent(defaultContent)
+        await citizenMessagesPage.messageReplyContent.fill(defaultContent)
         await citizenMessagesPage.discardReplyEditor()
         await citizenMessagesPage.discardMessageButton.waitUntilHidden()
         await citizenMessagesPage.openFirstThreadReplyEditor()
-        await citizenMessagesPage.assertReplyContentIsEmpty()
+        await citizenMessagesPage.messageReplyContent.assertTextEquals('')
       })
 
       test('Citizen can reply to a thread and receive a notification on success', async () => {
@@ -711,6 +711,50 @@ describe('Sending and receiving messages', () => {
           'message-sent-notification',
           'Viesti lähetetty'
         )
+      })
+
+      test('Citizen session is kept alive as long as user keeps typing', async () => {
+        await openSupervisorPage(mockedDateAt10)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        await openCitizen(mockedDateAt11)
+
+        await citizenPage.goto(config.enduserMessagesUrl)
+        await citizenPage.page.evaluate(() => {
+          if (window.evaka) window.evaka.keepSessionAliveThrottleTime = 300 // Set to 300ms for tests
+        })
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.assertThreadContent(defaultMessage)
+
+        const initialExpiry = await citizenMessagesPage.getSessionExpiry()
+
+        await citizenMessagesPage.startReplyToFirstThread()
+
+        const slowTypedText =
+          'Olen aika hidas kirjoittamaan näitä viestejä, mutta yritän parhaani: Lapseni ovat sitä ja tätä...'
+
+        const msDelayPerCharToTypeSlowly = 1000 / slowTypedText.length
+        const authStatusRequests: string[] = []
+        citizenPage.page.on('request', (request) => {
+          if (request.url().includes('/api/application/auth/status')) {
+            authStatusRequests.push(request.url())
+          }
+        })
+        // typing this takes so long that session keepalive mechanism should renew the session
+        await citizenMessagesPage.messageReplyContent.locator.pressSequentially(
+          slowTypedText,
+          {
+            delay: msDelayPerCharToTypeSlowly
+          }
+        )
+
+        const finalExpiry = await citizenMessagesPage.getSessionExpiry()
+        expect(authStatusRequests.length).toBeGreaterThanOrEqual(3)
+        expect(finalExpiry).toBeGreaterThan(initialExpiry + 0.3)
       })
 
       describe('Messages can be deleted / archived', () => {

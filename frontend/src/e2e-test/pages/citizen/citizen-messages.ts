@@ -23,7 +23,7 @@ export class MockStrongAuthPage {
   }
 }
 export default class CitizenMessagesPage {
-  #messageReplyContent: TextInput
+  messageReplyContent: TextInput
   #threadListItem: Element
   #threadTitle: Element
   #redactedThreadTitle: Element
@@ -38,7 +38,7 @@ export default class CitizenMessagesPage {
   newMessageButton: Element
   fileUpload: Element
   constructor(private readonly page: Page) {
-    this.#messageReplyContent = new TextInput(
+    this.messageReplyContent = new TextInput(
       page.findByDataQa('message-reply-content')
     )
     this.#threadListItem = page.findByDataQa('thread-list-item')
@@ -141,21 +141,25 @@ export default class CitizenMessagesPage {
     await this.discardMessageButton.click()
   }
 
-  async fillReplyContent(content: string) {
-    await this.#messageReplyContent.fill(content)
-  }
-
-  async assertReplyContentIsEmpty() {
-    return this.#messageReplyContent.assertTextEquals('')
-  }
-
   async replyToFirstThread(content: string) {
+    await this.startReplyToFirstThread()
+    await this.messageReplyContent.fill(content)
+    await this.sendReply()
+  }
+  async startReplyToFirstThread() {
     await this.#threadListItem.click()
     await this.#openReplyEditorButton.click()
-    await this.#messageReplyContent.fill(content)
+  }
+  async sendReply() {
     await this.#sendReplyButton.click()
     // the editor is hidden after sending the reply
     await this.#sendReplyButton.waitUntilHidden()
+  }
+
+  async getSessionExpiry() {
+    const cookies = await this.page.page.context().cookies()
+    const sessionCookie = cookies.find((c) => c.name === 'evaka.eugw.session')
+    return sessionCookie?.expires ?? 0
   }
 
   async deleteFirstThread() {

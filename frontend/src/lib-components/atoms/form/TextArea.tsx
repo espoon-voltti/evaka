@@ -4,7 +4,7 @@
 
 import autosize from 'autosize'
 import classNames from 'classnames'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState, forwardRef } from 'react'
 import styled from 'styled-components'
 
 import { BoundFormState } from 'lib-common/form/hooks'
@@ -20,6 +20,7 @@ interface TextAreaInputProps extends BaseProps {
   onFocus?: (e: React.FocusEvent<HTMLTextAreaElement>) => void
   onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void
   onKeyPress?: (e: React.KeyboardEvent) => void
+  onKeyUp?: (e: React.KeyboardEvent) => void
   readonly?: boolean
   rows?: number
   maxLength?: number
@@ -38,79 +39,87 @@ interface TextAreaInputProps extends BaseProps {
   wrapperClassName?: string
 }
 
-const TextArea = React.memo(function TextArea({
-  value,
-  onChange,
-  onFocus,
-  onBlur,
-  onKeyPress,
-  readonly,
-  rows,
-  maxLength,
-  type,
-  autoFocus,
-  preventAutoFocusScroll,
-  placeholder,
-  info,
-  id,
-  'data-qa': dataQa,
-  className,
-  'aria-describedby': ariaId,
-  hideErrorsBeforeTouched,
-  required
-}: TextAreaInputProps) {
-  const [touched, setTouched] = useState(false)
+const TextArea = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
+  function TextArea(
+    {
+      value,
+      onChange,
+      onFocus,
+      onBlur,
+      onKeyPress,
+      readonly,
+      rows,
+      maxLength,
+      type,
+      autoFocus,
+      preventAutoFocusScroll,
+      placeholder,
+      info,
+      id,
+      'data-qa': dataQa,
+      className,
+      'aria-describedby': ariaId,
+      hideErrorsBeforeTouched,
+      required,
+      onKeyUp
+    },
+    ref
+  ) {
+    const [touched, setTouched] = useState(false)
 
-  const hideError =
-    hideErrorsBeforeTouched && !touched && info?.status === 'warning'
-  const infoText = hideError ? undefined : info?.text
-  const infoStatus = hideError ? undefined : info?.status
+    const hideError =
+      hideErrorsBeforeTouched && !touched && info?.status === 'warning'
+    const infoText = hideError ? undefined : info?.text
+    const infoStatus = hideError ? undefined : info?.status
 
-  const handleChange = useMemo(
-    () =>
-      onChange
-        ? (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            onChange(e.target.value)
-        : undefined,
-    [onChange]
-  )
+    const handleChange = useMemo(
+      () =>
+        onChange
+          ? (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              onChange(e.target.value)
+          : undefined,
+      [onChange]
+    )
 
-  return (
-    <>
-      <StyledTextArea
-        value={value}
-        onChange={handleChange}
-        onFocus={onFocus}
-        onBlur={(e) => {
-          setTouched(true)
-          if (onBlur) onBlur(e)
-        }}
-        onKeyPress={onKeyPress}
-        placeholder={placeholder}
-        readOnly={readonly}
-        disabled={readonly}
-        maxLength={maxLength}
-        type={type}
-        autoFocus={autoFocus}
-        preventAutoFocusScroll={preventAutoFocusScroll}
-        className={classNames(className, infoStatus)}
-        data-qa={dataQa}
-        id={id}
-        aria-describedby={ariaId}
-        required={required ?? false}
-        rows={rows}
-      />
-      {!!infoText && (
-        <InputFieldUnderRow className={classNames(infoStatus)}>
-          <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
-            {infoText}
-          </span>
-          <UnderRowStatusIcon status={info?.status} />
-        </InputFieldUnderRow>
-      )}
-    </>
-  )
-})
+    return (
+      <>
+        <StyledTextArea
+          ref={ref}
+          value={value}
+          onChange={handleChange}
+          onFocus={onFocus}
+          onBlur={(e) => {
+            setTouched(true)
+            if (onBlur) onBlur(e)
+          }}
+          onKeyPress={onKeyPress}
+          onKeyUp={onKeyUp}
+          placeholder={placeholder}
+          readOnly={readonly}
+          disabled={readonly}
+          maxLength={maxLength}
+          type={type}
+          autoFocus={autoFocus}
+          preventAutoFocusScroll={preventAutoFocusScroll}
+          className={classNames(className, infoStatus)}
+          data-qa={dataQa}
+          id={id}
+          aria-describedby={ariaId}
+          required={required ?? false}
+          rows={rows}
+        />
+        {!!infoText && (
+          <InputFieldUnderRow className={classNames(infoStatus)}>
+            <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
+              {infoText}
+            </span>
+            <UnderRowStatusIcon status={info?.status} />
+          </InputFieldUnderRow>
+        )}
+      </>
+    )
+  }
+)
 
 export default TextArea
 
