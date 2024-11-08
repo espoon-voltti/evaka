@@ -542,6 +542,53 @@ describe('Child mobile attendance list', () => {
     await listPage.selectChild(child)
     await childPage.termBreak.waitUntilVisible()
   })
+
+  test('Non operational day child is shown in absent list', async () => {
+    // change mocked now to be during weekend
+    now = HelsinkiDateTime.of(2024, 5, 18, 13, 0, 0)
+    today = now.toLocalDate()
+    await openPage({ mockedTime: now })
+
+    const child = testChild2.id
+    await createPlacements(child, testDaycareGroup.id, 'PRESCHOOL')
+
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+    await page.goto(mobileSignupUrl)
+
+    await assertAttendanceCounts(0, 0, 0, 1, 1)
+    await listPage.absentChildrenTab.click()
+    await listPage.selectChild(child)
+    await childPage.termBreak.waitUntilVisible()
+  })
+
+  test('Child with shift care is shown in coming list even on weekend', async () => {
+    // change mocked now to be during weekend
+    now = HelsinkiDateTime.of(2024, 5, 18, 13, 0, 0)
+    today = now.toLocalDate()
+    await openPage({ mockedTime: now })
+
+    const child = testChild2.id
+    const placement = await createPlacements(
+      child,
+      testDaycareGroup.id,
+      'PRESCHOOL'
+    )
+    const employee = await Fixture.employee().save()
+    const serviceNeedOption = await Fixture.serviceNeedOption().save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      shiftCare: 'FULL',
+      optionId: serviceNeedOption.id,
+      confirmedBy: employee.id
+    }).save()
+
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+    await page.goto(mobileSignupUrl)
+
+    await assertAttendanceCounts(1, 0, 0, 0, 1)
+  })
 })
 
 describe('Notes on child departure page', () => {
