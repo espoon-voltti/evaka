@@ -30,6 +30,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { renderResult } from '../async-rendering'
 
 import Actions from './Actions'
 import InvoiceFilters from './InvoiceFilters'
@@ -113,28 +114,31 @@ export default React.memo(function InvoicesPage() {
       </ContentArea>
       <Gap size="XL" />
       <ContentArea opaque>
-        <Invoices
-          user={user}
-          pagedInvoices={invoices}
-          currentPage={page}
-          setCurrentPage={setPage}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          sortDirection={sortDirection}
-          setSortDirection={setSortDirection}
-          showCheckboxes={
-            (searchFilters.status === 'DRAFT' ||
-              searchFilters.status === 'WAITING_FOR_SENDING') &&
-            (canSend || canDelete)
-          }
-          checked={checkedInvoices}
-          checkAll={checkAllOnPage}
-          clearChecked={clearChecked}
-          toggleChecked={toggleChecked}
-          fullAreaSelection={fullAreaSelection}
-          setFullAreaSelection={setFullAreaSelection}
-          fullAreaSelectionDisabled={searchFilters.area.length < 1}
-        />
+        {renderResult(invoices, (invoices, isReloading) => (
+          <Invoices
+            user={user}
+            pagedInvoices={invoices}
+            isLoading={isReloading}
+            currentPage={page}
+            setCurrentPage={setPage}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            showCheckboxes={
+              (searchFilters.status === 'DRAFT' ||
+                searchFilters.status === 'WAITING_FOR_SENDING') &&
+              (canSend || canDelete)
+            }
+            checked={checkedInvoices}
+            checkAll={checkAllOnPage}
+            clearChecked={clearChecked}
+            toggleChecked={toggleChecked}
+            fullAreaSelection={fullAreaSelection}
+            setFullAreaSelection={setFullAreaSelection}
+            fullAreaSelectionDisabled={searchFilters.area.length < 1}
+          />
+        ))}
       </ContentArea>
       <Actions
         openModal={openModal}
