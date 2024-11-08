@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test
 class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val accountId: MessageAccountId = MessageAccountId(UUID.randomUUID())
+    private val clock = RealEvakaClock()
 
     @BeforeEach
     fun setUp() {
@@ -62,7 +64,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun update(draftId: MessageDraftId, content: UpdatableDraftContent) =
-        db.transaction { it.updateDraft(accountId, draftId, content) }
+        db.transaction { it.updateDraft(accountId, draftId, content, clock.now()) }
 
     private fun assertContent(expected: UpdatableDraftContent) {
         val actual = db.read { it.getDrafts(accountId)[0] }

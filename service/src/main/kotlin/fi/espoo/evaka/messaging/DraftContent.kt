@@ -12,7 +12,7 @@ import org.jdbi.v3.json.Json
 
 data class DraftContent(
     val id: MessageDraftId,
-    val created: HelsinkiDateTime,
+    val createdAt: HelsinkiDateTime,
     val type: MessageType,
     val title: String,
     val content: String,

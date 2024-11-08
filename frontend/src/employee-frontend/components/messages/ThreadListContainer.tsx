@@ -157,7 +157,7 @@ export default React.memo(function ThreadListContainer({
           unread: false,
           onClick: () => setSelectedDraft(draft),
           type: draft.type,
-          timestamp: draft.created,
+          timestamp: draft.createdAt,
           messageCount: undefined,
           dataQa: 'draft-message-row'
         }))

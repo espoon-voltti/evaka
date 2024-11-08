@@ -704,7 +704,7 @@ class MessageController(
     ) {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.transaction { it.updateDraft(accountId, draftId, content) }
+                dbc.transaction { it.updateDraft(accountId, draftId, content, clock.now()) }
             }
             .also {
                 Audit.MessagingUpdateDraft.log(
