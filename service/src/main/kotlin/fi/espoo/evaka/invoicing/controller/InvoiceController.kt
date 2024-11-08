@@ -79,12 +79,7 @@ class InvoiceController(
                             pageSize = 200,
                             body.sortBy ?: InvoiceSortParam.STATUS,
                             body.sortDirection ?: SortDirection.DESC,
-                            body.status
-                                ?: listOf(
-                                    InvoiceStatus.DRAFT,
-                                    InvoiceStatus.WAITING_FOR_SENDING,
-                                    InvoiceStatus.SENT,
-                                ),
+                            body.status,
                             body.area ?: emptyList(),
                             body.unit,
                             body.distinctions ?: emptyList(),
@@ -335,7 +330,7 @@ data class SearchInvoicesRequest(
     val page: Int,
     val sortBy: InvoiceSortParam? = null,
     val sortDirection: SortDirection? = null,
-    val status: List<InvoiceStatus>? = null,
+    val status: InvoiceStatus,
     val area: List<String>? = null,
     val unit: DaycareId? = null,
     val distinctions: List<InvoiceDistinctiveParams>? = null,

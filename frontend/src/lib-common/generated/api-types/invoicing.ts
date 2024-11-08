@@ -863,7 +863,7 @@ export interface SearchInvoicesRequest {
   searchTerms: string | null
   sortBy: InvoiceSortParam | null
   sortDirection: SortDirection | null
-  status: InvoiceStatus[] | null
+  status: InvoiceStatus
   unit: UUID | null
 }
 

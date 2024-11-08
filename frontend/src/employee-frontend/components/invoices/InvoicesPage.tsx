@@ -63,7 +63,7 @@ export default React.memo(function InvoicesPage() {
             sortDirection,
             area,
             unit: unit ?? null,
-            status: status.length > 0 ? [status] : null,
+            status,
             distinctions: distinctiveDetails,
             searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
             periodStart: startDate ?? null,
