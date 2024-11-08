@@ -346,6 +346,8 @@ class ReservationControllerCitizen(
                         )
                     }
 
+                    val operationalDates = tx.getOperationalDatesForChildren(range, body.childIds)
+
                     val childPlannedAbsenceEnabled =
                         range.intersection(reservableRange)?.let {
                             tx.getPlannedAbsenceEnabledRanges(
@@ -358,7 +360,10 @@ class ReservationControllerCitizen(
                     val deletedAbsences =
                         tx.clearOldCitizenEditableAbsences(
                             body.childIds.flatMap { childId ->
-                                range.dates().map { childId to it }
+                                range
+                                    .dates()
+                                    .filter { operationalDates[childId]?.contains(it) ?: false }
+                                    .map { childId to it }
                             },
                             reservableRange = reservableRange,
                         )
@@ -368,7 +373,9 @@ class ReservationControllerCitizen(
                         range.intersection(reservableRange)?.dates()?.let { dates ->
                             tx.clearOldReservations(
                                 body.childIds.flatMap { childId ->
-                                    dates.map { date -> childId to date }
+                                    dates
+                                        .filter { operationalDates[childId]?.contains(it) ?: false }
+                                        .map { date -> childId to date }
                                 }
                             )
                         }
@@ -382,27 +389,30 @@ class ReservationControllerCitizen(
                                 holidayPeriod == null || holidayPeriod.reservationsOpenOn <= today
                             }
                             .flatMap { date ->
-                                body.childIds.map { childId ->
-                                    FullDayAbsenseUpsert(
-                                        childId,
-                                        date,
-                                        if (
-                                            reservableRange.includes(date) &&
-                                                body.absenceType == OTHER_ABSENCE
-                                        ) {
-                                            val plannedAbsenceEnabled =
-                                                childPlannedAbsenceEnabled[childId]?.includes(date)
-                                                    ?: false
-                                            if (plannedAbsenceEnabled) {
-                                                PLANNED_ABSENCE
+                                body.childIds
+                                    .filter { operationalDates[it]?.contains(date) ?: false }
+                                    .map { childId ->
+                                        FullDayAbsenseUpsert(
+                                            childId,
+                                            date,
+                                            if (
+                                                reservableRange.includes(date) &&
+                                                    body.absenceType == OTHER_ABSENCE
+                                            ) {
+                                                val plannedAbsenceEnabled =
+                                                    childPlannedAbsenceEnabled[childId]?.includes(
+                                                        date
+                                                    ) ?: false
+                                                if (plannedAbsenceEnabled) {
+                                                    PLANNED_ABSENCE
+                                                } else {
+                                                    body.absenceType
+                                                }
                                             } else {
                                                 body.absenceType
-                                            }
-                                        } else {
-                                            body.absenceType
-                                        },
-                                    )
-                                }
+                                            },
+                                        )
+                                    }
                             }
                             .toList()
 
