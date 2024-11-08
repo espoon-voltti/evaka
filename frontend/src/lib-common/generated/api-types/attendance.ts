@@ -75,6 +75,7 @@ export interface AttendanceChild {
   id: UUID
   imageUrl: string | null
   lastName: string
+  operationalDates: LocalDate[]
   placementType: PlacementType
   preferredName: string
   reservations: ReservationResponse[]
@@ -466,6 +467,7 @@ export function deserializeJsonAttendanceChild(json: JsonOf<AttendanceChild>): A
     dailyNote: (json.dailyNote != null) ? deserializeJsonChildDailyNote(json.dailyNote) : null,
     dailyServiceTimes: (json.dailyServiceTimes != null) ? deserializeJsonDailyServiceTimesValue(json.dailyServiceTimes) : null,
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    operationalDates: json.operationalDates.map(e => LocalDate.parseIso(e)),
     reservations: json.reservations.map(e => deserializeJsonReservationResponse(e)),
     stickyNotes: json.stickyNotes.map(e => deserializeJsonChildStickyNote(e))
   }

@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
+import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
@@ -77,6 +78,11 @@ class ChildAttendanceController(
 
                     val childrenBasics = tx.fetchChildrenBasics(unitId, now)
                     val childIds = childrenBasics.asSequence().map { it.id }.toSet()
+                    val operationalDatesByChild =
+                        tx.getOperationalDatesForChildren(
+                            range = FiniteDateRange(today, today.plusDays(7)),
+                            children = childIds,
+                        )
 
                     val dailyNotes =
                         tx.getChildDailyNotesForChildren(childIds).associateBy { it.childId }
@@ -94,6 +100,7 @@ class ChildAttendanceController(
                             placementType = child.placementType,
                             scheduleType =
                                 child.placementType.scheduleType(today, clubTerms, preschoolTerms),
+                            operationalDates = operationalDatesByChild[child.id] ?: emptySet(),
                             groupId = child.groupId,
                             backup = child.backup,
                             dailyServiceTimes = child.dailyServiceTimes?.times,

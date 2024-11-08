@@ -206,7 +206,14 @@ export default React.memo(function AttendanceChildPage({
                   </Zindex>
 
                   <FlexColumn paddingHorizontal="s">
-                    {child.scheduleType !== 'TERM_BREAK' ? (
+                    {childAttendance.noServiceToday ? (
+                      <>
+                        <Center data-qa="term-break">
+                          {i18n.attendances.termBreak}
+                        </Center>
+                        <Gap size="XXL" />
+                      </>
+                    ) : (
                       <>
                         <AttendanceDailyServiceTimes
                           dailyServiceTimes={child.dailyServiceTimes}
@@ -222,13 +229,6 @@ export default React.memo(function AttendanceChildPage({
                           absences={childAttendance.absences}
                           placementType={child.placementType}
                         />
-                      </>
-                    ) : (
-                      <>
-                        <Center data-qa="term-break">
-                          {i18n.attendances.termBreak}
-                        </Center>
-                        <Gap size="XXL" />
                       </>
                     )}
                     <Gap size="xs" />
@@ -246,7 +246,7 @@ export default React.memo(function AttendanceChildPage({
                       <AttendanceChildDeparted unitId={unitId} child={child} />
                     )}
                     {childAttendance.status === 'ABSENT' &&
-                      child.scheduleType !== 'TERM_BREAK' && (
+                      !childAttendance.noServiceToday && (
                         <AttendanceChildAbsent
                           childId={childId}
                           unitId={unitId}

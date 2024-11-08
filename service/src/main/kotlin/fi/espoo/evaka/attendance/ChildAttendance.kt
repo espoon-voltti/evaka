@@ -38,6 +38,7 @@ data class AttendanceChild(
     val dateOfBirth: LocalDate,
     val placementType: PlacementType,
     val scheduleType: ScheduleType,
+    val operationalDates: Set<LocalDate>,
     val groupId: GroupId?,
     val backup: Boolean,
     val dailyServiceTimes: DailyServiceTimesValue?,
