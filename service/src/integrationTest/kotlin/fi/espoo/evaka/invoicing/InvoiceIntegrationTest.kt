@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
+import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -103,7 +104,22 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
                 areaId = testArea.id,
-                rows = listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
+                rows =
+                    listOf(
+                        DevInvoiceRow(
+                            childId = testChild_1.id,
+                            unitId = testDaycare.id,
+                            amount = 1,
+                            unitPrice = 28900,
+                        ),
+                        DevInvoiceRow(
+                            childId = testChild_1.id,
+                            unitId = testDaycare.id,
+                            product = ProductKey("DAILY_REFUND"),
+                            amount = 1,
+                            unitPrice = -1000,
+                        ),
+                    ),
             ),
             DevInvoice(
                 status = InvoiceStatus.SENT,
@@ -548,7 +564,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
 
-        val draft = testInvoices[0]
+        val draft = testInvoices[2]
         db.transaction { tx -> tx.insert(listOf(draft)) }
 
         sendInvoices(listOf(draft.id))
@@ -854,9 +870,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             periodEnd = invoice.periodEnd,
             headOfFamily = allAdults.find { it.id == invoice.headOfFamilyId }!!.toPersonDetailed(),
             children =
-                invoice.rows.map { row ->
-                    allChildren.find { it.id == row.childId }!!.toPersonBasic()
-                },
+                invoice.rows
+                    .map { row -> allChildren.find { it.id == row.childId }!!.toPersonBasic() }
+                    .distinctBy { it.id },
             totalPrice = invoice.rows.sumOf { it.amount * it.unitPrice },
             sentBy = invoice.sentBy,
             sentAt = invoice.sentAt,
