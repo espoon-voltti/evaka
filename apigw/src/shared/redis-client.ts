@@ -10,7 +10,7 @@ export interface RedisClient {
   set(
     key: string,
     value: string,
-    options: { EX: number }
+    options: { EX: number; GET?: true; NX?: true }
   ): Promise<string | null>
 
   del(key: string | string[]): Promise<number>

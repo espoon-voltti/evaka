@@ -215,6 +215,8 @@ enum class Audit(
     CitizenNotificationSettingsUpdate,
     CitizenLogin(securityEvent = true, securityLevel = "high"),
     CitizenUserDetailsRead(securityEvent = true, securityLevel = "high"),
+    CitizenWeakLogin(securityEvent = true, securityLevel = "high"),
+    CitizenWeakLoginAttempt(securityEvent = true, securityLevel = "high"),
     CitizenVoucherValueDecisionDownloadPdf,
     ClubTermCreate,
     ClubTermUpdate,

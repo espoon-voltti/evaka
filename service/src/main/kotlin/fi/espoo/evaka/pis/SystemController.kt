@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.daycare.anyUnitHasFeature
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -21,6 +22,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.auth.PasswordHashAlgorithm
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -35,6 +37,10 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
+import fi.espoo.evaka.user.getCitizenWeakLoginDetails
+import fi.espoo.evaka.user.updateLastStrongLogin
+import fi.espoo.evaka.user.updateLastWeakLogin
+import fi.espoo.evaka.user.updatePassword
 import fi.espoo.evaka.webpush.WebPush
 import java.util.UUID
 import org.springframework.web.bind.annotation.GetMapping
@@ -74,6 +80,9 @@ class SystemController(
                                 )
                                 ?.let { CitizenUserIdentity(it.id) }
                             ?: error("No person found with ssn")
+                    if (request.keycloakEmail == null) {
+                        tx.updateLastStrongLogin(clock, citizen.id)
+                    }
                     tx.updateCitizenOnLogin(
                         clock,
                         citizen.id,
@@ -89,6 +98,42 @@ class SystemController(
                     targetId = AuditId(request.socialSecurityNumber),
                     objectId = AuditId(it.id),
                     meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName),
+                )
+            }
+    }
+
+    @PostMapping("/system/citizen-weak-login")
+    fun citizenWeakLogin(
+        db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
+        @RequestBody request: CitizenWeakLoginRequest,
+    ): CitizenUserIdentity {
+        Audit.CitizenWeakLoginAttempt.log(targetId = AuditId(request.username))
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val citizen = tx.getCitizenWeakLoginDetails(request.username)
+                    if (citizen == null || !citizen.password.isMatch(request.password))
+                        throw Forbidden()
+
+                    // rehash password if necessary
+                    if (citizen.password.algorithm != PasswordHashAlgorithm.DEFAULT) {
+                        tx.updatePassword(
+                            clock,
+                            citizen.id,
+                            PasswordHashAlgorithm.DEFAULT.encode(request.password),
+                        )
+                    }
+
+                    tx.updateLastWeakLogin(clock, citizen.id)
+                    personService.getPersonWithChildren(tx, user, citizen.id)
+                    CitizenUserIdentity(citizen.id)
+                }
+            }
+            .also {
+                Audit.CitizenWeakLogin.log(
+                    targetId = AuditId(request.username),
+                    objectId = AuditId(it.id),
                 )
             }
     }
@@ -355,6 +400,8 @@ class SystemController(
         // null in SFI login requests, always set (but possibly empty) in Keycloak login requests
         val keycloakEmail: String?,
     )
+
+    data class CitizenWeakLoginRequest(val username: String, val password: Sensitive<String>)
 
     data class EmployeeUserResponse(
         val id: EmployeeId,

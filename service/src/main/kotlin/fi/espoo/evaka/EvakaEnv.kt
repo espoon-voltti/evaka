@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka
 
+import com.fasterxml.jackson.annotation.JsonValue
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.job.JobSchedule
@@ -634,7 +635,7 @@ data class JamixEnv(val url: URI, val user: String, val password: Sensitive<Stri
     }
 }
 
-data class Sensitive<T>(val value: T) {
+data class Sensitive<T>(@JsonValue val value: T) {
     override fun toString(): String = "**REDACTED**"
 }
 
