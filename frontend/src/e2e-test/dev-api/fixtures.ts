@@ -32,8 +32,7 @@ import {
   FeeDecision,
   FeeDecisionStatus,
   FeeThresholds,
-  IncomeNotification,
-  InvoiceStatus
+  IncomeNotification
 } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
@@ -84,6 +83,7 @@ import {
   createHolidayQuestionnaire,
   createIncome,
   createIncomeNotification,
+  createInvoices,
   createOtherAssistanceMeasures,
   createParentships,
   createPedagogicalDocuments,
@@ -129,6 +129,7 @@ import {
   DevFridgeChild,
   DevIncome,
   DevInvoice,
+  DevInvoiceRow,
   DevParentship,
   DevPayment,
   DevPedagogicalDocument,
@@ -1173,6 +1174,28 @@ export class Fixture {
       ...initial
     })
   }
+
+  static invoice(
+    initial: SemiPartial<DevInvoice, 'headOfFamilyId' | 'areaId'>
+  ): InvoiceBuilder {
+    return new InvoiceBuilder({
+      id: uuidv4(),
+      status: 'DRAFT',
+      number: null,
+      invoiceDate: LocalDate.of(2021, 2, 1),
+      dueDate: LocalDate.of(2021, 2, 14),
+      periodStart: LocalDate.of(2021, 1, 1),
+      periodEnd: LocalDate.of(2021, 1, 31),
+      createdAt: HelsinkiDateTime.now(),
+      sentAt: null,
+      sentBy: null,
+      codebtor: null,
+      revisionNumber: 0,
+      replacedInvoiceId: null,
+      rows: [],
+      ...initial
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1790,6 +1813,31 @@ export class AssistanceActionOptionBuilder extends FixtureBuilder<DevAssistanceA
 export class ParentshipBuilder extends FixtureBuilder<DevParentship> {
   async save() {
     await createParentships({ body: [this.data] })
+    return this.data
+  }
+}
+
+export class InvoiceBuilder extends FixtureBuilder<DevInvoice> {
+  addRow(
+    row: SemiPartial<DevInvoiceRow, 'childId' | 'unitId'>
+  ): InvoiceBuilder {
+    this.data.rows.push({
+      id: uuidv4(),
+      amount: 1,
+      unitPrice: 28900,
+      periodStart: this.data.periodStart,
+      periodEnd: this.data.periodEnd,
+      product: 'DAYCARE',
+      description: '',
+      correctionId: null,
+      idx: this.data.rows.length,
+      ...row
+    })
+    return this
+  }
+
+  async save() {
+    await createInvoices({ body: [this.data] })
     return this.data
   }
 }
@@ -3005,47 +3053,6 @@ export const voucherValueDecisionsFixture = (
   documentKey: documentKey ?? null,
   created: HelsinkiDateTime.now(),
   decisionHandler: null
-})
-
-export const invoiceFixture = (
-  adultId: UUID,
-  childId: UUID,
-  areaId: UUID,
-  unitId: UUID,
-  status: InvoiceStatus,
-  periodStart = LocalDate.of(2019, 1, 1),
-  periodEnd = LocalDate.of(2019, 1, 1)
-): DevInvoice => ({
-  id: uuidv4(),
-  status,
-  headOfFamilyId: adultId,
-  codebtor: null,
-  areaId,
-  periodStart,
-  periodEnd,
-  invoiceDate: periodStart,
-  dueDate: periodEnd,
-  number: null,
-  sentAt: null,
-  sentBy: null,
-  createdAt: null,
-  replacedInvoiceId: null,
-  revisionNumber: 0,
-  rows: [
-    {
-      id: uuidv4(),
-      idx: 1,
-      childId,
-      amount: 1,
-      unitPrice: 10000,
-      periodStart: periodStart,
-      periodEnd: periodEnd,
-      product: 'DAYCARE',
-      unitId,
-      description: '',
-      correctionId: null
-    }
-  ]
 })
 
 export const testDaycareGroup: DevDaycareGroup = {

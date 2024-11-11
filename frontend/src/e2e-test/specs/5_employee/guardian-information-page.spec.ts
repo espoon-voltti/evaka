@@ -15,7 +15,6 @@ import {
   testAdult,
   familyWithTwoGuardians,
   Fixture,
-  invoiceFixture,
   uuidv4,
   testCareArea
 } from '../../dev-api/fixtures'
@@ -24,7 +23,6 @@ import {
   createDaycareGroups,
   createDaycarePlacements,
   createDecisions,
-  createInvoices,
   deleteDaycareCostCenter,
   resetServiceState
 } from '../../generated/api-clients'
@@ -127,19 +125,17 @@ describe('Employee - Guardian Information', () => {
   })
 
   test('Invoices are listed on the admin UI guardian page', async () => {
-    await createInvoices({
-      body: [
-        invoiceFixture(
-          testAdult.id,
-          testChild.id,
-          testCareArea.id,
-          testDaycare.id,
-          'DRAFT',
-          LocalDate.of(2020, 1, 1),
-          LocalDate.of(2020, 1, 31)
-        )
-      ]
+    await Fixture.invoice({
+      headOfFamilyId: testAdult.id,
+      areaId: testCareArea.id,
+      periodStart: LocalDate.of(2020, 1, 1),
+      periodEnd: LocalDate.of(2020, 1, 31)
     })
+      .addRow({
+        childId: testChild.id,
+        unitId: testDaycare.id
+      })
+      .save()
 
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(testAdult.id)

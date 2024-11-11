@@ -11,7 +11,6 @@ import {
   familyWithRestrictedDetailsGuardian,
   feeDecisionsFixture,
   Fixture,
-  invoiceFixture,
   testAdult,
   testCareArea,
   testChild,
@@ -22,7 +21,6 @@ import {
 import {
   createDaycarePlacements,
   createFeeDecisions,
-  createInvoices,
   resetServiceState
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
@@ -115,30 +113,30 @@ describe('Invoices', () => {
         `${testAdult.firstName} ${testAdult.lastName}`
       )
       await invoicesPage.navigateBackToInvoices()
-      // TODO: assert content fields
     })
   })
 
   describe('Send invoices', () => {
     test('Invoices are toggled and sent', async () => {
-      await createInvoices({
-        body: [
-          invoiceFixture(
-            testAdult.id,
-            testChild.id,
-            testCareArea.id,
-            testDaycare.id,
-            'DRAFT'
-          ),
-          invoiceFixture(
-            familyWithRestrictedDetailsGuardian.guardian.id,
-            familyWithRestrictedDetailsGuardian.children[0].id,
-            testCareArea.id,
-            testDaycare.id,
-            'DRAFT'
-          )
-        ]
+      await Fixture.invoice({
+        headOfFamilyId: testAdult.id,
+        areaId: testCareArea.id
       })
+        .addRow({
+          childId: testChild.id,
+          unitId: testDaycare.id
+        })
+        .save()
+      await Fixture.invoice({
+        headOfFamilyId: familyWithRestrictedDetailsGuardian.guardian.id,
+        areaId: testCareArea.id
+      })
+        .addRow({
+          childId: familyWithRestrictedDetailsGuardian.children[0].id,
+          unitId: testDaycare.id
+        })
+        .save()
+
       // switch tabs to refresh data
       await financePage.selectFeeDecisionsTab()
       await financePage.selectInvoicesTab()
@@ -152,17 +150,12 @@ describe('Invoices', () => {
     })
 
     test('Sending an invoice with a recipient without a SSN', async () => {
-      await createInvoices({
-        body: [
-          invoiceFixture(
-            adultWithoutSSN.id,
-            testChild.id,
-            testCareArea.id,
-            testDaycare.id,
-            'DRAFT'
-          )
-        ]
+      await Fixture.invoice({
+        headOfFamilyId: adultWithoutSSN.id,
+        areaId: testCareArea.id
       })
+        .addRow({ childId: testChild.id, unitId: testDaycare.id })
+        .save()
 
       await invoicesPage.freeTextFilter(adultWithoutSSN.firstName)
       await invoicesPage.assertInvoiceCount(1)
