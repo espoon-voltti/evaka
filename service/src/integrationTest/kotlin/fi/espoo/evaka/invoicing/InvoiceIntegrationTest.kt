@@ -362,6 +362,21 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `search returns invoices without rows correctly`() {
+        val testInvoice =
+            DevInvoice(
+                status = InvoiceStatus.DRAFT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+                rows = emptyList(),
+            )
+        db.transaction { tx -> tx.insert(listOf(testInvoice)) }
+
+        val result = searchInvoices(SearchInvoicesRequest(page = 1))
+        assertEqualEnough(listOf(toSummary(testInvoice)), result)
+    }
+
+    @Test
     fun `search gives correct total and page composition when using filters`() {
         db.transaction { tx -> tx.insert(testInvoices) }
         val sent =
