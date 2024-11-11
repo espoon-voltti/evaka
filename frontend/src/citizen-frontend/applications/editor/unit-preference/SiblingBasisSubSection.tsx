@@ -26,31 +26,6 @@ export default React.memo(function SiblingBasisSubSection({
 }: UnitPreferenceSectionCommonProps) {
   const t = useTranslation()
 
-  const siblingUnitEnabled = applicationType === 'PRESCHOOL'
-  const siblingUnitEditor = (
-    <>
-      <Label htmlFor="sibling-unit">
-        {t.applications.editor.unitPreference.siblingBasis.unit} *
-      </Label>
-      <InputField
-        value={formData.siblingUnit}
-        data-qa="siblingUnit-input"
-        onChange={(value) =>
-          updateFormData(() => ({
-            siblingUnit: value
-          }))
-        }
-        placeholder={
-          t.applications.editor.unitPreference.siblingBasis.unitPlaceholder
-        }
-        id="sibling-unit"
-        width="m"
-        info={errorToInputInfo(errors.siblingUnit, t.validationErrors)}
-        hideErrorsBeforeTouched={!verificationRequested}
-      />
-    </>
-  )
-
   return (
     <>
       <H3>{t.applications.editor.unitPreference.siblingBasis.title}</H3>
@@ -83,26 +58,22 @@ export default React.memo(function SiblingBasisSubSection({
               <Gap />
               <FixedSpaceColumn>
                 {formData.vtjSiblings.map((sibling) => (
-                  <AdaptiveFlex key={sibling.socialSecurityNumber}>
-                    <Radio
-                      checked={sibling.selected}
-                      label={`${sibling.firstName} ${sibling.lastName}, ${sibling.socialSecurityNumber}`}
-                      translate="no"
-                      onChange={() =>
-                        updateFormData((prev) => ({
-                          vtjSiblings: prev.vtjSiblings.map((s) => ({
-                            ...s,
-                            selected:
-                              s.socialSecurityNumber ===
-                              sibling.socialSecurityNumber
-                          }))
+                  <Radio
+                    key={sibling.socialSecurityNumber}
+                    checked={sibling.selected}
+                    label={`${sibling.firstName} ${sibling.lastName}, ${sibling.socialSecurityNumber}`}
+                    translate="no"
+                    onChange={() =>
+                      updateFormData((prev) => ({
+                        vtjSiblings: prev.vtjSiblings.map((s) => ({
+                          ...s,
+                          selected:
+                            s.socialSecurityNumber ===
+                            sibling.socialSecurityNumber
                         }))
-                      }
-                    />
-                    {sibling.selected &&
-                      siblingUnitEnabled &&
-                      siblingUnitEditor}
-                  </AdaptiveFlex>
+                      }))
+                    }
+                  />
                 ))}
                 <Radio
                   checked={!formData.vtjSiblings.find((s) => s.selected)}
@@ -177,14 +148,36 @@ export default React.memo(function SiblingBasisSubSection({
                     }
                   />
                 </FixedSpaceColumn>
-                {siblingUnitEnabled && (
-                  <FixedSpaceColumn spacing="xs">
-                    {siblingUnitEditor}
-                  </FixedSpaceColumn>
-                )}
               </AdaptiveFlex>
             </>
           )}
+        </>
+      )}
+      {applicationType === 'PRESCHOOL' && formData.siblingBasis && (
+        <>
+          <Gap />
+          <FixedSpaceColumn spacing="xs">
+            <Label htmlFor="sibling-unit">
+              {t.applications.editor.unitPreference.siblingBasis.unit} *
+            </Label>
+            <InputField
+              value={formData.siblingUnit}
+              data-qa="siblingUnit-input"
+              onChange={(value) =>
+                updateFormData(() => ({
+                  siblingUnit: value
+                }))
+              }
+              placeholder={
+                t.applications.editor.unitPreference.siblingBasis
+                  .unitPlaceholder
+              }
+              id="sibling-unit"
+              width="XL"
+              info={errorToInputInfo(errors.siblingUnit, t.validationErrors)}
+              hideErrorsBeforeTouched={!verificationRequested}
+            />
+          </FixedSpaceColumn>
         </>
       )}
     </>
