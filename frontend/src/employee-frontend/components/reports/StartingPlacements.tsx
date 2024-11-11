@@ -6,7 +6,7 @@ import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import range from 'lodash/range'
 import uniqBy from 'lodash/uniqBy'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -133,7 +133,7 @@ export default React.memo(function StartingPlacementsReport() {
   )
 })
 
-type SortColumn = keyof StartingPlacementsRow
+type SortColumn = keyof StartingPlacementsRow | 'childName'
 const StartingPlacements = React.memo(function StartingPlacements({
   filters
 }: {
@@ -157,7 +157,7 @@ const StartingPlacements = React.memo(function StartingPlacements({
     columns: SortColumn[]
     direction: SortDirection
   }>({
-    columns: ['careAreaName', 'unitName', 'lastName', 'firstName'],
+    columns: ['careAreaName', 'unitName', 'childName'],
     direction: 'ASC'
   })
 
@@ -179,13 +179,26 @@ const StartingPlacements = React.memo(function StartingPlacements({
       isEqual(sort.columns, columns) ? sort.direction : undefined,
     [sort.columns, sort.direction]
   )
+
+  const sortedResult = useMemo(
+    () =>
+      result.map((rawResult) =>
+        orderBy(
+          rawResult.map((row) => ({
+            ...row,
+            childName: `${row.lastName} ${row.firstName}`
+          })),
+          sort.columns,
+          [sort.direction === 'ASC' ? 'asc' : 'desc']
+        )
+      ),
+    [sort, result]
+  )
+
   return (
     <>
-      {renderResult(result, (rawResult) => {
-        const rows = orderBy(rawResult.filter(displayFilter), sort.columns, [
-          sort.direction === 'ASC' ? 'asc' : 'desc'
-        ])
-
+      {renderResult(sortedResult, (sortedRows) => {
+        const filteredRows = sortedRows.filter(displayFilter)
         return (
           <>
             <FilterRow>
@@ -195,7 +208,7 @@ const StartingPlacements = React.memo(function StartingPlacements({
                   <Combobox
                     items={[
                       { value: '', label: i18n.common.all },
-                      ...uniqBy(rawResult, (r) => r.careAreaName).map((s) => ({
+                      ...uniqBy(sortedRows, (r) => r.careAreaName).map((s) => ({
                         value: s.careAreaName,
                         label: s.careAreaName
                       }))
@@ -236,7 +249,7 @@ const StartingPlacements = React.memo(function StartingPlacements({
                     items={[
                       { value: '', label: i18n.common.all },
                       ...uniqBy(
-                        rawResult.filter(areaFilter),
+                        sortedRows.filter(areaFilter),
                         (r) => r.unitName
                       ).map((s) => ({ value: s.unitName, label: s.unitName }))
                     ]}
@@ -269,7 +282,7 @@ const StartingPlacements = React.memo(function StartingPlacements({
             </FilterRow>
 
             <ReportDownload
-              data={rows.map((row) => ({
+              data={filteredRows.map((row) => ({
                 careAreaName: row.careAreaName,
                 unitName: row.unitName,
                 firstName: row.firstName,
@@ -301,49 +314,35 @@ const StartingPlacements = React.memo(function StartingPlacements({
               <Thead>
                 <Tr>
                   <SortableTh
-                    sorted={sorted([
-                      'careAreaName',
-                      'unitName',
-                      'lastName',
-                      'firstName'
-                    ])}
+                    sorted={sorted(['careAreaName', 'unitName', 'childName'])}
                     onClick={() =>
-                      sortBy([
-                        'careAreaName',
-                        'unitName',
-                        'lastName',
-                        'firstName'
-                      ])
+                      sortBy(['careAreaName', 'unitName', 'childName'])
                     }
                   >
                     {i18n.reports.common.careAreaName}
                   </SortableTh>
                   <SortableTh
-                    sorted={sorted(['unitName', 'lastName', 'firstName'])}
-                    onClick={() =>
-                      sortBy(['unitName', 'lastName', 'firstName'])
-                    }
+                    sorted={sorted(['unitName', 'childName'])}
+                    onClick={() => sortBy(['unitName', 'childName'])}
                   >
                     {i18n.reports.common.unitName}
                   </SortableTh>
                   <SortableTh
-                    sorted={sorted(['lastName', 'firstName'])}
-                    onClick={() => sortBy(['lastName', 'firstName'])}
+                    sorted={sorted(['childName'])}
+                    onClick={() => sortBy(['childName'])}
                   >
                     {i18n.reports.common.childName}
                   </SortableTh>
                   <SortableTh
-                    sorted={sorted(['placementStart', 'lastName', 'firstName'])}
-                    onClick={() =>
-                      sortBy(['placementStart', 'lastName', 'firstName'])
-                    }
+                    sorted={sorted(['placementStart', 'childName'])}
+                    onClick={() => sortBy(['placementStart', 'childName'])}
                   >
                     {i18n.reports.startingPlacements.placementStart}
                   </SortableTh>
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.map((row) => (
+                {filteredRows.map((row) => (
                   <Tr key={row.placementId} data-qa="report-row">
                     <StyledTd data-qa="area-name">{row.careAreaName}</StyledTd>
                     <StyledTd data-qa="unit-name">{row.unitName}</StyledTd>
@@ -351,7 +350,9 @@ const StartingPlacements = React.memo(function StartingPlacements({
                       <Link
                         data-qa="child-name"
                         to={`/child-information/${row.childId}`}
-                      >{`${row.lastName} ${row.firstName}`}</Link>
+                      >
+                        {row.childName}
+                      </Link>
                     </StyledTd>
                     <StyledTd data-qa="placement-start-date">
                       {row.placementStart.format()}
@@ -360,7 +361,7 @@ const StartingPlacements = React.memo(function StartingPlacements({
                 ))}
               </Tbody>
             </TableScrollable>
-            <RowCountInfo rowCount={rows.length} />
+            <RowCountInfo rowCount={filteredRows.length} />
           </>
         )
       })}
