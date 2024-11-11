@@ -1529,7 +1529,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         postNewThread(
             "title",
             "content",
-            MessageType.MESSAGE,
+            MessageType.BULLETIN,
             employee1Account,
             listOf(
                 MessageRecipient(MessageRecipientType.CHILD, testChild_2.id),
