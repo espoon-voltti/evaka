@@ -91,7 +91,7 @@ can use the same method as above.
 
 In case you notice any information security related issue in our
 services, or you have an idea how to improve information security,
-please contact us by email at [tietoturva@espoo.fi](tietoturva@espoo.fi)
+please contact us by email at [evakatuki@espoo.fi](mailto:evakatuki@espoo.fi)
 
 ## License
 
@@ -161,4 +161,4 @@ for more details on the linter.
 ## Contact information
 
 eVaka® is developed in the [City of Espoo](https://www.espoo.fi), Finland.
-You can contact the development team at [voltti@espoo.fi](voltti@espoo.fi).
+You can contact the development team at [voltti@espoo.fi](mailto:voltti@espoo.fi).
