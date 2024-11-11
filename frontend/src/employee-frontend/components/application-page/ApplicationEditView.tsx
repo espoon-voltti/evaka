@@ -791,6 +791,21 @@ export default React.memo(function ApplicationEditView({
                 }
                 data-qa="input-sibling-ssn"
               />
+              {type === 'PRESCHOOL' && (
+                <>
+                  <Label>{i18n.application.preferences.siblingUnit}</Label>
+                  <InputField
+                    width="L"
+                    value={siblingBasis.siblingUnit}
+                    onChange={(value) =>
+                      setApplication(
+                        set('form.preferences.siblingBasis.siblingUnit', value)
+                      )
+                    }
+                    data-qa="input-sibling-unit"
+                  />
+                </>
+              )}
             </>
           )}
         </ListGrid>

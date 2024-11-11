@@ -35,11 +35,13 @@ export default React.memo(function UnitPreferenceSection({
     return vtjSibling
       ? {
           name: `${vtjSibling.firstName} ${vtjSibling.lastName}`,
-          ssn: vtjSibling.socialSecurityNumber
+          ssn: vtjSibling.socialSecurityNumber,
+          unit: formData.siblingUnit
         }
       : {
           name: formData.siblingName,
-          ssn: formData.siblingSsn
+          ssn: formData.siblingSsn,
+          unit: formData.siblingUnit
         }
   })()
 
@@ -65,6 +67,9 @@ export default React.memo(function UnitPreferenceSection({
 
             <Label>{tLocal.siblingBasis.ssn}</Label>
             <span>{sibling?.ssn}</span>
+
+            <Label>{tLocal.siblingBasis.unit}</Label>
+            <span>{sibling?.unit}</span>
           </>
         ) : (
           <span>{t.applications.editor.verification.no}</span>

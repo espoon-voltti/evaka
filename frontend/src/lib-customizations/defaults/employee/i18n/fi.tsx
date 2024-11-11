@@ -489,7 +489,8 @@ export const fi = {
       siblingBasisLabel: 'Sisarusperuste',
       siblingBasisValue: 'Haen paikkaa sisarusperusteella',
       siblingName: 'Sisaruksen nimi',
-      siblingSsn: 'Sisaruksen henkilötunnus'
+      siblingSsn: 'Sisaruksen henkilötunnus',
+      siblingUnit: 'Sisaruksen koulu'
     },
     child: {
       title: 'Lapsen tiedot'

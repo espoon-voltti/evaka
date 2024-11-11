@@ -851,12 +851,13 @@ export default {
         unitPreference: {
           title: 'Hakutoive',
           siblingBasis: {
-            title: 'Haku sisarperusteella',
+            title: 'Haku sisarusperusteella',
             siblingBasisLabel: 'Sisarusperuste',
             siblingBasisYes:
               'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa',
             name: 'Sisaruksen nimi',
-            ssn: 'Sisaruksen henkilötunnus'
+            ssn: 'Sisaruksen henkilötunnus',
+            unit: 'Sisaruksen koulu'
           },
           units: {
             title: 'Hakutoiveet',
@@ -1113,7 +1114,7 @@ export default {
       unitPreference: {
         title: 'Hakutoive',
         siblingBasis: {
-          title: 'Haku sisarperusteella',
+          title: 'Haku sisarusperusteella',
           info: {
             DAYCARE: (
               <>
@@ -1195,7 +1196,9 @@ export default {
           names: 'Sisaruksen etunimet ja sukunimi',
           namesPlaceholder: 'Etunimet ja sukunimi',
           ssn: 'Sisaruksen henkilötunnus',
-          ssnPlaceholder: 'Henkilötunnus'
+          ssnPlaceholder: 'Henkilötunnus',
+          unit: 'Sisaruksen koulu / päiväkoti',
+          unitPlaceholder: 'Koulun / päiväkodin nimi'
         },
         units: {
           title: (maxUnits: number): string =>

@@ -162,6 +162,7 @@ data class DaycareFormV0(
                         siblingBasis = form.preferences.siblingBasis != null,
                         siblingName = form.preferences.siblingBasis?.siblingName ?: "",
                         siblingSsn = form.preferences.siblingBasis?.siblingSsn ?: "",
+                        siblingUnit = form.preferences.siblingBasis?.siblingUnit ?: "",
                     ),
                 urgent = form.preferences.urgent,
                 partTime = form.preferences.serviceNeed?.partTime ?: false,
@@ -269,6 +270,7 @@ data class Apply(
     val siblingBasis: Boolean = false,
     val siblingName: String = "",
     val siblingSsn: String = "",
+    val siblingUnit: String = "",
 )
 
 data class OtherPerson(

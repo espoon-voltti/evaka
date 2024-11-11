@@ -210,6 +210,7 @@ data class ApplicationForm(
                                     SiblingBasis(
                                             siblingName = v0.apply.siblingName,
                                             siblingSsn = v0.apply.siblingSsn,
+                                            siblingUnit = v0.apply.siblingUnit,
                                         )
                                         .takeIf { v0.apply.siblingBasis },
                                 preparatory = v0.careDetails.preparatory ?: false,
@@ -303,6 +304,7 @@ data class ApplicationForm(
                                     SiblingBasis(
                                             siblingName = v0.apply.siblingName,
                                             siblingSsn = v0.apply.siblingSsn,
+                                            siblingUnit = v0.apply.siblingUnit,
                                         )
                                         .takeIf { v0.apply.siblingBasis },
                                 preparatory = false,
@@ -510,7 +512,7 @@ data class ServiceNeed(
     val serviceNeedOption: ServiceNeedOption?,
 )
 
-data class SiblingBasis(val siblingName: String, val siblingSsn: String)
+data class SiblingBasis(val siblingName: String, val siblingSsn: String, val siblingUnit: String)
 
 data class ClubDetails(val wasOnDaycare: Boolean, val wasOnClubCare: Boolean)
 

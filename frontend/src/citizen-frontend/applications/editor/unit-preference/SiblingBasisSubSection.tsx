@@ -153,6 +153,33 @@ export default React.memo(function SiblingBasisSubSection({
           )}
         </>
       )}
+      {applicationType === 'PRESCHOOL' && formData.siblingBasis && (
+        <>
+          <Gap />
+          <FixedSpaceColumn spacing="xs">
+            <Label htmlFor="sibling-unit">
+              {t.applications.editor.unitPreference.siblingBasis.unit} *
+            </Label>
+            <InputField
+              value={formData.siblingUnit}
+              data-qa="siblingUnit-input"
+              onChange={(value) =>
+                updateFormData(() => ({
+                  siblingUnit: value
+                }))
+              }
+              placeholder={
+                t.applications.editor.unitPreference.siblingBasis
+                  .unitPlaceholder
+              }
+              id="sibling-unit"
+              width="XL"
+              info={errorToInputInfo(errors.siblingUnit, t.validationErrors)}
+              hideErrorsBeforeTouched={!verificationRequested}
+            />
+          </FixedSpaceColumn>
+        </>
+      )}
     </>
   )
 })
