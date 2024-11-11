@@ -12,15 +12,25 @@ import { useTranslation } from '../../state/i18n'
 interface Props {
   title: 'rowSubTotal' | 'familyTotal'
   sum: number
+  previousSum?: number | undefined
 }
 
-export default React.memo(function Sum({ title, sum }: Props) {
+export default React.memo(function Sum({ title, sum, previousSum }: Props) {
   const { i18n } = useTranslation()
 
   return (
     <InvoiceSum>
       <span data-qa="invoice-sum-title">{i18n.invoice.form.sum[title]}</span>
-      <span data-qa="invoice-sum-price">{formatCents(sum)}</span>
+      {previousSum !== undefined ? (
+        <span>
+          <div data-qa="invoice-sum-price">{formatCents(sum, true)}</div>
+          <div data-qa="invoice-sum-replaced-price">
+            <s>{formatCents(previousSum, true)}</s>
+          </div>
+        </span>
+      ) : (
+        <span data-qa="invoice-sum-price">formatCents(sum, true)</span>
+      )}
     </InvoiceSum>
   )
 })

@@ -427,7 +427,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val invoiceIds = db.transaction { tx -> tx.insert(testInvoices) }
         val invoice = testInvoices[0]
 
-        val result = getInvoice(invoiceIds[0])
+        val result = getInvoice(invoiceIds[0]).invoice
         assertDetailedEqualEnough(listOf(toDetailed(invoice)), listOf(result))
     }
 
@@ -447,7 +447,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(DevInvoicedFeeDecision(invoice.id, feeDecision.id))
         }
 
-        val result = getInvoice(invoice.id)
+        val result = getInvoice(invoice.id).invoice
         assertDetailedEqualEnough(
             expected =
                 listOf(
@@ -461,6 +461,30 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ),
             actual = listOf(result),
         )
+    }
+
+    @Test
+    fun `getInvoice returns replaced invoices`() {
+        val replacedInvoice =
+            DevInvoice(
+                status = InvoiceStatus.SENT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+            )
+        val invoice =
+            DevInvoice(
+                status = InvoiceStatus.REPLACEMENT_DRAFT,
+                areaId = testArea.id,
+                headOfFamilyId = testAdult_1.id,
+                replacedInvoiceId = replacedInvoice.id,
+            )
+        db.transaction { tx ->
+            tx.insert(replacedInvoice)
+            tx.insert(invoice)
+        }
+
+        assertEquals(invoice.id, getInvoice(replacedInvoice.id).replacedByInvoice?.id)
+        assertEquals(replacedInvoice.id, getInvoice(invoice.id).replacedInvoice?.id)
     }
 
     @Test
@@ -495,7 +519,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         sendInvoices(listOf(draft.id))
 
-        val result = getInvoice(draft.id)
+        val result = getInvoice(draft.id).invoice
         val updated =
             draft.copy(
                 status = InvoiceStatus.SENT,
@@ -592,7 +616,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         markInvoicesAsSent(listOf(invoice.id))
 
-        val result = getInvoice(invoice.id)
+        val result = getInvoice(invoice.id).invoice
 
         val updated =
             invoice.copy(
@@ -812,8 +836,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .map { it.data }
     }
 
-    private fun getInvoice(id: InvoiceId): InvoiceDetailed {
-        return invoiceController.getInvoice(dbInstance(), testUser, RealEvakaClock(), id).invoice
+    private fun getInvoice(id: InvoiceId): InvoiceController.InvoiceDetailedResponse {
+        return invoiceController.getInvoice(dbInstance(), testUser, RealEvakaClock(), id)
     }
 
     private fun markInvoicesAsSent(ids: List<InvoiceId>) {

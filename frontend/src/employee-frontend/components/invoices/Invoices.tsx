@@ -15,9 +15,9 @@ import {
   PagedInvoiceSummaryResponses,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
+import YearMonth from 'lib-common/year-month'
 import Pagination from 'lib-components/Pagination'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -291,10 +291,6 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
   )
 })
 
-function formatMonth(date: LocalDate) {
-  return `${date.month.toString().padStart(2, '0')}/${date.year}`
-}
-
 const InvoiceTableBody = React.memo(function InvoiceTableBody({
   invoices,
   showCheckboxes,
@@ -325,7 +321,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             <Td>
               <ChildrenCell people={item.children} />
             </Td>
-            <Td>{formatMonth(item.periodStart)}</Td>
+            <Td>{YearMonth.ofDate(item.periodStart).format()}</Td>
             <Td data-qa="invoice-created-at">
               {item.createdAt?.toLocalDate().format() ?? ''}
             </Td>

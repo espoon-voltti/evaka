@@ -161,6 +161,13 @@ fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
         .exactlyOneOrNull()
 }
 
+fun Database.Read.getReplacingInvoiceFor(id: InvoiceId): InvoiceDetailed? {
+    return createQuery {
+            invoiceDetailedQuery(Predicate { where("invoice.replaced_invoice_id = ${bind(id)}") })
+        }
+        .exactlyOneOrNull()
+}
+
 fun Database.Read.getSentInvoicesOfMonth(month: YearMonth): List<InvoiceDetailed> {
     val periodStart = month.atDay(1)
     val periodEnd = month.atEndOfMonth()

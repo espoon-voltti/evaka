@@ -583,8 +583,10 @@ export interface InvoiceDetailed {
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.InvoiceDetailedResponse
 */
 export interface InvoiceDetailedResponse {
-  data: InvoiceDetailed
+  invoice: InvoiceDetailed
   permittedActions: Action.Invoice[]
+  replacedByInvoice: InvoiceDetailed | null
+  replacedInvoice: InvoiceDetailed | null
 }
 
 /**
@@ -1296,7 +1298,9 @@ export function deserializeJsonInvoiceDetailed(json: JsonOf<InvoiceDetailed>): I
 export function deserializeJsonInvoiceDetailedResponse(json: JsonOf<InvoiceDetailedResponse>): InvoiceDetailedResponse {
   return {
     ...json,
-    data: deserializeJsonInvoiceDetailed(json.data)
+    invoice: deserializeJsonInvoiceDetailed(json.invoice),
+    replacedByInvoice: (json.replacedByInvoice != null) ? deserializeJsonInvoiceDetailed(json.replacedByInvoice) : null,
+    replacedInvoice: (json.replacedInvoice != null) ? deserializeJsonInvoiceDetailed(json.replacedInvoice) : null
   }
 }
 

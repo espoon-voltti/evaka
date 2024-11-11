@@ -2,18 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { get, groupBy } from 'lodash/fp'
+import groupBy from 'lodash/groupBy'
+import mapValues from 'lodash/mapValues'
+import sumBy from 'lodash/sumBy'
 import React, { Fragment, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import {
   InvoiceCodes,
   InvoiceRowDetailed,
   PersonDetailed
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -37,16 +39,19 @@ const TitleContainer = styled.div`
 
 interface Props {
   rows: InvoiceRowDetailed[]
-  invoiceCodes: Result<InvoiceCodes>
+  replacedRows: InvoiceRowDetailed[] | undefined
+  invoiceCodes: InvoiceCodes
 }
 
 const InvoiceRowsTable = styled(Table)`
   border-collapse: collapse;
   margin-bottom: 15px;
+
   td {
     padding: 16px 0 24px 16px;
     vertical-align: bottom;
   }
+
   td:nth-child(1) {
     padding-left: 0;
   }
@@ -70,6 +75,7 @@ const TotalPriceTh = styled(Th)`
 
 export default React.memo(function InvoiceRowsSection({
   rows,
+  replacedRows,
   invoiceCodes
 }: Props) {
   const { i18n } = useTranslation()
@@ -85,24 +91,23 @@ export default React.memo(function InvoiceRowsSection({
     toggleUiMode('invoices-absence-modal')
   }
 
-  const groupedRows = groupBy(get('child.id'), rows)
+  const childRows = groupBy(rows, (row) => row.child.id)
 
-  const products = useMemo(
-    () => invoiceCodes.map(({ products }) => products).getOrElse([]),
-    [invoiceCodes]
-  )
+  const replacedChildSums: Partial<Record<UUID, number>> | undefined =
+    useMemo(() => {
+      if (!replacedRows) return undefined
+      return mapValues(
+        groupBy(replacedRows, (row) => row.child.id),
+        (rows) => sumBy(rows, (row) => row.amount * row.unitPrice)
+      )
+    }, [replacedRows])
+
   const unitIds = useMemo(
-    () =>
-      invoiceCodes.map(({ units }) => units.map(({ id }) => id)).getOrElse([]),
+    () => invoiceCodes.units.map((unit) => unit.id),
     [invoiceCodes]
   )
   const unitDetails = useMemo(
-    () =>
-      invoiceCodes
-        .map(({ units }) =>
-          Object.fromEntries(units.map((unit) => [unit.id, unit]))
-        )
-        .getOrElse({}),
+    () => Object.fromEntries(invoiceCodes.units.map((unit) => [unit.id, unit])),
     [invoiceCodes]
   )
 
@@ -114,8 +119,12 @@ export default React.memo(function InvoiceRowsSection({
         startCollapsed={false}
       >
         <div className="invoice-rows">
-          {Object.entries(groupedRows).map(([childId, childRows]) => {
+          {Object.entries(childRows).map(([childId, childRows]) => {
             const firstRow = childRows[0]
+            const previousSum =
+              replacedChildSums !== undefined
+                ? replacedChildSums[childId] ?? 0
+                : undefined
             return (
               <div key={childId}>
                 <TitleContainer>
@@ -177,14 +186,18 @@ export default React.memo(function InvoiceRowsSection({
                       <InvoiceRowsSectionRow
                         key={index}
                         row={row}
-                        products={products}
+                        products={invoiceCodes.products}
                         unitIds={unitIds}
                         unitDetails={unitDetails}
                       />
                     ))}
                   </Tbody>
                 </InvoiceRowsTable>
-                <Sum title="rowSubTotal" sum={totalPrice(childRows)} />
+                <Sum
+                  title="rowSubTotal"
+                  sum={totalPrice(childRows)}
+                  previousSum={previousSum}
+                />
               </div>
             )
           })}

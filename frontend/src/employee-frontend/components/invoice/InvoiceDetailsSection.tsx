@@ -13,15 +13,18 @@ import { faMoneyCheck } from 'lib-icons'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 
+import { formatInvoicePeriod } from './utils'
+
 interface Props {
   invoice: InvoiceDetailed
+  replacedInvoice: InvoiceDetailed | null
 }
 
 const InvoiceDetailsSection = React.memo(function InvoiceDetailsSection({
-  invoice
+  invoice,
+  replacedInvoice
 }: Props) {
   const { i18n } = useTranslation()
-
   return (
     <CollapsibleSection
       title={i18n.invoice.form.details.title}
@@ -78,7 +81,19 @@ const InvoiceDetailsSection = React.memo(function InvoiceDetailsSection({
                 ))}
               </div>
             )
-          }
+          },
+          ...(invoice.status === 'REPLACEMENT_DRAFT' && replacedInvoice !== null
+            ? [
+                {
+                  label: i18n.invoice.form.details.replacedInvoice,
+                  value: (
+                    <Link to={`/finance/invoices/${replacedInvoice.id}`}>
+                      {formatInvoicePeriod(replacedInvoice, i18n)}
+                    </Link>
+                  )
+                }
+              ]
+            : [])
         ]}
       />
     </CollapsibleSection>
