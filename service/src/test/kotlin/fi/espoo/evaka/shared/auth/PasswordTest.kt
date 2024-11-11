@@ -4,10 +4,11 @@
 
 package fi.espoo.evaka.shared.auth
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.util.stream.Stream
 import kotlin.test.*
-import org.bouncycastle.crypto.params.Argon2Parameters
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -20,10 +21,10 @@ class PasswordTest {
                 // Keycloak default Argon2id
                 PasswordHashAlgorithm.Argon2id(
                     hashLength = 32,
-                    version = Argon2Parameters.ARGON2_VERSION_13,
-                    m = 7168,
-                    t = 5,
-                    p = 1,
+                    version = PasswordHashAlgorithm.Argon2id.Version.VERSION_13,
+                    memoryKbytes = 7168,
+                    iterations = 5,
+                    parallelism = 1,
                 ),
                 // Keycloak old pbkdf2-sha256
                 PasswordHashAlgorithm.Pbkdf2(
@@ -33,6 +34,8 @@ class PasswordTest {
                 ),
             )
             .stream()
+
+    private val jsonMapper = defaultJsonMapperBuilder().build()
 
     @ParameterizedTest
     @MethodSource("algorithms")
@@ -68,7 +71,7 @@ class PasswordTest {
         algorithm: PasswordHashAlgorithm
     ) {
         val password = algorithm.encode(Sensitive("password"))
-        val parsed = EncodedPassword.parse(password.toString())
+        val parsed = jsonMapper.readValue<EncodedPassword>(jsonMapper.writeValueAsString(password))
         assertEquals(password, parsed)
     }
 
@@ -83,10 +86,10 @@ class PasswordTest {
             EncodedPassword(
                 PasswordHashAlgorithm.Argon2id(
                     hashLength = 32,
-                    version = Argon2Parameters.ARGON2_VERSION_13,
-                    m = 7168,
-                    t = 5,
-                    p = 1,
+                    version = PasswordHashAlgorithm.Argon2id.Version.VERSION_13,
+                    memoryKbytes = 7168,
+                    iterations = 5,
+                    parallelism = 1,
                 ),
                 EncodedPassword.Salt.parse("LgSKeCa5qZH6Dh0PE17AwQ=="),
                 EncodedPassword.Hash.parse("O7vS90g14jWr4ESbUpJ3KX5y1NMZcMgjuqPHrZ4Eq8U="),
