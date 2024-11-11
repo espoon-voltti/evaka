@@ -40,8 +40,7 @@ let listPage: MobileListPage
 let childPage: MobileChildPage
 let childAttendancePage: ChildAttendancePage
 
-let now = HelsinkiDateTime.of(2024, 5, 17, 13, 0, 0)
-let today = now.toLocalDate()
+const now = HelsinkiDateTime.of(2024, 5, 17, 13, 0, 0)
 
 const group2 = {
   id: uuidv4(),
@@ -84,7 +83,8 @@ beforeEach(async () => {
 async function createPlacements(
   childId: string,
   groupId: string = testDaycareGroup.id,
-  placementType: PlacementType = 'DAYCARE'
+  placementType: PlacementType = 'DAYCARE',
+  today: LocalDate = now.toLocalDate()
 ) {
   const daycarePlacementFixture = await Fixture.placement({
     childId,
@@ -471,6 +471,7 @@ describe('Child mobile attendance list', () => {
       startDate: LocalDate.of(2022, 1, 1)
     }).save()
 
+    const today = now.toLocalDate()
     const placement1StartDate = today.subMonths(5)
     const placement1EndDate = today.subMonths(1)
 
@@ -527,12 +528,16 @@ describe('Child mobile attendance list', () => {
 
   test('Term break child is shown in absent list', async () => {
     // change mocked now to be during term break
-    now = HelsinkiDateTime.of(2024, 1, 1, 13, 0, 0)
-    today = now.toLocalDate()
-    await openPage({ mockedTime: now })
+    const testNow = HelsinkiDateTime.of(2024, 1, 1, 13, 0, 0)
+    await openPage({ mockedTime: testNow })
 
     const child = testChild2.id
-    await createPlacements(child, testDaycareGroup.id, 'PRESCHOOL')
+    await createPlacements(
+      child,
+      testDaycareGroup.id,
+      'PRESCHOOL',
+      testNow.toLocalDate()
+    )
 
     const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
@@ -545,12 +550,16 @@ describe('Child mobile attendance list', () => {
 
   test('Non operational day child is shown in absent list', async () => {
     // change mocked now to be during weekend
-    now = HelsinkiDateTime.of(2024, 5, 18, 13, 0, 0)
-    today = now.toLocalDate()
-    await openPage({ mockedTime: now })
+    const testNow = HelsinkiDateTime.of(2024, 5, 18, 13, 0, 0)
+    await openPage({ mockedTime: testNow })
 
     const child = testChild2.id
-    await createPlacements(child, testDaycareGroup.id, 'PRESCHOOL')
+    await createPlacements(
+      child,
+      testDaycareGroup.id,
+      'PRESCHOOL',
+      testNow.toLocalDate()
+    )
 
     const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
@@ -563,15 +572,15 @@ describe('Child mobile attendance list', () => {
 
   test('Child with shift care is shown in coming list even on weekend', async () => {
     // change mocked now to be during weekend
-    now = HelsinkiDateTime.of(2024, 5, 18, 13, 0, 0)
-    today = now.toLocalDate()
-    await openPage({ mockedTime: now })
+    const testNow = HelsinkiDateTime.of(2024, 5, 18, 13, 0, 0)
+    await openPage({ mockedTime: testNow })
 
     const child = testChild2.id
     const placement = await createPlacements(
       child,
       testDaycareGroup.id,
-      'PRESCHOOL'
+      'PRESCHOOL',
+      testNow.toLocalDate()
     )
     const employee = await Fixture.employee().save()
     const serviceNeedOption = await Fixture.serviceNeedOption().save()
