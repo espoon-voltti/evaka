@@ -1197,8 +1197,8 @@ export default {
           namesPlaceholder: 'Etunimet ja sukunimi',
           ssn: 'Sisaruksen henkilötunnus',
           ssnPlaceholder: 'Henkilötunnus',
-          unit: 'Sisaruksen koulu',
-          unitPlaceholder: 'Koulun nimi'
+          unit: 'Sisaruksen koulu / päiväkoti',
+          unitPlaceholder: 'Koulun / päiväkodin nimi'
         },
         units: {
           title: (maxUnits: number): string =>

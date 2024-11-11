@@ -1238,8 +1238,8 @@ const en: Translations = {
           namesPlaceholder: 'First and last name',
           ssn: 'Personal identity code of the sibling',
           ssnPlaceholder: 'e.g. 010110A000P',
-          unit: "Sibling's school",
-          unitPlaceholder: 'The name of the school'
+          unit: "Sibling's school / daycare",
+          unitPlaceholder: 'The name of the school / daycare'
         },
         units: {
           title: (maxUnits: number) =>

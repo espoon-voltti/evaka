@@ -1202,8 +1202,8 @@ const sv: Translations = {
           namesPlaceholder: 'För- och efternamn',
           ssn: 'Syskonets personbeteckning',
           ssnPlaceholder: 'Personbeteckning',
-          unit: 'Syskonets skola',
-          unitPlaceholder: 'Skolans namn'
+          unit: 'Syskonets skola / daghem',
+          unitPlaceholder: 'Skolans / daghems namn'
         },
         units: {
           title: () => 'Ansökningsönskemål',
