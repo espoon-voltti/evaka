@@ -851,7 +851,7 @@ export default {
         unitPreference: {
           title: 'Hakutoive',
           siblingBasis: {
-            title: 'Haku sisarperusteella',
+            title: 'Haku sisarusperusteella',
             siblingBasisLabel: 'Sisarusperuste',
             siblingBasisYes:
               'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa',
@@ -1114,7 +1114,7 @@ export default {
       unitPreference: {
         title: 'Hakutoive',
         siblingBasis: {
-          title: 'Haku sisarperusteella',
+          title: 'Haku sisarusperusteella',
           info: {
             DAYCARE: (
               <>
