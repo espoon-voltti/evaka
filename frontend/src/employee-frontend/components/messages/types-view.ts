@@ -35,6 +35,7 @@ export const personalMessageBoxes: View[] = [
   'received',
   'sent',
   'drafts',
+  'copies',
   'archive'
 ]
 export const groupMessageBoxes: View[] = [

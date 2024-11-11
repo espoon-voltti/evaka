@@ -1343,15 +1343,43 @@ fun Database.Read.getStaffCopyRecipients(
     return createQuery {
             sql(
                 """
-SELECT receiver_acc.id
-FROM message_account sender_acc
-JOIN daycare_acl_view acl ON sender_acc.employee_id = acl.employee_id OR sender_acc.type = 'MUNICIPAL'
-JOIN daycare u ON u.id = acl.daycare_id
-JOIN daycare_group g ON u.id = g.daycare_id
-JOIN message_account receiver_acc ON g.id = receiver_acc.daycare_group_id
-WHERE sender_acc.id = ${bind(senderId)}
-AND (g.end_date IS NULL OR g.end_date >= ${bind(date)})
-AND (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g.id = ANY(${bind(groupIds)}))
+WITH groups AS (
+    SELECT u.id AS unit_id, g.id AS group_id
+    FROM daycare u
+    JOIN daycare_group g ON u.id = g.daycare_id
+    JOIN LATERAL (
+        SELECT ma.employee_id, ma.type
+        FROM message_account ma
+        WHERE ma.id = ${bind(senderId)}
+    ) sender ON TRUE
+    WHERE (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g.id = ANY(${bind(groupIds)}))
+      AND (sender.type = 'MUNICIPAL' OR EXISTS(
+        SELECT FROM daycare_acl_view acl
+        WHERE acl.daycare_id = u.id AND sender.employee_id = acl.employee_id
+      ))
+      AND (u.closing_date IS NULL OR u.closing_date >= ${bind(date)})
+      AND (g.end_date IS NULL OR g.end_date >= ${bind(date)})
+), units AS (
+    SELECT DISTINCT unit_id
+    FROM groups
+), recipients AS (
+    -- group accounts
+    SELECT receiver_acc.id
+    FROM groups g
+    JOIN message_account receiver_acc ON receiver_acc.daycare_group_id = g.group_id
+
+    UNION ALL
+
+    -- unit supervisor and special education teacher accounts
+    SELECT receiver_acc.id
+    FROM units u
+    JOIN daycare_acl unit_employee ON unit_employee.daycare_id = u.unit_id
+      AND unit_employee.role = ANY('{UNIT_SUPERVISOR,SPECIAL_EDUCATION_TEACHER}'::user_role[])
+    JOIN message_account receiver_acc ON receiver_acc.employee_id = unit_employee.employee_id
+)
+SELECT id
+FROM recipients
+WHERE id <> ${bind(senderId)}
 """
             )
         }
