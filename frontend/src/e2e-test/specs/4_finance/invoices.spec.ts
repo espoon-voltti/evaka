@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -38,7 +37,6 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let financePage: FinancePage
 let invoicesPage: InvoicesPage
-let feeDecisionFixture: FeeDecision
 let adultWithoutSSN: DevPerson
 
 beforeEach(async () => {
@@ -67,30 +65,6 @@ beforeEach(async () => {
     endDate: LocalDate.of(2099, 1, 1)
   }).save()
 
-  feeDecisionFixture = feeDecisionsFixture(
-    'SENT',
-    testAdult,
-    testChild2,
-    testDaycare.id,
-    null,
-    new FiniteDateRange(
-      LocalDate.todayInSystemTz().subMonths(1).withDate(1),
-      LocalDate.todayInSystemTz().withDate(1).subDays(1)
-    )
-  )
-  await createFeeDecisions({ body: [feeDecisionFixture] })
-  await createDaycarePlacements({
-    body: [
-      createDaycarePlacementFixture(
-        uuidv4(),
-        testChild2.id,
-        testDaycare.id,
-        feeDecisionFixture.validDuring.start,
-        feeDecisionFixture.validDuring.end ?? undefined
-      )
-    ]
-  })
-
   await Fixture.feeThresholds().save()
 
   page = await Page.open({ acceptDownloads: true })
@@ -106,76 +80,102 @@ beforeEach(async () => {
 })
 
 describe('Invoices', () => {
-  test('List of invoice drafts is empty intially and after creating new drafts the list has one invoice', async () => {
-    await invoicesPage.assertInvoiceCount(0)
-    await invoicesPage.createInvoiceDrafts()
-    await invoicesPage.assertInvoiceCount(1)
-  })
-
-  test('Navigate to and from invoice page', async () => {
-    await invoicesPage.createInvoiceDrafts()
-    await invoicesPage.openFirstInvoice()
-    await invoicesPage.assertInvoiceHeadOfFamily(
-      `${testAdult.firstName} ${testAdult.lastName}`
-    )
-    await invoicesPage.navigateBackToInvoices()
-  })
-
-  test('Invoices are toggled and sent', async () => {
-    await createInvoices({
-      body: [
-        invoiceFixture(
-          testAdult.id,
-          testChild.id,
-          testCareArea.id,
-          testDaycare.id,
-          'DRAFT'
-        ),
-        invoiceFixture(
-          familyWithRestrictedDetailsGuardian.guardian.id,
-          familyWithRestrictedDetailsGuardian.children[0].id,
-          testCareArea.id,
-          testDaycare.id,
-          'DRAFT'
+  describe('Create drafts', () => {
+    beforeEach(async () => {
+      const feeDecisionFixture = feeDecisionsFixture(
+        'SENT',
+        testAdult,
+        testChild2,
+        testDaycare.id,
+        null,
+        new FiniteDateRange(
+          LocalDate.todayInSystemTz().subMonths(1).withDate(1),
+          LocalDate.todayInSystemTz().withDate(1).subDays(1)
         )
-      ]
-    })
-    // switch tabs to refresh data
-    await financePage.selectFeeDecisionsTab()
-    await financePage.selectInvoicesTab()
-
-    await invoicesPage.toggleAllInvoices(true)
-    await invoicesPage.assertInvoiceCount(2)
-    await invoicesPage.sendInvoices()
-    await invoicesPage.assertInvoiceCount(0)
-    await invoicesPage.showSentInvoices()
-    await invoicesPage.assertInvoiceCount(2)
-  })
-
-  test('Sending an invoice with a recipient without a SSN', async () => {
-    await createInvoices({
-      body: [
-        invoiceFixture(
-          adultWithoutSSN.id,
-          testChild.id,
-          testCareArea.id,
-          testDaycare.id,
-          'DRAFT'
-        )
-      ]
+      )
+      await createFeeDecisions({ body: [feeDecisionFixture] })
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: feeDecisionFixture.validDuring.start,
+        endDate: feeDecisionFixture.validDuring.end
+      }).save()
     })
 
-    await invoicesPage.freeTextFilter(adultWithoutSSN.firstName)
-    await invoicesPage.assertInvoiceCount(1)
-    await invoicesPage.toggleAllInvoices(true)
-    await invoicesPage.sendInvoices()
-    await invoicesPage.assertInvoiceCount(0)
-    await invoicesPage.showWaitingForSendingInvoices()
-    await invoicesPage.assertInvoiceCount(1)
-    await invoicesPage.openFirstInvoice()
-    await invoicesPage.markInvoiceSent()
-    await invoicesPage.navigateBackToInvoices()
-    await invoicesPage.showSentInvoices()
-    await invoicesPage.assertInvoiceCount(1)
+    test('List of invoice drafts is empty intially and after creating new drafts the list has one invoice', async () => {
+      await invoicesPage.assertInvoiceCount(0)
+      await invoicesPage.createInvoiceDrafts()
+      await invoicesPage.assertInvoiceCount(1)
+    })
+
+    test('Invoice page has correct content', async () => {
+      await invoicesPage.createInvoiceDrafts()
+      await invoicesPage.openFirstInvoice()
+      await invoicesPage.assertInvoiceHeadOfFamily(
+        `${testAdult.firstName} ${testAdult.lastName}`
+      )
+      await invoicesPage.navigateBackToInvoices()
+      // TODO: assert content fields
+    })
+  })
+
+  describe('Send invoices', () => {
+    test('Invoices are toggled and sent', async () => {
+      await createInvoices({
+        body: [
+          invoiceFixture(
+            testAdult.id,
+            testChild.id,
+            testCareArea.id,
+            testDaycare.id,
+            'DRAFT'
+          ),
+          invoiceFixture(
+            familyWithRestrictedDetailsGuardian.guardian.id,
+            familyWithRestrictedDetailsGuardian.children[0].id,
+            testCareArea.id,
+            testDaycare.id,
+            'DRAFT'
+          )
+        ]
+      })
+      // switch tabs to refresh data
+      await financePage.selectFeeDecisionsTab()
+      await financePage.selectInvoicesTab()
+
+      await invoicesPage.toggleAllInvoices(true)
+      await invoicesPage.assertInvoiceCount(2)
+      await invoicesPage.sendInvoices()
+      await invoicesPage.assertInvoiceCount(0)
+      await invoicesPage.showSentInvoices()
+      await invoicesPage.assertInvoiceCount(2)
+    })
+
+    test('Sending an invoice with a recipient without a SSN', async () => {
+      await createInvoices({
+        body: [
+          invoiceFixture(
+            adultWithoutSSN.id,
+            testChild.id,
+            testCareArea.id,
+            testDaycare.id,
+            'DRAFT'
+          )
+        ]
+      })
+
+      await invoicesPage.freeTextFilter(adultWithoutSSN.firstName)
+      await invoicesPage.assertInvoiceCount(1)
+      await invoicesPage.toggleAllInvoices(true)
+      await invoicesPage.sendInvoices()
+      await invoicesPage.assertInvoiceCount(0)
+      await invoicesPage.showWaitingForSendingInvoices()
+      await invoicesPage.assertInvoiceCount(1)
+      await invoicesPage.openFirstInvoice()
+      await invoicesPage.markInvoiceSent()
+      await invoicesPage.navigateBackToInvoices()
+      await invoicesPage.showSentInvoices()
+      await invoicesPage.assertInvoiceCount(1)
+    })
   })
 })
