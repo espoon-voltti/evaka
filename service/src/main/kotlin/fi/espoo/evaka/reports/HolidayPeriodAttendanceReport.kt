@@ -151,8 +151,22 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                         sn.validity.includes(date)
                                     }
                                 }
-
-                        val dailyPlacedData = dailyDirectlyPlacedData + dailyBackupPlacedData
+                        // splits placed children's service need info into two groups based on
+                        // placement type
+                        // - children that require reservations to inform holiday period attendance
+                        // (RESERVATION_REQUIRED)
+                        // - children that do not reserve attendance and won't have service on
+                        // holiday periods (FIXED_SCHEDULE, TERM_BREAK)
+                        val (dailyPlacedData, fixedScheduleServiceNeeds) =
+                            (dailyDirectlyPlacedData + dailyBackupPlacedData).partition { sni ->
+                                sni.placementType.scheduleType(
+                                    date = date,
+                                    clubTerms = emptyList(),
+                                    preschoolTerms = preschoolTerms,
+                                ) == ScheduleType.RESERVATION_REQUIRED
+                            }
+                        val fixedSchedulePlacedChildren =
+                            fixedScheduleServiceNeeds.map { it.child.id }.toSet()
                         val dailyPlacedDataByChild = dailyPlacedData.groupBy { it.child.id }
 
                         val dailyAbsencesByChild =
@@ -224,20 +238,13 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                         )
                                     },
                             presentOccupancyCoefficient = dailyOccupancyCoefficient,
-                            absentCount = dailyAbsencesByChild.size,
+                            absentCount =
+                                dailyAbsencesByChild.size + fixedSchedulePlacedChildren.size,
                             requiredStaff = staffNeedAtDate,
                             noResponseChildren =
                                 noResponses
-                                    // expect a response when:
-                                    // - it's an operation day for the child
-                                    // - reservation is required for the child
                                     .filter {
-                                        operationDaysByChild[it.child.id]?.contains(date) == true &&
-                                            it.placementType.scheduleType(
-                                                date,
-                                                emptyList(),
-                                                preschoolTerms,
-                                            ) == ScheduleType.RESERVATION_REQUIRED
+                                        operationDaysByChild[it.child.id]?.contains(date) == true
                                     }
                                     .map { (child) ->
                                         ChildWithName(

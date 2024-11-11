@@ -48,6 +48,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.withHolidays
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -563,7 +564,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `Report does not count preschoolers on term break to non-responders`() {
+    fun `Report counts preschoolers as absent for entire period`() {
         val monday = holidayPeriod.period.start // 2024-12-23
         val testUnitData = initTestUnitData(monday)
         val testData = initTestPlacementData(monday, testUnitData[0])
@@ -581,19 +582,25 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 testChildEmil,
                 listOf(
                     DevPlacement(
-                        id = PlacementId(UUID.randomUUID()),
                         type = PlacementType.PRESCHOOL,
                         childId = testChildEmil.id,
                         unitId = testUnitData[0],
                         startDate = placementDuration.start,
+                        endDate = monday.plusDays(1),
+                    ),
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = testChildEmil.id,
+                        unitId = testUnitData[0],
+                        startDate = monday.plusDays(2),
                         endDate = placementDuration.end,
-                    )
+                    ),
                 ),
             )
 
         db.transaction { tx ->
             tx.insert(testChildEmil, DevPersonType.CHILD)
-            tx.insert(testDataEmil.second[0])
+            testDataEmil.second.forEach { tx.insert(it) }
 
             val term =
                 DevPreschoolTerm(
@@ -619,7 +626,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val expectedMonday =
             HolidayPeriodAttendanceReportRow(
-                absentCount = 2,
+                absentCount = 3,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
                 assistanceChildren = emptyList(),
@@ -633,7 +640,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val expectedTuesday =
             HolidayPeriodAttendanceReportRow(
-                absentCount = 0,
+                absentCount = 1,
                 requiredStaff = 2,
                 presentChildren =
                     testData.slice(0..2).map {
@@ -650,7 +657,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val expectedWednesday =
             HolidayPeriodAttendanceReportRow(
-                absentCount = 0,
+                absentCount = 1,
                 requiredStaff = 1,
                 presentChildren =
                     listOf(testData[0]).map {
@@ -667,38 +674,30 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val expectedThursday =
             HolidayPeriodAttendanceReportRow(
-                absentCount = 1,
+                absentCount = 2,
                 requiredStaff = 1,
                 presentChildren =
                     (testData.slice(0..1)).map {
                         ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 assistanceChildren = emptyList(),
-                noResponseChildren =
-                    listOf(testDataEmil).map {
-                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
-                    },
+                noResponseChildren = emptyList(),
                 date = monday.plusDays(3),
                 presentOccupancyCoefficient = 2.75,
             )
+
         val expectedFriday =
             HolidayPeriodAttendanceReportRow(
-                absentCount = 2,
+                absentCount = 3,
                 requiredStaff = 1,
                 presentChildren =
                     listOf(testData[2].first).map {
                         ChildWithName(it.id, it.firstName, it.lastName)
                     },
-                assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
-                    },
-                noResponseChildren =
-                    listOf(testDataEmil.first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
-                    },
+                assistanceChildren = listOf(),
+                noResponseChildren = listOf(),
                 date = monday.plusDays(4),
-                presentOccupancyCoefficient = 5.5,
+                presentOccupancyCoefficient = 1.0,
             )
 
         listOf(expectedMonday, expectedTuesday, expectedWednesday, expectedThursday, expectedFriday)
@@ -849,6 +848,25 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     endDate = defaultPlacementDuration.end,
                 )
             tx.insert(placementB)
+
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementB.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = wednesday,
+                    confirmedBy = admin.evakaUserId,
+                    optionId = snDefaultDaycare.id,
+                )
+            )
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementB.id,
+                    startDate = thursday,
+                    endDate = defaultPlacementDuration.end,
+                    confirmedBy = admin.evakaUserId,
+                    optionId = snDaycareFullDay35.id,
+                )
+            )
 
             val placementC1 =
                 DevPlacement(
