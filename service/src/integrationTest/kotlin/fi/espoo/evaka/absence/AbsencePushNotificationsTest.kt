@@ -58,7 +58,7 @@ class AbsencePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
     @BeforeAll
     override fun beforeAll() {
         super.beforeAll()
-        clock = MockEvakaClock(2023, 1, 1, 12, 0)
+        clock = MockEvakaClock(2023, 1, 2, 12, 0) // monday
     }
 
     @BeforeEach
