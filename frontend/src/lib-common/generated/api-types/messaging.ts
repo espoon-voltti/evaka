@@ -29,6 +29,14 @@ export interface AuthorizedMessageAccount {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.ChildMessageAccountAccess
+*/
+export interface ChildMessageAccountAccess {
+  newMessage: UUID[]
+  reply: UUID[]
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.CitizenMessageBody
 */
 export interface CitizenMessageBody {
@@ -102,7 +110,7 @@ export interface DraftContent {
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetReceiversResponse
 */
 export interface GetReceiversResponse {
-  childrenToMessageAccounts: Record<UUID, UUID[]>
+  childrenToMessageAccounts: Record<UUID, ChildMessageAccountAccess>
   messageAccounts: MessageAccount[]
 }
 

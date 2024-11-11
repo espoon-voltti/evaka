@@ -741,15 +741,21 @@ WHERE m.id = ${bind(messageId)} AND m.sender_id = ${bind(senderId)}
         .exactlyOne<Message>()
 }
 
+data class MessageAccountAccess(
+    val newMessage: Set<MessageAccount>,
+    val reply: Set<MessageAccount>,
+)
+
 fun Database.Read.getCitizenReceivers(
     today: LocalDate,
     accountId: MessageAccountId,
-): Map<ChildId, List<MessageAccount>> {
+): Map<ChildId, MessageAccountAccess> {
     data class MessageAccountWithChildId(
         val id: MessageAccountId,
         val name: String,
         val type: AccountType,
         val childId: ChildId,
+        val replyOnly: Boolean,
     )
 
     return createQuery {
@@ -794,9 +800,9 @@ relevant_placements AS (
     FROM backup_care_placements bc
 ),
 personal_accounts AS (
-    SELECT acc.id, acc_name.name, 'PERSONAL' AS type, p.child_id
+    SELECT acc.id, acc_name.name, 'PERSONAL' AS type, p.child_id, acl.role != 'UNIT_SUPERVISOR' AS reply_only 
     FROM (SELECT DISTINCT unit_id, child_id FROM relevant_placements) p
-    JOIN daycare_acl acl ON acl.daycare_id = p.unit_id AND acl.role = 'UNIT_SUPERVISOR'
+    JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
     JOIN message_account acc ON acc.employee_id = acl.employee_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
     WHERE active IS TRUE
@@ -833,20 +839,32 @@ citizen_accounts AS (
     WHERE acc.id != ${bind(accountId)} AND NOT c.guardian_relationship
 ),
 mixed_accounts AS (
-    SELECT id, name, type, child_id FROM personal_accounts
+    SELECT id, name, type, child_id, reply_only FROM personal_accounts
     UNION ALL
-    SELECT id, name, type, child_id FROM group_accounts
+    SELECT id, name, type, child_id, FALSE AS reply_only FROM group_accounts
     UNION ALL
-    SELECT id, name, type, child_id FROM citizen_accounts
+    SELECT id, name, type, child_id, FALSE AS reply_only FROM citizen_accounts
 )
-SELECT id, name, type, child_id FROM mixed_accounts
+SELECT id, name, type, child_id, reply_only FROM mixed_accounts
 ORDER BY type, name  -- groups first
 """
             )
         }
         .toList<MessageAccountWithChildId>()
-        .groupBy({ it.childId }, { MessageAccount(it.id, it.name, it.type) })
-        .filterValues { accounts -> accounts.any { it.type.isPrimaryRecipientForCitizenMessage() } }
+        .groupBy { it.childId }
+        .mapValues { (_, accounts) ->
+            val newMessage =
+                accounts
+                    .filter { !it.replyOnly }
+                    .map { MessageAccount(id = it.id, name = it.name, type = it.type) }
+            val reply = accounts.map { MessageAccount(id = it.id, name = it.name, type = it.type) }
+            MessageAccountAccess(newMessage.toSet(), reply.toSet())
+        }
+        .filterValues { accounts ->
+            (accounts.newMessage + accounts.reply).any {
+                it.type.isPrimaryRecipientForCitizenMessage()
+            }
+        }
 }
 
 data class PagedSentMessages(val data: List<SentMessage>, val total: Int, val pages: Int)

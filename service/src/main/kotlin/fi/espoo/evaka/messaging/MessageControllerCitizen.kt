@@ -164,9 +164,14 @@ class MessageControllerCitizen(
             }
     }
 
-    data class GetReceiversResponse(
+    data class ChildMessageAccountAccess(
+        val newMessage: Set<MessageAccountId>,
+        val reply: Set<MessageAccountId>,
+    )
+
+    class GetReceiversResponse(
         val messageAccounts: Set<MessageAccount>,
-        val childrenToMessageAccounts: Map<ChildId, List<MessageAccountId>>,
+        val childrenToMessageAccounts: Map<ChildId, ChildMessageAccountAccess>,
     )
 
     @GetMapping("/receivers")
@@ -181,9 +186,18 @@ class MessageControllerCitizen(
                     (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
                 val response =
                     GetReceiversResponse(
-                        messageAccounts = accountsPerChild.values.flatten().toSet(),
+                        messageAccounts =
+                            accountsPerChild.values
+                                .map { it.newMessage + it.reply }
+                                .flatten()
+                                .toSet(),
                         childrenToMessageAccounts =
-                            accountsPerChild.mapValues { entry -> entry.value.map { it.id } },
+                            accountsPerChild.mapValues { entry ->
+                                ChildMessageAccountAccess(
+                                    entry.value.newMessage.map { it.id }.toSet(),
+                                    entry.value.reply.map { it.id }.toSet(),
+                                )
+                            },
                     )
                 accountId to response
             }
@@ -242,7 +256,7 @@ class MessageControllerCitizen(
                 val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val validRecipients =
                     dbc.read { it.getCitizenReceivers(today, senderId) }
-                        .mapValues { entry -> entry.value.map { it.id }.toSet() }
+                        .mapValues { entry -> entry.value.newMessage.map { it.id }.toSet() }
                 val allRecipientsValid =
                     body.recipients.all { recipient ->
                         body.children.any { child ->

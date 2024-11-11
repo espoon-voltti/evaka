@@ -133,7 +133,7 @@ export default React.memo(function MessagesPage() {
                     accountId={messageAccount.accountId}
                     closeThread={() => selectThread(undefined)}
                     thread={selectedThread}
-                    allowedReplyAccounts={
+                    allowedAccounts={
                       receivers.getOrElse(null)?.childrenToMessageAccounts ?? {}
                     }
                     onThreadDeleted={() => {
