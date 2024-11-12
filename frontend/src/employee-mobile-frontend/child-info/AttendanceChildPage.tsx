@@ -206,7 +206,7 @@ export default React.memo(function AttendanceChildPage({
                   </Zindex>
 
                   <FlexColumn paddingHorizontal="s">
-                    {child.scheduleType !== 'TERM_BREAK' ? (
+                    {childAttendance.hasOperationalDay ? (
                       <>
                         <AttendanceDailyServiceTimes
                           dailyServiceTimes={child.dailyServiceTimes}
@@ -246,7 +246,7 @@ export default React.memo(function AttendanceChildPage({
                       <AttendanceChildDeparted unitId={unitId} child={child} />
                     )}
                     {childAttendance.status === 'ABSENT' &&
-                      child.scheduleType !== 'TERM_BREAK' && (
+                      childAttendance.hasOperationalDay && (
                         <AttendanceChildAbsent
                           childId={childId}
                           unitId={unitId}

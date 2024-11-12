@@ -75,7 +75,7 @@ const staff2Name = `${staff2LastName} ${staff2FirstName}`
 
 const pin = '2580'
 
-const mockedDate = LocalDate.of(2022, 5, 21)
+const mockedDate = LocalDate.of(2022, 5, 20) // Friday
 const mockedDateAt10 = HelsinkiDateTime.fromLocal(
   mockedDate,
   LocalTime.of(10, 2)

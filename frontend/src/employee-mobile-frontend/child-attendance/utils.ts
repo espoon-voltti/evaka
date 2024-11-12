@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -31,28 +31,37 @@ export type AttendanceStatuses = Record<
   ChildAttendanceStatusResponse | undefined
 >
 
+export type ChildAttendanceStatus = ChildAttendanceStatusResponse & {
+  hasOperationalDay: boolean
+}
+
 export function childAttendanceStatus(
   child: AttendanceChild,
   attendanceStatuses: Record<UUID, ChildAttendanceStatusResponse | undefined>
-): ChildAttendanceStatusResponse {
+): ChildAttendanceStatus {
   const status = attendanceStatuses[child.id]
-  if (status) return status
+  if (status) return { ...status, hasOperationalDay: true }
 
-  if (child.scheduleType === 'TERM_BREAK') {
-    return defaultChildAttendanceStatusTermBreak
+  if (
+    child.scheduleType === 'TERM_BREAK' ||
+    !child.operationalDates.some((date) => date.isToday())
+  ) {
+    return childAttendanceStatusNoService
   }
 
   return defaultChildAttendanceStatus
 }
 
-const defaultChildAttendanceStatus: ChildAttendanceStatusResponse = {
+const defaultChildAttendanceStatus: ChildAttendanceStatus = {
   status: 'COMING',
   attendances: [],
-  absences: []
+  absences: [],
+  hasOperationalDay: true
 }
 
-const defaultChildAttendanceStatusTermBreak: ChildAttendanceStatusResponse = {
+const childAttendanceStatusNoService: ChildAttendanceStatus = {
   status: 'ABSENT',
   attendances: [],
-  absences: []
+  absences: [],
+  hasOperationalDay: false
 }
