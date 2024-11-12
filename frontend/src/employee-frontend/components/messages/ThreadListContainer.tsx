@@ -115,7 +115,7 @@ export default React.memo(function ThreadListContainer({
       urgent: thread.urgent,
       sensitive: thread.sensitive,
       participants:
-        view === 'sent'
+        view === 'sent' || view === 'copies'
           ? thread.messages[0].recipientNames || getUniqueParticipants(thread)
           : getUniqueParticipants(thread),
       unread: thread.messages.some(
