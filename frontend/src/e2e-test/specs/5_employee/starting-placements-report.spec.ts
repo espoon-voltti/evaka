@@ -17,7 +17,7 @@ import { employeeLogin } from '../../utils/user'
 beforeEach(async (): Promise<void> => resetServiceState())
 
 describe('Starting placements report', () => {
-  test('works', async () => {
+  test('shows correct row data', async () => {
     const mockedToday = LocalDate.of(2023, 6, 19)
 
     const admin = await Fixture.employee().admin().save()
@@ -48,6 +48,7 @@ describe('Starting placements report', () => {
     await report.assertRows([
       {
         childName: `${child.lastName} ${child.firstName}`,
+        unitName: daycare.name,
         areaName: area.name,
         placementStart: placement.startDate
       }

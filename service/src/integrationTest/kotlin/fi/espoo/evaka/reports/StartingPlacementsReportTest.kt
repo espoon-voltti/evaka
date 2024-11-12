@@ -4,29 +4,41 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testVoucherDaycare
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired
+    private lateinit var startingPlacementsReportController: StartingPlacementsReportController
+    val testClock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.of(8, 0)))
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -48,18 +60,24 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
     fun `child with single placement starting at query date is picked up`() {
         val date = LocalDate.of(2019, 1, 1)
         val placementStart = date
-        insertPlacement(testChild_1.id, placementStart)
+        val placementId = insertPlacement(testChild_1.id, placementStart)
 
-        getAndAssert(date, listOf(toReportRow(testChild_1, placementStart)))
+        getAndAssert(
+            date,
+            listOf(toReportRow(testChild_1, placementStart, testDaycare, placementId)),
+        )
     }
 
     @Test
     fun `child with single placement starting at the middle of the query month is picked up`() {
         val date = LocalDate.of(2019, 1, 1)
         val placementStart = date.withDayOfMonth(15)
-        insertPlacement(testChild_1.id, placementStart)
+        val placementId = insertPlacement(testChild_1.id, placementStart)
 
-        getAndAssert(date, listOf(toReportRow(testChild_1, placementStart)))
+        getAndAssert(
+            date,
+            listOf(toReportRow(testChild_1, placementStart, testDaycare, placementId)),
+        )
     }
 
     @Test
@@ -94,49 +112,139 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
     fun `child with a placement before with a gap between is picked up`() {
         val date = LocalDate.of(2019, 1, 1)
         val placementStart = date
-        insertPlacement(testChild_1.id, placementStart)
+        val secondPlacementId = insertPlacement(testChild_1.id, placementStart)
         insertPlacement(testChild_1.id, placementStart.minusMonths(1), placementStart.minusDays(2))
 
-        getAndAssert(date, listOf(toReportRow(testChild_1, placementStart)))
+        getAndAssert(
+            date,
+            listOf(toReportRow(testChild_1, placementStart, testDaycare, secondPlacementId)),
+        )
     }
 
     @Test
     fun `child with a placement after is picked up`() {
         val date = LocalDate.of(2019, 1, 1)
         val placementStart = date
-        insertPlacement(testChild_1.id, placementStart, placementStart.plusMonths(1))
+        val firstPlacementId =
+            insertPlacement(testChild_1.id, placementStart, placementStart.plusMonths(1))
         insertPlacement(
             testChild_1.id,
             placementStart.plusMonths(1).plusDays(1),
             placementStart.plusMonths(2),
         )
 
-        getAndAssert(date, listOf(toReportRow(testChild_1, placementStart)))
+        getAndAssert(
+            date,
+            listOf(toReportRow(testChild_1, placementStart, testDaycare, firstPlacementId)),
+        )
     }
 
     @Test
     fun `child in a service voucher daycare is picked up`() {
         val date = LocalDate.of(2019, 1, 1)
         val placementStart = date
-        insertPlacement(testChild_1.id, placementStart, placementStart, testVoucherDaycare)
-        getAndAssert(date, listOf(toReportRow(testChild_1, placementStart, "palvelusetelialue")))
+        val placementId =
+            insertPlacement(testChild_1.id, placementStart, placementStart, testVoucherDaycare)
+        getAndAssert(
+            date,
+            listOf(
+                toReportRow(
+                    testChild_1,
+                    placementStart,
+                    testVoucherDaycare,
+                    placementId,
+                    "palvelusetelialue",
+                )
+            ),
+        )
     }
 
-    private val testUser =
+    private val testUnitSupervisor =
+        DevEmployee(id = EmployeeId(UUID.randomUUID()), roles = setOf())
+
+    private val testUnitSupervisor2 =
+        DevEmployee(id = EmployeeId(UUID.randomUUID()), roles = setOf())
+
+    @Test
+    fun `unit supervisor can see only their own unit's placements`() {
+        val startDay = testClock.today()
+        val anotherDaycare =
+            DevDaycare(
+                id = DaycareId(UUID.randomUUID()),
+                name = "Another Daycare",
+                areaId = testArea.id,
+            )
+        val anotherPlacement =
+            DevPlacement(
+                childId = testChild_2.id,
+                unitId = anotherDaycare.id,
+                startDate = startDay,
+                endDate = startDay.plusMonths(1),
+            )
+
+        db.transaction { tx ->
+            tx.insert(anotherDaycare)
+
+            tx.insert(testUnitSupervisor)
+            tx.insert(testUnitSupervisor2)
+
+            tx.insertDaycareAclRow(
+                anotherDaycare.id,
+                testUnitSupervisor.id,
+                UserRole.UNIT_SUPERVISOR,
+            )
+            tx.insertDaycareAclRow(testDaycare.id, testUnitSupervisor2.id, UserRole.UNIT_SUPERVISOR)
+
+            tx.insert(testChild_2, DevPersonType.CHILD)
+            tx.insert(anotherPlacement)
+        }
+
+        val result =
+            startingPlacementsReportController.getStartingPlacementsReport(
+                dbInstance(),
+                testUnitSupervisor.user,
+                testClock,
+                startDay.year,
+                startDay.monthValue,
+            )
+        assertEquals(
+            listOf(
+                toReportRow(
+                    testChild_2,
+                    startDay,
+                    anotherDaycare,
+                    anotherPlacement.id,
+                    testArea.name,
+                )
+            ),
+            result,
+        )
+
+        val result2 =
+            startingPlacementsReportController.getStartingPlacementsReport(
+                dbInstance(),
+                testUnitSupervisor2.user,
+                testClock,
+                startDay.year,
+                startDay.monthValue,
+            )
+
+        assertEquals(emptyList(), result2)
+    }
+
+    private val testAdmin =
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     private fun getAndAssert(date: LocalDate, expected: List<StartingPlacementsRow>) {
-        val (_, response, result) =
-            http
-                .get(
-                    "/employee/reports/starting-placements",
-                    listOf("year" to date.year, "month" to date.monthValue),
-                )
-                .asUser(testUser)
-                .responseObject<List<StartingPlacementsRow>>(jsonMapper)
-
-        assertEquals(200, response.statusCode)
-        assertEquals(expected, result.get())
+        val result =
+            startingPlacementsReportController.getStartingPlacementsReport(
+                dbInstance(),
+                testAdmin,
+                testClock,
+                date.year,
+                date.monthValue,
+            )
+        assertEquals(expected, result)
     }
 
     private fun insertPlacement(
@@ -159,6 +267,8 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
     private fun toReportRow(
         child: DevPerson,
         startDate: LocalDate,
+        unit: DevDaycare,
+        placementId: PlacementId,
         careAreaName: String = testArea.name,
     ) =
         StartingPlacementsRow(
@@ -168,5 +278,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
             dateOfBirth = child.dateOfBirth,
             placementStart = startDate,
             careAreaName = careAreaName,
+            unitName = unit.name,
+            placementId = placementId,
         )
 }

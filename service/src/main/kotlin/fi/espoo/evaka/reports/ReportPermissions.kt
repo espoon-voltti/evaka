@@ -203,8 +203,8 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedGlobalActions.contains(Action.Global.READ_SEXTET_REPORT)
                     },
                     Report.STARTING_PLACEMENTS.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_STARTING_PLACEMENTS_REPORT
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_STARTING_PLACEMENTS_REPORT
                         )
                     },
                     Report.TITANIA_ERRORS.takeIf {

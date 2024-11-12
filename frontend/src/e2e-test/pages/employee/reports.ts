@@ -768,6 +768,7 @@ export class StartingPlacementsReport {
     expected: {
       childName: string
       areaName: string
+      unitName: string
       placementStart: LocalDate
     }[]
   ) {
@@ -778,6 +779,7 @@ export class StartingPlacementsReport {
         const row = rows.nth(index)
         await row.findByDataQa('child-name').assertTextEquals(data.childName)
         await row.findByDataQa('area-name').assertTextEquals(data.areaName)
+        await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
         await row
           .findByDataQa('placement-start-date')
           .assertTextEquals(data.placementStart.format())

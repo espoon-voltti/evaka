@@ -270,7 +270,6 @@ sealed interface Action {
         READ_PLACEMENT_COUNT_REPORT(HasGlobalRole(ADMIN, DIRECTOR)),
         READ_PRESENCE_REPORT(HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER)),
         READ_RAW_REPORT(HasGlobalRole(ADMIN, REPORT_VIEWER)),
-        READ_STARTING_PLACEMENTS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)),
         READ_SEXTET_REPORT(HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER)),
         READ_UNITS_REPORT(HasGlobalRole(ADMIN)),
         READ_TITANIA_ERRORS(HasGlobalRole(ADMIN)),
@@ -2259,6 +2258,10 @@ sealed interface Action {
         READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.RESERVATIONS).inUnit(),
+        ),
+        READ_STARTING_PLACEMENTS_REPORT(
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
