@@ -210,7 +210,9 @@ export default {
             . Voit kirjautua myös käyttämällä vahvaa tunnistautumista.
           </P>
         </>
-      )
+      ),
+      email: 'Sähköpostiosoite',
+      password: 'Salasana'
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',
@@ -1999,7 +2001,12 @@ export default {
     },
     loginDetailsSection: {
       title: 'Kirjautumistiedot',
-      keycloakEmail: 'Käyttäjätunnus'
+      weakLoginUsername: 'Käyttäjätunnus',
+      password: 'Salasana',
+      newPassword: 'Uusi salasana',
+      repeatPassword: 'Vahvista uusi salasana',
+      setPassword: 'Aseta salasana',
+      updatePassword: 'Vaihda salasana'
     },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',

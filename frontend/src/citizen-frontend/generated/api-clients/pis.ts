@@ -8,6 +8,7 @@ import { EmailMessageType } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
+import { UpdatePasswordRequest } from 'lib-common/generated/api-types/pis'
 import { client } from '../../api-client'
 import { uri } from 'lib-common/uri'
 
@@ -36,6 +37,23 @@ export async function updateNotificationSettings(
     url: uri`/citizen/personal-data/notification-settings`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<EmailMessageType[]>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.updatePassword
+*/
+export async function updatePassword(
+  request: {
+    body: UpdatePasswordRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/personal-data/password`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<UpdatePasswordRequest>
   })
   return json
 }

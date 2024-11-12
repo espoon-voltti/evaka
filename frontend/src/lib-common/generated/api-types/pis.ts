@@ -43,6 +43,7 @@ export interface CitizenUserDetails {
   postalCode: string
   preferredName: string
   streetAddress: string
+  weakLoginUsername: string | null
 }
 
 /**
@@ -659,6 +660,13 @@ export interface TemporaryEmployee {
   hasStaffOccupancyEffect: boolean
   lastName: string
   pinCode: PinCode | null
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.UpdatePasswordRequest
+*/
+export interface UpdatePasswordRequest {
+  password: string
 }
 
 /**

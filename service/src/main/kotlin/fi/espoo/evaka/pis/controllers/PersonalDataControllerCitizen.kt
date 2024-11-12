@@ -6,13 +6,11 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.pis.PersonalDataUpdate
-import fi.espoo.evaka.pis.getDisabledEmailTypes
-import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.updateDisabledEmailTypes
-import fi.espoo.evaka.pis.updatePersonalDetails
+import fi.espoo.evaka.ForceCodeGenType
+import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.pis.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.PasswordHashAlgorithm
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -20,6 +18,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
 import fi.espoo.evaka.shared.utils.PHONE_PATTERN
+import fi.espoo.evaka.user.updatePassword
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -29,6 +28,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/citizen/personal-data")
 class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
+    private val passwordHashAlgorithm = PasswordHashAlgorithm.DEFAULT
+
     @PutMapping
     fun updatePersonalData(
         db: Database,
@@ -116,5 +117,39 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
             }
         }
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
+    }
+
+    data class UpdatePasswordRequest(
+        @ForceCodeGenType(String::class) val password: Sensitive<String>
+    ) {
+        init {
+            if (
+                password.value.isEmpty() || password.value.length < 8 || password.value.length > 128
+            ) {
+                throw BadRequest("Invalid password")
+            }
+        }
+    }
+
+    @PutMapping("/password")
+    fun updatePassword(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: UpdatePasswordRequest,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Person.UPDATE_PASSWORD,
+                    user.id,
+                )
+                tx.updatePassword(clock, user.id, passwordHashAlgorithm.encode(body.password))
+            }
+        }
+        Audit.CitizenPasswordUpdate.log(targetId = AuditId(user.id))
     }
 }

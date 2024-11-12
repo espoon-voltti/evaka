@@ -7,9 +7,15 @@ import React, { useMemo, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
+import { string } from 'lib-common/form/fields'
+import { object, validated } from 'lib-common/form/form'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
+import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
@@ -23,9 +29,11 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, H1, H2, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import { farMap } from 'lib-icons'
 
 import Footer from '../Footer'
+import { authWeakLogin } from '../auth/api'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUriWithPath, getWeakLoginUri } from '../navigation/const'
@@ -119,6 +127,7 @@ export default React.memo(function LoginPage() {
             >
               {i18n.loginPage.login.link}
             </LinkButton>
+            {featureFlags.weakLogin && <WeakLoginForm nextPath={nextPath} />}
           </ContentArea>
           <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.applying.title}</H2>
@@ -162,6 +171,70 @@ export default React.memo(function LoginPage() {
       </Container>
       <Footer />
     </Main>
+  )
+})
+
+const weakLoginForm = validated(
+  object({
+    username: string(),
+    password: string()
+  }),
+  (form) => {
+    if (form.username.length === 0 || form.password.length === 0) {
+      return 'required'
+    }
+    return undefined
+  }
+)
+
+const authWeakLoginResult = wrapResult(authWeakLogin)
+
+const WeakLoginForm = React.memo(function WeakLogin({
+  nextPath
+}: {
+  nextPath: string | null
+}) {
+  const i18n = useTranslation()
+
+  const form = useForm(
+    weakLoginForm,
+    () => ({ username: '', password: '' }),
+    i18n.validationErrors
+  )
+  const { username, password } = useFormFields(form)
+  return (
+    <>
+      <Gap size="m" />
+      <form action="" onSubmit={(e) => e.preventDefault()}>
+        <FixedSpaceColumn spacing="xs">
+          <InputFieldF
+            autoComplete="email"
+            bind={username}
+            placeholder={i18n.loginPage.login.email}
+            width="L"
+            hideErrorsBeforeTouched={true}
+          />
+          <InputFieldF
+            autoComplete="current-password"
+            bind={password}
+            type="password"
+            placeholder={i18n.loginPage.login.password}
+            width="L"
+            hideErrorsBeforeTouched={true}
+          />
+          <AsyncButton
+            primary
+            type="submit"
+            text={i18n.loginPage.login.link}
+            disabled={!form.isValid()}
+            onClick={() =>
+              authWeakLoginResult(form.state.username, form.state.password)
+            }
+            onSuccess={() => window.location.replace(nextPath ?? '/')}
+          />
+        </FixedSpaceColumn>
+      </form>
+    </>
   )
 })
 

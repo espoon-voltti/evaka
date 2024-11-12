@@ -568,7 +568,8 @@ sealed interface Action {
             READ_CHILD_DOCUMENTS_UNREAD_COUNT(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self()),
             READ_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
-            UPDATE_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self());
+            UPDATE_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
+            UPDATE_PASSWORD(IsCitizen(allowWeakLogin = false).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

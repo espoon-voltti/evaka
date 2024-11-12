@@ -12,6 +12,7 @@ import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
@@ -71,10 +72,13 @@ export default React.memo(function PersonalDetails() {
           {renderResult(user, (user) =>
             user ? (
               <>
-                {!!user.keycloakEmail && (
+                {(!!user.keycloakEmail || featureFlags.weakLogin) && (
                   <>
                     <HorizontalLine />
-                    <LoginDetailsSection user={user} />
+                    <LoginDetailsSection
+                      user={user}
+                      reloadUser={refreshAuthStatus}
+                    />
                   </>
                 )}
               </>
