@@ -52,7 +52,7 @@ WHERE id = ${bind(id)}
         .updateExactlyOne()
 
 fun Database.Transaction.updatePassword(
-    clock: EvakaClock,
+    clock: EvakaClock?, // null = don't update timestamp
     id: PersonId,
     password: EncodedPassword,
 ) =
@@ -62,7 +62,7 @@ fun Database.Transaction.updatePassword(
 UPDATE citizen_user
 SET
     password = ${bindJson(password)},
-    password_updated_at = ${bind(clock.now())}
+    password_updated_at = coalesce(${bind(clock?.now())}, password_updated_at)
 WHERE id = ${bind(id)}
 """
             )

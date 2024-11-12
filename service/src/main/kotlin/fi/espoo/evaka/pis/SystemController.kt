@@ -119,7 +119,7 @@ class SystemController(
                     // rehash password if necessary
                     if (citizen.password.algorithm != PasswordHashAlgorithm.DEFAULT) {
                         tx.updatePassword(
-                            clock,
+                            clock = null, // avoid updating the password timestamp
                             citizen.id,
                             PasswordHashAlgorithm.DEFAULT.encode(request.password),
                         )
