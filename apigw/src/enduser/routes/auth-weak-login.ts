@@ -31,7 +31,10 @@ export const authWeakLogin = (redis: RedisClient) =>
         GET: true, // return previous value
         NX: true // only set if key doesn't exist
       })
-      if (previous) throw new Error('Login rate limit for user triggered')
+      if (previous) {
+        res.sendStatus(429)
+        return
+      }
 
       const { id } = await citizenWeakLogin(body)
       const user: EvakaSessionUser = {
