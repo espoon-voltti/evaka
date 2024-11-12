@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -58,6 +60,7 @@ fun Database.Read.sextetReport(
     to: LocalDate,
     placementType: PlacementType,
 ): List<SextetReportRow> {
+    val holidays = getHolidays(FiniteDateRange(from, to))
     return createQuery {
             sql(
                 """
@@ -109,7 +112,7 @@ WHERE NOT EXISTS (
 ) AND (
     ep.has_shift_care OR extract(isodow FROM ep.date) = ANY(d.operation_days)
 ) AND (
-    (ep.has_shift_care AND d.shift_care_open_on_holidays) OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ep.date)
+    (ep.has_shift_care AND d.shift_care_open_on_holidays) OR ep.date != ALL (${bind(holidays)})
 )
 AND ep.placement_type = ${bind(placementType)}
 GROUP BY ep.unit_id, d.name, ep.placement_type

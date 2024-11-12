@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -186,6 +187,7 @@ fun getPreschoolAbsenceReportRowsForUnit(
     preschoolTerm: FiniteDateRange,
     absenceTypes: List<AbsenceType>,
 ): List<PreschoolAbsenceRow> {
+    val holidays = getHolidays(preschoolTerm)
     return tx.createQuery {
             sql(
                 """
@@ -216,7 +218,7 @@ fun getPreschoolAbsenceReportRowsForUnit(
                                              ab.absence_type = types.absence_type and
                                              ab.category = 'NONBILLABLE' and
                                              extract(isodow from ab.date) BETWEEN 1 AND 5 and
-                                             not exists (SELECT FROM holiday h WHERE h.date = ab.date) and
+                                             ab.date != ALL (${bind(holidays)}) and
                                              not exists (SELECT FROM preschool_term pt WHERE pt.term_breaks @> ab.date)
             group by 1, 2, 3, 4;
         """
@@ -233,6 +235,7 @@ fun getPreschoolAbsenceReportRowsForGroup(
     preschoolTerm: FiniteDateRange,
     absenceTypes: List<AbsenceType>,
 ): List<PreschoolAbsenceRow> {
+    val holidays = getHolidays(preschoolTerm)
     return tx.createQuery {
             sql(
                 """
@@ -268,7 +271,7 @@ from preschool_group_placement_children pgpc
                                  ab.absence_type = types.absence_type and
                                  ab.category = 'NONBILLABLE' and
                                  extract(isodow from ab.date) BETWEEN 1 AND 5 and
-                                 not exists (SELECT FROM holiday h WHERE h.date = ab.date) and
+                                 ab.date != ALL (${bind(holidays)}) and
                                  not exists (SELECT FROM preschool_term pt WHERE pt.term_breaks @> ab.date)
 group by 1, 2, 3, 4;
         """

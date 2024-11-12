@@ -147,7 +147,7 @@ class CalendarEventController(
                         unitId,
                     )
 
-                    val holidays = tx.getHolidays(range)
+                    val holidays = getHolidays(range)
                     val unitOperationDays =
                         tx.getDaycare(unitId)?.operationDays
                             ?: throw NotFound("Unit operation days not found")

@@ -92,7 +92,7 @@ class ReservationControllerCitizen(
                         user.id,
                     )
                     val holidayPeriods = tx.getHolidayPeriods()
-                    val holidays = tx.getHolidays(requestedRange)
+                    val holidays = getHolidays(requestedRange)
                     val preschoolTerms = tx.getPreschoolTerms()
                     val clubTerms = tx.getClubTerms()
                     val children = tx.getReservationChildren(user.id, today)

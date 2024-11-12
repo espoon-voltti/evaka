@@ -18,6 +18,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -60,6 +62,7 @@ class RawReportController(private val accessControl: AccessControl) {
 }
 
 fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow> {
+    val holidays = getHolidays(FiniteDateRange(from, to))
     return createQuery {
             sql(
                 """
@@ -140,7 +143,7 @@ SELECT
     ab1.absence_type as absence_paid,
     ab2.absence_type as absence_free,
     7 as staff_dimensioning,
-    holiday.date IS NOT NULL as is_holiday,
+    t = ANY (${bind(holidays)}) as is_holiday,
     date_part('isodow', t) = ANY(ARRAY[1, 2, 3, 4, 5]) as is_weekday
 FROM generate_series(${bind(from)}, ${bind(to)}, '1 day') t
 JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
@@ -161,8 +164,12 @@ LEFT JOIN assistance_factor an ON an.child_id = p.id AND an.valid_during @> t::d
 LEFT JOIN assistance_need_voucher_coefficient anvc ON anvc.child_id = p.id AND anvc.validity_period @> t::date AND anvc.coefficient <> 1
 LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date AND ab1.category = 'BILLABLE'
 LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date AND ab2.category = 'NONBILLABLE'
-LEFT JOIN holiday ON t = holiday.date AND NOT (u.shift_care_open_on_holidays OR bcu.shift_care_open_on_holidays)
-WHERE (date_part('isodow', t) = ANY(coalesce(u.shift_care_operation_days, u.operation_days)) OR date_part('isodow', t) = ANY(coalesce(bcu.shift_care_operation_days, bcu.operation_days))) AND holiday.date IS NULL
+WHERE
+    (
+        date_part('isodow', t) = ANY(coalesce(u.shift_care_operation_days, u.operation_days)) OR
+        date_part('isodow', t) = ANY(coalesce(bcu.shift_care_operation_days, bcu.operation_days))
+    ) AND
+    (t != ALL (${bind(holidays)}) OR u.shift_care_open_on_holidays OR bcu.shift_care_open_on_holidays)
 ORDER BY p.id, t
 """
             )

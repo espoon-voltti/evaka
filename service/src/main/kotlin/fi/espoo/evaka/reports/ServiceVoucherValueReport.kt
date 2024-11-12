@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -281,14 +282,24 @@ private fun Database.Read.getServiceVoucherValues(
     unitIds: Set<DaycareId>? = null,
 ): List<ServiceVoucherValueRow> {
     val reportDate = LocalDate.of(year, month, 1)
+    val minChangeMonth =
+        createQuery {
+                sql(
+                    """
+    SELECT coalesce(min(valid_from), ${bind(reportDate)})
+    FROM voucher_value_decision
+    WHERE status != 'DRAFT'
+    """
+                )
+            }
+            .exactlyOne<LocalDate>()
+            .withDayOfMonth(1)
+    val holidays =
+        getHolidays(FiniteDateRange(minChangeMonth, reportDate.plusMonths(1).minusDays(1)))
     return createQuery {
             sql(
                 """
-WITH min_voucher_decision_date AS (
-    SELECT coalesce(min(valid_from), ${bind(reportDate)}) AS min_date FROM voucher_value_decision WHERE status != 'DRAFT'::voucher_value_decision_status
-), min_change_month AS (
-    SELECT make_date(extract(year from min_date)::int, extract(month from min_date)::int, 1) AS month FROM min_voucher_decision_date
-), include_corrections AS (
+WITH include_corrections AS (
     SELECT NOT EXISTS (SELECT 1 FROM voucher_value_report_snapshot) OR EXISTS (
         SELECT 1 FROM voucher_value_report_snapshot
         WHERE month = extract(month from (${bind(reportDate)} - interval '1 month'))
@@ -301,11 +312,11 @@ WITH min_voucher_decision_date AS (
         daterange(t::date, (t + interval '1 month')::date) AS period,
         op.operational_days,
         array_length(op.operational_days, 1) AS operational_days_count
-    FROM generate_series((SELECT month FROM min_change_month), ${bind(reportDate)}, '1 month') t
+    FROM generate_series(${bind(minChangeMonth)}, ${bind(reportDate)}, '1 month') t
     JOIN include_corrections ON should_include OR t = ${bind(reportDate)}
     JOIN LATERAL (
         SELECT array_agg(d::date) operational_days FROM generate_series(t, (t + interval '1 month' - interval '1 day'), '1 day') d
-        WHERE date_part('isodow', d) = ANY('{1,2,3,4,5}') AND NOT EXISTS (SELECT 1 FROM holiday WHERE holiday.date = d)
+        WHERE date_part('isodow', d) = ANY('{1,2,3,4,5}') AND d != ALL (${bind(holidays)})
     ) op ON true
 ), original AS (
     SELECT

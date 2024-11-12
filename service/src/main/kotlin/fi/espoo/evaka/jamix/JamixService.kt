@@ -336,7 +336,7 @@ private fun getChildInfos(
     jamixCustomerNumber: Int,
     date: LocalDate,
 ): List<MealReportChildInfo> {
-    val holidays = tx.getHolidays(FiniteDateRange(date, date))
+    val holidays = getHolidays(FiniteDateRange(date, date))
 
     val childData = tx.getJamixChildData(jamixCustomerNumber, date)
     val unitIds = childData.map { it.unitId }.toSet()

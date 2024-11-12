@@ -278,6 +278,8 @@ fun asDistinctPeriods(
 fun LocalDate.isWeekend() =
     this.dayOfWeek == DayOfWeek.SATURDAY || this.dayOfWeek == DayOfWeek.SUNDAY
 
+fun LocalDate.isHoliday() = isHoliday(this)
+
 fun LocalDate.toFiniteDateRange(): FiniteDateRange = FiniteDateRange(this, this)
 
 fun LocalDate.asHelsinkiDateTimeRange(): HelsinkiDateTimeRange =
