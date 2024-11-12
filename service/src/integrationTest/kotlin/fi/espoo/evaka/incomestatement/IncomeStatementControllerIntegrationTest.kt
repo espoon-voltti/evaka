@@ -244,13 +244,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return db.read { it.readIncomeStatementForPerson(personId, id, true)!! }
     }
 
-    private fun createChildTestIncomeStatement(personId: PersonId): IncomeStatement {
+    private fun createChildTestIncomeStatement(
+        personId: PersonId,
+        startDate: LocalDate? = null,
+    ): IncomeStatement {
         val id =
             db.transaction { tx ->
                 tx.createIncomeStatement(
                     personId,
                     IncomeStatementBody.ChildIncome(
-                        startDate = today,
+                        startDate = startDate ?: today,
                         endDate = null,
                         attachmentIds = listOf(),
                         otherInfo = "",
@@ -423,7 +426,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
-                        personName = "Doe John",
+                        personLastName = "Doe",
+                        personFirstName = "John",
                         primaryCareArea = area1.name,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -434,7 +438,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Doe Joan",
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
                         primaryCareArea = area2.name,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -445,7 +450,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_3.id,
-                        personName = "Foo Mark",
+                        personLastName = "Foo",
+                        personFirstName = "Mark",
                         primaryCareArea = area2.name,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -456,7 +462,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_4.id,
-                        personName = "Aman Dork",
+                        personLastName = "Aman",
+                        personFirstName = "Dork",
                         primaryCareArea = area1.name,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -467,7 +474,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_5.id,
-                        personName = "Karhula Johannes Olavi Antero Tapio",
+                        personLastName = "Karhula",
+                        personFirstName = "Johannes Olavi Antero Tapio",
                         primaryCareArea = null,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -478,7 +486,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_6.id,
-                        personName = "Vilkas Ville",
+                        personLastName = "Vilkas",
+                        personFirstName = "Ville",
                         primaryCareArea = null,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -489,7 +498,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.CHILD_INCOME,
                         personId = testChild_1.id,
-                        personName = "Doe Ricky",
+                        personLastName = "Doe",
+                        personFirstName = "Ricky",
                         primaryCareArea = area1.name,
                     ),
                 ),
@@ -560,7 +570,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Doe Joan",
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
                         primaryCareArea = area2.name,
                     )
                 ),
@@ -636,7 +647,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Doe Joan",
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
                         primaryCareArea = area2.name,
                     )
                 ),
@@ -707,7 +719,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Doe Joan",
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
                         primaryCareArea = area1.name,
                     )
                 ),
@@ -790,7 +803,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
-                        personName = "Doe John",
+                        personLastName = "Doe",
+                        personFirstName = "John",
                         primaryCareArea = area1.name,
                     )
                 ),
@@ -816,7 +830,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Doe Joan",
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
                         primaryCareArea = area1.name,
                     )
                 ),
@@ -913,7 +928,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
-                        personName = "Doe John",
+                        personLastName = "Doe",
+                        personFirstName = "John",
                         primaryCareArea = area1.name,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -924,7 +940,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Doe Joan",
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
                         primaryCareArea = area1.name,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -935,7 +952,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_3.id,
-                        personName = "Foo Mark",
+                        personLastName = "Foo",
+                        personFirstName = "Mark",
                         primaryCareArea = null,
                     ),
                 ),
@@ -958,7 +976,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Doe Joan",
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
                         primaryCareArea = area1.name,
                     )
                 ),
@@ -982,7 +1001,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
-                        personName = "Doe John",
+                        personLastName = "Doe",
+                        personFirstName = "John",
                         primaryCareArea = area1.name,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -993,7 +1013,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Doe Joan",
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
                         primaryCareArea = area1.name,
                     ),
                 ),
@@ -1076,7 +1097,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
                 personId = citizenId,
-                personName = "Doe John",
+                personLastName = "Doe",
+                personFirstName = "John",
                 primaryCareArea = area1.name,
             )
         val expected2 =
@@ -1088,7 +1110,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
                 personId = testAdult_2.id,
-                personName = "Doe Joan",
+                personLastName = "Doe",
+                personFirstName = "Joan",
                 primaryCareArea = area1.name,
             )
         assertEquals(
@@ -1185,7 +1208,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
                 personId = citizenId,
-                personName = "Doe John",
+                personLastName = "Doe",
+                personFirstName = "John",
                 primaryCareArea = area1.name,
             )
         val expected2 =
@@ -1197,7 +1221,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
                 personId = testAdult_2.id,
-                personName = "Doe Joan",
+                personLastName = "Doe",
+                personFirstName = "Joan",
                 primaryCareArea = area1.name,
             )
         assertEquals(
@@ -1214,6 +1239,299 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.INCOME_END_DATE,
+                    sortDirection = SortDirection.DESC,
+                )
+            ),
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - type sort`() {
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        val incomeStatement1 =
+            createTestIncomeStatement(testAdult_1.id, startDate = LocalDate.of(2022, 10, 12))
+        val incomeStatement2 =
+            createChildTestIncomeStatement(testChild_2.id, startDate = LocalDate.of(2022, 10, 13))
+
+        val expected1 =
+            IncomeStatementAwaitingHandler(
+                id = incomeStatement1.id,
+                created = incomeStatement1.created,
+                startDate = incomeStatement1.startDate,
+                incomeEndDate = null,
+                handlerNote = "",
+                type = IncomeStatementType.HIGHEST_FEE,
+                personId = testAdult_1.id,
+                personLastName = "Doe",
+                personFirstName = "John",
+                primaryCareArea = area1.name,
+            )
+        val expected2 =
+            IncomeStatementAwaitingHandler(
+                id = incomeStatement2.id,
+                created = incomeStatement2.created,
+                startDate = incomeStatement2.startDate,
+                incomeEndDate = null,
+                handlerNote = "",
+                type = IncomeStatementType.CHILD_INCOME,
+                personId = testChild_2.id,
+                personLastName = "Doe",
+                personFirstName = "Micky",
+                primaryCareArea = area1.name,
+            )
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sortBy = IncomeStatementSortParam.TYPE,
+                    sortDirection = SortDirection.ASC,
+                )
+            ),
+        )
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(listOf(expected2, expected1), 2, 1),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sortBy = IncomeStatementSortParam.TYPE,
+                    sortDirection = SortDirection.DESC,
+                )
+            ),
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - handler note sort`() {
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        val incomeStatement1 =
+            createTestIncomeStatement(testAdult_1.id, startDate = LocalDate.of(2022, 10, 12))
+        setIncomeStatementHandled(
+            incomeStatement1.id,
+            IncomeStatementController.SetIncomeStatementHandledBody(
+                handled = false,
+                handlerNote = "a",
+            ),
+        )
+        val incomeStatement2 =
+            createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
+        setIncomeStatementHandled(
+            incomeStatement2.id,
+            IncomeStatementController.SetIncomeStatementHandledBody(
+                handled = false,
+                handlerNote = "b",
+            ),
+        )
+
+        val expected1 =
+            IncomeStatementAwaitingHandler(
+                id = incomeStatement1.id,
+                created = incomeStatement1.created,
+                startDate = incomeStatement1.startDate,
+                incomeEndDate = null,
+                handlerNote = "a",
+                type = IncomeStatementType.HIGHEST_FEE,
+                personId = testAdult_1.id,
+                personLastName = "Doe",
+                personFirstName = "John",
+                primaryCareArea = area1.name,
+            )
+        val expected2 =
+            IncomeStatementAwaitingHandler(
+                id = incomeStatement2.id,
+                created = incomeStatement2.created,
+                startDate = incomeStatement2.startDate,
+                incomeEndDate = null,
+                handlerNote = "b",
+                type = IncomeStatementType.HIGHEST_FEE,
+                personId = testAdult_2.id,
+                personLastName = "Doe",
+                personFirstName = "Joan",
+                primaryCareArea = area1.name,
+            )
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sortBy = IncomeStatementSortParam.HANDLER_NOTE,
+                    sortDirection = SortDirection.ASC,
+                )
+            ),
+        )
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(listOf(expected2, expected1), 2, 1),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sortBy = IncomeStatementSortParam.HANDLER_NOTE,
+                    sortDirection = SortDirection.DESC,
+                )
+            ),
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - person name sort`() {
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        val incomeStatement1 =
+            createTestIncomeStatement(testAdult_1.id, startDate = LocalDate.of(2022, 10, 12))
+        val incomeStatement2 =
+            createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
+
+        val expected1 =
+            IncomeStatementAwaitingHandler(
+                id = incomeStatement1.id,
+                created = incomeStatement1.created,
+                startDate = incomeStatement1.startDate,
+                incomeEndDate = null,
+                handlerNote = "",
+                type = IncomeStatementType.HIGHEST_FEE,
+                personId = testAdult_1.id,
+                personLastName = "Doe",
+                personFirstName = "John",
+                primaryCareArea = area1.name,
+            )
+        val expected2 =
+            IncomeStatementAwaitingHandler(
+                id = incomeStatement2.id,
+                created = incomeStatement2.created,
+                startDate = incomeStatement2.startDate,
+                incomeEndDate = null,
+                handlerNote = "",
+                type = IncomeStatementType.HIGHEST_FEE,
+                personId = testAdult_2.id,
+                personLastName = "Doe",
+                personFirstName = "Joan",
+                primaryCareArea = area1.name,
+            )
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(listOf(expected2, expected1), 2, 1),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sortBy = IncomeStatementSortParam.PERSON_NAME,
+                    sortDirection = SortDirection.ASC,
+                )
+            ),
+        )
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sortBy = IncomeStatementSortParam.PERSON_NAME,
                     sortDirection = SortDirection.DESC,
                 )
             ),

@@ -158,7 +158,9 @@ export interface IncomeStatementAwaitingHandler {
   handlerNote: string
   id: UUID
   incomeEndDate: LocalDate | null
+  personFirstName: string
   personId: UUID
+  personLastName: string
   personName: string
   primaryCareArea: string | null
   startDate: LocalDate
@@ -216,6 +218,9 @@ export type IncomeStatementSortParam =
   | 'CREATED'
   | 'START_DATE'
   | 'INCOME_END_DATE'
+  | 'TYPE'
+  | 'HANDLER_NOTE'
+  | 'PERSON_NAME'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementType
