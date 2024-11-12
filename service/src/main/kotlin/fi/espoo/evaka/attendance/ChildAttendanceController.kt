@@ -6,7 +6,6 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceUpsert
@@ -232,47 +231,6 @@ class ChildAttendanceController(
                     meta = mapOf("unitId" to unitId),
                 )
             }
-    }
-
-    data class ArrivalRequest(
-        @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
-    )
-
-    @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/arrival")
-    fun postArrivalDeprecated(
-        db: Database,
-        user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-        @PathVariable childId: ChildId,
-        @RequestBody body: ArrivalRequest,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId,
-                )
-                tx.fetchChildPlacementBasics(childId, unitId, clock.today())
-                try {
-                    tx.insertAttendance(
-                        childId = childId,
-                        unitId = unitId,
-                        date = clock.today(),
-                        range = TimeInterval(body.arrived, null),
-                    )
-                } catch (e: Exception) {
-                    throw mapPSQLException(e)
-                }
-            }
-        }
-        Audit.ChildAttendancesArrivalCreate.log(
-            targetId = AuditId(childId),
-            objectId = AuditId(unitId),
-        )
     }
 
     @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/return-to-coming")
