@@ -61,6 +61,9 @@ class SystemController(
     private val env: EvakaEnv,
     private val webPush: WebPush?,
 ) {
+    private val passwordHashAlgorithm = PasswordHashAlgorithm.DEFAULT
+    private val passwordPlaceholder = passwordHashAlgorithm.placeholder()
+
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
         db: Database,
@@ -113,15 +116,21 @@ class SystemController(
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     val citizen = tx.getCitizenWeakLoginDetails(request.username)
-                    if (citizen == null || !citizen.password.isMatch(request.password))
-                        throw Forbidden()
+                    // We want to run a constant-time password check even if we can't find the user,
+                    // in order to avoid exposing information about username validity. A dummy
+                    // placeholder is used if necessary, so we have *something* to compare against.
+                    // Reference: OWASP Authentication Cheat Sheet - Authentication Responses
+                    // https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-responses
+                    val isMatch =
+                        (citizen?.password ?: passwordPlaceholder).isMatch(request.password)
+                    if (!isMatch || citizen == null) throw Forbidden()
 
                     // rehash password if necessary
-                    if (citizen.password.algorithm != PasswordHashAlgorithm.DEFAULT) {
+                    if (citizen.password.algorithm != passwordHashAlgorithm) {
                         tx.updatePassword(
                             clock = null, // avoid updating the password timestamp
                             citizen.id,
-                            PasswordHashAlgorithm.DEFAULT.encode(request.password),
+                            passwordHashAlgorithm.encode(request.password),
                         )
                     }
 

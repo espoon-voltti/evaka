@@ -89,6 +89,15 @@ sealed class PasswordHashAlgorithm {
 
     abstract fun hash(salt: EncodedPassword.Salt, password: Sensitive<String>): EncodedPassword.Hash
 
+    /**
+     * Returns a placeholder password that can be used for constant-time checks when a real encoded
+     * password is not available.
+     *
+     * The returned placeholder should have the correct hash length, but otherwise doesn't need to
+     * be a valid password
+     */
+    abstract fun placeholder(): EncodedPassword
+
     data class Argon2id(
         val hashLength: Int,
         val version: Version,
@@ -118,6 +127,13 @@ sealed class PasswordHashAlgorithm {
             generator.generateBytes(password.value.toByteArray(Charsets.UTF_8), output)
             return EncodedPassword.Hash(output)
         }
+
+        override fun placeholder(): EncodedPassword =
+            EncodedPassword(
+                this,
+                EncodedPassword.Salt.generate(SECURE_RANDOM),
+                EncodedPassword.Hash(ByteArray(size = hashLength)),
+            )
     }
 
     data class Pbkdf2(val hashType: HashType, val keySize: Int, val iterationCount: Int) :
@@ -142,6 +158,13 @@ sealed class PasswordHashAlgorithm {
             val parameters = gen.generateDerivedParameters(keySize)
             return EncodedPassword.Hash((parameters as KeyParameter).key)
         }
+
+        override fun placeholder(): EncodedPassword =
+            EncodedPassword(
+                this,
+                EncodedPassword.Salt.generate(SECURE_RANDOM),
+                EncodedPassword.Hash(ByteArray(size = keySize / 8)),
+            )
     }
 
     companion object {
