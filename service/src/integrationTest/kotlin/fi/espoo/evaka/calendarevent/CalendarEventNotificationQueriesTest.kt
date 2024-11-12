@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCalendarEvent
@@ -353,6 +354,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
         description: String = "description",
         period: FiniteDateRange,
         created: HelsinkiDateTime = now,
+        createdBy: EvakaUserId = employee.evakaUserId,
         unitId: DaycareId,
         groupIds: List<GroupId> = listOf(),
         groupChildIds: List<Pair<GroupId, ChildId>> = listOf(),
@@ -365,6 +367,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                         description = description,
                         period = period,
                         modifiedAt = created,
+                        modifiedBy = createdBy,
                         eventType = CalendarEventType.DAYCARE_EVENT,
                     )
                 )

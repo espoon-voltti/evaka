@@ -2325,6 +2325,10 @@ export const fi = {
       events: {
         title: 'Tapahtumat',
         createEvent: 'Luo muu tapahtuma',
+        lastModified: (date: string, name: string) =>
+          `Viimeksi muokattu ${date}; muokkaaja: ${name}`,
+        lastModifiedAt: 'Viimeksi muokattu',
+        lastModifiedBy: 'Muokkaaja',
         edit: {
           title: 'Tapahtuma',
           saveChanges: 'Tallenna muutokset',

@@ -32,6 +32,7 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -41,6 +42,7 @@ import TreeDropdown, {
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
+import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -394,14 +396,21 @@ export default React.memo(function CalendarEventsSection({
                             className={`type-${specifier.type}`}
                             key={event.id}
                           >
-                            <Link
-                              to={`/units/${unitId}/calendar/events/${event.id}`}
-                              data-qa="event"
+                            <Tooltip
+                              tooltip={i18n.unit.calendar.events.lastModified(
+                                event.contentModifiedAt.format(),
+                                event.contentModifiedBy.name
+                              )}
                             >
-                              <p>
-                                <Bold>{specifier.text}:</Bold> {event.title}
-                              </p>
-                            </Link>
+                              <Link
+                                to={`/units/${unitId}/calendar/events/${event.id}`}
+                                data-qa="event"
+                              >
+                                <p>
+                                  <Bold>{specifier.text}:</Bold> {event.title}
+                                </p>
+                              </Link>
+                            </Tooltip>
                           </EventLinkContainer>
                         )
                       } else if (
@@ -413,21 +422,28 @@ export default React.memo(function CalendarEventsSection({
                             className={`type-${specifier.type}`}
                             key={event.id}
                           >
-                            <Link
-                              to={`/units/${unitId}/calendar/events/${event.id}?eventDay=${day.formatIso()}`}
-                              data-qa="survey"
+                            <Tooltip
+                              tooltip={i18n.unit.calendar.events.lastModified(
+                                event.contentModifiedAt.format(),
+                                event.contentModifiedBy.name
+                              )}
                             >
-                              <P noMargin>
-                                <Bold>{event.title}</Bold>
-                              </P>
+                              <Link
+                                to={`/units/${unitId}/calendar/events/${event.id}?eventDay=${day.formatIso()}`}
+                                data-qa="survey"
+                              >
+                                <P noMargin>
+                                  <Bold>{event.title}</Bold>
+                                </P>
 
-                              <P
-                                noMargin
-                              >{`${reservationsToday.length} ${i18n.unit.calendar.events.reservedTimesLabel}`}</P>
-                              <P
-                                noMargin
-                              >{`${freeTimesToday.length} ${i18n.unit.calendar.events.freeTimesLabel}`}</P>
-                            </Link>
+                                <P
+                                  noMargin
+                                >{`${reservationsToday.length} ${i18n.unit.calendar.events.reservedTimesLabel}`}</P>
+                                <P
+                                  noMargin
+                                >{`${freeTimesToday.length} ${i18n.unit.calendar.events.freeTimesLabel}`}</P>
+                              </Link>
+                            </Tooltip>
                           </EventLinkContainer>
                         )
                       } else return null
@@ -910,6 +926,19 @@ const EditEventModal = React.memo(function EditEventModal({
             }
             data-qa="description-input"
           />
+
+          <Gap size="m" />
+
+          <ListGrid>
+            <FixedSpaceColumn>
+              <Label>{i18n.unit.calendar.events.lastModifiedAt}</Label>
+              <Label>{i18n.unit.calendar.events.lastModifiedBy}</Label>
+            </FixedSpaceColumn>
+            <FixedSpaceColumn>
+              <span>{event.contentModifiedAt.format()}</span>
+              <span>{event.contentModifiedBy.name}</span>
+            </FixedSpaceColumn>
+          </ListGrid>
 
           <Gap size="L" />
           <FixedSpaceRow justifyContent="space-between">

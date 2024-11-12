@@ -32,7 +32,16 @@ private fun Database.Read.getCalendarEventsQuery(where: PredicateSql) = createQu
     sql(
         """
 SELECT
-    ce.id, cea.unit_id, ce.title, ce.description, ce.period, ce.content_modified_at, ce.event_type,
+    ce.id,
+    cea.unit_id,
+    ce.title,
+    ce.description,
+    ce.period,
+    ce.content_modified_at,
+    eu.id AS content_modified_by_id,
+    eu.name AS content_modified_by_name,
+    eu.type AS content_modified_by_type,
+    ce.event_type,
     (
         coalesce(jsonb_agg(DISTINCT jsonb_build_object(
             'id', cea.group_id,
@@ -61,6 +70,7 @@ JOIN calendar_event ce ON cea.calendar_event_id = ce.id
 LEFT JOIN daycare_group dg ON dg.id = cea.group_id
 LEFT JOIN person p ON p.id = cea.child_id
 LEFT JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
+LEFT JOIN evaka_user eu ON eu.id = ce.content_modified_by
 WHERE ${predicate(where)}
 AND (cea.child_id IS NULL OR EXISTS(
     -- filter out attendees that haven't been placed in the specified unit/group,
@@ -71,7 +81,7 @@ AND (cea.child_id IS NULL OR EXISTS(
       AND (cea.group_id IS NULL OR rp.group_id = cea.group_id)
       AND rp.unit_id = cea.unit_id
 ))
-GROUP BY ce.id, cea.unit_id
+GROUP BY ce.id, cea.unit_id, eu.id
 """
     )
 }
@@ -101,8 +111,8 @@ fun Database.Transaction.createCalendarEvent(
         createUpdate {
                 sql(
                     """
-INSERT INTO calendar_event (created_at, title, description, period, modified_at, content_modified_at, event_type)
-VALUES (${bind(createdAt)}, ${bind(event.title)}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdAt)}, ${bind(event.eventType)})
+INSERT INTO calendar_event (created_at, created_by, title, description, period, modified_at, modified_by, content_modified_at, content_modified_by, event_type)
+VALUES (${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.title)}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.eventType)})
 RETURNING id
 """
                 )
