@@ -632,7 +632,7 @@ class AssistanceNeedDecisionController(
     private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean {
         return decision.selectedUnit == null ||
             (decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) &&
-                decision.validityPeriod.end == null) ||
+                (decision.validityPeriod.end == null && !decision.endDateNotKnown)) ||
             decision.pedagogicalMotivation.isNullOrEmpty() ||
             decision.guardiansHeardOn == null ||
             ((decision.preparedBy1?.employeeId == null ||
