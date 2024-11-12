@@ -32,7 +32,7 @@ export type AttendanceStatuses = Record<
 >
 
 export type ChildAttendanceStatus = ChildAttendanceStatusResponse & {
-  noServiceToday?: boolean
+  hasOperationalDay: boolean
 }
 
 export function childAttendanceStatus(
@@ -40,7 +40,7 @@ export function childAttendanceStatus(
   attendanceStatuses: Record<UUID, ChildAttendanceStatusResponse | undefined>
 ): ChildAttendanceStatus {
   const status = attendanceStatuses[child.id]
-  if (status) return status
+  if (status) return { ...status, hasOperationalDay: true }
 
   if (
     child.scheduleType === 'TERM_BREAK' ||
@@ -55,12 +55,13 @@ export function childAttendanceStatus(
 const defaultChildAttendanceStatus: ChildAttendanceStatus = {
   status: 'COMING',
   attendances: [],
-  absences: []
+  absences: [],
+  hasOperationalDay: true
 }
 
 const childAttendanceStatusNoService: ChildAttendanceStatus = {
   status: 'ABSENT',
   attendances: [],
   absences: [],
-  noServiceToday: true
+  hasOperationalDay: false
 }
