@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -1440,9 +1440,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         userRole: UserRole,
         isVisible: Boolean,
     ) {
-        val newEmployee =
-            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
-        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
+        val newEmployee = prepareGroupAccountAccessTest(userRole, clock.now())
         postNewThread(
             person2,
             "title",
@@ -1473,9 +1471,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         userRole: UserRole,
         isVisible: Boolean,
     ) {
-        val newEmployee =
-            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
-        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
+        val newEmployee = prepareGroupAccountAccessTest(userRole, clock.now())
         postNewThread(
             "title",
             "content",
@@ -1497,9 +1493,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         userRole: UserRole,
         isVisible: Boolean,
     ) {
-        val newEmployee =
-            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
-        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
+        val newEmployee = prepareGroupAccountAccessTest(userRole, clock.now())
 
         createDraft(
             employee1,
@@ -1522,9 +1516,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         userRole: UserRole,
         isVisible: Boolean,
     ) {
-        val newEmployee =
-            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
-        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
+        val newEmployee = prepareGroupAccountAccessTest(userRole, clock.now())
 
         postNewThread(
             "title",
@@ -1550,9 +1542,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         userRole: UserRole,
         isVisible: Boolean,
     ) {
-        val newEmployee =
-            AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(userRole))
-        prepareGroupAccountAccessTest(newEmployee.id, userRole, clock.now())
+        val newEmployee = prepareGroupAccountAccessTest(userRole, clock.now())
         val threadId =
             postNewThread(
                 person2,
@@ -1570,12 +1560,88 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(if (isVisible) 1 else 0, archivedThreads.size)
     }
 
+    @Test
+    fun `bulletin copy is created for others supervisors, veos and groups`() {
+        // given
+        val child = DevPerson()
+        val secondSupervisor = DevEmployee()
+        var secondSupervisorAccount: MessageAccountId? = null
+        val veo = DevEmployee()
+        var veoAccount: MessageAccountId? = null
+        db.transaction { tx ->
+            insertChild(tx, child, groupId1)
+            tx.insert(
+                secondSupervisor,
+                unitRoles = mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
+            )
+            secondSupervisorAccount = tx.upsertEmployeeMessageAccount(secondSupervisor.id)
+            tx.insert(veo, unitRoles = mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER))
+            veoAccount = tx.upsertEmployeeMessageAccount(veo.id)
+        }
+
+        // when
+        postNewThread(
+            "title",
+            "content",
+            MessageType.BULLETIN,
+            employee1Account,
+            listOf(MessageRecipient(MessageRecipientType.GROUP, groupId1)),
+            user = employee1,
+            now = sendTime,
+        )
+
+        // then
+
+        // no copy for the sender
+        assertEquals(0, getMessageCopies(employee1, employee1Account, readTime).size)
+
+        // copy for the second supervisor
+        assertEquals(
+            1,
+            getMessageCopies(secondSupervisor.user, secondSupervisorAccount!!, readTime).size,
+        )
+
+        // no copy for supervisor of another unit
+        assertEquals(0, getMessageCopies(employee2, employee2Account, readTime).size)
+
+        // copy for veo
+        assertEquals(1, getMessageCopies(veo.user, veoAccount!!, readTime).size)
+
+        // copy for group
+        assertEquals(1, getMessageCopies(employee1, group1Account, readTime).size)
+
+        // no copy for the other group
+        assertEquals(0, getMessageCopies(employee1, group2Account, readTime).size)
+
+        // no copy for service worker
+        assertEquals(0, getMessageCopies(serviceWorker, serviceWorkerAccount, readTime).size)
+    }
+
+    @Test
+    fun `message copy is not created for non-bulletins`() {
+        // given
+        db.transaction { tx -> insertChild(tx, DevPerson(), groupId1) }
+
+        // when
+        postNewThread(
+            "title",
+            "content",
+            MessageType.MESSAGE,
+            employee1Account,
+            listOf(MessageRecipient(MessageRecipientType.GROUP, groupId1)),
+            user = employee1,
+            now = sendTime,
+        )
+
+        // then
+        assertEquals(0, getMessageCopies(employee1, group1Account, readTime).size)
+    }
+
     private fun prepareGroupAccountAccessTest(
-        newEmployeeId: EmployeeId,
         userRole: UserRole,
         now: HelsinkiDateTime,
-    ) {
-        db.transaction { tx ->
+    ): AuthenticatedUser.Employee {
+        return db.transaction { tx ->
             testChild_2.let {
                 insertChild(tx, it, groupId1)
                 tx.insertGuardian(person2.id, it.id)
@@ -1597,9 +1663,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = now.toLocalDate().plusMonths(6),
                 )
             )
-            tx.insert(DevEmployee(id = newEmployeeId, firstName = "New", lastName = "Staff"))
-            tx.insertDaycareAclRow(testDaycare.id, newEmployeeId, userRole)
-            tx.insertDaycareGroupAcl(testDaycare.id, newEmployeeId, listOf(groupId1), now)
+            val employee = DevEmployee(firstName = "New", lastName = "Staff")
+            tx.insert(employee)
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, userRole)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId1), now)
+            employee.user
         }
     }
 
