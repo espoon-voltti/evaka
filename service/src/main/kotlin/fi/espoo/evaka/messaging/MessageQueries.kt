@@ -1354,7 +1354,7 @@ WITH groups AS (
     ) sender ON TRUE
     WHERE (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g.id = ANY(${bind(groupIds)}))
       AND (sender.type = 'MUNICIPAL' OR EXISTS(
-        SELECT FROM daycare_acl_view acl
+        SELECT FROM daycare_acl acl
         WHERE acl.daycare_id = u.id AND sender.employee_id = acl.employee_id
       ))
       AND (u.closing_date IS NULL OR u.closing_date >= ${bind(date)})
