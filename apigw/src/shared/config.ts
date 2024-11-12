@@ -606,10 +606,7 @@ function sfiDefaultsForMode(mode: SfiMode):
           'https://tunnistautuminen.suomi.fi/idp/profile/SAML2/Redirect/SSO',
         logoutUrl:
           'https://tunnistautuminen.suomi.fi/idp/profile/SAML2/Redirect/SLO',
-        publicCert: [
-          'saml-signing.idp.tunnistautuminen.suomi.fi.2024.pem',
-          'saml-signing.idp.tunnistautuminen.suomi.fi.2022.pem'
-        ]
+        publicCert: ['saml-signing.idp.tunnistautuminen.suomi.fi.2024.pem']
       }
     case 'test':
       return {
@@ -617,10 +614,7 @@ function sfiDefaultsForMode(mode: SfiMode):
           'https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SSO',
         logoutUrl:
           'https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SLO',
-        publicCert: [
-          'saml-signing-testi.apro.tunnistus.fi.2024.pem',
-          'saml-signing-testi.apro.tunnistus.fi.2022.pem'
-        ]
+        publicCert: ['saml-signing-testi.apro.tunnistus.fi.2024.pem']
       }
     case 'mock':
       return undefined
@@ -670,18 +664,18 @@ export function configFromEnv(): Config {
             entryPoint: nonNullable(
               optional('SFI_SAML_ENTRYPOINT', unchanged) ??
                 sfiDefaults?.entryPoint,
-              'Either SFI_ENV or SFI_SAML_ENTRYPOINT must be set'
+              'Either SFI_MODE or SFI_SAML_ENTRYPOINT must be set'
             ),
             logoutUrl: nonNullable(
               optional('SFI_SAML_LOGOUT_URL', unchanged) ??
                 sfiDefaults?.logoutUrl,
-              'Either SFI_ENV or SFI_SAML_LOGOUT_URL must be set'
+              'Either SFI_MODE or SFI_SAML_LOGOUT_URL must be set'
             ),
             issuer: required('SFI_SAML_ISSUER', unchanged),
             publicCert: nonNullable(
               optional('SFI_SAML_PUBLIC_CERT', parseArray(unchanged)) ??
                 sfiDefaults?.publicCert,
-              'Either SFI_ENV or SFI_SAML_PUBLIC_CERT must be set'
+              'Either SFI_MODE or SFI_SAML_PUBLIC_CERT must be set'
             ),
             privateCert: required('SFI_SAML_PRIVATE_CERT', unchanged),
             validateInResponseTo: ValidateInResponseTo.always,
