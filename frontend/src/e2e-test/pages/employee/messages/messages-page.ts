@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { MessageType } from 'lib-common/generated/api-types/messaging'
+
 import { waitUntilEqual } from '../../../utils'
 import {
   FileInput,
@@ -212,6 +214,7 @@ export class MessageEditor extends Element {
   async sendNewMessage(message: {
     title: string
     content: string
+    type?: MessageType
     urgent?: boolean
     sensitive?: boolean
     attachmentCount?: number
@@ -242,6 +245,9 @@ export class MessageEditor extends Element {
       await this.receiverSelection.open()
       await this.receiverSelection.firstOption().check()
       await this.receiverSelection.close()
+    }
+    if (message.type === 'BULLETIN') {
+      await this.messageTypeBulletin.check()
     }
     if (message.urgent ?? false) {
       await this.urgent.check()
