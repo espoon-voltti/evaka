@@ -84,10 +84,12 @@ private val childDocumentCss =
         margin-top: 0;
     }
     
+    .question-grouped-text-fields table {
+        width: 100%;
+    }
+    
     .question-grouped-text-fields th, .question-grouped-text-fields td {
-        white-space: nowrap;
-        overflow: hidden;
-        padding-right: 24px;
+        padding-right: 16px;
     }
 """
         .trimIndent()
