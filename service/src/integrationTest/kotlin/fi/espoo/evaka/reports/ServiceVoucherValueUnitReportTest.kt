@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -63,16 +62,6 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(testDaycare2)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.execute {
-                sql(
-                    "INSERT INTO holiday (date, description) VALUES (${bind(janFirst)}, ${bind("New Year")})"
-                )
-            }
-            tx.execute {
-                sql(
-                    "INSERT INTO holiday (date, description) VALUES (${bind(janFirst.plusDays(5))}, ${bind("Epiphany")})"
-                )
-            }
         }
     }
 
@@ -1214,10 +1203,6 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
 
     @Test
     fun `production scenario 1`() {
-        db.transaction {
-            it.insert(DevHoliday(LocalDate.of(2024, 1, 1), "New Year"))
-            it.insert(DevHoliday(LocalDate.of(2024, 1, 6), "Epiphany"))
-        }
         val range = FiniteDateRange(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
 
         // value decision, value 1483, copay 0

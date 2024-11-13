@@ -104,7 +104,7 @@ class AttendanceReservationController(
                                 )
                             }
 
-                    val holidays = tx.getHolidays(period)
+                    val holidays = getHolidays(period)
                     val holidayPeriods = tx.getHolidayPeriodsInRange(period)
                     val unitOperationalDays =
                         getUnitOperationalDayData(
@@ -619,7 +619,7 @@ class AttendanceReservationController(
                             clock.now(),
                             featureConfig.citizenReservationThresholdHours,
                         )
-                    val holidays = tx.getHolidays(confirmedRange)
+                    val holidays = getHolidays(confirmedRange)
                     val operationalDays =
                         getUnitOperationalDayData(
                             confirmedRange,
@@ -633,6 +633,7 @@ class AttendanceReservationController(
                         operationalDays
                             .filter { !it.dateInfo.isHoliday || it.dateInfo.shiftCareOpenOnHoliday }
                             .map { it.date }
+                            .sorted()
 
                     val rowsByDate =
                         tx.getReservationStatisticsForUnit(

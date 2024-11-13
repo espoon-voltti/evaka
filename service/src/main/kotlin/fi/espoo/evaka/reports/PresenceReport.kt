@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -55,6 +57,7 @@ class PresenceReportController(private val accessControl: AccessControl) {
 }
 
 fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<PresenceReportRow> {
+    val holidays = getHolidays(FiniteDateRange(from, to))
     return createQuery {
             sql(
                 """
@@ -76,9 +79,8 @@ LEFT JOIN daycare ON dg.daycare_id = daycare.id
 LEFT JOIN placement pl ON dgp.daycare_placement_id = pl.id AND pl.type != 'CLUB'::placement_type
 LEFT JOIN person p ON pl.child_id = p.id
 LEFT JOIN LATERAL (SELECT coalesce(array_agg(category), '{}') AS categories FROM absence a WHERE p.id = a.child_id AND a.date = t::date) a ON true
-LEFT JOIN holiday h ON t = h.date
 WHERE dw = ANY(coalesce(daycare.shift_care_operation_days, daycare.operation_days)) AND
-  (h.date IS NULL OR daycare.shift_care_open_on_holidays) AND
+  (t != ALL(${bind(holidays)}) OR daycare.shift_care_open_on_holidays) AND
   (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
 """
             )

@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import org.springframework.stereotype.Service
 
 @Service
@@ -101,6 +102,7 @@ LIMIT 1
 }
 
 private fun missingReservationsQuery(range: FiniteDateRange, guardian: PersonId?) = QuerySql {
+    val holidays = getHolidays(range)
     sql(
         """
 SELECT guardian_id
@@ -115,11 +117,7 @@ FROM (
     )
         AND p.type = ANY(${bind(PlacementType.requiringAttendanceReservations)})
         AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-        AND ((d.shift_care_open_on_holidays AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])) OR NOT EXISTS (
-            SELECT 1
-            FROM holiday h
-            WHERE t::date = h.date
-        ))
+        AND ((d.shift_care_open_on_holidays AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])) OR t::date != ALL(${bind(holidays)}))
         AND NOT EXISTS (
             SELECT 1
             FROM attendance_reservation ar

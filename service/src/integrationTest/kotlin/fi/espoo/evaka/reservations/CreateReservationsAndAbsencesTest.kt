@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -284,35 +283,38 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
     @Test
     fun `reservation is not added on holiday`() {
+        val workday = LocalDate.of(2019, 4, 30)
+        val holiday = workday.plusDays(1) // Mayday
+
         // given
         db.transaction {
             it.insert(
                 DevPlacement(
                     childId = child.id,
                     unitId = daycare.id,
-                    startDate = monday,
-                    endDate = tuesday,
+                    startDate = workday,
+                    endDate = holiday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insert(DevHoliday(tuesday, "holiday"))
         }
 
         // when
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                beforeThreshold,
+                HelsinkiDateTime.of(workday.minusWeeks(2), LocalTime.of(12, 0)),
                 adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = child.id,
-                        date = monday,
+                        date = workday,
                         TimeRange(startTime, endTime),
                     ),
+                    // Holiday
                     DailyReservationRequest.Reservations(
                         childId = child.id,
-                        date = tuesday,
+                        date = holiday,
                         TimeRange(startTime, endTime),
                     ),
                 ),
@@ -322,9 +324,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then only 1 reservation is added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, adult.id, queryRange) }.map { it.date }
+            db.read {
+                    it.getReservationsCitizen(
+                        workday,
+                        adult.id,
+                        FiniteDateRange(workday.minusDays(10), workday.plusDays(10)),
+                    )
+                }
+                .map { it.date }
         assertEquals(1, reservations.size)
-        assertEquals(monday, reservations.first())
+        assertEquals(workday, reservations.first())
     }
 
     @Test

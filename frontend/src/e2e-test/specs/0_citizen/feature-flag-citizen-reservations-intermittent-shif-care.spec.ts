@@ -52,12 +52,7 @@ describe.each(e)(
     })
 
     test('Citizen creates a repeating reservation on a bank holiday', async () => {
-      const firstReservationDay = june7th2023.addDays(14).addDays(2) //Friday, holiday
-
-      await Fixture.holiday({
-        date: firstReservationDay,
-        description: 'Test holiday 1'
-      }).save()
+      const firstReservationDay = june7th2023.addDays(14).addDays(2) //Friday, juhannusaatto
 
       const { child, parent } = await addTestData(june7th2023)
       const calendarPage = await openCalendarPage(

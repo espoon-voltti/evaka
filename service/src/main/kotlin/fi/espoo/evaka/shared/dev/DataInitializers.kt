@@ -132,7 +132,6 @@ fun Database.Transaction.ensureDevData() {
                 "employees.sql",
                 "preschool-terms.sql",
                 "club-terms.sql",
-                "holidays.sql",
             )
             .forEach { runDevScript(it) }
     }
@@ -150,18 +149,6 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
-
-fun Database.Transaction.insert(holiday: DevHoliday) {
-    createUpdate {
-            sql(
-                """
-INSERT INTO holiday (date, description)
-VALUES (${bind(holiday.date)}, ${bind(holiday.description)})
-"""
-            )
-        }
-        .execute()
-}
 
 fun Database.Transaction.insert(holidayPeriod: DevHolidayPeriod) {
     createUpdate {

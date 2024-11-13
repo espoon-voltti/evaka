@@ -63,7 +63,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
 
                     val holidayPeriod =
                         tx.getHolidayPeriod(periodId) ?: throw BadRequest("No such holiday period")
-                    val holidays = tx.getHolidays(holidayPeriod.period)
+                    val holidays = getHolidays(holidayPeriod.period)
 
                     // report result days
                     val periodDays =

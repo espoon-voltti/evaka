@@ -213,8 +213,8 @@ describe('Holiday periods and questionnaires', () => {
       const assertFreeAbsences = (hasFreeAbsences: boolean) =>
         assertCalendarDayRange(
           calendar,
-          LocalDate.of(2035, 12, 26),
-          LocalDate.of(2036, 1, 1),
+          LocalDate.of(2035, 12, 27),
+          LocalDate.of(2035, 12, 31),
           [
             {
               childIds: [child.id],
@@ -244,8 +244,8 @@ describe('Holiday periods and questionnaires', () => {
       const assertFreeAbsences = (hasFreeAbsences: boolean) =>
         assertCalendarDayRange(
           calendar,
-          LocalDate.of(2035, 12, 26),
-          LocalDate.of(2036, 1, 1),
+          LocalDate.of(2035, 12, 27),
+          LocalDate.of(2035, 12, 31),
           [
             {
               childIds: [child.id, child2.id],
@@ -271,7 +271,7 @@ describe('Holiday periods and questionnaires', () => {
 
       await assertFreeAbsences(true)
 
-      const dayView = await calendar.openDayView(LocalDate.of(2035, 12, 26))
+      const dayView = await calendar.openDayView(LocalDate.of(2035, 12, 27))
       await dayView.assertAbsence(
         child.id,
         'Henkilökunnan merkitsemä poissaolo'
@@ -357,8 +357,8 @@ describe('Holiday periods and questionnaires', () => {
       await holidayModal.assertNotEligible(child2)
       await holidayModal.markHoliday(child, '26.12.2035 - 01.01.2036')
 
-      let today = LocalDate.of(2035, 12, 26)
-      while (today.isEqualOrBefore(LocalDate.of(2036, 1, 1))) {
+      let today = LocalDate.of(2035, 12, 27)
+      while (today.isEqualOrBefore(LocalDate.of(2035, 12, 31))) {
         await calendar.assertDay(today, [
           { childIds: [child.id], text: 'Maksuton poissaolo' },
           { childIds: [child2.id], text: 'Ilmoitus puuttuu' }
@@ -366,7 +366,7 @@ describe('Holiday periods and questionnaires', () => {
         today = today.addBusinessDays(1)
       }
 
-      const dayView = await calendar.openDayView(LocalDate.of(2035, 12, 26))
+      const dayView = await calendar.openDayView(LocalDate.of(2035, 12, 27))
       await dayView.assertAbsence(
         child.id,
         'Henkilökunnan merkitsemä poissaolo'

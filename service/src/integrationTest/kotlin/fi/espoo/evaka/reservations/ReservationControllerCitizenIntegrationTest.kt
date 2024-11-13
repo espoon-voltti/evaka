@@ -36,7 +36,6 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -60,6 +59,7 @@ import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareHours120
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
+import fi.espoo.evaka.withHolidays
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -184,9 +184,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
             // child4 has no placement
 
-            // Holiday on wednesday
-            tx.insert(DevHoliday(wednesday, "holiday"))
-
             // Term break on thursday
             tx.insertPreschoolTerm(
                 preschoolTerm2021.finnishPreschool,
@@ -198,10 +195,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         }
 
         val res =
-            getReservations(
-                adult.user(CitizenAuthLevel.WEAK),
-                FiniteDateRange(sundayLastWeek, thursday),
-            )
+            @Suppress("DEPRECATION")
+            withHolidays(setOf(wednesday)) {
+                getReservations(
+                    adult.user(CitizenAuthLevel.WEAK),
+                    FiniteDateRange(sundayLastWeek, thursday),
+                )
+            }
 
         assertEquals(
             ReservationsResponse(
@@ -376,15 +376,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         )
                     )
                 }
-
-            tx.insert(DevHoliday(tuesday, "holiday"))
         }
 
         val res =
-            getReservations(
-                adult.user(CitizenAuthLevel.WEAK),
-                FiniteDateRange(sundayLastWeek, wednesday),
-            )
+            @Suppress("DEPRECATION")
+            withHolidays(setOf(tuesday)) {
+                getReservations(
+                    adult.user(CitizenAuthLevel.WEAK),
+                    FiniteDateRange(sundayLastWeek, wednesday),
+                )
+            }
 
         assertEquals(
             ReservationsResponse(

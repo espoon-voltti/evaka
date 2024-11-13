@@ -40,7 +40,6 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -69,6 +68,7 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.withHolidays
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -838,9 +838,8 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @Test
     fun `operational day for holiday`() {
-        db.transaction { tx -> tx.insert(DevHoliday(mon, "holiday")) }
-
-        val result = getAttendanceReservations()
+        val result =
+            @Suppress("DEPRECATION") withHolidays(setOf(mon)) { getAttendanceReservations() }
         assertEquals(
             UnitAttendanceReservations.UnitDateInfo(
                 normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
@@ -1257,11 +1256,14 @@ class AttendanceReservationsControllerIntegrationTest :
         val testClock = MockEvakaClock(HelsinkiDateTime.of(tue.minusWeeks(1), LocalTime.of(10, 0)))
 
         val result =
-            getConfirmedDailyReservationStats(
-                testDaycare.id,
-                mobileDeviceId = mobileDeviceId,
-                clock = testClock,
-            )
+            @Suppress("DEPRECATION")
+            withHolidays(setOf(mon.minusDays(3))) {
+                getConfirmedDailyReservationStats(
+                    testDaycare.id,
+                    mobileDeviceId = mobileDeviceId,
+                    clock = testClock,
+                )
+            }
 
         result.forEachIndexed { index, dayReservationStatisticsResult ->
             val expected = expectation[index]
@@ -1549,8 +1551,6 @@ class AttendanceReservationsControllerIntegrationTest :
                 preschoolTerm2020.applicationPeriod,
                 DateSet.of(FiniteDateRange(mon, tue)),
             )
-
-            it.insert(DevHoliday(previousFriday, "holiday"))
 
             val child1PlacementId =
                 it.insert(

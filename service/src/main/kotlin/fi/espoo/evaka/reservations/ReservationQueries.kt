@@ -27,6 +27,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.isHoliday
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -138,11 +140,11 @@ WHERE
             WHEN sn.shift_care = 'FULL'
             THEN (
                 extract(isodow FROM ${bind(it.date)}) = ANY(coalesce(d.shift_care_operation_days, d.operation_days)) AND 
-                (d.shift_care_open_on_holidays OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)}))
+                (d.shift_care_open_on_holidays OR ${bind(!it.date.isHoliday())})
             )
             ELSE (
-                extract(isodow FROM ${bind(it.date)}) = ANY(d.operation_days) AND 
-                NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)})
+                extract(isodow FROM ${bind(it.date)}) = ANY(d.operation_days) AND
+                ${bind(!it.date.isHoliday())}
             )
         END
     ) AND
@@ -557,6 +559,9 @@ fun Database.Read.getReservationStatisticsForUnit(
     confirmedDays: List<LocalDate>,
     unitId: DaycareId,
 ): Map<LocalDate, List<GroupReservationStatisticsRow>> {
+    val holidays =
+        if (confirmedDays.isEmpty()) emptySet()
+        else getHolidays(FiniteDateRange(confirmedDays.min(), confirmedDays.max()))
     return createQuery {
             sql(
                 """
@@ -577,17 +582,17 @@ from (SELECT d                                     AS date,
                  WHEN (ct.id IS NOT NULL OR pt.id IS NOT NULL) -- term break
                      THEN false
                  WHEN ( -- holiday without shift care
-                    EXISTS(SELECT 1 FROM holiday h WHERE h.date = d) AND 
+                    d = ANY(${bind(holidays)}) AND
                     NOT (u.shift_care_open_on_holidays AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[]) )
                  )
                     THEN FALSE
                  WHEN ( -- unit not open
                     NOT (extract(isodow FROM d) = ANY(
-                        CASE 
+                        CASE
                             WHEN sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
                             THEN coalesce(u.shift_care_operation_days, u.operation_days)
                             ELSE u.operation_days
-                        END 
+                        END
                     ))
                  )
                     THEN FALSE

@@ -393,17 +393,16 @@ test('Intermittent shift care outside opening times', async () => {
 
 test('Intermittent shift care on a holiday', async () => {
   await setupTestData({ placementType: 'DAYCARE' })
-  const date1 = today.addDays(1)
-  const date2 = today.addDays(2)
-  await Fixture.holiday({ date: date1 }).save()
-  await Fixture.holiday({ date: date2 }).save()
+  const date1 = LocalDate.of(2023, 12, 6) // Itsenäisyyspäivä
+  const date2 = LocalDate.of(2023, 12, 25) // Joulupäivä
+
   // Intermittent shift care for date 1
   await Fixture.serviceNeed({
     placementId,
     optionId: daycareServiceNeedOptionId,
     shiftCare: 'INTERMITTENT',
     startDate: today.subDays(2),
-    endDate: today.addDays(1),
+    endDate: date1,
     confirmedBy: unitSupervisor.id
   }).save()
   // No intermittent shift care for date 2
@@ -411,13 +410,14 @@ test('Intermittent shift care on a holiday', async () => {
     placementId,
     optionId: daycareServiceNeedOptionId,
     shiftCare: 'NONE',
-    startDate: today.addDays(2),
-    endDate: today.addDays(2),
+    startDate: date1.addDays(1),
+    endDate: date2,
     confirmedBy: unitSupervisor.id
   }).save()
   const weekCalendar = await navigateToTestView({
     intermittentShiftCareEnabled: true
   })
+  await weekCalendar.changeWeekToDate(date1)
   const reservationsTable = weekCalendar.childReservations
 
   // date 1 - before opening time
@@ -428,19 +428,23 @@ test('Intermittent shift care on a holiday', async () => {
   await modal.submit()
 
   // date 2 - after closing time
+  await weekCalendar.changeWeekToDate(date2)
   await reservationsTable.assertCannotOpenChildDateModal(childId, date2)
 
+  await weekCalendar.changeWeekToDate(date1)
   await reservationsTable
     .attendanceCells(childId, date1)
     .nth(0)
     .assertTextEquals('Tee varasijoitus ')
 
+  await weekCalendar.changeWeekToDate(date2)
   await reservationsTable
     .attendanceCells(childId, date2)
     .nth(0)
     .assertTextEquals('')
 
   const monthCalendar = await weekCalendar.openMonthCalendar()
+  await monthCalendar.changeWeekToDate(date1)
   await monthCalendar.assertTooltipContains(childId, date1, [
     'Ilta-/vuorohoito Odottaa varasijoitusta'
   ])

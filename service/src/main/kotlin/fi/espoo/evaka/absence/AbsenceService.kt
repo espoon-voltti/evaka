@@ -67,7 +67,7 @@ fun getGroupMonthCalendar(
     val attendances = allAttendances.groupBy { it.childId to it.date }
     val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
 
-    val holidays = tx.getHolidays(range)
+    val holidays = getHolidays(range)
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
 
     val childIdsWithHourBasedServiceNeed =

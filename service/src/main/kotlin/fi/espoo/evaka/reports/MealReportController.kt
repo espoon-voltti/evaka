@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 
 fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId): DaycareUnitData {
     val daycare = tx.getDaycare(unitId)
-    val holidays = tx.getHolidays(FiniteDateRange(date, date))
+    val holidays = getHolidays(FiniteDateRange(date, date))
     val childPlacements = tx.childPlacementsForDay(unitId, date)
     val childrenWithShiftCare =
         tx.getChildServiceNeedInfos(unitId, childPlacements.keys, FiniteDateRange(date, date))

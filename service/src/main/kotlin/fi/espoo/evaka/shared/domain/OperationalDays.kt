@@ -11,12 +11,6 @@ import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 
-fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
-    createQuery {
-            sql("SELECT date FROM holiday WHERE between_start_and_end(${bind(range)}, date)")
-        }
-        .toSet<LocalDate>()
-
 fun Database.Read.getOperationalDatesForChildren(
     range: FiniteDateRange,
     children: Set<ChildId>,

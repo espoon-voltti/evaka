@@ -608,15 +608,14 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
   test('Citizen creates a weekly reservation that spans a holiday', async () => {
     // Monday
-    const reservationDay = today.addDays(19)
+    const reservationDay = LocalDate.of(2022, 4, 4)
     const reservationRange = new FiniteDateRange(
       reservationDay,
-      reservationDay.addWeeks(2)
+      reservationDay.addWeeks(2).subDays(1)
     )
 
-    // Wednesday
-    const holiday = today.addDays(21)
-    await Fixture.holiday({ date: holiday }).save()
+    // Pitkäperjantai
+    const holiday = LocalDate.of(2022, 4, 15)
 
     const calendarPage = await openCalendarPage(env)
 
@@ -636,14 +635,19 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await reservationsModal.save()
 
     for (const date of reservationRange.dates()) {
-      if (date.isWeekend()) continue
-      if (date.isEqual(holiday)) continue
-      await calendarPage.assertDay(date, [
-        {
-          childIds: [testChild.id, testChild2.id, testChildRestricted.id],
-          text: '08:00–16:00'
-        }
-      ])
+      if (date.isWeekend()) {
+        // nothing
+      } else if (date.isEqual(holiday)) {
+        await calendarPage.assertHoliday(date)
+        await calendarPage.assertDay(date, [])
+      } else {
+        await calendarPage.assertDay(date, [
+          {
+            childIds: [testChild.id, testChild2.id, testChildRestricted.id],
+            text: '08:00–16:00'
+          }
+        ])
+      }
     }
   })
 })
@@ -682,13 +686,13 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
   it('Holiday', async () => {
     await init()
-    await Fixture.holiday({ date: today }).save()
+    const holiday = LocalDate.of(2022, 1, 6)
 
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertHoliday(today)
-    await calendarPage.assertDay(today, [])
+    await calendarPage.assertHoliday(holiday)
+    await calendarPage.assertDay(holiday, [])
 
-    const day = await calendarPage.openDayView(today)
+    const day = await calendarPage.openDayView(holiday)
     await day.assertNoActivePlacementsMsgVisible()
   })
 
@@ -1313,11 +1317,8 @@ describe('Citizen calendar child visibility', () => {
       shiftCare: 'FULL'
     }).save()
 
-    const firstReservationDay = today.addDays(14)
-    await Fixture.holiday({
-      date: firstReservationDay,
-      description: 'Test holiday 1'
-    }).save()
+    // Pitkäperjantai
+    const firstReservationDay = LocalDate.of(2022, 4, 15)
 
     const calendarPage = await openCalendarPage('desktop')
     await calendarPage.assertChildCountOnDay(firstReservationDay, 1)

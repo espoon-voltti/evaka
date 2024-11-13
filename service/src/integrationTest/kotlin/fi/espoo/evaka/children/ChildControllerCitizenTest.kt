@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -237,26 +236,26 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     DevPlacement(
                         childId = childId,
                         unitId = unitId,
-                        startDate = LocalDate.of(2023, 9, 1),
-                        endDate = LocalDate.of(2023, 9, 30),
+                        startDate = LocalDate.of(2023, 5, 1),
+                        endDate = LocalDate.of(2023, 5, 31),
                     )
                 )
-                tx.insert(DevHoliday(date = LocalDate.of(2023, 9, 11), description = "holiday"))
                 Pair(guardianId, childId)
             }
 
+        // 05/2023: 23 weekdays minus 2 holidays
         assertThat(
                 childControllerCitizen.getChildAttendanceSummary(
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 5, 11), LocalTime.of(8, 23))
                     ),
                     childId,
-                    YearMonth.of(2023, 9),
+                    YearMonth.of(2023, 5),
                 )
             )
-            .isEqualTo(AttendanceSummary(attendanceDays = 20))
+            .isEqualTo(AttendanceSummary(attendanceDays = 21))
     }
 
     @Test

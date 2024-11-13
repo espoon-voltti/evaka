@@ -80,7 +80,6 @@ import {
   createEmployeePins,
   createFeeThresholds,
   createFridgeChild,
-  createHoliday,
   createHolidayPeriod,
   createHolidayQuestionnaire,
   createIncome,
@@ -128,7 +127,6 @@ import {
   DevEmployee,
   DevEmployeePin,
   DevFridgeChild,
-  DevHoliday,
   DevIncome,
   DevInvoice,
   DevParentship,
@@ -868,14 +866,6 @@ export class Fixture {
       periodOptions: [],
       periodOptionLabel: { fi: '', sv: '', en: '' },
       requiresStrongAuth: false,
-      ...initial
-    })
-  }
-
-  static holiday(initial?: Partial<DevHoliday>): HolidayBuilder {
-    return new HolidayBuilder({
-      date: LocalDate.todayInHelsinkiTz(),
-      description: 'Holiday description',
       ...initial
     })
   }
@@ -1643,13 +1633,6 @@ export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuest
   async save() {
     const { id, ...body } = this.data
     await createHolidayQuestionnaire({ id, body })
-    return this.data
-  }
-}
-
-export class HolidayBuilder extends FixtureBuilder<DevHoliday> {
-  async save() {
-    await createHoliday({ body: this.data })
     return this.data
   }
 }
@@ -3073,6 +3056,9 @@ export const testDaycareGroup: DevDaycareGroup = {
   jamixCustomerNumber: null
 }
 
+/**
+ *  @deprecated Use `Fixture.placement()` instead
+ **/
 export function createDaycarePlacementFixture(
   id: string,
   childId: string,

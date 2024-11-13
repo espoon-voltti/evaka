@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import java.time.LocalDate
@@ -351,10 +352,14 @@ data class KoskiActivePreparatoryDataRaw(
     override val placements: DateSet,
     val lastOfChild: Boolean,
     val lastOfType: Boolean,
-    val holidays: Set<LocalDate>,
     @Json val absences: Map<AbsenceType, Set<LocalDate>>,
 ) : KoskiActiveDataRaw(OpiskeluoikeudenTyyppiKoodi.PREPARATORY) {
-    private val effectiveAbsences = calculatePreparatoryAbsences(placements, holidays, absences)
+    private val effectiveAbsences =
+        calculatePreparatoryAbsences(
+            placements,
+            getHolidays(placements.spanningRange()!!),
+            absences,
+        )
 
     override fun getHolidayDates(): DateSet = effectiveAbsences.plannedAbsence
 

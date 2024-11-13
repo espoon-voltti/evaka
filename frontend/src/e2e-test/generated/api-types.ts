@@ -611,14 +611,6 @@ export interface DevGuardian {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevHoliday
-*/
-export interface DevHoliday {
-  date: LocalDate
-  description: string
-}
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevIncome
 */
 export interface DevIncome {
@@ -1378,14 +1370,6 @@ export function deserializeJsonDevFridgePartner(json: JsonOf<DevFridgePartner>):
     createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     startDate: LocalDate.parseIso(json.startDate)
-  }
-}
-
-
-export function deserializeJsonDevHoliday(json: JsonOf<DevHoliday>): DevHoliday {
-  return {
-    ...json,
-    date: LocalDate.parseIso(json.date)
   }
 }
 

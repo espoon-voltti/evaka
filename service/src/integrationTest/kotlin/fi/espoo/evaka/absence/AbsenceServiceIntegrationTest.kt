@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -1168,7 +1167,6 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `group operational days do not include holidays`() {
         val firstOfJanuary2020 = LocalDate.of(2020, 1, 1)
         val epiphany2020 = LocalDate.of(2020, 1, 6)
-        db.transaction { it.insert(DevHoliday(epiphany2020)) }
         val result =
             db.read {
                 getGroupMonthCalendar(
@@ -1189,10 +1187,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val firstOfJanuary2020 = LocalDate.of(2020, 1, 1)
         val epiphany2020 = LocalDate.of(2020, 1, 6)
 
-        db.transaction {
-            it.execute { sql("INSERT INTO holiday (date) VALUES (${bind(epiphany2020)})") }
-            it.updateDaycareOperationTimes(testDaycare.id, allWeekOpTimes)
-        }
+        db.transaction { it.updateDaycareOperationTimes(testDaycare.id, allWeekOpTimes) }
         val result =
             db.read {
                 getGroupMonthCalendar(

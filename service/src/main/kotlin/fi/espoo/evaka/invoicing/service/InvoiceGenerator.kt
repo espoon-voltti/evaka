@@ -233,7 +233,7 @@ class InvoiceGenerator(
             tx.getOperationalDatesForChildren(range, allChildren).mapValues {
                 DateSet.ofDates(it.value)
             }
-        val holidays = tx.getHolidays(range)
+        val holidays = getHolidays(range)
         val businessDays =
             DateSet.ofDates(
                 range.dates().filter {

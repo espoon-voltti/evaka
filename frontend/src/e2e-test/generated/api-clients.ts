@@ -52,7 +52,6 @@ import { DevFosterParent } from './api-types'
 import { DevFridgeChild } from './api-types'
 import { DevFridgePartner } from './api-types'
 import { DevGuardian } from './api-types'
-import { DevHoliday } from './api-types'
 import { DevIncome } from './api-types'
 import { DevInvoice } from './api-types'
 import { DevMobileDevice } from './api-types'
@@ -1036,27 +1035,6 @@ export async function createFridgePartner(
       url: uri`/fridge-partner`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevFridgePartner[]>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createHoliday
-*/
-export async function createHoliday(
-  request: {
-    body: DevHoliday
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/holiday`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<DevHoliday>
     })
     return json
   } catch (e) {
