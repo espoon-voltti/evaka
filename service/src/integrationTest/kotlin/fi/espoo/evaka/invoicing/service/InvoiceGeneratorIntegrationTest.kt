@@ -37,7 +37,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -103,22 +102,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insert(feeThresholds)
             tx.insertServiceNeedOptions()
-            tx.execute {
-                sql(
-                    """
-                    INSERT INTO holiday (date)
-                    VALUES
-                        (${bind(LocalDate.of(2019, 1, 1))}),
-                        (${bind(LocalDate.of(2019, 1, 6))}),
-                        (${bind(LocalDate.of(2020, 1, 1))}),
-                        (${bind(LocalDate.of(2020, 1, 6))}),
-                        (${bind(LocalDate.of(2021, 1, 1))}),
-                        (${bind(LocalDate.of(2021, 1, 6))}),
-                        (${bind(LocalDate.of(2021, 12, 6))}),
-                        (${bind(LocalDate.of(2021, 12, 24))})
-                    """
-                )
-            }
         }
     }
 
@@ -4382,19 +4365,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `invoice generation with daily fee divisor 20 and only 19 operational days`() {
-        // Easter
-        db.transaction { tx ->
-            tx.execute {
-                sql(
-                    """
-                    INSERT INTO holiday (date)
-                    VALUES
-                        (${bind(LocalDate.of(2022, 4, 15))}),
-                        (${bind(LocalDate.of(2022, 4, 18))})
-                    """
-                )
-            }
-        }
+        // Pitkäperjantai 2022-04-15
+        // Toinen pääsiäispäivä 2022-04-18
 
         // 19 operational days
         val month = YearMonth.of(2022, 4)
@@ -4422,19 +4394,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `invoice generation with daily fee divisor 20 and only 19 operational days with a force majeure absence`() {
-        // Easter
-        db.transaction { tx ->
-            tx.execute {
-                sql(
-                    """
-                    INSERT INTO holiday (date)
-                    VALUES
-                        (${bind(LocalDate.of(2022, 4, 15))}),
-                        (${bind(LocalDate.of(2022, 4, 18))})
-                    """
-                )
-            }
-        }
+        // Pitkäperjantai 2022-04-15
+        // Toinen pääsiäispäivä 2022-04-18
 
         // 19 operational days
         val month = YearMonth.of(2022, 4)
@@ -4472,10 +4433,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `invoice generation with daily fee divisor 20 and only 19 operational days with force majeure absence on all days`() {
         val pitkaperjantai = LocalDate.of(2022, 4, 15)
         val toinenPaasiaispaiva = LocalDate.of(2022, 4, 18)
-        db.transaction { tx ->
-            tx.insert(DevHoliday(pitkaperjantai))
-            tx.insert(DevHoliday(toinenPaasiaispaiva))
-        }
 
         // 19 operational days
         val month = YearMonth.of(2022, 4)

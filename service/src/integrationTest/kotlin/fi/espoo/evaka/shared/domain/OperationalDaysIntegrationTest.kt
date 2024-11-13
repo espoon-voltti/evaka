@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -28,22 +27,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+    // Holidays: May 1st (vappu) and May 9th (helatorstai)
     val month = FiniteDateRange.ofMonth(2024, Month.MAY)
+
     val fullDay = TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
     val placementRange = FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 5, 28))
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insert(DevHoliday(date = LocalDate.of(2024, 5, 1), description = "Vappu"))
-            tx.insert(
-                DevHoliday(
-                    date = LocalDate.of(2024, 5, 19),
-                    description = "Helluntai", // On Sunday
-                )
-            )
-            tx.insertServiceNeedOption(snDaycareFullDay35)
-        }
+        db.transaction { tx -> tx.insertServiceNeedOption(snDaycareFullDay35) }
     }
 
     @Test
@@ -69,8 +61,8 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
             }
 
-        // 20 mon-fri days during placement range minus one holiday
-        assertEquals(19, result[normalChild]!!.size)
+        // 20 mon-fri days during placement range minus two holidays
+        assertEquals(18, result[normalChild]!!.size)
 
         // shift care is not provided in the unit so service need shift care has no effect
         assertEquals(result[normalChild], result[shiftCareChild])
@@ -100,11 +92,11 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
             }
 
-        // 20 mon-fri days during placement range minus one holiday
-        assertEquals(19, result[normalChild]!!.size)
+        // 20 mon-fri days during placement range minus two holidays
+        assertEquals(18, result[normalChild]!!.size)
 
         // 28 mon-sun days during placement range minus two holidays
-        assertEquals(26, result[shiftCareChild]!!.size)
+        assertEquals(25, result[shiftCareChild]!!.size)
     }
 
     @Test
@@ -131,8 +123,8 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
             }
 
-        // 20 mon-fri days during placement range minus one holiday
-        assertEquals(19, result[normalChild]!!.size)
+        // 20 mon-fri days during placement range minus two holidays
+        assertEquals(18, result[normalChild]!!.size)
 
         // 28 mon-sun days during placement range
         assertEquals(28, result[shiftCareChild]!!.size)

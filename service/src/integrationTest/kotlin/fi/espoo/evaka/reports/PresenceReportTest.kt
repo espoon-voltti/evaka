@@ -40,6 +40,8 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private lateinit var groupId: GroupId
+
+    // 2022-01-06 is a holiday
     private val reportStart = LocalDate.of(2022, 1, 3)
     private val reportEnd = LocalDate.of(2022, 1, 9)
 
@@ -48,7 +50,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         createPlacement(DAYCARE)
 
         val report = getReport()
-        assertEquals(5, report.size)
+        assertEquals(4, report.size)
         assertEquals(true, report.all { it.present == true })
     }
 
@@ -58,7 +60,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         addAbsence(reportStart, BILLABLE)
 
         val report = getReport()
-        assertEquals(5, report.size)
+        assertEquals(4, report.size)
         assertEquals(false, report.find { it.date == reportStart }?.present)
         assertEquals(true, report.filterNot { it.date == reportStart }.all { it.present == true })
     }
@@ -69,7 +71,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         addAbsence(reportStart, BILLABLE)
 
         val report = getReport()
-        assertEquals(5, report.size)
+        assertEquals(4, report.size)
         assertEquals(true, report.all { it.present == true })
     }
 
@@ -80,7 +82,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         addAbsence(reportStart, NONBILLABLE)
 
         val report = getReport()
-        assertEquals(5, report.size)
+        assertEquals(4, report.size)
         assertEquals(false, report.find { it.date == reportStart }?.present)
         assertEquals(true, report.filterNot { it.date == reportStart }.all { it.present == true })
     }
@@ -91,7 +93,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         addAbsence(reportStart, NONBILLABLE)
 
         val report = getReport()
-        assertEquals(5, report.size)
+        assertEquals(4, report.size)
         assertEquals(false, report.find { it.date == reportStart }?.present)
         assertEquals(true, report.filterNot { it.date == reportStart }.all { it.present == true })
     }

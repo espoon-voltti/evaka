@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -72,8 +71,6 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(child2, DevPersonType.CHILD)
             tx.insert(child3, DevPersonType.CHILD)
             tx.insert(child4, DevPersonType.CHILD)
-
-            tx.insert(DevHoliday(LocalDate.of(2024, 1, 1)))
 
             tx.insert(daycareGroup)
 

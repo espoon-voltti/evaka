@@ -12,7 +12,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
@@ -56,7 +55,6 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
                 .forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insertServiceNeedOptions()
-            tx.insert(DevHoliday(LocalDate.of(2021, 12, 6), "holiday"))
         }
     }
 

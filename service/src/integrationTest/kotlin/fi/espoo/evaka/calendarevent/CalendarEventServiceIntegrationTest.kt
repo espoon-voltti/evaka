@@ -47,7 +47,6 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -102,7 +101,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private val guardian = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
 
     // a monday
-    private val today = LocalDate.of(2021, 6, 5)
+    private val today = LocalDate.of(2022, 1, 3)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0))
     private val clock = MockEvakaClock(now)
 
@@ -135,7 +134,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(group1Data)
             tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id))
             tx.insert(DevDaycareGroup(id = unit2GroupId, daycareId = testDaycare2.id))
-            tx.insert(DevHoliday(today.plusDays(3)))
 
             placementId =
                 tx.insert(
