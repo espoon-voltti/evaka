@@ -464,6 +464,8 @@ fun upsertChildDatePresence(
                 input.unitId,
                 input.date,
                 TimeInterval(attendance.start, attendance.end),
+                now,
+                userId,
             )
         }
 

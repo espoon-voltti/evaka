@@ -1990,6 +1990,8 @@ data class DevChildAttendance(
     val date: LocalDate,
     val arrived: LocalTime,
     val departed: LocalTime?,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 )
 
 data class DevAssistanceAction(

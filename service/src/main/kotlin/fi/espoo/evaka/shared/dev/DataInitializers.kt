@@ -859,6 +859,8 @@ fun Database.Transaction.insertTestChildAttendance(
     unitId: DaycareId,
     arrived: HelsinkiDateTime,
     departed: HelsinkiDateTime?,
+    modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 ) {
     val attendances: List<Triple<LocalDate, LocalTime, LocalTime?>> =
         if (departed == null) {
@@ -881,8 +883,8 @@ fun Database.Transaction.insertTestChildAttendance(
     executeBatch(attendances) {
         sql(
             """
-INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
-VALUES (${bind(childId)}, ${bind(unitId)}, ${bind { (date, _, _) -> date }}, ${bind { (_, startTime, _) -> startTime.withSecond(0).withNano(0) }}, ${bind { (_, _, endTime) -> endTime?.withSecond(0)?.withNano(0) }})
+INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
+VALUES (${bind(childId)}, ${bind(unitId)}, ${bind { (date, _, _) -> date }}, ${bind { (_, startTime, _) -> startTime.withSecond(0).withNano(0) }}, ${bind { (_, _, endTime) -> endTime?.withSecond(0)?.withNano(0) }}, ${bind(modifiedAt)}, ${bind(modifiedBy)})
 """
         )
     }
@@ -1532,8 +1534,8 @@ fun Database.Transaction.insert(row: DevChildAttendance): ChildAttendanceId =
     createUpdate {
             sql(
                 """
-INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
-VALUES (${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.date)}, ${bind(row.arrived)}, ${bind(row.departed)})
+INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
+VALUES (${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.date)}, ${bind(row.arrived)}, ${bind(row.departed)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 """
             )
         }

@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
@@ -29,12 +30,14 @@ fun Database.Transaction.insertAttendance(
     unitId: DaycareId,
     date: LocalDate,
     range: TimeInterval,
+    now: HelsinkiDateTime,
+    createdById: EvakaUserId,
 ): ChildAttendanceId {
     return createUpdate {
             sql(
                 """
-                INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
-                VALUES (${bind(childId)}, ${bind(unitId)}, ${bind(date)}, ${bind(range.start)}, ${bind(range.end)})
+                INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
+                VALUES (${bind(childId)}, ${bind(unitId)}, ${bind(date)}, ${bind(range.start)}, ${bind(range.end)}, ${bind(now)}, ${bind(createdById)})
                 RETURNING id
                 """
             )
