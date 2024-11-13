@@ -266,7 +266,7 @@ describe('Employee - Unit month calendar', () => {
   })
 
   describe('Holiday period reservations', () => {
-    const holidayStart = today.addMonths(1).addDays(2) // Monday
+    const holidayStart = today.addMonths(1).addDays(16) // Monday
     const holidayEnd = holidayStart.addDays(4) // Friday
     const holidayRange = new FiniteDateRange(holidayStart, holidayEnd)
 

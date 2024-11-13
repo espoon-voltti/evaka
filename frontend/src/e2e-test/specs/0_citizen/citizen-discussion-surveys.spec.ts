@@ -36,7 +36,7 @@ let page: Page
 let header: CitizenHeader
 let calendarPage: CitizenCalendarPage
 let children: DevPerson[]
-const today = LocalDate.of(2022, 1, 3)
+const today = LocalDate.of(2022, 1, 10)
 
 const groupId = uuidv4()
 const groupEventId = uuidv4()
@@ -300,7 +300,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
       testChild.id,
       'Individual survey',
       reservationId,
-      `to 6.1. klo 12:00 - 12:30`,
+      `to 13.1. klo 12:00 - 12:30`,
       true
     )
 
@@ -309,7 +309,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
       testChild.id,
       'Restricted survey',
       noncancellableEventTimeId,
-      `ti 4.1. klo 10:00 - 10:30`,
+      `ti 11.1. klo 10:00 - 10:30`,
       false
     )
   })
@@ -329,7 +329,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
       testChild.id,
       'Group-wide survey',
       groupReservationId,
-      `to 6.1. klo 09:00 - 09:30`,
+      `to 13.1. klo 09:00 - 09:30`,
       true
     )
   })
@@ -370,7 +370,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
       testChild.id,
       'Individual survey',
       reservationId,
-      `to 6.1. klo 12:00 - 12:30`,
+      `to 13.1. klo 12:00 - 12:30`,
       true
     )
 

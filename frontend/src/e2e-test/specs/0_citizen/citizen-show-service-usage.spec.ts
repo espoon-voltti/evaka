@@ -233,7 +233,12 @@ describe('Service time alert', () => {
     while (i < 31) {
       const date = LocalDate.of(2022, 1, i)
       i++
-      if (date.getIsoDayOfWeek() === 6 || date.getIsoDayOfWeek() === 7) continue
+
+      // skip holidays and weekends
+      if (date.isEqual(LocalDate.of(2022, 1, 1))) continue
+      if (date.isEqual(LocalDate.of(2022, 1, 6))) continue
+      if (date.isWeekend()) continue
+
       await Fixture.attendanceReservation({
         type: 'RESERVATIONS',
         date: date,
@@ -246,7 +251,7 @@ describe('Service time alert', () => {
         unitId: testDaycare.id,
         date: date,
         arrived: LocalTime.of(8, 0),
-        departed: LocalTime.of(15, 32)
+        departed: LocalTime.of(16, 30)
       }).save()
     }
 
@@ -259,8 +264,8 @@ describe('Service time alert', () => {
     await summary.textElement.assertTextEquals(
       'Kaarina\n' +
         '\n' +
-        'Suunnitelma 60 h / 75 h\n' +
-        'Toteuma 75 h 20 min / 75 h'
+        'Suunnitelma 57 h / 75 h\n' +
+        'Toteuma 76 h 30 min / 75 h'
     )
   })
 

@@ -35,7 +35,7 @@ let page: Page
 let header: CitizenHeader
 let calendarPage: CitizenCalendarPage
 let children: DevPerson[]
-const today = LocalDate.of(2022, 1, 5)
+const today = LocalDate.of(2022, 1, 12)
 
 const groupEventId = uuidv4()
 const unitEventId = uuidv4()

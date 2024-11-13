@@ -67,8 +67,9 @@ describe('Child confirmed reservations', () => {
       LocalDate.of(2022, 5, 19),
       LocalDate.of(2022, 5, 20),
       LocalDate.of(2022, 5, 23),
+      LocalDate.of(2022, 5, 24),
       LocalDate.of(2022, 5, 25),
-      LocalDate.of(2022, 5, 26),
+      // 2022-05-26: Helatorstai
       LocalDate.of(2022, 5, 27)
     ]
 
@@ -78,7 +79,7 @@ describe('Child confirmed reservations', () => {
 
     const nonConfirmedDaysOnTestDate = [
       LocalDate.of(2022, 5, 17),
-      LocalDate.of(2022, 5, 24),
+      LocalDate.of(2022, 5, 26),
       LocalDate.of(2022, 5, 28)
     ]
 
@@ -114,16 +115,16 @@ describe('Child confirmed reservations', () => {
         absentCount: '0'
       },
       {
+        date: LocalDate.of(2022, 5, 24),
+        presentCount: '3',
+        presentCalc: '3,25',
+        absentCount: '1'
+      },
+      {
         date: LocalDate.of(2022, 5, 25),
         presentCount: '4',
         presentCalc: '4,25',
         absentCount: '0'
-      },
-      {
-        date: LocalDate.of(2022, 5, 26),
-        presentCount: '3',
-        presentCalc: '3,25',
-        absentCount: '1'
       },
       {
         date: LocalDate.of(2022, 5, 27),
@@ -286,11 +287,6 @@ async function insertConfirmedDaysTestData() {
     ]
   }).save()
 
-  await Fixture.holiday({
-    date: LocalDate.of(2022, 5, 24),
-    description: 'Testing'
-  }).save()
-
   const careArea = await Fixture.careArea(testCareArea).save()
   await Fixture.daycare({
     ...testDaycare,
@@ -335,8 +331,8 @@ async function insertConfirmedDaysTestData() {
     childId: testChild.id,
     unitId: testDaycare2.id,
     period: new FiniteDateRange(
-      LocalDate.of(2022, 5, 26),
-      LocalDate.of(2022, 5, 26)
+      LocalDate.of(2022, 5, 24),
+      LocalDate.of(2022, 5, 24)
     ),
     groupId: null
   }).save()
