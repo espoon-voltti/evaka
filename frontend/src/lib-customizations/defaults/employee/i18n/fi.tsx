@@ -539,6 +539,8 @@ export const fi = {
       num: 'Päätösnumero',
       status: 'Päätöksen tila',
       statuses: {
+        draft: 'Luonnos',
+        waitingMailing: 'Odottaa postitusta',
         PENDING: 'Vahvistettavana huoltajalla',
         ACCEPTED: 'Vastaanotettu',
         REJECTED: 'Hylätty'
