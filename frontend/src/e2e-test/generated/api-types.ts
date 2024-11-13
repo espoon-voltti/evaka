@@ -351,6 +351,8 @@ export interface DevChildAttendance {
   childId: UUID
   date: LocalDate
   departed: LocalTime | null
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
   unitId: UUID
 }
 
@@ -1223,7 +1225,8 @@ export function deserializeJsonDevChildAttendance(json: JsonOf<DevChildAttendanc
     ...json,
     arrived: LocalTime.parseIso(json.arrived),
     date: LocalDate.parseIso(json.date),
-    departed: (json.departed != null) ? LocalTime.parseIso(json.departed) : null
+    departed: (json.departed != null) ? LocalTime.parseIso(json.departed) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 
