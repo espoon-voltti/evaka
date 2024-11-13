@@ -952,11 +952,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
-    @PostMapping("/holiday")
-    fun createHoliday(db: Database, @RequestBody holiday: DevHoliday) {
-        db.connect { dbc -> dbc.transaction { tx -> tx.insert(holiday) } }
-    }
-
     @PostMapping("/holiday-period/questionnaire/{id}")
     fun createHolidayQuestionnaire(
         db: Database,
@@ -1834,8 +1829,6 @@ data class DevChild(
     val dietId: Int? = null,
     val mealTextureId: Int? = null,
 )
-
-data class DevHoliday(val date: LocalDate, val description: String = "Test Holiday")
 
 data class DevHolidayPeriod(
     val id: HolidayPeriodId = HolidayPeriodId(UUID.randomUUID()),
