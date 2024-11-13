@@ -1498,18 +1498,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         assertAbsenceCounts(child1.id, listOf(monday to 2, tuesday to 2))
 
         // DAYCARE generates one absence per day
-        assertAbsenceCounts(
-            child2.id,
-            listOf(
-                fridayLastWeek to 1,
-                // TODO: Absences are also generated for the weekend even though the unit is closed.
-                // This works but is not ideal.
-                saturdayLastWeek to 1,
-                sundayLastWeek to 1,
-                monday to 1,
-                tuesday to 1,
-            ),
-        )
+        assertAbsenceCounts(child2.id, listOf(fridayLastWeek to 1, monday to 1, tuesday to 1))
     }
 
     @Test
