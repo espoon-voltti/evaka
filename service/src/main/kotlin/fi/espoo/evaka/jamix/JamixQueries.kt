@@ -36,7 +36,6 @@ fun Database.Read.getJamixCustomerNumbers(range: FiniteDateRange): Set<Int> =
                       AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
                       AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
                 """
-                    .trimIndent()
             )
         }
         .toSet()
