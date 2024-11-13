@@ -223,7 +223,7 @@ fun planJamixOrderJobs(
     val range = now.toLocalDate().startOfNextWeek().weekSpan()
     val customerMapping = getCustomerMapping(client)
     dbc.transaction { tx ->
-        val customerNumbers = tx.getJamixCustomerNumbers()
+        val customerNumbers = tx.getJamixCustomerNumbers(range)
         planJamixOrderJobs(tx, asyncJobRunner, now, range, customerNumbers, customerMapping)
     }
 }

@@ -9,6 +9,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
@@ -24,10 +25,18 @@ data class JamixChildData(
     val absences: Set<AbsenceCategory>,
 )
 
-fun Database.Read.getJamixCustomerNumbers(): Set<Int> =
+fun Database.Read.getJamixCustomerNumbers(range: FiniteDateRange): Set<Int> =
     createQuery {
             sql(
-                "SELECT DISTINCT jamix_customer_number FROM daycare_group WHERE jamix_customer_number IS NOT NULL"
+                """
+                    SELECT DISTINCT dg.jamix_customer_number 
+                    FROM daycare_group dg 
+                    JOIN daycare d ON d.id = dg.daycare_id
+                    WHERE dg.jamix_customer_number IS NOT NULL
+                      AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
+                      AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
+                """
+                    .trimIndent()
             )
         }
         .toSet()
