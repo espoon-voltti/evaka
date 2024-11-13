@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -47,6 +46,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.withHolidays
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -168,13 +168,16 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
         initTestPlacementData(holidayPeriod.period.start, testUnitData[0])
 
         val reportResultsA =
-            holidayPeriodAttendanceReport.getHolidayPeriodAttendanceReport(
-                dbInstance(),
-                mockClock,
-                adminLoginUser,
-                testUnitData[0],
-                holidayPeriod.id,
-            )
+            @Suppress("DEPRECATION")
+            withHolidays(emptySet()) {
+                holidayPeriodAttendanceReport.getHolidayPeriodAttendanceReport(
+                    dbInstance(),
+                    mockClock,
+                    adminLoginUser,
+                    testUnitData[0],
+                    holidayPeriod.id,
+                )
+            }
         val periodDays = holidayPeriod.period.dates().toList()
         val periodDaysInA = periodDays.filter { it.dayOfWeek < DayOfWeek.SATURDAY }
         val resultDaysA = reportResultsA.map { it.date }
@@ -182,13 +185,16 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
         assertThat(resultDaysA).containsAll(periodDaysInA)
 
         val reportResultsB =
-            holidayPeriodAttendanceReport.getHolidayPeriodAttendanceReport(
-                dbInstance(),
-                mockClock,
-                adminLoginUser,
-                testUnitData[1],
-                holidayPeriod.id,
-            )
+            @Suppress("DEPRECATION")
+            withHolidays(emptySet()) {
+                holidayPeriodAttendanceReport.getHolidayPeriodAttendanceReport(
+                    dbInstance(),
+                    mockClock,
+                    adminLoginUser,
+                    testUnitData[1],
+                    holidayPeriod.id,
+                )
+            }
         val resultDaysB = reportResultsB.map { it.date }
 
         assertThat(resultDaysB).containsAll(periodDays)
@@ -200,15 +206,18 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
         val testData = initTestPlacementData(holidayPeriod.period.start, testUnitData[0])
 
         val reportResultsByDate =
-            holidayPeriodAttendanceReport
-                .getHolidayPeriodAttendanceReport(
-                    dbInstance(),
-                    mockClock,
-                    adminLoginUser,
-                    testUnitData[0],
-                    holidayPeriod.id,
-                )
-                .associateBy { it.date }
+            @Suppress("DEPRECATION")
+            withHolidays(emptySet()) {
+                holidayPeriodAttendanceReport
+                    .getHolidayPeriodAttendanceReport(
+                        dbInstance(),
+                        mockClock,
+                        adminLoginUser,
+                        testUnitData[0],
+                        holidayPeriod.id,
+                    )
+                    .associateBy { it.date }
+            }
 
         val expectedMonday =
             HolidayPeriodAttendanceReportRow(
@@ -299,7 +308,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
     fun `Report returns correct attendance data for shift care unit`() {
         val monday = holidayPeriod.period.start
         val testUnitData = initTestUnitData(monday)
-        val testData = initTestPlacementData(monday, testUnitData[1], listOf(monday.plusDays(2)))
+        val testData = initTestPlacementData(monday, testUnitData[1])
         addTestServiceNeed(testData[0].second[0], ShiftCareType.FULL)
 
         val reportResultsByDate =
@@ -456,15 +465,18 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
         )
 
         val reportResultsByDate =
-            holidayPeriodAttendanceReport
-                .getHolidayPeriodAttendanceReport(
-                    dbInstance(),
-                    mockClock,
-                    adminLoginUser,
-                    testUnitData[0],
-                    holidayPeriod.id,
-                )
-                .associateBy { it.date }
+            @Suppress("DEPRECATION")
+            withHolidays(emptySet()) {
+                holidayPeriodAttendanceReport
+                    .getHolidayPeriodAttendanceReport(
+                        dbInstance(),
+                        mockClock,
+                        adminLoginUser,
+                        testUnitData[0],
+                        holidayPeriod.id,
+                    )
+                    .associateBy { it.date }
+            }
 
         val expectedMonday =
             HolidayPeriodAttendanceReportRow(
@@ -604,7 +616,6 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
     private fun initTestPlacementData(
         monday: LocalDate,
         daycareId: DaycareId,
-        holidays: List<LocalDate> = emptyList(),
     ): List<Pair<DevPerson, List<DevPlacement>>> {
         val tuesday = monday.plusDays(1)
         val wednesday = monday.plusDays(2)
@@ -619,10 +630,6 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(unitSupervisorA)
 
             tx.insertDaycareAclRow(daycareId, unitSupervisorA.id, UserRole.UNIT_SUPERVISOR)
-
-            holidays.forEachIndexed { index, date ->
-                tx.insert(DevHoliday(date, "Test holiday ${index + 1}"))
-            }
 
             val testChildAapo =
                 DevPerson(

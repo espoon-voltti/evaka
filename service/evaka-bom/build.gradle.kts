@@ -23,6 +23,7 @@ dependencies {
         api("com.zaxxer:HikariCP:6.1.0")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api("io.kotest:kotest-property:5.9.1")
+        api("io.mockk:mockk:1.13.13")
         api("jakarta.annotation:jakarta.annotation-api:3.0.0")
         api("jakarta.jws:jakarta.jws-api:3.0.0")
         api("jakarta.xml.ws:jakarta.xml.ws-api:4.0.0")
