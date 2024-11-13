@@ -140,7 +140,11 @@ export const childDocumentsQuery = query({
 
 export const childDocumentQuery = query({
   api: getDocument,
-  queryKey: ({ documentId }) => queryKeys.childDocument(documentId)
+  queryKey: ({ documentId }) => queryKeys.childDocument(documentId),
+  options: {
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false
+  }
 })
 
 export const childDocumentMetadataQuery = query({
@@ -151,7 +155,11 @@ export const childDocumentMetadataQuery = query({
 
 export const childDocumentWriteLockQuery = query({
   api: takeDocumentWriteLock,
-  queryKey: ({ documentId }) => queryKeys.childDocumentWriteLock(documentId)
+  queryKey: ({ documentId }) => queryKeys.childDocumentWriteLock(documentId),
+  options: {
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false
+  }
 })
 
 export const createChildDocumentMutation = mutation({

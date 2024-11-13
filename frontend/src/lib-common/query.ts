@@ -26,6 +26,7 @@ import { useStableCallback } from './utils/useStableCallback'
 export interface QueryOptions {
   enabled?: boolean
   refetchOnMount?: boolean | 'always'
+  refetchOnWindowFocus?: boolean | 'always'
   staleTime?: number
 }
 
