@@ -460,8 +460,18 @@ fun Database.Read.getChildAttendances(where: Predicate): List<ChildAttendanceRow
     createQuery {
             sql(
                 """
-SELECT child_id, unit_id, date, start_time, end_time
+SELECT
+    ca.child_id,
+    ca.unit_id,
+    ca.date,
+    ca.start_time,
+    ca.end_time,
+    ca.modified_at,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
 FROM child_attendance ca
+JOIN evaka_user e ON ca.modified_by = e.id
 WHERE ${predicate(where.forTable("ca"))}
 """
             )
