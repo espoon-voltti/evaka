@@ -109,7 +109,7 @@ function SingleMessage({
   index: number
 }) {
   const { senderName, recipientNames } = useMemo(() => {
-    if (view === 'sent') {
+    if (view === 'sent' || view === 'copies') {
       return {
         senderName: message.sender.name,
         // message.recipientNames should always exist for sent messages, ?? is there to satisfy the type checker

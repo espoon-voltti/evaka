@@ -268,13 +268,14 @@ describe('Sending and receiving sensitive messages', () => {
 })
 
 describe('Staff copies', () => {
-  test('Message sent by supervisor to the whole unit creates a copy for the staff', async () => {
+  test('Bulletin sent by supervisor to the whole unit creates a copy for the staff', async () => {
     await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receivers: [testDaycare.id]
+      receivers: [testDaycare.id],
+      type: 'BULLETIN' as const
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -298,10 +299,17 @@ describe('Staff copies', () => {
       content: 'Ilmoituksen sisältö',
       receivers: [testChild2.id]
     }
-    const messageEditor = await new MessagesPage(
-      unitSupervisorPage
-    ).openMessageEditor()
+    const bulletin = {
+      title: 'Ilmoitus',
+      content: 'Ilmoituksen sisältö',
+      receivers: [testChild2.id],
+      type: 'BULLETIN' as const
+    }
+    const messagesPage = new MessagesPage(unitSupervisorPage)
+    const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage(message)
+    await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage(bulletin)
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     await initStaffPage(mockedDateAt11)
