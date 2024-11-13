@@ -56,16 +56,33 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         planJamixOrderJobs(db, asyncJobRunner, TestJamixClient(customerNumberToIdMapping), now)
 
-        val jobs =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'")
-                    }
-                    .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
-                    .toList()
-            }
+        assertEquals(emptyList(), getJobs())
+    }
 
-        assertEquals(emptyList(), jobs)
+    @Test
+    fun `meal order jobs for closed units are not planned`() {
+        // Tuesday
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 2), LocalTime.of(2, 25))
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                closingDate = now.toLocalDate().minusDays(1),
+            )
+        val group1 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 88)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group1)
+        }
+
+        planJamixOrderJobs(db, asyncJobRunner, TestJamixClient(customerNumberToIdMapping), now)
+
+        assertEquals(emptyList(), getJobs())
     }
 
     @Test
@@ -93,14 +110,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         planJamixOrderJobs(db, asyncJobRunner, TestJamixClient(customerNumberToIdMapping), now)
 
-        val jobs =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'")
-                    }
-                    .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
-                    .toList()
-            }
+        val jobs = getJobs()
 
         val mondayNextWeek = LocalDate.of(2024, 4, 8)
         val sundayNextWeek = LocalDate.of(2024, 4, 14)
@@ -159,14 +169,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             date = date,
         )
 
-        val jobs =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'")
-                    }
-                    .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
-                    .toList()
-            }
+        val jobs = getJobs()
 
         assertEquals(
             listOf(
@@ -530,6 +533,13 @@ Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden 
             )
         }
     }
+
+    private fun getJobs() =
+        db.read { tx ->
+            tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'") }
+                .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
+                .toList()
+        }
 
     private fun sendOrders(
         client: JamixClient,
