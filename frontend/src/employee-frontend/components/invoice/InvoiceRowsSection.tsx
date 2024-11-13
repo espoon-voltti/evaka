@@ -102,10 +102,6 @@ export default React.memo(function InvoiceRowsSection({
       )
     }, [replacedRows])
 
-  const unitIds = useMemo(
-    () => invoiceCodes.units.map((unit) => unit.id),
-    [invoiceCodes]
-  )
   const unitDetails = useMemo(
     () => Object.fromEntries(invoiceCodes.units.map((unit) => [unit.id, unit])),
     [invoiceCodes]
@@ -117,91 +113,76 @@ export default React.memo(function InvoiceRowsSection({
         title={i18n.invoice.form.rows.title}
         icon={faCoins}
         startCollapsed={false}
+        data-qa="invoice-rows"
       >
-        <div className="invoice-rows">
-          {Object.entries(childRows).map(([childId, childRows]) => {
-            const firstRow = childRows[0]
-            const previousSum =
-              replacedChildSums !== undefined
-                ? replacedChildSums[childId] ?? 0
-                : undefined
-            return (
-              <div key={childId}>
-                <TitleContainer>
-                  <Title size={4}>
-                    <Link to={`/child-information/${childId}`}>
+        {Object.entries(childRows).map(([childId, childRows]) => {
+          const firstRow = childRows[0]
+          const previousSum =
+            replacedChildSums !== undefined
+              ? replacedChildSums[childId] ?? 0
+              : undefined
+          return (
+            <div key={childId} data-qa={`child-${childId}`}>
+              <TitleContainer>
+                <Title size={4}>
+                  <Link to={`/child-information/${childId}`}>
+                    <span data-qa="child-name">
                       {formatName(
                         firstRow.child.firstName,
                         firstRow.child.lastName,
                         i18n,
                         true
-                      )}{' '}
-                      {firstRow.child.ssn}
-                    </Link>
-                  </Title>
-                  <Button
-                    appearance="inline"
-                    icon={faAbacus}
-                    onClick={() =>
-                      openAbsences(firstRow.child, firstRow.periodStart)
-                    }
-                    text={i18n.invoice.openAbsenceSummary}
-                  />
-                </TitleContainer>
-                <InvoiceRowsTable data-qa="table-of-invoice-rows">
-                  <Thead>
-                    <Tr>
-                      <Th data-qa="invoice-row-product">
-                        {i18n.invoice.form.rows.product}
-                      </Th>
-                      <Th data-qa="invoice-row-description">
-                        {i18n.invoice.form.rows.description}
-                      </Th>
-                      <UnitTh data-qa="invoice-row-unit">
-                        {i18n.invoice.form.rows.unitId}
-                      </UnitTh>
-                      <Th data-qa="invoice-row-daterange">
-                        {i18n.invoice.form.rows.daterange}
-                      </Th>
-                      <AmountTh data-qa="invoice-row-amount">
-                        {i18n.invoice.form.rows.amount}
-                      </AmountTh>
-                      <UnitPriceTh
-                        align="right"
-                        data-qa="invoice-row-unitprice"
-                      >
-                        {i18n.invoice.form.rows.unitPrice}
-                      </UnitPriceTh>
-                      <TotalPriceTh
-                        align="right"
-                        data-qa="invoice-row-totalprice"
-                      >
-                        {i18n.invoice.form.rows.price}
-                      </TotalPriceTh>
-                      <Th />
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {childRows.map((row, index) => (
-                      <InvoiceRowsSectionRow
-                        key={index}
-                        row={row}
-                        products={invoiceCodes.products}
-                        unitIds={unitIds}
-                        unitDetails={unitDetails}
-                      />
-                    ))}
-                  </Tbody>
-                </InvoiceRowsTable>
-                <Sum
-                  title="rowSubTotal"
-                  sum={totalPrice(childRows)}
-                  previousSum={previousSum}
+                      )}
+                    </span>{' '}
+                    <span data-qa="child-ssn">{firstRow.child.ssn}</span>
+                  </Link>
+                </Title>
+                <Button
+                  appearance="inline"
+                  icon={faAbacus}
+                  onClick={() =>
+                    openAbsences(firstRow.child, firstRow.periodStart)
+                  }
+                  text={i18n.invoice.openAbsenceSummary}
                 />
-              </div>
-            )
-          })}
-        </div>
+              </TitleContainer>
+              <InvoiceRowsTable data-qa="table-of-invoice-rows">
+                <Thead>
+                  <Tr>
+                    <Th>{i18n.invoice.form.rows.product}</Th>
+                    <Th>{i18n.invoice.form.rows.description}</Th>
+                    <UnitTh>{i18n.invoice.form.rows.unitId}</UnitTh>
+                    <Th>{i18n.invoice.form.rows.daterange}</Th>
+                    <AmountTh>{i18n.invoice.form.rows.amount}</AmountTh>
+                    <UnitPriceTh align="right">
+                      {i18n.invoice.form.rows.unitPrice}
+                    </UnitPriceTh>
+                    <TotalPriceTh align="right">
+                      {i18n.invoice.form.rows.price}
+                    </TotalPriceTh>
+                    <Th />
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {childRows.map((row, index) => (
+                    <InvoiceRowsSectionRow
+                      key={index}
+                      row={row}
+                      products={invoiceCodes.products}
+                      unitDetails={unitDetails}
+                    />
+                  ))}
+                </Tbody>
+              </InvoiceRowsTable>
+              <Sum
+                title="rowSubTotal"
+                sum={totalPrice(childRows)}
+                previousSum={previousSum}
+                data-qa="child-sum"
+              />
+            </div>
+          )
+        })}
       </CollapsibleSection>
       {uiMode == 'invoices-absence-modal' && child !== undefined && (
         <AbsencesModal child={child} date={absenceModalDate} />

@@ -13,23 +13,29 @@ interface Props {
   title: 'rowSubTotal' | 'familyTotal'
   sum: number
   previousSum?: number | undefined
+  'data-qa'?: string
 }
 
-export default React.memo(function Sum({ title, sum, previousSum }: Props) {
+export default React.memo(function Sum({
+  title,
+  sum,
+  previousSum,
+  'data-qa': dataQa
+}: Props) {
   const { i18n } = useTranslation()
 
   return (
-    <InvoiceSum>
-      <span data-qa="invoice-sum-title">{i18n.invoice.form.sum[title]}</span>
+    <InvoiceSum data-qa={dataQa}>
+      <span>{i18n.invoice.form.sum[title]}</span>
       {previousSum !== undefined ? (
         <span>
-          <div data-qa="invoice-sum-price">{formatCents(sum, true)}</div>
-          <div data-qa="invoice-sum-replaced-price">
+          <div data-qa="price">{formatCents(sum, true)}</div>
+          <div data-qa="previous-price">
             <s>{formatCents(previousSum, true)}</s>
           </div>
         </span>
       ) : (
-        <span data-qa="invoice-sum-price">formatCents(sum, true)</span>
+        <span data-qa="price">{formatCents(sum, true)}</span>
       )}
     </InvoiceSum>
   )

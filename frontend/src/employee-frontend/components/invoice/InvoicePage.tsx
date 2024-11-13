@@ -77,6 +77,7 @@ export default React.memo(function InvoiceDetailsPage() {
                 title="familyTotal"
                 sum={response.invoice.totalPrice}
                 previousSum={response.replacedInvoice?.totalPrice}
+                data-qa="total-sum"
               />
               <Actions invoiceResponse={response} />
             </ContentArea>

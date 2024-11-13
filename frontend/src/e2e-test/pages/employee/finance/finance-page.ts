@@ -28,6 +28,8 @@ import {
 import ChildInformationPage from '../child-information'
 import GuardianInformationPage from '../guardian-information'
 
+import { InvoiceDetailsPage } from './invoice-details-page'
+
 export class FinancePage {
   constructor(private readonly page: Page) {}
 
@@ -435,9 +437,10 @@ export class InvoicesPage {
       .click()
   }
 
-  async openFirstInvoice() {
+  async openFirstInvoice(): Promise<InvoiceDetailsPage> {
     await this.#invoiceInList.click()
     await this.#invoiceDetailsPage.waitUntilVisible()
+    return new InvoiceDetailsPage(this.page)
   }
 
   async assertInvoiceHeadOfFamily(fullName: string) {

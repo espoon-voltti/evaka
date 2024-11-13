@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
-  createDaycarePlacementFixture,
   familyWithRestrictedDetailsGuardian,
   feeDecisionsFixture,
   Fixture,
@@ -15,15 +15,12 @@ import {
   testCareArea,
   testChild,
   testChild2,
-  testDaycare,
-  uuidv4
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
-  createDaycarePlacements,
   createFeeDecisions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -35,37 +32,49 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let financePage: FinancePage
 let invoicesPage: InvoicesPage
-let adultWithoutSSN: DevPerson
+
+const now = HelsinkiDateTime.of(2024, 11, 1, 12, 0)
+const today = now.toLocalDate()
+
+const codebtor = Fixture.person({
+  firstName: 'Code',
+  lastName: 'Btor',
+  ssn: '010177-1234'
+}).data
 
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
+
   await Fixture.family({
     guardian: testAdult,
+    otherGuardian: codebtor,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
-  adultWithoutSSN = await Fixture.person({
-    id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
-    firstName: 'Aikuinen',
-    lastName: 'Hetuton',
-    ssn: null,
-    dateOfBirth: LocalDate.of(1980, 1, 1),
-    streetAddress: 'Kamreerintie 2',
-    postalCode: '02770',
-    postOffice: 'Espoo'
-  }).saveAdult()
+  await Fixture.guardian(testChild, testAdult).save()
+  await Fixture.guardian(testChild2, testAdult).save()
+  await Fixture.guardian(testChild, codebtor).save()
+  await Fixture.guardian(testChild2, codebtor).save()
+
+  await Fixture.parentship({
+    childId: testChild.id,
+    headOfChildId: testAdult.id,
+    startDate: testChild.dateOfBirth,
+    endDate: testChild.dateOfBirth.addYears(18).subDays(1)
+  }).save()
   await Fixture.parentship({
     childId: testChild2.id,
     headOfChildId: testAdult.id,
     startDate: testChild2.dateOfBirth,
-    endDate: LocalDate.of(2099, 1, 1)
+    endDate: testChild2.dateOfBirth.addYears(18).subDays(1)
   }).save()
+
+  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
 
   await Fixture.feeThresholds().save()
 
-  page = await Page.open({ acceptDownloads: true })
+  page = await Page.open({ acceptDownloads: true, mockedTime: now })
 
   const financeAdmin = await Fixture.employee().financeAdmin().save()
   await employeeLogin(page, financeAdmin)
@@ -79,24 +88,26 @@ beforeEach(async () => {
 
 describe('Invoices', () => {
   describe('Create drafts', () => {
+    const feeDecision = feeDecisionsFixture(
+      'SENT',
+      testAdult,
+      testChild2,
+      testDaycare.id,
+      codebtor,
+      FiniteDateRange.ofMonth(today.subMonths(1)),
+      now,
+      'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+      null,
+      123123123
+    )
+
     beforeEach(async () => {
-      const feeDecisionFixture = feeDecisionsFixture(
-        'SENT',
-        testAdult,
-        testChild2,
-        testDaycare.id,
-        null,
-        new FiniteDateRange(
-          LocalDate.todayInSystemTz().subMonths(1).withDate(1),
-          LocalDate.todayInSystemTz().withDate(1).subDays(1)
-        )
-      )
-      await createFeeDecisions({ body: [feeDecisionFixture] })
+      await createFeeDecisions({ body: [feeDecision] })
       await Fixture.placement({
         childId: testChild2.id,
         unitId: testDaycare.id,
-        startDate: feeDecisionFixture.validDuring.start,
-        endDate: feeDecisionFixture.validDuring.end
+        startDate: feeDecision.validDuring.start,
+        endDate: feeDecision.validDuring.end
       }).save()
     })
 
@@ -108,10 +119,59 @@ describe('Invoices', () => {
 
     test('Invoice page has correct content', async () => {
       await invoicesPage.createInvoiceDrafts()
-      await invoicesPage.openFirstInvoice()
-      await invoicesPage.assertInvoiceHeadOfFamily(
+      const invoicePage = await invoicesPage.openFirstInvoice()
+
+      const head = invoicePage.headOfFamilySection
+      await head.headOfFamilyName.assertTextEquals(
         `${testAdult.firstName} ${testAdult.lastName}`
       )
+      await head.headOfFamilySsn.assertTextEquals(testAdult.ssn!)
+      await head.codebtorName.assertTextEquals(
+        `${codebtor.firstName} ${codebtor.lastName}`
+      )
+      await head.codebtorSsn.assertTextEquals(codebtor.ssn!)
+
+      const details = invoicePage.detailsSection
+      await details.status.assertTextEquals('Luonnos')
+
+      const periodStart = today.subMonths(1).withDate(1)
+      const periodEnd = today.withDate(1).subDays(1)
+      await details.period.assertTextEquals(
+        `${periodStart.format()} - ${periodEnd.format()}`
+      )
+
+      await details.number.assertTextEquals('')
+      await details.dueDate.assertTextEquals(today.addDays(28).format())
+      await details.account.assertTextEquals('3295')
+      await details.agreementType.assertTextEquals('299')
+      await details.relatedFeeDecisions.assertTextEquals(
+        feeDecision.decisionNumber!.toString()
+      )
+      await details.replacedInvoice.waitUntilHidden()
+
+      const child = invoicePage.nthChild(0)
+      await child.childName.assertTextEquals(
+        `${testChild2.lastName} ${testChild2.firstName}`
+      )
+      await child.childSsn.assertTextEquals(testChild2.ssn!)
+
+      const row = child.row(0)
+      await row.product.assertTextEquals('Varhaiskasvatus')
+      await row.description.assertTextEquals('')
+      await row.unit.assertTextEquals(testDaycare.name)
+      await row.period.assertTextEquals(
+        `${periodStart.format()} - ${periodEnd.format()}`
+      )
+      await row.amount.assertTextEquals('1')
+      await row.unitPrice.assertTextEquals('289 €')
+      await row.totalPrice.assertTextEquals('289')
+
+      await child.totalPrice.assertTextEquals('289,00')
+      await child.previousTotalPrice.waitUntilHidden()
+
+      await invoicePage.totalPrice.assertTextEquals('289,00')
+      await invoicePage.previousTotalPrice.waitUntilHidden()
+
       await invoicesPage.navigateBackToInvoices()
     })
   })
@@ -150,6 +210,17 @@ describe('Invoices', () => {
     })
 
     test('Sending an invoice with a recipient without a SSN', async () => {
+      const adultWithoutSSN = await Fixture.person({
+        id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
+        firstName: 'Aikuinen',
+        lastName: 'Hetuton',
+        ssn: null,
+        dateOfBirth: LocalDate.of(1980, 1, 1),
+        streetAddress: 'Kamreerintie 2',
+        postalCode: '02770',
+        postOffice: 'Espoo'
+      }).saveAdult()
+
       await Fixture.invoice({
         headOfFamilyId: adultWithoutSSN.id,
         areaId: testCareArea.id

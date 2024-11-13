@@ -2948,7 +2948,8 @@ export const feeDecisionsFixture = (
   ),
   sentAt: HelsinkiDateTime | null = null,
   id = 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
-  documentKey?: string
+  documentKey: string | null = null,
+  decisionNumber: number | null = null
 ): FeeDecision => ({
   id,
   status,
@@ -2994,8 +2995,8 @@ export const feeDecisionsFixture = (
   approvedAt: null,
   approvedById: null,
   decisionHandlerId: null,
-  decisionNumber: null,
-  documentKey: documentKey || null,
+  decisionNumber,
+  documentKey,
   created: HelsinkiDateTime.now()
 })
 

@@ -200,8 +200,12 @@ export default class FiniteDateRange {
     )
   }
 
-  static ofMonth(month: YearMonth) {
-    return new FiniteDateRange(month.atDay(1), month.atEndOfMonth())
+  static ofMonth(target: YearMonth | LocalDate) {
+    if ('date' in target) {
+      return new FiniteDateRange(target.withDate(1), target.lastDayOfMonth())
+    } else {
+      return new FiniteDateRange(target.atDay(1), target.atEndOfMonth())
+    }
   }
 }
 
