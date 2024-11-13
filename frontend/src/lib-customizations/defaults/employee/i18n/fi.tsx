@@ -4185,14 +4185,16 @@ export const fi = {
     },
     preschoolApplications: {
       title: 'Ehdottava EO-raportti',
-      description: 'EO-raportti, josta johtaja voi tarkistaa oppilaan koulun',
+      description:
+        'Raportti näyttää ehdottavaan esiopetuspaikkapäätösprosessiin kuuluvat hakemukset',
       columns: {
         applicationUnitName: 'Yksikkö',
         childLastName: 'Sukunimi',
         childFirstName: 'Etunimi',
         childDateOfBirth: 'Syntymäaika',
         childStreetAddress: 'Postiosoite',
-        childPostalCode: 'Postinumero',
+        childPostalCode: 'Posti\u00ADnro',
+        childPostalCodeFull: 'Postinumero',
         currentUnitName: 'Nykyinen yksikkö',
         isDaycareAssistanceNeed: 'Tuen tarve'
       }

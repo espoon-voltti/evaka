@@ -163,6 +163,7 @@ interface SortableProps {
   sticky?: boolean
   top?: string
   'data-qa'?: string
+  className?: string
 }
 
 const CustomButton = styled.button`
@@ -177,6 +178,7 @@ const CustomButton = styled.button`
   cursor: pointer;
   text-transform: uppercase;
   font-weight: ${fontWeights.bold};
+  align-items: center;
 `
 
 export const SortableTh = React.memo(function SortableTh({
@@ -185,13 +187,14 @@ export const SortableTh = React.memo(function SortableTh({
   sorted,
   sticky,
   top,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  className
 }: SortableProps) {
   const {
     colors: { grayscale }
   } = useTheme()
   return (
-    <Th sticky={sticky} top={top}>
+    <Th sticky={sticky} top={top} className={className}>
       <CustomButton onClick={onClick} data-qa={dataQa}>
         <span>{children}</span>
         <Gap horizontal size="xs" />
