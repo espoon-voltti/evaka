@@ -314,7 +314,7 @@ class CalendarEventController(
                         Action.CalendarEvent.UPDATE,
                         id,
                     )
-                    tx.updateCalendarEvent(id, clock.now(), body)
+                    tx.updateCalendarEvent(id, clock.now(), user.evakaUserId, body)
                 }
             }
             .also { Audit.CalendarEventUpdate.log(targetId = AuditId(id)) }
@@ -349,7 +349,7 @@ class CalendarEventController(
                             childId = childId,
                         )
                     }
-                    tx.updateCalendarEvent(id, clock.now(), body)
+                    tx.updateCalendarEvent(id, clock.now(), user.evakaUserId, body)
                     tx.deleteCalendarEventAttendees(id)
                     tx.createCalendarEventAttendees(id, event.unitId, body.tree)
                 }
@@ -389,6 +389,7 @@ class CalendarEventController(
                     tx.updateCalendarEventPeriod(
                         eventId = id,
                         modifiedAt = clock.now(),
+                        modifiedBy = user.evakaUserId,
                         period = getPeriodOfTimes(updatedEvent.times, clock.today()),
                     )
                     cetId
@@ -431,6 +432,7 @@ class CalendarEventController(
                     tx.updateCalendarEventPeriod(
                         eventId = calendarEventId,
                         modifiedAt = clock.now(),
+                        modifiedBy = user.evakaUserId,
                         period = getPeriodOfTimes(associatedEvent.times, clock.today()),
                     )
 

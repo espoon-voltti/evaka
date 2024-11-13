@@ -249,13 +249,19 @@ WHERE calendar_event_id = ${bind(calendarEventId)}
 fun Database.Transaction.updateCalendarEvent(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
     updateForm: CalendarEventUpdateForm,
 ) =
     createUpdate {
             sql(
                 """
 UPDATE calendar_event
-SET title = ${bind(updateForm.title)}, description = ${bind(updateForm.description)}, modified_at = ${bind(modifiedAt)}, content_modified_at = ${bind(modifiedAt)}
+SET title = ${bind(updateForm.title)},
+    description = ${bind(updateForm.description)},
+    modified_at = ${bind(modifiedAt)},
+    modified_by = ${bind(modifiedBy)},
+    content_modified_at = ${bind(modifiedAt)},
+    content_modified_by = ${bind(modifiedBy)}
 WHERE id = ${bind(eventId)}
         """
             )
@@ -766,13 +772,18 @@ GROUP BY mp.parent_id, p.language
 fun Database.Transaction.updateCalendarEventPeriod(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
     period: FiniteDateRange,
 ) =
     this.createUpdate {
             sql(
                 """
 UPDATE calendar_event
-SET period = ${bind(period)}, modified_at = ${bind(modifiedAt)}, content_modified_at = ${bind(modifiedAt)}
+SET period = ${bind(period)},
+    modified_at = ${bind(modifiedAt)},
+    modified_by = ${bind(modifiedBy)},
+    content_modified_at = ${bind(modifiedAt)},
+    content_modified_by = ${bind(modifiedBy)}
 WHERE id = ${bind(eventId)}
         """
             )
