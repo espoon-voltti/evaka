@@ -2449,13 +2449,13 @@ export const fi = {
         title: 'Muokkaa ryhmän tietoja',
         name: 'Nimi',
         startDate: 'Perustettu',
-        endDate: 'Lakkautettu',
+        endDate: 'Viimeinen toimintapäivä',
         info: 'Ryhmän aikaisempia tietoja ei säilytetä',
         jamixPlaceholder: 'Jamix customerNumber',
         jamixTitle: 'Ruokatilausten asiakasnumero'
       },
       startDate: 'Perustettu',
-      endDate: 'Lakkautettu',
+      endDate: 'Viimeinen toimintapäivä',
       caretakers: 'Henkilökuntaa',
       childrenLabel: 'Lapsia',
       childrenValue: {
