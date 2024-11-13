@@ -1539,6 +1539,22 @@ export async function forceFullVtjRefresh(
 
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.generateReplacementDraftInvoices
+*/
+export async function generateReplacementDraftInvoices(): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/generate-replacement-draft-invoices`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.getAbsences
 */
 export async function getAbsences(

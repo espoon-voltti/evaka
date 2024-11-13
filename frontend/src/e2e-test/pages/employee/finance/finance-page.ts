@@ -5,6 +5,7 @@
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecisionStatus,
+  InvoiceStatus,
   PaymentStatus,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
@@ -427,14 +428,8 @@ export class InvoicesPage {
     await this.#sendInvoicesButton.waitUntilHidden()
   }
 
-  async showSentInvoices() {
-    await this.page.findByDataQa('invoice-status-filter-SENT').click()
-  }
-
-  async showWaitingForSendingInvoices() {
-    await this.page
-      .find('[data-qa="invoice-status-filter-WAITING_FOR_SENDING"]')
-      .click()
+  async filterByStatus(status: InvoiceStatus) {
+    await this.page.findByDataQa(`invoice-status-filter-${status}`).click()
   }
 
   async openFirstInvoice(): Promise<InvoiceDetailsPage> {

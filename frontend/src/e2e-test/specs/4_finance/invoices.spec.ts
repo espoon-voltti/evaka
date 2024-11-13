@@ -19,6 +19,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createFeeDecisions,
+  generateReplacementDraftInvoices,
   resetServiceState
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -30,8 +31,6 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let financePage: FinancePage
-let invoicesPage: InvoicesPage
 
 const now = HelsinkiDateTime.of(2024, 11, 1, 12, 0)
 const today = now.toLocalDate()
@@ -73,7 +72,9 @@ beforeEach(async () => {
   await Fixture.family(familyWithRestrictedDetailsGuardian).save()
 
   await Fixture.feeThresholds().save()
+})
 
+async function openInvoicesPage(): Promise<InvoicesPage> {
   page = await Page.open({ acceptDownloads: true, mockedTime: now })
 
   const financeAdmin = await Fixture.employee().financeAdmin().save()
@@ -82,9 +83,11 @@ beforeEach(async () => {
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
   await nav.openTab('finance')
-  financePage = new FinancePage(page)
-  invoicesPage = await financePage.selectInvoicesTab()
-})
+  const financePage = new FinancePage(page)
+  const invoicesPage = await financePage.selectInvoicesTab()
+
+  return invoicesPage
+}
 
 describe('Invoices', () => {
   describe('Create drafts', () => {
@@ -112,12 +115,14 @@ describe('Invoices', () => {
     })
 
     test('List of invoice drafts is empty intially and after creating new drafts the list has one invoice', async () => {
+      const invoicesPage = await openInvoicesPage()
       await invoicesPage.assertInvoiceCount(0)
       await invoicesPage.createInvoiceDrafts()
       await invoicesPage.assertInvoiceCount(1)
     })
 
     test('Invoice page has correct content', async () => {
+      const invoicesPage = await openInvoicesPage()
       await invoicesPage.createInvoiceDrafts()
       const invoicePage = await invoicesPage.openFirstInvoice()
 
@@ -196,16 +201,13 @@ describe('Invoices', () => {
           unitId: testDaycare.id
         })
         .save()
-
-      // switch tabs to refresh data
-      await financePage.selectFeeDecisionsTab()
-      await financePage.selectInvoicesTab()
+      const invoicesPage = await openInvoicesPage()
 
       await invoicesPage.toggleAllInvoices(true)
       await invoicesPage.assertInvoiceCount(2)
       await invoicesPage.sendInvoices()
       await invoicesPage.assertInvoiceCount(0)
-      await invoicesPage.showSentInvoices()
+      await invoicesPage.filterByStatus('SENT')
       await invoicesPage.assertInvoiceCount(2)
     })
 
@@ -228,18 +230,82 @@ describe('Invoices', () => {
         .addRow({ childId: testChild.id, unitId: testDaycare.id })
         .save()
 
+      const invoicesPage = await openInvoicesPage()
       await invoicesPage.freeTextFilter(adultWithoutSSN.firstName)
       await invoicesPage.assertInvoiceCount(1)
       await invoicesPage.toggleAllInvoices(true)
       await invoicesPage.sendInvoices()
       await invoicesPage.assertInvoiceCount(0)
-      await invoicesPage.showWaitingForSendingInvoices()
+      await invoicesPage.filterByStatus('WAITING_FOR_SENDING')
       await invoicesPage.assertInvoiceCount(1)
       await invoicesPage.openFirstInvoice()
       await invoicesPage.markInvoiceSent()
       await invoicesPage.navigateBackToInvoices()
-      await invoicesPage.showSentInvoices()
+      await invoicesPage.filterByStatus('SENT')
       await invoicesPage.assertInvoiceCount(1)
+    })
+  })
+
+  describe('Replacement invoices', () => {
+    const feeDecision = feeDecisionsFixture(
+      'SENT',
+      testAdult,
+      testChild2,
+      testDaycare.id,
+      codebtor,
+      FiniteDateRange.ofMonth(today.subMonths(1)),
+      now,
+      'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+      null,
+      123123123
+    )
+    let invoicesPage: InvoicesPage
+
+    beforeEach(async () => {
+      await createFeeDecisions({ body: [feeDecision] })
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: feeDecision.validDuring.start,
+        endDate: feeDecision.validDuring.end
+      }).save()
+
+      invoicesPage = await openInvoicesPage()
+
+      await invoicesPage.createInvoiceDrafts()
+      await invoicesPage.toggleAllInvoices(true)
+      await invoicesPage.sendInvoices()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today.subMonths(1).withDate(1),
+        absenceType: 'FORCE_MAJEURE',
+        absenceCategory: 'BILLABLE'
+      }).save()
+      await generateReplacementDraftInvoices()
+    })
+
+    test('Replacement invoice content', async () => {
+      await invoicesPage.filterByStatus('REPLACEMENT_DRAFT')
+
+      const invoicePage = await invoicesPage.openFirstInvoice()
+
+      const details = invoicePage.detailsSection
+      await details.status.assertTextEquals('Oikaisuluonnos')
+
+      await details.relatedFeeDecisions.assertTextEquals(
+        feeDecision.decisionNumber!.toString()
+      )
+      await details.replacedInvoice.assertTextEquals('10/2024')
+
+      const child = invoicePage.nthChild(0)
+      await child.totalPrice.assertTextEquals('276,43')
+      await child.previousTotalPrice.assertTextEquals('289,00')
+
+      await invoicePage.totalPrice.assertTextEquals('276,43')
+      await invoicePage.previousTotalPrice.assertTextEquals('289,00')
+
+      await invoicesPage.navigateBackToInvoices()
     })
   })
 })

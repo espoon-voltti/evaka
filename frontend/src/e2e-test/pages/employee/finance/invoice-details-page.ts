@@ -20,8 +20,8 @@ export class InvoiceDetailsPage {
     )
     this.totalPrice = this.page.findByDataQa('total-sum').findByDataQa('price')
     this.previousTotalPrice = this.page
-      .findByDataQa('previous-total-sum')
-      .findByDataQa('price')
+      .findByDataQa('total-sum')
+      .findByDataQa('previous-price')
   }
 
   nthChild(index: number): InvoiceChildSection {
