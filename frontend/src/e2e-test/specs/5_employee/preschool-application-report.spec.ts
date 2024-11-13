@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -32,6 +33,18 @@ xdescribe('Preschool application report', () => {
   })
 
   test('rows are shown', async () => {
+    const nextTermStart = LocalDate.of(2025, 8, 6)
+    const nextTermRange = new FiniteDateRange(
+      nextTermStart,
+      LocalDate.of(2026, 5, 29)
+    )
+    await Fixture.preschoolTerm({
+      finnishPreschool: nextTermRange,
+      swedishPreschool: nextTermRange,
+      extendedTerm: nextTermRange,
+      applicationPeriod: nextTermRange,
+      termBreaks: []
+    }).save()
     const area = await Fixture.careArea().save()
     const unit1 = await Fixture.daycare({
       areaId: area.id,
@@ -65,7 +78,8 @@ xdescribe('Preschool application report', () => {
         null,
         [unit1.id],
         false,
-        'WAITING_UNIT_CONFIRMATION'
+        'WAITING_UNIT_CONFIRMATION',
+        nextTermStart
       ),
       id: uuidv4()
     }
@@ -86,7 +100,8 @@ xdescribe('Preschool application report', () => {
         null,
         [unit2.id],
         false,
-        'WAITING_UNIT_CONFIRMATION'
+        'WAITING_UNIT_CONFIRMATION',
+        nextTermStart
       ),
       id: uuidv4()
     }

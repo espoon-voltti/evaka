@@ -13,14 +13,17 @@ import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
@@ -43,6 +46,30 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
+            val currentTermStart = LocalDate.of(2024, 8, 7)
+            FiniteDateRange(start = currentTermStart, end = LocalDate.of(2025, 5, 30)).let {
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool = it,
+                        swedishPreschool = it,
+                        extendedTerm = it,
+                        applicationPeriod = it,
+                        termBreaks = DateSet.empty(),
+                    )
+                )
+            }
+            val nextTermStart = LocalDate.of(2025, 8, 6)
+            FiniteDateRange(start = nextTermStart, end = LocalDate.of(2026, 5, 29)).let {
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool = it,
+                        swedishPreschool = it,
+                        extendedTerm = it,
+                        applicationPeriod = it,
+                        termBreaks = DateSet.empty(),
+                    )
+                )
+            }
             val areaId = tx.insert(DevCareArea())
             unitId1 = tx.insert(DevDaycare(areaId = areaId, name = "Koulu A"))
             unitId2 = tx.insert(DevDaycare(areaId = areaId, name = "Koulu B"))
@@ -70,6 +97,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
                         child = Child(dateOfBirth = child1.dateOfBirth),
                         guardian = Adult(),
                         apply = Apply(preferredUnits = listOf(unitId1)),
+                        preferredStartDate = nextTermStart,
                     ),
             )
 
@@ -93,6 +121,31 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
                         child = Child(dateOfBirth = child2.dateOfBirth),
                         guardian = Adult(),
                         apply = Apply(preferredUnits = listOf(unitId2)),
+                        preferredStartDate = nextTermStart,
+                    ),
+            )
+
+            val child3 =
+                DevPerson(
+                    lastName = "Testiläinen",
+                    firstName = "Matti",
+                    dateOfBirth = LocalDate.of(2019, 1, 2),
+                    ssn = null,
+                )
+            val childId3 = tx.insert(child3, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardianId, childId = childId3))
+            tx.insertTestApplication(
+                type = ApplicationType.PRESCHOOL,
+                status = ApplicationStatus.WAITING_UNIT_CONFIRMATION,
+                guardianId = guardianId,
+                childId = childId3,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.PRESCHOOL,
+                        child = Child(dateOfBirth = child3.dateOfBirth),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(unitId2)),
+                        preferredStartDate = currentTermStart,
                     ),
             )
         }

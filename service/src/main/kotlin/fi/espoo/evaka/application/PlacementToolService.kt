@@ -102,10 +102,8 @@ class PlacementToolService(
             throw NotFound("No default service need option found")
         }
         val nextPreschoolTermId =
-            tx.getPreschoolTerms().firstOrNull { it.finnishPreschool.start > clock.today() }?.id
-        if (null == nextPreschoolTermId) {
-            throw NotFound("No next preschool term found")
-        }
+            findNextPreschoolTerm(tx, clock.today())?.id
+                ?: throw NotFound("No next preschool term found")
         val placements = file.inputStream.use { parsePlacementToolCsv(it) }
         asyncJobRunner
             .plan(
@@ -364,6 +362,9 @@ class PlacementToolService(
             user.evakaUserId,
         )
     }
+
+    fun findNextPreschoolTerm(tx: Database.Read, date: LocalDate) =
+        tx.getPreschoolTerms().firstOrNull { it.finnishPreschool.start > date }
 }
 
 fun parsePlacementToolCsv(inputStream: InputStream): Map<String, DaycareId> =
