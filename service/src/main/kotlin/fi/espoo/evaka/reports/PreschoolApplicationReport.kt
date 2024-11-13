@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.reports
 
+import fi.espoo.evaka.application.PlacementToolService
+import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -19,7 +21,10 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class PreschoolApplicationReport(private val accessControl: AccessControl) {
+class PreschoolApplicationReport(
+    private val accessControl: AccessControl,
+    private val placementToolService: PlacementToolService,
+) {
 
     @GetMapping("/employee/reports/preschool-application")
     fun getPreschoolApplicationReport(
@@ -37,7 +42,10 @@ class PreschoolApplicationReport(private val accessControl: AccessControl) {
                         clock,
                         Action.Unit.READ_PRESCHOOL_APPLICATION_REPORT,
                     )
-                tx.getPreschoolApplicationReportRows(clock.today(), filter)
+                val nextPreschoolTerm =
+                    placementToolService.findNextPreschoolTerm(tx, clock.today())
+                        ?: return@read emptyList()
+                tx.getPreschoolApplicationReportRows(clock.today(), filter, nextPreschoolTerm)
             }
         }
     }
@@ -46,6 +54,7 @@ class PreschoolApplicationReport(private val accessControl: AccessControl) {
 private fun Database.Read.getPreschoolApplicationReportRows(
     today: LocalDate,
     filter: AccessControlFilter<DaycareId>,
+    preschoolTerm: PreschoolTerm,
 ): List<PreschoolApplicationReportRow> =
     createQuery {
             sql(
@@ -71,6 +80,7 @@ LEFT JOIN daycare current_unit ON placement.unit_id = current_unit.id
 WHERE application.type = 'PRESCHOOL'
   AND application.status = 'WAITING_UNIT_CONFIRMATION'
   AND ${predicate(filter.forTable("application_unit"))}
+  AND ${bind(preschoolTerm.finnishPreschool)} @> (application.document ->> 'preferredStartDate')::date
     """
                     .trimIndent()
             )
