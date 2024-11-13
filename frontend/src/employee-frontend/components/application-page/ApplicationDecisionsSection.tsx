@@ -98,7 +98,13 @@ export default React.memo(function ApplicationDecisionsSection({
 
               <Label>{i18n.application.decisions.status}</Label>
               <span>
-                {i18n.application.decisions.statuses[decision.status]}
+                {['WAITING_UNIT_CONFIRMATION', 'WAITING_DECISION'].includes(
+                  applicationStatus
+                )
+                  ? i18n.application.decisions.statuses.draft
+                  : applicationStatus === 'WAITING_MAILING'
+                    ? i18n.application.decisions.statuses.waitingMailing
+                    : i18n.application.decisions.statuses[decision.status]}
               </span>
 
               <Label>{i18n.application.decisions.unit}</Label>
