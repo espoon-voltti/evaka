@@ -1949,9 +1949,9 @@ export const fi = {
       handled: 'Tuloselvitys käsitelty'
     },
     invoice: {
-      validity: 'Aikaväli',
+      validity: 'Kausi',
       price: 'Summa',
-      status: 'Status'
+      status: 'Tila'
     },
     downloadAddressPage: 'Lataa osoitesivu'
   },
