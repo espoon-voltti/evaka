@@ -69,6 +69,11 @@ data class ChildAttendanceRow(
     fun asTimeInterval(): TimeInterval = TimeInterval(startTime, endTime)
 }
 
-data class AttendanceTimes(val arrived: HelsinkiDateTime, val departed: HelsinkiDateTime?)
+data class AttendanceTimes(
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?,
+    val modifiedAt: HelsinkiDateTime? = null,
+    @Nested("modified_by") val modifiedBy: EvakaUser? = null,
+)
 
 data class ChildAbsence(val category: AbsenceCategory, val type: AbsenceType)

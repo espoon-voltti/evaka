@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
@@ -288,6 +289,8 @@ private data class UnitChildAttendancesRow(
     val childId: ChildId,
     val arrived: HelsinkiDateTime,
     var departed: HelsinkiDateTime?,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 fun Database.Read.getUnitChildAttendances(
@@ -301,8 +304,9 @@ fun Database.Read.getUnitChildAttendances(
     return createQuery {
             sql(
                 """
-SELECT child_id, ca.arrived, ca.departed
+SELECT child_id, ca.arrived, ca.departed, ca.modified_at, e.id AS modified_by_id, e.name AS modified_by_name, e.type AS modified_by_type
 FROM child_attendance ca
+JOIN evaka_user e ON ca.modified_by = e.id
 WHERE ca.unit_id = ${bind(unitId)} AND tstzrange(arrived, departed) && ${bind(range)}
 """
             )
@@ -310,7 +314,9 @@ WHERE ca.unit_id = ${bind(unitId)} AND tstzrange(arrived, departed) && ${bind(ra
         .toList<UnitChildAttendancesRow>()
         .groupBy(
             keySelector = { it.childId },
-            valueTransform = { AttendanceTimes(it.arrived, it.departed) },
+            valueTransform = {
+                AttendanceTimes(it.arrived, it.departed, it.modifiedAt, it.modifiedBy)
+            },
         )
         .mapValues {
             mergeOverNightRanges(it.value)

@@ -13,6 +13,7 @@ import { AbsenceType } from './absence'
 import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
 import { DailyServiceTimesValue } from './dailyservicetimes'
+import { EvakaUser } from './user'
 import { HelsinkiDateTimeRange } from './shared'
 import { JsonOf } from '../../json'
 import { PilotFeature } from './shared'
@@ -91,6 +92,8 @@ export type AttendanceStatus =
 export interface AttendanceTimes {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: EvakaUser | null
 }
 
 /**
@@ -480,7 +483,8 @@ export function deserializeJsonAttendanceTimes(json: JsonOf<AttendanceTimes>): A
   return {
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
   }
 }
 

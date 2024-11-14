@@ -39,6 +39,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -48,6 +49,7 @@ import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -159,7 +161,8 @@ class AttendanceReservationController(
                                                         ?.takeIf {
                                                             !placementStatus.backupOtherUnit
                                                         }
-                                                        ?.sortedBy { it.start } ?: emptyList(),
+                                                        ?.sortedBy { it.interval.start }
+                                                        ?: emptyList(),
                                                 absenceBillable =
                                                     childData.absences[date]
                                                         ?.get(AbsenceCategory.BILLABLE)
@@ -709,7 +712,7 @@ data class UnitAttendanceReservations(
     data class ChildRecordOfDay(
         val childId: ChildId,
         val reservations: List<ReservationResponse>,
-        val attendances: List<TimeInterval>,
+        val attendances: List<AttendanceTimesForDate>,
         val absenceBillable: AbsenceTypeResponse?,
         val absenceNonbillable: AbsenceTypeResponse?,
         val possibleAbsenceCategories: Set<AbsenceCategory>,
@@ -927,7 +930,7 @@ WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterang
 data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<ReservationResponse>>,
-    val attendances: Map<LocalDate, List<TimeInterval>>,
+    val attendances: Map<LocalDate, List<AttendanceTimesForDate>>,
     val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceTypeResponse>>,
     val operationalDays: Set<LocalDate>,
 )
@@ -956,13 +959,13 @@ private data class ReservationTimesForDate(
         }
 }
 
-private data class AttendanceTimesForDate(
+data class AttendanceTimesForDate(
     val date: LocalDate,
-    val startTime: LocalTime,
-    val endTime: LocalTime?,
-) {
-    fun toTimeInterval() = TimeInterval(startTime, endTime)
-}
+    val interval: TimeInterval,
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUser,
+    val staffModified: Boolean,
+)
 
 private data class AbsenceForDate(
     val date: LocalDate,
@@ -1001,10 +1004,21 @@ SELECT
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
             'date', att.date,
-            'startTime', att.start_time,
-            'endTime', att.end_time
+            'interval', jsonb_build_object(
+                'start', att.start_time,
+                'end', att.end_time
+            ),
+            'modifiedAt', att.modified_at,
+            'modifiedBy', jsonb_build_object(
+                'id', eu.id,
+                'name', eu.name,
+                'type', eu.type
+            ),
+            'staffModified', eu.type <> 'CITIZEN'
         ) ORDER BY att.date, att.start_time)
-        FROM child_attendance att WHERE att.child_id = p.id AND between_start_and_end(${bind(dateRange)}, att.date)
+        FROM child_attendance att
+        JOIN evaka_user eu ON att.modified_by = eu.id
+        WHERE att.child_id = p.id AND between_start_and_end(${bind(dateRange)}, att.date)
     ), '[]'::jsonb) AS attendances,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
@@ -1044,11 +1058,7 @@ WHERE p.id = ANY(${bind(childIds)})
                         keySelector = { it.date },
                         valueTransform = { it.toReservationTimes() },
                     ),
-                attendances =
-                    row.attendances.groupBy(
-                        keySelector = { it.date },
-                        valueTransform = { it.toTimeInterval() },
-                    ),
+                attendances = row.attendances.groupBy(keySelector = { it.date }),
                 absences =
                     row.absences
                         .groupBy(
