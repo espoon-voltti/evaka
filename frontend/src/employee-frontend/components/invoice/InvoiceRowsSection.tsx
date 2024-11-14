@@ -47,6 +47,7 @@ const InvoiceRowsTable = styled(Table)`
   border-collapse: collapse;
   margin-bottom: 15px;
 
+  th,
   td {
     padding: 16px 0 24px 16px;
     vertical-align: bottom;

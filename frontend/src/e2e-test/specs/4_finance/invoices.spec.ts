@@ -168,13 +168,13 @@ describe('Invoices', () => {
         `${periodStart.format()} - ${periodEnd.format()}`
       )
       await row.amount.assertTextEquals('1')
-      await row.unitPrice.assertTextEquals('289 €')
+      await row.unitPrice.assertTextEquals('289')
       await row.totalPrice.assertTextEquals('289')
 
-      await child.totalPrice.assertTextEquals('289,00')
+      await child.totalPrice.assertTextEquals('289')
       await child.previousTotalPrice.waitUntilHidden()
 
-      await invoicePage.totalPrice.assertTextEquals('289,00')
+      await invoicePage.totalPrice.assertTextEquals('289')
       await invoicePage.previousTotalPrice.waitUntilHidden()
 
       await invoicesPage.navigateBackToInvoices()
@@ -300,10 +300,10 @@ describe('Invoices', () => {
 
       const child = invoicePage.nthChild(0)
       await child.totalPrice.assertTextEquals('276,43')
-      await child.previousTotalPrice.assertTextEquals('289,00')
+      await child.previousTotalPrice.assertTextEquals('289')
 
       await invoicePage.totalPrice.assertTextEquals('276,43')
-      await invoicePage.previousTotalPrice.assertTextEquals('289,00')
+      await invoicePage.previousTotalPrice.assertTextEquals('289')
 
       await invoicesPage.navigateBackToInvoices()
     })

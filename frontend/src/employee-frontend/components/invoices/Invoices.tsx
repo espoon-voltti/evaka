@@ -325,7 +325,9 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             <Td data-qa="invoice-created-at">
               {item.createdAt?.toLocalDate().format() ?? ''}
             </Td>
-            <Td data-qa="invoice-total">{formatCents(item.totalPrice)}</Td>
+            <Td align="right" data-qa="invoice-total">
+              {formatCents(item.totalPrice)}
+            </Td>
             <Td>
               {item.headOfFamily.restrictedDetailsEnabled && (
                 <Tooltip

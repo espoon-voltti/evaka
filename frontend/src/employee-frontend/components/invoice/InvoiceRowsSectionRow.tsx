@@ -84,7 +84,7 @@ export default React.memo(function InvoiceRowSectionRow({
         <span data-qa="amount">{amount}</span>
       </Td>
       <Td align="right">
-        <span data-qa="unit-price">{formatCents(unitPrice)} €</span>
+        <span data-qa="unit-price">{formatCents(unitPrice)}</span>
       </Td>
       <Td align="right" data-qa="total-price">
         {formatCents(price)}

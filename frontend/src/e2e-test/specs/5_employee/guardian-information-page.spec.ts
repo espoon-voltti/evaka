@@ -142,7 +142,7 @@ describe('Employee - Guardian Information', () => {
 
     const invoiceSection = await guardianPage.openCollapsible('invoices')
     await invoiceSection.assertInvoiceCount(1)
-    await invoiceSection.assertInvoice(0, '01.01.2020', '31.01.2020', 'Luonnos')
+    await invoiceSection.assertInvoice(0, '01/2020', 'Luonnos')
   })
 
   test('Invoice correction can be created and deleted', async () => {

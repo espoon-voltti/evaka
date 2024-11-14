@@ -29,13 +29,13 @@ export default React.memo(function Sum({
       <span>{i18n.invoice.form.sum[title]}</span>
       {previousSum !== undefined ? (
         <span>
-          <div data-qa="price">{formatCents(sum, true)}</div>
+          <div data-qa="price">{formatCents(sum)}</div>
           <div data-qa="previous-price">
-            <s>{formatCents(previousSum, true)}</s>
+            <s>{formatCents(previousSum)}</s>
           </div>
         </span>
       ) : (
-        <span data-qa="price">{formatCents(sum, true)}</span>
+        <span data-qa="price">{formatCents(sum)}</span>
       )}
     </InvoiceSum>
   )
@@ -49,4 +49,5 @@ const InvoiceSum = styled.div`
   background: ghostwhite;
   padding: 1rem;
   margin: 1rem 0;
+  text-align: right;
 `
