@@ -433,6 +433,15 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
+    @DeleteMapping("/placement/{placementId}")
+    fun deletePlacement(db: Database, @PathVariable placementId: PlacementId) {
+        db.connect { dbc ->
+            dbc.transaction {
+                it.execute { sql("DELETE FROM placement WHERE id = ${bind(placementId)}") }
+            }
+        }
+    }
+
     data class DecisionRequest(
         val id: DecisionId,
         val employeeId: EmployeeId,

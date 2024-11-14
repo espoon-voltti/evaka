@@ -1503,6 +1503,26 @@ export async function deleteDaycareCostCenter(
 
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.deletePlacement
+*/
+export async function deletePlacement(
+  request: {
+    placementId: UUID
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/placement/${request.placementId}`.toString(),
+      method: 'DELETE'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.digitransitAutocomplete
 */
 export async function digitransitAutocomplete(): Promise<Autocomplete> {

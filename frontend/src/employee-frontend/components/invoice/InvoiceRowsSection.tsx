@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import groupBy from 'lodash/groupBy'
-import mapValues from 'lodash/mapValues'
 import sumBy from 'lodash/sumBy'
+import uniq from 'lodash/uniq'
 import React, { Fragment, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -15,7 +15,6 @@ import {
   PersonDetailed
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -92,16 +91,24 @@ export default React.memo(function InvoiceRowsSection({
     toggleUiMode('invoices-absence-modal')
   }
 
-  const childRows = groupBy(rows, (row) => row.child.id)
+  const rowsByChild: Partial<Record<string, InvoiceRowDetailed[]>> = useMemo(
+    () => groupBy(rows, (row) => row.child.id),
+    [rows]
+  )
 
-  const replacedChildSums: Partial<Record<UUID, number>> | undefined =
-    useMemo(() => {
-      if (!replacedRows) return undefined
-      return mapValues(
-        groupBy(replacedRows, (row) => row.child.id),
-        (rows) => sumBy(rows, (row) => row.amount * row.unitPrice)
-      )
-    }, [replacedRows])
+  const replacedRowsByChild: Partial<Record<string, InvoiceRowDetailed[]>> =
+    useMemo(() => groupBy(replacedRows, (row) => row.child.id), [replacedRows])
+
+  const allChildIds = useMemo(
+    () =>
+      uniq([
+        ...Object.keys(rowsByChild),
+        ...(replacedRowsByChild !== undefined
+          ? Object.keys(replacedRowsByChild)
+          : [])
+      ]),
+    [rowsByChild, replacedRowsByChild]
+  )
 
   const unitDetails = useMemo(
     () => Object.fromEntries(invoiceCodes.units.map((unit) => [unit.id, unit])),
@@ -116,12 +123,22 @@ export default React.memo(function InvoiceRowsSection({
         startCollapsed={false}
         data-qa="invoice-rows"
       >
-        {Object.entries(childRows).map(([childId, childRows]) => {
-          const firstRow = childRows[0]
+        {allChildIds.map((childId) => {
+          const rows = rowsByChild[childId]
+          const replacedRows = replacedRowsByChild?.[childId]
+
+          const firstRow = rows?.[0] ?? replacedRows?.[0]
+          if (firstRow === undefined) {
+            // Does not happen: we have either rows or replacedRows
+            return null
+          }
+
+          const sum = rows !== undefined ? totalPrice(rows) : 0
           const previousSum =
-            replacedChildSums !== undefined
-              ? replacedChildSums[childId] ?? 0
+            replacedRows !== undefined
+              ? sumBy(replacedRows, (row) => row.amount * row.price)
               : undefined
+
           return (
             <div key={childId} data-qa={`child-${childId}`}>
               <TitleContainer>
@@ -147,37 +164,39 @@ export default React.memo(function InvoiceRowsSection({
                   text={i18n.invoice.openAbsenceSummary}
                 />
               </TitleContainer>
-              <InvoiceRowsTable data-qa="table-of-invoice-rows">
-                <Thead>
-                  <Tr>
-                    <Th>{i18n.invoice.form.rows.product}</Th>
-                    <Th>{i18n.invoice.form.rows.description}</Th>
-                    <UnitTh>{i18n.invoice.form.rows.unitId}</UnitTh>
-                    <Th>{i18n.invoice.form.rows.daterange}</Th>
-                    <AmountTh>{i18n.invoice.form.rows.amount}</AmountTh>
-                    <UnitPriceTh align="right">
-                      {i18n.invoice.form.rows.unitPrice}
-                    </UnitPriceTh>
-                    <TotalPriceTh align="right">
-                      {i18n.invoice.form.rows.price}
-                    </TotalPriceTh>
-                    <Th />
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {childRows.map((row, index) => (
-                    <InvoiceRowsSectionRow
-                      key={index}
-                      row={row}
-                      products={invoiceCodes.products}
-                      unitDetails={unitDetails}
-                    />
-                  ))}
-                </Tbody>
-              </InvoiceRowsTable>
+              {rows !== undefined ? (
+                <InvoiceRowsTable data-qa="table-of-invoice-rows">
+                  <Thead>
+                    <Tr>
+                      <Th>{i18n.invoice.form.rows.product}</Th>
+                      <Th>{i18n.invoice.form.rows.description}</Th>
+                      <UnitTh>{i18n.invoice.form.rows.unitId}</UnitTh>
+                      <Th>{i18n.invoice.form.rows.daterange}</Th>
+                      <AmountTh>{i18n.invoice.form.rows.amount}</AmountTh>
+                      <UnitPriceTh align="right">
+                        {i18n.invoice.form.rows.unitPrice}
+                      </UnitPriceTh>
+                      <TotalPriceTh align="right">
+                        {i18n.invoice.form.rows.price}
+                      </TotalPriceTh>
+                      <Th />
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {rows.map((row, index) => (
+                      <InvoiceRowsSectionRow
+                        key={index}
+                        row={row}
+                        products={invoiceCodes.products}
+                        unitDetails={unitDetails}
+                      />
+                    ))}
+                  </Tbody>
+                </InvoiceRowsTable>
+              ) : null}
               <Sum
                 title="rowSubTotal"
-                sum={totalPrice(childRows)}
+                sum={sum}
                 previousSum={previousSum}
                 data-qa="child-sum"
               />

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DevPlacement } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -19,6 +20,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createFeeDecisions,
+  deletePlacement,
   generateReplacementDraftInvoices,
   resetServiceState
 } from '../../generated/api-clients'
@@ -259,11 +261,12 @@ describe('Invoices', () => {
       null,
       123123123
     )
+    let placement: DevPlacement
     let invoicesPage: InvoicesPage
 
     beforeEach(async () => {
       await createFeeDecisions({ body: [feeDecision] })
-      await Fixture.placement({
+      placement = await Fixture.placement({
         childId: testChild2.id,
         unitId: testDaycare.id,
         startDate: feeDecision.validDuring.start,
@@ -275,7 +278,10 @@ describe('Invoices', () => {
       await invoicesPage.createInvoiceDrafts()
       await invoicesPage.toggleAllInvoices(true)
       await invoicesPage.sendInvoices()
+    })
 
+    test('Replacement invoice content', async () => {
+      // Add an absence => replacement invoice is generated
       await Fixture.absence({
         childId: testChild2.id,
         date: today.subMonths(1).withDate(1),
@@ -283,9 +289,7 @@ describe('Invoices', () => {
         absenceCategory: 'BILLABLE'
       }).save()
       await generateReplacementDraftInvoices()
-    })
 
-    test('Replacement invoice content', async () => {
       await invoicesPage.filterByStatus('REPLACEMENT_DRAFT')
 
       const invoicePage = await invoicesPage.openFirstInvoice()
@@ -303,6 +307,34 @@ describe('Invoices', () => {
       await child.previousTotalPrice.assertTextEquals('289')
 
       await invoicePage.totalPrice.assertTextEquals('276,43')
+      await invoicePage.previousTotalPrice.assertTextEquals('289')
+
+      await invoicesPage.navigateBackToInvoices()
+    })
+
+    test('Replacement invoice content when there are no rows', async () => {
+      // Delete the placement => replacement invoice with no rows is generated
+      await deletePlacement({ placementId: placement.id })
+      await generateReplacementDraftInvoices()
+
+      await invoicesPage.filterByStatus('REPLACEMENT_DRAFT')
+
+      const invoicePage = await invoicesPage.openFirstInvoice()
+
+      const details = invoicePage.detailsSection
+      await details.status.assertTextEquals('Oikaisuluonnos')
+
+      await details.replacedInvoice.assertTextEquals('Lasku 10/2024')
+
+      const child = invoicePage.nthChild(0)
+      await child.childName.assertTextEquals(
+        `${testChild2.lastName} ${testChild2.firstName}`
+      )
+      await child.childSsn.assertTextEquals(testChild2.ssn!)
+      await child.totalPrice.assertTextEquals('0')
+      await child.previousTotalPrice.assertTextEquals('289')
+
+      await invoicePage.totalPrice.assertTextEquals('0')
       await invoicePage.previousTotalPrice.assertTextEquals('289')
 
       await invoicesPage.navigateBackToInvoices()
