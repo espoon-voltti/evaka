@@ -7,6 +7,7 @@ import { ErrorRequestHandler } from 'express'
 import { includeAllErrorMessages } from '../config.js'
 import { InvalidRequest } from '../express.js'
 import { logError } from '../logging.js'
+import { SamlError } from '../routes/saml.js'
 
 import { InvalidAntiCsrfToken } from './csrf.js'
 
@@ -18,11 +19,21 @@ interface LogResponse {
 export const errorHandler: (v: boolean) => ErrorRequestHandler =
   (includeErrorMessage: boolean) => (error, req, res, next) => {
     if (error instanceof InvalidAntiCsrfToken) {
-      logError('Anti-CSRF token error', req, error)
+      logError('Anti-CSRF token error', req, undefined, error)
       if (!res.headersSent) {
         res
           .status(403)
           .send({ message: 'Anti-CSRF token error' } as LogResponse)
+      }
+      return
+    }
+    if (error instanceof SamlError) {
+      logError('SAML error', req, undefined, error)
+      if (res.headersSent) return
+      if (error.options?.redirectUrl) {
+        res.redirect(error.options.redirectUrl)
+      } else {
+        res.sendStatus(500)
       }
       return
     }

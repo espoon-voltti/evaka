@@ -18,7 +18,7 @@ import {
 } from '../saml/error-utils.js'
 import {
   AuthenticateProfile,
-  parseRelayState,
+  validateRelayStateUrl,
   SamlProfileIdSchema,
   SamlProfileSchema
 } from '../saml/index.js'
@@ -32,6 +32,21 @@ export interface SamlEndpointConfig {
   strategyName: string
   defaultPageUrl: string
   authenticate: AuthenticateProfile
+}
+
+export class SamlError extends Error {
+  constructor(
+    message: string,
+    public options?: {
+      /**
+       * Redirect the browser to this URL if possible using status 301
+       */
+      redirectUrl?: string
+    }
+  ) {
+    super(message)
+    this.name = 'SamlError'
+  }
 }
 
 // Configures passport to use the given strategy, and returns an Express router
@@ -63,7 +78,11 @@ export default function createSamlRouter(
     return typeof locale === 'string' ? { additionalParams: { locale } } : {}
   }
 
-  const parseLoginResponse = async (req: express.Request): Promise<Profile> => {
+  const isSamlPostRequest = (req: express.Request) => 'SAMLRequest' in req.body
+
+  const validateSamlLoginResponse = async (
+    req: express.Request
+  ): Promise<Profile> => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const samlMessage = await saml.validatePostResponseAsync(req.body)
     if (samlMessage.loggedOut || !samlMessage.profile) {
@@ -82,7 +101,7 @@ export default function createSamlRouter(
       logAuditEvent(eventCode('sign_in_started'), req, 'Login endpoint called')
       try {
         const idpLoginUrl = await saml.getAuthorizeUrlAsync(
-          parseRelayState(req) ?? '',
+          validateRelayStateUrl(req) ?? '',
           undefined,
           samlRequestOptions(req)
         )
@@ -93,11 +112,9 @@ export default function createSamlRouter(
           req,
           `Error logging user in. Error: ${err?.toString()}`
         )
-        if (!res.headersSent) {
-          return res.redirect(errorRedirectUrl(err))
-        } else {
-          throw err
-        }
+        throw new SamlError('Login failed', {
+          redirectUrl: errorRedirectUrl(err)
+        })
       }
     })
   )
@@ -110,7 +127,7 @@ export default function createSamlRouter(
       logAuditEvent(eventCode('sign_in'), req, 'Login callback endpoint called')
       let profile: Profile
       try {
-        profile = await parseLoginResponse(req)
+        profile = await validateSamlLoginResponse(req)
       } catch (err) {
         if (
           err instanceof Error &&
@@ -119,7 +136,7 @@ export default function createSamlRouter(
         ) {
           // When user uses browse back functionality after login we get invalid InResponseTo
           // This will ignore the error
-          const redirectUrl = parseRelayState(req) ?? defaultPageUrl
+          const redirectUrl = validateRelayStateUrl(req) ?? defaultPageUrl
           logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
           return res.redirect(redirectUrl)
         }
@@ -134,11 +151,9 @@ export default function createSamlRouter(
           req,
           `Failed to authenticate user. Description: ${description}. Error: ${err?.toString()}`
         )
-        if (!res.headersSent) {
-          return res.redirect(errorRedirectUrl(err))
-        } else {
-          throw err
-        }
+        throw new SamlError('Login failed', {
+          redirectUrl: errorRedirectUrl(err)
+        })
       }
       try {
         const user = await authenticate(profile)
@@ -156,7 +171,7 @@ export default function createSamlRouter(
         req.session.idpProvider = strategyName
         await sessions.saveLogoutToken(req, createLogoutToken(profile))
 
-        const redirectUrl = parseRelayState(req) ?? defaultPageUrl
+        const redirectUrl = validateRelayStateUrl(req) ?? defaultPageUrl
         logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
         return res.redirect(redirectUrl)
       } catch (err) {
@@ -165,11 +180,9 @@ export default function createSamlRouter(
           req,
           `Error logging user in. Error: ${err?.toString()}`
         )
-        if (!res.headersSent) {
-          return res.redirect(errorRedirectUrl(err))
-        } else {
-          throw err
-        }
+        throw new SamlError('Login failed', {
+          redirectUrl: errorRedirectUrl(err)
+        })
       }
     })
   )
@@ -190,7 +203,7 @@ export default function createSamlRouter(
         if (profile.success) {
           url = await saml.getLogoutUrlAsync(
             profile.data,
-            parseRelayState(req) ?? '',
+            validateRelayStateUrl(req) ?? '',
             samlRequestOptions(req)
           )
         } else {
@@ -205,11 +218,7 @@ export default function createSamlRouter(
           req,
           `Logout failed. Error: ${err?.toString()}.`
         )
-        if (!res.headersSent) {
-          return res.redirect(defaultPageUrl)
-        } else {
-          throw err
-        }
+        throw new SamlError('Logout failed', { redirectUrl: defaultPageUrl })
       }
     })
   )
@@ -221,6 +230,11 @@ export default function createSamlRouter(
       try {
         const profile = await parseLogoutMessage(req)
         let url: string
+        // There are two scenarios:
+        // 1. IDP-initiated logout, and we've just received a logout request -> profile is not null, the SAML transaction
+        // is still in progress, and we should redirect the user back to the IDP
+        // 2. SP-initiated logout, and we've just received a logout response -> profile is null, the SAML transaction
+        // is complete, and we should redirect the user to some meaningful page
         if (profile) {
           let user: unknown
           if (req.user) {
@@ -241,12 +255,12 @@ export default function createSamlRouter(
 
           url = await saml.getLogoutResponseUrlAsync(
             profile,
-            parseRelayState(req) ?? '',
+            validateRelayStateUrl(req) ?? '',
             samlRequestOptions(req),
             success
           )
         } else {
-          url = parseRelayState(req) ?? defaultPageUrl
+          url = validateRelayStateUrl(req) ?? defaultPageUrl
         }
         return res.redirect(url)
       } catch (err) {
@@ -255,11 +269,7 @@ export default function createSamlRouter(
           req,
           `Logout failed. Error: ${err?.toString()}.`
         )
-        if (!res.headersSent) {
-          return res.redirect(defaultPageUrl)
-        } else {
-          throw err
-        }
+        throw new SamlError('Logout failed', { redirectUrl: defaultPageUrl })
       }
     })
   // The IDP makes the browser either GET or POST one of these endpoints in two
@@ -279,7 +289,9 @@ export default function createSamlRouter(
         originalQuery
       )
       if (!loggedOut) {
-        throw new Error('Invalid SAML message type: expected logout response')
+        throw new SamlError(
+          'Invalid SAML message type: expected logout response'
+        )
       }
       return profile
     })
@@ -288,14 +300,15 @@ export default function createSamlRouter(
     `/logout/callback`,
     urlencodedParser,
     logoutCallback(async (req) => {
-      const { profile, loggedOut } =
-        'SAMLRequest' in req.body
-          ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            await saml.validatePostRequestAsync(req.body)
-          : // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            await saml.validatePostResponseAsync(req.body)
+      const { profile, loggedOut } = isSamlPostRequest(req)
+        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await saml.validatePostRequestAsync(req.body)
+        : // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await saml.validatePostResponseAsync(req.body)
       if (!loggedOut) {
-        throw new Error('Invalid SAML message type: expected logout response')
+        throw new SamlError(
+          'Invalid SAML message type: expected logout request/response'
+        )
       }
       return profile
     })

@@ -92,7 +92,14 @@ export const SamlProfileSchema = z.object({
   spNameQualifier: z.string().optional()
 })
 
-export function parseRelayState(req: express.Request): string | undefined {
+// SAML RelayState is an arbitrary string that gets passed in a SAML transaction.
+// In our case, we specify it to be a redirect URL where the user should be
+// redirected to after the SAML transaction is complete. Since the RelayState
+// is not signed or encrypted, we must make sure the URL points to our application
+// and not to some 3rd party domain
+export function validateRelayStateUrl(
+  req: express.Request
+): string | undefined {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
   const relayState = req.body?.RelayState || req.query.RelayState
 
