@@ -296,7 +296,7 @@ describe('Invoices', () => {
       await details.relatedFeeDecisions.assertTextEquals(
         feeDecision.decisionNumber!.toString()
       )
-      await details.replacedInvoice.assertTextEquals('10/2024')
+      await details.replacedInvoice.assertTextEquals('Lasku 10/2024')
 
       const child = invoicePage.nthChild(0)
       await child.totalPrice.assertTextEquals('276,43')

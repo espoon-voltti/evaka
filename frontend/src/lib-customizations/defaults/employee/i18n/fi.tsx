@@ -2768,6 +2768,7 @@ export const fi = {
         agreementType: 'Laskulaji',
         relatedFeeDecisions: 'Liittyvät maksupäätökset',
         replacedInvoice: 'Korvaa laskun',
+        invoice: 'Lasku',
         revision: (revisionNumber: number) => `Oikaisulasku ${revisionNumber}`,
         replacedBy: (link: React.ReactNode) => (
           <>Tämä lasku on oikaistu. Korvaava lasku: {link}</>

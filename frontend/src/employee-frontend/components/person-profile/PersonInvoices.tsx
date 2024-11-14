@@ -62,7 +62,7 @@ export default React.memo(function PersonInvoices({
                 <Tr key={invoice.id} data-qa="table-invoice-row">
                   <Td>
                     <Link to={`/finance/invoices/${invoice.id}`}>
-                      Lasku {formatInvoicePeriod(invoice, i18n)}
+                      {formatInvoicePeriod(invoice, i18n)}
                     </Link>
                   </Td>
                   <Td>{formatCents(invoice.totalPrice)}</Td>

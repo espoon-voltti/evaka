@@ -11,6 +11,8 @@ export function formatInvoicePeriod(
   i18n: Translations
 ): string {
   return (
+    i18n.invoice.form.details.invoice +
+    ' ' +
     YearMonth.ofDate(invoice.periodStart).format() +
     (invoice.revisionNumber > 0
       ? ` (${i18n.invoice.form.details.revision(invoice.revisionNumber)})`
