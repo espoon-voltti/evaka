@@ -121,14 +121,15 @@ data class ReservationInsert(val childId: ChildId, val date: LocalDate, val rang
 
 fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
+    createdAt: HelsinkiDateTime,
     reservations: List<ReservationInsert>,
 ): List<AttendanceReservationId> {
     return reservations.mapNotNull {
         createQuery {
                 sql(
                     """
-INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
-SELECT ${bind(it.childId)}, ${bind(it.date)}, ${bind(it.range?.start)}, ${bind(it.range?.end)}, ${bind(userId)}
+INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_at, created_by)
+SELECT ${bind(it.childId)}, ${bind(it.date)}, ${bind(it.range?.start)}, ${bind(it.range?.end)}, ${bind(createdAt)}, ${bind(userId)}
 FROM realized_placement_all(${bind(it.date)}) rp
 JOIN daycare d ON d.id = rp.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(it.date)}

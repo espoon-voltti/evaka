@@ -427,6 +427,7 @@ class AttendanceReservationController(
                         .forEach { tx.deleteReservationsInRange(childId, it) }
                     tx.insertValidReservations(
                         user.evakaUserId,
+                        clock.now(),
                         body.flatMap {
                             it.reservations.map { reservation ->
                                 ReservationInsert(
@@ -538,6 +539,8 @@ class AttendanceReservationController(
                                                 startTime = it.start,
                                                 endTime = it.end,
                                                 date = examinationDate,
+                                                createdAt = it.createdAt,
+                                                createdBy = it.createdBy,
                                                 staffCreated = it.staffCreated,
                                             )
                                             .toReservationTimes()
@@ -950,6 +953,8 @@ private data class ReservationTimesForDate(
     val date: LocalDate,
     val startTime: LocalTime?,
     val endTime: LocalTime?,
+    val createdAt: HelsinkiDateTime,
+    val createdBy: EvakaUser, // TODO should these be modified_by instead?
     val staffCreated: Boolean,
 ) {
     fun toReservationTimes() =
@@ -995,6 +1000,12 @@ SELECT
             'date', ar.date,
             'startTime', ar.start_time,
             'endTime', ar.end_time,
+            'createdAt', ar.created_at,
+            'createdBy', jsonb_build_object(
+                'id', eu.id,
+                'name', eu.name,
+                'type', eu.type
+            ),
             'staffCreated', eu.type <> 'CITIZEN'
         ) ORDER BY ar.date, ar.start_time)
         FROM attendance_reservation ar 

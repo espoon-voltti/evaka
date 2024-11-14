@@ -18,3 +18,10 @@ ALTER TABLE child_attendance RENAME COLUMN updated TO updated_at;
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON child_attendance FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
 
 ALTER TABLE child_attendance RENAME COLUMN created TO created_at;
+
+
+DROP TRIGGER set_timestamp ON attendance_reservation;
+ALTER TABLE attendance_reservation RENAME COLUMN updated TO updated_at;
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON attendance_reservation FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+
+ALTER TABLE attendance_reservation RENAME COLUMN created TO created_at;
