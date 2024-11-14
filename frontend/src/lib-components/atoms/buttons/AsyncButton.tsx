@@ -36,6 +36,7 @@ export type AsyncButtonProps<T> = BaseButtonVisualProps &
      * If true, the success icon is hidden.
      */
     hideSuccess?: boolean
+    successTimeout?: number
   }
 
 const AsyncButton_ = function AsyncButton<T>({
@@ -50,6 +51,7 @@ const AsyncButton_ = function AsyncButton<T>({
   textInProgress = text,
   textDone = text,
   hideSuccess = false,
+  successTimeout,
   ...props
 }: AsyncButtonProps<T>) {
   const { state, handleClick } = useAsyncButtonBehavior({
@@ -57,7 +59,8 @@ const AsyncButton_ = function AsyncButton<T>({
     stopPropagation,
     onClick,
     onSuccess,
-    onFailure
+    onFailure,
+    successTimeout
   })
   const i18n = useTranslations()
   const { colors } = useTheme()

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import partition from 'lodash/partition'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
@@ -44,7 +44,6 @@ import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
-import { NotificationsContext } from 'lib-components/Notifications'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -150,13 +149,6 @@ export default React.memo(function DayView({
   )
 
   const [editing, edit] = useBoolean(false)
-  const { addTimedNotification } = useContext(NotificationsContext)
-  const onSuccess = useCallback(() => {
-    edit.off()
-    addTimedNotification({
-      children: i18n.common.saveSuccess
-    })
-  }, [addTimedNotification, edit, i18n.common.saveSuccess])
 
   return modalData === undefined ? (
     <DayModal
@@ -172,7 +164,6 @@ export default React.memo(function DayView({
       modalData={modalData}
       onClose={onClose}
       onCancel={edit.off}
-      onSuccess={onSuccess}
       holidayPeriods={holidayPeriods}
     />
   ) : (
@@ -256,13 +247,11 @@ function Edit({
   modalData,
   onClose,
   onCancel,
-  onSuccess,
   holidayPeriods
 }: {
   modalData: ModalData
   onClose: () => void
   onCancel: () => void
-  onSuccess: () => void
   holidayPeriods: HolidayPeriod[]
 }) {
   const i18n = useTranslation()
@@ -296,9 +285,11 @@ function Edit({
         }
       }}
       disabled={!form.isValid()}
-      onSuccess={onSuccess}
+      onSuccess={onCancel}
       text={i18n.common.save}
+      textDone={i18n.common.saveSuccess}
       data-qa="save"
+      successTimeout={2500}
     />
   )
 

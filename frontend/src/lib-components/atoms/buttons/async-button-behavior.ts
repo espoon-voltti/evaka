@@ -8,7 +8,8 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { Failure, Result } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 
-const onSuccessTimeout = isAutomatedTest ? 10 : 800
+const onSuccessDefaultTimeout = 800
+const onSuccessTestTimeout = 10
 const clearStateTimeout = isAutomatedTest ? 25 : 3000
 
 type ButtonState<T> =
@@ -37,6 +38,11 @@ export interface AsyncButtonBehaviorProps<T> {
    * If true, the click event stopPropagation() function will be called automatically
    */
   stopPropagation?: boolean
+  /**
+   * The time in milliseconds to wait before calling onSuccess after the success animation has finished
+   * Should be less than clearStateTimeout because of the order of clearTimeout calls
+   */
+  successTimeout?: number
 }
 
 /**
@@ -49,8 +55,15 @@ export function useAsyncButtonBehavior<T>({
   stopPropagation = false,
   onClick,
   onSuccess,
-  onFailure
+  onFailure,
+  successTimeout = onSuccessDefaultTimeout
 }: AsyncButtonBehaviorProps<T>) {
+  const onSuccessTimeout = isAutomatedTest
+    ? onSuccessTestTimeout
+    : successTimeout > clearStateTimeout
+      ? clearStateTimeout
+      : successTimeout
+
   const [buttonState, setButtonState] = useState<ButtonState<T>>(idle)
   const onSuccessRef = useRef(onSuccess)
 
@@ -162,7 +175,7 @@ export function useAsyncButtonBehavior<T>({
       return () => clearTimeout(clearState)
     }
     return undefined
-  }, [buttonState])
+  }, [buttonState, onSuccessTimeout])
 
   return { state: buttonState.state, handleClick }
 }

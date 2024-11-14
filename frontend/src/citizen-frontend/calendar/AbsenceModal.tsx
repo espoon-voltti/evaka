@@ -92,7 +92,6 @@ function initialFormState(
 interface Props {
   close: () => void
   onReturn: () => void
-  onSuccess: () => void
   reservationsResponse: ReservationsResponse
   initialDate: LocalDate | undefined
   holidayPeriods: HolidayPeriod[]
@@ -101,7 +100,6 @@ interface Props {
 export default React.memo(function AbsenceModal({
   close,
   onReturn,
-  onSuccess,
   reservationsResponse,
   initialDate,
   holidayPeriods
@@ -302,6 +300,7 @@ export default React.memo(function AbsenceModal({
               <MutateButton
                 primary
                 text={i18n.common.confirm}
+                textDone={i18n.common.saveSuccess}
                 disabled={selectedChildren.state.length === 0}
                 mutation={postAbsencesMutation}
                 onClick={() => {
@@ -311,13 +310,14 @@ export default React.memo(function AbsenceModal({
                   }
                   return { body: form.value() }
                 }}
-                onSuccess={onSuccess}
+                onSuccess={close}
                 data-qa="modal-okBtn"
                 onFailure={(failure: Failure<unknown>) => {
                   setAttendanceAlreadyExistsError(
                     failure.errorCode === 'ATTENDANCE_ALREADY_EXISTS'
                   )
                 }}
+                successTimeout={2500}
               />
             </CalendarModalButtons>
           </BottomFooterContainer>
