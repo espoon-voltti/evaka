@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { animated, useSpring } from '@react-spring/web'
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { useTranslations } from 'lib-components/i18n'
@@ -82,6 +82,19 @@ const AsyncButton_ = function AsyncButton<T>({
   const cross = useSpring<{ opacity: number }>({
     opacity: state === 'failure' ? 1 : 0
   })
+  const getScreenReaderText = useMemo(() => {
+    switch (state) {
+      case 'in-progress':
+        return i18n.asyncButton.inProgress
+      case 'failure':
+        return i18n.asyncButton.failure
+      case 'success':
+        return textDone || i18n.asyncButton.success
+      default:
+        return ''
+    }
+  }, [state, i18n.asyncButton, textDone])
+
   return renderBaseButton(
     {
       text,
@@ -94,22 +107,10 @@ const AsyncButton_ = function AsyncButton<T>({
     handleClick,
     ({ icon }) => (
       <>
-        {state === 'in-progress' && (
-          <ScreenReaderOnly aria-live="polite" id="in-progress">
-            {i18n.asyncButton.inProgress}
-          </ScreenReaderOnly>
-        )}
-        {state === 'failure' && (
-          <ScreenReaderOnly aria-live="assertive" id="failure">
-            {i18n.asyncButton.failure}
-          </ScreenReaderOnly>
-        )}
-        {state === 'success' && (
-          <ScreenReaderOnly aria-live="assertive" id="success">
-            {i18n.asyncButton.success}
-          </ScreenReaderOnly>
-        )}
-
+        <ScreenReaderOnly
+          aria-live={state === 'in-progress' ? 'polite' : 'assertive'}
+          aria-label={getScreenReaderText}
+        />
         <IconContainer
           style={{
             width: container.x.to((x) => `${24 * x}px`),
@@ -144,7 +145,7 @@ const AsyncButton_ = function AsyncButton<T>({
             <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
           </IconWrapper>
         </IconContainer>
-        <TextWrapper>
+        <TextWrapper aria-hidden>
           {state === 'in-progress'
             ? textInProgress
             : state === 'success'
