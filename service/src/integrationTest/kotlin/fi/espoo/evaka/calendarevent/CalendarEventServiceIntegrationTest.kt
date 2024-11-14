@@ -2817,6 +2817,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 eventType = CalendarEventType.DISCUSSION_SURVEY,
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
                 modifiedAt = now,
+                modifiedBy = admin.evakaUserId,
             )
         val eventTime =
             DevCalendarEventTime(
@@ -2887,6 +2888,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 eventType = CalendarEventType.DISCUSSION_SURVEY,
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
                 modifiedAt = now,
+                modifiedBy = admin.evakaUserId,
             )
         val pastEventTime =
             DevCalendarEventTime(

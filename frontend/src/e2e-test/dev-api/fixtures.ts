@@ -987,6 +987,7 @@ export class Fixture {
         LocalDate.of(2020, 1, 1)
       ),
       modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
+      modifiedBy: systemInternalUser.id,
       eventType: 'DAYCARE_EVENT',
       ...initial
     })

@@ -9,6 +9,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import TimeRange from '../../time-range'
+import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
@@ -35,6 +36,7 @@ export interface AttendingChild {
 */
 export interface CalendarEvent {
   contentModifiedAt: HelsinkiDateTime
+  contentModifiedBy: EvakaUser
   description: string
   eventType: CalendarEventType
   groups: GroupInfo[]

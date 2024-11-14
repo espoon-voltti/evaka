@@ -287,6 +287,7 @@ export interface DevCalendarEvent {
   eventType: CalendarEventType
   id: UUID
   modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
   period: FiniteDateRange
   title: string
 }

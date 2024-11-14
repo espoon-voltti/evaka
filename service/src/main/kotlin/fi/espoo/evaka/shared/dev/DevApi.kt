@@ -2258,6 +2258,7 @@ data class DevCalendarEvent(
     val description: String,
     val period: FiniteDateRange,
     val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUserId,
     val eventType: CalendarEventType,
 )
 

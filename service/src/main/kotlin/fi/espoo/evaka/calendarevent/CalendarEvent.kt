@@ -12,8 +12,10 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
 data class GroupInfo(val id: GroupId, val name: String)
@@ -35,6 +37,7 @@ data class CalendarEvent(
     val period: FiniteDateRange,
     @Json val times: Set<CalendarEventTime>,
     val contentModifiedAt: HelsinkiDateTime,
+    @Nested("content_modified_by") val contentModifiedBy: EvakaUser,
     val eventType: CalendarEventType,
 )
 
