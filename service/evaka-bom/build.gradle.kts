@@ -2,18 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-plugins {
-    `java-platform`
-}
+plugins { `java-platform` }
 
-javaPlatform {
-    allowDependencies()
-}
+javaPlatform { allowDependencies() }
 
 dependencies {
     constraints {
         api("ch.qos.logback.access:tomcat:2.0.2")
-        api("org.apache.tomcat:tomcat-catalina:10.1.26")  // ch.qos.logback.access:tomcat breaks on runtime without this
+        api(
+            "org.apache.tomcat:tomcat-catalina:10.1.26"
+        ) // ch.qos.logback.access:tomcat breaks on runtime without this
         api("com.auth0:java-jwt:4.4.0")
         api("com.github.kagkarlsson:db-scheduler:14.1.0")
         api(libs.fuel)
@@ -58,7 +56,7 @@ dependencies {
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.18.0"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
-    api(platform("io.netty:netty-bom:4.1.108.Final")) // only needed for CVE fix
+    api(platform("io.netty:netty-bom:4.1.115.Final")) // only needed for CVE fix
     api(platform("io.opentelemetry:opentelemetry-bom:1.44.1"))
     api(platform("org.apache.cxf:cxf-bom:4.0.3"))
     // Spring Boot specifies a version constraint for Jetty, but we have other libraries relying
