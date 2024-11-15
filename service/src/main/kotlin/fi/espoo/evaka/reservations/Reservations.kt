@@ -319,6 +319,7 @@ fun createReservationsAndAbsences(
     val upsertedReservations =
         tx.insertValidReservations(
             user.evakaUserId,
+            now,
             validated.filterIsInstance<DailyReservationRequest.Reservations>().flatMap { res ->
                 listOfNotNull(res.reservation, res.secondReservation).map {
                     ReservationInsert(res.childId, res.date, it)

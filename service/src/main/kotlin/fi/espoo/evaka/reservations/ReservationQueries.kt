@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isHoliday
+import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -495,6 +496,8 @@ data class ConfirmedDayAbsenceInfo(val category: AbsenceCategory)
 data class ConfirmedDayReservationInfo(
     val start: LocalTime?,
     val end: LocalTime?,
+    val createdAt: HelsinkiDateTime,
+    val createdBy: EvakaUser,
     val staffCreated: Boolean,
 )
 
@@ -520,8 +523,20 @@ SELECT pcd.child_id,
         (SELECT coalesce(jsonb_agg(jsonb_build_object(
                'start', s.start_time,
                'end', s.end_time,
+               'createdAt', s.created_at,
+               'createdBy', jsonb_build_object(
+                   'id', s.created_by_id,
+                   'name', s.created_by_name,
+                   'type', s.created_by_type
+               ),
                'staffCreated', s.staff_created)), '[]'::jsonb)
-        FROM (select ar.start_time, ar.end_time, eu.type <> 'CITIZEN' as staff_created
+        FROM (select ar.start_time,
+                     ar.end_time,
+                     ar.created_at,
+                     eu.id AS created_by_id,
+                     eu.name AS crated_by_name,
+                     eu.type AS created_by_type,
+                     eu.type <> 'CITIZEN' AS staff_created
                 FROM attendance_reservation ar
                 JOIN evaka_user eu ON ar.created_by = eu.id
               WHERE ar.child_id = pcd.child_id

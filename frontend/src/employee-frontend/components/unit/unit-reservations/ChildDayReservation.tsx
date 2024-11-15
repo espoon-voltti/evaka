@@ -119,7 +119,7 @@ export default React.memo(function ChildDayReservation({
         ) : reservation && reservation.type === 'TIMES' ? (
           <ReservationTooltip
             tooltip={
-              reservation.staffCreated && ? i18n.unit.attendanceReservations.lastModifiedStaff(
+              reservation && (reservation.staffCreated ? i18n.unit.attendanceReservations.lastModifiedStaff(
                 reservation.modifiedAt.format(),
                 reservation.modifiedBy.name
               )
@@ -151,7 +151,7 @@ export default React.memo(function ChildDayReservation({
                   />
                 </>
               )}
-              {reservation.staffCreated && '*'}
+              {reservation?.staffCreated && '*'}
             </TimeCell>
           </ReservationTooltip>
         ) : reservationIndex === 0 ? (

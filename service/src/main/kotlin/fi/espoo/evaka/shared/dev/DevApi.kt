@@ -1013,7 +1013,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                tx.insertValidReservations(fakeAdmin.evakaUserId, body)
+                tx.insertValidReservations(fakeAdmin.evakaUserId, clock.now(), body)
             }
         }
     }
