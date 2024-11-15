@@ -10,9 +10,11 @@ import fi.espoo.evaka.assistance.getAssistanceFactorsForChildrenOverRange
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.document.childdocument.ChildBasics
 import fi.espoo.evaka.holidayperiod.getHolidayPeriod
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.reservations.getReservationBackupPlacements
 import fi.espoo.evaka.reservations.getReservations
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -64,6 +66,8 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                     val holidayPeriod =
                         tx.getHolidayPeriod(periodId) ?: throw BadRequest("No such holiday period")
                     val holidays = getHolidays(holidayPeriod.period)
+
+                    val preschoolTerms = tx.getPreschoolTerms()
 
                     // report result days
                     val periodDays =
@@ -147,8 +151,22 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                         sn.validity.includes(date)
                                     }
                                 }
-
-                        val dailyPlacedData = dailyDirectlyPlacedData + dailyBackupPlacedData
+                        // splits placed children's service need info into two groups based on
+                        // placement type
+                        // - children that require reservations to inform holiday period attendance
+                        // (RESERVATION_REQUIRED)
+                        // - children that do not reserve attendance and won't have service on
+                        // holiday periods (FIXED_SCHEDULE, TERM_BREAK)
+                        val (dailyPlacedData, fixedScheduleServiceNeeds) =
+                            (dailyDirectlyPlacedData + dailyBackupPlacedData).partition { sni ->
+                                sni.placementType.scheduleType(
+                                    date = date,
+                                    clubTerms = emptyList(),
+                                    preschoolTerms = preschoolTerms,
+                                ) == ScheduleType.RESERVATION_REQUIRED
+                            }
+                        val fixedSchedulePlacedChildren =
+                            fixedScheduleServiceNeeds.map { it.child.id }.toSet()
                         val dailyPlacedDataByChild = dailyPlacedData.groupBy { it.child.id }
 
                         val dailyAbsencesByChild =
@@ -220,16 +238,13 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                         )
                                     },
                             presentOccupancyCoefficient = dailyOccupancyCoefficient,
-                            absentCount = dailyAbsencesByChild.size,
+                            absentCount =
+                                dailyAbsencesByChild.size + fixedSchedulePlacedChildren.size,
                             requiredStaff = staffNeedAtDate,
                             noResponseChildren =
                                 noResponses
-                                    // expect a response always if full shift care, based on
-                                    // operation days otherwise
                                     .filter {
-                                        (it.shiftCareType == ShiftCareType.FULL ||
-                                            operationDaysByChild[it.child.id]?.contains(date) ==
-                                                true)
+                                        operationDaysByChild[it.child.id]?.contains(date) == true
                                     }
                                     .map { (child) ->
                                         ChildWithName(
