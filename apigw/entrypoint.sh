@@ -7,16 +7,8 @@
 set -euo pipefail
 
 # For logs
-if [ "${EC2_HOST:-false}" = "true" ]; then
-  HOST_IP="$(curl --silent --fail --show-error http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')"
-  export HOST_IP
-elif test -n "${ECS_CONTAINER_METADATA_URI:-}"; then
-  JSON="$(curl --silent --fail --show-error "${ECS_CONTAINER_METADATA_URI}"/task || printf 'UNAVAILABLE')"
-  HOST_IP="$(echo "$JSON" | jq -r '.Containers[0].Networks[0].IPv4Addresses[0]' || printf 'UNAVAILABLE')"
-  export HOST_IP
-else
-  export HOST_IP="UNAVAILABLE"
-fi
+HOST_IP="$(hostname --ip-address | grep --only-matching --extended-regexp '\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\b' || printf 'UNAVAILABLE')"
+export HOST_IP
 
 # Download deployment specific files from S3 if in a non-local environment
 if [ "${VOLTTI_ENV:-X}" != "local" ]; then

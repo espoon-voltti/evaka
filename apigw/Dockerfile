@@ -24,6 +24,7 @@ RUN apt-get update \
  && echo "520ea232e83a7cefe2a87d4f2af8433e383a4351464e213b7dd3b78ca0dc200f  /bin/s3download" | sha256sum -c - \
  && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
  && dpkg-reconfigure --frontend noninteractive tzdata \
+ && apt-get remove --auto-remove -y curl \
  && rm -rf /var/lib/apt/lists/*
 
 FROM base AS builder
