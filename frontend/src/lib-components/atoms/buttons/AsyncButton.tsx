@@ -4,13 +4,10 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { animated, useSpring } from '@react-spring/web'
-import React, { useMemo } from 'react'
+import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { useTranslations } from 'lib-components/i18n'
 import { faCheck, faTimes } from 'lib-icons'
-
-import { ScreenReaderOnly } from '../ScreenReaderOnly'
 
 import {
   AsyncButtonBehaviorProps,
@@ -62,7 +59,6 @@ const AsyncButton_ = function AsyncButton<T>({
     onFailure,
     successTimeout
   })
-  const i18n = useTranslations()
   const { colors } = useTheme()
 
   const showIcon = state !== 'idle'
@@ -82,18 +78,6 @@ const AsyncButton_ = function AsyncButton<T>({
   const cross = useSpring<{ opacity: number }>({
     opacity: state === 'failure' ? 1 : 0
   })
-  const getScreenReaderText = useMemo(() => {
-    switch (state) {
-      case 'in-progress':
-        return i18n.asyncButton.inProgress
-      case 'failure':
-        return i18n.asyncButton.failure
-      case 'success':
-        return textDone || i18n.asyncButton.success
-      default:
-        return ''
-    }
-  }, [state, i18n.asyncButton, textDone])
 
   return renderBaseButton(
     {
@@ -107,10 +91,6 @@ const AsyncButton_ = function AsyncButton<T>({
     handleClick,
     ({ icon }) => (
       <>
-        <ScreenReaderOnly
-          aria-live={state === 'in-progress' ? 'polite' : 'assertive'}
-          aria-label={getScreenReaderText}
-        />
         <IconContainer
           style={{
             width: container.x.to((x) => `${24 * x}px`),
@@ -145,7 +125,9 @@ const AsyncButton_ = function AsyncButton<T>({
             <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
           </IconWrapper>
         </IconContainer>
-        <TextWrapper aria-hidden>
+        <TextWrapper
+          aria-live={state === 'in-progress' ? 'polite' : 'assertive'}
+        >
           {state === 'in-progress'
             ? textInProgress
             : state === 'success'
