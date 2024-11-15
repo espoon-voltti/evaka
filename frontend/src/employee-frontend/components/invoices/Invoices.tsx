@@ -7,7 +7,6 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { isLoading, Result } from 'lib-common/api'
 import { User } from 'lib-common/api-types/employee-auth'
 import { useBoolean } from 'lib-common/form/hooks'
 import {
@@ -18,6 +17,7 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
+import YearMonth from 'lib-common/year-month'
 import Pagination from 'lib-components/Pagination'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -37,7 +37,6 @@ import colors from 'lib-customizations/common'
 import { faExclamation, faSync } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { renderResult } from '../async-rendering'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 import { StatusIconContainer } from '../common/StatusIconContainer'
@@ -46,7 +45,8 @@ import { createDraftInvoicesMutation } from './queries'
 
 interface Props {
   user: User | undefined
-  pagedInvoices: Result<PagedInvoiceSummaryResponses>
+  pagedInvoices: PagedInvoiceSummaryResponses
+  isLoading: boolean
 
   currentPage: number
   setCurrentPage: (p: number) => void
@@ -70,6 +70,7 @@ interface Props {
 export default React.memo(function Invoices({
   user,
   pagedInvoices,
+  isLoading,
   currentPage,
   setCurrentPage,
   sortBy,
@@ -86,6 +87,7 @@ export default React.memo(function Invoices({
   fullAreaSelectionDisabled
 }: Props) {
   const { i18n } = useTranslation()
+  const { pages, data: invoices } = pagedInvoices
 
   const [
     draftCreationError,
@@ -93,7 +95,7 @@ export default React.memo(function Invoices({
   ] = useBoolean(false)
 
   return (
-    <div className="invoices" data-isloading={isLoading(pagedInvoices)}>
+    <div className="invoices" data-isloading={isLoading}>
       {user?.accessibleFeatures.createDraftInvoices && (
         <RefreshInvoices>
           {draftCreationError && (
@@ -113,67 +115,60 @@ export default React.memo(function Invoices({
       )}
       <TitleRowContainer>
         <SectionTitle size={1}>{i18n.invoices.table.title}</SectionTitle>
-        {pagedInvoices?.isSuccess && (
-          <ResultsContainer>
-            <div>
-              {pagedInvoices.value.total
-                ? i18n.common.resultCount(pagedInvoices.value.total)
-                : null}
-            </div>
-            <Pagination
-              pages={pagedInvoices.value.pages}
-              currentPage={currentPage}
-              setPage={setCurrentPage}
-              label={i18n.common.page}
-            />
-          </ResultsContainer>
-        )}
+        <ResultsContainer>
+          <div>
+            {pagedInvoices.total
+              ? i18n.common.resultCount(pagedInvoices.total)
+              : null}
+          </div>
+          <Pagination
+            pages={pagedInvoices.pages}
+            currentPage={currentPage}
+            setPage={setCurrentPage}
+            label={i18n.common.page}
+          />
+        </ResultsContainer>
       </TitleRowContainer>
-
-      {renderResult(pagedInvoices, ({ data: invoices, pages }) => (
-        <>
-          <ResultsContainer>
-            {showCheckboxes && (
-              <Checkbox
-                checked={fullAreaSelection}
-                label={i18n.invoices.table.toggleAll}
-                onChange={setFullAreaSelection}
-                disabled={fullAreaSelectionDisabled}
-              />
-            )}
-          </ResultsContainer>
-          <Gap size="m" />
-          <Table data-qa="table-of-invoices">
-            <InvoiceTableHeader
-              invoices={invoices}
-              checked={checked}
-              checkAll={checkAll}
-              clearChecked={clearChecked}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              sortDirection={sortDirection}
-              setSortDirection={setSortDirection}
-              showCheckboxes={showCheckboxes}
-              fullAreaSelection={fullAreaSelection}
-            />
-            <InvoiceTableBody
-              invoices={invoices}
-              showCheckboxes={showCheckboxes}
-              checked={checked}
-              toggleChecked={toggleChecked}
-              fullAreaSelection={fullAreaSelection}
-            />
-          </Table>
-          <ResultsContainer>
-            <Pagination
-              pages={pages}
-              currentPage={currentPage}
-              setPage={setCurrentPage}
-              label={i18n.common.page}
-            />
-          </ResultsContainer>
-        </>
-      ))}
+      <ResultsContainer>
+        {showCheckboxes && (
+          <Checkbox
+            checked={fullAreaSelection}
+            label={i18n.invoices.table.toggleAll}
+            onChange={setFullAreaSelection}
+            disabled={fullAreaSelectionDisabled}
+          />
+        )}
+      </ResultsContainer>
+      <Gap size="m" />
+      <Table data-qa="table-of-invoices">
+        <InvoiceTableHeader
+          invoices={invoices}
+          checked={checked}
+          checkAll={checkAll}
+          clearChecked={clearChecked}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          sortDirection={sortDirection}
+          setSortDirection={setSortDirection}
+          showCheckboxes={showCheckboxes}
+          fullAreaSelection={fullAreaSelection}
+        />
+        <InvoiceTableBody
+          invoices={invoices}
+          showCheckboxes={showCheckboxes}
+          checked={checked}
+          toggleChecked={toggleChecked}
+          fullAreaSelection={fullAreaSelection}
+        />
+      </Table>
+      <ResultsContainer>
+        <Pagination
+          pages={pages}
+          currentPage={currentPage}
+          setPage={setCurrentPage}
+          label={i18n.common.page}
+        />
+      </ResultsContainer>
     </div>
   )
 })
@@ -326,11 +321,13 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             <Td>
               <ChildrenCell people={item.children} />
             </Td>
-            <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
+            <Td>{YearMonth.ofDate(item.periodStart).format()}</Td>
             <Td data-qa="invoice-created-at">
               {item.createdAt?.toLocalDate().format() ?? ''}
             </Td>
-            <Td data-qa="invoice-total">{formatCents(item.totalPrice)}</Td>
+            <Td align="right" data-qa="invoice-total">
+              {formatCents(item.totalPrice)}
+            </Td>
             <Td>
               {item.headOfFamily.restrictedDetailsEnabled && (
                 <Tooltip

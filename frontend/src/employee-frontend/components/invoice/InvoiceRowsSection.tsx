@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { get, groupBy } from 'lodash/fp'
+import groupBy from 'lodash/groupBy'
+import sumBy from 'lodash/sumBy'
+import uniq from 'lodash/uniq'
 import React, { Fragment, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import {
   InvoiceCodes,
   InvoiceRowDetailed,
@@ -37,16 +38,20 @@ const TitleContainer = styled.div`
 
 interface Props {
   rows: InvoiceRowDetailed[]
-  invoiceCodes: Result<InvoiceCodes>
+  replacedRows: InvoiceRowDetailed[] | undefined
+  invoiceCodes: InvoiceCodes
 }
 
 const InvoiceRowsTable = styled(Table)`
   border-collapse: collapse;
   margin-bottom: 15px;
+
+  th,
   td {
     padding: 16px 0 24px 16px;
     vertical-align: bottom;
   }
+
   td:nth-child(1) {
     padding-left: 0;
   }
@@ -70,6 +75,7 @@ const TotalPriceTh = styled(Th)`
 
 export default React.memo(function InvoiceRowsSection({
   rows,
+  replacedRows,
   invoiceCodes
 }: Props) {
   const { i18n } = useTranslation()
@@ -85,24 +91,27 @@ export default React.memo(function InvoiceRowsSection({
     toggleUiMode('invoices-absence-modal')
   }
 
-  const groupedRows = groupBy(get('child.id'), rows)
+  const rowsByChild: Partial<Record<string, InvoiceRowDetailed[]>> = useMemo(
+    () => groupBy(rows, (row) => row.child.id),
+    [rows]
+  )
 
-  const products = useMemo(
-    () => invoiceCodes.map(({ products }) => products).getOrElse([]),
-    [invoiceCodes]
-  )
-  const unitIds = useMemo(
+  const replacedRowsByChild: Partial<Record<string, InvoiceRowDetailed[]>> =
+    useMemo(() => groupBy(replacedRows, (row) => row.child.id), [replacedRows])
+
+  const allChildIds = useMemo(
     () =>
-      invoiceCodes.map(({ units }) => units.map(({ id }) => id)).getOrElse([]),
-    [invoiceCodes]
+      uniq([
+        ...Object.keys(rowsByChild),
+        ...(replacedRowsByChild !== undefined
+          ? Object.keys(replacedRowsByChild)
+          : [])
+      ]),
+    [rowsByChild, replacedRowsByChild]
   )
+
   const unitDetails = useMemo(
-    () =>
-      invoiceCodes
-        .map(({ units }) =>
-          Object.fromEntries(units.map((unit) => [unit.id, unit]))
-        )
-        .getOrElse({}),
+    () => Object.fromEntries(invoiceCodes.units.map((unit) => [unit.id, unit])),
     [invoiceCodes]
   )
 
@@ -112,83 +121,88 @@ export default React.memo(function InvoiceRowsSection({
         title={i18n.invoice.form.rows.title}
         icon={faCoins}
         startCollapsed={false}
+        data-qa="invoice-rows"
       >
-        <div className="invoice-rows">
-          {Object.entries(groupedRows).map(([childId, childRows]) => {
-            const firstRow = childRows[0]
-            return (
-              <div key={childId}>
-                <TitleContainer>
-                  <Title size={4}>
-                    <Link to={`/child-information/${childId}`}>
+        {allChildIds.map((childId) => {
+          const rows = rowsByChild[childId]
+          const replacedRows = replacedRowsByChild?.[childId]
+
+          const firstRow = rows?.[0] ?? replacedRows?.[0]
+          if (firstRow === undefined) {
+            // Does not happen: we have either rows or replacedRows
+            return null
+          }
+
+          const sum = rows !== undefined ? totalPrice(rows) : 0
+          const previousSum =
+            replacedRows !== undefined
+              ? sumBy(replacedRows, (row) => row.amount * row.price)
+              : undefined
+
+          return (
+            <div key={childId} data-qa={`child-${childId}`}>
+              <TitleContainer>
+                <Title size={4}>
+                  <Link to={`/child-information/${childId}`}>
+                    <span data-qa="child-name">
                       {formatName(
                         firstRow.child.firstName,
                         firstRow.child.lastName,
                         i18n,
                         true
-                      )}{' '}
-                      {firstRow.child.ssn}
-                    </Link>
-                  </Title>
-                  <Button
-                    appearance="inline"
-                    icon={faAbacus}
-                    onClick={() =>
-                      openAbsences(firstRow.child, firstRow.periodStart)
-                    }
-                    text={i18n.invoice.openAbsenceSummary}
-                  />
-                </TitleContainer>
+                      )}
+                    </span>{' '}
+                    <span data-qa="child-ssn">{firstRow.child.ssn}</span>
+                  </Link>
+                </Title>
+                <Button
+                  appearance="inline"
+                  icon={faAbacus}
+                  onClick={() =>
+                    openAbsences(firstRow.child, firstRow.periodStart)
+                  }
+                  text={i18n.invoice.openAbsenceSummary}
+                />
+              </TitleContainer>
+              {rows !== undefined ? (
                 <InvoiceRowsTable data-qa="table-of-invoice-rows">
                   <Thead>
                     <Tr>
-                      <Th data-qa="invoice-row-product">
-                        {i18n.invoice.form.rows.product}
-                      </Th>
-                      <Th data-qa="invoice-row-description">
-                        {i18n.invoice.form.rows.description}
-                      </Th>
-                      <UnitTh data-qa="invoice-row-unit">
-                        {i18n.invoice.form.rows.unitId}
-                      </UnitTh>
-                      <Th data-qa="invoice-row-daterange">
-                        {i18n.invoice.form.rows.daterange}
-                      </Th>
-                      <AmountTh data-qa="invoice-row-amount">
-                        {i18n.invoice.form.rows.amount}
-                      </AmountTh>
-                      <UnitPriceTh
-                        align="right"
-                        data-qa="invoice-row-unitprice"
-                      >
+                      <Th>{i18n.invoice.form.rows.product}</Th>
+                      <Th>{i18n.invoice.form.rows.description}</Th>
+                      <UnitTh>{i18n.invoice.form.rows.unitId}</UnitTh>
+                      <Th>{i18n.invoice.form.rows.daterange}</Th>
+                      <AmountTh>{i18n.invoice.form.rows.amount}</AmountTh>
+                      <UnitPriceTh align="right">
                         {i18n.invoice.form.rows.unitPrice}
                       </UnitPriceTh>
-                      <TotalPriceTh
-                        align="right"
-                        data-qa="invoice-row-totalprice"
-                      >
+                      <TotalPriceTh align="right">
                         {i18n.invoice.form.rows.price}
                       </TotalPriceTh>
                       <Th />
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {childRows.map((row, index) => (
+                    {rows.map((row, index) => (
                       <InvoiceRowsSectionRow
                         key={index}
                         row={row}
-                        products={products}
-                        unitIds={unitIds}
+                        products={invoiceCodes.products}
                         unitDetails={unitDetails}
                       />
                     ))}
                   </Tbody>
                 </InvoiceRowsTable>
-                <Sum title="rowSubTotal" sum={totalPrice(childRows)} />
-              </div>
-            )
-          })}
-        </div>
+              ) : null}
+              <Sum
+                title="rowSubTotal"
+                sum={sum}
+                previousSum={previousSum}
+                data-qa="child-sum"
+              />
+            </div>
+          )
+        })}
       </CollapsibleSection>
       {uiMode == 'invoices-absence-modal' && child !== undefined && (
         <AbsencesModal child={child} date={absenceModalDate} />

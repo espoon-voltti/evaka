@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useCallback, useMemo } from 'react'
+import React, { Fragment, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
+import { UserContext } from 'employee-frontend/state/user'
 import {
   ApplicationStatusOption,
   applicationStatusOptions,
@@ -695,13 +696,29 @@ interface InvoiceStatusFilterProps {
   toggle: (status: InvoiceStatus) => () => void
 }
 
+const statusesWithoutReplacements: InvoiceStatus[] = [
+  'DRAFT',
+  'WAITING_FOR_SENDING',
+  'SENT'
+]
+
+const allStatuses: InvoiceStatus[] = [
+  ...statusesWithoutReplacements,
+  'REPLACEMENT_DRAFT',
+  'REPLACED'
+]
+
 export function InvoiceStatusFilter({
   toggled,
   toggle
 }: InvoiceStatusFilterProps) {
   const { i18n } = useTranslation()
+  const user = useContext(UserContext)
 
-  const statuses: InvoiceStatus[] = ['DRAFT', 'WAITING_FOR_SENDING', 'SENT']
+  const statuses: InvoiceStatus[] = user?.user?.accessibleFeatures
+    .replacementInvoices
+    ? allStatuses
+    : statusesWithoutReplacements
 
   return (
     <>

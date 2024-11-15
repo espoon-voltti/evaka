@@ -9,6 +9,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.getDetailedInvoice
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyInvoices
+import fi.espoo.evaka.invoicing.data.getReplacingInvoiceFor
 import fi.espoo.evaka.invoicing.data.paginatedSearch
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
@@ -79,12 +80,7 @@ class InvoiceController(
                             pageSize = 200,
                             body.sortBy ?: InvoiceSortParam.STATUS,
                             body.sortDirection ?: SortDirection.DESC,
-                            body.status
-                                ?: listOf(
-                                    InvoiceStatus.DRAFT,
-                                    InvoiceStatus.WAITING_FOR_SENDING,
-                                    InvoiceStatus.SENT,
-                                ),
+                            body.status,
                             body.area ?: emptyList(),
                             body.unit,
                             body.distinctions ?: emptyList(),
@@ -261,6 +257,29 @@ class InvoiceController(
                     val invoice =
                         tx.getDetailedInvoice(id)
                             ?: throw NotFound("No invoice found with given ID ($id)")
+                    val replacedInvoice =
+                        invoice.replacedInvoiceId?.let {
+                            tx.getDetailedInvoice(invoice.replacedInvoiceId)?.takeIf {
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Invoice.READ,
+                                    it.id,
+                                )
+                            }
+                        }
+                    val replacedByInvoice =
+                        tx.getReplacingInvoiceFor(invoice.id)?.takeIf {
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Invoice.READ,
+                                it.id,
+                            )
+                        }
+
                     val permittedActions =
                         accessControl.getPermittedActions<InvoiceId, Action.Invoice>(
                             tx,
@@ -268,14 +287,21 @@ class InvoiceController(
                             clock,
                             invoice.id,
                         )
-                    InvoiceDetailedResponse(invoice, permittedActions)
+                    InvoiceDetailedResponse(
+                        invoice,
+                        replacedInvoice,
+                        replacedByInvoice,
+                        permittedActions,
+                    )
                 }
             }
             .also { Audit.InvoicesRead.log(targetId = AuditId(id)) }
     }
 
     data class InvoiceDetailedResponse(
-        val data: InvoiceDetailed,
+        val invoice: InvoiceDetailed,
+        val replacedInvoice: InvoiceDetailed?,
+        val replacedByInvoice: InvoiceDetailed?,
         val permittedActions: Set<Action.Invoice>,
     )
 
@@ -335,7 +361,7 @@ data class SearchInvoicesRequest(
     val page: Int,
     val sortBy: InvoiceSortParam? = null,
     val sortDirection: SortDirection? = null,
-    val status: List<InvoiceStatus>? = null,
+    val status: InvoiceStatus,
     val area: List<String>? = null,
     val unit: DaycareId? = null,
     val distinctions: List<InvoiceDistinctiveParams>? = null,

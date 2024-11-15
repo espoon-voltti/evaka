@@ -161,6 +161,13 @@ fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
         .exactlyOneOrNull()
 }
 
+fun Database.Read.getReplacingInvoiceFor(id: InvoiceId): InvoiceDetailed? {
+    return createQuery {
+            invoiceDetailedQuery(Predicate { where("invoice.replaced_invoice_id = ${bind(id)}") })
+        }
+        .exactlyOneOrNull()
+}
+
 fun Database.Read.getSentInvoicesOfMonth(month: YearMonth): List<InvoiceDetailed> {
     val periodStart = month.atDay(1)
     val periodEnd = month.atEndOfMonth()
@@ -205,7 +212,7 @@ fun Database.Read.paginatedSearch(
     pageSize: Int = 200,
     sortBy: InvoiceSortParam = InvoiceSortParam.STATUS,
     sortDirection: SortDirection = SortDirection.ASC,
-    statuses: List<InvoiceStatus> = listOf(),
+    status: InvoiceStatus = InvoiceStatus.DRAFT,
     areas: List<String> = listOf(),
     unit: DaycareId? = null,
     distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
@@ -228,9 +235,7 @@ fun Database.Read.paginatedSearch(
 
     val conditions =
         PredicateSql.allNotNull(
-            if (statuses.isNotEmpty())
-                PredicateSql { where("invoice.status = ANY(${bind(statuses)})") }
-            else null,
+            PredicateSql { where("invoice.status = ${bind(status)}") },
             if (areas.isNotEmpty())
                 PredicateSql {
                     where(

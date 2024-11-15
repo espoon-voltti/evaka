@@ -219,8 +219,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val drafts =
             testInvoices.filter { it.status == InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
-        val result =
-            searchInvoices(SearchInvoicesRequest(page = 1, status = listOf(InvoiceStatus.DRAFT)))
+        val result = searchInvoices(SearchInvoicesRequest(page = 1, status = InvoiceStatus.DRAFT))
         assertEqualEnough(drafts.map(::toSummary), result)
     }
 
@@ -229,27 +228,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.insert(testInvoices) }
         val sent = testInvoices.filter { it.status == InvoiceStatus.SENT }
 
-        val result =
-            searchInvoices(SearchInvoicesRequest(page = 1, status = listOf(InvoiceStatus.SENT)))
+        val result = searchInvoices(SearchInvoicesRequest(page = 1, status = InvoiceStatus.SENT))
         assertEqualEnough(sent.map(::toSummary), result)
-    }
-
-    @Test
-    fun `search works with multiple status parameters`() {
-        db.transaction { tx -> tx.insert(testInvoices) }
-        val sentAndDraft =
-            testInvoices.filter {
-                it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.DRAFT
-            }
-
-        val result =
-            searchInvoices(
-                SearchInvoicesRequest(
-                    page = 1,
-                    status = listOf(InvoiceStatus.SENT, InvoiceStatus.DRAFT),
-                )
-            )
-        assertEqualEnough(sentAndDraft.map(::toSummary), result)
     }
 
     @Test
@@ -257,8 +237,18 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.insert(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
-        val result = searchInvoices(SearchInvoicesRequest(page = 1, area = listOf("test_area")))
-        assertEqualEnough(invoices.map(::toSummary), result)
+        val result =
+            searchInvoices(
+                SearchInvoicesRequest(
+                    page = 1,
+                    status = InvoiceStatus.DRAFT,
+                    area = listOf("test_area"),
+                )
+            )
+        assertEqualEnough(
+            invoices.filter { it.status == InvoiceStatus.DRAFT }.map(::toSummary),
+            result,
+        )
     }
 
     @Test
@@ -271,7 +261,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 SearchInvoicesRequest(
                     page = 1,
                     area = listOf("test_area"),
-                    status = listOf(InvoiceStatus.DRAFT),
+                    status = InvoiceStatus.DRAFT,
                 )
             )
         assertEqualEnough(
@@ -286,7 +276,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with non-existent area param`() {
         db.transaction { tx -> tx.insert(testInvoices) }
 
-        val result = searchInvoices(SearchInvoicesRequest(page = 1, area = listOf("non_existent")))
+        val result =
+            searchInvoices(
+                SearchInvoicesRequest(
+                    page = 1,
+                    status = InvoiceStatus.DRAFT,
+                    area = listOf("non_existent"),
+                )
+            )
         assertEqualEnough(listOf(), result)
     }
 
@@ -298,11 +295,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
+                    status = InvoiceStatus.DRAFT,
                     searchTerms =
                         "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}",
                 )
             )
-        assertEqualEnough(testInvoices.map(::toSummary), result)
+        assertEqualEnough(
+            testInvoices.filter { it.status == InvoiceStatus.DRAFT }.map(::toSummary),
+            result,
+        )
     }
 
     @Test
@@ -313,10 +314,11 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
+                    status = InvoiceStatus.DRAFT,
                     searchTerms = "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}",
                 )
             )
-        assertEqualEnough(testInvoices.take(2).map(::toSummary), result)
+        assertEqualEnough(testInvoices.take(1).map(::toSummary), result)
     }
 
     @Test
@@ -327,6 +329,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
+                    status = InvoiceStatus.DRAFT,
                     searchTerms = "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch",
                 )
             )
@@ -338,7 +341,13 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.insert(testInvoices) }
 
         val result =
-            searchInvoices(SearchInvoicesRequest(page = 1, searchTerms = testChild_2.firstName))
+            searchInvoices(
+                SearchInvoicesRequest(
+                    page = 1,
+                    status = InvoiceStatus.DRAFT,
+                    searchTerms = testChild_2.firstName,
+                )
+            )
         assertEqualEnough(testInvoices.takeLast(1).map(::toSummary), result)
     }
 
@@ -346,8 +355,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with ssn as search term`() {
         db.transaction { tx -> tx.insert(testInvoices) }
 
-        val result = searchInvoices(SearchInvoicesRequest(page = 1, searchTerms = testAdult_1.ssn))
-        assertEqualEnough(testInvoices.take(2).map(::toSummary), result)
+        val result =
+            searchInvoices(
+                SearchInvoicesRequest(
+                    page = 1,
+                    status = InvoiceStatus.DRAFT,
+                    searchTerms = testAdult_1.ssn,
+                )
+            )
+        assertEqualEnough(testInvoices.take(1).map(::toSummary), result)
     }
 
     @Test
@@ -356,9 +372,13 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             searchInvoices(
-                SearchInvoicesRequest(page = 1, searchTerms = testAdult_1.ssn!!.substring(0, 6))
+                SearchInvoicesRequest(
+                    page = 1,
+                    status = InvoiceStatus.DRAFT,
+                    searchTerms = testAdult_1.ssn!!.substring(0, 6),
+                )
             )
-        assertEqualEnough(testInvoices.take(2).map(::toSummary), result)
+        assertEqualEnough(testInvoices.take(1).map(::toSummary), result)
     }
 
     @Test
@@ -372,7 +392,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         db.transaction { tx -> tx.insert(listOf(testInvoice)) }
 
-        val result = searchInvoices(SearchInvoicesRequest(page = 1))
+        val result = searchInvoices(SearchInvoicesRequest(page = 1, status = InvoiceStatus.DRAFT))
         assertEqualEnough(listOf(toSummary(testInvoice)), result)
     }
 
@@ -392,7 +412,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 RealEvakaClock(),
                 SearchInvoicesRequest(
                     page = 1,
-                    status = listOf(InvoiceStatus.DRAFT),
+                    status = InvoiceStatus.DRAFT,
                     sortBy = InvoiceSortParam.START,
                     sortDirection = SortDirection.DESC,
                 ),
@@ -407,7 +427,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val invoiceIds = db.transaction { tx -> tx.insert(testInvoices) }
         val invoice = testInvoices[0]
 
-        val result = getInvoice(invoiceIds[0])
+        val result = getInvoice(invoiceIds[0]).invoice
         assertDetailedEqualEnough(listOf(toDetailed(invoice)), listOf(result))
     }
 
@@ -427,7 +447,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(DevInvoicedFeeDecision(invoice.id, feeDecision.id))
         }
 
-        val result = getInvoice(invoice.id)
+        val result = getInvoice(invoice.id).invoice
         assertDetailedEqualEnough(
             expected =
                 listOf(
@@ -441,6 +461,30 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ),
             actual = listOf(result),
         )
+    }
+
+    @Test
+    fun `getInvoice returns replaced invoices`() {
+        val replacedInvoice =
+            DevInvoice(
+                status = InvoiceStatus.SENT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+            )
+        val invoice =
+            DevInvoice(
+                status = InvoiceStatus.REPLACEMENT_DRAFT,
+                areaId = testArea.id,
+                headOfFamilyId = testAdult_1.id,
+                replacedInvoiceId = replacedInvoice.id,
+            )
+        db.transaction { tx ->
+            tx.insert(replacedInvoice)
+            tx.insert(invoice)
+        }
+
+        assertEquals(invoice.id, getInvoice(replacedInvoice.id).replacedByInvoice?.id)
+        assertEquals(replacedInvoice.id, getInvoice(invoice.id).replacedInvoice?.id)
     }
 
     @Test
@@ -475,7 +519,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         sendInvoices(listOf(draft.id))
 
-        val result = getInvoice(draft.id)
+        val result = getInvoice(draft.id).invoice
         val updated =
             draft.copy(
                 status = InvoiceStatus.SENT,
@@ -572,7 +616,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         markInvoicesAsSent(listOf(invoice.id))
 
-        val result = getInvoice(invoice.id)
+        val result = getInvoice(invoice.id).invoice
 
         val updated =
             invoice.copy(
@@ -618,7 +662,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     50,
                     InvoiceSortParam.STATUS,
                     SortDirection.DESC,
-                    listOf(InvoiceStatus.DRAFT),
+                    InvoiceStatus.DRAFT,
                     listOf(),
                     null,
                     listOf(),
@@ -642,7 +686,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     50,
                     InvoiceSortParam.STATUS,
                     SortDirection.DESC,
-                    listOf(InvoiceStatus.DRAFT),
+                    InvoiceStatus.DRAFT,
                     listOf(),
                     null,
                     listOf(),
@@ -668,7 +712,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     50,
                     InvoiceSortParam.STATUS,
                     SortDirection.DESC,
-                    listOf(InvoiceStatus.DRAFT),
+                    InvoiceStatus.DRAFT,
                     listOf(),
                     null,
                     listOf(),
@@ -792,8 +836,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .map { it.data }
     }
 
-    private fun getInvoice(id: InvoiceId): InvoiceDetailed {
-        return invoiceController.getInvoice(dbInstance(), testUser, RealEvakaClock(), id).data
+    private fun getInvoice(id: InvoiceId): InvoiceController.InvoiceDetailedResponse {
+        return invoiceController.getInvoice(dbInstance(), testUser, RealEvakaClock(), id)
     }
 
     private fun markInvoicesAsSent(ids: List<InvoiceId>) {

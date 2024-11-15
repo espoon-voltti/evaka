@@ -29,6 +29,7 @@ export default React.memo(function InvoiceHeadOfFamilySection({
       title={i18n.invoice.form.headOfFamily.title}
       icon={faUserFriends}
       startCollapsed={false}
+      data-qa="head-of-family"
     >
       <LabelValueList
         spacing="small"
@@ -46,11 +47,13 @@ export default React.memo(function InvoiceHeadOfFamilySection({
                   i18n
                 )}
               </Link>
-            )
+            ),
+            dataQa: 'head-of-family-name'
           },
           {
             label: i18n.invoice.form.headOfFamily.ssn,
-            value: headOfFamily.ssn || headOfFamily.dateOfBirth.format()
+            value: headOfFamily.ssn || headOfFamily.dateOfBirth.format(),
+            dataQa: 'head-of-family-ssn'
           },
           ...(codebtor
             ? [
@@ -60,11 +63,13 @@ export default React.memo(function InvoiceHeadOfFamilySection({
                     <Link to={`/profile/${codebtor.id}`}>
                       {formatName(codebtor.firstName, codebtor.lastName, i18n)}
                     </Link>
-                  )
+                  ),
+                  dataQa: 'codebtor-name'
                 },
                 {
                   label: i18n.invoice.form.headOfFamily.codebtorSsn,
-                  value: codebtor.ssn || codebtor.dateOfBirth.format()
+                  value: codebtor.ssn || codebtor.dateOfBirth.format(),
+                  dataQa: 'codebtor-ssn'
                 }
               ]
             : [])

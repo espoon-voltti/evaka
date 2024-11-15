@@ -18,6 +18,7 @@ import { getHeadOfFamilyInvoices } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+import { formatInvoicePeriod } from '../invoice/utils'
 
 const getHeadOfFamilyInvoicesResult = wrapResult(getHeadOfFamilyInvoices)
 
@@ -61,8 +62,7 @@ export default React.memo(function PersonInvoices({
                 <Tr key={invoice.id} data-qa="table-invoice-row">
                   <Td>
                     <Link to={`/finance/invoices/${invoice.id}`}>
-                      Lasku{' '}
-                      {`${invoice.periodStart.format()} - ${invoice.periodEnd.format()}`}
+                      {formatInvoicePeriod(invoice, i18n)}
                     </Link>
                   </Td>
                   <Td>{formatCents(invoice.totalPrice)}</Td>

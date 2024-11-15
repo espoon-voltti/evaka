@@ -12,21 +12,22 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { markInvoicesSentMutation } from '../invoices/queries'
 
 type Props = {
-  invoice: InvoiceDetailedResponse
+  invoiceResponse: InvoiceDetailedResponse
 }
 
-const Actions = React.memo(function Actions({ invoice }: Props) {
+const Actions = React.memo(function Actions({ invoiceResponse }: Props) {
   const { i18n } = useTranslation()
+  const { invoice, permittedActions } = invoiceResponse
 
   return (
     <FixedSpaceRow justifyContent="flex-end">
-      {invoice.permittedActions.includes('MARK_SENT') &&
-      invoice.data.status === 'WAITING_FOR_SENDING' ? (
+      {permittedActions.includes('MARK_SENT') &&
+      invoice.status === 'WAITING_FOR_SENDING' ? (
         <MutateButton
           primary
           text={i18n.invoice.form.buttons.markSent}
           mutation={markInvoicesSentMutation}
-          onClick={() => ({ body: [invoice.data.id] })}
+          onClick={() => ({ body: [invoice.id] })}
           data-qa="invoice-actions-mark-sent"
         />
       ) : null}

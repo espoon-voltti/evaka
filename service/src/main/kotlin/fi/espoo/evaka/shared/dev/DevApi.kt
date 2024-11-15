@@ -89,6 +89,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotification
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
+import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
@@ -250,6 +251,7 @@ class DevApi(
     private val documentClient: DocumentService,
     private val env: EvakaEnv,
     private val emailMessageProvider: IEmailMessageProvider,
+    private val invoiceGenerator: InvoiceGenerator,
     private val featureConfig: FeatureConfig,
 ) {
     private val digitransit = MockDigitransit()
@@ -428,6 +430,15 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     }
                 }
                 .execute()
+        }
+    }
+
+    @DeleteMapping("/placement/{placementId}")
+    fun deletePlacement(db: Database, @PathVariable placementId: PlacementId) {
+        db.connect { dbc ->
+            dbc.transaction {
+                it.execute { sql("DELETE FROM placement WHERE id = ${bind(placementId)}") }
+            }
         }
     }
 
@@ -1657,6 +1668,13 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
                     .execute()
             }
         }
+
+    @PostMapping("/generate-replacement-draft-invoices")
+    fun generateReplacementDraftInvoices(db: Database, clock: EvakaClock) {
+        db.connect { dbc ->
+            invoiceGenerator.generateAllReplacementDraftInvoices(dbc, clock.today())
+        }
+    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html

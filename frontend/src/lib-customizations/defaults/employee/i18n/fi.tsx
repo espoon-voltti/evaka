@@ -1949,9 +1949,9 @@ export const fi = {
       handled: 'Tuloselvitys käsitelty'
     },
     invoice: {
-      validity: 'Aikaväli',
+      validity: 'Kausi',
       price: 'Summa',
-      status: 'Status'
+      status: 'Tila'
     },
     downloadAddressPage: 'Lataa osoitesivu'
   },
@@ -2766,7 +2766,16 @@ export const fi = {
         account: 'Tili',
         accountType: 'Tililaji',
         agreementType: 'Laskulaji',
-        relatedFeeDecisions: 'Liittyvät maksupäätökset'
+        relatedFeeDecisions: 'Liittyvät maksupäätökset',
+        replacedInvoice: 'Korvaa laskun',
+        invoice: 'Lasku',
+        revision: (revisionNumber: number) => `Oikaisulasku ${revisionNumber}`,
+        replacedBy: (link: React.ReactNode) => (
+          <>Tämä lasku on oikaistu. Korvaava lasku: {link}</>
+        ),
+        replacedByDraft: (link: React.ReactNode) => (
+          <>Tälle laskulle on korvaava oikaisuluonnos: {link}</>
+        )
       },
       rows: {
         title: 'Laskurivit',

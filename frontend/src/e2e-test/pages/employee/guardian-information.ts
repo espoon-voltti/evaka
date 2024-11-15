@@ -575,15 +575,9 @@ class InvoicesSection extends Section {
     await waitUntilEqual(() => this.#invoiceRows.count(), n)
   }
 
-  async assertInvoice(
-    n: number,
-    startDate: string,
-    endDate: string,
-    status: string
-  ) {
+  async assertInvoice(n: number, period: string, status: string) {
     const row = this.#invoiceRows.nth(n)
-    await row.findText(startDate).waitUntilVisible()
-    await row.findText(endDate).waitUntilVisible()
+    await row.findText(period).waitUntilVisible()
     await row.findText(status).waitUntilVisible()
   }
 }

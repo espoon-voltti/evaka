@@ -5,6 +5,7 @@
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecisionStatus,
+  InvoiceStatus,
   PaymentStatus,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
@@ -27,6 +28,8 @@ import {
 } from '../../../utils/page'
 import ChildInformationPage from '../child-information'
 import GuardianInformationPage from '../guardian-information'
+
+import { InvoiceDetailsPage } from './invoice-details-page'
 
 export class FinancePage {
   constructor(private readonly page: Page) {}
@@ -425,19 +428,14 @@ export class InvoicesPage {
     await this.#sendInvoicesButton.waitUntilHidden()
   }
 
-  async showSentInvoices() {
-    await this.page.findByDataQa('invoice-status-filter-SENT').click()
+  async filterByStatus(status: InvoiceStatus) {
+    await this.page.findByDataQa(`invoice-status-filter-${status}`).click()
   }
 
-  async showWaitingForSendingInvoices() {
-    await this.page
-      .find('[data-qa="invoice-status-filter-WAITING_FOR_SENDING"]')
-      .click()
-  }
-
-  async openFirstInvoice() {
+  async openFirstInvoice(): Promise<InvoiceDetailsPage> {
     await this.#invoiceInList.click()
     await this.#invoiceDetailsPage.waitUntilVisible()
+    return new InvoiceDetailsPage(this.page)
   }
 
   async assertInvoiceHeadOfFamily(fullName: string) {

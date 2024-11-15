@@ -1503,6 +1503,26 @@ export async function deleteDaycareCostCenter(
 
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.deletePlacement
+*/
+export async function deletePlacement(
+  request: {
+    placementId: UUID
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/placement/${request.placementId}`.toString(),
+      method: 'DELETE'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.digitransitAutocomplete
 */
 export async function digitransitAutocomplete(): Promise<Autocomplete> {
@@ -1529,6 +1549,22 @@ export async function forceFullVtjRefresh(
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/persons/${request.person}/force-full-vtj-refresh`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.generateReplacementDraftInvoices
+*/
+export async function generateReplacementDraftInvoices(): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/generate-replacement-draft-invoices`.toString(),
       method: 'POST'
     })
     return json
