@@ -72,6 +72,11 @@ beforeEach(async () => {
     validDuring: period.period
   }).save()
 
+  await Fixture.daycareAssistance({
+    childId: child.id,
+    validDuring: period.period
+  }).save()
+
   await Fixture.absence({
     absenceType: 'OTHER_ABSENCE',
     absenceCategory: 'BILLABLE',
