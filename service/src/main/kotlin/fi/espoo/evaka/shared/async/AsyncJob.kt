@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -48,6 +49,7 @@ import fi.espoo.evaka.specialdiet.SpecialDiet
 import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -117,6 +119,21 @@ sealed interface AsyncJob : AsyncJobPayload {
         AsyncJob {
         override val user: AuthenticatedUser? = null
     }
+
+    enum class CalendarEventReservationNotificationType {
+        RESERVED,
+        CANCELLED,
+    }
+
+    data class SendCalendarEventReservationPushNotification(
+        override val user: AuthenticatedUser,
+        val device: MobileDeviceId,
+        val groupId: GroupId,
+        val type: CalendarEventReservationNotificationType,
+        val date: LocalDate,
+        val startTime: LocalTime,
+        val endTime: LocalTime,
+    ) : AsyncJob
 
     data class UploadToKoski(val key: KoskiStudyRightKey) : AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -492,8 +509,9 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Config(concurrency = 4),
                 setOf(
                     MarkMessagesAsSent::class,
-                    SendMessagePushNotification::class,
                     SendAbsencePushNotification::class,
+                    SendCalendarEventReservationPushNotification::class,
+                    SendMessagePushNotification::class,
                     UpdateMessageThreadRecipients::class,
                 ),
             )

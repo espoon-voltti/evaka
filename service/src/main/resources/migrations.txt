@@ -461,3 +461,5 @@ V462__drop_table_holiday.sql
 V463__calendar_event_modified_by.sql
 V464__scheduled_tasks_priority.sql
 V465__invoice_replacement_info.sql
+V466__push_notification_calendar_event_reservation.sql
+V467__push_notification_calendar_event_reservation_defaults.sql

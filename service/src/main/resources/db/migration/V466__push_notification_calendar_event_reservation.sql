@@ -1,0 +1,1 @@
+ALTER TYPE push_notification_category ADD VALUE 'CALENDAR_EVENT_RESERVATION';

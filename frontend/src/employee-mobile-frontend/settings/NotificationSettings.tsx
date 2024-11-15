@@ -42,8 +42,10 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { renderResult } from '../async-rendering'
+import { UserContext } from '../auth/state'
 import { useTranslation } from '../common/i18n'
 import { ServiceWorkerContext } from '../common/service-worker'
 import { unitInfoQuery } from '../units/queries'
@@ -183,9 +185,22 @@ const SettingsSectionsView = React.memo(function SettingsSectionsView({
   groupInfos: GroupInfo[]
 }) {
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
+  const personalDevice = user.map((u) => u && u.personalDevice).getOrElse(false)
+
+  const enabledCategories = featureFlags.discussionReservations
+    ? pushNotificationCategories
+    : pushNotificationCategories.filter(
+        (c) => c !== 'CALENDAR_EVENT_RESERVATION'
+      )
+
+  const deviceCategories = personalDevice
+    ? enabledCategories.filter((c) => c !== 'CALENDAR_EVENT_RESERVATION')
+    : enabledCategories
+
   return (
     <SettingsSections
-      categories={pushNotificationCategories.map((category) => (
+      categories={deviceCategories.map((category) => (
         <Checkbox
           key={category}
           data-qa={category}
