@@ -59,4 +59,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        ]]></notes>
         <cve>CVE-2024-9329</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Affects only old Spring versions (5.3.x), and we're already using 6.1.x
+       ]]></notes>
+        <cve>CVE-2024-38828</cve>
+    </suppress>
 </suppressions>
