@@ -5,7 +5,10 @@
 export const sessionKeepalive = async () => {
   const response = await fetch('/api/application/auth/status', {
     method: 'GET',
-    credentials: 'include'
+    credentials: 'include',
+    headers: {
+      'x-evaka-csrf': '1'
+    }
   })
   if (!response.ok) {
     // could be e.g. temporarily offline
