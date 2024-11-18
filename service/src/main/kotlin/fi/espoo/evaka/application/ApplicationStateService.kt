@@ -220,6 +220,7 @@ class ApplicationStateService(
             application.form,
             currentDate,
             strict = user is AuthenticatedUser.Citizen,
+            validateApplicationPeriod = true,
         )
 
         personService.getGuardians(tx, user, application.childId)
@@ -982,7 +983,14 @@ class ApplicationStateService(
             if (original.status != CREATED)
                 throw BadRequest("Cannot save as draft, application already sent")
         } else {
-            validateApplication(tx, original.type, updatedForm, now.toLocalDate(), strict = true)
+            validateApplication(
+                tx,
+                original.type,
+                updatedForm,
+                now.toLocalDate(),
+                strict = true,
+                validateApplicationPeriod = true,
+            )
 
             if (listOf(SENT).contains(original.status)) {
                 original.form.preferences.preferredStartDate?.let { previousStartDate ->
@@ -1010,13 +1018,21 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         update: ApplicationUpdate,
         userId: EvakaUserId,
+        validateApplicationPeriod: Boolean = true,
     ) {
         val original =
             tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
 
         val updatedForm = original.form.update(update.form)
-        validateApplication(tx, original.type, updatedForm, now.toLocalDate(), strict = false)
+        validateApplication(
+            tx,
+            original.type,
+            updatedForm,
+            now.toLocalDate(),
+            strict = false,
+            validateApplicationPeriod,
+        )
 
         if (!updatedForm.preferences.urgent) {
             tx.dissociateAttachmentsByApplicationAndType(
@@ -1209,12 +1225,14 @@ class ApplicationStateService(
         application: ApplicationForm,
         currentDate: LocalDate,
         strict: Boolean,
+        validateApplicationPeriod: Boolean,
     ) {
         val preferredStartDate = application.preferences.preferredStartDate
         if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
+            val activePreschoolTerm = tx.getActivePreschoolTermAt(preferredStartDate)
             val canApplyForPreferredDate =
-                tx.getActivePreschoolTermAt(preferredStartDate)?.isApplicationAccepted(currentDate)
-                    ?: false
+                activePreschoolTerm?.isApplicationAccepted(currentDate) == true ||
+                    (activePreschoolTerm != null && !validateApplicationPeriod)
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to preschool on $preferredStartDate at the moment")
             }

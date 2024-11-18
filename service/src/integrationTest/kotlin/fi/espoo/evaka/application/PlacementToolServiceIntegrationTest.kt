@@ -68,7 +68,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired lateinit var scheduledJobs: ScheduledJobs
     @Autowired lateinit var accessCpontrol: AccessControl
 
-    private val clock = MockEvakaClock(2021, 1, 10, 12, 0)
+    private val clock = MockEvakaClock(2021, 1, 7, 12, 0)
     final val employee =
         DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Test", lastName = "Employee")
     private val admin = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
