@@ -61,7 +61,7 @@ async function openCalendarPage(
     mockedTime:
       options?.mockedTime ?? today.toHelsinkiDateTime(LocalTime.of(12, 0)),
     citizenCustomizations: {
-      featureFlags: { calendarMonthView: false, ...options?.featureFlags }
+      featureFlags: options?.featureFlags
     }
   })
   await enduserLogin(page, testAdult)
@@ -634,6 +634,11 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     )
     await reservationsModal.save()
 
+    if (env === 'desktop') {
+      await calendarPage.navigateToNextMonths(3)
+      await calendarPage.assertMonthTitle('Huhtikuu 2022')
+    }
+
     for (const date of reservationRange.dates()) {
       if (date.isWeekend()) {
         // nothing
@@ -1205,10 +1210,7 @@ describe('Citizen calendar child visibility', () => {
     })
 
     page = await Page.open({
-      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)),
-      citizenCustomizations: {
-        featureFlags: { calendarMonthView: false }
-      }
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await enduserLogin(page, testAdult)
     header = new CitizenHeader(page, 'desktop')
@@ -1220,12 +1222,23 @@ describe('Citizen calendar child visibility', () => {
 
     await calendarPage.assertChildCountOnDay(placement1start.subDays(1), 0)
     await calendarPage.assertChildCountOnDay(placement1start, 1)
+
+    await calendarPage.navigateToNextMonths(6)
+    await calendarPage.assertMonthTitle('Heinäkuu 2022')
+
     await calendarPage.assertChildCountOnDay(placement1end, 1)
     await calendarPage.assertChildCountOnDay(placement1end.addDays(1), 0)
+
+    await calendarPage.navigateToNextMonths(2)
+    await calendarPage.assertMonthTitle('Syyskuu 2022')
 
     await calendarPage.assertChildCountOnDay(placement2start.subDays(1), 0)
     await calendarPage.assertChildCountOnDay(placement2start, 1)
     await calendarPage.assertChildCountOnDay(placement2start.addDays(1), 1)
+
+    await calendarPage.navigateToNextMonths(4)
+    await calendarPage.assertMonthTitle('Tammikuu 2023')
+
     await calendarPage.assertChildCountOnDay(placement2end, 1)
     await calendarPage.assertChildCountOnDay(placement2end.addDays(1), 0)
 
@@ -1239,6 +1252,10 @@ describe('Citizen calendar child visibility', () => {
     let dayView = await calendarPage.openDayView(today.subDays(1))
     await dayView.assertNoActivePlacementsMsgVisible()
     await dayView.close()
+
+    await calendarPage.navigateToNextMonths(12)
+    await calendarPage.assertMonthTitle('Tammikuu 2023')
+
     dayView = await calendarPage.openDayView(today.addYears(1).addDays(1))
     await dayView.assertNoActivePlacementsMsgVisible()
   })
@@ -1321,6 +1338,10 @@ describe('Citizen calendar child visibility', () => {
     const firstReservationDay = LocalDate.of(2022, 4, 15)
 
     const calendarPage = await openCalendarPage('desktop')
+
+    await calendarPage.navigateToNextMonths(3)
+    await calendarPage.assertMonthTitle('Huhtikuu 2022')
+
     await calendarPage.assertChildCountOnDay(firstReservationDay, 1)
 
     const holidayDayModal = await calendarPage.openDayView(firstReservationDay)

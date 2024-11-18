@@ -53,18 +53,19 @@ export function useMonthlySummaryInfo(
   const [displayAlert, setDisplayAlert] = useState(false)
 
   useEffect(() => {
-    setSummaryInfoOpen(false)
-
-    const shouldDisplayAlert = childSummaries.some(
-      ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
-        reservedMinutes > serviceNeedMinutes ||
-        usedServiceMinutes > serviceNeedMinutes
+    setDisplayAlert(
+      childSummaries.some(
+        ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
+          reservedMinutes > serviceNeedMinutes ||
+          usedServiceMinutes > serviceNeedMinutes
+      )
     )
-
-    setDisplayAlert(shouldDisplayAlert)
-    if (shouldDisplayAlert) {
-      setSummaryInfoOpen(true)
-    }
+    setSummaryInfoOpen(
+      childSummaries.some(
+        ({ reservedMinutes, serviceNeedMinutes }) =>
+          reservedMinutes > serviceNeedMinutes
+      )
+    )
   }, [childSummaries, selectedMonthData.month, selectedMonthData.year])
 
   const toggleSummaryInfo = useCallback(() => {

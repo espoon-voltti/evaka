@@ -630,7 +630,7 @@ const MonthPicker = React.memo(function MonthPicker({
   const i18n = useTranslation()
   return (
     <MonthPickerContainer>
-      <MonthTitle>
+      <MonthTitle data-qa="calendar-month-title">
         {`${i18n.common.datetime.months[selectedMonthData.month - 1]} ${selectedMonthData.year}`}
         {childSummaries.length > 0 && (
           <InlineInfoButton
@@ -649,6 +649,7 @@ const MonthPicker = React.memo(function MonthPicker({
         onClick={prevMonth}
         disabled={currentIndex === 0}
         aria-label={i18n.calendar.previousMonth}
+        data-qa="previous-month-button"
       />
       <Gap size="s" horizontal />
       <IconOnlyButton
@@ -656,6 +657,7 @@ const MonthPicker = React.memo(function MonthPicker({
         onClick={nextMonth}
         disabled={currentIndex === monthDataLength - 1}
         aria-label={i18n.calendar.nextMonth}
+        data-qa="next-month-button"
       />
     </MonthPickerContainer>
   )
