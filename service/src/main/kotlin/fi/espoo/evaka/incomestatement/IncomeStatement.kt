@@ -151,9 +151,11 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
 
 fun createIncomeStatement(
     dbc: Database.Connection,
+    now: HelsinkiDateTime,
     incomeStatementPersonId: PersonId,
     uploadedBy: AuthenticatedUser.Citizen,
     body: IncomeStatementBody,
+    draft: Boolean,
 ): IncomeStatementId {
     if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
 
@@ -167,6 +169,9 @@ fun createIncomeStatement(
 
     return dbc.transaction { tx ->
         val incomeStatementId = tx.createIncomeStatement(incomeStatementPersonId, body)
+        if (!draft) {
+            tx.setSentIfDraft(incomeStatementId, now)
+        }
         when (body) {
             is IncomeStatementBody.Income ->
                 tx.associateOrphanAttachments(
@@ -209,7 +214,8 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
     abstract val endDate: LocalDate?
     abstract val created: HelsinkiDateTime
     abstract val updated: HelsinkiDateTime
-    abstract val handled: Boolean
+    abstract val sentAt: HelsinkiDateTime?
+    abstract val status: IncomeStatementStatus
     abstract val handlerNote: String
 
     @JsonTypeName("HIGHEST_FEE")
@@ -222,7 +228,8 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val endDate: LocalDate?,
         override val created: HelsinkiDateTime,
         override val updated: HelsinkiDateTime,
-        override val handled: Boolean,
+        override val sentAt: HelsinkiDateTime?,
+        override val status: IncomeStatementStatus,
         override val handlerNote: String,
     ) : IncomeStatement(IncomeStatementType.HIGHEST_FEE)
 
@@ -241,7 +248,8 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         val otherInfo: String,
         override val created: HelsinkiDateTime,
         override val updated: HelsinkiDateTime,
-        override val handled: Boolean,
+        override val sentAt: HelsinkiDateTime?,
+        override val status: IncomeStatementStatus,
         override val handlerNote: String,
         val attachments: List<Attachment>,
     ) : IncomeStatement(IncomeStatementType.INCOME)
@@ -257,7 +265,8 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         val otherInfo: String,
         override val created: HelsinkiDateTime,
         override val updated: HelsinkiDateTime,
-        override val handled: Boolean,
+        override val sentAt: HelsinkiDateTime?,
+        override val status: IncomeStatementStatus,
         override val handlerNote: String,
         val attachments: List<Attachment>,
     ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)

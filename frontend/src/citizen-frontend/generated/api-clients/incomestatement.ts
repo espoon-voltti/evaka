@@ -25,12 +25,17 @@ import { uri } from 'lib-common/uri'
 export async function createChildIncomeStatement(
   request: {
     childId: UUID,
+    draft?: boolean | null,
     body: IncomeStatementBody
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['draft', request.draft?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/child/${request.childId}`.toString(),
     method: 'POST',
+    params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
   })
   return json
@@ -42,12 +47,17 @@ export async function createChildIncomeStatement(
 */
 export async function createIncomeStatement(
   request: {
+    draft?: boolean | null,
     body: IncomeStatementBody
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['draft', request.draft?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements`.toString(),
     method: 'POST',
+    params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
   })
   return json
@@ -208,12 +218,17 @@ export async function updateChildIncomeStatement(
   request: {
     childId: UUID,
     incomeStatementId: UUID,
+    draft?: boolean | null,
     body: IncomeStatementBody
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['draft', request.draft?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/child/${request.childId}/${request.incomeStatementId}`.toString(),
     method: 'PUT',
+    params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
   })
   return json
@@ -226,12 +241,17 @@ export async function updateChildIncomeStatement(
 export async function updateIncomeStatement(
   request: {
     incomeStatementId: UUID,
+    draft?: boolean | null,
     body: IncomeStatementBody
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['draft', request.draft?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/${request.incomeStatementId}`.toString(),
     method: 'PUT',
+    params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
   })
   return json

@@ -143,7 +143,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         body.placementValidDate,
                         body.page,
                         pageSize = 50,
-                        body.sortBy ?: IncomeStatementSortParam.CREATED,
+                        body.sortBy ?: IncomeStatementSortParam.SENT_AT,
                         body.sortDirection ?: SortDirection.ASC,
                     )
                 }
@@ -192,7 +192,7 @@ data class SearchIncomeStatementsRequest(
 )
 
 enum class IncomeStatementSortParam {
-    CREATED,
+    SENT_AT,
     START_DATE,
     INCOME_END_DATE,
     TYPE,

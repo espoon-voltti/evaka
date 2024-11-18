@@ -36,7 +36,6 @@ import { DevChild } from './api-types'
 import { DevChildAttendance } from './api-types'
 import { DevChildDocument } from './api-types'
 import { DevClubTerm } from './api-types'
-import { DevCreateIncomeStatements } from './api-types'
 import { DevDailyServiceTimeNotification } from './api-types'
 import { DevDailyServiceTimes } from './api-types'
 import { DevDaycare } from './api-types'
@@ -53,6 +52,7 @@ import { DevFridgeChild } from './api-types'
 import { DevFridgePartner } from './api-types'
 import { DevGuardian } from './api-types'
 import { DevIncome } from './api-types'
+import { DevIncomeStatement } from './api-types'
 import { DevInvoice } from './api-types'
 import { DevMobileDevice } from './api-types'
 import { DevOtherAssistanceMeasure } from './api-types'
@@ -1128,18 +1128,18 @@ export async function createIncomeNotification(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createIncomeStatements
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createIncomeStatement
 */
-export async function createIncomeStatements(
+export async function createIncomeStatement(
   request: {
-    body: DevCreateIncomeStatements
+    body: DevIncomeStatement
   }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/income-statements`.toString(),
+      url: uri`/income-statement`.toString(),
       method: 'POST',
-      data: request.body satisfies JsonCompatible<DevCreateIncomeStatements>
+      data: request.body satisfies JsonCompatible<DevIncomeStatement>
     })
     return json
   } catch (e) {

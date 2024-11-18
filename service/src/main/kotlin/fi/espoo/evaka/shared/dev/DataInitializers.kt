@@ -15,7 +15,9 @@ import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.incomestatement.IncomeStatementType
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.IncomeStatementStatus
+import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -534,24 +536,28 @@ VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(r
 data class DevIncomeStatement(
     val id: IncomeStatementId = IncomeStatementId(UUID.randomUUID()),
     val personId: PersonId,
-    val startDate: LocalDate,
-    val type: IncomeStatementType,
-    val grossEstimatedMonthlyIncome: Int,
+    val data: IncomeStatementBody,
+    val status: IncomeStatementStatus = IncomeStatementStatus.SENT,
+    val sentAt: HelsinkiDateTime? = HelsinkiDateTime.now(),
     val handlerId: EmployeeId? = null,
 )
 
-fun Database.Transaction.insert(row: DevIncomeStatement): IncomeStatementId =
-    createUpdate {
-            sql(
-                """
-INSERT INTO income_statement (id, person_id, start_date, type, gross_estimated_monthly_income, handler_id)
-VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.startDate)}, ${bind(row.type)}, ${bind(row.grossEstimatedMonthlyIncome)}, ${bind(row.handlerId)})
-RETURNING id
-"""
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne()
+fun Database.Transaction.insert(row: DevIncomeStatement): IncomeStatementId {
+    val defaultId = createIncomeStatement(row.personId, row.data)
+    execute {
+        sql(
+            """
+        UPDATE income_statement
+        SET id = ${bind(row.id)},
+            status = ${bind(row.status)},
+            sent_at = ${bind(row.sentAt)},
+            handler_id = ${bind(row.handlerId)}
+        WHERE id = ${bind(defaultId)}
+    """
+        )
+    }
+    return row.id
+}
 
 data class DevFeeAlteration(
     val id: FeeAlterationId = FeeAlterationId(UUID.randomUUID()),

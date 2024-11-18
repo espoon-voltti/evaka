@@ -16,7 +16,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  createIncomeStatements,
   resetServiceState
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -59,23 +58,22 @@ async function navigateToIncomeStatements() {
 
 describe('Income statements', () => {
   test('Income statement can be set handled', async () => {
-    await createIncomeStatements({
-      body: {
-        personId: testAdult.id,
-        data: [
-          {
-            type: 'HIGHEST_FEE',
-            startDate: today.addYears(-1),
-            endDate: today.addDays(-1)
-          },
-          {
-            type: 'HIGHEST_FEE',
-            startDate: today,
-            endDate: null
-          }
-        ]
+    await Fixture.incomeStatement({
+      personId: testAdult.id,
+      data: {
+        type: 'HIGHEST_FEE',
+        startDate: today.addYears(-1),
+        endDate: today.addDays(-1)
       }
-    })
+    }).save()
+    await Fixture.incomeStatement({
+      personId: testAdult.id,
+      data: {
+        type: 'HIGHEST_FEE',
+        startDate: today,
+        endDate: null
+      }
+    }).save()
 
     let incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()
@@ -130,18 +128,14 @@ describe('Income statements', () => {
       ]
     })
 
-    await createIncomeStatements({
-      body: {
-        personId: testAdult.id,
-        data: [
-          {
-            type: 'HIGHEST_FEE',
-            startDate,
-            endDate
-          }
-        ]
+    await Fixture.incomeStatement({
+      personId: testAdult.id,
+      data: {
+        type: 'HIGHEST_FEE',
+        startDate,
+        endDate
       }
-    })
+    }).save()
 
     const incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()
@@ -165,20 +159,16 @@ describe('Income statements', () => {
   })
 
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {
-    await createIncomeStatements({
-      body: {
-        personId: testChild.id,
-        data: [
-          {
-            type: 'CHILD_INCOME',
-            otherInfo: 'Test info',
-            startDate: today,
-            endDate: today,
-            attachmentIds: []
-          }
-        ]
+    await Fixture.incomeStatement({
+      personId: testChild.id,
+      data: {
+        type: 'CHILD_INCOME',
+        otherInfo: 'Test info',
+        startDate: today,
+        endDate: today,
+        attachmentIds: []
       }
-    })
+    }).save()
 
     const incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()

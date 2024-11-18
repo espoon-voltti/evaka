@@ -74,7 +74,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     endDate = null,
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handled = false,
+                    sentAt = incomeStatements[0].sentAt,
+                    status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                 )
             ),
@@ -180,7 +181,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     otherInfo = "foo bar",
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handled = false,
+                    sentAt = incomeStatements[0].sentAt,
+                    status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     attachments = listOf(),
                 )
@@ -231,7 +233,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     otherInfo = "foo bar",
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handled = false,
+                    sentAt = incomeStatements[0].sentAt,
+                    status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     attachments = listOf(),
                 )
@@ -413,7 +416,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     otherInfo = "foo bar",
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handled = false,
+                    sentAt = incomeStatements[0].sentAt,
+                    status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
@@ -450,7 +454,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     otherInfo = "foo bar",
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handled = false,
+                    sentAt = incomeStatements[0].sentAt,
+                    status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
@@ -632,7 +637,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 otherInfo = "",
                 created = incomeStatement.created,
                 updated = updated,
-                handled = false,
+                sentAt = incomeStatement.sentAt,
+                status = IncomeStatementStatus.SENT,
                 handlerNote = "",
                 attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
             ),
@@ -674,7 +680,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         markIncomeStatementHandled(incomeStatement.id, employee.id, "foo bar")
 
         val handled = getIncomeStatements().data.first()
-        assertEquals(true, handled.handled)
+        assertEquals(IncomeStatementStatus.HANDLED, handled.status)
         assertEquals("", handled.handlerNote)
 
         assertThrows<Forbidden> { deleteIncomeStatement(incomeStatement.id) }
@@ -721,7 +727,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 sql(
                     """
 UPDATE income_statement
-SET handler_id = ${bind(handlerId)}, handler_note = ${bind(note)}
+SET handler_id = ${bind(handlerId)}, handler_note = ${bind(note)}, status = 'HANDLED'::income_statement_status
 WHERE id = ${bind(id)}
 """
                 )
@@ -881,18 +887,20 @@ WHERE id = ${bind(id)}
         )
     }
 
-    private fun createIncomeStatement(body: IncomeStatementBody) {
+    private fun createIncomeStatement(body: IncomeStatementBody, draft: Boolean = false) {
         incomeStatementControllerCitizen.createIncomeStatement(
             dbInstance(),
             citizen,
             RealEvakaClock(),
             body,
+            draft,
         )
     }
 
     private fun createIncomeStatementForChild(
         body: IncomeStatementBody.ChildIncome,
         childId: ChildId,
+        draft: Boolean = false,
     ) {
         incomeStatementControllerCitizen.createChildIncomeStatement(
             dbInstance(),
@@ -900,16 +908,22 @@ WHERE id = ${bind(id)}
             RealEvakaClock(),
             childId,
             body,
+            draft,
         )
     }
 
-    private fun updateIncomeStatement(id: IncomeStatementId, body: IncomeStatementBody) {
+    private fun updateIncomeStatement(
+        id: IncomeStatementId,
+        body: IncomeStatementBody,
+        draft: Boolean = false,
+    ) {
         incomeStatementControllerCitizen.updateIncomeStatement(
             dbInstance(),
             citizen,
             RealEvakaClock(),
             id,
             body,
+            draft,
         )
     }
 

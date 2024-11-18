@@ -41,6 +41,7 @@ import { FeeAlterationWithEffect } from 'lib-common/generated/api-types/invoicin
 import { FeeDecisionThresholds } from 'lib-common/generated/api-types/invoicing'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
+import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeValue } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { JsonOf } from 'lib-common/json'
@@ -381,14 +382,6 @@ export interface DevClubTerm {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.DevCreateIncomeStatements
-*/
-export interface DevCreateIncomeStatements {
-  data: IncomeStatementBody[]
-  personId: UUID
-}
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevDailyServiceTimeNotification
 */
 export interface DevDailyServiceTimeNotification {
@@ -625,6 +618,18 @@ export interface DevIncome {
   validFrom: LocalDate
   validTo: LocalDate | null
   worksAtEcha: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevIncomeStatement
+*/
+export interface DevIncomeStatement {
+  data: IncomeStatementBody
+  handlerId: UUID | null
+  id: UUID
+  personId: UUID
+  sentAt: HelsinkiDateTime | null
+  status: IncomeStatementStatus
 }
 
 /**
@@ -1231,14 +1236,6 @@ export function deserializeJsonDevClubTerm(json: JsonOf<DevClubTerm>): DevClubTe
 }
 
 
-export function deserializeJsonDevCreateIncomeStatements(json: JsonOf<DevCreateIncomeStatements>): DevCreateIncomeStatements {
-  return {
-    ...json,
-    data: json.data.map(e => deserializeJsonIncomeStatementBody(e))
-  }
-}
-
-
 export function deserializeJsonDevDailyServiceTimes(json: JsonOf<DevDailyServiceTimes>): DevDailyServiceTimes {
   return {
     ...json,
@@ -1362,6 +1359,15 @@ export function deserializeJsonDevIncome(json: JsonOf<DevIncome>): DevIncome {
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonDevIncomeStatement(json: JsonOf<DevIncomeStatement>): DevIncomeStatement {
+  return {
+    ...json,
+    data: deserializeJsonIncomeStatementBody(json.data),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
   }
 }
 

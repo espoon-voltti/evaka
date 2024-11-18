@@ -77,7 +77,7 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
           data-qa="is-handled-checkbox"
           label={i18n.personProfile.incomeStatement.handled}
           hiddenLabel
-          checked={incomeStatement.handled}
+          checked={incomeStatement.status === 'HANDLED'}
           disabled
         />
         {!!incomeStatement.handlerNote && (

@@ -211,6 +211,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestBody body: IncomeStatementBody,
+        @RequestParam draft: Boolean?,
     ) {
         val id =
             db.connect { dbc ->
@@ -223,7 +224,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user.id,
                     )
                 }
-                createIncomeStatement(dbc, user.id, user, body)
+                createIncomeStatement(dbc, clock.now(), user.id, user, body, draft ?: false)
             }
         Audit.IncomeStatementCreate.log(targetId = AuditId(user.id), objectId = AuditId(id))
     }
@@ -235,6 +236,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: IncomeStatementBody,
+        @RequestParam draft: Boolean?,
     ) {
         val id =
             db.connect { dbc ->
@@ -247,7 +249,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         childId,
                     )
                 }
-                createIncomeStatement(dbc, childId, user, body)
+                createIncomeStatement(dbc, clock.now(), childId, user, body, draft ?: false)
             }
         Audit.IncomeStatementCreateForChild.log(targetId = AuditId(user.id), objectId = AuditId(id))
     }
@@ -259,6 +261,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody,
+        @RequestParam draft: Boolean?,
     ) {
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         db.connect { dbc ->
@@ -273,6 +276,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
                     tx.updateIncomeStatement(incomeStatementId, body).also { success ->
                         if (success) {
+                            if (draft != true) {
+                                tx.setSentIfDraft(incomeStatementId, clock.now())
+                            }
                             val parent = AttachmentParent.IncomeStatement(incomeStatementId)
                             tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
                             when (body) {
@@ -300,6 +306,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody,
+        @RequestParam draft: Boolean?,
     ) {
         if (!validateIncomeStatementBody(body))
             throw BadRequest("Invalid child income statement body")
@@ -320,6 +327,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     )
                     tx.updateIncomeStatement(incomeStatementId, body).also { success ->
                         if (success) {
+                            if (draft != true) {
+                                tx.setSentIfDraft(incomeStatementId, clock.now())
+                            }
                             val parent = AttachmentParent.IncomeStatement(incomeStatementId)
                             tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
                             when (body) {
@@ -421,7 +431,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         val incomeStatement =
             tx.readIncomeStatementForPerson(personId, id, includeEmployeeContent = false)
                 ?: throw NotFound("Income statement not found")
-        if (incomeStatement.handled) {
+        if (incomeStatement.status == IncomeStatementStatus.HANDLED) {
             throw Forbidden("Handled income statement cannot be modified or removed")
         }
     }

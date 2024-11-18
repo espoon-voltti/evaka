@@ -16,7 +16,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  createIncomeStatements,
   resetServiceState
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -50,20 +49,16 @@ describe('Child profile income statements', () => {
     )
     await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
-    await createIncomeStatements({
-      body: {
-        personId: testChild.id,
-        data: [
-          {
-            type: 'CHILD_INCOME',
-            otherInfo: 'Test info',
-            startDate: LocalDate.todayInSystemTz(),
-            endDate: LocalDate.todayInSystemTz(),
-            attachmentIds: []
-          }
-        ]
+    await Fixture.incomeStatement({
+      personId: testChild.id,
+      data: {
+        type: 'CHILD_INCOME',
+        otherInfo: 'Test info',
+        startDate: LocalDate.todayInSystemTz(),
+        endDate: LocalDate.todayInSystemTz(),
+        attachmentIds: []
       }
-    })
+    }).save()
 
     const profilePage = new ChildInformationPage(page)
     await profilePage.navigateToChild(testChild.id)

@@ -2074,7 +2074,7 @@ export const fi = {
       title: 'Käsittelyä odottavat tuloselvitykset',
       customer: 'Asiakas',
       area: 'Alue',
-      created: 'Luotu',
+      sentAt: 'Lähetetty',
       startDate: 'Voimassa',
       incomeEndDate: 'Tulotieto päättyy',
       type: 'Tyyppi',

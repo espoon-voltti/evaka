@@ -83,7 +83,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
             <Td>{item.created.toLocalDate().format()}</Td>
             <Td>
               <Buttons>
-                {item.handled ? (
+                {item.status === 'HANDLED' ? (
                   <Dimmed>{t.income.table.handled}</Dimmed>
                 ) : (
                   <>

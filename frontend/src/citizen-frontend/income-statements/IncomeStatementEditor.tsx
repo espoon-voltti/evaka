@@ -102,7 +102,8 @@ export default React.memo(function IncomeStatementEditor() {
         if (id) {
           return updateIncomeStatement({
             incomeStatementId: id,
-            body: validatedData
+            body: validatedData,
+            draft: false // TODO
           })
         } else {
           return createIncomeStatement({ body: validatedData })

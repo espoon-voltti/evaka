@@ -116,7 +116,8 @@ export default React.memo(function ChildIncomeStatementEditor() {
           return updateChildIncomeStatement({
             childId,
             incomeStatementId: id,
-            body: validatedData
+            body: validatedData,
+            draft: false // TODO
           })
         } else {
           return createChildIncomeStatement({ childId, body: validatedData })

@@ -83,6 +83,7 @@ import {
   createHolidayQuestionnaire,
   createIncome,
   createIncomeNotification,
+  createIncomeStatement,
   createInvoices,
   createOtherAssistanceMeasures,
   createParentships,
@@ -128,6 +129,7 @@ import {
   DevEmployeePin,
   DevFridgeChild,
   DevIncome,
+  DevIncomeStatement,
   DevInvoice,
   DevInvoiceRow,
   DevParentship,
@@ -808,6 +810,23 @@ export class Fixture {
       modifiedAt: HelsinkiDateTime.now(),
       isEntrepreneur: false,
       worksAtEcha: false,
+      ...initial
+    })
+  }
+
+  static incomeStatement(
+    initial: SemiPartial<DevIncomeStatement, 'personId'>
+  ): IncomeStatementBuilder {
+    return new IncomeStatementBuilder({
+      id: uuidv4(),
+      data: {
+        type: 'HIGHEST_FEE',
+        startDate: LocalDate.todayInSystemTz(),
+        endDate: null
+      },
+      status: 'SENT',
+      sentAt: HelsinkiDateTime.now(),
+      handlerId: null,
       ...initial
     })
   }
@@ -1617,6 +1636,13 @@ export class ChildAttendanceBuilder extends FixtureBuilder<DevChildAttendance> {
 export class IncomeBuilder extends FixtureBuilder<DevIncome> {
   async save() {
     await createIncome({ body: this.data })
+    return this.data
+  }
+}
+
+export class IncomeStatementBuilder extends FixtureBuilder<DevIncomeStatement> {
+  async save() {
+    await createIncomeStatement({ body: this.data })
     return this.data
   }
 }

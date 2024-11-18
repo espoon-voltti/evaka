@@ -135,7 +135,7 @@ export default React.memo(function IncomeStatementPage() {
                 onSave={onUpdateHandled}
                 onSuccess={() => navigateToPersonProfile(incomeStatement)}
                 initialValues={{
-                  handled: incomeStatement.handled,
+                  handled: incomeStatement.status === 'HANDLED',
                   handlerNote: incomeStatement.handlerNote
                 }}
               />

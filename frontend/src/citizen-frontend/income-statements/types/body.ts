@@ -9,7 +9,13 @@ import { stringToInt } from 'lib-common/utils/number'
 
 import * as Form from './form'
 
-type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handled' | 'handlerNote'
+type ReadOnlyFields =
+  | 'id'
+  | 'created'
+  | 'updated'
+  | 'sent_at'
+  | 'status'
+  | 'handlerNote'
 
 export type HighestFeeBody = Omit<
   ApiTypes.IncomeStatementBody.HighestFee,

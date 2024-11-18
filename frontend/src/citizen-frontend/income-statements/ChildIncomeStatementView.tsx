@@ -55,7 +55,7 @@ export default React.memo(function ChildIncomeStatementView() {
         <ContentArea opaque>
           <FixedSpaceRow spacing="L">
             <H1>{t.income.view.title}</H1>
-            {!incomeStatement.handled && (
+            {incomeStatement.status !== 'HANDLED' && (
               <EditButtonContainer>
                 <ResponsiveInlineButton
                   text={t.common.edit}

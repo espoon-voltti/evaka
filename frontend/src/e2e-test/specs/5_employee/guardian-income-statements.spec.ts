@@ -17,7 +17,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  createIncomeStatements,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
@@ -68,20 +67,16 @@ describe('Guardian income statements', () => {
       ]
     })
 
-    await createIncomeStatements({
-      body: {
-        personId: child.id,
-        data: [
-          {
-            type: 'CHILD_INCOME',
-            otherInfo: 'Test other info',
-            startDate: mockedNow.toLocalDate(),
-            endDate: mockedNow.toLocalDate(),
-            attachmentIds: []
-          }
-        ]
+    await Fixture.incomeStatement({
+      personId: child.id,
+      data: {
+        type: 'CHILD_INCOME',
+        otherInfo: 'Test other info',
+        startDate: mockedNow.toLocalDate(),
+        endDate: mockedNow.toLocalDate(),
+        attachmentIds: []
       }
-    })
+    }).save()
 
     await page.goto(config.employeeUrl + '/profile/' + personId)
     const guardianPage = new GuardianInformationPage(page)

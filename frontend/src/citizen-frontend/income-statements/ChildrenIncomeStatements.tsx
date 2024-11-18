@@ -96,7 +96,7 @@ const ChildIncomeStatementsTable = React.memo(
                       <Td>{item.created.toLocalDate().format()}</Td>
                       <Td>
                         <Buttons>
-                          {item.handled ? (
+                          {item.status === 'HANDLED' ? (
                             <Dimmed>{t.income.table.handled}</Dimmed>
                           ) : (
                             <>
