@@ -26,6 +26,7 @@ enum class Report {
     ENDED_PLACEMENTS,
     EXCEEDED_SERVICE_NEEDS,
     FAMILY_CONFLICT,
+    FAMILY_CONTACT,
     FAMILY_DAYCARE_MEAL_REPORT,
     HOLIDAY_PERIOD_ATTENDANCE,
     INVOICE,
@@ -132,6 +133,9 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_FAMILY_CONFLICT_REPORT
                         )
+                    },
+                    Report.FAMILY_CONTACT.takeIf {
+                        permittedActionsForSomeUnit.contains(Action.Unit.READ_FAMILY_CONTACT_REPORT)
                     },
                     Report.FAMILY_DAYCARE_MEAL_REPORT.takeIf {
                         permittedActionsForSomeUnit.contains(

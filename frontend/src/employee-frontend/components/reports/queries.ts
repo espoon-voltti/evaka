@@ -23,6 +23,7 @@ import {
   getNonSsnChildrenReportRows,
   getOccupancyGroupReport,
   getOccupancyUnitReport,
+  getPermittedReports,
   getPlacementGuaranteeReport,
   getPreschoolAbsenceReport,
   getPreschoolApplicationReport,
@@ -43,6 +44,7 @@ import { createQueryKeys } from '../../query'
 import { OccupancyReportFilters } from './Occupancies'
 
 const queryKeys = createQueryKeys('reports', {
+  permittedReports: () => ['permittedReports'],
   attendanceReservationByChild: (
     filters: Arg0<typeof getAttendanceReservationReportByChild>
   ) => ['attendanceReservationByUnitAndChild', filters],
@@ -98,6 +100,11 @@ const queryKeys = createQueryKeys('reports', {
   startingPlacementsReport: (
     filters: Arg0<typeof getStartingPlacementsReport>
   ) => ['startingPlacementsReport', filters]
+})
+
+export const permittedReportsQuery = query({
+  api: getPermittedReports,
+  queryKey: queryKeys.permittedReports
 })
 
 export const attendanceReservationReportByChildQuery = query({

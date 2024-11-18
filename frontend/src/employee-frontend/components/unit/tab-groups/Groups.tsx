@@ -16,6 +16,7 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -40,6 +41,7 @@ import {
 } from '../../../types/unit'
 import { UnitFilters } from '../../../utils/UnitFilters'
 import { requireRole } from '../../../utils/roles'
+import { permittedReportsQuery } from '../../reports/queries'
 
 function renderGroups(
   unit: Daycare,
@@ -156,11 +158,10 @@ export default React.memo(function Groups({
     }
   }
 
-  const canSeeFamilyContactsReport = requireRole(
-    roles,
-    'ADMIN',
-    'UNIT_SUPERVISOR'
-  )
+  const permittedReportsResult = useQueryResult(permittedReportsQuery())
+  const canSeeFamilyContactsReport = permittedReportsResult
+    .map((reports) => reports.includes('FAMILY_CONTACT'))
+    .getOrElse(false)
 
   return (
     <>
