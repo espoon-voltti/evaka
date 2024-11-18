@@ -2705,7 +2705,8 @@ export const fi = {
       createdAt: 'Luonnos luotu',
       nb: 'Huom',
       totalPrice: 'Summa',
-      status: 'Tila'
+      status: 'Tila',
+      replacementInvoice: 'Oikaisulasku'
     },
     buttons: {
       checked: (count: number) =>
