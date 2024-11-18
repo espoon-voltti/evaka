@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.pis.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -119,9 +118,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
     }
 
-    data class UpdatePasswordRequest(
-        @ForceCodeGenType(String::class) val password: Sensitive<String>
-    ) {
+    data class UpdatePasswordRequest(val password: Sensitive<String>) {
         init {
             if (
                 password.value.isEmpty() || password.value.length < 8 || password.value.length > 128

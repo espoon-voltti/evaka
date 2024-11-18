@@ -6,6 +6,7 @@ package evaka.codegen.api
 
 import evaka.codegen.api.TsProject.E2ETest
 import evaka.codegen.api.TsProject.LibCommon
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.MessageReceiver
@@ -212,6 +213,7 @@ val defaultMetadata =
         Map::class to TsRecord,
         Pair::class to TsTuple(size = 2),
         Triple::class to TsTuple(size = 3),
+        Sensitive::class to GenericWrapper,
         Void::class to Excluded,
         ExternalId::class to TsPlain("string"),
         YearMonth::class to

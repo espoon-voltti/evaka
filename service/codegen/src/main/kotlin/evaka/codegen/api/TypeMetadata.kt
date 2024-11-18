@@ -66,7 +66,8 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
             when (representation) {
                 is TsArray,
                 is TsRecord,
-                is TsTuple -> typeArguments.forEach { it.type?.discover() }
+                is TsTuple,
+                is GenericWrapper -> typeArguments.forEach { it.type?.discover() }
                 is TsPlainObject ->
                     representation.applyTypeArguments(typeArguments).values.forEach {
                         it.discover()

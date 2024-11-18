@@ -79,6 +79,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is TsPlain -> TsCode(tsRepr.type)
             is TsStringEnum -> TsCode(typeRef(tsRepr))
             is TsExternalTypeRef -> tsRepr.keyRepresentation
+            is GenericWrapper -> keyType(tsRepr.getTypeArgs(tsType.typeArguments))
             is Excluded,
             is TsArray,
             is TsRecord,
@@ -97,6 +98,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is TsArray -> arrayType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
             is TsRecord -> recordType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
             is TsTuple -> tupleType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
+            is GenericWrapper -> tsType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
             is TsPlainObject -> {
                 val typeArguments =
                     tsRepr.getTypeArgs(tsType.typeArguments).map { typeArg ->
@@ -211,6 +213,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                         tsRepr.getTypeArgs(type.arguments).second?.let { check(it) } ?: false
                     is TsTuple ->
                         tsRepr.getTypeArgs(type.arguments).filterNotNull().any { check(it) }
+                    is GenericWrapper -> check(tsRepr.getTypeArgs(type.arguments))
                     is TsPlainObject ->
                         tsRepr.applyTypeArguments(type.arguments).values.any { check(it) }
                     is TsObjectLiteral -> tsRepr.properties.values.any { check(it.type) }
@@ -363,6 +366,8 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                         postfix = "]",
                     )
                 }
+                is GenericWrapper ->
+                    jsonDeserializerExpression(tsRepr.getTypeArgs(type.arguments), jsonExpression)
                 is TsObjectLiteral,
                 is TsSealedVariant -> TODO()
                 is TsPlainObject -> {
@@ -404,6 +409,8 @@ ${join(propCodes, ",\n").prependIndent("    ")}
             is TsArray,
             is TsStringEnum -> valueExpression
             is TsExternalTypeRef -> tsRepr.serializePathVariable?.invoke(valueExpression)
+            is GenericWrapper ->
+                serializePathVariable(tsRepr.getTypeArgs(type.arguments), valueExpression)
             is TsPlainObject,
             is TsSealedClass,
             is TsObjectLiteral,
@@ -439,6 +446,8 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                 tsRepr.serializeRequestParam?.invoke(valueExpression, type.isMarkedNullable)
                     ?: if (type.isMarkedNullable) valueExpression + "?.toString()"
                     else valueExpression + ".toString()"
+            is GenericWrapper ->
+                serializeRequestParam(tsRepr.getTypeArgs(type.arguments), valueExpression)
             is TsArray,
             is TsPlainObject,
             is TsSealedClass,
