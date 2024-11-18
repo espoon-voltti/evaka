@@ -7,14 +7,19 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.invoicing.controller.InvoiceController
+import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.data.searchInvoices
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
+import fi.espoo.evaka.invoicing.domain.InvoiceReplacementReason
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevFeeDecisionChild
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -24,6 +29,7 @@ import fi.espoo.evaka.shared.dev.feeThresholds2020
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
@@ -35,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var invoiceService: InvoiceService
+    @Autowired private lateinit var invoiceController: InvoiceController
 
     @Autowired private lateinit var draftInvoiceGenerator: DraftInvoiceGenerator
     @Autowired private lateinit var invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser
@@ -206,6 +213,72 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(replacements.size, 6)
         assertEquals(replacements[0].periodStart, replacementInvoicesStart.atDay(1))
         assertEquals(replacements[5].periodEnd, endMonth.atEndOfMonth())
+    }
+
+    @Test
+    fun `replacement invoice can be marked as sent`() {
+        val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+
+        insertPlacementAndFeeDecision()
+        val original = generateTestInvoice()
+
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = previousMonth.atDay(1),
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    absenceType = AbsenceType.FORCE_MAJEURE,
+                )
+            )
+        }
+        val replacement = generateReplacementDrafts().single()
+
+        invoiceController.markReplacementDraftSent(
+            dbInstance(),
+            employee.user,
+            MockEvakaClock(now),
+            replacement.id,
+            InvoiceController.MarkReplacementDraftSentRequest(
+                reason = InvoiceReplacementReason.ABSENCE,
+                notes = "foo bar baz",
+            ),
+        )
+
+        val originalAfter = db.read { tx -> tx.getInvoice(original.id) }!!
+        val replacementAfter = db.read { tx -> tx.getInvoice(replacement.id) }!!
+
+        assertEquals(originalAfter.status, InvoiceStatus.REPLACED)
+
+        assertEquals(replacementAfter.status, InvoiceStatus.SENT)
+        assertEquals(replacementAfter.sentBy?.id, employee.evakaUserId)
+        assertEquals(replacementAfter.sentAt, now)
+        assertEquals(replacementAfter.replacementReason, InvoiceReplacementReason.ABSENCE)
+        assertEquals(replacementAfter.replacementNotes, "foo bar baz")
+    }
+
+    @Test
+    fun `replacement invoice can be marked as sent even if there is no invoice to be replaced`() {
+        val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+        db.transaction { tx -> tx.insert(employee) }
+
+        insertPlacementAndFeeDecision()
+        val replacement = generateReplacementDrafts().single()
+
+        invoiceController.markReplacementDraftSent(
+            dbInstance(),
+            employee.user,
+            MockEvakaClock(now),
+            replacement.id,
+            InvoiceController.MarkReplacementDraftSentRequest(
+                reason = InvoiceReplacementReason.ABSENCE,
+                notes = "foo bar baz",
+            ),
+        )
+
+        val replacementAfter = db.read { tx -> tx.getInvoice(replacement.id) }!!
+        assertEquals(replacementAfter.status, InvoiceStatus.SENT)
     }
 
     private fun generateReplacementDrafts(today: LocalDate = this.today): List<InvoiceDetailed> {

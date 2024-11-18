@@ -571,10 +571,12 @@ export interface InvoiceDetailed {
   periodStart: LocalDate
   relatedFeeDecisions: RelatedFeeDecision[]
   replacedInvoiceId: UUID | null
+  replacementNotes: string | null
+  replacementReason: InvoiceReplacementReason | null
   revisionNumber: number
   rows: InvoiceRowDetailed[]
   sentAt: HelsinkiDateTime | null
-  sentBy: UUID | null
+  sentBy: EvakaUser | null
   status: InvoiceStatus
   totalPrice: number
 }
@@ -605,6 +607,20 @@ export interface InvoicePayload {
   invoiceDate: LocalDate | null
   to: LocalDate
 }
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.InvoiceReplacementReason
+*/
+export const invoiceReplacementReasons = [
+  'SERVICE_NEED',
+  'ABSENCE',
+  'INCOME',
+  'FAMILY_SIZE',
+  'RELIEF_RETROACTIVE',
+  'OTHER'
+] as const
+
+export type InvoiceReplacementReason = typeof invoiceReplacementReasons[number]
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
@@ -683,6 +699,14 @@ export interface InvoiceSummaryResponse {
 export interface InvoiceWithCorrection {
   id: UUID
   status: InvoiceStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.MarkReplacementDraftSentRequest
+*/
+export interface MarkReplacementDraftSentRequest {
+  notes: string
+  reason: InvoiceReplacementReason
 }
 
 /**

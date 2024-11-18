@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DevPlacement } from 'e2e-test/generated/api-types'
+import { DevEmployee, DevPlacement } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -43,6 +43,8 @@ const codebtor = Fixture.person({
   ssn: '010177-1234'
 }).data
 
+let financeAdmin: DevEmployee
+
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea(testCareArea).save()
@@ -79,7 +81,7 @@ beforeEach(async () => {
 async function openInvoicesPage(): Promise<InvoicesPage> {
   page = await Page.open({ acceptDownloads: true, mockedTime: now })
 
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
+  financeAdmin = await Fixture.employee().financeAdmin().save()
   await employeeLogin(page, financeAdmin)
 
   await page.goto(config.employeeUrl)
@@ -338,6 +340,34 @@ describe('Invoices', () => {
       await invoicePage.previousTotalPrice.assertTextEquals('289')
 
       await invoicesPage.navigateBackToInvoices()
+    })
+
+    test('Replacement invoice can be marked as sent', async () => {
+      // Add an absence => replacement invoice is generated
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today.subMonths(1).withDate(1),
+        absenceType: 'FORCE_MAJEURE',
+        absenceCategory: 'BILLABLE'
+      }).save()
+      await generateReplacementDraftInvoices()
+
+      await invoicesPage.filterByStatus('REPLACEMENT_DRAFT')
+
+      const invoicePage = await invoicesPage.openFirstInvoice()
+      const form = invoicePage.replacementDraftForm
+
+      await form.selectReason('ABSENCE')
+      await form.notes.fill('Unohtunut päiväkirjamerkintä')
+      await form.markSentButton.click()
+
+      const view = invoicePage.replacementInfo
+      await view.reason.assertTextEquals('Päiväkirjamerkintä')
+      await view.notes.assertTextEquals('Unohtunut päiväkirjamerkintä')
+      await view.sentAt.assertTextEquals(now.format())
+      await view.sentBy.assertTextEquals(
+        `${financeAdmin.lastName} ${financeAdmin.firstName}`
+      )
     })
   })
 })

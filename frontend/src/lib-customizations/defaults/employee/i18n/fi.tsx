@@ -2777,6 +2777,21 @@ export const fi = {
           <>Tälle laskulle on korvaava oikaisuluonnos: {link}</>
         )
       },
+      replacement: {
+        title: 'Laskun oikaisuun liittyvät tiedot',
+        info: 'Voit lisätä tänne oikaisuun liittyvät tiedot.',
+        reasons: {
+          SERVICE_NEED: 'Väärä palveluntarve',
+          ABSENCE: 'Päiväkirjamerkintä',
+          INCOME: 'Puuttuvat/virheelliset tulotiedot',
+          FAMILY_SIZE: 'Virheellinen perhekoko',
+          RELIEF_RETROACTIVE: 'Maksuvapautus, takautuva',
+          OTHER: 'Muu'
+        },
+        sendInfo:
+          'Kun merkitset tämän laskun siirretyksi, korvattava lasku merkitään oikaistuksi!',
+        send: 'Merkitse siirretyksi'
+      },
       rows: {
         title: 'Laskurivit',
         product: 'Tuote',

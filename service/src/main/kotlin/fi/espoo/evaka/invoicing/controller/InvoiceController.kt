@@ -11,7 +11,9 @@ import fi.espoo.evaka.invoicing.data.getDetailedInvoice
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyInvoices
 import fi.espoo.evaka.invoicing.data.getReplacingInvoiceFor
 import fi.espoo.evaka.invoicing.data.paginatedSearch
+import fi.espoo.evaka.invoicing.data.setReplacementDraftSent
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
+import fi.espoo.evaka.invoicing.domain.InvoiceReplacementReason
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.service.InvoiceCodes
@@ -23,6 +25,7 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -304,6 +307,45 @@ class InvoiceController(
         val replacedByInvoice: InvoiceDetailed?,
         val permittedActions: Set<Action.Invoice>,
     )
+
+    data class MarkReplacementDraftSentRequest(
+        val reason: InvoiceReplacementReason,
+        val notes: String,
+    )
+
+    @PostMapping("/{invoiceId}/mark-replacement-draft-sent")
+    fun markReplacementDraftSent(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable invoiceId: InvoiceId,
+        @RequestBody body: MarkReplacementDraftSentRequest,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Invoice.MARK_SENT,
+                    invoiceId,
+                )
+                val invoice =
+                    tx.getDetailedInvoice(invoiceId) ?: throw NotFound("Invoice not found")
+                if (invoice.status != InvoiceStatus.REPLACEMENT_DRAFT) {
+                    throw BadRequest("Invoice is not a replacement draft")
+                }
+                tx.setReplacementDraftSent(
+                    invoiceId,
+                    clock.now(),
+                    user.evakaUserId,
+                    body.reason,
+                    body.notes,
+                )
+            }
+        }
+        Audit.InvoicesMarkReplacementDraftSent.log(targetId = AuditId(invoiceId))
+    }
 
     @GetMapping("/head-of-family/{id}")
     fun getHeadOfFamilyInvoices(

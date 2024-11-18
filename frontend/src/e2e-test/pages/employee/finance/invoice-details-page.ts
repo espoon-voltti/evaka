@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, Element } from '../../../utils/page'
+import { InvoiceReplacementReason } from 'lib-common/generated/api-types/invoicing'
+
+import { Page, Element, TextInput, Select } from '../../../utils/page'
 
 export class InvoiceDetailsPage {
   headOfFamilySection: InvoiceHeadOfFamilySection
@@ -10,6 +12,11 @@ export class InvoiceDetailsPage {
 
   totalPrice: Element
   previousTotalPrice: Element
+
+  replacementDraftForm: InvoiceReplacementDraftSection
+
+  // view
+  replacementInfo: InvoiceReplacementInfoSection
 
   constructor(private page: Page) {
     this.headOfFamilySection = new InvoiceHeadOfFamilySection(
@@ -22,6 +29,13 @@ export class InvoiceDetailsPage {
     this.previousTotalPrice = this.page
       .findByDataQa('total-sum')
       .findByDataQa('previous-price')
+
+    this.replacementDraftForm = new InvoiceReplacementDraftSection(
+      page.findByDataQa('replacement-draft-form')
+    )
+    this.replacementInfo = new InvoiceReplacementInfoSection(
+      page.findByDataQa('replacement-info')
+    )
   }
 
   nthChild(index: number): InvoiceChildSection {
@@ -79,4 +93,21 @@ export class InvoiceRow extends Element {
   amount = this.findByDataQa('amount')
   unitPrice = this.findByDataQa('unit-price')
   totalPrice = this.findByDataQa('total-price')
+}
+
+export class InvoiceReplacementDraftSection extends Element {
+  reason = new Select(this.findByDataQa('replacement-reason'))
+  notes = new TextInput(this.findByDataQa('replacement-notes'))
+  markSentButton = this.findByDataQa('mark-sent')
+
+  async selectReason(value: InvoiceReplacementReason) {
+    await this.reason.selectOption(value)
+  }
+}
+
+export class InvoiceReplacementInfoSection extends Element {
+  reason = this.findByDataQa('replacement-reason')
+  notes = this.findByDataQa('replacement-notes')
+  sentAt = this.findByDataQa('sent-at')
+  sentBy = this.findByDataQa('sent-by')
 }
