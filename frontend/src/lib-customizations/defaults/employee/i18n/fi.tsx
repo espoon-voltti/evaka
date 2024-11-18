@@ -4938,7 +4938,10 @@ export const fi = {
   placementTool: {
     title: 'Optimointityökalu',
     description:
-      'Voit luoda optimointityökalulla tuotetuista sijoitusehdotuksista hakemukset eVakaan. Hakemukset luodaan suoraan odottamaan päätöstä.'
+      'Voit luoda optimointityökalulla tuotetuista sijoitusehdotuksista hakemukset eVakaan. Hakemukset luodaan suoraan odottamaan päätöstä.',
+    preschoolTermNotification: 'Hakemukset luodaan seuravaan esiopetuskauteen:',
+    preschoolTermWarning:
+      'eVakasta puuttuu seuraavan esiopetuskauden määrittely. Esiopetuskausi tarvitaan hakemusten luontia varten.'
   },
   components
 }

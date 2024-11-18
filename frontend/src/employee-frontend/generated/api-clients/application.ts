@@ -20,6 +20,7 @@ import { PaperApplicationCreateRequest } from 'lib-common/generated/api-types/ap
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-types/application'
+import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { RejectDecisionRequest } from 'lib-common/generated/api-types/application'
 import { SearchApplicationRequest } from 'lib-common/generated/api-types/application'
 import { SimpleBatchRequest } from 'lib-common/generated/api-types/application'
@@ -33,6 +34,7 @@ import { deserializeJsonDecisionDraftGroup } from 'lib-common/generated/api-type
 import { deserializeJsonPagedApplicationSummaries } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPlacementPlanDraft } from 'lib-common/generated/api-types/placement'
+import { deserializeJsonPreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitApplications } from 'lib-common/generated/api-types/application'
 import { uri } from 'lib-common/uri'
 
@@ -339,6 +341,18 @@ export async function updateDecisionDrafts(
     data: request.body satisfies JsonCompatible<DecisionDraftUpdate[]>
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.PlacementToolController.getNextPreschoolTerm
+*/
+export async function getNextPreschoolTerm(): Promise<PreschoolTerm[]> {
+  const { data: json } = await client.request<JsonOf<PreschoolTerm[]>>({
+    url: uri`/employee/placement-tool/next-term`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonPreschoolTerm(e))
 }
 
 

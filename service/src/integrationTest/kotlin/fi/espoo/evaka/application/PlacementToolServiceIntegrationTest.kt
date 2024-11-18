@@ -55,6 +55,7 @@ import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.whenever
@@ -528,5 +529,12 @@ ${child.ssn!!};${unit.id}
         assertEquals(summary.preferredUnitId, unit.id)
         val child = db.read { it.getPersonBySSN(child.ssn!!) }
         assertEquals(summary.childId, child!!.id)
+    }
+
+    @Test
+    fun `next preschool term is received correctly`() {
+        val nextTerms = controller.getNextPreschoolTerm(dbInstance(), admin, clock)
+        assertTrue(nextTerms.isNotEmpty())
+        assertEquals(preschoolTerm, nextTerms[0])
     }
 }
