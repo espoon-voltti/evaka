@@ -13,7 +13,7 @@ dependencies {
             "org.apache.tomcat:tomcat-catalina:10.1.26"
         ) // ch.qos.logback.access:tomcat breaks on runtime without this
         api("com.auth0:java-jwt:4.4.0")
-        api("com.github.kagkarlsson:db-scheduler:14.1.0")
+        api("com.github.kagkarlsson:db-scheduler:15.0.0")
         api(libs.fuel)
         api(libs.fuel.jackson)
         api("com.google.guava:guava:33.3.0-jre")
