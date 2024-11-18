@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
 import { z } from 'zod'
 
-import { createSamlStrategy } from '../shared/saml/index.js'
+import { authenticateProfile } from '../shared/saml/index.js'
 import { employeeLogin } from '../shared/service-client.js'
-import { Sessions } from '../shared/session.js'
 
 const Profile = z.object({
   id: z.string(),
@@ -16,11 +14,9 @@ const Profile = z.object({
   lastName: z.string()
 })
 
-export function createKeycloakEmployeeSamlStrategy(
-  sessions: Sessions,
-  config: SamlConfig
-): SamlStrategy {
-  return createSamlStrategy(sessions, config, Profile, async (profile) => {
+export const authenticateKeycloakEmployee = authenticateProfile(
+  Profile,
+  async (profile) => {
     const id = profile.id
     if (!id) throw Error('No user ID in evaka IDP SAML data')
     const person = await employeeLogin({
@@ -35,5 +31,5 @@ export function createKeycloakEmployeeSamlStrategy(
       globalRoles: person.globalRoles,
       allScopedRoles: person.allScopedRoles
     }
-  })
-}
+  }
+)

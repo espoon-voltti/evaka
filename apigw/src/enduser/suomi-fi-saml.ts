@@ -2,13 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SamlConfig, Strategy } from '@node-saml/passport-saml'
 import { z } from 'zod'
 
 import { logWarn } from '../shared/logging.js'
-import { createSamlStrategy } from '../shared/saml/index.js'
+import { authenticateProfile } from '../shared/saml/index.js'
 import { citizenLogin } from '../shared/service-client.js'
-import { Sessions } from '../shared/session.js'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -25,11 +23,9 @@ const Profile = z.object({
 
 const ssnRegex = /^[0-9]{6}[-+ABCDEFUVWXY][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/
 
-export function createSuomiFiStrategy(
-  sessions: Sessions,
-  config: SamlConfig
-): Strategy {
-  return createSamlStrategy(sessions, config, Profile, async (profile) => {
+export const authenticateSuomiFi = authenticateProfile(
+  Profile,
+  async (profile) => {
     const socialSecurityNumber = profile[SUOMI_FI_SSN_KEY]?.trim()
     if (!socialSecurityNumber) throw Error('No SSN in SAML data')
     if (!ssnRegex.test(socialSecurityNumber)) {
@@ -46,5 +42,5 @@ export function createSuomiFiStrategy(
       globalRoles: [],
       allScopedRoles: []
     }
-  })
-}
+  }
+)

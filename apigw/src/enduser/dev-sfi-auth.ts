@@ -15,7 +15,6 @@ export function createDevSfiRouter(sessions: Sessions): Router {
   return createDevAuthRouter({
     sessions,
     root: '/',
-    strategyName: 'dev-sfi',
     loginFormHandler: async (req, res) => {
       const defaultSsn = '070644-937X'
 

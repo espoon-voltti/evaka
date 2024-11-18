@@ -4,12 +4,9 @@
 
 import { Request } from 'express'
 import { XMLParser } from 'fast-xml-parser'
+import { z } from 'zod'
 
 import { logDebug, logError } from '../logging.js'
-
-export interface PassportSamlError extends Error {
-  statusXml?: string
-}
 
 export type PrimaryStatusCodeValue =
   | 'urn:oasis:names:tc:SAML:2.0:status:Success'
@@ -57,8 +54,15 @@ function parseErrorMessage(status: StatusObject): string {
   return status.Status.StatusMessage
 }
 
+export const samlErrorSchema = z.object({
+  message: z.string(),
+  statusXml: z.string()
+})
+
+export type SamlError = z.infer<typeof samlErrorSchema>
+
 export function parseDescriptionFromSamlError(
-  error: PassportSamlError,
+  error: SamlError,
   req: Request
 ): string | undefined {
   if (!error.statusXml) {

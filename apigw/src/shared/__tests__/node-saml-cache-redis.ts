@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { describe, beforeEach, expect, it, test } from '@jest/globals'
-import type { CacheProvider } from '@node-saml/passport-saml'
+import type { CacheProvider } from '@node-saml/node-saml'
 
-import redisCacheProvider from '../saml/passport-saml-cache-redis.js'
+import redisCacheProvider from '../saml/node-saml-cache-redis.js'
 import { MockRedisClient } from '../test/mock-redis-client.js'
 
 const ttlSeconds = 1
@@ -20,7 +20,7 @@ beforeEach(() => {
   })
 })
 
-describe('passport-saml-cache-redis', () => {
+describe('node-saml-cache-redis', () => {
   describe('constructor', () => {
     test('throws an error if ttlSeconds is not a positive integer', () => {
       expect((): unknown =>

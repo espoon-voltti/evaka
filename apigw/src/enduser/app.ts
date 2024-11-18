@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { SAML } from '@node-saml/node-saml'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import passport from 'passport'
@@ -15,14 +16,14 @@ import { createProxy } from '../shared/proxy-utils.js'
 import { RedisClient } from '../shared/redis-client.js'
 import createSamlRouter from '../shared/routes/saml.js'
 import { createSamlConfig } from '../shared/saml/index.js'
-import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
+import redisCacheProvider from '../shared/saml/node-saml-cache-redis.js'
 import { sessionSupport } from '../shared/session.js'
 
 import { createDevSfiRouter } from './dev-sfi-auth.js'
-import { createKeycloakCitizenSamlStrategy } from './keycloak-citizen-saml.js'
+import { authenticateKeycloakCitizen } from './keycloak-citizen-saml.js'
 import mapRoutes from './mapRoutes.js'
 import authStatus from './routes/auth-status.js'
-import { createSuomiFiStrategy } from './suomi-fi-saml.js'
+import { authenticateSuomiFi } from './suomi-fi-saml.js'
 
 export function enduserGwRouter(
   config: Config,
@@ -53,16 +54,18 @@ export function enduserGwRouter(
   if (config.sfi.type === 'mock') {
     router.use('/auth/saml', createDevSfiRouter(sessions))
   } else if (config.sfi.type === 'saml') {
-    const suomifiSamlConfig = createSamlConfig(
-      config.sfi.saml,
-      redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
-    )
     router.use(
       '/auth/saml',
       createSamlRouter({
         sessions,
         strategyName: 'suomifi',
-        strategy: createSuomiFiStrategy(sessions, suomifiSamlConfig),
+        saml: new SAML(
+          createSamlConfig(
+            config.sfi.saml,
+            redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
+          )
+        ),
+        authenticate: authenticateSuomiFi,
         defaultPageUrl: '/'
       })
     )
@@ -70,19 +73,18 @@ export function enduserGwRouter(
 
   if (!config.keycloakCitizen)
     throw new Error('Missing Keycloak SAML configuration (citizen)')
-  const keycloakCitizenConfig = createSamlConfig(
-    config.keycloakCitizen,
-    redisCacheProvider(redisClient, { keyPrefix: 'customer-saml-resp:' })
-  )
   router.use(
     '/auth/evaka-customer',
     createSamlRouter({
       sessions,
       strategyName: 'evaka-customer',
-      strategy: createKeycloakCitizenSamlStrategy(
-        sessions,
-        keycloakCitizenConfig
+      saml: new SAML(
+        createSamlConfig(
+          config.keycloakCitizen,
+          redisCacheProvider(redisClient, { keyPrefix: 'customer-saml-resp:' })
+        )
       ),
+      authenticate: authenticateKeycloakCitizen,
       defaultPageUrl: '/'
     })
   )

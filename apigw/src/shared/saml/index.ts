@@ -5,28 +5,19 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
-import {
-  CacheProvider,
-  Profile,
-  SamlConfig,
-  Strategy as SamlStrategy,
-  VerifyWithRequest
-} from '@node-saml/passport-saml'
+import { CacheProvider, Profile, SamlConfig } from '@node-saml/node-saml'
 import express from 'express'
-import _ from 'lodash'
 import { z } from 'zod'
 
-import { createLogoutToken, EvakaSessionUser } from '../auth/index.js'
+import { EvakaSessionUser } from '../auth/index.js'
 import certificates, { TrustedCertificates } from '../certificates.js'
 import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
 import { logError } from '../logging.js'
-import { fromCallback } from '../promise-utils.js'
-import { Sessions } from '../session.js'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
   cacheProvider?: CacheProvider
-): SamlConfig & { passReqToCallback: boolean } {
+): SamlConfig {
   const privateCert = readFileSync(config.privateCert, {
     encoding: 'utf8'
   })
@@ -57,8 +48,7 @@ export function createSamlConfig(
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     validateInResponseTo: config.validateInResponseTo,
-    passReqToCallback: true,
-    // When *both* wantXXXXSigned settings are false, passport-saml still
+    // When *both* wantXXXXSigned settings are false, node-saml still
     // requires at least the whole response *or* the assertion to be signed, so
     // these settings don't introduce a security problem
     wantAssertionsSigned: false,
@@ -66,82 +56,50 @@ export function createSamlConfig(
   }
 }
 
-// A subset of SAML Profile fields that are expected to be present in Profile
-// *and* req.user in valid SAML sessions
-const SamlProfileId = z.object({
-  nameID: z.string(),
-  sessionIndex: z.string().optional()
-})
+export type AuthenticateProfile = (
+  profile: Profile
+) => Promise<EvakaSessionUser>
 
-export function createSamlStrategy<T>(
-  sessions: Sessions,
-  config: SamlConfig,
-  profileSchema: z.ZodType<T>,
-  login: (profile: T) => Promise<EvakaSessionUser>
-): SamlStrategy {
-  const loginVerify: VerifyWithRequest = (req, profile, done) => {
-    if (!profile) return done(null, undefined)
-    const parseResult = profileSchema.safeParse(profile)
-    if (!parseResult.success) {
-      return done(
-        new Error(
-          `SAML ${profile.issuer} profile parsing failed: ${parseResult.error.message}`
-        )
+export function authenticateProfile<T>(
+  schema: z.ZodType<T>,
+  authenticate: (profile: T) => Promise<EvakaSessionUser>
+): AuthenticateProfile {
+  return async (profile) => {
+    const parseResult = schema.safeParse(profile)
+    if (parseResult.success) {
+      return await authenticate(parseResult.data)
+    } else {
+      throw new Error(
+        `SAML ${profile.issuer} profile parsing failed: ${parseResult.error.message}`
       )
     }
-    login(parseResult.data)
-      .then((user) => {
-        // Despite what the typings say, passport-saml assumes
-        // we give it back a valid Profile, including at least some of these
-        // SAML-specific fields
-        const samlUser: EvakaSessionUser & Profile = {
-          ...user,
-          issuer: profile.issuer,
-          nameID: profile.nameID,
-          nameIDFormat: profile.nameIDFormat,
-          nameQualifier: profile.nameQualifier,
-          spNameQualifier: profile.spNameQualifier,
-          sessionIndex: profile.sessionIndex
-        }
-        done(null, samlUser)
-      })
-      .catch(done)
   }
-  const logoutVerify: VerifyWithRequest = (req, profile, done) => {
-    ;(async () => {
-      if (!profile) return undefined
-      const profileId = SamlProfileId.safeParse(profile)
-      if (!profileId.success) return undefined
-      if (!req.user) {
-        // We're possibly doing SLO without a real session (e.g. browser has
-        // 3rd party cookies disabled). We need to retrieve the session data
-        // and recreate req.user for this request
-        const logoutToken = createLogoutToken(
-          profile.nameID,
-          profile.sessionIndex
-        )
-        const user = await sessions.logoutWithToken(logoutToken)
-        if (user) {
-          // Set req.user for *this request only*
-          await fromCallback((cb) =>
-            req.login(user, { session: false, keepSessionInfo: false }, cb)
-          )
-        }
-      }
-      const reqUser: Partial<Profile> = (req.user ?? {}) as Partial<Profile>
-      const reqId = SamlProfileId.safeParse(reqUser)
-      if (reqId.success && _.isEqual(reqId.data, profileId.data)) {
-        return reqUser
-      }
-    })()
-      .then((user) => done(null, user))
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      .catch((err) => done(err))
-  }
-  return new SamlStrategy(config, loginVerify, logoutVerify)
 }
 
-export function parseRelayState(req: express.Request): string | undefined {
+export const SamlProfileIdSchema = z.object({
+  nameID: z.string(),
+  nameIDFormat: z.string()
+})
+
+// A subset of SAML Profile fields that are expected to be present in Profile
+// *and* req.user in valid SAML sessions
+export const SamlProfileSchema = z.object({
+  issuer: z.string(),
+  nameID: z.string(),
+  nameIDFormat: z.string(),
+  sessionIndex: z.string().optional(),
+  nameQualifier: z.string().optional(),
+  spNameQualifier: z.string().optional()
+})
+
+// SAML RelayState is an arbitrary string that gets passed in a SAML transaction.
+// In our case, we specify it to be a redirect URL where the user should be
+// redirected to after the SAML transaction is complete. Since the RelayState
+// is not signed or encrypted, we must make sure the URL points to our application
+// and not to some 3rd party domain
+export function validateRelayStateUrl(
+  req: express.Request
+): string | undefined {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
   const relayState = req.body?.RelayState || req.query.RelayState
 

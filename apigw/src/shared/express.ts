@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import passportSaml from '@node-saml/passport-saml'
 import type express from 'express'
 import { BaseError } from 'make-error-cause'
+import { z } from 'zod'
 
 import { EvakaSessionUser } from './auth/index.js'
+import { SamlProfileSchema } from './saml/index.js'
 
 export interface LogoutToken {
   // milliseconds value of a Date. Not an actual Date because it will be JSONified
@@ -69,8 +70,9 @@ declare global {
     interface Request {
       traceId?: string
       spanId?: string
-      samlLogoutRequest: passportSaml.Profile
     }
-    interface User extends EvakaSessionUser {}
+    interface User
+      extends EvakaSessionUser,
+        Partial<z.infer<typeof SamlProfileSchema>> {}
   }
 }

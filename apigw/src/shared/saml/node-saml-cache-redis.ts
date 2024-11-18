@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { CacheProvider } from '@node-saml/passport-saml'
+import type { CacheProvider } from '@node-saml/node-saml'
 
 import { RedisClient } from '../redis-client.js'
 
@@ -13,21 +13,21 @@ export interface ProviderOptions {
   ttlSeconds?: number
   /**
    * Prefix for cache item keys in Redis.
-   * If creating multiple passport-saml strategy instances targeting the same
+   * If creating multiple saml instances targeting the same
    * Redis database, you should set a unique keyPrefix per strategy.
    */
   keyPrefix: string
 }
 
 /**
- * Custom passport-saml CacheProvider for Redis.
+ * Custom node-saml CacheProvider for Redis.
  *
  * This allows the use of validateInResponseTo in multi-instance environments
  * where the instances obviously cannot share access to the same
  * InMemoryCacheProvider. Instead, a shared Redis cache is used.
  *
- * This cache provider also supports using it with multiple passport-saml
- * Strategies simultaneously by allowing keyPrefix configuration.
+ * This cache provider also supports using it with multiple saml instances
+ * simultaneously by allowing keyPrefix configuration.
  */
 export default function redisCacheProvider(
   client: RedisClient,
