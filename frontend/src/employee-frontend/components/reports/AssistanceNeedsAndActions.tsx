@@ -46,8 +46,7 @@ import { faChevronDown, faChevronUp } from 'lib-icons'
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
   getAssistanceNeedsAndActionsReport,
-  getAssistanceNeedsAndActionsReportByChild,
-  getPermittedReports
+  getAssistanceNeedsAndActionsReportByChild
 } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { reducePropertySum } from '../../utils'
@@ -55,8 +54,8 @@ import { renderResult } from '../async-rendering'
 import { areaQuery, unitsQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
+import { permittedReportsQuery } from './queries'
 
-const getPermittedReportsResult = wrapResult(getPermittedReports)
 const getAssistanceNeedsAndActionsReportResult = wrapResult(
   getAssistanceNeedsAndActionsReport
 )
@@ -277,7 +276,7 @@ const resolveGroupingType = (
 
 export default React.memo(function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
-  const [permittedReports] = useApiState(getPermittedReportsResult, [])
+  const permittedReports = useQueryResult(permittedReportsQuery())
   const [filters, setFilters] =
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.todayInSystemTz()
