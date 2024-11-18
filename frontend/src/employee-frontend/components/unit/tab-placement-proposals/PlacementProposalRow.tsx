@@ -105,17 +105,19 @@ export default React.memo(function PlacementProposalRow({
         <Td>
           {!submitting && (
             <FixedSpaceRow spacing="m">
-              <div>
-                <CheckIconButton
-                  data-qa="accept-button"
-                  onClick={() =>
-                    confirmationState === 'ACCEPTED'
-                      ? onChange('PENDING')
-                      : onChange('ACCEPTED')
-                  }
-                  active={confirmationState === 'ACCEPTED'}
-                />
-              </div>
+              {!placementPlan.unitAcceptDisabled && (
+                <div>
+                  <CheckIconButton
+                    data-qa="accept-button"
+                    onClick={() =>
+                      confirmationState === 'ACCEPTED'
+                        ? onChange('PENDING')
+                        : onChange('ACCEPTED')
+                    }
+                    active={confirmationState === 'ACCEPTED'}
+                  />
+                </div>
+              )}
               <div>
                 <CrossIconButton
                   data-qa="reject-button"

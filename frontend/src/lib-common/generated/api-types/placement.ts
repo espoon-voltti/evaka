@@ -202,6 +202,7 @@ export interface PlacementPlanDetails {
   preschoolDaycarePeriod: FiniteDateRange | null
   rejectedByCitizen: boolean
   type: PlacementType
+  unitAcceptDisabled: boolean
   unitConfirmationStatus: PlacementPlanConfirmationStatus
   unitId: UUID
   unitRejectOtherReason: string | null
