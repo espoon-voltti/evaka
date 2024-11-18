@@ -360,6 +360,7 @@ class PlacementToolService(
             application.id,
             ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form)),
             user.evakaUserId,
+            validateApplicationPeriod = false,
         )
     }
 
