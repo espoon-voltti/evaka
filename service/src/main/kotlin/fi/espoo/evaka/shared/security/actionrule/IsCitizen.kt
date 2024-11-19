@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -540,6 +541,32 @@ FROM calendar_event_attendee_child_view cea
 JOIN person child ON cea.child_id = child.id
 JOIN foster_parent ON child.id = foster_parent.child_id
 WHERE parent_id = ${bind(citizenId)} AND valid_during @> ${bind(now.toLocalDate())}
+"""
+            )
+        }
+
+    fun guardianOfChildOfCalendarEventTimeReservation() =
+        rule<CalendarEventTimeId> { citizenId, _ ->
+            sql(
+                """
+SELECT cet.id AS id
+FROM calendar_event_time cet
+JOIN person child ON cet.child_id = child.id
+JOIN guardian g ON child.id = g.child_id
+WHERE g.guardian_id = ${bind(citizenId)}
+"""
+            )
+        }
+
+    fun fosterParentOfChildOfCalendarEventTimeReservation() =
+        rule<CalendarEventTimeId> { citizenId, now ->
+            sql(
+                """
+SELECT cet.id AS id
+FROM calendar_event_time cet
+JOIN person child ON cet.child_id = child.id
+JOIN foster_parent fp ON child.id = fp.child_id
+WHERE fp.parent_id = ${bind(citizenId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
 """
             )
         }

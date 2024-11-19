@@ -43,6 +43,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCalendarEvent
 import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 import fi.espoo.evaka.shared.dev.DevCalendarEventTime
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -2976,6 +2978,205 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertAllEmailsFor(testAdult_2, listOf(cancellationEmailContent), expectedFromAddress)
     }
 
+    @Test
+    fun `guardian can only cancel a reservation of their own child`() {
+        val guardian = DevPerson(firstName = "Guardian")
+        val fosterParent = DevPerson(firstName = "Foster")
+
+        val ownChild = DevPerson(dateOfBirth = today.minusYears(2))
+        val otherChild = DevPerson(dateOfBirth = today.minusYears(3))
+
+        val area = DevCareArea(shortName = "abc")
+        val unit = DevDaycare(areaId = area.id)
+        val group =
+            DevDaycareGroup(
+                daycareId = unit.id,
+                startDate = today.minusDays(1),
+                endDate = today.plusMonths(2),
+            )
+
+        val event =
+            DevCalendarEvent(
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                title = "Event",
+                description = "Description",
+                period = FiniteDateRange(today.minusDays(3), today.plusDays(3)),
+                modifiedAt = clock.now(),
+                modifiedBy = admin.evakaUserId,
+            )
+
+        val eventAttendee =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = unit.id,
+                groupId = group.id,
+            )
+
+        val eventTime =
+            DevCalendarEventTime(
+                calendarEventId = event.id,
+                childId = ownChild.id,
+                date = today,
+                modifiedAt = clock.now(),
+                modifiedBy = admin.evakaUserId,
+                start = LocalTime.of(8, 0),
+                end = LocalTime.of(8, 15),
+            )
+
+        val eventTime2 =
+            DevCalendarEventTime(
+                calendarEventId = event.id,
+                childId = otherChild.id,
+                date = today,
+                modifiedAt = clock.now(),
+                modifiedBy = admin.evakaUserId,
+                start = LocalTime.of(8, 15),
+                end = LocalTime.of(8, 30),
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(group)
+
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(fosterParent, DevPersonType.ADULT)
+            tx.insert(ownChild, DevPersonType.CHILD)
+            tx.insert(otherChild, DevPersonType.CHILD)
+
+            tx.insertGuardian(guardian.id, ownChild.id)
+            tx.insert(
+                DevFosterParent(
+                    childId = ownChild.id,
+                    parentId = fosterParent.id,
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
+                    modifiedAt = now,
+                    modifiedBy = admin.evakaUserId,
+                )
+            )
+
+            val placementId1 =
+                tx.insert(
+                    DevPlacement(
+                        childId = ownChild.id,
+                        unitId = unit.id,
+                        startDate = today,
+                        endDate = today.plusMonths(2),
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId1,
+                    daycareGroupId = group.id,
+                    startDate = today,
+                    endDate = today.plusMonths(2),
+                )
+            )
+
+            val placementId2 =
+                tx.insert(
+                    DevPlacement(
+                        childId = otherChild.id,
+                        unitId = unit.id,
+                        startDate = today,
+                        endDate = today.plusMonths(2),
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId2,
+                    daycareGroupId = group.id,
+                    startDate = today,
+                    endDate = today.plusMonths(2),
+                )
+            )
+
+            tx.insert(event)
+            tx.insert(eventAttendee)
+            tx.insert(eventTime)
+            tx.insert(eventTime2)
+        }
+
+        deleteEventTimeReservationAsCitizen(
+            guardian.user(CitizenAuthLevel.WEAK),
+            clock,
+            eventTime.id,
+            ownChild.id,
+        )
+
+        val freedOwnTime =
+            readCalendarEvent(event.id, admin, clock).times.firstOrNull { it.id == eventTime.id }
+
+        val expectedFreeTime =
+            CalendarEventTime(
+                id = eventTime.id,
+                date = eventTime.date,
+                startTime = eventTime.start,
+                endTime = eventTime.end,
+                childId = null,
+            )
+
+        assertEquals(expectedFreeTime, freedOwnTime)
+
+        reserveEventTimeAsCitizen(
+            guardian.user(CitizenAuthLevel.WEAK),
+            clock,
+            eventTime.id,
+            ownChild.id,
+        )
+
+        val reservedOwnTime =
+            readCalendarEvent(event.id, admin, clock).times.firstOrNull { it.id == eventTime.id }
+        assertEquals(expectedFreeTime.copy(childId = ownChild.id), reservedOwnTime)
+
+        deleteEventTimeReservationAsCitizen(
+            fosterParent.user(CitizenAuthLevel.WEAK),
+            clock,
+            eventTime.id,
+            ownChild.id,
+        )
+
+        val freedOwnTime2 =
+            readCalendarEvent(event.id, admin, clock).times.firstOrNull { it.id == eventTime.id }
+        assertEquals(expectedFreeTime, freedOwnTime2)
+
+        assertThrows<Forbidden> {
+            deleteEventTimeReservationAsCitizen(
+                guardian.user(CitizenAuthLevel.WEAK),
+                clock,
+                eventTime2.id,
+                ownChild.id,
+            )
+        }
+
+        assertThrows<Forbidden> {
+            deleteEventTimeReservationAsCitizen(
+                guardian.user(CitizenAuthLevel.WEAK),
+                clock,
+                eventTime2.id,
+                otherChild.id,
+            )
+        }
+
+        assertThrows<Forbidden> {
+            deleteEventTimeReservationAsCitizen(
+                fosterParent.user(CitizenAuthLevel.WEAK),
+                clock,
+                eventTime2.id,
+                otherChild.id,
+            )
+        }
+
+        assertThrows<Forbidden> {
+            deleteEventTimeReservationAsCitizen(
+                fosterParent.user(CitizenAuthLevel.WEAK),
+                clock,
+                eventTime2.id,
+                ownChild.id,
+            )
+        }
+    }
+
     private fun reserveEventTime(id: CalendarEventTimeId, childId: ChildId) {
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
@@ -3110,6 +3311,19 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             eventTimeId,
             childId,
+        )
+
+    private fun reserveEventTimeAsCitizen(
+        user: AuthenticatedUser.Citizen = guardian,
+        clock: EvakaClock = this.clock,
+        eventTimeId: CalendarEventTimeId,
+        childId: ChildId,
+    ) =
+        calendarEventController.addCalendarEventTimeReservation(
+            dbInstance(),
+            user,
+            clock,
+            CalendarEventTimeCitizenReservationForm(eventTimeId, childId),
         )
 
     private fun setCalendarEventTimeReservationAsEmployee(

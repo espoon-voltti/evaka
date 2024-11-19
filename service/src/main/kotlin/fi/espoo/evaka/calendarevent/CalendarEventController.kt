@@ -843,8 +843,8 @@ class CalendarEventController(
                         tx,
                         user,
                         clock,
-                        Action.Citizen.Child.DELETE_CALENDAR_EVENT_TIME_RESERVATION,
-                        body.childId,
+                        Action.Citizen.CalendarEventTime.CANCEL_RESERVATION,
+                        body.calendarEventTimeId,
                     )
                     val eventTimeDetails =
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
