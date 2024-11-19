@@ -280,14 +280,14 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
-    fun `if expiration date is in the past no notification is sent`() {
+    fun `if expiration date is before yesterday no notification is sent`() {
         db.transaction {
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
                     modifiedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().minusDays(1),
+                    validTo = clock.today().minusDays(2),
                 )
             )
         }
@@ -536,13 +536,14 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Final notification is sent after income expires`() {
+        val expirationDay = clock.today().minusDays(1)
         db.transaction {
             it.insert(
                 DevIncome(
                     personId = fridgeHeadOfChildId,
                     modifiedBy = employeeEvakaUserId,
-                    validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today(),
+                    validFrom = expirationDay.minusMonths(1),
+                    validTo = expirationDay,
                     effect = IncomeEffect.INCOME,
                 )
             )
@@ -610,7 +611,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             }
         assertEquals(2, incomes.size)
         assertEquals(IncomeEffect.INCOMPLETE, incomes[0].effect)
-        val firstDayAfterExpiration = clock.today().plusDays(1)
+        val firstDayAfterExpiration = expirationDay.plusDays(1)
         assertEquals(firstDayAfterExpiration, incomes[0].validFrom)
 
         val feeFecisions =

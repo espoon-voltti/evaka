@@ -38,6 +38,7 @@ class OutdatedIncomeNotifications(
 ) {
     init {
         asyncJobRunner.registerHandler(::sendEmail)
+        asyncJobRunner.registerHandler(::createExpiredIncome)
     }
 
     fun scheduleNotifications(tx: Database.Transaction, clock: EvakaClock): Int {
@@ -65,12 +66,11 @@ class OutdatedIncomeNotifications(
         val guardiansForExpirationNotification =
             tx.expiringIncomes(
                     clock.now().toLocalDate(),
-                    FiniteDateRange(clock.today(), clock.today()),
+                    FiniteDateRange(clock.today().minusDays(1), clock.today().minusDays(1)),
                     IncomeNotificationType.EXPIRED_EMAIL,
                 )
                 .filter { !guardiansForInitialNotification.contains(it.personId) }
                 .filter { !guardiansForReminderNotification.contains(it.personId) }
-                .map { it.personId }
 
         asyncJobRunner.plan(
             tx,
@@ -93,9 +93,14 @@ class OutdatedIncomeNotifications(
                     .plus(
                         guardiansForExpirationNotification.map {
                             AsyncJob.SendOutdatedIncomeNotificationEmail(
-                                it,
+                                it.personId,
                                 IncomeNotificationType.EXPIRED_EMAIL,
                             )
+                        }
+                    )
+                    .plus(
+                        guardiansForExpirationNotification.map {
+                            AsyncJob.CreateExpiredIncome(it.personId, it.expirationDate)
                         }
                     ),
             runAt = clock.now(),
@@ -145,15 +150,17 @@ class OutdatedIncomeNotifications(
                 traceId = msg.guardianId.toString(),
             )
             ?.also { emailClient.send(it) }
+            .also { db.transaction { it.createIncomeNotification(msg.guardianId, msg.type) } }
+    }
 
+    fun createExpiredIncome(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.CreateExpiredIncome,
+    ) {
         db.transaction {
-            it.createIncomeNotification(msg.guardianId, msg.type)
-
-            val firstDayAfterExpiration = clock.today().plusDays(1)
-            if (
-                msg.type == IncomeNotificationType.EXPIRED_EMAIL &&
-                    !it.personHasActiveIncomeOnDate(msg.guardianId, firstDayAfterExpiration)
-            ) {
+            val dayAfterExpiration = msg.incomeExpirationDate.plusDays(1)
+            if (!it.personHasActiveIncomeOnDate(msg.guardianId, dayAfterExpiration)) {
                 it.insertIncome(
                     clock = clock,
                     mapper = mapper,
@@ -161,7 +168,7 @@ class OutdatedIncomeNotifications(
                         IncomeRequest(
                             personId = msg.guardianId,
                             effect = IncomeEffect.INCOMPLETE,
-                            validFrom = firstDayAfterExpiration,
+                            validFrom = dayAfterExpiration,
                             validTo = null,
                             data = emptyMap(),
                             notes = "Created automatically because previous income expired",
@@ -174,7 +181,7 @@ class OutdatedIncomeNotifications(
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             msg.guardianId,
-                            DateRange(firstDayAfterExpiration, null),
+                            DateRange(dayAfterExpiration, null),
                         )
                     ),
                     runAt = clock.now(),

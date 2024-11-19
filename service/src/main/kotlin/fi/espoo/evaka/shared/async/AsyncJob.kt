@@ -329,6 +329,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class CreateExpiredIncome(val guardianId: PersonId, val incomeExpirationDate: LocalDate) :
+        AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendNewCustomerIncomeNotificationEmail(val guardianId: PersonId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -433,6 +438,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     CreateAssistanceNeedDecisionPdf::class,
                     CreateAssistanceNeedPreschoolDecisionPdf::class,
                     CreateChildDocumentPdf::class,
+                    CreateExpiredIncome::class,
                     DeleteAttachment::class,
                     DeleteChildDocumentPdf::class,
                     DvvModificationsRefresh::class,
