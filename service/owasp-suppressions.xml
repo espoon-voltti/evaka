@@ -30,14 +30,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        <notes><![CDATA[
        Misidentification
        ]]></notes>
-       <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat/tomcat-jaspic-api@10\.1\.26$</packageUrl>
+       <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat/tomcat-jaspic-api@10\.1\.31$</packageUrl>
        <cpe>cpe:/a:apache:tomcat:3.0</cpe>
     </suppress>
     <suppress>
         <notes><![CDATA[
         Misidentification
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat/tomcat-jsp-api@10\.1\.26$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat/tomcat-jsp-api@10\.1\.31$</packageUrl>
         <cpe>cpe:/a:apache:tomcat:3.1</cpe>
     </suppress>
     <suppress>
