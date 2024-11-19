@@ -273,6 +273,12 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath
     }
 
+    register("encodePassword", JavaExec::class) {
+        description = "Encode a password with the default password hash algorithm"
+        mainClass.set("fi.espoo.evaka.shared.auth.PasswordHasherCliKt")
+        classpath = sourceSets["test"].runtimeClasspath
+    }
+
     register("copyDownloadOnlyDeps", Copy::class) {
         from(downloadOnly)
         into(layout.buildDirectory.dir("download-only"))
