@@ -14,7 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.invoicing.partnerIsCodebtor
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -614,7 +614,7 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
             it.copy(
                 partnerIsCodebtor =
                     partnerIsCodebtor(
-                        it.headOfFamily.id,
+                        this,
                         it.partner?.id,
                         it.children.map { c -> c.child.id },
                         it.validDuring,
@@ -796,31 +796,6 @@ fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
     createUpdate { sql("SELECT id FROM fee_decision WHERE id = ANY(${bind(ids)}) FOR UPDATE") }
         .execute()
 }
-
-fun Database.Read.partnerIsCodebtor(
-    // TODO: headOfFamilyId is not used, is there a bug here?
-    @Suppress("UNUSED_PARAMETER") headOfFamilyId: PersonId,
-    partnerId: PersonId?,
-    childIds: List<ChildId>,
-    dateRange: FiniteDateRange,
-): Boolean =
-    partnerId != null &&
-        createQuery {
-                sql(
-                    """
-WITH partner_children AS (
-    SELECT COALESCE(ARRAY_AGG(child_id), '{}') AS ids
-    FROM guardian WHERE guardian_id = ${bind(partnerId)}
-), partner_fridge_children AS (
-    SELECT COALESCE(ARRAY_AGG(child_id), '{}') AS ids
-    FROM fridge_child WHERE NOT conflict AND head_of_child = ${bind(partnerId)} AND daterange(start_date, end_date, '[]') && ${bind(dateRange)}
-)
-SELECT (partner_children.ids || partner_fridge_children.ids) && ${bind(childIds)}
-FROM partner_children, partner_fridge_children
-"""
-                )
-            }
-            .exactlyOne<Boolean>()
 
 fun Database.Read.getFeeDecisionByLiableCitizen(
     citizenId: PersonId

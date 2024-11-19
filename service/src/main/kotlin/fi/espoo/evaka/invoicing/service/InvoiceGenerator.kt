@@ -6,12 +6,13 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.children.getChildIdsByGuardians
+import fi.espoo.evaka.children.getChildIdsByHeadsOfFamily
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.getSentInvoicesOfMonth
 import fi.espoo.evaka.invoicing.data.insertDraftInvoices
-import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DraftInvoice
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -216,10 +217,7 @@ class InvoiceGenerator(
 
         val extraFreeChildren = invoiceGenerationLogicChooser.getFreeChildren(tx, month)
 
-        val codebtors =
-            unhandledDecisions.mapValues { (_, decisions) ->
-                getInvoiceCodebtor(tx, decisions, range)
-            }
+        val codebtors = getInvoiceCodebtors(tx, unhandledDecisions, range)
 
         val allChildren =
             unhandledDecisions.values
@@ -264,29 +262,59 @@ class InvoiceGenerator(
         )
     }
 
-    private fun getInvoiceCodebtor(
+    private fun getInvoiceCodebtors(
         tx: Database.Read,
-        decisions: List<FeeDecision>,
-        dateRange: FiniteDateRange,
-    ): PersonId? {
-        val partners = decisions.map { it.partnerId }.distinct()
-        if (partners.size != 1) return null
+        headOfFamilyDecisions: Map<PersonId, List<FeeDecision>>,
+        range: FiniteDateRange,
+    ): Map<PersonId, PersonId> {
+        val partnerByHeadOfFamily =
+            headOfFamilyDecisions
+                .mapNotNull { (headOfFamilyId, decisions) ->
+                    val partnersOfHead = decisions.map { it.partnerId }.distinct()
+                    if (partnersOfHead.size == 1) {
+                        val partnerId = partnersOfHead.first()
+                        if (partnerId != null) {
+                            headOfFamilyId to partnerId
+                        } else {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                }
+                .toMap()
 
-        return partners.first().takeIf {
-            decisions.all { decision ->
-                if (decision.partnerId == null) {
-                    false
+        val partnerIds = partnerByHeadOfFamily.values.toSet()
+        val childrenByGuardian = tx.getChildIdsByGuardians(partnerIds)
+        val childrenByHead = tx.getChildIdsByHeadsOfFamily(partnerIds, range)
+
+        return headOfFamilyDecisions
+            .mapNotNull { (headOfFamilyId, decisions) ->
+                val partnerId = partnerByHeadOfFamily[headOfFamilyId] ?: return@mapNotNull null
+                val partnerAsGuardian = childrenByGuardian[partnerId] ?: emptyList()
+                val partnerAsHead = childrenByHead[partnerId] ?: emptyMap()
+                if (partnerAsGuardian.isEmpty() && partnerAsHead.isEmpty()) return@mapNotNull null
+
+                val hasCommonChildrenOnAllDecisions =
+                    decisions.all { decision ->
+                        decision.children.any {
+                            if (partnerAsGuardian.contains(it.child.id)) {
+                                true
+                            } else {
+                                val partnerAsHeadRange = partnerAsHead[it.child.id]
+                                partnerAsHeadRange != null &&
+                                    partnerAsHeadRange.overlaps(decision.validDuring)
+                            }
+                        }
+                    }
+
+                if (hasCommonChildrenOnAllDecisions) {
+                    headOfFamilyId to partnerId
                 } else {
-                    tx.partnerIsCodebtor(
-                        decision.headOfFamilyId,
-                        decision.partnerId,
-                        decision.children.map { it.child.id },
-                        decision.validDuring.intersection(dateRange)
-                            ?: error("Decision is not valid during invoice period $dateRange"),
-                    )
+                    null
                 }
             }
-        }
+            .toMap()
     }
 
     fun applyUnappliedCorrections(

@@ -7,6 +7,7 @@ package fi.espoo.evaka.children
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
 fun Database.Read.getChildrenByParent(id: PersonId, today: LocalDate): List<Child> =
@@ -63,3 +64,47 @@ SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_d
             )
         }
         .toList()
+
+fun Database.Read.getChildIdsByGuardians(guardianIds: Set<PersonId>): Map<PersonId, Set<ChildId>> =
+    createQuery {
+            sql(
+                """
+SELECT guardian_id, child_id
+FROM guardian
+WHERE guardian_id = ANY (${bind(guardianIds)})
+"""
+            )
+        }
+        .map { columnPair<PersonId, ChildId>("guardian_id", "child_id") }
+        .useSequence { rows ->
+            rows.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
+        }
+
+fun Database.Read.getChildIdsByHeadsOfFamily(
+    headOfFamilyIds: Set<PersonId>,
+    range: FiniteDateRange,
+): Map<PersonId, Map<ChildId, FiniteDateRange>> =
+    createQuery {
+            sql(
+                """
+SELECT head_of_child, child_id, daterange(start_date, end_date, '[]') * ${bind(range)} AS valid_during
+FROM fridge_child
+WHERE
+    NOT conflict AND
+    head_of_child = ANY (${bind(headOfFamilyIds)}) AND
+    daterange(start_date, end_date, '[]') && ${bind(range)}
+"""
+            )
+        }
+        .map {
+            Triple(
+                column<PersonId>("head_of_child"),
+                column<PersonId>("child_id"),
+                column<FiniteDateRange>("valid_during"),
+            )
+        }
+        .useSequence { rows ->
+            rows.groupBy({ it.first }, { it.second to it.third }).mapValues { (_, value) ->
+                value.associateBy({ it.first }, { it.second })
+            }
+        }
