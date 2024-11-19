@@ -64,7 +64,7 @@ dependencies {
     api(enforcedPlatform("org.eclipse.jetty:jetty-bom:11.0.20"))
     api(platform("org.jdbi:jdbi3-bom:3.47.0"))
     api(platform(libs.kotlin.bom))
-    api(platform("org.junit:junit-bom:5.11.0"))
+    api(platform("org.junit:junit-bom:5.11.3"))
     api(platform(libs.spring.boot.dependencies))
     api(platform("org.springframework:spring-framework-bom:6.1.14")) // only needed for CVE fix
     api(platform("software.amazon.awssdk:bom:2.29.1"))
