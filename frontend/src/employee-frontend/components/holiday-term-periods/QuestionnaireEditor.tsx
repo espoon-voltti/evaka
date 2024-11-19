@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Container, { ContentArea } from 'lib-components/layout/Container'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { renderResult } from '../async-rendering'
 
@@ -33,10 +34,17 @@ export default React.memo(function QuestionnaireEditor() {
     <Container>
       <ContentArea opaque>
         {id === 'new' ? (
-          <FixedPeriodQuestionnaireForm
-            onSuccess={navigateToList}
-            onCancel={navigateToList}
-          />
+          featureFlags.holidayQuestionnaireType === 'OPEN_RANGES' ? (
+            <OpenRangesQuestionnaireForm
+              onSuccess={navigateToList}
+              onCancel={navigateToList}
+            />
+          ) : (
+            <FixedPeriodQuestionnaireForm
+              onSuccess={navigateToList}
+              onCancel={navigateToList}
+            />
+          )
         ) : (
           renderResult(questionnaire, (questionnaire) =>
             questionnaire.type === 'FIXED_PERIOD' ? (
@@ -45,12 +53,14 @@ export default React.memo(function QuestionnaireEditor() {
                 onSuccess={navigateToList}
                 onCancel={navigateToList}
               />
-            ) : (
+            ) : questionnaire.type === 'OPEN_RANGES' ? (
               <OpenRangesQuestionnaireForm
                 questionnaire={questionnaire}
                 onSuccess={navigateToList}
                 onCancel={navigateToList}
               />
+            ) : (
+              <div>Not Yet Implemented</div>
             )
           )
         )}
