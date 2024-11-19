@@ -203,8 +203,6 @@ class InvoiceGenerator(
             effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
         val areaIds = tx.getAreaIds()
 
-        val absences = tx.getBillableAbsencesInRange(range)
-
         val julyFreeChildren =
             if (
                 range.start.month == Month.JULY &&
@@ -227,6 +225,7 @@ class InvoiceGenerator(
                 .toSet() +
                 permanentPlacements.keys +
                 temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
+        val absences = tx.getBillableAbsencesInRange(allChildren, range)
         val operationalDaysByChild =
             tx.getOperationalDatesForChildren(range, allChildren).mapValues {
                 DateSet.ofDates(it.value)
@@ -441,15 +440,18 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonI
 }
 
 fun Database.Read.getBillableAbsencesInRange(
-    range: FiniteDateRange
+    childIds: Set<ChildId>,
+    range: FiniteDateRange,
 ): Map<ChildId, List<Pair<AbsenceType, DateSet>>> {
     return createQuery {
             sql(
                 """
 SELECT child_id, absence_type, range_agg(daterange(date, date, '[]')) AS dates
 FROM absence
-WHERE between_start_and_end(${bind(range)}, date)
-AND category = 'BILLABLE'
+WHERE
+    child_id = ANY(${bind(childIds)}) AND
+    between_start_and_end(${bind(range)}, date) AND
+    category = 'BILLABLE'
 GROUP BY child_id, absence_type
 """
             )
