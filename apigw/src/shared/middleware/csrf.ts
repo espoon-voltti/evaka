@@ -25,10 +25,11 @@ export class InvalidAntiCsrfToken extends Error {
 // Middleware that does CSRF header checks
 export const csrf: express.RequestHandler = (req, res, next) => {
   if (requiresCsrfCheck(req)) {
-    const sessionToken = req.session?.antiCsrfToken
-    const headerToken = req.header('x-evaka-csrf')
-    if (!sessionToken || !headerToken || sessionToken !== headerToken)
-      return next(new InvalidAntiCsrfToken())
+    // For APIs that don't use traditional HTML forms, it's enough to check the existence of a custom header
+    // Reference: OWASP  Cross-Site Request Forgery Prevention - Employing Custom Request Headers for AJAX/API
+    // https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#employing-custom-request-headers-for-ajaxapi
+    const header = req.header('x-evaka-csrf')
+    if (!header) return next(new InvalidAntiCsrfToken())
   }
   next()
 }
