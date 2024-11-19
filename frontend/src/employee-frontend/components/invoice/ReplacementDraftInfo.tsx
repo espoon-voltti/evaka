@@ -61,7 +61,7 @@ export function ReplacementDraftForm({
       <P>{i18n.invoice.form.replacement.info}</P>
       <FixedSpaceRow>
         <FixedSpaceColumn>
-          <Label>Oikaisun syy *</Label>
+          <Label>{i18n.invoice.form.replacement.reason} *</Label>
           <SelectF
             bind={reason}
             placeholder={i18n.common.select}
@@ -70,7 +70,7 @@ export function ReplacementDraftForm({
           />
         </FixedSpaceColumn>
         <FixedSpaceColumn>
-          <Label>Lisätiedot</Label>
+          <Label>{i18n.invoice.form.replacement.notes}</Label>
           <TextAreaWrapper>
             <TextAreaF bind={notes} data-qa="replacement-notes" />
           </TextAreaWrapper>
@@ -112,20 +112,20 @@ export function ReplacementInfo({
       <P>{i18n.invoice.form.replacement.info}</P>
       <FixedSpaceRow spacing="L">
         <FixedSpaceColumn>
-          <Label>Oikaisun syy</Label>
+          <Label>{i18n.invoice.form.replacement.reason}</Label>
           <div data-qa="replacement-reason">
             {i18n.invoice.form.replacement.reasons[invoice.replacementReason]}
           </div>
         </FixedSpaceColumn>
         <FixedSpaceColumn>
-          <Label>Lisätiedot</Label>
+          <Label>{i18n.invoice.form.replacement.notes}</Label>
           <NotesWrapper data-qa="replacement-notes">
             {invoice.replacementNotes}
           </NotesWrapper>
         </FixedSpaceColumn>
       </FixedSpaceRow>
       <div>
-        <Label>Merkitty siirretyksi</Label>
+        <Label>{i18n.invoice.form.replacement.markedAsSent}</Label>
         <div>
           <span data-qa="sent-at">{invoice.sentAt?.format()}</span>
           {' ('}

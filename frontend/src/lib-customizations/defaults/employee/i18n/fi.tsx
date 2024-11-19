@@ -2781,6 +2781,7 @@ export const fi = {
       replacement: {
         title: 'Laskun oikaisuun liittyvät tiedot',
         info: 'Voit lisätä tänne oikaisuun liittyvät tiedot.',
+        reason: 'Oikaisun syy',
         reasons: {
           SERVICE_NEED: 'Väärä palveluntarve',
           ABSENCE: 'Päiväkirjamerkintä',
@@ -2789,9 +2790,11 @@ export const fi = {
           RELIEF_RETROACTIVE: 'Maksuvapautus, takautuva',
           OTHER: 'Muu'
         },
+        notes: 'Lisätiedot',
         sendInfo:
           'Kun merkitset tämän laskun siirretyksi, korvattava lasku merkitään oikaistuksi!',
-        send: 'Merkitse siirretyksi'
+        send: 'Merkitse siirretyksi',
+        markedAsSent: 'Merkitty siirretyksi'
       },
       rows: {
         title: 'Laskurivit',
