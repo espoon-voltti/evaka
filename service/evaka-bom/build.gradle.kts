@@ -10,7 +10,7 @@ dependencies {
     constraints {
         api("ch.qos.logback.access:tomcat:2.0.2")
         api(
-            "org.apache.tomcat:tomcat-catalina:10.1.26"
+            "org.apache.tomcat:tomcat-catalina:10.1.31"
         ) // ch.qos.logback.access:tomcat breaks on runtime without this
         api("com.auth0:java-jwt:4.4.0")
         api("com.github.kagkarlsson:db-scheduler:15.0.0")
