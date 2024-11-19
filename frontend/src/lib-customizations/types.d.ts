@@ -21,6 +21,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
+import { HolidayQuestionnaire } from '../lib-common/generated/api-types/holidayperiod'
 
 import {
   Lang as LangCitizen,
@@ -278,6 +279,12 @@ interface BaseFeatureFlags {
    * Enable support for citizen weak login
    */
   weakLogin?: boolean
+
+  /**
+   * Select the type of holiday questionnaire
+   * Note the corresponding backend environment variable feature flag.
+   */
+  holidayQuestionnaireType?: 'FIXED_PERIOD' | 'OPEN_RANGES'
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

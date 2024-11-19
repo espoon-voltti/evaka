@@ -109,4 +109,5 @@ data class HolidayQuestionnaireAnswer(
     val questionnaireId: HolidayQuestionnaireId,
     val childId: ChildId,
     val fixedPeriod: FiniteDateRange?,
+    val openRanges: List<FiniteDateRange>,
 )

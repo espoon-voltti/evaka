@@ -137,6 +137,7 @@ export type HolidayQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
 export interface HolidayQuestionnaireAnswer {
   childId: PersonId
   fixedPeriod: FiniteDateRange | null
+  openRanges: FiniteDateRange[]
   questionnaireId: HolidayQuestionnaireId
 }
 
@@ -297,7 +298,8 @@ export function deserializeJsonHolidayQuestionnaire(json: JsonOf<HolidayQuestion
 export function deserializeJsonHolidayQuestionnaireAnswer(json: JsonOf<HolidayQuestionnaireAnswer>): HolidayQuestionnaireAnswer {
   return {
     ...json,
-    fixedPeriod: (json.fixedPeriod != null) ? FiniteDateRange.parseJson(json.fixedPeriod) : null
+    fixedPeriod: (json.fixedPeriod != null) ? FiniteDateRange.parseJson(json.fixedPeriod) : null,
+    openRanges: json.openRanges.map(e => FiniteDateRange.parseJson(e))
   }
 }
 

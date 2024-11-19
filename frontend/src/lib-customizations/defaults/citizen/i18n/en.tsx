@@ -484,7 +484,9 @@ const en: Translations = {
       addTimePeriod: 'Add holiday',
       emptySelection: 'No free absences',
       notEligible: (period: FiniteDateRange) =>
-        `The questionnaire doesn't concern the child, because he or she hasn't been in early childhood education continuously during ${period.format()}.`
+        `The questionnaire doesn't concern the child, because he or she hasn't been in early childhood education continuously during ${period.format()}.`,
+      rangesOverlap:
+        'There is already a overlapping entry for this period. If necessary, edit the previous time period.'
     },
     previousDay: 'Previous day',
     nextDay: 'Next day',
