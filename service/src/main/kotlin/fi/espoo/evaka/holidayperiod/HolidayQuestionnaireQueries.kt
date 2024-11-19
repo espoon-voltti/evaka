@@ -212,7 +212,7 @@ INSERT INTO holiday_period_questionnaire (
     absence_type_threshold
 )
 VALUES (
-    ${bind(QuestionnaireType.FIXED_PERIOD)},
+    ${bind(QuestionnaireType.OPEN_RANGES)},
     ${bind(data.absenceType)},
     ${bind(data.requiresStrongAuth)},
     ${bind(data.active)},
@@ -220,7 +220,7 @@ VALUES (
     ${bindJson(data.description)},
     ${bindJson(data.descriptionLink)},
     ${bind(data.conditions.continuousPlacement)},
-    ${bind(data.period)}
+    ${bind(data.period)},
     ${bind(data.absenceTypeThreshold)}
 )
 RETURNING id
@@ -239,7 +239,7 @@ fun Database.Transaction.updateOpenRangesQuestionnaire(
                 """
 UPDATE holiday_period_questionnaire
 SET
-    type = ${bind(QuestionnaireType.FIXED_PERIOD)},
+    type = ${bind(QuestionnaireType.OPEN_RANGES)},
     absence_type = ${bind(data.absenceType)},
     requires_strong_auth = ${bind(data.requiresStrongAuth)},
     active = ${bind(data.active)},
@@ -270,16 +270,19 @@ INSERT INTO holiday_questionnaire_answer (
     questionnaire_id,
     child_id,
     fixed_period,
+    open_ranges,
     modified_by
 )
 VALUES (
     ${bind { it.questionnaireId }},
     ${bind { it.childId }},
     ${bind { it.fixedPeriod }},
+    ${bind { it.openRanges }},
     ${bind(modifiedBy)}
 )
 ON CONFLICT(questionnaire_id, child_id)
     DO UPDATE SET fixed_period = EXCLUDED.fixed_period,
+                  open_ranges = EXCLUDED.open_ranges,
                   modified_by  = EXCLUDED.modified_by
 """
         )
@@ -293,7 +296,7 @@ fun Database.Read.getQuestionnaireAnswers(
     createQuery {
             sql(
                 """
-SELECT questionnaire_id, child_id, fixed_period
+SELECT questionnaire_id, child_id, fixed_period, open_ranges
 FROM holiday_questionnaire_answer
 WHERE questionnaire_id = ${bind(id)} AND child_id = ANY(${bind(childIds)})
         """

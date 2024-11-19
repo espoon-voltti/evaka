@@ -60,7 +60,6 @@ interface FormState {
 
 const formToQuestionnaireBody = (
   s: FormState
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 ): QuestionnaireBody.OpenRangesQuestionnaireBody | undefined => {
   if (!s.start || !s.end || !s.periodStart || !s.periodEnd) {
     return undefined
@@ -122,35 +121,30 @@ const emptyFormState: FormState = {
 }
 
 const toFormState = (
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   p: HolidayQuestionnaire.OpenRangesQuestionnaire | undefined
 ): FormState =>
   p
     ? {
         type: 'OPEN_RANGES',
         absenceType: 'FREE_ABSENCE',
-        requiresStrongAuth: p.requiresStrongAuth, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        titleFi: p.title.fi, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        titleSv: p.title.sv, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        titleEn: p.title.en, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        descriptionFi: p.description.fi, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        descriptionSv: p.description.sv, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        descriptionEn: p.description.en, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        descriptionLinkFi: p.descriptionLink.fi, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        descriptionLinkSv: p.descriptionLink.sv, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        descriptionLinkEn: p.descriptionLink.en, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        start: p.active.start, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        end: p.active.end, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        periodStart: p.period.start, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        periodEnd: p.period.end, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        absenceTypeThreshold: p.absenceTypeThreshold, // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        requiresStrongAuth: p.requiresStrongAuth,
+        titleFi: p.title.fi,
+        titleSv: p.title.sv,
+        titleEn: p.title.en,
+        descriptionFi: p.description.fi,
+        descriptionSv: p.description.sv,
+        descriptionEn: p.description.en,
+        descriptionLinkFi: p.descriptionLink.fi,
+        descriptionLinkSv: p.descriptionLink.sv,
+        descriptionLinkEn: p.descriptionLink.en,
+        start: p.active.start,
+        end: p.active.end,
+        periodStart: p.period.start,
+        periodEnd: p.period.end,
+        absenceTypeThreshold: p.absenceTypeThreshold,
         conditionContinuousPlacementStart:
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           p.conditions.continuousPlacement?.start ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         conditionContinuousPlacementEnd:
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           p.conditions.continuousPlacement?.end ?? null
       }
     : emptyFormState
@@ -158,7 +152,7 @@ const toFormState = (
 interface Props {
   onSuccess: () => void
   onCancel: () => void
-  questionnaire: HolidayQuestionnaire.OpenRangesQuestionnaire
+  questionnaire?: HolidayQuestionnaire.OpenRangesQuestionnaire
 }
 
 export default React.memo(function OpenRangesQuestionnaireForm({
@@ -278,12 +272,11 @@ export default React.memo(function OpenRangesQuestionnaireForm({
   )
 
   const onSubmit = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const body = isValid && formToQuestionnaireBody(form)
     if (!body) return
     return questionnaire
-      ? updateOpenRangesQuestionnaire({ id: questionnaire.id, body }) // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-      : createOpenRangesQuestionnaire({ body }) // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      ? updateOpenRangesQuestionnaire({ id: questionnaire.id, body })
+      : createOpenRangesQuestionnaire({ body })
   }, [
     createOpenRangesQuestionnaire,
     updateOpenRangesQuestionnaire,
@@ -473,8 +466,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        {/*todo: juttuja*/}
-        <Label inputRow>{i18n.holidayQuestionnaires.period}</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.period} *</Label>
         <FixedSpaceRow alignItems="center">
           <DatePicker
             info={useMemo(
@@ -506,27 +498,32 @@ export default React.memo(function OpenRangesQuestionnaireForm({
         </FixedSpaceRow>
 
         <Label inputRow>
-          {i18n.holidayQuestionnaires.absenceTypeThreshold}
+          {i18n.holidayQuestionnaires.absenceTypeThreshold} *
         </Label>
-        <InputField
-          width="L"
-          placeholder="0"
-          type="number"
-          value={form.absenceTypeThreshold.toString()}
-          onChange={(absenceTypeThreshold) =>
-            update({ absenceTypeThreshold: parseInt(absenceTypeThreshold, 10) })
-          }
-          data-qa="input-absence-type-threshold"
-          info={useMemo(
-            () =>
-              errorToInputInfo(
-                errors.absenceTypeThreshold,
-                i18n.validationErrors
-              ),
-            [errors.absenceTypeThreshold, i18n]
-          )}
-          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-        />
+        <FixedSpaceRow alignItems="center">
+          <InputField
+            width="s"
+            placeholder="0"
+            type="number"
+            value={form.absenceTypeThreshold.toString()}
+            onChange={(absenceTypeThreshold) =>
+              update({
+                absenceTypeThreshold: parseInt(absenceTypeThreshold, 10)
+              })
+            }
+            data-qa="input-absence-type-threshold"
+            info={useMemo(
+              () =>
+                errorToInputInfo(
+                  errors.absenceTypeThreshold,
+                  i18n.validationErrors
+                ),
+              [errors.absenceTypeThreshold, i18n]
+            )}
+            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+          />
+          <span>{i18n.holidayQuestionnaires.days}</span>
+        </FixedSpaceRow>
 
         <Label inputRow>
           {i18n.holidayQuestionnaires.conditionContinuousPlacement}
