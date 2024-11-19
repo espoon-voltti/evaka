@@ -39,6 +39,13 @@ export interface AcceptDecisionRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.AcceptPlacementProposalRequest
+*/
+export interface AcceptPlacementProposalRequest {
+  rejectReasons: Record<PlacementPlanRejectReason, string>
+}
+
+/**
 * Generated from fi.espoo.evaka.application.Address
 */
 export interface Address {
