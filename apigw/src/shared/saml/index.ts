@@ -92,6 +92,14 @@ export const SamlProfileSchema = z.object({
   spNameQualifier: z.string().optional()
 })
 
+export function getRawUnvalidatedRelayState(
+  req: express.Request
+): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+  const relayState = req.body?.RelayState || req.query.RelayState
+  return typeof relayState === 'string' ? relayState : undefined
+}
+
 // SAML RelayState is an arbitrary string that gets passed in a SAML transaction.
 // In our case, we specify it to be a redirect URL where the user should be
 // redirected to after the SAML transaction is complete. Since the RelayState
@@ -100,10 +108,9 @@ export const SamlProfileSchema = z.object({
 export function validateRelayStateUrl(
   req: express.Request
 ): string | undefined {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-  const relayState = req.body?.RelayState || req.query.RelayState
+  const relayState = getRawUnvalidatedRelayState(req)
 
-  if (typeof relayState === 'string' && path.isAbsolute(relayState)) {
+  if (relayState && path.isAbsolute(relayState)) {
     if (evakaBaseUrl === 'local') {
       return relayState
     } else {

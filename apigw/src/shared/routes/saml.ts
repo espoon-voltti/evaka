@@ -18,9 +18,10 @@ import {
 } from '../saml/error-utils.js'
 import {
   AuthenticateProfile,
-  validateRelayStateUrl,
+  getRawUnvalidatedRelayState,
   SamlProfileIdSchema,
-  SamlProfileSchema
+  SamlProfileSchema,
+  validateRelayStateUrl
 } from '../saml/index.js'
 import { Sessions } from '../session.js'
 
@@ -101,7 +102,8 @@ export default function createSamlRouter(
       logAuditEvent(eventCode('sign_in_started'), req, 'Login endpoint called')
       try {
         const idpLoginUrl = await saml.getAuthorizeUrlAsync(
-          validateRelayStateUrl(req) ?? '',
+          // no need for validation here, because the value only matters in the login callback request and is validated there
+          getRawUnvalidatedRelayState(req) ?? '',
           undefined,
           samlRequestOptions(req)
         )
@@ -203,7 +205,8 @@ export default function createSamlRouter(
         if (profile.success) {
           url = await saml.getLogoutUrlAsync(
             profile.data,
-            validateRelayStateUrl(req) ?? '',
+            // no need for validation here, because the value only matters in the logout callback request and is validated there
+            getRawUnvalidatedRelayState(req) ?? '',
             samlRequestOptions(req)
           )
         } else {
@@ -255,7 +258,9 @@ export default function createSamlRouter(
 
           url = await saml.getLogoutResponseUrlAsync(
             profile,
-            validateRelayStateUrl(req) ?? '',
+            // not validated, because the value and its format are specified by the IDP and we're supposed to
+            // just pass it back
+            getRawUnvalidatedRelayState(req) ?? '',
             samlRequestOptions(req),
             success
           )
