@@ -24,6 +24,7 @@ export type QueryKeyPrefix =
   | 'personDetails'
   | 'systemNotifications'
   | 'invoices'
+  | 'placementTool'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
