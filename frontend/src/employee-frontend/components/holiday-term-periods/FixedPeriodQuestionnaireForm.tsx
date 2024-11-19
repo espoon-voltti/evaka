@@ -82,7 +82,6 @@ const parseDateRanges = (s: string) =>
 
 const formToQuestionnaireBody = (
   s: FormState
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 ): QuestionnaireBody.FixedPeriodQuestionnaireBody | undefined => {
   if (!s.start || !s.end) {
     return undefined
@@ -149,36 +148,33 @@ const emptyFormState: FormState = {
 }
 
 const toFormState = (
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   p: HolidayQuestionnaire.FixedPeriodQuestionnaire | undefined
 ): FormState =>
   p
     ? {
         type: 'FIXED_PERIOD',
         absenceType: 'FREE_ABSENCE',
-        requiresStrongAuth: p.requiresStrongAuth, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        titleFi: p.title.fi, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        titleSv: p.title.sv, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        titleEn: p.title.en, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        descriptionFi: p.description.fi, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        descriptionSv: p.description.sv, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        descriptionEn: p.description.en, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        descriptionLinkFi: p.descriptionLink.fi, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        descriptionLinkSv: p.descriptionLink.sv, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        descriptionLinkEn: p.descriptionLink.en, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        start: p.active.start, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        end: p.active.end, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        periodOptions: p.periodOptions.map((r) => r.format()).join(', '), // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
-        periodOptionLabelFi: p.periodOptionLabel.fi, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        periodOptionLabelSv: p.periodOptionLabel.sv, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        periodOptionLabelEn: p.periodOptionLabel.en, // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        requiresStrongAuth: p.requiresStrongAuth,
+        titleFi: p.title.fi,
+        titleSv: p.title.sv,
+        titleEn: p.title.en,
+        descriptionFi: p.description.fi,
+        descriptionSv: p.description.sv,
+        descriptionEn: p.description.en,
+        descriptionLinkFi: p.descriptionLink.fi,
+        descriptionLinkSv: p.descriptionLink.sv,
+        descriptionLinkEn: p.descriptionLink.en,
+        start: p.active.start,
+        end: p.active.end,
+        periodOptions: p.periodOptions.map((r) => r.format()).join(', '),
+        periodOptionLabelFi: p.periodOptionLabel.fi,
+        periodOptionLabelSv: p.periodOptionLabel.sv,
+        periodOptionLabelEn: p.periodOptionLabel.en,
+
         conditionContinuousPlacementStart:
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           p.conditions.continuousPlacement?.start ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         conditionContinuousPlacementEnd:
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           p.conditions.continuousPlacement?.end ?? null
       }
     : emptyFormState
@@ -295,12 +291,11 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
   )
 
   const onSubmit = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const body = isValid && formToQuestionnaireBody(form)
     if (!body) return
     return questionnaire
-      ? updateFixedPeriodQuestionnaire({ id: questionnaire.id, body }) // eslint-disable-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-      : createFixedPeriodQuestionnaire({ body }) // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      ? updateFixedPeriodQuestionnaire({ id: questionnaire.id, body })
+      : createFixedPeriodQuestionnaire({ body })
   }, [
     createFixedPeriodQuestionnaire,
     updateFixedPeriodQuestionnaire,

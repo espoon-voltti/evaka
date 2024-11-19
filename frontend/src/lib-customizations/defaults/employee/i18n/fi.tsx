@@ -4878,7 +4878,8 @@ export const fi = {
     conditionContinuousPlacement:
       'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus',
     period: 'Poissaolokausi',
-    absenceTypeThreshold: 'Yhtenäisen poissaolon minimipituus'
+    absenceTypeThreshold: 'Yhtenäisen poissaolon minimipituus',
+    days: 'päivää'
   },
   terms: {
     term: 'Lukukausi',

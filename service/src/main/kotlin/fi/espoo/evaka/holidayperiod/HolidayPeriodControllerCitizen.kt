@@ -6,6 +6,7 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.absence.upsertFullDayAbsences
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -163,21 +165,11 @@ class HolidayPeriodControllerCitizen(
                         } ?: emptySequence()
                     }
 
-                val reservableRange =
-                    getReservableRange(now, featureConfig.citizenReservationThresholdHours)
-
-                absences
-                    .map { absence -> absence.childId to absence.date }
-                    .let {
-                        tx.clearOldReservations(it)
-                        tx.clearOldCitizenEditableAbsences(it, reservableRange)
-                    }
-                tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
-                tx.upsertFullDayAbsences(user.evakaUserId, now, absences)
+                upsertAbsences(tx, now, user, absences, questionnaire, childIds)
                 tx.insertQuestionnaireAnswers(
                     user.id,
                     body.fixedPeriods.entries.map { (childId, period) ->
-                        HolidayQuestionnaireAnswer(questionnaire.id, childId, period)
+                        HolidayQuestionnaireAnswer(questionnaire.id, childId, period, listOf())
                     },
                 )
             }
@@ -213,10 +205,44 @@ class HolidayPeriodControllerCitizen(
                     } ?: throw BadRequest("Questionnaire not found")
                 validateEligibility(questionnaire, tx, today, user, childIds, null, body)
 
-                // TODO: validate selected periods
-                // TODO: deduce and update absences
-                // TODO: insert questionnaire answers
+                val invalidRanges =
+                    body.openRanges.values.find { ranges ->
+                        ranges.any { it.start < questionnaire.period.start } ||
+                            ranges.any { it.end > questionnaire.period.end } ||
+                            ranges.any { range -> ranges.any { it != range && it.overlaps(range) } }
+                    }
 
+                if (invalidRanges != null) {
+                    throw BadRequest("Invalid option provided ($invalidRanges)")
+                }
+
+                val absences =
+                    body.openRanges.entries.flatMap { (childId, ranges) ->
+                        ranges.flatMap { range ->
+                            range.dates().map {
+                                FullDayAbsenseUpsert(
+                                    childId = childId,
+                                    date = it,
+                                    absenceType =
+                                        when {
+                                            range.durationInDays() >=
+                                                questionnaire.absenceTypeThreshold ->
+                                                questionnaire.absenceType
+                                            else -> AbsenceType.OTHER_ABSENCE
+                                        },
+                                    questionnaireId = questionnaire.id,
+                                )
+                            }
+                        }
+                    }
+
+                upsertAbsences(tx, now, user, absences, questionnaire, childIds)
+                tx.insertQuestionnaireAnswers(
+                    user.id,
+                    body.openRanges.entries.map { (childId, ranges) ->
+                        HolidayQuestionnaireAnswer(questionnaire.id, childId, null, ranges)
+                    },
+                )
             }
         }
         Audit.HolidayAbsenceCreate.log(targetId = AuditId(id), objectId = AuditId(childIds.toSet()))
@@ -247,6 +273,27 @@ class HolidayPeriodControllerCitizen(
                 throw BadRequest("Some children are not eligible to answer")
             }
         }
+    }
+
+    private fun upsertAbsences(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime,
+        user: AuthenticatedUser.Citizen,
+        absences: List<FullDayAbsenseUpsert>,
+        questionnaire: HolidayQuestionnaire,
+        childIds: Set<ChildId>,
+        config: FeatureConfig = featureConfig,
+    ) {
+        val reservableRange = getReservableRange(now, config.citizenReservationThresholdHours)
+
+        absences
+            .map { absence -> absence.childId to absence.date }
+            .let {
+                tx.clearOldReservations(it)
+                tx.clearOldCitizenEditableAbsences(it, reservableRange)
+            }
+        tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
+        tx.upsertFullDayAbsences(user.evakaUserId, now, absences)
     }
 }
 
