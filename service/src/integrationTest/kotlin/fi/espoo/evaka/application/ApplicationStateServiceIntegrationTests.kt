@@ -1397,7 +1397,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 testDaycare.id,
-                rejectReasons =
+                rejectReasonTranslations =
                     enumEntries<PlacementPlanRejectReason>().associateBy({ it }, { it.name }),
             )
         }
@@ -1474,7 +1474,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 testDaycare.id,
-                rejectReasons =
+                rejectReasonTranslations =
                     enumEntries<PlacementPlanRejectReason>().associateBy({ it }, { it.name }),
             )
         }
@@ -1550,7 +1550,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 testDaycare.id,
-                rejectReasons = mapOf(PlacementPlanRejectReason.REASON_1 to rejectReason),
+                rejectReasonTranslations = mapOf(PlacementPlanRejectReason.REASON_1 to rejectReason),
             )
         }
         asyncJobRunner.runPendingJobsSync(clock)
@@ -1619,7 +1619,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 testDaycare.id,
-                rejectReasons = emptyMap(),
+                rejectReasonTranslations = emptyMap(),
             )
         }
         asyncJobRunner.runPendingJobsSync(clock)

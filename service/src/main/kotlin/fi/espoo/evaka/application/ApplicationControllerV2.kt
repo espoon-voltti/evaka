@@ -537,7 +537,7 @@ class ApplicationControllerV2(
                     user,
                     clock,
                     unitId,
-                    body.rejectReasons,
+                    body.rejectReasonTranslations,
                 )
             }
         }
@@ -794,7 +794,7 @@ data class PlacementProposalConfirmationUpdate(
 )
 
 data class AcceptPlacementProposalRequest(
-    val rejectReasons: Map<PlacementPlanRejectReason, String>
+    val rejectReasonTranslations: Map<PlacementPlanRejectReason, String>
 )
 
 data class DaycarePlacementPlan(

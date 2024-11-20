@@ -695,7 +695,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         unitId: DaycareId,
-        rejectReasons: Map<PlacementPlanRejectReason, String>,
+        rejectReasonTranslations: Map<PlacementPlanRejectReason, String>,
     ) {
         accessControl.requirePermissionFor(
             tx,
@@ -728,7 +728,7 @@ class ApplicationStateService(
                 val reason =
                     when (it.unitRejectReason) {
                         PlacementPlanRejectReason.OTHER -> it.unitRejectOtherReason
-                        else -> rejectReasons[it.unitRejectReason]
+                        else -> rejectReasonTranslations[it.unitRejectReason]
                     }
                 if (reason != null) {
                     tx.createApplicationNote(it.applicationId, reason, user.evakaUserId)

@@ -303,7 +303,8 @@ export default React.memo(function PlacementProposals({
             onClick={() => ({
               unitId,
               body: {
-                rejectReasons: i18n.unit.placementProposals.rejectReasons
+                rejectReasonTranslations:
+                  i18n.unit.placementProposals.rejectReasons
               }
             })}
             onSuccess={() => undefined}
