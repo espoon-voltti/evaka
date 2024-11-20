@@ -472,10 +472,6 @@ sealed interface Action {
             CREATE_CALENDAR_EVENT_TIME_RESERVATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
-            ),
-            DELETE_CALENDAR_EVENT_TIME_RESERVATION(
-                IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -593,6 +589,15 @@ sealed interface Action {
             DELETE(IsCitizen(allowWeakLogin = false).ownerOfServiceApplication());
 
             override fun toString(): String = "${javaClass.name}.$name"
+        }
+
+        enum class CalendarEventTime(
+            override vararg val defaultRules: ScopedActionRule<in CalendarEventTimeId>
+        ) : ScopedAction<CalendarEventTimeId> {
+            CANCEL_RESERVATION(
+                IsCitizen(allowWeakLogin = true).guardianOfChildOfCalendarEventTimeReservation(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChildOfCalendarEventTimeReservation(),
+            )
         }
     }
 
