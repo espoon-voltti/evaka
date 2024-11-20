@@ -112,7 +112,7 @@ export default function createSamlRouter(
         logAuditEvent(
           eventCode('sign_in_failed'),
           req,
-          `Error logging user in. Error: ${err?.toString()}`
+          `Error logging user in. ${err?.toString()}`
         )
         throw new SamlError('Login failed', {
           redirectUrl: errorRedirectUrl(err),
@@ -152,7 +152,7 @@ export default function createSamlRouter(
         logAuditEvent(
           eventCode('sign_in_failed'),
           req,
-          `Failed to authenticate user. Description: ${description}. Error: ${err?.toString()}`
+          `Failed to authenticate user. Description: ${description}. ${err?.toString()}`
         )
         throw new SamlError('Login failed', {
           redirectUrl: errorRedirectUrl(err),
@@ -182,7 +182,7 @@ export default function createSamlRouter(
         logAuditEvent(
           eventCode('sign_in_failed'),
           req,
-          `Error logging user in. Error: ${err?.toString()}`
+          `Error logging user in. ${err?.toString()}`
         )
         throw new SamlError('Login failed', {
           redirectUrl: errorRedirectUrl(err),
@@ -222,7 +222,7 @@ export default function createSamlRouter(
         logAuditEvent(
           eventCode('sign_out_failed'),
           req,
-          `Logout failed. Error: ${err?.toString()}.`
+          `Logout failed. ${err?.toString()}.`
         )
         throw new SamlError('Logout failed', {
           redirectUrl: defaultPageUrl,
@@ -278,7 +278,7 @@ export default function createSamlRouter(
         logAuditEvent(
           eventCode('sign_out_failed'),
           req,
-          `Logout failed. Error: ${err?.toString()}.`
+          `Logout failed. ${err?.toString()}.`
         )
         throw new SamlError('Logout failed', {
           redirectUrl: defaultPageUrl,
