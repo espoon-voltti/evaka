@@ -135,6 +135,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: UpdatePasswordRequest,
     ) {
+        Audit.CitizenPasswordUpdateAttempt.log(targetId = AuditId(user.id))
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
