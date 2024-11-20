@@ -346,6 +346,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     data = createGrossIncome(incomeExpirationDate.plusDays(1)),
                     status = IncomeStatementStatus.HANDLED,
                     handlerId = employeeId,
+                    handledAt = clock.now(),
                 )
             )
         }

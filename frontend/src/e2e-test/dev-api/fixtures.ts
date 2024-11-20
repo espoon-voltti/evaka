@@ -819,6 +819,10 @@ export class Fixture {
   ): IncomeStatementBuilder {
     return new IncomeStatementBuilder({
       id: uuidv4(),
+      createdAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
+      createdBy: systemInternalUser.id,
+      modifiedBy: systemInternalUser.id,
       data: {
         type: 'HIGHEST_FEE',
         startDate: LocalDate.todayInSystemTz(),
@@ -826,6 +830,7 @@ export class Fixture {
       },
       status: 'SENT',
       sentAt: HelsinkiDateTime.now(),
+      handledAt: null,
       handlerId: null,
       ...initial
     })

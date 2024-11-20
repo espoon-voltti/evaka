@@ -109,9 +109,11 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     incomeStatementId,
                 )
                 tx.updateIncomeStatementHandled(
+                    user,
+                    clock.now(),
                     incomeStatementId,
                     body.handlerNote,
-                    if (body.handled) user.id else null,
+                    body.handled,
                 )
             }
         }

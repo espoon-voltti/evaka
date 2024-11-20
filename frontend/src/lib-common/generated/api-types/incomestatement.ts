@@ -90,18 +90,19 @@ export namespace IncomeStatement {
   export interface ChildIncome {
     type: 'CHILD_INCOME'
     attachments: Attachment[]
-    created: HelsinkiDateTime
+    createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     firstName: string
+    handledAt: HelsinkiDateTime | null
     handlerNote: string
     id: UUID
     lastName: string
+    modifiedAt: HelsinkiDateTime
     otherInfo: string
     personId: UUID
     sentAt: HelsinkiDateTime | null
     startDate: LocalDate
     status: IncomeStatementStatus
-    updated: HelsinkiDateTime
   }
 
   /**
@@ -109,17 +110,18 @@ export namespace IncomeStatement {
   */
   export interface HighestFee {
     type: 'HIGHEST_FEE'
-    created: HelsinkiDateTime
+    createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     firstName: string
+    handledAt: HelsinkiDateTime | null
     handlerNote: string
     id: UUID
     lastName: string
+    modifiedAt: HelsinkiDateTime
     personId: UUID
     sentAt: HelsinkiDateTime | null
     startDate: LocalDate
     status: IncomeStatementStatus
-    updated: HelsinkiDateTime
   }
 
   /**
@@ -129,21 +131,22 @@ export namespace IncomeStatement {
     type: 'INCOME'
     alimonyPayer: boolean
     attachments: Attachment[]
-    created: HelsinkiDateTime
+    createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     entrepreneur: Entrepreneur | null
     firstName: string
     gross: Gross | null
+    handledAt: HelsinkiDateTime | null
     handlerNote: string
     id: UUID
     lastName: string
+    modifiedAt: HelsinkiDateTime
     otherInfo: string
     personId: UUID
     sentAt: HelsinkiDateTime | null
     startDate: LocalDate
     status: IncomeStatementStatus
     student: boolean
-    updated: HelsinkiDateTime
   }
 }
 
@@ -352,34 +355,37 @@ export function deserializeJsonEstimatedIncome(json: JsonOf<EstimatedIncome>): E
 export function deserializeJsonIncomeStatementChildIncome(json: JsonOf<IncomeStatement.ChildIncome>): IncomeStatement.ChildIncome {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    startDate: LocalDate.parseIso(json.startDate),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 
 export function deserializeJsonIncomeStatementHighestFee(json: JsonOf<IncomeStatement.HighestFee>): IncomeStatement.HighestFee {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    startDate: LocalDate.parseIso(json.startDate),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 
 export function deserializeJsonIncomeStatementIncome(json: JsonOf<IncomeStatement.Income>): IncomeStatement.Income {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     entrepreneur: (json.entrepreneur != null) ? deserializeJsonEntrepreneur(json.entrepreneur) : null,
+    handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    startDate: LocalDate.parseIso(json.startDate),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 export function deserializeJsonIncomeStatement(json: JsonOf<IncomeStatement>): IncomeStatement {

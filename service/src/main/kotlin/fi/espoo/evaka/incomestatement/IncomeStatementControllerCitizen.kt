@@ -215,16 +215,23 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     ) {
         val id =
             db.connect { dbc ->
-                dbc.read {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.CREATE_INCOME_STATEMENT,
                         user.id,
                     )
+                    createValidatedIncomeStatement(
+                        tx = tx,
+                        user = user,
+                        now = clock.now(),
+                        personId = user.id,
+                        body = body,
+                        draft = draft ?: false,
+                    )
                 }
-                createIncomeStatement(dbc, clock.now(), user.id, user, body, draft ?: false)
             }
         Audit.IncomeStatementCreate.log(targetId = AuditId(user.id), objectId = AuditId(id))
     }
@@ -240,16 +247,23 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     ) {
         val id =
             db.connect { dbc ->
-                dbc.read {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Child.CREATE_INCOME_STATEMENT,
                         childId,
                     )
+                    createValidatedIncomeStatement(
+                        tx = tx,
+                        user = user,
+                        now = clock.now(),
+                        personId = childId,
+                        body = body,
+                        draft = draft ?: false,
+                    )
                 }
-                createIncomeStatement(dbc, clock.now(), childId, user, body, draft ?: false)
             }
         Audit.IncomeStatementCreateForChild.log(targetId = AuditId(user.id), objectId = AuditId(id))
     }
@@ -266,34 +280,31 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         db.connect { dbc ->
             dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.IncomeStatement.UPDATE,
-                        incomeStatementId,
-                    )
-                    verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
-                    tx.updateIncomeStatement(incomeStatementId, body).also { success ->
-                        if (success) {
-                            if (draft != true) {
-                                tx.setSentIfDraft(incomeStatementId, clock.now())
-                            }
-                            val parent = AttachmentParent.IncomeStatement(incomeStatementId)
-                            tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
-                            when (body) {
-                                is IncomeStatementBody.Income ->
-                                    tx.associateOrphanAttachments(
-                                        user.evakaUserId,
-                                        parent,
-                                        body.attachmentIds,
-                                    )
-                                else -> Unit
-                            }
-                        }
-                    }
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.IncomeStatement.UPDATE,
+                    incomeStatementId,
+                )
+                verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
+
+                tx.updateIncomeStatement(
+                    user.evakaUserId,
+                    clock.now(),
+                    incomeStatementId,
+                    body,
+                    draft ?: false,
+                )
+
+                val parent = AttachmentParent.IncomeStatement(incomeStatementId)
+                tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
+                when (body) {
+                    is IncomeStatementBody.Income ->
+                        tx.associateOrphanAttachments(user.evakaUserId, parent, body.attachmentIds)
+                    else -> Unit
                 }
-                .let { success -> if (!success) throw NotFound("Income statement not found") }
+            }
         }
         Audit.IncomeStatementUpdate.log(targetId = AuditId(incomeStatementId))
     }
@@ -313,38 +324,31 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.IncomeStatement.UPDATE,
-                        incomeStatementId,
-                    )
-                    verifyIncomeStatementModificationsAllowed(
-                        tx,
-                        PersonId(childId.raw),
-                        incomeStatementId,
-                    )
-                    tx.updateIncomeStatement(incomeStatementId, body).also { success ->
-                        if (success) {
-                            if (draft != true) {
-                                tx.setSentIfDraft(incomeStatementId, clock.now())
-                            }
-                            val parent = AttachmentParent.IncomeStatement(incomeStatementId)
-                            tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
-                            when (body) {
-                                is IncomeStatementBody.ChildIncome ->
-                                    tx.associateOrphanAttachments(
-                                        user.evakaUserId,
-                                        parent,
-                                        body.attachmentIds,
-                                    )
-                                else -> Unit
-                            }
-                        }
-                    }
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.IncomeStatement.UPDATE,
+                    incomeStatementId,
+                )
+                verifyIncomeStatementModificationsAllowed(tx, childId, incomeStatementId)
+
+                tx.updateIncomeStatement(
+                    user.evakaUserId,
+                    clock.now(),
+                    incomeStatementId,
+                    body,
+                    draft ?: false,
+                )
+
+                val parent = AttachmentParent.IncomeStatement(incomeStatementId)
+                tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
+                when (body) {
+                    is IncomeStatementBody.ChildIncome ->
+                        tx.associateOrphanAttachments(user.evakaUserId, parent, body.attachmentIds)
+                    else -> Unit
                 }
-                .let { success -> if (!success) throw NotFound("Income statement not found") }
+            }
         }
         Audit.IncomeStatementUpdateForChild.log(targetId = AuditId(incomeStatementId))
     }

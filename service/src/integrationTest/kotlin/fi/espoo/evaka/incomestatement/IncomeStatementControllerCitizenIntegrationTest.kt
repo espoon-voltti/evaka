@@ -21,13 +21,15 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -43,6 +45,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
     @Autowired
     private lateinit var incomeStatementControllerCitizen: IncomeStatementControllerCitizen
     @Autowired private lateinit var attachmentsController: AttachmentsController
+
+    private val clock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 11, 18), LocalTime.of(15, 30)))
 
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
 
@@ -72,10 +77,11 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     lastName = testAdult_1.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null,
-                    created = incomeStatements[0].created,
-                    updated = incomeStatements[0].updated,
+                    createdAt = incomeStatements[0].createdAt,
+                    modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
+                    handledAt = null,
                     handlerNote = "",
                 )
             ),
@@ -179,11 +185,12 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     student = false,
                     alimonyPayer = true,
                     otherInfo = "foo bar",
-                    created = incomeStatements[0].created,
-                    updated = incomeStatements[0].updated,
+                    createdAt = incomeStatements[0].createdAt,
+                    modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
+                    handledAt = null,
                     attachments = listOf(),
                 )
             ),
@@ -231,11 +238,12 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2021, 8, 9),
                     otherInfo = "foo bar",
-                    created = incomeStatements[0].created,
-                    updated = incomeStatements[0].updated,
+                    createdAt = incomeStatements[0].createdAt,
+                    modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
+                    handledAt = null,
                     attachments = listOf(),
                 )
             ),
@@ -414,11 +422,12 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     student = false,
                     alimonyPayer = true,
                     otherInfo = "foo bar",
-                    created = incomeStatements[0].created,
-                    updated = incomeStatements[0].updated,
+                    createdAt = incomeStatements[0].createdAt,
+                    modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
+                    handledAt = null,
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
@@ -452,11 +461,12 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null,
                     otherInfo = "foo bar",
-                    created = incomeStatements[0].created,
-                    updated = incomeStatements[0].updated,
+                    createdAt = incomeStatements[0].createdAt,
+                    modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
+                    handledAt = null,
                     attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
@@ -569,10 +579,12 @@ class IncomeStatementControllerCitizenIntegrationTest :
             )
         )
 
-        val incomeStatement = getIncomeStatements().data[0]
+        val original = getIncomeStatements().data[0]
+
+        clock.tick()
 
         updateIncomeStatement(
-            incomeStatement.id,
+            original.id,
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = LocalDate.of(2022, 6, 1),
@@ -602,12 +614,12 @@ class IncomeStatementControllerCitizenIntegrationTest :
             ),
         )
 
-        val updated = getIncomeStatement(incomeStatement.id).updated
-        assertNotEquals(incomeStatement.updated, updated)
+        val modifiedAt = getIncomeStatement(original.id).modifiedAt
+        assertNotEquals(original.modifiedAt, modifiedAt)
 
         assertEquals(
             IncomeStatement.Income(
-                id = incomeStatement.id,
+                id = original.id,
                 personId = testAdult_1.id,
                 firstName = testAdult_1.firstName,
                 lastName = testAdult_1.lastName,
@@ -635,14 +647,15 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 student = true,
                 alimonyPayer = false,
                 otherInfo = "",
-                created = incomeStatement.created,
-                updated = updated,
-                sentAt = incomeStatement.sentAt,
+                createdAt = original.createdAt,
+                modifiedAt = modifiedAt,
+                sentAt = original.sentAt,
                 status = IncomeStatementStatus.SENT,
                 handlerNote = "",
+                handledAt = null,
                 attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
             ),
-            getIncomeStatement(incomeStatement.id),
+            getIncomeStatement(original.id),
         )
     }
 
@@ -727,7 +740,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 sql(
                     """
 UPDATE income_statement
-SET handler_id = ${bind(handlerId)}, handler_note = ${bind(note)}, status = 'HANDLED'::income_statement_status
+SET handler_id = ${bind(handlerId)}, 
+    handler_note = ${bind(note)}, 
+    status = 'HANDLED'::income_statement_status,
+    handled_at = ${bind(clock.now())}
 WHERE id = ${bind(id)}
 """
                 )
@@ -818,8 +834,8 @@ WHERE id = ${bind(id)}
             it.insert(
                 DevPlacement(
                     childId = testChild_1.id,
-                    startDate = LocalDate.now(),
-                    endDate = LocalDate.now(),
+                    startDate = clock.today(),
+                    endDate = clock.today(),
                     type = PlacementType.DAYCARE,
                     unitId = testDaycare.id,
                 )
@@ -837,8 +853,8 @@ WHERE id = ${bind(id)}
             it.insert(
                 DevPlacement(
                     childId = testChild_1.id,
-                    startDate = LocalDate.now().minusWeeks(1),
-                    endDate = LocalDate.now().minusWeeks(1),
+                    startDate = clock.today().minusWeeks(1),
+                    endDate = clock.today().minusWeeks(1),
                     type = PlacementType.DAYCARE,
                     unitId = testDaycare.id,
                 )
@@ -852,7 +868,7 @@ WHERE id = ${bind(id)}
         return incomeStatementControllerCitizen.getIncomeStatements(
             dbInstance(),
             citizen,
-            RealEvakaClock(),
+            clock,
             page = page,
         )
     }
@@ -864,26 +880,21 @@ WHERE id = ${bind(id)}
         return incomeStatementControllerCitizen.getChildIncomeStatements(
             dbInstance(),
             citizen,
-            RealEvakaClock(),
+            clock,
             childId,
             page = page,
         )
     }
 
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement {
-        return incomeStatementControllerCitizen.getIncomeStatement(
-            dbInstance(),
-            citizen,
-            RealEvakaClock(),
-            id,
-        )
+        return incomeStatementControllerCitizen.getIncomeStatement(dbInstance(), citizen, clock, id)
     }
 
     private fun getIncomeStatementChildren(): List<ChildBasicInfo> {
         return incomeStatementControllerCitizen.getIncomeStatementChildren(
             dbInstance(),
             citizen,
-            RealEvakaClock(),
+            clock,
         )
     }
 
@@ -891,7 +902,7 @@ WHERE id = ${bind(id)}
         incomeStatementControllerCitizen.createIncomeStatement(
             dbInstance(),
             citizen,
-            RealEvakaClock(),
+            clock,
             body,
             draft,
         )
@@ -905,7 +916,7 @@ WHERE id = ${bind(id)}
         incomeStatementControllerCitizen.createChildIncomeStatement(
             dbInstance(),
             citizen,
-            RealEvakaClock(),
+            clock,
             childId,
             body,
             draft,
@@ -920,7 +931,7 @@ WHERE id = ${bind(id)}
         incomeStatementControllerCitizen.updateIncomeStatement(
             dbInstance(),
             citizen,
-            RealEvakaClock(),
+            clock,
             id,
             body,
             draft,
@@ -928,19 +939,14 @@ WHERE id = ${bind(id)}
     }
 
     private fun deleteIncomeStatement(id: IncomeStatementId) {
-        incomeStatementControllerCitizen.deleteIncomeStatement(
-            dbInstance(),
-            citizen,
-            RealEvakaClock(),
-            id,
-        )
+        incomeStatementControllerCitizen.deleteIncomeStatement(dbInstance(), citizen, clock, id)
     }
 
     private fun uploadAttachment(user: AuthenticatedUser.Citizen = citizen): AttachmentId {
         return attachmentsController.uploadIncomeStatementAttachmentCitizen(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             incomeStatementId = null,
             file = MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
@@ -956,7 +962,7 @@ WHERE id = ${bind(id)}
         return attachmentsController.uploadIncomeStatementAttachmentEmployee(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             incomeStatementId,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )

@@ -624,9 +624,14 @@ export interface DevIncome {
 * Generated from fi.espoo.evaka.shared.dev.DevIncomeStatement
 */
 export interface DevIncomeStatement {
+  createdAt: HelsinkiDateTime
+  createdBy: UUID
   data: IncomeStatementBody
+  handledAt: HelsinkiDateTime | null
   handlerId: UUID | null
   id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
   personId: UUID
   sentAt: HelsinkiDateTime | null
   status: IncomeStatementStatus
@@ -1366,7 +1371,10 @@ export function deserializeJsonDevIncome(json: JsonOf<DevIncome>): DevIncome {
 export function deserializeJsonDevIncomeStatement(json: JsonOf<DevIncomeStatement>): DevIncomeStatement {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     data: deserializeJsonIncomeStatementBody(json.data),
+    handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
   }
 }

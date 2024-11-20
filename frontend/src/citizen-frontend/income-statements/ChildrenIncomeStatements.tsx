@@ -93,7 +93,7 @@ const ChildIncomeStatementsTable = React.memo(
                           {item.startDate.format()} - {item.endDate?.format()}
                         </Link>
                       </Td>
-                      <Td>{item.created.toLocalDate().format()}</Td>
+                      <Td>{item.createdAt.toLocalDate().format()}</Td>
                       <Td>
                         <Buttons>
                           {item.status === 'HANDLED' ? (

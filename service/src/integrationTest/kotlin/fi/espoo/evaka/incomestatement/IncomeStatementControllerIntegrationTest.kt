@@ -94,14 +94,17 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val startDate = today
         val endDate = today.plusDays(30)
 
-        val id =
-            db.transaction { tx ->
-                tx.createIncomeStatement(
-                        citizenId,
-                        IncomeStatementBody.HighestFee(startDate, endDate),
-                    )
-                    .also { tx.setSentIfDraft(it, now) }
-            }
+        val incomeStatement =
+            DevIncomeStatement(
+                personId = testAdult_1.id,
+                data = IncomeStatementBody.HighestFee(startDate, endDate),
+                status = IncomeStatementStatus.SENT,
+                createdAt = now.minusHours(10),
+                modifiedAt = now.minusHours(7),
+                sentAt = now.minusHours(5),
+            )
+        db.transaction { it.insert(incomeStatement) }
+        val id = incomeStatement.id
 
         val incomeStatement1 = getIncomeStatement(id)
         assertEquals(
@@ -112,10 +115,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
-                created = incomeStatement1.created,
-                updated = incomeStatement1.updated,
-                sentAt = incomeStatement1.sentAt,
+                createdAt = incomeStatement.createdAt,
+                modifiedAt = incomeStatement.modifiedAt,
+                sentAt = incomeStatement.sentAt,
                 status = IncomeStatementStatus.SENT,
+                handledAt = null,
                 handlerNote = "",
             ),
             incomeStatement1,
@@ -135,10 +139,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
-                created = incomeStatement2.created,
-                updated = incomeStatement2.updated,
-                sentAt = incomeStatement2.sentAt,
+                createdAt = incomeStatement.createdAt,
+                modifiedAt = incomeStatement2.modifiedAt,
+                sentAt = incomeStatement.sentAt,
                 status = IncomeStatementStatus.HANDLED,
+                handledAt = now,
                 handlerNote = "is cool",
             ),
             incomeStatement2,
@@ -158,10 +163,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
-                created = incomeStatement3.created,
-                updated = incomeStatement3.updated,
+                createdAt = incomeStatement3.createdAt,
+                modifiedAt = incomeStatement3.modifiedAt,
                 sentAt = incomeStatement3.sentAt,
                 status = IncomeStatementStatus.SENT,
+                handledAt = null,
                 handlerNote = "is not cool",
             ),
             incomeStatement3,
@@ -175,10 +181,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `add an attachment`() {
-        val id =
-            db.transaction { tx ->
-                tx.createIncomeStatement(
-                    citizenId,
+        val devIncomeStatement =
+            DevIncomeStatement(
+                personId = testAdult_1.id,
+                status = IncomeStatementStatus.DRAFT,
+                sentAt = null,
+                data =
                     IncomeStatementBody.Income(
                         startDate = today,
                         endDate = null,
@@ -195,8 +203,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         otherInfo = "",
                         attachmentIds = listOf(),
                     ),
-                )
-            }
+            )
+        db.transaction { it.insert(devIncomeStatement) }
+        val id = devIncomeStatement.id
 
         val attachmentId = uploadAttachment(id)
 
@@ -229,10 +238,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                             uploadedByEmployee = true,
                         )
                     ),
-                created = incomeStatement.created,
-                updated = incomeStatement.updated,
-                sentAt = incomeStatement.sentAt,
-                status = incomeStatement.status,
+                createdAt = incomeStatement.createdAt,
+                modifiedAt = incomeStatement.modifiedAt,
+                sentAt = null,
+                status = IncomeStatementStatus.DRAFT,
+                handledAt = null,
                 handlerNote = "",
             ),
             getIncomeStatement(id),

@@ -9,9 +9,10 @@ import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.db.PredicateSql
@@ -72,9 +73,10 @@ SELECT
     student,
     alimony_payer,
     other_info,
-    ist.created,
-    ist.updated,
+    ist.created_at,
+    ist.modified_at,
     ist.sent_at,
+    ist.handled_at,
     status,
     handler_note,
     (SELECT coalesce(jsonb_agg(jsonb_build_object(
@@ -105,9 +107,10 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
     val lastName = column<String>("last_name")
     val startDate = column<LocalDate>("start_date")
     val endDate = column<LocalDate?>("end_date")
-    val created = column<HelsinkiDateTime>("created")
-    val updated = column<HelsinkiDateTime>("updated")
+    val createdAt = column<HelsinkiDateTime>("created_at")
+    val modifiedAt = column<HelsinkiDateTime>("modified_at")
     val sentAt = column<HelsinkiDateTime?>("sent_at")
+    val handledAt = column<HelsinkiDateTime?>("handled_at")
     val status = column<IncomeStatementStatus>("status")
     val handlerNote = if (includeEmployeeContent) column("handler_note") else ""
     return when (column<IncomeStatementType>("type")) {
@@ -119,9 +122,10 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                 lastName = lastName,
                 startDate = startDate,
                 endDate = endDate,
-                created = created,
-                updated = updated,
+                createdAt = createdAt,
+                modifiedAt = modifiedAt,
                 sentAt = sentAt,
+                handledAt = handledAt,
                 status = status,
                 handlerNote = handlerNote,
             )
@@ -212,9 +216,10 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                 student = column("student"),
                 alimonyPayer = column("alimony_payer"),
                 otherInfo = column("other_info"),
-                created = created,
-                updated = updated,
+                createdAt = createdAt,
+                modifiedAt = modifiedAt,
                 sentAt = sentAt,
+                handledAt = handledAt,
                 status = status,
                 handlerNote = handlerNote,
                 attachments = jsonColumn("attachments"),
@@ -228,9 +233,10 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                 lastName = lastName,
                 startDate = startDate,
                 endDate = endDate,
-                created = created,
-                updated = updated,
+                createdAt = createdAt,
+                modifiedAt = modifiedAt,
                 sentAt = sentAt,
+                handledAt = handledAt,
                 status = status,
                 handlerNote = handlerNote,
                 otherInfo = column("other_info"),
@@ -353,19 +359,26 @@ private fun Database.SqlStatement<*>.bindAccountant(accountant: Accountant) {
     this.bind("accountantEmail", accountant.email)
 }
 
-fun Database.Transaction.createIncomeStatement(
-    personId: PersonId,
+fun Database.Transaction.insertIncomeStatement(
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
+    personId: PersonId, // may be either the user or their child
     body: IncomeStatementBody,
+    draft: Boolean,
 ): IncomeStatementId {
     @Suppress("DEPRECATION")
     return createQuery(
             """
 INSERT INTO income_statement (
+    created_at,
+    created_by,
+    modified_at,
+    modified_by,
+    status,
+    sent_at,
     person_id,
     start_date, 
     end_date,
-    status,
-    sent_at,
     type, 
     gross_income_source, 
     gross_estimated_monthly_income,
@@ -391,11 +404,15 @@ INSERT INTO income_statement (
     alimony_payer,
     other_info
 ) VALUES (
+    :now,
+    :userId,
+    :now,
+    :userId,
+    :status,
+    :sentAt,
     :personId,
     :startDate,
     :endDate,
-    'DRAFT'::income_statement_status,
-    NULL,
     :type,
     :grossIncomeSource,
     :grossEstimatedMonthlyIncome,
@@ -423,37 +440,33 @@ INSERT INTO income_statement (
 )
 RETURNING id
         """
-                .trimIndent()
         )
+        .bind("now", now)
+        .bind("userId", userId)
         .bind("personId", personId)
+        .bind("status", if (draft) IncomeStatementStatus.DRAFT else IncomeStatementStatus.SENT)
+        .bind("sentAt", if (draft) null else now)
         .also { it.bindIncomeStatementBody(body) }
         .exactlyOne<IncomeStatementId>()
 }
 
-fun Database.Transaction.setSentIfDraft(
-    incomeStatementId: IncomeStatementId,
-    now: HelsinkiDateTime,
-) = execute {
-    sql(
-        """
-    UPDATE income_statement
-    SET status = 'SENT'::income_statement_status, sent_at = ${bind(now)}
-    WHERE id = ${bind(incomeStatementId)} AND status = 'DRAFT'::income_statement_status
-"""
-    )
-}
-
 fun Database.Transaction.updateIncomeStatement(
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
     incomeStatementId: IncomeStatementId,
     body: IncomeStatementBody,
-): Boolean {
-    val rowCount =
-        @Suppress("DEPRECATION")
-        createUpdate(
-                """
+    draft: Boolean,
+) {
+    @Suppress("DEPRECATION")
+    createUpdate(
+            """
 UPDATE income_statement SET
+    modified_at = :now,
+    modified_by = :userId,
     start_date = :startDate,
     end_date = :endDate,
+    status = CASE WHEN status = 'DRAFT'::income_statement_status THEN :status ELSE status END,
+    sent_at = coalesce(sent_at, :sentAt),
     type = :type,
     gross_income_source = :grossIncomeSource,
     gross_estimated_monthly_income = :grossEstimatedMonthlyIncome,
@@ -480,27 +493,33 @@ UPDATE income_statement SET
     other_info = :otherInfo
 WHERE id = :id
         """
-                    .trimIndent()
-            )
-            .bind("id", incomeStatementId)
-            .also { it.bindIncomeStatementBody(body) }
-            .execute()
-
-    return rowCount == 1
+        )
+        .bind("id", incomeStatementId)
+        .bind("now", now)
+        .bind("userId", userId)
+        .bind("status", if (draft) IncomeStatementStatus.DRAFT else IncomeStatementStatus.SENT)
+        .bind("sentAt", if (draft) null else now)
+        .also { it.bindIncomeStatementBody(body) }
+        .updateExactlyOne()
 }
 
 fun Database.Transaction.updateIncomeStatementHandled(
+    user: AuthenticatedUser.Employee,
+    now: HelsinkiDateTime,
     incomeStatementId: IncomeStatementId,
     note: String,
-    handlerId: EmployeeId?,
+    handled: Boolean,
 ) {
     execute {
         sql(
             """
 UPDATE income_statement 
-SET handler_id = ${bind(handlerId)}, 
+SET modified_at = ${bind(now)},
+    modified_by = ${bind(user.evakaUserId)},
     handler_note = ${bind(note)},
-    status = ${bind(if (handlerId != null) IncomeStatementStatus.HANDLED else IncomeStatementStatus.SENT)}
+    handler_id = ${bind(user.id.takeIf { handled })}, 
+    handled_at = ${bind(now.takeIf { handled })},
+    status = ${bind(if (handled) IncomeStatementStatus.HANDLED else IncomeStatementStatus.SENT)}
 WHERE id = ${bind(incomeStatementId)}
 """
         )

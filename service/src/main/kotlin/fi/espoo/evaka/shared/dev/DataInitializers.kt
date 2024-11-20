@@ -17,7 +17,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
-import fi.espoo.evaka.incomestatement.createIncomeStatement
+import fi.espoo.evaka.incomestatement.insertIncomeStatement
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -535,24 +535,40 @@ VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(r
 
 data class DevIncomeStatement(
     val id: IncomeStatementId = IncomeStatementId(UUID.randomUUID()),
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val createdBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val personId: PersonId,
     val data: IncomeStatementBody,
     val status: IncomeStatementStatus = IncomeStatementStatus.SENT,
     val sentAt: HelsinkiDateTime? = HelsinkiDateTime.now(),
     val handlerId: EmployeeId? = null,
+    val handledAt: HelsinkiDateTime? = null,
 )
 
 fun Database.Transaction.insert(row: DevIncomeStatement): IncomeStatementId {
-    val defaultId = createIncomeStatement(row.personId, row.data)
+    // insertion has complex bind logic, so workaround for reusing that
+    val databaseGeneratedId =
+        insertIncomeStatement(
+            userId = row.createdBy,
+            now = row.createdAt,
+            personId = row.personId,
+            body = row.data,
+            draft = row.status == IncomeStatementStatus.DRAFT,
+        )
     execute {
         sql(
             """
         UPDATE income_statement
         SET id = ${bind(row.id)},
+            modified_at = ${bind(row.modifiedAt)},
+            modified_by = ${bind(row.modifiedBy)},
             status = ${bind(row.status)},
             sent_at = ${bind(row.sentAt)},
-            handler_id = ${bind(row.handlerId)}
-        WHERE id = ${bind(defaultId)}
+            handler_id = ${bind(row.handlerId)},
+            handled_at = ${bind(row.handledAt)}
+        WHERE id = ${bind(databaseGeneratedId)}
     """
         )
     }
