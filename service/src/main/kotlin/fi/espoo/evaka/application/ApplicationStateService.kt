@@ -724,14 +724,18 @@ class ApplicationStateService(
             }
             .executeAndReturnGeneratedKeys()
             .toList<PlacementPlanReject>()
-            .forEach {
+            .forEach { placementPlan ->
                 val reason =
-                    when (it.unitRejectReason) {
-                        PlacementPlanRejectReason.OTHER -> it.unitRejectOtherReason
-                        else -> rejectReasonTranslations[it.unitRejectReason]
+                    rejectReasonTranslations[placementPlan.unitRejectReason]?.let { translation ->
+                        val otherReason =
+                            placementPlan.unitRejectOtherReason?.takeIf {
+                                placementPlan.unitRejectReason == PlacementPlanRejectReason.OTHER &&
+                                    it.isNotBlank()
+                            }
+                        "Sijoitusehdotus hylätty - $translation${if (otherReason != null) ": $otherReason" else ""}"
                     }
                 if (reason != null) {
-                    tx.createApplicationNote(it.applicationId, reason, user.evakaUserId)
+                    tx.createApplicationNote(placementPlan.applicationId, reason, user.evakaUserId)
                 }
             }
 

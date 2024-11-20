@@ -1562,7 +1562,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val notes = tx.getApplicationNotes(applicationId)
             assertThat(notes)
                 .extracting({ it.applicationId }, { it.content }, { it.createdBy })
-                .containsExactly(Tuple(applicationId, rejectReason, serviceWorker.evakaUserId))
+                .containsExactly(
+                    Tuple(
+                        applicationId,
+                        "Sijoitusehdotus hylätty - $rejectReason",
+                        serviceWorker.evakaUserId,
+                    )
+                )
 
             val decisionsByApplication =
                 tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
@@ -1619,7 +1625,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 testDaycare.id,
-                rejectReasonTranslations = emptyMap(),
+                rejectReasonTranslations = mapOf(PlacementPlanRejectReason.OTHER to "Muu syy"),
             )
         }
         asyncJobRunner.runPendingJobsSync(clock)
@@ -1631,7 +1637,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val notes = tx.getApplicationNotes(applicationId)
             assertThat(notes)
                 .extracting({ it.applicationId }, { it.content }, { it.createdBy })
-                .containsExactly(Tuple(applicationId, rejectReason, serviceWorker.evakaUserId))
+                .containsExactly(
+                    Tuple(
+                        applicationId,
+                        "Sijoitusehdotus hylätty - Muu syy: $rejectReason",
+                        serviceWorker.evakaUserId,
+                    )
+                )
 
             val decisionsByApplication =
                 tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
