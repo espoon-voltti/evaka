@@ -705,6 +705,7 @@ class ApplicationStateService(
             unitId,
         )
 
+        val unit = tx.getDaycare(unitId)!!
         data class PlacementPlanReject(
             val applicationId: ApplicationId,
             val unitRejectReason: PlacementPlanRejectReason,
@@ -732,7 +733,7 @@ class ApplicationStateService(
                                 placementPlan.unitRejectReason == PlacementPlanRejectReason.OTHER &&
                                     it.isNotBlank()
                             }
-                        "Sijoitusehdotus hylätty - $translation${if (otherReason != null) ": $otherReason" else ""}"
+                        "Sijoitusehdotus hylätty (${unit.name}) - $translation${if (otherReason != null) ": $otherReason" else ""}"
                     }
                 if (reason != null) {
                     tx.createApplicationNote(placementPlan.applicationId, reason, user.evakaUserId)

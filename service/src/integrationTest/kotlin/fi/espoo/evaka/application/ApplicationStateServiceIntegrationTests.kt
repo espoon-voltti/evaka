@@ -1565,7 +1565,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 .containsExactly(
                     Tuple(
                         applicationId,
-                        "Sijoitusehdotus hylätty - $rejectReason",
+                        "Sijoitusehdotus hylätty (${testDaycare.name}) - $rejectReason",
                         serviceWorker.evakaUserId,
                     )
                 )
@@ -1640,7 +1640,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 .containsExactly(
                     Tuple(
                         applicationId,
-                        "Sijoitusehdotus hylätty - Muu syy: $rejectReason",
+                        "Sijoitusehdotus hylätty (${testDaycare.name}) - Muu syy: $rejectReason",
                         serviceWorker.evakaUserId,
                     )
                 )
