@@ -24,7 +24,7 @@ import {
   CalendarEventCount,
   CalendarEventCountContainer
 } from './CalendarEventCount'
-import { countEventsForDay } from './CalendarGridView'
+import { countEventsForDay } from './CalendarMonthView'
 import { HistoryOverlay } from './HistoryOverlay'
 import { ChildImageData } from './RoundChildImages'
 import { Reservations } from './calendar-elements'

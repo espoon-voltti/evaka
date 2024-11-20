@@ -33,10 +33,7 @@ let guardian: DevPerson
 beforeEach(async () => {
   await resetServiceState()
   page = await Page.open({
-    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0)),
-    citizenCustomizations: {
-      featureFlags: { calendarMonthView: false }
-    }
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
 
   const area = await Fixture.careArea(testCareArea).save()
@@ -70,6 +67,9 @@ describe('Placement start after deadline end', () => {
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 
+    await calendar.navigateToNextMonth()
+    await calendar.assertMonthTitle('Kesäkuu 2024')
+
     await calendar.assertDay(startDate, [
       {
         childIds: [child.id],
@@ -97,6 +97,9 @@ describe('Placement start after deadline end', () => {
     await enduserLogin(page, guardian)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
+
+    await calendar.navigateToNextMonth()
+    await calendar.assertMonthTitle('Kesäkuu 2024')
 
     await calendar.assertDay(startDate, [
       {

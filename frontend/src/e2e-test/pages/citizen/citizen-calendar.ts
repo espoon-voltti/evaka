@@ -71,6 +71,10 @@ export default class CitizenCalendarPage {
     this.page.findByDataQa(`${this.type}-calendar-day-${date.formatIso()}`)
   monthlySummaryInfoButton = (year: number, month: number) =>
     this.page.findByDataQa(`monthly-summary-info-button-${month}-${year}`)
+  navigateNextMonthButton = () => this.page.findByDataQa('next-month-button')
+  navigatePreviousMonthButton = () =>
+    this.page.findByDataQa('previous-month-button')
+  monthTitle = () => this.page.findByDataQa('calendar-month-title')
 
   async waitUntilLoaded() {
     await this.page
@@ -164,6 +168,20 @@ export default class CitizenCalendarPage {
         `monthly-summary-info-container-${month}-${year}-text`
       )
     )
+  }
+
+  async navigateToNextMonth() {
+    return await this.navigateNextMonthButton().click()
+  }
+
+  async navigateToNextMonths(n: number) {
+    for (let i = 0; i < n; i++) {
+      await this.navigateToNextMonth()
+    }
+  }
+
+  async assertMonthTitle(title: string) {
+    await this.monthTitle().assertTextEquals(title)
   }
 
   async openMonthlySummary(year: number, month: number) {

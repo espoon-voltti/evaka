@@ -25,10 +25,7 @@ let page: Page
 
 async function openCalendarPage() {
   page = await Page.open({
-    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)),
-    citizenCustomizations: {
-      featureFlags: { calendarMonthView: false }
-    }
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
   await enduserLogin(page, testAdult)
   const header = new CitizenHeader(page, 'desktop')
@@ -285,6 +282,10 @@ describe('Service time alert', () => {
     }
 
     const calendarPage = await openCalendarPage()
+
+    await calendarPage.navigateToNextMonth()
+    await calendarPage.assertMonthTitle('Helmikuu 2022')
+
     // Should be open initially, so we call getMonthlySummary instead of openMonthlySummary
     const summary = calendarPage.getMonthlySummary(today.year, 2)
     await summary.title.assertTextEquals('Läsnäolot 01.02. - 28.02.2022')
