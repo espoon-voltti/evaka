@@ -490,7 +490,7 @@ export const fi = {
       siblingBasisValue: 'Haen paikkaa sisarusperusteella',
       siblingName: 'Sisaruksen nimi',
       siblingSsn: 'Sisaruksen henkilötunnus',
-      siblingUnit: 'Sisaruksen koulu'
+      siblingUnit: 'Sisaruksen yksikkö'
     },
     child: {
       title: 'Lapsen tiedot'
