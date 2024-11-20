@@ -321,7 +321,15 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             <Td>
               <ChildrenCell people={item.children} />
             </Td>
-            <Td>{YearMonth.ofDate(item.periodStart).format()}</Td>
+            <Td>
+              {YearMonth.ofDate(item.periodStart).format()}
+              {item.revisionNumber > 0 && (
+                <>
+                  <br />({i18n.invoices.table.replacementInvoice}{' '}
+                  {item.revisionNumber})
+                </>
+              )}
+            </Td>
             <Td data-qa="invoice-created-at">
               {item.createdAt?.toLocalDate().format() ?? ''}
             </Td>

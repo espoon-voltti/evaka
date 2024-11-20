@@ -28,6 +28,7 @@ import { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicin
 import { InvoicePayload } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MarkReplacementDraftSentRequest } from 'lib-common/generated/api-types/invoicing'
 import { NoteUpdateBody } from 'lib-common/generated/api-types/invoicing'
 import { PagedFeeDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
 import { PagedInvoiceSummaryResponses } from 'lib-common/generated/api-types/invoicing'
@@ -636,6 +637,24 @@ export async function markInvoicesSent(
     url: uri`/employee/invoices/mark-sent`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.markReplacementDraftSent
+*/
+export async function markReplacementDraftSent(
+  request: {
+    invoiceId: UUID,
+    body: MarkReplacementDraftSentRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/invoices/${request.invoiceId}/mark-replacement-draft-sent`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<MarkReplacementDraftSentRequest>
   })
   return json
 }

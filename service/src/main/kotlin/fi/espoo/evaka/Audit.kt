@@ -334,6 +334,7 @@ enum class Audit(
     InvoicesCreate,
     InvoicesDeleteDrafts,
     InvoicesMarkSent,
+    InvoicesMarkReplacementDraftSent,
     InvoicesRead,
     InvoicesReportRead,
     InvoicesSearch,

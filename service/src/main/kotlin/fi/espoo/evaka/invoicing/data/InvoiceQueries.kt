@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.domain.DraftInvoice
 import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
+import fi.espoo.evaka.invoicing.domain.InvoiceReplacementReason
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.shared.DaycareId
@@ -42,10 +43,15 @@ fun invoiceDetailedQuery(where: Predicate = Predicate.alwaysTrue()) = QuerySql {
         care_area.area_code AS agreement_type,
         invoice.area_id,
         invoice.number,
-        invoice.sent_by,
         invoice.sent_at,
         invoice.revision_number,
         invoice.replaced_invoice_id,
+        invoice.replacement_reason,
+        invoice.replacement_notes,
+        
+        invoice.sent_by AS sent_by_id,
+        sent_by.name AS sent_by_name,
+        sent_by.type AS sent_by_type,
     
         head.id as head_id,
         head.date_of_birth as head_date_of_birth,
@@ -129,6 +135,7 @@ fun invoiceDetailedQuery(where: Predicate = Predicate.alwaysTrue()) = QuerySql {
     JOIN care_area ON invoice.area_id = care_area.id
     LEFT JOIN person as head ON invoice.head_of_family = head.id
     LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
+    LEFT JOIN evaka_user as sent_by ON invoice.sent_by = sent_by.id
     WHERE ${predicate(where.forTable("invoice"))}
     """
     )
@@ -538,5 +545,42 @@ private fun Database.Transaction.insertInvoicedFeeDecisions(
         VALUES (${bind { pair -> pair.first }}, ${bind { pair -> pair.second }})
     """
         )
+    }
+}
+
+fun Database.Transaction.setReplacementDraftSent(
+    invoiceId: InvoiceId,
+    sentAt: HelsinkiDateTime,
+    sentBy: EvakaUserId,
+    reason: InvoiceReplacementReason,
+    notes: String,
+) {
+    val replacedInvoiceId =
+        createQuery {
+                sql(
+                    """
+UPDATE invoice
+SET status = 'SENT',
+    replacement_reason = ${bind(reason)},
+    replacement_notes = ${bind(notes)},
+    sent_at = ${bind(sentAt)},
+    sent_by = ${bind(sentBy)}
+WHERE id = ${bind(invoiceId)} AND status = 'REPLACEMENT_DRAFT'
+RETURNING replaced_invoice_id
+"""
+                )
+            }
+            .exactlyOne<InvoiceId?>()
+    if (replacedInvoiceId != null) {
+        createUpdate {
+                sql(
+                    """
+UPDATE invoice
+SET status = ${bind(InvoiceStatus.REPLACED)}
+WHERE id = ${bind(replacedInvoiceId)}
+"""
+                )
+            }
+            .updateExactlyOne()
     }
 }

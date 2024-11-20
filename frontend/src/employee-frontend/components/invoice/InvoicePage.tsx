@@ -19,10 +19,11 @@ import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
 import { invoiceCodesQuery, invoiceDetailsQuery } from '../invoices/queries'
 
-import Actions from './Actions'
+import { MarkSent } from './Actions'
 import InvoiceDetailsSection from './InvoiceDetailsSection'
 import InvoiceHeadOfFamilySection from './InvoiceHeadOfFamilySection'
 import InvoiceRowsSection from './InvoiceRowsSection'
+import { ReplacementDraftForm, ReplacementInfo } from './ReplacementDraftInfo'
 import Sum from './Sum'
 import { formatInvoicePeriod } from './utils'
 
@@ -79,7 +80,13 @@ export default React.memo(function InvoiceDetailsPage() {
                 previousSum={response.replacedInvoice?.totalPrice}
                 data-qa="total-sum"
               />
-              <Actions invoiceResponse={response} />
+              {response.invoice.status === 'WAITING_FOR_SENDING' ? (
+                <MarkSent invoiceResponse={response} />
+              ) : response.invoice.status === 'REPLACEMENT_DRAFT' ? (
+                <ReplacementDraftForm invoiceResponse={response} />
+              ) : response.invoice.replacementReason !== null ? (
+                <ReplacementInfo invoiceResponse={response} />
+              ) : null}
             </ContentArea>
           )
         )}

@@ -15,24 +15,21 @@ type Props = {
   invoiceResponse: InvoiceDetailedResponse
 }
 
-const Actions = React.memo(function Actions({ invoiceResponse }: Props) {
+export const MarkSent = React.memo(function MarkSent({
+  invoiceResponse
+}: Props) {
   const { i18n } = useTranslation()
   const { invoice, permittedActions } = invoiceResponse
 
-  return (
+  return permittedActions.includes('MARK_SENT') ? (
     <FixedSpaceRow justifyContent="flex-end">
-      {permittedActions.includes('MARK_SENT') &&
-      invoice.status === 'WAITING_FOR_SENDING' ? (
-        <MutateButton
-          primary
-          text={i18n.invoice.form.buttons.markSent}
-          mutation={markInvoicesSentMutation}
-          onClick={() => ({ body: [invoice.id] })}
-          data-qa="invoice-actions-mark-sent"
-        />
-      ) : null}
+      <MutateButton
+        primary
+        text={i18n.invoice.form.buttons.markSent}
+        mutation={markInvoicesSentMutation}
+        onClick={() => ({ body: [invoice.id] })}
+        data-qa="invoice-actions-mark-sent"
+      />
     </FixedSpaceRow>
-  )
+  ) : null
 })
-
-export default Actions

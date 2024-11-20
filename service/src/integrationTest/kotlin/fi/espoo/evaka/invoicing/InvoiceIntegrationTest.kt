@@ -26,7 +26,6 @@ import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -58,6 +57,8 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.toPersonBasic
 import fi.espoo.evaka.toPersonDetailed
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -524,12 +525,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             draft.copy(
                 status = InvoiceStatus.SENT,
                 number = 5000000002L,
-                sentBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                sentBy = testDecisionMaker_1.evakaUserId,
             )
 
-        assertDetailedEqualEnough(listOf(toDetailed(updated)), listOf(result))
+        assertDetailedEqualEnough(
+            listOf(toDetailed(updated, testDecisionMaker_1.evakaUser)),
+            listOf(result),
+        )
         assertEquals(InvoiceStatus.SENT, result.status)
-        assertEquals(testDecisionMaker_1.id.raw, result.sentBy?.raw)
+        assertEquals(testDecisionMaker_1.evakaUser, result.sentBy)
         assertNotNull(result.sentAt)
     }
 
@@ -619,14 +623,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val result = getInvoice(invoice.id).invoice
 
         val updated =
-            invoice.copy(
-                status = InvoiceStatus.SENT,
-                sentBy = EvakaUserId(testDecisionMaker_1.id.raw),
-            )
+            invoice.copy(status = InvoiceStatus.SENT, sentBy = testDecisionMaker_1.evakaUserId)
 
-        assertDetailedEqualEnough(listOf(toDetailed(updated)), listOf(result))
+        assertDetailedEqualEnough(
+            listOf(toDetailed(updated, testDecisionMaker_1.evakaUser)),
+            listOf(result),
+        )
         assertEquals(InvoiceStatus.SENT, result.status)
-        assertEquals(testDecisionMaker_1.id.raw, result.sentBy?.raw)
+        assertEquals(testDecisionMaker_1.evakaUser, result.sentBy)
         assertNotNull(result.sentAt)
     }
 
@@ -847,7 +851,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
         db.transaction { tx -> tx.searchInvoices(status) }
 
-    private fun toDetailed(invoice: DevInvoice): InvoiceDetailed =
+    private fun toDetailed(
+        invoice: DevInvoice,
+        sentBy: EvakaUser =
+            EvakaUser(
+                id = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                name = "eVaka",
+                type = EvakaUserType.SYSTEM,
+            ),
+    ): InvoiceDetailed =
         InvoiceDetailed(
             id = invoice.id,
             status = invoice.status,
@@ -891,9 +903,11 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 },
             number = invoice.number,
-            sentBy = invoice.sentBy,
+            sentBy = sentBy,
             sentAt = invoice.sentAt,
             relatedFeeDecisions = emptyList(),
+            replacementNotes = null,
+            replacementReason = null,
         )
 
     private fun toSummary(invoice: DevInvoice): InvoiceSummary =

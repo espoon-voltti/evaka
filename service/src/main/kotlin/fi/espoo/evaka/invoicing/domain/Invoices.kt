@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.service.ProductKey
@@ -19,6 +20,7 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.user.EvakaUser
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -56,11 +58,13 @@ data class InvoiceDetailed(
     @Nested("codebtor") val codebtor: PersonDetailed?,
     @Json val rows: List<InvoiceRowDetailed>,
     val number: Long?,
-    val sentBy: EvakaUserId?,
+    @Nested("sent_by") val sentBy: EvakaUser?,
     val sentAt: HelsinkiDateTime?,
     @Json val relatedFeeDecisions: List<RelatedFeeDecision>,
     val revisionNumber: Int,
     val replacedInvoiceId: InvoiceId?,
+    val replacementReason: InvoiceReplacementReason?,
+    val replacementNotes: String?,
 ) {
     val account: Int = 3295
     val totalPrice
@@ -147,4 +151,16 @@ data class DraftInvoiceRow(
 ) : RowWithPrice {
     override val price: Int
         get() = amount * unitPrice
+}
+
+@ConstList("invoiceReplacementReasons")
+enum class InvoiceReplacementReason : DatabaseEnum {
+    SERVICE_NEED,
+    ABSENCE,
+    INCOME,
+    FAMILY_SIZE,
+    RELIEF_RETROACTIVE,
+    OTHER;
+
+    override val sqlType = "invoice_replacement_reason"
 }

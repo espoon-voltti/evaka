@@ -15,6 +15,7 @@ import {
   sendInvoices,
   sendInvoicesByDate
 } from '../../generated/api-clients/invoicing'
+import { markReplacementDraftSent } from '../../generated/api-clients/invoicing'
 import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('invoices', {
@@ -75,4 +76,9 @@ export const deleteDraftInvoicesMutation = mutation({
     queryKeys.invoicesAll(),
     queryKeys.invoiceDetailsAll()
   ]
+})
+
+export const markReplacementDraftSentMutation = mutation({
+  api: markReplacementDraftSent,
+  invalidateQueryKeys: (arg) => [queryKeys.invoiceDetails(arg.invoiceId)]
 })

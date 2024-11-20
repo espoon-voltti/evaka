@@ -2134,6 +2134,15 @@ data class DevEmployee(
     val evakaUserId: EvakaUserId
         @JsonIgnore get() = EvakaUserId(id.raw)
 
+    val evakaUser: EvakaUser
+        @JsonIgnore
+        get() =
+            EvakaUser(
+                id = evakaUserId,
+                name = "$lastName $firstName",
+                type = EvakaUserType.EMPLOYEE,
+            )
+
     val user: AuthenticatedUser.Employee
         @JsonIgnore get() = AuthenticatedUser.Employee(id, roles)
 }
