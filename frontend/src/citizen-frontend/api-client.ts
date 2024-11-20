@@ -11,6 +11,7 @@ export const API_URL = '/api/application'
 export const client = axios.create({
   baseURL: API_URL
 })
+client.defaults.headers.common['x-evaka-csrf'] = '1'
 
 export const setAntiCsrfToken = (value: string | undefined) => {
   for (const method of ['delete', 'patch', 'post', 'put'] as const) {
