@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { AcceptDecisionRequest } from 'lib-common/generated/api-types/application'
+import { AcceptPlacementProposalRequest } from 'lib-common/generated/api-types/application'
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { ApplicationNoteResponse } from 'lib-common/generated/api-types/application'
 import { ApplicationResponse } from 'lib-common/generated/api-types/application'
@@ -62,12 +63,14 @@ export async function acceptDecision(
 */
 export async function acceptPlacementProposal(
   request: {
-    unitId: UUID
+    unitId: UUID,
+    body: AcceptPlacementProposalRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/placement-proposals/${request.unitId}/accept`.toString(),
-    method: 'POST'
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<AcceptPlacementProposalRequest>
   })
   return json
 }

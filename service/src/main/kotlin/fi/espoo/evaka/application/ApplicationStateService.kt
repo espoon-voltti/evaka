@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
+import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentType
@@ -694,6 +695,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         unitId: DaycareId,
+        rejectReasonTranslations: Map<PlacementPlanRejectReason, String>,
     ) {
         accessControl.requirePermissionFor(
             tx,
@@ -703,17 +705,40 @@ class ApplicationStateService(
             unitId,
         )
 
-        tx.execute {
-            sql(
-                """
+        val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
+        data class PlacementPlanReject(
+            val applicationId: ApplicationId,
+            val unitRejectReason: PlacementPlanRejectReason,
+            val unitRejectOtherReason: String?,
+        )
+        tx.createUpdate {
+                sql(
+                    """
                 UPDATE placement_plan
                 SET unit_confirmation_status = 'REJECTED'
                 WHERE 
                     unit_id = ${bind(unitId)} AND
                     unit_confirmation_status = 'REJECTED_NOT_CONFIRMED'
+                RETURNING application_id, unit_reject_reason, unit_reject_other_reason
                 """
-            )
-        }
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            .toList<PlacementPlanReject>()
+            .forEach { placementPlan ->
+                val reason =
+                    rejectReasonTranslations[placementPlan.unitRejectReason]?.let { translation ->
+                        val otherReason =
+                            placementPlan.unitRejectOtherReason?.takeIf {
+                                placementPlan.unitRejectReason == PlacementPlanRejectReason.OTHER &&
+                                    it.isNotBlank()
+                            }
+                        "Sijoitusehdotus hylätty (${unit.name}) - $translation${if (otherReason != null) ": $otherReason" else ""}"
+                    }
+                if (reason != null) {
+                    tx.createApplicationNote(placementPlan.applicationId, reason, user.evakaUserId)
+                }
+            }
 
         val validIds =
             tx.createQuery {

@@ -528,10 +528,17 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
+        @RequestBody body: AcceptPlacementProposalRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.confirmPlacementProposalChanges(it, user, clock, unitId)
+                applicationStateService.confirmPlacementProposalChanges(
+                    it,
+                    user,
+                    clock,
+                    unitId,
+                    body.rejectReasonTranslations,
+                )
             }
         }
     }
@@ -784,6 +791,10 @@ data class PlacementProposalConfirmationUpdate(
     val status: PlacementPlanConfirmationStatus,
     val reason: PlacementPlanRejectReason?,
     val otherReason: String?,
+)
+
+data class AcceptPlacementProposalRequest(
+    val rejectReasonTranslations: Map<PlacementPlanRejectReason, String>
 )
 
 data class DaycarePlacementPlan(

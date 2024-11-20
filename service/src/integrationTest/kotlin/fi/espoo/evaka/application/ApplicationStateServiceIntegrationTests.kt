@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
@@ -22,6 +23,7 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
+import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
@@ -78,12 +80,14 @@ import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import kotlin.enums.enumEntries
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -1388,13 +1392,23 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED,
             )
-            service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
+            service.confirmPlacementProposalChanges(
+                tx,
+                serviceWorker,
+                clock,
+                testDaycare.id,
+                rejectReasonTranslations =
+                    enumEntries<PlacementPlanRejectReason>().associateBy({ it }, { it.name }),
+            )
         }
         asyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
+
+            val notes = tx.getApplicationNotes(applicationId)
+            assertEquals(emptyList(), notes)
 
             val decisionsByApplication =
                 tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
@@ -1455,13 +1469,23 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED,
             )
-            service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
+            service.confirmPlacementProposalChanges(
+                tx,
+                serviceWorker,
+                clock,
+                testDaycare.id,
+                rejectReasonTranslations =
+                    enumEntries<PlacementPlanRejectReason>().associateBy({ it }, { it.name }),
+            )
         }
         asyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
+
+            val notes = tx.getApplicationNotes(applicationId)
+            assertEquals(emptyList(), notes)
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
@@ -1481,6 +1505,155 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             assertEquals(1, tx.getParentships(testAdult_1.id, testChild_2.id).size)
             assertEquals(0, tx.getParentships(testAdult_2.id, testChild_2.id).size)
+        }
+    }
+
+    @Test
+    fun `confirmPlacementProposalChanges - reject reason is copied to application notes`() {
+        val rejectReason = "päiväkoti täynnä"
+        db.transaction { tx ->
+            // given
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                child = testChild_2,
+                guardian = testAdult_1,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+            )
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                clock,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
+            )
+            service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.respondToPlacementProposal(
+                tx,
+                serviceWorker,
+                clock,
+                applicationId,
+                PlacementPlanConfirmationStatus.REJECTED_NOT_CONFIRMED,
+                PlacementPlanRejectReason.REASON_1,
+            )
+            service.confirmPlacementProposalChanges(
+                tx,
+                serviceWorker,
+                clock,
+                testDaycare.id,
+                rejectReasonTranslations = mapOf(PlacementPlanRejectReason.REASON_1 to rejectReason),
+            )
+        }
+        asyncJobRunner.runPendingJobsSync(clock)
+        db.read { tx ->
+            // then
+            val application = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
+
+            val notes = tx.getApplicationNotes(applicationId)
+            assertThat(notes)
+                .extracting({ it.applicationId }, { it.content }, { it.createdBy })
+                .containsExactly(
+                    Tuple(
+                        applicationId,
+                        "Sijoitusehdotus hylätty (${testDaycare.name}) - $rejectReason",
+                        serviceWorker.evakaUserId,
+                    )
+                )
+
+            val decisionsByApplication =
+                tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
+            assertEquals(2, decisionsByApplication.size)
+            decisionsByApplication.forEach { decision ->
+                assertNull(decision.sentDate)
+                assertNull(decision.documentKey)
+            }
+            val messages = MockSfiMessagesClient.getMessages()
+            assertEquals(0, messages.size)
+        }
+    }
+
+    @Test
+    fun `confirmPlacementProposalChanges - reject other reason is copied to application notes`() {
+        val rejectReason = "päiväkoti täynnä"
+        db.transaction { tx ->
+            // given
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                child = testChild_2,
+                guardian = testAdult_1,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+            )
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                clock,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
+            )
+            service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.respondToPlacementProposal(
+                tx,
+                serviceWorker,
+                clock,
+                applicationId,
+                PlacementPlanConfirmationStatus.REJECTED_NOT_CONFIRMED,
+                PlacementPlanRejectReason.OTHER,
+                rejectReason,
+            )
+            service.confirmPlacementProposalChanges(
+                tx,
+                serviceWorker,
+                clock,
+                testDaycare.id,
+                rejectReasonTranslations = mapOf(PlacementPlanRejectReason.OTHER to "Muu syy"),
+            )
+        }
+        asyncJobRunner.runPendingJobsSync(clock)
+        db.read { tx ->
+            // then
+            val application = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
+
+            val notes = tx.getApplicationNotes(applicationId)
+            assertThat(notes)
+                .extracting({ it.applicationId }, { it.content }, { it.createdBy })
+                .containsExactly(
+                    Tuple(
+                        applicationId,
+                        "Sijoitusehdotus hylätty (${testDaycare.name}) - Muu syy: $rejectReason",
+                        serviceWorker.evakaUserId,
+                    )
+                )
+
+            val decisionsByApplication =
+                tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
+            assertEquals(2, decisionsByApplication.size)
+            decisionsByApplication.forEach { decision ->
+                assertNull(decision.sentDate)
+                assertNull(decision.documentKey)
+            }
+            val messages = MockSfiMessagesClient.getMessages()
+            assertEquals(0, messages.size)
         }
     }
 

@@ -300,7 +300,13 @@ export default React.memo(function PlacementProposals({
           <MutateButton
             data-qa="placement-proposals-accept-button"
             mutation={acceptPlacementProposalMutation}
-            onClick={() => ({ unitId })}
+            onClick={() => ({
+              unitId,
+              body: {
+                rejectReasonTranslations:
+                  i18n.unit.placementProposals.rejectReasons
+              }
+            })}
             onSuccess={() => undefined}
             onFailure={onAcceptFailure}
             disabled={acceptDisabled}
