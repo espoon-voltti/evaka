@@ -76,7 +76,9 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   const partTimeOptions = useMemo(
     () =>
       optionsValidAtTime.filter(
-        (opt) => opt.validPlacementType === 'DAYCARE_PART_TIME'
+        (opt) =>
+          opt.validPlacementType === 'DAYCARE_PART_TIME' ||
+          opt.validPlacementType === 'PRESCHOOL_DAYCARE_ONLY'
       ),
     [optionsValidAtTime]
   )
@@ -171,20 +173,23 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
     return (
       <FixedSpaceColumn>
-        {placementTypes.includes('DAYCARE_PART_TIME') && (
-          <Radio
-            id="service-need-part-time-true"
-            label={t.applications.editor.serviceNeed.partTime.true}
-            checked={formData.partTime}
-            data-qa="partTime-input-true"
-            onChange={() =>
-              updateFormData({
-                partTime: true,
-                serviceNeedOption: partTimeOptions[0] ?? null
-              })
-            }
-          />
-        )}
+        {(placementTypes.includes('DAYCARE_PART_TIME') ||
+          placementTypes.includes('PRESCHOOL_DAYCARE_ONLY')) &&
+          (!featureFlags.daycareApplication.serviceNeedOption ||
+            partTimeOptions.length > 0) && (
+            <Radio
+              id="service-need-part-time-true"
+              label={t.applications.editor.serviceNeed.partTime.true}
+              checked={formData.partTime}
+              data-qa="partTime-input-true"
+              onChange={() =>
+                updateFormData({
+                  partTime: true,
+                  serviceNeedOption: partTimeOptions[0] ?? null
+                })
+              }
+            />
+          )}
         {formData.partTime && partTimeOptions.length > 0 && (
           <SubRadios>
             <FixedSpaceColumn spacing="xs">

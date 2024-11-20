@@ -135,8 +135,10 @@ data class ApplicationDetails(
                 }
             }
             ApplicationType.DAYCARE ->
-                if (form.preferences.serviceNeed?.partTime == true) PlacementType.DAYCARE_PART_TIME
-                else PlacementType.DAYCARE
+                form.preferences.serviceNeed?.serviceNeedOption?.validPlacementType
+                    ?: if (form.preferences.serviceNeed?.partTime == true)
+                        PlacementType.DAYCARE_PART_TIME
+                    else PlacementType.DAYCARE
             ApplicationType.CLUB -> PlacementType.CLUB
         }
 }

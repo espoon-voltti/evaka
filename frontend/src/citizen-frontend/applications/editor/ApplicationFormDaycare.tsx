@@ -37,7 +37,11 @@ export default React.memo(function ApplicationFormDaycare({
   const serviceNeedOptions = useQueryResult(
     featureFlags.daycareApplication.serviceNeedOption
       ? serviceNeedOptionPublicInfosQuery({
-          placementTypes: ['DAYCARE', 'DAYCARE_PART_TIME']
+          placementTypes: [
+            'DAYCARE',
+            'DAYCARE_PART_TIME',
+            'PRESCHOOL_DAYCARE_ONLY'
+          ]
         })
       : constantQuery([])
   )
