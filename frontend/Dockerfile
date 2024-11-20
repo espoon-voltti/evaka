@@ -62,7 +62,7 @@ ARG S3_DOWNLOADER_SHA256="520ea232e83a7cefe2a87d4f2af8433e383a4351464e213b7dd3b7
 
 RUN apt-get update \
  && apt-get -y dist-upgrade \
- && apt-get remove --auto-remove -y nginx-module-image-filter \
+ && apt-get remove --auto-remove -y nginx-module-image-filter nginx-module-njs nginx-module-xslt \
  && curl -sSfL "https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64" \
        -o /bin/gomplate \
  && chmod +x /bin/gomplate \
