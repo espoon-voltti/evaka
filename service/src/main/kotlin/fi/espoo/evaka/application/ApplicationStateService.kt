@@ -705,7 +705,7 @@ class ApplicationStateService(
             unitId,
         )
 
-        val unit = tx.getDaycare(unitId)!!
+        val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
         data class PlacementPlanReject(
             val applicationId: ApplicationId,
             val unitRejectReason: PlacementPlanRejectReason,
