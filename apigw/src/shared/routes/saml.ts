@@ -43,9 +43,9 @@ export class SamlError extends Error {
        * Redirect the browser to this URL if possible using status 301
        */
       redirectUrl?: string
-    }
+    } & ErrorOptions
   ) {
-    super(message)
+    super(message, options)
     this.name = 'SamlError'
   }
 }
@@ -115,7 +115,8 @@ export default function createSamlRouter(
           `Error logging user in. Error: ${err?.toString()}`
         )
         throw new SamlError('Login failed', {
-          redirectUrl: errorRedirectUrl(err)
+          redirectUrl: errorRedirectUrl(err),
+          cause: err
         })
       }
     })
@@ -154,7 +155,8 @@ export default function createSamlRouter(
           `Failed to authenticate user. Description: ${description}. Error: ${err?.toString()}`
         )
         throw new SamlError('Login failed', {
-          redirectUrl: errorRedirectUrl(err)
+          redirectUrl: errorRedirectUrl(err),
+          cause: err
         })
       }
       try {
@@ -183,7 +185,8 @@ export default function createSamlRouter(
           `Error logging user in. Error: ${err?.toString()}`
         )
         throw new SamlError('Login failed', {
-          redirectUrl: errorRedirectUrl(err)
+          redirectUrl: errorRedirectUrl(err),
+          cause: err
         })
       }
     })
@@ -221,7 +224,10 @@ export default function createSamlRouter(
           req,
           `Logout failed. Error: ${err?.toString()}.`
         )
-        throw new SamlError('Logout failed', { redirectUrl: defaultPageUrl })
+        throw new SamlError('Logout failed', {
+          redirectUrl: defaultPageUrl,
+          cause: err
+        })
       }
     })
   )
@@ -274,7 +280,10 @@ export default function createSamlRouter(
           req,
           `Logout failed. Error: ${err?.toString()}.`
         )
-        throw new SamlError('Logout failed', { redirectUrl: defaultPageUrl })
+        throw new SamlError('Logout failed', {
+          redirectUrl: defaultPageUrl,
+          cause: err
+        })
       }
     })
   // The IDP makes the browser either GET or POST one of these endpoints in two
