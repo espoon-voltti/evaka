@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.util.stream.Stream
 import kotlin.test.*
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -36,6 +37,14 @@ class PasswordTest {
             .stream()
 
     private val jsonMapper = defaultJsonMapperBuilder().build()
+
+    @ParameterizedTest
+    @MethodSource("algorithms")
+    fun `no validation error is thrown when a placeholder password is generated`(
+        algorithm: PasswordHashAlgorithm
+    ) {
+        assertDoesNotThrow { algorithm.placeholder() }
+    }
 
     @ParameterizedTest
     @MethodSource("algorithms")

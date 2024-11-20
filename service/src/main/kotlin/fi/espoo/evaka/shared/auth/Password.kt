@@ -25,6 +25,12 @@ import org.bouncycastle.util.Arrays
 
 /** A hashed and encoded password */
 data class EncodedPassword(val algorithm: PasswordHashAlgorithm, val salt: Salt, val hash: Hash) {
+    init {
+        require(algorithm.hashLength() == hash.length()) {
+            "Invalid password hash length: expected ${algorithm.hashLength()} bytes, got ${hash.length()}"
+        }
+    }
+
     /**
      * Returns true if this encoded password matches the given raw password string.
      *
@@ -64,6 +70,8 @@ data class EncodedPassword(val algorithm: PasswordHashAlgorithm, val salt: Salt,
 
         override fun hashCode(): Int = Arrays.hashCode(value)
 
+        fun length(): Int = value.size
+
         @JsonValue override fun toString(): String = Base64.getEncoder().encodeToString(value)
 
         companion object {
@@ -89,6 +97,9 @@ sealed class PasswordHashAlgorithm {
 
     abstract fun hash(salt: EncodedPassword.Salt, password: Sensitive<String>): EncodedPassword.Hash
 
+    /** Length of the generated hash in bytes */
+    abstract fun hashLength(): Int
+
     /**
      * Returns a placeholder password that can be used for constant-time checks when a real encoded
      * password is not available.
@@ -108,6 +119,8 @@ sealed class PasswordHashAlgorithm {
         enum class Version(val rawValue: Int) {
             VERSION_13(Argon2Parameters.ARGON2_VERSION_13)
         }
+
+        override fun hashLength(): Int = hashLength
 
         override fun hash(
             salt: EncodedPassword.Salt,
@@ -143,6 +156,8 @@ sealed class PasswordHashAlgorithm {
             SHA512,
         }
 
+        override fun hashLength(): Int = keySize / 8
+
         override fun hash(
             salt: EncodedPassword.Salt,
             password: Sensitive<String>,
@@ -163,7 +178,7 @@ sealed class PasswordHashAlgorithm {
             EncodedPassword(
                 this,
                 EncodedPassword.Salt.generate(SECURE_RANDOM),
-                EncodedPassword.Hash(ByteArray(size = keySize / 8)),
+                EncodedPassword.Hash(ByteArray(size = hashLength())),
             )
     }
 
