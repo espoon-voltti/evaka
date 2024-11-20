@@ -133,8 +133,7 @@ export default function createSamlRouter(
       } catch (err) {
         if (
           err instanceof Error &&
-          err.message === 'InResponseTo is not valid' &&
-          req.user
+          err.message === 'InResponseTo is not valid'
         ) {
           // When user uses browse back functionality after login we get invalid InResponseTo
           // This will ignore the error
