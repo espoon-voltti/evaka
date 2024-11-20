@@ -857,7 +857,7 @@ export default {
               'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa',
             name: 'Sisaruksen nimi',
             ssn: 'Sisaruksen henkilötunnus',
-            unit: 'Sisaruksen koulu'
+            unit: 'Sisaruksen koulu / päiväkoti'
           },
           units: {
             title: 'Hakutoiveet',
