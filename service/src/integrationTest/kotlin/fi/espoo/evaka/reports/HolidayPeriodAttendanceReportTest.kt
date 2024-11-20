@@ -999,7 +999,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(
                 DevPreschoolAssistance(
                     childId = testChildBertil.id,
-                    validDuring = FiniteDateRange(monday, tuesday),
+                    validDuring = FiniteDateRange(monday.minusMonths(2), tuesday),
                 )
             )
 
@@ -1035,7 +1035,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(
                 DevDaycareAssistance(
                     childId = testChildCecil.id,
-                    validDuring = FiniteDateRange(monday, wednesday),
+                    validDuring = FiniteDateRange(monday.minusMonths(3), wednesday),
                 )
             )
 

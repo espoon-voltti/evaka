@@ -18,13 +18,12 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.reservations.getReservationBackupPlacements
 import fi.espoo.evaka.reservations.getReservations
 import fi.espoo.evaka.serviceneed.ShiftCareType
-import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateMap
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -136,25 +135,13 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                 DateMap.of(entry.value.map { it.validDuring to it.capacityFactor })
                             }
 
-                    val daycareAssistanceByChild =
-                        tx.getDaycareAssistanceInfoByChildIdsAndPeriod(
+                    val assistanceRangesByChild =
+                        tx.getAssistanceRanges(
                                 directlyPlacedChildren + backupChildrenInUnit,
                                 holidayPeriod.period,
                             )
                             .groupBy { it.childId }
-                            .mapValues { entry ->
-                                DateMap.of(entry.value.map { it.validDuring to it.id })
-                            }
-
-                    val preschoolAssistanceByChild =
-                        tx.getPreschoolAssistanceInfoByChildIdsAndPeriod(
-                                directlyPlacedChildren + backupChildrenInUnit,
-                                holidayPeriod.period,
-                            )
-                            .groupBy { it.childId }
-                            .mapValues { entry ->
-                                DateMap.of(entry.value.map { it.validDuring to it.id })
-                            }
+                            .mapValues { entry -> DateSet.of(entry.value.map { it.validDuring }) }
 
                     val operationDaysByChild =
                         tx.getOperationalDatesForChildren(
@@ -249,10 +236,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                             assistanceChildren =
                                 confirmedPresent
                                     .filter {
-                                        (daycareAssistanceByChild[it.child.id]?.getValue(date)
-                                            ?: preschoolAssistanceByChild[it.child.id]?.getValue(
-                                                date
-                                            )) != null
+                                        assistanceRangesByChild[it.child.id]?.includes(date) == true
                                     }
                                     .map { (child) ->
                                         ChildWithName(
@@ -396,50 +380,27 @@ AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(period)}
         }
         .toList<ChildServiceNeedOccupancyInfo>()
 
-private data class DaycareAssistanceInfo(
-    val id: DaycareAssistanceId,
-    val childId: PersonId,
-    val validDuring: FiniteDateRange,
-)
+private data class AssistanceRange(val childId: PersonId, val validDuring: FiniteDateRange)
 
-private data class PreschoolAssistanceInfo(
-    val id: PreschoolAssistanceId,
-    val childId: PersonId,
-    val validDuring: FiniteDateRange,
-)
-
-private fun Database.Read.getDaycareAssistanceInfoByChildIdsAndPeriod(
+private fun Database.Read.getAssistanceRanges(
     childIds: Set<PersonId>,
     period: FiniteDateRange,
-): List<DaycareAssistanceInfo> =
+): List<AssistanceRange> =
     if (childIds.isEmpty()) emptyList()
     else
         createQuery {
                 sql(
                     """
-SELECT d.id, d.child_id, d.valid_during
+SELECT d.child_id, d.valid_during * ${bind(period)} as valid_during
 FROM daycare_assistance d
-WHERE child_id = ANY(${bind(childIds)})
-AND d.valid_during && ${bind(period)}
-"""
-                )
-            }
-            .toList<DaycareAssistanceInfo>()
+WHERE child_id = ANY(${bind(childIds)}) AND d.valid_during && ${bind(period)}
 
-private fun Database.Read.getPreschoolAssistanceInfoByChildIdsAndPeriod(
-    childIds: Set<PersonId>,
-    period: FiniteDateRange,
-): List<PreschoolAssistanceInfo> =
-    if (childIds.isEmpty()) emptyList()
-    else
-        createQuery {
-                sql(
-                    """
-SELECT p.id, p.child_id, p.valid_during
+UNION ALL
+
+SELECT p.child_id, p.valid_during * ${bind(period)} as valid_during
 FROM preschool_assistance p
-WHERE child_id = ANY(${bind(childIds)})
-AND p.valid_during && ${bind(period)}
+WHERE child_id = ANY(${bind(childIds)}) AND p.valid_during && ${bind(period)}
 """
                 )
             }
-            .toList<PreschoolAssistanceInfo>()
+            .toList<AssistanceRange>()
