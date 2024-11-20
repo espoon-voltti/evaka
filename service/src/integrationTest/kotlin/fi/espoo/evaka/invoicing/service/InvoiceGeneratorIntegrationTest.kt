@@ -5656,8 +5656,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             invoiceGenerator(
                 invoiceGenerationLogicChooser =
                     object : InvoiceGenerationLogicChooser {
-                        override fun getFreeChildren(tx: Database.Read, month: YearMonth) =
-                            setOf(testChild_1.id)
+                        override fun getFreeChildren(
+                            tx: Database.Read,
+                            month: YearMonth,
+                            childIds: Set<ChildId>,
+                        ): Set<ChildId> {
+                            assertEquals(setOf(testChild_1.id), childIds)
+                            return childIds
+                        }
                     }
             )
 
