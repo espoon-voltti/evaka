@@ -701,7 +701,7 @@ class ApplicationControllerV2(
     ): UnitApplications {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.hasPermissionFor(
+                    accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
