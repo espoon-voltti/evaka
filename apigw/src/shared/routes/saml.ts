@@ -40,6 +40,10 @@ export class SamlError extends Error {
     message: string,
     public options?: {
       /**
+       * True if this error should not be logged by the error middleware
+       */
+      silent?: boolean
+      /**
        * Redirect the browser to this URL if possible using status 301
        */
       redirectUrl?: string
@@ -132,32 +136,44 @@ export default function createSamlRouter(
       try {
         profile = await validateSamlLoginResponse(req)
       } catch (err) {
-        if (
-          err instanceof Error &&
-          err.message === 'InResponseTo is not valid' &&
-          req.user
-        ) {
-          // When user uses browse back functionality after login we get invalid InResponseTo
-          // This will ignore the error
-          const redirectUrl = validateRelayStateUrl(req) ?? defaultPageUrl
-          logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
-          return res.redirect(redirectUrl)
-        }
+        if (err instanceof Error && err.message === 'InResponseTo is not valid')
+          // These errors can happen for example when the user browses back to the login callback after login
+          throw new SamlError('Login failed', {
+            redirectUrl: req.user
+              ? validateRelayStateUrl(req) ?? defaultPageUrl
+              : errorRedirectUrl(err),
+            cause: err,
+            // just ignore without logging to reduce noise in logs
+            silent: true
+          })
 
         const samlError = samlErrorSchema.safeParse(err)
-        const description =
-          (samlError.success
-            ? parseDescriptionFromSamlError(samlError.data, req)
-            : undefined) || 'Could not parse SAML message'
-        logAuditEvent(
-          eventCode('sign_in_failed'),
-          req,
-          `Failed to authenticate user. Description: ${description}. ${err?.toString()}`
-        )
-        throw new SamlError('Login failed', {
-          redirectUrl: errorRedirectUrl(err),
-          cause: err
-        })
+        if (samlError.success) {
+          const description =
+            parseDescriptionFromSamlError(samlError.data, req) ??
+            'Could not parse SAML message'
+          logAuditEvent(
+            eventCode('sign_in_failed'),
+            req,
+            `Failed to authenticate user. Description: ${description}. ${err?.toString()}`
+          )
+          throw new SamlError('Login failed', {
+            redirectUrl: errorRedirectUrl(err),
+            cause: err,
+            // just ignore without logging to reduce noise in logs
+            silent: true
+          })
+        } else {
+          logAuditEvent(
+            eventCode('sign_in_failed'),
+            req,
+            `Failed to authenticate user. ${err?.toString()}`
+          )
+          throw new SamlError('Login failed', {
+            redirectUrl: errorRedirectUrl(err),
+            cause: err
+          })
+        }
       }
       try {
         const user = await authenticate(profile)
@@ -275,15 +291,41 @@ export default function createSamlRouter(
         }
         return res.redirect(url)
       } catch (err) {
-        logAuditEvent(
-          eventCode('sign_out_failed'),
-          req,
-          `Logout failed. ${err?.toString()}.`
-        )
-        throw new SamlError('Logout failed', {
-          redirectUrl: defaultPageUrl,
-          cause: err
-        })
+        if (err instanceof Error && err.message === 'InResponseTo is not valid')
+          throw new SamlError('Logout failed', {
+            redirectUrl: validateRelayStateUrl(req) ?? defaultPageUrl,
+            cause: err,
+            // just ignore without logging to reduce noise in logs
+            silent: true
+          })
+
+        const samlError = samlErrorSchema.safeParse(err)
+        if (samlError.success) {
+          const description =
+            parseDescriptionFromSamlError(samlError.data, req) ??
+            'Could not parse SAML message'
+          logAuditEvent(
+            eventCode('sign_out_failed'),
+            req,
+            `Logout failed. Description: ${description}. ${err?.toString()}`
+          )
+          throw new SamlError('Logout failed', {
+            redirectUrl: validateRelayStateUrl(req) ?? defaultPageUrl,
+            cause: err,
+            // just ignore without logging to reduce noise in logs
+            silent: true
+          })
+        } else {
+          logAuditEvent(
+            eventCode('sign_out_failed'),
+            req,
+            `Logout failed. ${err?.toString()}`
+          )
+          throw new SamlError('Logout failed', {
+            redirectUrl: validateRelayStateUrl(req) ?? defaultPageUrl,
+            cause: err
+          })
+        }
       }
     })
   // The IDP makes the browser either GET or POST one of these endpoints in two
