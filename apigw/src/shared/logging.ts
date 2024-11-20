@@ -69,6 +69,13 @@ export const logInfo: LogFn = (msg, req?, meta?) => log('info', msg, req, meta)
 export const logDebug: LogFn = (msg, req?, meta?) =>
   log('debug', msg, req, meta)
 
+function formatStackTrace(e: Error): string {
+  const stack = e.stack ?? ''
+  return e.cause instanceof Error
+    ? `${stack}\nCause: ${formatStackTrace(e.cause)}`
+    : stack
+}
+
 function log(
   level: LogLevel,
   msg: string,
@@ -87,7 +94,7 @@ function log(
   if (level === 'error') {
     extraFields.exception =
       err?.name ?? err?.constructor?.name ?? 'Unknown Error'
-    extraFields.stackTrace = err?.stack
+    extraFields.stackTrace = err ? formatStackTrace(err) : undefined
   }
 
   logger[level](extraFields, msg)
