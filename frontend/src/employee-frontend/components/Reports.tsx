@@ -7,8 +7,7 @@ import React, { Fragment, ReactNode, useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -37,13 +36,11 @@ import {
   faUtensils
 } from 'lib-icons'
 
-import { getPermittedReports } from '../generated/api-clients/reports'
 import { useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
 import { AssistanceNeedDecisionReportContext } from './reports/AssistanceNeedDecisionReportContext'
-
-const getPermittedReportsResult = wrapResult(getPermittedReports)
+import { permittedReportsQuery } from './reports/queries'
 
 const ReportItems = styled.div`
   margin: 20px 0;
@@ -122,7 +119,7 @@ export default React.memo(function Reports() {
     AssistanceNeedDecisionReportContext
   )
 
-  const [permittedReports] = useApiState(getPermittedReportsResult, [])
+  const permittedReports = useQueryResult(permittedReportsQuery())
   const permittedReportsSet = useMemo(
     () => permittedReports.map((reports) => new Set(reports)),
     [permittedReports]
