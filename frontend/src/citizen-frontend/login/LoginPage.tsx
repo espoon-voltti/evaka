@@ -12,6 +12,7 @@ import { string } from 'lib-common/form/fields'
 import { object, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
+import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
 import Main from 'lib-components/atoms/Main'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
@@ -52,9 +53,8 @@ const getSafeNextPath = (nextParam: string | null) => {
   if (nextParam === null) {
     return null
   }
-
-  const url = new URL(nextParam, window.location.origin)
-
+  const url = parseUrlWithOrigin(window.location, nextParam)
+  if (!url) return null
   return `${url.pathname}${url.search}${url.hash}`
 }
 
