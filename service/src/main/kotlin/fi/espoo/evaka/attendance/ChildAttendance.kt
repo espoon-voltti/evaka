@@ -72,8 +72,8 @@ data class ChildAttendanceRow(
 data class AttendanceTimes(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
-    val modifiedAt: HelsinkiDateTime? = null,
-    @Nested("modified_by") val modifiedBy: EvakaUser? = null,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class ChildAbsence(val category: AbsenceCategory, val type: AbsenceType)

@@ -746,3 +746,10 @@ fun DevEmployee.toEvakaUser() =
         name = this.lastName + " " + this.firstName,
         type = EvakaUserType.EMPLOYEE,
     )
+
+fun DevPerson.toEvakaUser(type: EvakaUserType) =
+    EvakaUser(
+        id = EvakaUserId(this.id.raw),
+        name = this.lastName + " " + this.firstName,
+        type = type,
+    )

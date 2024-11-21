@@ -169,7 +169,11 @@ SELECT
   ar.child_id,
   ar.start_time,
   ar.end_time,
-  eu.type <> 'CITIZEN' as staff_created
+  eu.type <> 'CITIZEN' as staff_created,
+  ar.created_at,
+  eu.id AS created_by_id,
+  eu.name AS created_by_name,
+  eu.type AS created_by_type
 FROM attendance_reservation ar
 JOIN evaka_user eu ON ar.created_by = eu.id
 WHERE ${predicate(where.forTable("ar"))}
@@ -182,6 +186,12 @@ WHERE ${predicate(where.forTable("ar"))}
                 column("child_id"),
                 Reservation.of(column("start_time"), column("end_time")),
                 column("staff_created"),
+                column("created_at"),
+                EvakaUser(
+                    column("created_by_id"),
+                    column("created_by_name"),
+                    column("created_by_type"),
+                ),
             )
         }
 
@@ -534,7 +544,7 @@ SELECT pcd.child_id,
                      ar.end_time,
                      ar.created_at,
                      eu.id AS created_by_id,
-                     eu.name AS crated_by_name,
+                     eu.name AS created_by_name,
                      eu.type AS created_by_type,
                      eu.type <> 'CITIZEN' AS staff_created
                 FROM attendance_reservation ar

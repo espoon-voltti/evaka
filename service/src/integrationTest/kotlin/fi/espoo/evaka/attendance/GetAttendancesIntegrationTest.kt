@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
@@ -36,6 +37,7 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.toEvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -51,8 +53,12 @@ import org.springframework.beans.factory.annotation.Autowired
 class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var childAttendanceController: ChildAttendanceController
 
+    // TODO Re-write this a bit to use DevMobileDevice instead of what it actually does.
+
+    private val evakaUser2 = DevEmployee()
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
-    private val mobileUser2 = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
+    private val mobileUser2 =
+        AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()), evakaUser2.id)
     private val groupId = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
@@ -413,13 +419,21 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = now.toLocalDate(),
                     startTime = reservationStart,
                     endTime = reservationEnd,
+                    createdAt = now,
                     createdBy = mobileUser2.evakaUserId,
                 )
             )
         }
         val child = expectOneChild()
         assertEquals(
-            listOf(ReservationResponse.Times(TimeRange(reservationStart, reservationEnd), true)),
+            listOf(
+                ReservationResponse.Times(
+                    TimeRange(reservationStart, reservationEnd),
+                    true,
+                    now,
+                    evakaUser2.toEvakaUser(),
+                )
+            ),
             child.reservations,
         )
     }
@@ -438,7 +452,10 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
         val child = expectOneChild()
-        assertEquals(listOf(ReservationResponse.NoTimes(true)), child.reservations)
+        assertEquals(
+            listOf(ReservationResponse.NoTimes(true, now, evakaUser2.toEvakaUser())),
+            child.reservations,
+        )
     }
 
     @Test
@@ -467,7 +484,14 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val childInBackup = expectOneChild(backupUnitId, mobileUser2)
         assertEquals(
-            listOf(ReservationResponse.Times(TimeRange(reservationStart, reservationEnd), true)),
+            listOf(
+                ReservationResponse.Times(
+                    TimeRange(reservationStart, reservationEnd),
+                    true,
+                    now,
+                    evakaUser2.toEvakaUser(),
+                )
+            ),
             childInBackup.reservations,
         )
     }

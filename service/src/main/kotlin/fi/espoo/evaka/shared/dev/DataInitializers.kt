@@ -1199,7 +1199,7 @@ data class DevReservation(
     val date: LocalDate,
     val startTime: LocalTime?,
     val endTime: LocalTime?,
-    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val createdBy: EvakaUserId,
 )
 
@@ -1207,8 +1207,8 @@ fun Database.Transaction.insert(row: DevReservation): AttendanceReservationId =
     createUpdate {
             sql(
                 """
-INSERT INTO attendance_reservation (id, child_id, date, start_time, end_time, created, created_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.date)}, ${bind(row.startTime)}, ${bind(row.endTime)}, ${bind(row.created)}, ${bind(row.createdBy)})
+INSERT INTO attendance_reservation (id, child_id, date, start_time, end_time, created_at, created_by)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.date)}, ${bind(row.startTime)}, ${bind(row.endTime)}, ${bind(row.createdAt)}, ${bind(row.createdBy)})
 RETURNING id
 """
             )

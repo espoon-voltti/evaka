@@ -959,8 +959,15 @@ private data class ReservationTimesForDate(
 ) {
     fun toReservationTimes() =
         when {
-            startTime == null || endTime == null -> ReservationResponse.NoTimes(staffCreated)
-            else -> ReservationResponse.Times(TimeRange(startTime, endTime), staffCreated)
+            startTime == null || endTime == null ->
+                ReservationResponse.NoTimes(staffCreated, createdAt, createdBy)
+            else ->
+                ReservationResponse.Times(
+                    TimeRange(startTime, endTime),
+                    staffCreated,
+                    createdAt,
+                    createdBy,
+                )
         }
 }
 

@@ -339,7 +339,23 @@ private fun mergeOverNightRanges(attendances: List<AttendanceTimes>): List<Atten
                     previous.departed.toLocalTime() == LocalTime.of(23, 59) &&
                     attendance.arrived.toLocalTime() == LocalTime.of(0, 0)
             ) {
-                acc.dropLast(1) + AttendanceTimes(previous.arrived, attendance.departed)
+                if (previous.modifiedAt > attendance.modifiedAt) {
+                    acc.dropLast(1) +
+                        AttendanceTimes(
+                            previous.arrived,
+                            attendance.departed,
+                            previous.modifiedAt,
+                            previous.modifiedBy,
+                        )
+                } else {
+                    acc.dropLast(1) +
+                        AttendanceTimes(
+                            previous.arrived,
+                            attendance.departed,
+                            attendance.modifiedAt,
+                            attendance.modifiedBy,
+                        )
+                }
             } else {
                 acc + attendance
             }
