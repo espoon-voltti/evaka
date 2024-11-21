@@ -21,7 +21,6 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
-import { HolidayQuestionnaire } from '../lib-common/generated/api-types/holidayperiod'
 
 import {
   Lang as LangCitizen,
