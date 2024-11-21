@@ -35,7 +35,6 @@ const initializeForm = (
   children.reduce(
     (acc, child) => ({
       ...acc,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       [child.id]:
         previousAnswers.find((a) => a.childId === child.id)?.openRanges ?? []
     }),
