@@ -10,11 +10,9 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -261,11 +259,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     fun `correct type of active questionnaire is fetched based on feature flag`() {
         createOpenRangesQuestionnaire(freeRangesQuestionnaire)
 
-        val response =
-            getActiveQuestionnaires(
-                mockToday,
-                testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES),
-            )
+        val response = getActiveQuestionnaires(mockToday)
 
         assertEquals(1, response.size)
     }
@@ -303,17 +297,13 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         )
     }
 
-    private fun getActiveQuestionnaires(
-        mockedDay: LocalDate,
-        config: FeatureConfig = testFeatureConfig,
-    ): List<ActiveQuestionnaire> {
+    private fun getActiveQuestionnaires(mockedDay: LocalDate): List<ActiveQuestionnaire> {
         val mockClock =
             MockEvakaClock(HelsinkiDateTime.Companion.of(mockedDay, LocalTime.of(11, 0)))
         return holidayPeriodControllerCitizen.getActiveQuestionnaires(
             dbInstance(),
             authenticatedParent,
             mockClock,
-            config,
         )
     }
 

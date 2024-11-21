@@ -14,7 +14,8 @@ import {
 } from '../generated/api-clients/calendarevent'
 import { getDailyServiceTimeNotifications } from '../generated/api-clients/dailyservicetimes'
 import {
-  answerFixedPeriodQuestionnaire, answerOpenRangeQuestionnaire,
+  answerFixedPeriodQuestionnaire,
+  answerOpenRangeQuestionnaire,
   getActiveQuestionnaires,
   getHolidayPeriods
 } from '../generated/api-clients/holidayperiod'
