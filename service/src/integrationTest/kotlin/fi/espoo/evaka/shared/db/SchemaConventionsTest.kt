@@ -554,6 +554,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ColumnRef("holiday_period", "period"),
                 ColumnRef("holiday_period_questionnaire", "active"),
                 ColumnRef("holiday_period_questionnaire", "condition_continuous_placement"),
+                ColumnRef("holiday_period_questionnaire", "period"),
                 ColumnRef("holiday_questionnaire_answer", "fixed_period"),
                 ColumnRef("invoice_correction", "period"),
                 ColumnRef("payment", "period"),
