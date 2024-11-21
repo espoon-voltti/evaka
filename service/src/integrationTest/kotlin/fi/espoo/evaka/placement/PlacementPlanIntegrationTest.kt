@@ -16,6 +16,8 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.preschoolTerm2023
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -35,6 +37,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toApplicationType
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -63,6 +66,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         DevCareArea(name = "Svenska Bildningstjänster", shortName = "svenska-bildningstjanster")
     private val daycareSvebi = DevDaycare(areaId = areaSvebi.id, language = Language.sv)
 
+    private val preschoolTerm = preschoolTerm2023
+
     private val clock =
         MockEvakaClock(HelsinkiDateTime.Companion.of(LocalDate.of(2020, 1, 1), LocalTime.of(15, 0)))
 
@@ -77,7 +82,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             tx.insert(daycareSvebi)
             listOf(testAdult_1, testAdult_7).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(preschoolTerm2023)
+            tx.insert(preschoolTerm)
         }
         MockPersonDetailsService.add(legacyMockVtjDataset())
     }
@@ -367,6 +372,206 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         }
     }
 
+    @Test
+    fun `getUnitApplications with daycare placement plan and today is before preschool application period returns unitAcceptDisabled=false`() {
+        val expectedPlacementPlan =
+            createApplicationAndPlacementPlanWaitingUnitConfirmation(
+                PlacementType.DAYCARE,
+                daycare1.id,
+                preschoolTerm.finnishPreschool,
+            )
+
+        val unitApplications =
+            applicationController.getUnitApplications(
+                dbInstance(),
+                serviceWorker,
+                clock =
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(
+                            preschoolTerm.applicationPeriod.start.minusDays(1),
+                            LocalTime.of(8, 0),
+                        )
+                    ),
+                daycare1.id,
+            )
+
+        assertEquals(
+            listOf(expectedPlacementPlan.copy(unitAcceptDisabled = false)),
+            unitApplications.placementProposals,
+        )
+    }
+
+    @Test
+    fun `getUnitApplications with daycare placement plan and today is during preschool application period returns unitAcceptDisabled=false`() {
+        val expectedPlacementPlan =
+            createApplicationAndPlacementPlanWaitingUnitConfirmation(
+                PlacementType.DAYCARE,
+                daycare1.id,
+                preschoolTerm.finnishPreschool,
+            )
+
+        val unitApplications =
+            applicationController.getUnitApplications(
+                dbInstance(),
+                serviceWorker,
+                clock =
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(
+                            preschoolTerm.applicationPeriod.start,
+                            LocalTime.of(8, 0),
+                        )
+                    ),
+                daycare1.id,
+            )
+
+        assertEquals(
+            listOf(expectedPlacementPlan.copy(unitAcceptDisabled = false)),
+            unitApplications.placementProposals,
+        )
+    }
+
+    @Test
+    fun `getUnitApplications with daycare placement plan and today is after preschool application period returns unitAcceptDisabled=false`() {
+        val expectedPlacementPlan =
+            createApplicationAndPlacementPlanWaitingUnitConfirmation(
+                PlacementType.DAYCARE,
+                daycare1.id,
+                preschoolTerm.finnishPreschool,
+            )
+
+        val unitApplications =
+            applicationController.getUnitApplications(
+                dbInstance(),
+                serviceWorker,
+                clock =
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(
+                            preschoolTerm.applicationPeriod.start.plusDays(1),
+                            LocalTime.of(8, 0),
+                        )
+                    ),
+                daycare1.id,
+            )
+
+        assertEquals(
+            listOf(expectedPlacementPlan.copy(unitAcceptDisabled = false)),
+            unitApplications.placementProposals,
+        )
+    }
+
+    @Test
+    fun `getUnitApplications with preschool placement plan and today is before preschool application period returns unitAcceptDisabled=true`() {
+        val expectedPlacementPlan =
+            createApplicationAndPlacementPlanWaitingUnitConfirmation(
+                PlacementType.PRESCHOOL,
+                daycare1.id,
+                preschoolTerm.finnishPreschool,
+            )
+
+        val unitApplications =
+            applicationController.getUnitApplications(
+                dbInstance(),
+                serviceWorker,
+                clock =
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(
+                            preschoolTerm.applicationPeriod.start.minusDays(1),
+                            LocalTime.of(8, 0),
+                        )
+                    ),
+                daycare1.id,
+            )
+
+        assertEquals(
+            listOf(expectedPlacementPlan.copy(unitAcceptDisabled = true)),
+            unitApplications.placementProposals,
+        )
+    }
+
+    @Test
+    fun `getUnitApplications with preschool placement plan and today is during preschool application period returns unitAcceptDisabled=false`() {
+        val expectedPlacementPlan =
+            createApplicationAndPlacementPlanWaitingUnitConfirmation(
+                PlacementType.PRESCHOOL,
+                daycare1.id,
+                preschoolTerm.finnishPreschool,
+            )
+
+        val unitApplications =
+            applicationController.getUnitApplications(
+                dbInstance(),
+                serviceWorker,
+                clock =
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(
+                            preschoolTerm.applicationPeriod.start,
+                            LocalTime.of(8, 0),
+                        )
+                    ),
+                daycare1.id,
+            )
+
+        assertEquals(
+            listOf(expectedPlacementPlan.copy(unitAcceptDisabled = false)),
+            unitApplications.placementProposals,
+        )
+    }
+
+    @Test
+    fun `getUnitApplications with preschool placement plan and today is after preschool application period returns unitAcceptDisabled=false`() {
+        val expectedPlacementPlan =
+            createApplicationAndPlacementPlanWaitingUnitConfirmation(
+                PlacementType.PRESCHOOL,
+                daycare1.id,
+                preschoolTerm.finnishPreschool,
+            )
+
+        val unitApplications =
+            applicationController.getUnitApplications(
+                dbInstance(),
+                serviceWorker,
+                clock =
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(
+                            preschoolTerm.applicationPeriod.start.plusDays(1),
+                            LocalTime.of(8, 0),
+                        )
+                    ),
+                daycare1.id,
+            )
+
+        assertEquals(
+            listOf(expectedPlacementPlan.copy(unitAcceptDisabled = false)),
+            unitApplications.placementProposals,
+        )
+    }
+
+    @Test
+    fun `getUnitApplications with preschool placement plan without preschool term returns unitAcceptDisabled=false`() {
+        val expectedPlacementPlan =
+            createApplicationAndPlacementPlanWaitingUnitConfirmation(
+                PlacementType.PRESCHOOL,
+                daycare1.id,
+                FiniteDateRange(LocalDate.of(2020, 8, 11), LocalDate.of(2021, 6, 3)),
+            )
+
+        val unitApplications =
+            applicationController.getUnitApplications(
+                dbInstance(),
+                serviceWorker,
+                clock =
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(LocalDate.of(2020, 8, 10), LocalTime.of(8, 0))
+                    ),
+                daycare1.id,
+            )
+
+        assertEquals(
+            listOf(expectedPlacementPlan.copy(unitAcceptDisabled = false)),
+            unitApplications.placementProposals,
+        )
+    }
+
     private fun checkPlacementPlanDraft(
         applicationId: ApplicationId,
         type: PlacementType,
@@ -405,11 +610,59 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         )
     }
 
+    private fun createApplicationAndPlacementPlanWaitingUnitConfirmation(
+        placementType: PlacementType,
+        unitId: DaycareId,
+        placementPlanPeriod: FiniteDateRange,
+    ): PlacementPlanDetails {
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = placementType.toApplicationType(),
+                preferredStartDate = placementPlanPeriod.start,
+            )
+        val placementPlanId =
+            createPlacementPlanAndAssert(
+                applicationId,
+                placementType,
+                DaycarePlacementPlan(unitId = unitId, period = placementPlanPeriod),
+            )
+        applicationController.simpleApplicationAction(
+            dbInstance(),
+            serviceWorker,
+            clock,
+            applicationId,
+            "send-placement-proposal",
+        )
+        return PlacementPlanDetails(
+            id = placementPlanId,
+            unitId = unitId,
+            applicationId = applicationId,
+            type = placementType,
+            period = placementPlanPeriod,
+            preschoolDaycarePeriod = null,
+            child =
+                testChild_1.let {
+                    PlacementPlanChild(
+                        id = it.id,
+                        firstName = it.firstName,
+                        lastName = it.lastName,
+                        dateOfBirth = it.dateOfBirth,
+                    )
+                },
+            unitConfirmationStatus = PlacementPlanConfirmationStatus.PENDING,
+            unitAcceptDisabled = false,
+            unitRejectReason = null,
+            unitRejectOtherReason = null,
+            rejectedByCitizen = false,
+        )
+    }
+
     private fun createPlacementPlanAndAssert(
         applicationId: ApplicationId,
         type: PlacementType,
         proposal: DaycarePlacementPlan,
-    ) {
+    ): PlacementPlanId {
         applicationController.createPlacementPlan(
             dbInstance(),
             serviceWorker,
@@ -418,15 +671,17 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             proposal,
         )
 
-        db.read { r ->
-            r.getPlacementPlanRowByApplication(applicationId).also {
-                assertEquals(type, it.type)
-                assertEquals(proposal.unitId, it.unitId)
-                assertEquals(proposal.period, it.period())
-                assertEquals(proposal.preschoolDaycarePeriod, it.preschoolDaycarePeriod())
-                assertEquals(false, it.deleted)
-            }
+        return db.read { r ->
+            val placementPlanTableRow =
+                r.getPlacementPlanRowByApplication(applicationId).also {
+                    assertEquals(type, it.type)
+                    assertEquals(proposal.unitId, it.unitId)
+                    assertEquals(proposal.period, it.period())
+                    assertEquals(proposal.preschoolDaycarePeriod, it.preschoolDaycarePeriod())
+                    assertEquals(false, it.deleted)
+                }
             assertEquals(ApplicationStatus.WAITING_DECISION, r.getApplicationStatus(applicationId))
+            placementPlanTableRow.id
         }
     }
 
