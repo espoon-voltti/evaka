@@ -28,11 +28,13 @@ import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareAssistance
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.DevServiceNeed
@@ -231,8 +233,8 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
+                    testData.slice(1..2).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 noResponseChildren = emptyList(),
                 date = holidayPeriod.period.start.plusDays(1),
@@ -321,8 +323,8 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
+                    testData.slice(1..2).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 noResponseChildren = emptyList(),
                 date = monday.plusDays(1),
@@ -477,8 +479,8 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
+                    testData.slice(1..2).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 noResponseChildren = emptyList(),
                 date = monday.plusDays(1),
@@ -610,8 +612,8 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
+                    testData.slice(1..2).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 noResponseChildren = emptyList(),
                 date = monday.plusDays(1),
@@ -744,8 +746,8 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 assistanceChildren =
-                    listOf(testData[2].first).map {
-                        ChildWithName(it.id, it.firstName, it.lastName)
+                    testData.slice(1..2).map {
+                        ChildWithName(it.first.id, it.first.firstName, it.first.lastName)
                     },
                 noResponseChildren = emptyList(),
                 date = monday.plusDays(1),
@@ -994,6 +996,13 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 )
             )
 
+            tx.insert(
+                DevPreschoolAssistance(
+                    childId = testChildBertil.id,
+                    validDuring = FiniteDateRange(monday.minusMonths(2), tuesday),
+                )
+            )
+
             val placementC1 =
                 DevPlacement(
                     type = PlacementType.DAYCARE,
@@ -1020,6 +1029,13 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     childId = testChildCecil.id,
                     validDuring = FiniteDateRange(monday, wednesday),
                     capacityFactor = 5.50,
+                )
+            )
+
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = testChildCecil.id,
+                    validDuring = FiniteDateRange(monday.minusMonths(3), wednesday),
                 )
             )
 
