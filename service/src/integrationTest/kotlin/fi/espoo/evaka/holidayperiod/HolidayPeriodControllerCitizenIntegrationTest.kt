@@ -24,6 +24,11 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.Translatable
+import fi.espoo.evaka.shared.noopTracer
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.AccessControlTest.TestActionRuleMapping
+import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -259,7 +264,18 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     fun `correct type of active questionnaire is fetched based on feature flag`() {
         createOpenRangesQuestionnaire(freeRangesQuestionnaire)
 
-        val response = getActiveQuestionnaires(mockToday)
+        val rules = TestActionRuleMapping()
+        rules.add(
+            Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES,
+            IsCitizen(allowWeakLogin = false).any(),
+        )
+
+        val controller =
+            HolidayPeriodControllerCitizen(
+                AccessControl(rules, noopTracer()),
+                featureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES),
+            )
+        val response = getActiveQuestionnaires(mockToday, controller)
 
         assertEquals(1, response.size)
     }
@@ -297,14 +313,13 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         )
     }
 
-    private fun getActiveQuestionnaires(mockedDay: LocalDate): List<ActiveQuestionnaire> {
+    private fun getActiveQuestionnaires(
+        mockedDay: LocalDate,
+        controller: HolidayPeriodControllerCitizen = holidayPeriodControllerCitizen,
+    ): List<ActiveQuestionnaire> {
         val mockClock =
             MockEvakaClock(HelsinkiDateTime.Companion.of(mockedDay, LocalTime.of(11, 0)))
-        return holidayPeriodControllerCitizen.getActiveQuestionnaires(
-            dbInstance(),
-            authenticatedParent,
-            mockClock,
-        )
+        return controller.getActiveQuestionnaires(dbInstance(), authenticatedParent, mockClock)
     }
 
     private fun reportFreePeriods(
