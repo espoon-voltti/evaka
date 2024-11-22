@@ -22,9 +22,9 @@ yarn install --immutable
 yarn exec playwright install
 
 echo 'INFO: Waiting for compose stack to be up ...'
-./wait-for-url.sh "${PROXY_URL}/api/internal/dev-api"
-./wait-for-url.sh "${KEYCLOAK_URL}/auth/realms/evaka-customer/account/" "200"
-./wait-for-url.sh "${DUMMY_SUOMIFI_URL}/health" "200"
+wait-for-url.sh "${PROXY_URL}/api/internal/dev-api"
+wait-for-url.sh "${KEYCLOAK_URL}/auth/realms/evaka-customer/account/" "200"
+wait-for-url.sh "${DUMMY_SUOMIFI_URL}/health" "200"
 
 echo "Running tests ..."
 
