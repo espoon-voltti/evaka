@@ -270,7 +270,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 DevEmployee(
                     lastLogin = firstOfAugust2021.minusDays(daysToDeactivation),
                     roles = setOf(UserRole.ADMIN),
-                    active = false
+                    active = false,
                 )
             )
         }
