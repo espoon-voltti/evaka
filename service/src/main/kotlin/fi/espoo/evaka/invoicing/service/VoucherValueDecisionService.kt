@@ -14,7 +14,6 @@ import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
-import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.data.removeVoucherValueDecisionIgnore
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionToIgnored
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionType
@@ -38,7 +37,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -203,17 +201,8 @@ class VoucherValueDecisionService(
         tx: Database.Read,
         decisionId: VoucherValueDecisionId,
     ): VoucherValueDecisionDetailed =
-        tx.getVoucherValueDecision(decisionId)?.let {
-            it.copy(
-                partnerIsCodebtor =
-                    tx.partnerIsCodebtor(
-                        it.headOfFamily.id,
-                        it.partner?.id,
-                        listOf(it.child.id),
-                        FiniteDateRange(it.validFrom, it.validTo),
-                    )
-            )
-        } ?: error("No voucher value decision found with ID ($decisionId)")
+        tx.getVoucherValueDecision(decisionId)
+            ?: error("No voucher value decision found with ID ($decisionId)")
 
     private fun generatePdf(
         decision: VoucherValueDecisionDetailed,

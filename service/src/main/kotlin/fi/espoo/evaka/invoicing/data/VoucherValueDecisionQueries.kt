@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.invoicing.partnerIsCodebtor
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -486,7 +487,7 @@ WHERE decision.id = ${bind(id)}
             it.copy(
                 partnerIsCodebtor =
                     partnerIsCodebtor(
-                        it.headOfFamily.id,
+                        this,
                         it.partner?.id,
                         listOf(it.child.id),
                         FiniteDateRange(it.validFrom, it.validTo),

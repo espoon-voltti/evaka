@@ -6,12 +6,13 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.children.getChildIdsByGuardians
+import fi.espoo.evaka.children.getChildIdsByHeadsOfFamily
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.getSentInvoicesOfMonth
 import fi.espoo.evaka.invoicing.data.insertDraftInvoices
-import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DraftInvoice
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -181,6 +182,63 @@ class InvoiceGenerator(
         excludeAlreadyInvoiced: Boolean,
     ): DraftInvoiceGenerator.InvoiceGeneratorInput {
         val range = FiniteDateRange.ofMonth(month)
+        val effectiveDecisions = tx.getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
+        val unhandledDecisions =
+            if (excludeAlreadyInvoiced) {
+                val invoicedHeadsOfFamily = tx.getInvoicedHeadsOfFamily(range)
+                effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
+            } else {
+                effectiveDecisions
+            }
+
+        val temporaryPlacements =
+            tx.getInvoiceableTemporaryPlacements(FiniteDateRange.ofMonth(month))
+
+        return calculateInvoiceData(tx, month, unhandledDecisions, temporaryPlacements)
+    }
+
+    private fun calculateInvoiceData(
+        tx: Database.Read,
+        month: YearMonth,
+        feeDecisions: Map<PersonId, List<FeeDecision>>,
+        temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
+    ): DraftInvoiceGenerator.InvoiceGeneratorInput {
+        val range = FiniteDateRange.ofMonth(month)
+
+        val codebtors = getInvoiceCodebtors(tx, feeDecisions, range)
+
+        val decisionChildIds =
+            feeDecisions.values
+                .asSequence()
+                .flatten()
+                .flatMap { feeDecision -> feeDecision.children.asSequence().map { it.child.id } }
+                .toSet()
+        val permanentPlacements =
+            tx.getInvoiceablePlacements(range, PlacementType.invoiced, decisionChildIds)
+
+        val temporaryPlacementChildIds =
+            temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
+        val allChildIds = decisionChildIds + temporaryPlacementChildIds
+
+        val julyFreeChildren =
+            if (month.month == Month.JULY) {
+                tx.getFreeJulyChildren(
+                    year = month.year,
+                    childIds = allChildIds,
+                    freeJulyStartOnSeptember = featureConfig.freeJulyStartOnSeptember,
+                )
+            } else {
+                emptySet()
+            }
+        val extraFreeChildren =
+            invoiceGenerationLogicChooser.getFreeChildren(tx, month, allChildIds)
+        val freeChildren = julyFreeChildren + extraFreeChildren
+
+        val absences = tx.getBillableAbsencesInRange(allChildIds, range)
+        val operationalDaysByChild =
+            tx.getOperationalDatesForChildren(range, allChildIds).mapValues {
+                DateSet.ofDates(it.value)
+            }
 
         val feeThresholds =
             tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
@@ -188,51 +246,6 @@ class InvoiceGenerator(
                     "Missing prices for period ${range.start} - ${range.end}, cannot generate invoices"
                 )
 
-        val effectiveDecisions = tx.getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
-        val permanentPlacements = tx.getInvoiceablePlacements(range, PlacementType.invoiced)
-        val temporaryPlacements = tx.getInvoiceableTemporaryPlacements(range)
-        val invoicedHeadsOfFamily =
-            if (excludeAlreadyInvoiced) {
-                tx.getInvoicedHeadsOfFamily(range)
-            } else {
-                emptySet()
-            }
-
-        val unhandledDecisions =
-            effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
-        val areaIds = tx.getAreaIds()
-
-        val absences = tx.getBillableAbsencesInRange(range)
-
-        val julyFreeChildren =
-            if (
-                range.start.month == Month.JULY &&
-                    (range.end.month == Month.JULY && range.start.year == range.end.year)
-            ) {
-                tx.getFreeJulyChildren(range.start.year, featureConfig.freeJulyStartOnSeptember)
-            } else {
-                emptySet()
-            }
-
-        val extraFreeChildren = invoiceGenerationLogicChooser.getFreeChildren(tx, month)
-
-        val codebtors =
-            unhandledDecisions.mapValues { (_, decisions) ->
-                getInvoiceCodebtor(tx, decisions, range)
-            }
-
-        val allChildren =
-            unhandledDecisions.values
-                .flatMap { feeDecisions ->
-                    feeDecisions.flatMap { feeDecision -> feeDecision.children.map { it.child.id } }
-                }
-                .toSet() +
-                permanentPlacements.keys +
-                temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
-        val operationalDaysByChild =
-            tx.getOperationalDatesForChildren(range, allChildren).mapValues {
-                DateSet.ofDates(it.value)
-            }
         val holidays = getHolidays(range)
         val businessDays =
             DateSet.ofDates(
@@ -248,45 +261,77 @@ class InvoiceGenerator(
                 .filter { it.defaultOption }
                 .associateBy { it.validPlacementType }
 
+        val areaIds = tx.getAreaIds()
+
         return DraftInvoiceGenerator.InvoiceGeneratorInput(
-            decisions = unhandledDecisions,
+            invoicePeriod = range,
+            decisions = feeDecisions,
+            codebtors = codebtors,
             permanentPlacements = permanentPlacements,
             temporaryPlacements = temporaryPlacements,
-            invoicePeriod = range,
-            areaIds = areaIds,
+            absences = absences,
+            freeChildren = freeChildren,
             operationalDaysByChild = operationalDaysByChild,
             businessDays = businessDays,
             feeThresholds = feeThresholds,
-            absences = absences,
-            freeChildren = julyFreeChildren + extraFreeChildren,
-            codebtors = codebtors,
             defaultServiceNeedOptions = defaultServiceNeedOptions,
+            areaIds = areaIds,
         )
     }
 
-    private fun getInvoiceCodebtor(
+    private fun getInvoiceCodebtors(
         tx: Database.Read,
-        decisions: List<FeeDecision>,
-        dateRange: FiniteDateRange,
-    ): PersonId? {
-        val partners = decisions.map { it.partnerId }.distinct()
-        if (partners.size != 1) return null
+        headOfFamilyDecisions: Map<PersonId, List<FeeDecision>>,
+        range: FiniteDateRange,
+    ): Map<PersonId, PersonId> {
+        val partnerByHeadOfFamily =
+            headOfFamilyDecisions
+                .mapNotNull { (headOfFamilyId, decisions) ->
+                    val partnersOfHead = decisions.map { it.partnerId }.distinct()
+                    if (partnersOfHead.size == 1) {
+                        val partnerId = partnersOfHead.first()
+                        if (partnerId != null) {
+                            headOfFamilyId to partnerId
+                        } else {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                }
+                .toMap()
 
-        return partners.first().takeIf {
-            decisions.all { decision ->
-                if (decision.partnerId == null) {
-                    false
+        val partnerIds = partnerByHeadOfFamily.values.toSet()
+        val childrenByGuardian = tx.getChildIdsByGuardians(partnerIds)
+        val childrenByHead = tx.getChildIdsByHeadsOfFamily(partnerIds, range)
+
+        return headOfFamilyDecisions
+            .mapNotNull { (headOfFamilyId, decisions) ->
+                val partnerId = partnerByHeadOfFamily[headOfFamilyId] ?: return@mapNotNull null
+                val partnerAsGuardian = childrenByGuardian[partnerId] ?: emptyList()
+                val partnerAsHead = childrenByHead[partnerId] ?: emptyMap()
+                if (partnerAsGuardian.isEmpty() && partnerAsHead.isEmpty()) return@mapNotNull null
+
+                val hasCommonChildrenOnAllDecisions =
+                    decisions.all { decision ->
+                        decision.children.any {
+                            if (partnerAsGuardian.contains(it.child.id)) {
+                                true
+                            } else {
+                                val partnerAsHeadRange = partnerAsHead[it.child.id]
+                                partnerAsHeadRange != null &&
+                                    partnerAsHeadRange.overlaps(decision.validDuring)
+                            }
+                        }
+                    }
+
+                if (hasCommonChildrenOnAllDecisions) {
+                    headOfFamilyId to partnerId
                 } else {
-                    tx.partnerIsCodebtor(
-                        decision.headOfFamilyId,
-                        decision.partnerId,
-                        decision.children.map { it.child.id },
-                        decision.validDuring.intersection(dateRange)
-                            ?: error("Decision is not valid during invoice period $dateRange"),
-                    )
+                    null
                 }
             }
-        }
+            .toMap()
     }
 
     fun applyUnappliedCorrections(
@@ -413,15 +458,18 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonI
 }
 
 fun Database.Read.getBillableAbsencesInRange(
-    range: FiniteDateRange
+    childIds: Set<ChildId>,
+    range: FiniteDateRange,
 ): Map<ChildId, List<Pair<AbsenceType, DateSet>>> {
     return createQuery {
             sql(
                 """
 SELECT child_id, absence_type, range_agg(daterange(date, date, '[]')) AS dates
 FROM absence
-WHERE between_start_and_end(${bind(range)}, date)
-AND category = 'BILLABLE'
+WHERE
+    child_id = ANY(${bind(childIds)}) AND
+    between_start_and_end(${bind(range)}, date) AND
+    category = 'BILLABLE'
 GROUP BY child_id, absence_type
 """
             )
@@ -445,7 +493,11 @@ data class PlacementStub(
 private fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: FiniteDateRange,
     placementTypes: List<PlacementType>,
+    childIds: Set<ChildId>?,
 ): Map<ChildId, List<Pair<FiniteDateRange, PlacementStub>>> {
+    val childFilter =
+        if (childIds != null) Predicate { where("$it.child_id = ANY(${bind(childIds)})") }
+        else Predicate.alwaysTrue()
     return createQuery {
             sql(
                 """
@@ -453,8 +505,10 @@ SELECT p.child_id, c.date_of_birth AS child_date_of_birth, u.id AS unit, dateran
 FROM placement p
 JOIN person c ON p.child_id = c.id
 JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
-WHERE daterange(start_date, end_date, '[]') && ${bind(spanningPeriod)}
-AND p.type = ANY(${bind(placementTypes)}::placement_type[])
+WHERE
+    daterange(start_date, end_date, '[]') && ${bind(spanningPeriod)} AND
+    p.type = ANY(${bind(placementTypes)}::placement_type[]) AND
+    ${predicate(childFilter.forTable("p"))}
 """
             )
         }
@@ -465,7 +519,8 @@ AND p.type = ANY(${bind(placementTypes)}::placement_type[])
 private fun Database.Read.getInvoiceableTemporaryPlacements(
     spanningPeriod: FiniteDateRange
 ): Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>> {
-    val placements = getInvoiceablePlacements(spanningPeriod, PlacementType.temporary)
+    val placements =
+        getInvoiceablePlacements(spanningPeriod, PlacementType.temporary, childIds = null)
 
     val familyCompositions =
         toFamilyCompositions(
@@ -577,10 +632,16 @@ FROM daycare
         }
         .toMap { columnPair("unit_id", "area_id") }
 
-fun Database.Read.getFreeJulyChildren(year: Int, freeJulyStartOnSeptember: Boolean): Set<ChildId> =
+fun Database.Read.getFreeJulyChildren(
+    year: Int,
+    childIds: Set<ChildId>?,
+    freeJulyStartOnSeptember: Boolean,
+): Set<ChildId> =
     createQuery {
             val where =
                 Predicate.allNotNull(
+                    Predicate { where("$it.id = ANY(${bind(childIds)})") }
+                        .takeIf { childIds != null },
                     placementOn(year - 1, 8).takeUnless { freeJulyStartOnSeptember },
                     placementOn(year - 1, 9),
                     placementOn(year - 1, 10),
@@ -593,7 +654,10 @@ fun Database.Read.getFreeJulyChildren(year: Int, freeJulyStartOnSeptember: Boole
                     placementOn(year, 5).takeIf { year != 2020 },
                     placementOn(year, 6),
                 )
-            sql("SELECT id FROM child c WHERE ${predicate(where.forTable("c"))}")
+            sql(
+                """
+                SELECT id FROM child c WHERE ${predicate(where.forTable("c"))}"""
+            )
         }
         .toSet<ChildId>()
 

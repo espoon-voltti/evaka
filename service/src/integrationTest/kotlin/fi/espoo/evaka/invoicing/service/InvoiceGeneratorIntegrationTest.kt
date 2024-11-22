@@ -3615,7 +3615,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `invoice codebtor is not set when partner on decision is not any child's guardian`() {
+    fun `invoice codebtor is not set when partner on decision is not a guardian of any of the children`() {
         val month = YearMonth.of(2019, 1)
         val period = FiniteDateRange.ofMonth(month)
         initByPeriodAndPlacementType(
@@ -3635,6 +3635,30 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         result.first().let { invoice ->
             assertEquals(testAdult_1.id, invoice.headOfFamily.id)
             assertNull(invoice.codebtor)
+        }
+    }
+
+    @Test
+    fun `invoice codebtor is set when partner on decision is guardian of one of the children`() {
+        val month = YearMonth.of(2019, 1)
+        val period = FiniteDateRange.ofMonth(month)
+        initByPeriodAndPlacementType(
+            period,
+            PlacementType.DAYCARE,
+            children = listOf(testChild_1, testChild_2),
+            partner = testAdult_2.id,
+        )
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
+        val result = db.read { it.getAllInvoices() }
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertEquals(testAdult_2.id, invoice.codebtor?.id)
         }
     }
 
@@ -5632,8 +5656,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             invoiceGenerator(
                 invoiceGenerationLogicChooser =
                     object : InvoiceGenerationLogicChooser {
-                        override fun getFreeChildren(tx: Database.Read, month: YearMonth) =
-                            setOf(testChild_1.id)
+                        override fun getFreeChildren(
+                            tx: Database.Read,
+                            month: YearMonth,
+                            childIds: Set<ChildId>,
+                        ): Set<ChildId> {
+                            assertEquals(setOf(testChild_1.id), childIds)
+                            return childIds
+                        }
                     }
             )
 

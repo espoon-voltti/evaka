@@ -38,11 +38,15 @@ import java.time.YearMonth
 import org.springframework.stereotype.Component
 
 interface InvoiceGenerationLogicChooser {
-    fun getFreeChildren(tx: Database.Read, month: YearMonth): Set<ChildId>
+    fun getFreeChildren(tx: Database.Read, month: YearMonth, childIds: Set<ChildId>): Set<ChildId>
 }
 
 object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
-    override fun getFreeChildren(tx: Database.Read, month: YearMonth): Set<ChildId> = emptySet()
+    override fun getFreeChildren(
+        tx: Database.Read,
+        month: YearMonth,
+        childIds: Set<ChildId>,
+    ): Set<ChildId> = emptySet()
 }
 
 data class InvoiceGeneratorConfig(

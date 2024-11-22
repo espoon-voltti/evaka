@@ -4,15 +4,20 @@
 
 package fi.espoo.evaka.invoicing
 
+import fi.espoo.evaka.children.getChildIdsByGuardians
+import fi.espoo.evaka.children.getChildIdsByHeadsOfFamily
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.pis.getEmployeeWithRoles
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -93,3 +98,19 @@ fun calculateTotalExpense(
 
 fun calculateMonthlyAmount(amount: Int, multiplier: BigDecimal): Int =
     (BigDecimal(amount) * multiplier).setScale(0, RoundingMode.HALF_UP).toInt()
+
+fun partnerIsCodebtor(
+    tx: Database.Read,
+    partnerId: PersonId?,
+    childIds: List<ChildId>,
+    range: FiniteDateRange,
+): Boolean {
+    if (partnerId == null) return false
+
+    val partnerAsGuardian = tx.getChildIdsByGuardians(setOf(partnerId))[partnerId] ?: emptySet()
+    val partnerAsHead =
+        tx.getChildIdsByHeadsOfFamily(setOf(partnerId), range)[partnerId] ?: emptyMap()
+    if (partnerAsGuardian.isEmpty() && partnerAsHead.isEmpty()) return false
+
+    return childIds.any { it in partnerAsGuardian || it in partnerAsHead }
+}
