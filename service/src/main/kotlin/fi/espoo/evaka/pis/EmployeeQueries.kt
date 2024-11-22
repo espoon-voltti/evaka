@@ -510,23 +510,10 @@ fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
         .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Transaction.deactivateInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
-    val inactiveEmployees = getInactiveEmployees(now)
-    inactiveEmployees.forEach { employeeId -> deactivateEmployeeRemoveRolesAndPin(employeeId) }
-    return inactiveEmployees
-}
-
-fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
-    updateEmployeeActive(id = id, active = false)
-    updateEmployeeGlobalRoles(id = id, globalRoles = emptyList())
-    deleteEmployeeDaycareRoles(id = id, daycareId = null)
-    removePinCode(userId = id)
-    listPersonalDevices(id).forEach { deleteDevice(it.id) }
-}
-
-fun Database.Read.getInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
-    return createQuery {
-            sql(
-                """
+    val inactiveEmployees =
+        createQuery {
+                sql(
+                    """
     SELECT e.id
     FROM employee e
     LEFT JOIN daycare_acl d ON d.employee_id = e.id
@@ -537,9 +524,19 @@ fun Database.Read.getInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> 
     ) < ${bind(now)} - interval '56 days'
     AND e.active = true
 """
-            )
-        }
-        .toList<EmployeeId>()
+                )
+            }
+            .toList<EmployeeId>()
+    inactiveEmployees.forEach { employeeId -> deactivateEmployeeRemoveRolesAndPin(employeeId) }
+    return inactiveEmployees
+}
+
+fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
+    updateEmployeeActive(id = id, active = false)
+    updateEmployeeGlobalRoles(id = id, globalRoles = emptyList())
+    deleteEmployeeDaycareRoles(id = id, daycareId = null)
+    removePinCode(userId = id)
+    listPersonalDevices(id).forEach { deleteDevice(it.id) }
 }
 
 fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
