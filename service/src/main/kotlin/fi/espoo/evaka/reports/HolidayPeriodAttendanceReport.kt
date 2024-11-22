@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.absence.getAbsences
 import fi.espoo.evaka.assistance.getAssistanceFactorsForChildrenOverRange
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
-import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.document.childdocument.ChildBasics
@@ -19,6 +18,7 @@ import fi.espoo.evaka.reservations.getReservationBackupPlacements
 import fi.espoo.evaka.reservations.getReservations
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import java.time.Period
 import kotlin.math.ceil
@@ -49,6 +48,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
+        @RequestParam(required = false) groupIds: Set<GroupId> = emptySet(),
         @RequestParam unitId: DaycareId,
         @RequestParam periodId: HolidayPeriodId,
     ): List<HolidayPeriodAttendanceReportRow> {
@@ -84,9 +84,18 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                             .toList()
 
                     // incoming back up children
-                    val backupCareIncoming =
-                        tx.getBackupCaresForDaycare(unit.id, holidayPeriod.period)
-                    val backupChildrenInUnit = backupCareIncoming.map { it.child.id }.toSet()
+                    val incomingBackupCaresByChild =
+                        tx.getIncomingBackupCaresOverPeriodForGroupsInUnit(
+                                unitId = unitId,
+                                groupIds = groupIds,
+                                period = holidayPeriod.period,
+                            )
+                            .groupBy { it.childId }
+                            .mapValues { entry ->
+                                DateMap.of(entry.value.map { it.validDuring to it })
+                            }
+
+                    val backupChildrenInUnit = incomingBackupCaresByChild.keys
 
                     val backupChildDataByChild =
                         tx.getServiceNeedOccupancyInfoOverRangeForChildren(
@@ -97,10 +106,12 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
 
                     // directly placed children
                     val directlyPlacedChildData =
-                        tx.getServiceNeedOccupancyInfoOverRangeForUnit(
-                            unit.id,
-                            holidayPeriod.period,
+                        tx.getServiceNeedOccupancyInfoOverRangeForGroups(
+                            range = holidayPeriod.period,
+                            groupIds = groupIds,
+                            unitId = unitId,
                         )
+
                     val directlyPlacedChildren = directlyPlacedChildData.map { it.child.id }.toSet()
 
                     // outgoing backup children
@@ -158,13 +169,12 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                         .none { it.range.includes(date) }
                             }
                         val dailyBackupPlacedData =
-                            backupCareIncoming
-                                .filter { it.period.includes(date) }
-                                .mapNotNull {
-                                    backupChildDataByChild[it.child.id]?.firstOrNull { sn ->
-                                        sn.validity.includes(date)
-                                    }
-                                }
+                            incomingBackupCaresByChild.mapNotNull { (key, value) ->
+                                val bc = value.getValue(date) ?: return@mapNotNull null
+                                backupChildDataByChild[key]
+                                    ?.firstOrNull { sn -> sn.validity.includes(date) }
+                                    ?.copy(groupId = bc.groupId)
+                            }
                         // splits placed children's service need info into two groups based on
                         // placement type
                         // - children that require reservations to inform holiday period attendance
@@ -294,6 +304,7 @@ private data class ChildServiceNeedOccupancyInfo(
     val coefficient: Double,
     val validity: FiniteDateRange,
     val shiftCareType: ShiftCareType,
+    val groupId: GroupId?,
 )
 
 private fun Database.Read.getAbsencesForChildrenOverRange(
@@ -322,15 +333,6 @@ private fun Database.Read.getReservationsForChildrenOverRange(
         )
         .groupBy { Pair(it.date, it.childId) }
 
-private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForUnit(
-    daycareId: DaycareId,
-    range: FiniteDateRange,
-) =
-    getServiceNeedOccupancyInfoOverRange(
-        Predicate { where("pl.unit_id = ${bind(daycareId)}") },
-        range,
-    )
-
 private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForChildren(
     childIds: Set<PersonId>,
     range: FiniteDateRange,
@@ -338,13 +340,25 @@ private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForChildren(
     if (childIds.isEmpty()) emptyList()
     else
         getServiceNeedOccupancyInfoOverRange(
-            Predicate { where("pl.child_id = ANY (${bind(childIds)})") },
             range,
+            Predicate { where("pl.child_id = ANY (${bind(childIds)})") },
         )
 
+private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForGroups(
+    groupIds: Set<GroupId>,
+    unitId: DaycareId,
+    range: FiniteDateRange,
+): List<ChildServiceNeedOccupancyInfo> {
+    val pred =
+        if (groupIds.isEmpty()) Predicate { where("pl.unit_id = ${bind(unitId)}") }
+        else Predicate { where("dgp.daycare_group_id = ANY (${bind(groupIds)})") }
+
+    return getServiceNeedOccupancyInfoOverRange(range, pred)
+}
+
 private fun Database.Read.getServiceNeedOccupancyInfoOverRange(
-    where: Predicate,
     period: FiniteDateRange,
+    where: Predicate,
 ): List<ChildServiceNeedOccupancyInfo> =
     createQuery {
             sql(
@@ -360,10 +374,23 @@ SELECT p.id                                                          AS child_id
                 default_sno.realized_occupancy_coefficient)          AS coefficient,
        CASE
            WHEN (sn.start_date IS NOT NULL)
-               THEN daterange(sn.start_date, sn.end_date, '[]')
-           ELSE daterange(pl.start_date, pl.end_date, '[]')
+               THEN
+               CASE
+                   WHEN (dgp.start_date IS NOT NULL)
+                       THEN daterange(sn.start_date, sn.end_date, '[]') *
+                            daterange(dgp.start_date, dgp.end_date, '[]')
+                   ELSE daterange(sn.start_date, sn.end_date, '[]')
+                   END
+           ELSE
+               CASE
+                   WHEN (dgp.start_date IS NOT NULL)
+                       THEN daterange(pl.start_date, pl.end_date, '[]') *
+                            daterange(dgp.start_date, dgp.end_date, '[]')
+                   ELSE daterange(pl.start_date, pl.end_date, '[]')
+                   END
            END                                                       AS validity,
-       coalesce(sn.shift_care, 'NONE')                               AS shift_care_type
+       coalesce(sn.shift_care, 'NONE')                               AS shift_care_type,
+       dgp.daycare_group_id                                          AS group_id
 FROM placement pl
          JOIN person p ON pl.child_id = p.id
          LEFT JOIN service_need sn
@@ -373,14 +400,24 @@ FROM placement pl
          LEFT JOIN service_need_option default_sno
                    ON pl.type = default_sno.valid_placement_type
                        AND default_sno.default_option
-WHERE ${predicate(where.forTable(""))} 
-AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(period)}
+         LEFT JOIN daycare_group_placement dgp
+                   ON pl.id = dgp.daycare_placement_id
+                       AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(period)}
+                       AND (sn.start_date IS NULL OR daterange(dgp.start_date, dgp.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]'))
+WHERE ${predicate(where.forTable(""))}
+  AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(period)}
         """
             )
         }
         .toList<ChildServiceNeedOccupancyInfo>()
 
 private data class AssistanceRange(val childId: PersonId, val validDuring: FiniteDateRange)
+
+private data class BackupPlacementRange(
+    val childId: PersonId,
+    val validDuring: FiniteDateRange,
+    val groupId: GroupId?,
+)
 
 private fun Database.Read.getAssistanceRanges(
     childIds: Set<PersonId>,
@@ -404,3 +441,28 @@ WHERE child_id = ANY(${bind(childIds)}) AND p.valid_during && ${bind(period)}
                 )
             }
             .toList<AssistanceRange>()
+
+private fun Database.Read.getIncomingBackupCaresOverPeriodForGroupsInUnit(
+    groupIds: Set<GroupId>,
+    unitId: DaycareId,
+    period: FiniteDateRange,
+): List<BackupPlacementRange> {
+    val where =
+        if (groupIds.isEmpty()) Predicate.alwaysTrue()
+        else Predicate { where("bc.group_id = ANY(${bind(groupIds)})") }
+
+    return createQuery {
+            sql(
+                """
+SELECT bc.child_id,
+       daterange(bc.start_date, bc.end_date, '[]') * ${bind(period)} as valid_during,
+       bc.group_id
+FROM backup_care bc
+WHERE ${predicate(where.forTable(""))}
+AND bc.unit_id = ${bind(unitId)}
+AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)}
+"""
+            )
+        }
+        .toList<BackupPlacementRange>()
+}

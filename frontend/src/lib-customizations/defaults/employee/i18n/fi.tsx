@@ -4237,6 +4237,8 @@ export const fi = {
       periodFilter: 'Lomakysely',
       periodFilterPlaceholder: 'Valitse lomakysely',
       unitFilter: 'Yksikkö',
+      groupFilter: 'Ryhmävalinta',
+      groupFilterPlaceholder: 'Koko yksikkö',
       fetchButton: 'Hae',
       dateColumn: 'Päivä',
       presentColumn: 'Paikalla',

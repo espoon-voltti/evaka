@@ -10,16 +10,21 @@ import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import { ChildWithName } from 'lib-common/generated/api-types/reports'
+import {
+  ChildWithName,
+  HolidayPeriodAttendanceReportRow
+} from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
+import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
@@ -32,12 +37,17 @@ import { faChevronRight, faChevronDown } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
-import { FlexRow } from '../common/styled/containers'
 import { holidayPeriodsQuery } from '../holiday-term-periods/queries'
-import { unitsQuery } from '../unit/queries'
+import { unitGroupsQuery, unitsQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { holidayPeriodAttendanceReportQuery } from './queries'
+
+interface ReportQueryParams {
+  unitId: UUID
+  periodId: UUID
+  groupIds: UUID[] | null
+}
 
 export default React.memo(function HolidayPeriodAttendanceReport() {
   const { i18n } = useTranslation()
@@ -46,6 +56,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
   const [selectedPeriod, setSelectedPeriod] = useState<HolidayPeriod | null>(
     null
   )
+  const [selectedGroups, setSelectedGroups] = useState<UUID[] | null>(null)
 
   const units = useQueryResult(unitsQuery({ includeClosed: false }))
   const periods = useQueryResult(holidayPeriodsQuery())
@@ -72,6 +83,44 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
     [units]
   )
 
+  const groupsResult = useQueryResult(
+    selectedUnit && selectedPeriod
+      ? unitGroupsQuery({
+          daycareId: selectedUnit.id,
+          from: selectedPeriod.period.start,
+          to: selectedPeriod.period.end
+        })
+      : constantQuery([])
+  )
+
+  const groupOptions = useMemo(
+    () =>
+      groupsResult.map((g) => {
+        return orderBy(g, (item) => item.name)
+      }),
+    [groupsResult]
+  )
+
+  const [activeParams, setActiveParams] = useState<ReportQueryParams | null>(
+    null
+  )
+
+  const reportResult = useQueryResult(
+    activeParams
+      ? holidayPeriodAttendanceReportQuery(activeParams)
+      : constantQuery([])
+  )
+
+  const fetchResults = () => {
+    if (selectedUnit && selectedPeriod) {
+      setActiveParams({
+        unitId: selectedUnit.id,
+        groupIds: selectedGroups,
+        periodId: selectedPeriod.id
+      })
+    }
+  }
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -85,49 +134,83 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
                 <FilterLabel>
                   {i18n.reports.holidayPeriodAttendance.unitFilter}
                 </FilterLabel>
-                <FlexRow>
-                  <Combobox
-                    fullWidth
-                    items={unitResult}
-                    onChange={setSelectedUnit}
-                    selectedItem={selectedUnit}
-                    getItemLabel={(item) => item.name}
-                    placeholder={i18n.filters.unitPlaceholder}
-                    data-qa="unit-select"
-                    getItemDataQa={({ id }) => `unit-${id}`}
-                  />
-                </FlexRow>
+
+                <Combobox
+                  fullWidth
+                  items={unitResult}
+                  onChange={(item) => {
+                    setSelectedGroups([])
+                    setSelectedUnit(item)
+                  }}
+                  selectedItem={selectedUnit}
+                  getItemLabel={(item) => item.name}
+                  placeholder={i18n.filters.unitPlaceholder}
+                  data-qa="unit-select"
+                  getItemDataQa={({ id }) => `unit-${id}`}
+                />
               </FilterRow>
               <FilterRow>
                 <FilterLabel>
                   {i18n.reports.holidayPeriodAttendance.periodFilter}
                 </FilterLabel>
-                <FlexRow>
-                  <Combobox
-                    fullWidth
-                    items={periodResult}
-                    onChange={setSelectedPeriod}
-                    selectedItem={selectedPeriod}
-                    getItemLabel={(item) => item.period.format()}
-                    placeholder={
-                      i18n.reports.holidayPeriodAttendance
-                        .periodFilterPlaceholder
-                    }
-                    data-qa="period-select"
-                    getItemDataQa={({ id }) => `term-${id}`}
-                  />
-                </FlexRow>
-              </FilterRow>
-              <Gap />
-              {selectedPeriod && selectedUnit && (
-                <HolidayPeriodAttendanceReportGrid
-                  daycare={selectedUnit}
-                  period={selectedPeriod}
+
+                <Combobox
+                  fullWidth
+                  items={periodResult}
+                  onChange={(item) => {
+                    setSelectedGroups([])
+                    setSelectedPeriod(item)
+                  }}
+                  selectedItem={selectedPeriod}
+                  getItemLabel={(item) => item.period.format()}
+                  placeholder={
+                    i18n.reports.holidayPeriodAttendance.periodFilterPlaceholder
+                  }
+                  data-qa="period-select"
+                  getItemDataQa={({ id }) => `term-${id}`}
                 />
-              )}
+              </FilterRow>
             </>
           )
         )}
+
+        {renderResult(groupOptions, (groups) => (
+          <FilterRow>
+            <FilterLabel>
+              {i18n.reports.holidayPeriodAttendance.groupFilter}
+            </FilterLabel>
+            <div style={{ width: '100%' }}>
+              <MultiSelect
+                isClearable
+                options={groups}
+                getOptionId={(item) => item.id}
+                getOptionLabel={(item) => item.name}
+                placeholder={
+                  i18n.reports.holidayPeriodAttendance.groupFilterPlaceholder
+                }
+                onChange={(item) => setSelectedGroups(item.map((i) => i.id))}
+                value={groups.filter(
+                  (g) => selectedGroups?.includes(g.id) === true
+                )}
+                data-qa="group-select"
+              />
+            </div>
+          </FilterRow>
+        ))}
+        <Gap />
+        <FilterRow>
+          <Button
+            primary
+            disabled={!(selectedUnit && selectedPeriod)}
+            text={i18n.common.search}
+            onClick={fetchResults}
+            data-qa="send-button"
+          />
+        </FilterRow>
+        <Gap />
+        {renderResult(reportResult, (report) => (
+          <HolidayPeriodAttendanceReportGrid reportResult={report} />
+        ))}
       </ContentArea>
     </Container>
   )
@@ -145,39 +228,27 @@ type ReportDisplayRow = {
 
 const HolidayPeriodAttendanceReportGrid = React.memo(
   function HolidayPeriodAttendanceReportGrid({
-    daycare,
-    period
+    reportResult
   }: {
-    daycare: Daycare
-    period: HolidayPeriod
+    reportResult: HolidayPeriodAttendanceReportRow[]
   }) {
     const { i18n } = useTranslation()
-    const reportResult = useQueryResult(
-      holidayPeriodAttendanceReportQuery({
-        unitId: daycare.id,
-        periodId: period.id
-      })
-    )
+
     const [expandingInfo, infoExpansion] = useBoolean(false)
 
-    const sortedReportResult = useMemo(
-      () =>
-        reportResult.map((rows) => {
-          const displayRows: ReportDisplayRow[] = rows.map((row) => ({
-            date: row.date,
-            presentChildren: orderChildren(row.presentChildren),
-            assistanceChildren: orderChildren(row.assistanceChildren),
-            coefficientSum: row.presentOccupancyCoefficient,
-            requiredStaffCount: row.requiredStaff,
-            absentCount: row.absentCount,
-            noResponseChildren: orderChildren(row.noResponseChildren)
-          }))
-          return orderBy(displayRows, ['date'], ['asc'])
-        }),
-      [reportResult]
-    )
-
-    return renderResult(sortedReportResult, (report) => (
+    const sortedReportResult = useMemo(() => {
+      const displayRows: ReportDisplayRow[] = reportResult.map((row) => ({
+        date: row.date,
+        presentChildren: orderChildren(row.presentChildren),
+        assistanceChildren: orderChildren(row.assistanceChildren),
+        coefficientSum: row.presentOccupancyCoefficient,
+        requiredStaffCount: row.requiredStaff,
+        absentCount: row.absentCount,
+        noResponseChildren: orderChildren(row.noResponseChildren)
+      }))
+      return orderBy(displayRows, ['date'], ['asc'])
+    }, [reportResult])
+    return (
       <>
         {expandingInfo && (
           <ExpandingInfoBox
@@ -211,8 +282,8 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
             </Tr>
           </Thead>
           <Tbody>
-            {report.length > 0 ? (
-              report.map((row) => (
+            {sortedReportResult.length > 0 ? (
+              sortedReportResult.map((row) => (
                 <DailyPeriodAttendanceRow
                   row={row}
                   key={row.date.formatIso()}
@@ -226,7 +297,7 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
           </Tbody>
         </TableScrollable>
       </>
-    ))
+    )
   }
 )
 
