@@ -126,14 +126,15 @@ sealed interface AsyncJob : AsyncJobPayload {
     }
 
     data class SendCalendarEventReservationPushNotification(
-        override val user: AuthenticatedUser,
         val device: MobileDeviceId,
         val groupId: GroupId,
         val type: CalendarEventReservationNotificationType,
         val date: LocalDate,
         val startTime: LocalTime,
         val endTime: LocalTime,
-    ) : AsyncJob
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
 
     data class UploadToKoski(val key: KoskiStudyRightKey) : AsyncJob {
         override val user: AuthenticatedUser? = null

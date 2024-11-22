@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.webpush.WebPush
@@ -84,6 +85,17 @@ AND 'CALENDAR_EVENT_RESERVATION' = ANY(md.push_notification_categories)
     ) {
         if (webPush == null) return
 
+        val untilReservationEnd =
+            Duration.between(
+                clock.now().toInstant(),
+                HelsinkiDateTime.of(job.date, job.endTime).toInstant(),
+            )
+
+        if (untilReservationEnd.isNegative) {
+            // reservation is in the past, no need to send notification
+            return
+        }
+
         val device = job.device
 
         val (vapidJwt, notification) =
@@ -113,7 +125,7 @@ AND 'CALENDAR_EVENT_RESERVATION' = ANY(md.push_notification_categories)
                 vapidJwt,
                 WebPushNotification(
                     notification.endpoint,
-                    ttl = Duration.ofDays(1),
+                    ttl = untilReservationEnd.coerceIn(Duration.ofMinutes(15), Duration.ofDays(5)),
                     payloads =
                         listOf(
                             WebPushPayload.NotificationV1(

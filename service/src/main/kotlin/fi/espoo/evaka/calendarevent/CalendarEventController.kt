@@ -822,7 +822,6 @@ class CalendarEventController(
                             } +
                                 groupDevices.map {
                                     AsyncJob.SendCalendarEventReservationPushNotification(
-                                        user = user,
                                         device = it.device,
                                         groupId = it.groupId,
                                         type =
@@ -887,7 +886,6 @@ class CalendarEventController(
                         } +
                             groupDevices.map {
                                 AsyncJob.SendCalendarEventReservationPushNotification(
-                                    user = user,
                                     device = it.device,
                                     groupId = it.groupId,
                                     type =
