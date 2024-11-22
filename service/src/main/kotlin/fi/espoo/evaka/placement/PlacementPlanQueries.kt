@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
@@ -141,6 +142,7 @@ fun Database.Read.getPlacementPlans(
         val lastName: String,
         val dateOfBirth: LocalDate,
         val unitConfirmationStatus: PlacementPlanConfirmationStatus,
+        val unitAcceptDisabled: Boolean,
         val unitRejectReason: PlacementPlanRejectReason?,
         val unitRejectOtherReason: String?,
         val rejectedByCitizen: Boolean,
@@ -151,7 +153,9 @@ fun Database.Read.getPlacementPlans(
                 """
 SELECT
     pp.id, pp.unit_id, pp.application_id, pp.type, pp.start_date, pp.end_date, pp.preschool_daycare_start_date, pp.preschool_daycare_end_date,
-    pp.unit_confirmation_status, pp.unit_reject_reason, pp.unit_reject_other_reason,
+    pp.unit_confirmation_status,
+    coalesce(lower(preschool_term.application_period) > ${bind(today)}, false) AS unit_accept_disabled,
+    pp.unit_reject_reason, pp.unit_reject_other_reason,
     p.id as child_id, p.first_name, p.last_name, p.date_of_birth, d.resolved IS NOT NULL AS rejected_by_citizen
 FROM placement_plan pp
 LEFT JOIN application a ON pp.application_id = a.id
@@ -163,6 +167,7 @@ LEFT JOIN LATERAL (
  AND a.status = 'REJECTED'::application_status_type
  AND d.status = 'REJECTED'::decision_status
 ) d ON TRUE
+LEFT JOIN preschool_term ON a.type = ${bind(ApplicationType.PRESCHOOL)} AND preschool_term.finnish_preschool @> (a.document ->> 'preferredStartDate')::date
 WHERE
     pp.unit_id = ${bind(unitId)} AND
     a.status = ANY(${bind(statuses)}::application_status_type[]) AND
@@ -200,6 +205,7 @@ WHERE
                         dateOfBirth = it.dateOfBirth,
                     ),
                 unitConfirmationStatus = it.unitConfirmationStatus,
+                unitAcceptDisabled = it.unitAcceptDisabled,
                 unitRejectReason = it.unitRejectReason,
                 unitRejectOtherReason = it.unitRejectOtherReason,
                 rejectedByCitizen = it.rejectedByCitizen,
