@@ -1949,6 +1949,7 @@ export const fi = {
       handled: 'Tuloselvitys käsitelty'
     },
     invoice: {
+      createReplacementDrafts: 'Muodosta oikaisulaskut',
       validity: 'Kausi',
       price: 'Summa',
       status: 'Tila'

@@ -93,6 +93,7 @@ declare module 'Icons' {
   const faPlusCircle: IconDefinition
   const faPrint: IconDefinition
   const faRedo: IconDefinition
+  const faRefresh: IconDefinition
   const faQuestion: IconDefinition
   const faQuestionCircle: IconDefinition
   const faSearch: IconDefinition

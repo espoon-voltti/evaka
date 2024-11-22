@@ -565,6 +565,22 @@ export async function createDraftInvoices(): Promise<void> {
 
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.createReplacementDraftsForHeadOfFamily
+*/
+export async function createReplacementDraftsForHeadOfFamily(
+  request: {
+    headOfFamilyId: UUID
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/invoices/create-replacement-drafts/${request.headOfFamilyId}`.toString(),
+    method: 'POST'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.deleteDraftInvoices
 */
 export async function deleteDraftInvoices(

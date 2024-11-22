@@ -69,21 +69,60 @@ class InvoiceGenerator(
             tracer.withSpan("applyCorrections") {
                 applyUnappliedCorrections(tx, month, invoices, invoiceCalculationData.areaIds)
             }
+
         tx.deleteDraftInvoices(month, InvoiceStatus.DRAFT)
         tx.insertDraftInvoices(
             status = InvoiceStatus.DRAFT,
             invoices = invoicesWithCorrections,
-            relatedFeeDecisions =
-                invoicesWithCorrections.associate { invoice ->
-                    invoice.headOfFamily to
-                        invoiceCalculationData.decisions
-                            .getOrDefault(invoice.headOfFamily, emptyList())
-                            .map { it.id }
-                },
+            relatedFeeDecisions = invoiceCalculationData.decisionIds,
         )
     }
 
     fun generateAllReplacementDraftInvoices(dbc: Database.Connection, today: LocalDate) {
+        forReplaceableMonths(dbc, today) { tx, month ->
+            val invoiceCalculationData =
+                tracer.withSpan("calculateInvoiceData") {
+                    calculateInvoiceData(tx, month, excludeAlreadyInvoiced = false)
+                }
+            val drafts = createReplacementDraftInvoices(tx, month, invoiceCalculationData)
+
+            tx.deleteDraftInvoices(month, InvoiceStatus.REPLACEMENT_DRAFT)
+            tx.insertDraftInvoices(
+                status = InvoiceStatus.REPLACEMENT_DRAFT,
+                invoices = drafts,
+                relatedFeeDecisions = invoiceCalculationData.decisionIds,
+            )
+        }
+    }
+
+    fun generateReplacementDraftInvoicesForHeadOfFamily(
+        dbc: Database.Connection,
+        today: LocalDate,
+        headOfFamilyId: PersonId,
+    ) =
+        forReplaceableMonths(dbc, today) { tx, month ->
+            val invoiceCalculationData =
+                tracer.withSpan("calculateInvoiceData") {
+                    calculateInvoiceData(tx, month, headOfFamilyId)
+                }
+            val draft =
+                createReplacementDraftInvoices(tx, month, invoiceCalculationData).firstOrNull()
+
+            tx.deleteDraftInvoices(month, InvoiceStatus.REPLACEMENT_DRAFT, headOfFamilyId)
+            if (draft != null) {
+                tx.insertDraftInvoices(
+                    status = InvoiceStatus.REPLACEMENT_DRAFT,
+                    invoices = listOf(draft),
+                    relatedFeeDecisions = invoiceCalculationData.decisionIds,
+                )
+            }
+        }
+
+    private fun forReplaceableMonths(
+        dbc: Database.Connection,
+        today: LocalDate,
+        fn: (Database.Transaction, month: YearMonth) -> Unit,
+    ) {
         val replacementInvoicesStart = env.replacementInvoicesStart
         if (replacementInvoicesStart == null) {
             logger.info("Replacement invoices are not enabled")
@@ -98,7 +137,7 @@ class InvoiceGenerator(
         var month = earliestMonth
         while (month <= latestMonth) {
             try {
-                dbc.transaction { tx -> createReplacementDraftInvoices(tx, month) }
+                dbc.transaction { tx -> fn(tx, month) }
             } catch (e: Exception) {
                 logger.error("Failed to create replacement draft invoices for $month", e)
             }
@@ -106,11 +145,11 @@ class InvoiceGenerator(
         }
     }
 
-    private fun createReplacementDraftInvoices(tx: Database.Transaction, month: YearMonth) {
-        val invoiceCalculationData =
-            tracer.withSpan("calculateInvoiceData") {
-                calculateInvoiceData(tx, month, excludeAlreadyInvoiced = false)
-            }
+    private fun createReplacementDraftInvoices(
+        tx: Database.Transaction,
+        month: YearMonth,
+        invoiceCalculationData: DraftInvoiceGenerator.InvoiceGeneratorInput,
+    ): List<DraftInvoice> {
         val invoices = draftInvoiceGenerator.generateDraftInvoices(invoiceCalculationData)
 
         val invoicesWithCorrections =
@@ -156,23 +195,10 @@ class InvoiceGenerator(
                         replacedInvoiceId = sentInvoice.id,
                     )
                 }
-        val draftsToInsert = newOrReplacedInvoices + zeroInvoices
-
-        tx.deleteDraftInvoices(month, InvoiceStatus.REPLACEMENT_DRAFT)
-        tx.insertDraftInvoices(
-            status = InvoiceStatus.REPLACEMENT_DRAFT,
-            invoices = draftsToInsert,
-            relatedFeeDecisions =
-                draftsToInsert.associate { invoice ->
-                    invoice.headOfFamily to
-                        invoiceCalculationData.decisions
-                            .getOrDefault(invoice.headOfFamily, emptyList())
-                            .map { it.id }
-                },
-        )
+        return newOrReplacedInvoices + zeroInvoices
     }
 
-    fun calculateInvoiceData(
+    private fun calculateInvoiceData(
         tx: Database.Read,
         month: YearMonth,
         excludeAlreadyInvoiced: Boolean,
@@ -196,6 +222,28 @@ class InvoiceGenerator(
     private fun calculateInvoiceData(
         tx: Database.Read,
         month: YearMonth,
+        headOfFamilyId: PersonId,
+    ): DraftInvoiceGenerator.InvoiceGeneratorInput {
+        val range = FiniteDateRange.ofMonth(month)
+        val effectiveDecisions = tx.getInvoiceableFeeDecisions(range, headOfFamilyId)
+
+        // There are very few temporary placements in total, so we can just fetch all of them
+        val temporaryPlacements =
+            tx.getInvoiceableTemporaryPlacements(FiniteDateRange.ofMonth(month)).filterKeys {
+                it == headOfFamilyId
+            }
+
+        return calculateInvoiceData(
+            tx,
+            month,
+            mapOf(headOfFamilyId to effectiveDecisions),
+            temporaryPlacements,
+        )
+    }
+
+    private fun calculateInvoiceData(
+        tx: Database.Read,
+        month: YearMonth,
         feeDecisions: Map<PersonId, List<FeeDecision>>,
         temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
     ): DraftInvoiceGenerator.InvoiceGeneratorInput {
@@ -213,7 +261,9 @@ class InvoiceGenerator(
             tx.getInvoiceablePlacements(range, PlacementType.invoiced, decisionChildIds)
 
         val temporaryPlacementChildIds =
-            temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
+            temporaryPlacements.values.flatMap { placementRanges ->
+                placementRanges.map { (_, placement) -> placement.child.id }
+            }
         val allChildIds = decisionChildIds + temporaryPlacementChildIds
 
         val julyFreeChildren =
@@ -297,6 +347,8 @@ class InvoiceGenerator(
                 }
                 .toMap()
 
+        if (partnerByHeadOfFamily.isEmpty()) return emptyMap()
+
         val partnerIds = partnerByHeadOfFamily.values.toSet()
         val childrenByGuardian = tx.getChildIdsByGuardians(partnerIds)
         val childrenByHead = tx.getChildIdsByHeadsOfFamily(partnerIds, range)
@@ -340,7 +392,7 @@ class InvoiceGenerator(
         return applyCorrections(targetMonth, invoices, unappliedCorrections, areaIds)
     }
 
-    fun applyCorrectionsForMonth(
+    private fun applyCorrectionsForMonth(
         tx: Database.Read,
         targetMonth: YearMonth,
         invoices: List<DraftInvoice>,
@@ -427,17 +479,27 @@ class InvoiceGenerator(
     }
 }
 
-fun Database.Read.getInvoiceableFeeDecisions(dateRange: FiniteDateRange): List<FeeDecision> {
+fun Database.Read.getInvoiceableFeeDecisions(
+    dateRange: FiniteDateRange,
+    headOfFamilyId: PersonId? = null,
+): List<FeeDecision> {
+    val headOfFamilyFilter =
+        if (headOfFamilyId != null) {
+            Predicate { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
+        } else {
+            Predicate.alwaysTrue()
+        }
     return createQuery(
             feeDecisionQuery(
                 Predicate {
-                    where(
-                        """
+                        where(
+                            """
                             $it.valid_during && ${bind(dateRange)} AND
                             $it.status = ANY(${bind(FeeDecisionStatus.effective)}::fee_decision_status[])
                             """
-                    )
-                }
+                        )
+                    }
+                    .and(headOfFamilyFilter)
             )
         )
         .toList<FeeDecision>()
