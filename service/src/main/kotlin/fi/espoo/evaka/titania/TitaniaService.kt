@@ -153,6 +153,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                 // identical shifts are deduplicated later, ignore them here
                                 if (next !in unmergedSameDayPlans) {
                                     unmergedSameDayPlans
+                                        .filter { it.employeeId == next.employeeId }
                                         .filter {
                                             TimeRange(
                                                     next.startTime.toLocalTime(),
@@ -186,7 +187,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                         }
                 }
 
-        if (!overlappingShifts.isEmpty()) {
+        if (overlappingShifts.isNotEmpty()) {
             tx.insertReportRows(requestTime, overlappingShifts)
             return TitaniaUpdateResponse(
                 listOf(),

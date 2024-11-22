@@ -879,6 +879,84 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `same event with different employees isn't conflicting shift`() {
+        db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716"))
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176167"))
+
+            titaniaService.updateWorkingTimeEventsInternal(
+                tx,
+                UpdateWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 12),
+                            endDate = LocalDate.of(2022, 10, 12),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaSchedulingUnit(
+                                code = "",
+                                occupation =
+                                    listOf(
+                                        TitaniaOccupation(
+                                            code = "",
+                                            name = "",
+                                            person =
+                                                listOf(
+                                                    TitaniaPerson(
+                                                        employeeId = "176716",
+                                                        name = "",
+                                                        actualWorkingTimeEvents =
+                                                            TitaniaWorkingTimeEvents(
+                                                                event =
+                                                                    listOf(
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    12,
+                                                                                ),
+                                                                            beginTime = "0800",
+                                                                            endTime = "1600",
+                                                                        )
+                                                                    )
+                                                            ),
+                                                    ),
+                                                    TitaniaPerson(
+                                                        employeeId = "176167",
+                                                        name = "",
+                                                        actualWorkingTimeEvents =
+                                                            TitaniaWorkingTimeEvents(
+                                                                event =
+                                                                    listOf(
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    12,
+                                                                                ),
+                                                                            beginTime = "0800",
+                                                                            endTime = "1600",
+                                                                        )
+                                                                    )
+                                                            ),
+                                                    ),
+                                                ),
+                                        )
+                                    ),
+                            )
+                        ),
+                ),
+            )
+        }
+
+        val reportRows = db.read { tx -> tx.fetchReportRows() }
+        assertThat(reportRows).isEmpty()
+    }
+
+    @Test
     fun `getStampedWorkingTimeEvents`() {
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
