@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -14,7 +14,6 @@ import { ReservationsResponse } from 'lib-common/generated/api-types/reservation
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { NotificationsContext } from 'lib-components/Notifications'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Desktop, RenderOnlyOn } from 'lib-components/layout/responsive-layout'
@@ -25,7 +24,6 @@ import Footer from '../Footer'
 import RequireAuth from '../RequireAuth'
 import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
-import { useTranslation } from '../localization'
 
 import AbsenceModal from './AbsenceModal'
 import ActionPickerModal from './ActionPickerModal'
@@ -128,15 +126,6 @@ const CalendarPage = React.memo(function CalendarPage() {
     }
   }, [data])
 
-  const { addTimedNotification } = useContext(NotificationsContext)
-  const i18n = useTranslation()
-  const onSuccess = useCallback(() => {
-    closeModal()
-    addTimedNotification({
-      children: i18n.common.saveSuccess
-    })
-  }, [addTimedNotification, closeModal, i18n.common.saveSuccess])
-
   if (!user || !user.accessibleFeatures.reservations) return null
 
   return (
@@ -233,7 +222,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                 <ReservationModal
                   onClose={closeModal}
                   reservationsResponse={response}
-                  onSuccess={onSuccess}
+                  onSuccess={closeModal}
                   initialStart={
                     modalState.initialRange?.start ?? firstReservableDate
                   }
@@ -253,7 +242,6 @@ const CalendarPage = React.memo(function CalendarPage() {
                           )
                       : closeModal
                   }
-                  onSuccess={onSuccess}
                   initialDate={modalState.initialDate}
                   reservationsResponse={response}
                   holidayPeriods={holidayPeriods}

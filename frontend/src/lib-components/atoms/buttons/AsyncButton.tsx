@@ -7,10 +7,7 @@ import { animated, useSpring } from '@react-spring/web'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { useTranslations } from 'lib-components/i18n'
 import { faCheck, faTimes } from 'lib-icons'
-
-import { ScreenReaderOnly } from '../ScreenReaderOnly'
 
 import {
   AsyncButtonBehaviorProps,
@@ -36,6 +33,7 @@ export type AsyncButtonProps<T> = BaseButtonVisualProps &
      * If true, the success icon is hidden.
      */
     hideSuccess?: boolean
+    successTimeout?: number
   }
 
 const AsyncButton_ = function AsyncButton<T>({
@@ -50,6 +48,7 @@ const AsyncButton_ = function AsyncButton<T>({
   textInProgress = text,
   textDone = text,
   hideSuccess = false,
+  successTimeout,
   ...props
 }: AsyncButtonProps<T>) {
   const { state, handleClick } = useAsyncButtonBehavior({
@@ -57,9 +56,9 @@ const AsyncButton_ = function AsyncButton<T>({
     stopPropagation,
     onClick,
     onSuccess,
-    onFailure
+    onFailure,
+    successTimeout
   })
-  const i18n = useTranslations()
   const { colors } = useTheme()
 
   const showIcon = state !== 'idle'
@@ -79,6 +78,7 @@ const AsyncButton_ = function AsyncButton<T>({
   const cross = useSpring<{ opacity: number }>({
     opacity: state === 'failure' ? 1 : 0
   })
+
   return renderBaseButton(
     {
       text,
@@ -91,22 +91,6 @@ const AsyncButton_ = function AsyncButton<T>({
     handleClick,
     ({ icon }) => (
       <>
-        {state === 'in-progress' && (
-          <ScreenReaderOnly aria-live="polite" id="in-progress">
-            {i18n.asyncButton.inProgress}
-          </ScreenReaderOnly>
-        )}
-        {state === 'failure' && (
-          <ScreenReaderOnly aria-live="assertive" id="failure">
-            {i18n.asyncButton.failure}
-          </ScreenReaderOnly>
-        )}
-        {state === 'success' && (
-          <ScreenReaderOnly aria-live="assertive" id="success">
-            {i18n.asyncButton.success}
-          </ScreenReaderOnly>
-        )}
-
         <IconContainer
           style={{
             width: container.x.to((x) => `${24 * x}px`),
@@ -141,7 +125,9 @@ const AsyncButton_ = function AsyncButton<T>({
             <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
           </IconWrapper>
         </IconContainer>
-        <TextWrapper>
+        <TextWrapper
+          aria-live={state === 'in-progress' ? 'polite' : 'assertive'}
+        >
           {state === 'in-progress'
             ? textInProgress
             : state === 'success'

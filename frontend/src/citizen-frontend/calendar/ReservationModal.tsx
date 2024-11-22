@@ -309,6 +309,7 @@ export default React.memo(function ReservationModal({
               <MutateButton
                 primary
                 text={i18n.common.confirm}
+                textDone={i18n.common.saveSuccess}
                 disabled={
                   form.state.selectedChildren.length === 0 || !form.isValid()
                 }
@@ -327,6 +328,7 @@ export default React.memo(function ReservationModal({
                 onSuccess={onSuccess}
                 onFailure={(reason) => showSaveError(reason)}
                 data-qa="modal-okBtn"
+                successTimeout={2500}
               />
             </CalendarModalButtons>
           </BottomFooterContainer>
