@@ -107,10 +107,6 @@ class InvoiceGenerator(
     }
 
     private fun createReplacementDraftInvoices(tx: Database.Transaction, month: YearMonth) {
-        tx.setStatementTimeout(Duration.ofMinutes(10))
-        tx.setLockTimeout(Duration.ofSeconds(15))
-        tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
-
         val invoiceCalculationData =
             tracer.withSpan("calculateInvoiceData") {
                 calculateInvoiceData(tx, month, excludeAlreadyInvoiced = false)
