@@ -88,7 +88,8 @@ RUN cd /tmp \
  && curl -sSfLO https://github.com/DataDog/dd-opentracing-cpp/releases/download/${DD_OPENTRACING_CPP_VERSION}/linux-amd64-libdd_opentracing_plugin.so.gz \
  && echo "${DD_OPENTRACING_CPP_SHA256}  linux-amd64-libdd_opentracing_plugin.so.gz" | sha256sum -c - \
  && gunzip linux-amd64-libdd_opentracing_plugin.so.gz -c > /usr/local/lib/libdd_opentracing_plugin.so \
- && rm linux-amd64-libdd_opentracing_plugin.so.gz
+ && rm linux-amd64-libdd_opentracing_plugin.so.gz \
+ && apt-get remove --auto-remove -y curl
 
 COPY ./proxy/files/bin/ /bin/
 COPY ./proxy/files/internal/ /internal/
