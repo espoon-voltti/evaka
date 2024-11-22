@@ -13,7 +13,8 @@ import { UUID } from '../../types'
 */
 export const pushNotificationCategories = [
   'RECEIVED_MESSAGE',
-  'NEW_ABSENCE'
+  'NEW_ABSENCE',
+  'CALENDAR_EVENT_RESERVATION'
 ] as const
 
 export type PushNotificationCategory = typeof pushNotificationCategories[number]

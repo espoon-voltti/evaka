@@ -800,10 +800,15 @@ class CalendarEventController(
                         )
                     }
 
-                    // send reservation email if reservation changes
+                    // send reservation email and mobile notification if reservation changes
                     if (eventTimeDetails.eventTime.childId != body.childId) {
                         val recipients = getRecipientsForChild(tx, body.childId)
                         val finalEventTime = eventTimeDetails.eventTime.copy(childId = body.childId)
+                        val groupDevices =
+                            tx.getCalendarEventReservationGroupDevices(
+                                body.calendarEventTimeId,
+                                body.childId,
+                            )
                         asyncJobRunner.plan(
                             tx,
                             recipients.map {
@@ -814,7 +819,19 @@ class CalendarEventController(
                                     calendarEventTime = finalEventTime,
                                     recipientId = it.id,
                                 )
-                            },
+                            } +
+                                groupDevices.map {
+                                    AsyncJob.SendCalendarEventReservationPushNotification(
+                                        device = it.device,
+                                        groupId = it.groupId,
+                                        type =
+                                            AsyncJob.CalendarEventReservationNotificationType
+                                                .RESERVED,
+                                        date = eventTimeDetails.eventTime.date,
+                                        startTime = eventTimeDetails.eventTime.startTime,
+                                        endTime = eventTimeDetails.eventTime.endTime,
+                                    )
+                                },
                             runAt = clock.now(),
                         )
                     }
@@ -849,6 +866,11 @@ class CalendarEventController(
                     val eventTimeDetails =
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
                             ?: throw BadRequest("Calendar event time not found")
+                    val groupDevices =
+                        tx.getCalendarEventReservationGroupDevices(
+                            body.calendarEventTimeId,
+                            body.childId,
+                        )
                     tx.freeCalendarEventTimeReservation(user, clock.now(), body.calendarEventTimeId)
                     val recipients = getRecipientsForChild(tx, body.childId)
                     asyncJobRunner.plan(
@@ -861,7 +883,18 @@ class CalendarEventController(
                                 calendarEventTime = eventTimeDetails.eventTime,
                                 recipientId = it.id,
                             )
-                        },
+                        } +
+                            groupDevices.map {
+                                AsyncJob.SendCalendarEventReservationPushNotification(
+                                    device = it.device,
+                                    groupId = it.groupId,
+                                    type =
+                                        AsyncJob.CalendarEventReservationNotificationType.CANCELLED,
+                                    date = eventTimeDetails.eventTime.date,
+                                    startTime = eventTimeDetails.eventTime.startTime,
+                                    endTime = eventTimeDetails.eventTime.endTime,
+                                )
+                            },
                         runAt = clock.now(),
                     )
                 }

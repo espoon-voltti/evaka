@@ -527,7 +527,8 @@ export const fi = {
         label: 'Aiheet, joista lähetetään ilmoitus tähän puhelimeen',
         values: {
           RECEIVED_MESSAGE: 'Saapuneet viestit',
-          NEW_ABSENCE: 'Lasten kuluvan päivän poissaolomerkinnät'
+          NEW_ABSENCE: 'Lasten kuluvan päivän poissaolomerkinnät',
+          CALENDAR_EVENT_RESERVATION: 'Varatut ja perutut keskusteluajat'
         }
       },
       groups: {
