@@ -22,15 +22,18 @@ ALTER TABLE income_statement
 UPDATE income_statement SET
     status = CASE
         WHEN handler_id IS NOT NULL
-            THEN 'HANDLED'::income_statement_status
-            ELSE 'SENT'::income_statement_status
-        END,
+        THEN 'HANDLED'::income_statement_status
+        ELSE 'SENT'::income_statement_status
+    END,
     -- person_id may also refer to child so created_by/modified_by is not reliably known
     created_by = '00000000-0000-0000-0000-000000000000'::UUID,
     modified_by = '00000000-0000-0000-0000-000000000000'::UUID,
     modified_at = updated_at,
     sent_at = created_at,
-    handled_at = updated_at -- best guess
+    handled_at = CASE
+        WHEN handler_id IS NOT NULL
+        THEN updated_at -- best guess
+    END
 ;
 
 ALTER TABLE income_statement
