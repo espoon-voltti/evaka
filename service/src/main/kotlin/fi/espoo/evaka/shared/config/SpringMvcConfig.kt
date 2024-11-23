@@ -76,7 +76,7 @@ class SpringMvcConfig(
     }
 
     override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
-        configurer.defaultContentType(MediaType.APPLICATION_JSON, MediaType.ALL)
+        configurer.defaultContentType(MediaType.APPLICATION_JSON)
     }
 
     override fun configureMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
