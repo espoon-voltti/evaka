@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 import { Fixture } from '../../dev-api/fixtures'
@@ -20,6 +20,9 @@ let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let absencesPage: MobileAbsencesPage
+
+const mockedNow = HelsinkiDateTime.of(2024, 11, 20, 13, 0)
+const today = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
@@ -40,8 +43,11 @@ beforeEach(async () => {
 
   const daycarePlacementFixture = await Fixture.placement({
     childId,
-    unitId: unit.id
+    unitId: unit.id,
+    startDate: today,
+    endDate: today.addYears(1)
   }).save()
+
   await Fixture.groupPlacement({
     daycarePlacementId: daycarePlacementFixture.id,
     daycareGroupId: group.id,
@@ -49,7 +55,7 @@ beforeEach(async () => {
     endDate: daycarePlacementFixture.endDate
   }).save()
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockedNow })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   absencesPage = new MobileAbsencesPage(page)
@@ -65,16 +71,16 @@ describe('Future absences', () => {
     await waitUntilEqual(() => absencesPage.getAbsencesCount(), 0)
 
     await absencesPage.markNewAbsencePeriod(
-      LocalDate.todayInSystemTz().addWeeks(1),
-      LocalDate.todayInSystemTz().addWeeks(2),
+      today.addWeeks(1),
+      today.addWeeks(2),
       'SICKLEAVE'
     )
     await childPage.markAbsentBeforehandLink.click()
     await waitUntilEqual(() => absencesPage.getAbsencesCount(), 1)
 
     await absencesPage.markNewAbsencePeriod(
-      LocalDate.todayInSystemTz().addWeeks(4),
-      LocalDate.todayInSystemTz().addWeeks(5),
+      today.addWeeks(4),
+      today.addWeeks(5),
       'SICKLEAVE'
     )
     await childPage.markAbsentBeforehandLink.click()

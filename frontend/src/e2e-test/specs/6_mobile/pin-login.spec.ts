@@ -1,9 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
 
 import { mobileViewport } from '../../browser'
 import {
@@ -46,6 +45,9 @@ const childName = testChild.firstName + ' ' + testChild.lastName
 
 const pin = '2580'
 
+const mockedNow = HelsinkiDateTime.of(2024, 11, 20, 13, 0)
+const today = mockedNow.toLocalDate()
+
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea(testCareArea).save()
@@ -66,7 +68,9 @@ beforeEach(async () => {
   const daycareGroup = await Fixture.daycareGroup({ daycareId: unit.id }).save()
   const placementFixture = await Fixture.placement({
     childId: child.id,
-    unitId: unit.id
+    unitId: unit.id,
+    startDate: today,
+    endDate: today.addYears(1)
   }).save()
   await Fixture.groupPlacement({
     daycareGroupId: daycareGroup.id,
@@ -75,7 +79,7 @@ beforeEach(async () => {
     endDate: placementFixture.endDate
   }).save()
 
-  page = await Page.open({ viewport: mobileViewport })
+  page = await Page.open({ mockedTime: mockedNow, viewport: mobileViewport })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   pinLoginPage = new PinLoginPage(page)
@@ -104,9 +108,9 @@ describe('Mobile PIN login', () => {
           indx: 1,
           otherIndx: 2,
           personId: testAdult.id,
-          startDate: LocalDate.todayInSystemTz(),
-          endDate: LocalDate.todayInSystemTz(),
-          createdAt: HelsinkiDateTime.now(),
+          startDate: today,
+          endDate: today,
+          createdAt: mockedNow,
           conflict: false
         },
         {
@@ -114,9 +118,9 @@ describe('Mobile PIN login', () => {
           indx: 2,
           otherIndx: 1,
           personId: testAdult2.id,
-          startDate: LocalDate.todayInSystemTz(),
-          endDate: LocalDate.todayInSystemTz(),
-          createdAt: HelsinkiDateTime.now(),
+          startDate: today,
+          endDate: today,
+          createdAt: mockedNow,
           conflict: false
         }
       ]
@@ -158,8 +162,8 @@ describe('Mobile PIN login', () => {
           id: uuidv4(),
           childId: child.id,
           headOfChild: testAdult.id,
-          startDate: LocalDate.todayInSystemTz(),
-          endDate: LocalDate.todayInSystemTz(),
+          startDate: today,
+          endDate: today,
           conflict: false
         }
       ]

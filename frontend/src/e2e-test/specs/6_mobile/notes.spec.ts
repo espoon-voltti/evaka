@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import {
@@ -31,6 +32,9 @@ let childPage: MobileChildPage
 let notePage: MobileNotePage
 let attendancePage: ChildAttendancePage
 
+const mockedNow = HelsinkiDateTime.of(2024, 11, 20, 13, 0)
+const today = mockedNow.toLocalDate()
+
 describe('Child and group notes', () => {
   let child: DevPerson
 
@@ -47,7 +51,9 @@ describe('Child and group notes', () => {
     }).save()
     const placementFixture = await Fixture.placement({
       childId: child.id,
-      unitId: unit.id
+      unitId: unit.id,
+      startDate: today,
+      endDate: today.addYears(1)
     }).save()
     await Fixture.groupPlacement({
       daycareGroupId: daycareGroup.id,
@@ -56,7 +62,7 @@ describe('Child and group notes', () => {
       endDate: placementFixture.endDate
     }).save()
 
-    page = await Page.open()
+    page = await Page.open({ mockedTime: mockedNow })
 
     const mobileSignupUrl = await pairMobileDevice(unit.id)
     await page.goto(mobileSignupUrl)
@@ -124,10 +130,7 @@ describe('Child and group notes', () => {
     await notePage.typeAndSaveStickyNote(note2)
 
     await notePage.assertStickyNote(note, 0)
-    await notePage.assertStickyNoteExpires(
-      LocalDate.todayInSystemTz().addDays(7),
-      0
-    )
+    await notePage.assertStickyNoteExpires(today.addDays(7), 0)
     await notePage.assertStickyNote(note2, 1)
 
     await notePage.editStickyNote('Foobar', 1)
@@ -162,7 +165,9 @@ describe('Child and group notes (backup care)', () => {
     }).save()
     const placementFixture = await Fixture.placement({
       childId: child.id,
-      unitId: unit.id
+      unitId: unit.id,
+      startDate: today,
+      endDate: today.addYears(1)
     }).save()
     await Fixture.groupPlacement({
       daycareGroupId: daycareGroup.id,
@@ -179,10 +184,11 @@ describe('Child and group notes (backup care)', () => {
     await Fixture.backupCare({
       unitId: backupCareDaycareGroup.daycareId,
       groupId: backupCareDaycareGroup.id,
-      childId: child.id
+      childId: child.id,
+      period: new FiniteDateRange(today, today)
     }).save()
 
-    page = await Page.open()
+    page = await Page.open({ mockedTime: mockedNow })
 
     const mobileSignupUrl = await pairMobileDevice(backupCareDaycare.id)
     await page.goto(mobileSignupUrl)
