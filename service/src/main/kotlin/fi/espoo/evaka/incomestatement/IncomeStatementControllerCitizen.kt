@@ -277,7 +277,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean?,
     ) {
-        if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
+        if (draft == false && !validateIncomeStatementBody(body))
+            throw BadRequest("Invalid income statement body")
+
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(

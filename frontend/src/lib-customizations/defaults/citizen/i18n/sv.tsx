@@ -2156,6 +2156,9 @@ const sv: Translations = {
       </P>
     ),
     addNew: 'Ny inkomstutredning',
+    send: 'Skicka',
+    updateSent: 'Spara ändringar',
+    saveAsDraft: 'Spara och fortsätt senare',
     incomeInfo: 'Inkomstuppgifter',
     incomeInstructions:
       'Lämnä in en inkomstutredning eftersom din barn har fått platsen inom småbarnspedagogik.',
@@ -2399,6 +2402,8 @@ const sv: Translations = {
       startDate: 'Gäller från och med',
       endDate: 'Gäller till och med',
       createdAt: 'Skapad',
+      sentAt: 'Skickat',
+      notSent: 'Inte skickat',
       handled: 'Handläggare',
       openIncomeStatement: 'Öppna blanketten',
       deleteConfirm: 'Vill du radera inkomstutredningen?',

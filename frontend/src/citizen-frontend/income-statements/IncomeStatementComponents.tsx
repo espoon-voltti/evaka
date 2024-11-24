@@ -52,7 +52,8 @@ export const ActionContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: ${defaultMargins.m} 0;
+  padding: ${defaultMargins.s} 0;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
 
   > * {
     margin: 0 ${defaultMargins.m};
