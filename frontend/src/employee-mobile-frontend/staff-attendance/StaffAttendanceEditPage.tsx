@@ -125,7 +125,9 @@ const staffAttendanceForm = mapped(
       output.arrivedTime,
       output.departedTime
     ),
-    hasStaffOccupancyEffect: output.occupancyEffect
+    hasStaffOccupancyEffect: ['TRAINING', 'OTHER_WORK'].includes(output.type)
+      ? false
+      : output.occupancyEffect
   })
 )
 
@@ -613,6 +615,7 @@ const StaffAttendanceEditor = ({
           </>
         )}
       </FixedSpaceRow>
+      <Gap size="s" />
       <FixedSpaceRow alignItems="end" flexWrap="wrap">
         {featureFlags.staffAttendanceTypes && (
           <div>
@@ -655,11 +658,15 @@ const StaffAttendanceEditor = ({
           </IconContainer>
         </FixedSpaceRow>
       </FixedSpaceRow>
-      <CheckboxF
-        bind={occupancyEffect}
-        label={i18n.staff.staffOccupancyEffect}
-        data-qa="occupancy-effect"
-      />
+      <Gap size="s" />
+      {featureFlags.staffAttendanceTypes &&
+      ['TRAINING', 'OTHER_WORK'].includes(type.value()) ? null : (
+        <CheckboxF
+          bind={occupancyEffect}
+          label={i18n.staff.staffOccupancyEffect}
+          data-qa="occupancy-effect"
+        />
+      )}
     </FlexColumn>
   )
 }

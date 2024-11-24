@@ -192,6 +192,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
                 WHERE sa.departed IS NULL AND dc.id = ${bind(unitId)}
                   AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(date)}
                   AND 'REALTIME_STAFF_ATTENDANCE' = ANY(dc.enabled_pilot_features)
+                  AND sa.type NOT IN ('OTHER_WORK', 'TRAINING')
         
                 UNION ALL
         
