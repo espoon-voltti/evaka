@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -17,6 +17,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { formatPreferredName } from 'lib-common/names'
 import {
   constantQuery,
   useMutationResult,
@@ -32,13 +33,20 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { fontWeights } from 'lib-components/typography'
+import { fontWeights, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
+import { faArrowLeft } from 'lib-icons'
 
+import { routes } from '../../App'
 import { renderResult } from '../../async-rendering'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
-import { Actions, CustomTitle, TimeWrapper } from '../../common/components'
+import {
+  Actions,
+  BackButtonInline,
+  CustomTitle,
+  TimeWrapper
+} from '../../common/components'
 import { Translations, useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import { formatCategory } from '../../types'
@@ -49,7 +57,7 @@ import {
   createDeparturesMutation,
   expectedAbsencesOnDeparturesQuery
 } from '../queries'
-import { childAttendanceStatus, useChild } from '../utils'
+import { childAttendanceStatus } from '../utils'
 
 import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
 
@@ -61,7 +69,6 @@ const AbsenceTitle = styled(Title)`
   letter-spacing: 0;
   text-align: left;
   margin-top: 0;
-  margin-bottom: 0;
 `
 
 function validateTime(
@@ -91,16 +98,25 @@ function validateTime(
   return undefined
 }
 
+type ChildAbsenceState = {
+  childId: UUID
+  nonBillable: AbsenceTypeWithNoAbsence | undefined
+  billable: AbsenceTypeWithNoAbsence | undefined
+}
+
 const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   unitId,
-  child,
-  attendanceStatus
+  childList,
+  multiselect
 }: {
   unitId: UUID
-  child: AttendanceChild
-  attendanceStatus: ChildAttendanceStatusResponse
+  childList: {
+    child: AttendanceChild
+    attendanceStatus: ChildAttendanceStatusResponse
+  }[]
+  multiselect: boolean
 }) {
-  const childIds = [child.id]
+  const childIds = childList.map(({ child }) => child.id)
 
   const navigate = useNavigate()
   const { i18n } = useTranslation()
@@ -109,19 +125,48 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
     HelsinkiDateTime.now().toLocalTime().format()
   )
 
-  const [selectedAbsenceTypeNonbillable, setSelectedAbsenceTypeNonbillable] =
-    useState<AbsenceTypeWithNoAbsence | undefined>(
-      attendanceStatus.absences.find((a) => a.category === 'NONBILLABLE')?.type
-    )
-  const [selectedAbsenceTypeBillable, setSelectedAbsenceTypeBillable] =
-    useState<AbsenceTypeWithNoAbsence | undefined>(
-      attendanceStatus.absences.find((a) => a.category === 'BILLABLE')?.type
-    )
-
-  const timeError = useMemo(
-    () => validateTime(i18n, time, attendanceStatus.attendances),
-    [i18n, time, attendanceStatus]
+  const [childAbsenceStates, setChildAbsenceStates] = useState<
+    ChildAbsenceState[]
+  >(
+    childList.map(({ child, attendanceStatus }) => ({
+      childId: child.id,
+      nonBillable: attendanceStatus.absences.find(
+        (a) => a.category === 'NONBILLABLE'
+      )?.type,
+      billable: attendanceStatus.absences.find((a) => a.category === 'BILLABLE')
+        ?.type
+    }))
   )
+
+  const setChildNonBillableAbsenceType = (
+    childId: UUID,
+    absenceType: AbsenceTypeWithNoAbsence | undefined
+  ) => {
+    setChildAbsenceStates((prev) =>
+      prev.map((s) =>
+        s.childId === childId ? { ...s, nonBillable: absenceType } : s
+      )
+    )
+  }
+
+  const setChildBillableAbsenceType = (
+    childId: UUID,
+    absenceType: AbsenceTypeWithNoAbsence | undefined
+  ) => {
+    setChildAbsenceStates((prev) =>
+      prev.map((s) =>
+        s.childId === childId ? { ...s, billable: absenceType } : s
+      )
+    )
+  }
+
+  const timeError = useMemo(() => {
+    for (const child of childList) {
+      const error = validateTime(i18n, time, child.attendanceStatus.attendances)
+      if (error) return error
+    }
+    return undefined
+  }, [i18n, time, childList])
 
   const expectedAbsences = useQueryResult(
     timeError === undefined
@@ -142,12 +187,16 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
     childIds.every((childId) => {
       const childExpectedAbsences =
         expectedAbsences.value?.categoriesByChild[childId]
+      const childAbsenceState = childAbsenceStates.find(
+        (s) => s.childId === childId
+      )
 
       return (
+        !!childAbsenceState &&
         (childExpectedAbsences?.includes('NONBILLABLE') !== true ||
-          selectedAbsenceTypeNonbillable !== undefined) &&
+          childAbsenceState.nonBillable !== undefined) &&
         (childExpectedAbsences?.includes('BILLABLE') !== true ||
-          selectedAbsenceTypeBillable !== undefined)
+          childAbsenceState.billable !== undefined)
       )
     })
 
@@ -164,7 +213,18 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
       paddingVertical="zero"
     >
       <div>
-        <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
+        {childList.length === 1 ? (
+          <ChildNameBackButton
+            child={childList[0].child}
+            onClick={() => navigate(-1)}
+          />
+        ) : (
+          <BackButtonInline
+            icon={faArrowLeft}
+            text={i18n.common.return}
+            onClick={() => navigate(-1)}
+          />
+        )}
       </div>
 
       <ContentArea
@@ -188,63 +248,117 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
         <Gap size="xs" />
 
         {renderResult(expectedAbsences, (expectedAbsences) => {
-          const singleChildCategories =
-            expectedAbsences?.categoriesByChild[child.id]
-          return singleChildCategories && singleChildCategories.length > 0 ? (
+          if (
+            !expectedAbsences ||
+            !Object.values(expectedAbsences.categoriesByChild).some(
+              (categories) => categories && categories.length > 0
+            )
+          )
+            return null
+
+          return (
             <FixedSpaceColumn>
               <AbsenceTitle size={2}>
                 {i18n.attendances.absenceTitle}
               </AbsenceTitle>
-              {singleChildCategories.includes('NONBILLABLE') && (
-                <FixedSpaceColumn spacing="xs" data-qa="absence-NONBILLABLE">
-                  <div>
-                    {formatCategory('NONBILLABLE', child.placementType, i18n)}
-                  </div>
-                  <AbsenceSelector
-                    absenceTypes={[
-                      ...basicAbsenceTypes,
-                      ...attendanceStatus.absences
-                        .filter(
-                          (a) =>
-                            a.category === 'NONBILLABLE' &&
-                            !basicAbsenceTypes.includes(a.type)
-                        )
-                        .map((a) => a.type),
-                      ...(featureFlags.noAbsenceType
-                        ? (['NO_ABSENCE'] as const)
-                        : ([] as const))
-                    ]}
-                    selectedAbsenceType={selectedAbsenceTypeNonbillable}
-                    setSelectedAbsenceType={setSelectedAbsenceTypeNonbillable}
-                  />
-                </FixedSpaceColumn>
-              )}
-              {singleChildCategories.includes('BILLABLE') && (
-                <FixedSpaceColumn spacing="xs" data-qa="absence-BILLABLE">
-                  <div>
-                    {formatCategory('BILLABLE', child.placementType, i18n)}
-                  </div>
-                  <AbsenceSelector
-                    absenceTypes={[
-                      ...basicAbsenceTypes,
-                      ...attendanceStatus.absences
-                        .filter(
-                          (a) =>
-                            a.category === 'BILLABLE' &&
-                            !basicAbsenceTypes.includes(a.type)
-                        )
-                        .map((a) => a.type),
-                      ...(featureFlags.noAbsenceType
-                        ? (['NO_ABSENCE'] as const)
-                        : ([] as const))
-                    ]}
-                    selectedAbsenceType={selectedAbsenceTypeBillable}
-                    setSelectedAbsenceType={setSelectedAbsenceTypeBillable}
-                  />
-                </FixedSpaceColumn>
+
+              {Object.entries(expectedAbsences.categoriesByChild).map(
+                ([childId, categories]) => {
+                  if (!categories || categories.length === 0) return null
+                  const childData = childList.find(
+                    ({ child }) => child.id === childId
+                  )
+                  if (!childData) return null
+
+                  const { child, attendanceStatus } = childData
+
+                  return (
+                    <FixedSpaceColumn key={childId}>
+                      <H4
+                        noMargin
+                      >{`${formatPreferredName({ firstName: child.firstName, preferredName: child.preferredName })} ${child.lastName}`}</H4>
+                      <FixedSpaceColumn>
+                        {categories.includes('NONBILLABLE') && (
+                          <FixedSpaceColumn
+                            spacing="xs"
+                            data-qa="absence-NONBILLABLE"
+                          >
+                            <div>
+                              {formatCategory(
+                                'NONBILLABLE',
+                                child.placementType,
+                                i18n
+                              )}
+                            </div>
+                            <AbsenceSelector
+                              absenceTypes={[
+                                ...basicAbsenceTypes,
+                                ...attendanceStatus.absences
+                                  .filter(
+                                    (a) =>
+                                      a.category === 'NONBILLABLE' &&
+                                      !basicAbsenceTypes.includes(a.type)
+                                  )
+                                  .map((a) => a.type),
+                                ...(featureFlags.noAbsenceType
+                                  ? (['NO_ABSENCE'] as const)
+                                  : ([] as const))
+                              ]}
+                              selectedAbsenceType={
+                                childAbsenceStates.find(
+                                  (s) => s.childId === childId
+                                )?.nonBillable
+                              }
+                              setSelectedAbsenceType={(type) =>
+                                setChildNonBillableAbsenceType(childId, type)
+                              }
+                            />
+                          </FixedSpaceColumn>
+                        )}
+                        {categories.includes('BILLABLE') && (
+                          <FixedSpaceColumn
+                            spacing="xs"
+                            data-qa="absence-BILLABLE"
+                          >
+                            <div>
+                              {formatCategory(
+                                'BILLABLE',
+                                child.placementType,
+                                i18n
+                              )}
+                            </div>
+                            <AbsenceSelector
+                              absenceTypes={[
+                                ...basicAbsenceTypes,
+                                ...attendanceStatus.absences
+                                  .filter(
+                                    (a) =>
+                                      a.category === 'BILLABLE' &&
+                                      !basicAbsenceTypes.includes(a.type)
+                                  )
+                                  .map((a) => a.type),
+                                ...(featureFlags.noAbsenceType
+                                  ? (['NO_ABSENCE'] as const)
+                                  : ([] as const))
+                              ]}
+                              selectedAbsenceType={
+                                childAbsenceStates.find(
+                                  (s) => s.childId === childId
+                                )?.billable
+                              }
+                              setSelectedAbsenceType={(type) =>
+                                setChildBillableAbsenceType(childId, type)
+                              }
+                            />
+                          </FixedSpaceColumn>
+                        )}
+                      </FixedSpaceColumn>
+                    </FixedSpaceColumn>
+                  )
+                }
               )}
             </FixedSpaceColumn>
-          ) : null
+          )
         })}
 
         <Gap size="s" />
@@ -266,59 +380,93 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                   unitId,
                   body: {
                     departed: LocalTime.parse(time),
-                    departures: childIds.map((childId) => ({
-                      childId,
-                      absenceTypeNonbillable:
-                        expectedAbsences.value?.categoriesByChild[
-                          childId
-                        ]?.includes('NONBILLABLE') &&
-                        selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
-                          ? selectedAbsenceTypeNonbillable ?? null
-                          : null,
-                      absenceTypeBillable:
-                        expectedAbsences.value?.categoriesByChild[
-                          childId
-                        ]?.includes('BILLABLE') &&
-                        selectedAbsenceTypeBillable !== 'NO_ABSENCE'
-                          ? selectedAbsenceTypeBillable ?? null
-                          : null
-                    }))
+                    departures: childIds.map((childId) => {
+                      const expectedCategories =
+                        expectedAbsences.value?.categoriesByChild[childId] ?? []
+                      const absences = childAbsenceStates.find(
+                        (s) => s.childId === childId
+                      )
+
+                      return {
+                        childId,
+                        absenceTypeNonbillable:
+                          expectedCategories?.includes('NONBILLABLE') &&
+                          absences?.nonBillable !== 'NO_ABSENCE'
+                            ? absences?.nonBillable ?? null
+                            : null,
+                        absenceTypeBillable:
+                          expectedCategories.includes('BILLABLE') &&
+                          absences?.billable !== 'NO_ABSENCE'
+                            ? absences?.billable ?? null
+                            : null
+                      }
+                    })
                   }
                 })
               }}
               onSuccess={() => {
-                navigate(-2)
+                navigate(multiselect ? -1 : -2)
               }}
               data-qa="mark-departed-btn"
             />
           </FixedSpaceRow>
         </Actions>
       </ContentArea>
-
       <Gap size="s" />
-      <ChildNotesSummary child={child} />
+      <FixedSpaceColumn>
+        {childList.map(({ child }) => (
+          <ChildNotesSummary child={child} key={child.id} />
+        ))}
+      </FixedSpaceColumn>
     </TallContentArea>
   )
 })
 
-export default React.memo(function MarkDeparted({
+const MarkDepartedWithParams = React.memo(function MarkPresentWithParams({
   unitId,
-  childId
+  childIds,
+  multiselect
 }: {
   unitId: UUID
-  childId: UUID
+  childIds: UUID[]
+  multiselect: boolean
 }) {
-  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+  const children = useQueryResult(childrenQuery(unitId)).map((children) =>
+    children.filter((child) => childIds.includes(child.id))
+  )
+
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
 
   return renderResult(
-    combine(child, attendanceStatuses),
-    ([child, attendanceStatuses]) => (
+    combine(children, attendanceStatuses),
+    ([children, attendanceStatuses]) => (
       <MarkDepartedInner
         unitId={unitId}
-        child={child}
-        attendanceStatus={childAttendanceStatus(child, attendanceStatuses)}
+        childList={children.map((child) => ({
+          child,
+          attendanceStatus: childAttendanceStatus(child, attendanceStatuses)
+        }))}
+        multiselect={multiselect}
       />
     )
+  )
+})
+
+export default React.memo(function MarkDeparted({ unitId }: { unitId: UUID }) {
+  const [searchParams] = useSearchParams()
+  const children = searchParams.get('children')
+  const multiselect = searchParams.get('multiselect') === 'true'
+  if (children === null)
+    return <Navigate replace to={routes.unit(unitId).value} />
+  const childIds = children.split(',').filter((id) => id.length > 0)
+  if (childIds.length === 0)
+    return <Navigate replace to={routes.unit(unitId).value} />
+
+  return (
+    <MarkDepartedWithParams
+      unitId={unitId}
+      childIds={childIds}
+      multiselect={multiselect}
+    />
   )
 })

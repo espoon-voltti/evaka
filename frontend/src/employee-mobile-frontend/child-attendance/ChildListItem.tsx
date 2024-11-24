@@ -262,8 +262,8 @@ export default React.memo(function ChildListItem({
             </NameRow>
             <DetailsText>
               {selected
-                ? i18n.attendances.actions.arrivalMultiselect.selected
-                : i18n.attendances.actions.arrivalMultiselect.select}
+                ? i18n.attendances.actions.multiselect.selected
+                : i18n.attendances.actions.multiselect.select}
             </DetailsText>
           </MainInfoColumn>
           <RightColumn>
