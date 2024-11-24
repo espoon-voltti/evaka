@@ -23,6 +23,7 @@ import {
   SpacingSize
 } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faTimes } from 'lib-icons'
 
 import { routes } from '../App'
@@ -65,7 +66,8 @@ export default React.memo(function ChildList({
         <OrderedList spacing="zero">
           {items.length > 0 ? (
             <>
-              {(type === 'COMING' || type === 'PRESENT') && (
+              {(type === 'COMING' ||
+                (type === 'PRESENT' && featureFlags.multiSelectDeparture)) && (
                 <Li>
                   <MultiselectToggleBox>
                     <Checkbox

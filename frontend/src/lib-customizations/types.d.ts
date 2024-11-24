@@ -268,6 +268,11 @@ interface BaseFeatureFlags {
    * Show the Titania errors report in the reports list
    */
   titaniaErrorsReport?: boolean
+
+  /**
+   * Allow marking multiple children as departed in the employee mobile
+   */
+  multiSelectDeparture?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
