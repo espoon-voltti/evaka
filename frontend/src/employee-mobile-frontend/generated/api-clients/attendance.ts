@@ -10,9 +10,9 @@ import { ArrivalsRequest } from 'lib-common/generated/api-types/attendance'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { ChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { CurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { DepartureRequest } from 'lib-common/generated/api-types/attendance'
-import { ExpectedAbsencesOnDepartureRequest } from 'lib-common/generated/api-types/attendance'
-import { ExpectedAbsencesOnDepartureResponse } from 'lib-common/generated/api-types/attendance'
+import { DeparturesRequest } from 'lib-common/generated/api-types/attendance'
+import { ExpectedAbsencesOnDeparturesRequest } from 'lib-common/generated/api-types/attendance'
+import { ExpectedAbsencesOnDeparturesResponse } from 'lib-common/generated/api-types/attendance'
 import { ExternalStaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
 import { ExternalStaffDepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { FullDayAbsenceRequest } from 'lib-common/generated/api-types/attendance'
@@ -97,25 +97,6 @@ export async function getAttendanceStatuses(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.getChildExpectedAbsencesOnDeparture
-*/
-export async function getChildExpectedAbsencesOnDeparture(
-  request: {
-    unitId: UUID,
-    childId: UUID,
-    body: ExpectedAbsencesOnDepartureRequest
-  }
-): Promise<ExpectedAbsencesOnDepartureResponse> {
-  const { data: json } = await client.request<JsonOf<ExpectedAbsencesOnDepartureResponse>>({
-    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/departure/expected-absences`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ExpectedAbsencesOnDepartureRequest>
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.getChildren
 */
 export async function getChildren(
@@ -128,6 +109,24 @@ export async function getChildren(
     method: 'GET'
   })
   return json.map(e => deserializeJsonAttendanceChild(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.getExpectedAbsencesOnDepartures
+*/
+export async function getExpectedAbsencesOnDepartures(
+  request: {
+    unitId: UUID,
+    body: ExpectedAbsencesOnDeparturesRequest
+  }
+): Promise<ExpectedAbsencesOnDeparturesResponse> {
+  const { data: json } = await client.request<JsonOf<ExpectedAbsencesOnDeparturesResponse>>({
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/departure/expected-absences`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<ExpectedAbsencesOnDeparturesRequest>
+  })
+  return json
 }
 
 
@@ -169,19 +168,18 @@ export async function postArrivals(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postDeparture
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postDepartures
 */
-export async function postDeparture(
+export async function postDepartures(
   request: {
     unitId: UUID,
-    childId: UUID,
-    body: DepartureRequest
+    body: DeparturesRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/departure`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/departures`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<DepartureRequest>
+    data: request.body satisfies JsonCompatible<DeparturesRequest>
   })
   return json
 }

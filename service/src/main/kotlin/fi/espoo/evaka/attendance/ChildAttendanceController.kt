@@ -252,7 +252,7 @@ class ChildAttendanceController(
                 )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
-                val attendance = tx.getChildOngoingAttendance(childId, unitId)
+                val attendance = tx.getOngoingAttendanceForChild(childId, unitId)
                 if (attendance != null) tx.deleteAttendance(attendance.id)
             }
         }
@@ -262,12 +262,76 @@ class ChildAttendanceController(
         )
     }
 
+    data class ExpectedAbsencesOnDeparturesRequest(
+        val childIds: Set<ChildId>,
+        @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
+    )
+
+    data class ExpectedAbsencesOnDeparturesResponse(
+        val categoriesByChild: Map<ChildId, Set<AbsenceCategory>?>
+    )
+
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/departure/expected-absences")
+    fun getExpectedAbsencesOnDepartures(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestBody body: ExpectedAbsencesOnDeparturesRequest,
+    ): ExpectedAbsencesOnDeparturesResponse {
+        val today = clock.today()
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_CHILD_ATTENDANCES,
+                        unitId,
+                    )
+
+                    val ongoingAttendances =
+                        tx.getOngoingAttendanceForChildren(body.childIds, unitId)
+                    val attendanceTimesToday =
+                        tx.getCompletedAttendanceTimesForChildren(body.childIds, unitId, today)
+
+                    body.childIds
+                        .associateWith { childId ->
+                            val ongoingAttendance =
+                                ongoingAttendances[childId]
+                                    ?: throw BadRequest("Cannot depart, has not yet arrived")
+                            val childAttendanceTimesToday =
+                                attendanceTimesToday.getOrDefault(childId, emptyList()) +
+                                    ongoingAttendance.toTimeRange(
+                                        HelsinkiDateTime.of(today, body.departed)
+                                    )
+                            getExpectedAbsenceCategories(
+                                tx = tx,
+                                date = today,
+                                childId = childId,
+                                attendanceTimes = childAttendanceTimesToday,
+                            )
+                        }
+                        .let { ExpectedAbsencesOnDeparturesResponse(it) }
+                }
+            }
+            .also {
+                Audit.ChildAttendancesDepartureRead.log(
+                    targetId = AuditId(body.childIds),
+                    objectId = AuditId(unitId),
+                )
+            }
+    }
+
+    // TODO: deprecated, remove later
     data class ExpectedAbsencesOnDepartureRequest(
         @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime
     )
 
+    // TODO: deprecated, remove later
     data class ExpectedAbsencesOnDepartureResponse(val categories: Set<AbsenceCategory>?)
 
+    // TODO: deprecated, remove later
     @PostMapping(
         "/employee-mobile/attendances/units/{unitId}/children/{childId}/departure/expected-absences"
     )
@@ -290,10 +354,10 @@ class ChildAttendanceController(
                         unitId,
                     )
                     val ongoingAttendance =
-                        tx.getChildOngoingAttendance(childId, unitId)
+                        tx.getOngoingAttendanceForChild(childId, unitId)
                             ?: throw BadRequest("Cannot depart, has not yet arrived")
                     val attendanceTimesToday =
-                        tx.getCompletedChildAttendanceTimes(childId, unitId, today) +
+                        tx.getCompletedAttendanceTimesForChild(childId, unitId, today) +
                             ongoingAttendance.toTimeRange(HelsinkiDateTime.of(today, body.departed))
                     ExpectedAbsencesOnDepartureResponse(
                         categories =
@@ -314,12 +378,113 @@ class ChildAttendanceController(
             }
     }
 
+    data class ChildDeparture(
+        val childId: ChildId,
+        val absenceTypeNonbillable: AbsenceType?,
+        val absenceTypeBillable: AbsenceType?,
+    )
+
+    data class DeparturesRequest(
+        val departures: List<ChildDeparture>,
+        @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
+    )
+
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/departures")
+    fun postDepartures(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestBody body: DeparturesRequest,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId,
+                )
+                val now = clock.now()
+                val today = clock.today()
+
+                val childIds = body.departures.map { it.childId }.toSet()
+
+                val ongoingAttendances = tx.getOngoingAttendanceForChildren(childIds, unitId)
+
+                body.departures.forEach { departure ->
+                    val childId = departure.childId
+                    val ongoingAttendance =
+                        ongoingAttendances[childId]
+                            ?: throw BadRequest("Cannot depart, child $childId has not yet arrived")
+
+                    validateAndSetAbsences(
+                        tx = tx,
+                        now = now,
+                        user = user,
+                        unitId = unitId,
+                        childId = childId,
+                        ongoingAttendance = ongoingAttendance,
+                        departed = body.departed,
+                        absences =
+                            mapOfNotNullValues(
+                                AbsenceCategory.NONBILLABLE to departure.absenceTypeNonbillable,
+                                AbsenceCategory.BILLABLE to departure.absenceTypeBillable,
+                            ),
+                    )
+
+                    try {
+                        if (ongoingAttendance.date == today) {
+                            tx.updateAttendanceEnd(
+                                attendanceId = ongoingAttendance.id,
+                                endTime = body.departed,
+                            )
+                        } else {
+                            tx.updateAttendanceEnd(
+                                attendanceId = ongoingAttendance.id,
+                                endTime = LocalTime.of(23, 59),
+                            )
+                            generateSequence(ongoingAttendance.date.plusDays(1)) { it.plusDays(1) }
+                                .takeWhile { it <= today }
+                                .map { date ->
+                                    Triple(
+                                        date,
+                                        LocalTime.of(0, 0),
+                                        if (date < today) LocalTime.of(23, 59) else body.departed,
+                                    )
+                                }
+                                .filter { (_, startTime, endTime) -> startTime != endTime }
+                                .forEach { (date, startTime, endTime) ->
+                                    tx.insertAttendance(
+                                        childId,
+                                        unitId,
+                                        date,
+                                        TimeInterval(startTime, endTime),
+                                    )
+                                }
+                        }
+                    } catch (e: Exception) {
+                        throw mapPSQLException(e)
+                    }
+                }
+            }
+        }
+
+        Audit.ChildAttendancesDepartureCreate.log(
+            targetId = AuditId(body.departures.map { it.childId }),
+            objectId = AuditId(unitId),
+        )
+    }
+
+    // TODO: deprecated, remove later
     data class DepartureRequest(
         @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
         val absenceTypeNonbillable: AbsenceType?,
         val absenceTypeBillable: AbsenceType?,
     )
 
+    // TODO: deprecated, remove later
     @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/departure")
     fun postDeparture(
         db: Database,
@@ -342,7 +507,7 @@ class ChildAttendanceController(
                 val today = clock.today()
 
                 val ongoingAttendance =
-                    tx.getChildOngoingAttendance(childId, unitId)
+                    tx.getOngoingAttendanceForChild(childId, unitId)
                         ?: throw BadRequest("Cannot depart, has not yet arrived")
 
                 validateAndSetAbsences(
@@ -413,7 +578,7 @@ class ChildAttendanceController(
     ) {
         val today = now.toLocalDate()
         val attendanceTimesToday =
-            tx.getCompletedChildAttendanceTimes(childId, unitId, today) +
+            tx.getCompletedAttendanceTimesForChild(childId, unitId, today) +
                 ongoingAttendance.toTimeRange(HelsinkiDateTime.of(today, departed))
         val expectedAbsences =
             getExpectedAbsenceCategories(
@@ -487,9 +652,9 @@ class ChildAttendanceController(
                 )
                 val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
-                val ongoingAttendance = tx.getChildOngoingAttendance(childId, unitId)
+                val ongoingAttendance = tx.getOngoingAttendanceForChild(childId, unitId)
                 val completedAttendances =
-                    tx.getCompletedChildAttendanceTimes(childId, unitId, today)
+                    tx.getCompletedAttendanceTimesForChild(childId, unitId, today)
                 if (ongoingAttendance != null || completedAttendances.isNotEmpty()) {
                     throw Conflict("Cannot add full day absence, child already has attendance")
                 }

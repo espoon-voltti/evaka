@@ -45,9 +45,9 @@ import { formatCategory } from '../../types'
 import ChildNotesSummary from '../ChildNotesSummary'
 import {
   attendanceStatusesQuery,
-  childExpectedAbsencesOnDepartureQuery,
   childrenQuery,
-  createDepartureMutation
+  createDeparturesMutation,
+  expectedAbsencesOnDeparturesQuery
 } from '../queries'
 import { childAttendanceStatus, useChild } from '../utils'
 
@@ -100,7 +100,8 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   child: AttendanceChild
   attendanceStatus: ChildAttendanceStatusResponse
 }) {
-  const childId = child.id
+  const childIds = [child.id]
+
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
@@ -124,25 +125,31 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 
   const expectedAbsences = useQueryResult(
     timeError === undefined
-      ? childExpectedAbsencesOnDepartureQuery({
+      ? expectedAbsencesOnDeparturesQuery({
           unitId,
-          childId,
-          body: { departed: LocalTime.parse(time) }
+          body: { departed: LocalTime.parse(time), childIds }
         })
       : constantQuery(null)
   )
 
-  const { mutateAsync: createDeparture } = useMutationResult(
-    createDepartureMutation
+  const { mutateAsync: createDepartures } = useMutationResult(
+    createDeparturesMutation
   )
 
   const formIsValid =
     !timeError &&
     expectedAbsences.isSuccess &&
-    (expectedAbsences.value?.categories?.includes('NONBILLABLE') !== true ||
-      selectedAbsenceTypeNonbillable !== undefined) &&
-    (expectedAbsences.value?.categories?.includes('BILLABLE') !== true ||
-      selectedAbsenceTypeBillable !== undefined)
+    childIds.every((childId) => {
+      const childExpectedAbsences =
+        expectedAbsences.value?.categoriesByChild[childId]
+
+      return (
+        (childExpectedAbsences?.includes('NONBILLABLE') !== true ||
+          selectedAbsenceTypeNonbillable !== undefined) &&
+        (childExpectedAbsences?.includes('BILLABLE') !== true ||
+          selectedAbsenceTypeBillable !== undefined)
+      )
+    })
 
   const basicAbsenceTypes: AbsenceType[] = [
     'OTHER_ABSENCE',
@@ -180,14 +187,15 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 
         <Gap size="xs" />
 
-        {renderResult(expectedAbsences, (expectedAbsences) =>
-          expectedAbsences?.categories &&
-          expectedAbsences.categories.length > 0 ? (
+        {renderResult(expectedAbsences, (expectedAbsences) => {
+          const singleChildCategories =
+            expectedAbsences?.categoriesByChild[child.id]
+          return singleChildCategories && singleChildCategories.length > 0 ? (
             <FixedSpaceColumn>
               <AbsenceTitle size={2}>
                 {i18n.attendances.absenceTitle}
               </AbsenceTitle>
-              {expectedAbsences.categories.includes('NONBILLABLE') && (
+              {singleChildCategories.includes('NONBILLABLE') && (
                 <FixedSpaceColumn spacing="xs" data-qa="absence-NONBILLABLE">
                   <div>
                     {formatCategory('NONBILLABLE', child.placementType, i18n)}
@@ -211,7 +219,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                   />
                 </FixedSpaceColumn>
               )}
-              {expectedAbsences.categories.includes('BILLABLE') && (
+              {singleChildCategories.includes('BILLABLE') && (
                 <FixedSpaceColumn spacing="xs" data-qa="absence-BILLABLE">
                   <div>
                     {formatCategory('BILLABLE', child.placementType, i18n)}
@@ -237,7 +245,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
               )}
             </FixedSpaceColumn>
           ) : null
-        )}
+        })}
 
         <Gap size="s" />
 
@@ -254,31 +262,32 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
               onClick={() => {
                 if (!expectedAbsences.isSuccess) return undefined
 
-                return createDeparture({
+                return createDepartures({
                   unitId,
-                  childId,
                   body: {
-                    absenceTypeNonbillable:
-                      expectedAbsences.value?.categories?.includes(
-                        'NONBILLABLE'
-                      ) && selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
-                        ? selectedAbsenceTypeNonbillable ?? null
-                        : null,
-                    absenceTypeBillable:
-                      expectedAbsences.value?.categories?.includes(
-                        'BILLABLE'
-                      ) && selectedAbsenceTypeBillable !== 'NO_ABSENCE'
-                        ? selectedAbsenceTypeBillable ?? null
-                        : null,
-                    departed: LocalTime.parse(time)
+                    departed: LocalTime.parse(time),
+                    departures: childIds.map((childId) => ({
+                      childId,
+                      absenceTypeNonbillable:
+                        expectedAbsences.value?.categoriesByChild[
+                          childId
+                        ]?.includes('NONBILLABLE') &&
+                        selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
+                          ? selectedAbsenceTypeNonbillable ?? null
+                          : null,
+                      absenceTypeBillable:
+                        expectedAbsences.value?.categoriesByChild[
+                          childId
+                        ]?.includes('BILLABLE') &&
+                        selectedAbsenceTypeBillable !== 'NO_ABSENCE'
+                          ? selectedAbsenceTypeBillable ?? null
+                          : null
+                    }))
                   }
                 })
               }}
               onSuccess={() => {
-                const absenceMarked = expectedAbsences
-                  .map((exp) => exp?.categories && exp.categories.length > 0)
-                  .getOrElse(false)
-                navigate(absenceMarked ? -1 : -2)
+                navigate(-2)
               }}
               data-qa="mark-departed-btn"
             />

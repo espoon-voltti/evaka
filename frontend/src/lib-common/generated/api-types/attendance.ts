@@ -111,6 +111,15 @@ export interface ChildAttendanceStatusResponse {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ChildDeparture
+*/
+export interface ChildDeparture {
+  absenceTypeBillable: AbsenceType | null
+  absenceTypeNonbillable: AbsenceType | null
+  childId: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.ContactInfo
 */
 export interface ContactInfo {
@@ -132,12 +141,11 @@ export interface CurrentDayStaffAttendanceResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.DepartureRequest
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.DeparturesRequest
 */
-export interface DepartureRequest {
-  absenceTypeBillable: AbsenceType | null
-  absenceTypeNonbillable: AbsenceType | null
+export interface DeparturesRequest {
   departed: LocalTime
+  departures: ChildDeparture[]
 }
 
 /**
@@ -155,17 +163,18 @@ export interface EmployeeAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDepartureRequest
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesRequest
 */
-export interface ExpectedAbsencesOnDepartureRequest {
+export interface ExpectedAbsencesOnDeparturesRequest {
+  childIds: UUID[]
   departed: LocalTime
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDepartureResponse
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesResponse
 */
-export interface ExpectedAbsencesOnDepartureResponse {
-  categories: AbsenceCategory[] | null
+export interface ExpectedAbsencesOnDeparturesResponse {
+  categoriesByChild: Record<UUID, AbsenceCategory[] | null>
 }
 
 /**
@@ -493,7 +502,7 @@ export function deserializeJsonCurrentDayStaffAttendanceResponse(json: JsonOf<Cu
 }
 
 
-export function deserializeJsonDepartureRequest(json: JsonOf<DepartureRequest>): DepartureRequest {
+export function deserializeJsonDeparturesRequest(json: JsonOf<DeparturesRequest>): DeparturesRequest {
   return {
     ...json,
     departed: LocalTime.parseIso(json.departed)
@@ -510,7 +519,7 @@ export function deserializeJsonEmployeeAttendance(json: JsonOf<EmployeeAttendanc
 }
 
 
-export function deserializeJsonExpectedAbsencesOnDepartureRequest(json: JsonOf<ExpectedAbsencesOnDepartureRequest>): ExpectedAbsencesOnDepartureRequest {
+export function deserializeJsonExpectedAbsencesOnDeparturesRequest(json: JsonOf<ExpectedAbsencesOnDeparturesRequest>): ExpectedAbsencesOnDeparturesRequest {
   return {
     ...json,
     departed: LocalTime.parseIso(json.departed)
