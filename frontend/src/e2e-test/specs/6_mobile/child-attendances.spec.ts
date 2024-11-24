@@ -145,11 +145,7 @@ const markChildArrivedAndDeparted = async (
   }
   await childAttendancePage.markDepartedButton.click()
 
-  if (nonBillableAbsenceExpected || billableAbsenceExpected) {
-    await childAttendancePage.assertChildStatusLabelIsShown('Lähtenyt')
-  } else {
-    await childAttendancePage.assertNoChildrenPresentIndicatorIsShown()
-  }
+  await childAttendancePage.assertNoChildrenPresentIndicatorIsShown()
 }
 
 describe('Child mobile attendances', () => {
@@ -221,7 +217,7 @@ describe('Child mobile attendances', () => {
       .markAbsentByCategoryAndTypeButton('NONBILLABLE', 'NO_ABSENCE')
       .click()
     await childAttendancePage.markDepartedButton.click()
-    await childAttendancePage.assertChildStatusLabelIsShown('Lähtenyt')
+    await childAttendancePage.assertNoChildrenPresentIndicatorIsShown()
   })
 })
 
