@@ -267,7 +267,7 @@ describe('Child mobile attendance list', () => {
     await listPage.assertChildExists(child1)
   })
 
-  test('Multiple children can be marked as present', async () => {
+  test('Multiple children can be marked as present and departed', async () => {
     await openPage()
     await createPlacements(testChild.id)
     await createPlacements(testChild2.id, group2.id)
@@ -286,8 +286,19 @@ describe('Child mobile attendance list', () => {
     await childAttendancePage.selectMarkPresent()
 
     await assertAttendanceCounts(1, 2, 0, 0, 3)
-
     await listPage.presentChildrenTab.click()
+    await listPage.assertChildExists(testChild.id)
+    await listPage.assertChildExists(testChild2.id)
+
+    await listPage.multiselectToggle.check()
+    await listPage.selectChild(testChild.id)
+    await listPage.selectChild(testChild2.id)
+    await listPage.markMultipleDepartedutton.click()
+    await childAttendancePage.setTime('14:00')
+    await childAttendancePage.markDepartedButton.click()
+
+    await assertAttendanceCounts(1, 0, 2, 0, 3)
+    await listPage.departedChildrenTab.click()
     await listPage.assertChildExists(testChild.id)
     await listPage.assertChildExists(testChild2.id)
   })
