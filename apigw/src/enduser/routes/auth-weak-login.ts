@@ -53,7 +53,11 @@ export const authWeakLogin = (redis: RedisClient) =>
         `Error logging user in. Error: ${err?.toString()}`
       )
       if (!res.headersSent) {
-        res.sendStatus(403)
+        if (err instanceof z.ZodError) {
+          res.sendStatus(400)
+        } else {
+          res.sendStatus(403)
+        }
       } else {
         throw err
       }
