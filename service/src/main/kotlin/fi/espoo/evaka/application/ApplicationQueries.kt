@@ -559,22 +559,24 @@ fun Database.Read.fetchApplicationSummaries(
                     attachmentCount = column("attachmentCount"),
                     additionalDaycareApplication = column("additionaldaycareapplication"),
                     placementProposalStatus =
-                        column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")?.let {
-                            PlacementProposalStatus(
-                                unitConfirmationStatus = it,
-                                unitRejectReason = column("unit_reject_reason"),
-                                unitRejectOtherReason = column("unit_reject_other_reason"),
-                                modifiedAt = column("status_modified_at"),
-                                modifiedBy =
-                                    column<EvakaUserId?>("status_modified_by_id")?.let {
-                                        EvakaUser(
-                                            id = it,
-                                            name = column("status_modified_by_name"),
-                                            type = column("status_modified_by_type"),
-                                        )
-                                    },
-                            )
-                        },
+                        column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
+                            ?.takeIf { status == ApplicationStatus.WAITING_UNIT_CONFIRMATION }
+                            ?.let {
+                                PlacementProposalStatus(
+                                    unitConfirmationStatus = it,
+                                    unitRejectReason = column("unit_reject_reason"),
+                                    unitRejectOtherReason = column("unit_reject_other_reason"),
+                                    modifiedAt = column("status_modified_at"),
+                                    modifiedBy =
+                                        column<EvakaUserId?>("status_modified_by_id")?.let {
+                                            EvakaUser(
+                                                id = it,
+                                                name = column("status_modified_by_name"),
+                                                type = column("status_modified_by_type"),
+                                            )
+                                        },
+                                )
+                            },
                     placementPlanStartDate = column("placement_plan_start_date"),
                     placementPlanUnitName = column("placement_plan_unit_name"),
                     currentPlacementUnit =
