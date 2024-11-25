@@ -510,7 +510,23 @@ fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
         .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Transaction.deactivateInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
-    val inactiveEmployees = getInactiveEmployees(now)
+    val inactiveEmployees =
+        createQuery {
+                sql(
+                    """
+    SELECT e.id
+    FROM employee e
+    LEFT JOIN daycare_acl d ON d.employee_id = e.id
+    LEFT JOIN daycare_group_acl dg ON dg.employee_id = e.id
+    WHERE (
+        SELECT max(ts)
+        FROM unnest(ARRAY[e.last_login, d.updated, dg.updated]) ts
+    ) < ${bind(now)} - interval '56 days'
+    AND e.active = true
+"""
+                )
+            }
+            .toList<EmployeeId>()
     inactiveEmployees.forEach { employeeId -> deactivateEmployeeRemoveRolesAndPin(employeeId) }
     return inactiveEmployees
 }
@@ -521,24 +537,6 @@ fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
     deleteEmployeeDaycareRoles(id = id, daycareId = null)
     removePinCode(userId = id)
     listPersonalDevices(id).forEach { deleteDevice(it.id) }
-}
-
-fun Database.Read.getInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
-    return createQuery {
-            sql(
-                """
-    SELECT e.id
-    FROM employee e
-    LEFT JOIN daycare_acl d ON d.employee_id = e.id
-    LEFT JOIN daycare_group_acl dg ON dg.employee_id = e.id
-    WHERE (
-        SELECT max(ts)
-        FROM unnest(ARRAY[e.last_login, d.updated, dg.updated]) ts
-    ) < ${bind(now)} - interval '56 days'
-"""
-            )
-        }
-        .toList<EmployeeId>()
 }
 
 fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
