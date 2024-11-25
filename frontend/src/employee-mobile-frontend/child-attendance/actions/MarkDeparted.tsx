@@ -422,7 +422,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   )
 })
 
-const MarkDepartedWithParams = React.memo(function MarkPresentWithParams({
+const MarkDepartedWithParams = React.memo(function MarkDepartedWithParams({
   unitId,
   childIds,
   multiselect
