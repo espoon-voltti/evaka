@@ -10,7 +10,6 @@ import { focusElementOnNextFrame } from 'citizen-frontend/utils/focus'
 import { combine, isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -37,41 +36,45 @@ import DiscussionReservationModal from './discussion-reservation-modal/Discussio
 import DiscussionSurveyModal from './discussion-reservation-modal/DiscussionSurveyModal'
 import { showModalEventTime } from './discussion-reservation-modal/discussion-survey'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
+import { useExtendedReservationsRange } from './hooks'
 import {
   activeQuestionnaireQuery,
   calendarEventsQuery,
-  holidayPeriodsQuery,
-  reservationsQuery
+  holidayPeriodsQuery
 } from './queries'
 
-function useReservationsDefaultRange(): Result<ReservationsResponse> {
+const defaultRange = new FiniteDateRange(
+  LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
+  LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+)
+
+function useEventsRange(
+  eventsRange: FiniteDateRange
+): Result<CitizenCalendarEvent[]> {
   return useQueryResult(
-    reservationsQuery({
-      from: LocalDate.todayInSystemTz()
-        .subMonths(1)
-        .startOfMonth()
-        .startOfWeek(),
-      to: LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+    calendarEventsQuery({
+      start: eventsRange.start,
+      end: eventsRange.end
     })
   )
 }
 
-function useEventsDefaultRange(): Result<CitizenCalendarEvent[]> {
-  return useQueryResult(
-    calendarEventsQuery({
-      start: LocalDate.todayInSystemTz()
-        .subMonths(1)
-        .startOfMonth()
-        .startOfWeek(),
-      end: LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
-    })
-  )
+function getPreviousMonthRangeBeforeDate(
+  beforeDate: LocalDate
+): FiniteDateRange {
+  const end = beforeDate.subDays(1)
+  const start = end.startOfMonth().startOfWeek()
+  return new FiniteDateRange(start, end)
 }
 
 const CalendarPage = React.memo(function CalendarPage() {
   const user = useUser()
-  const data = useReservationsDefaultRange()
-  const events = useEventsDefaultRange()
+  const events = useEventsRange(defaultRange)
+  const {
+    reservations: data,
+    setDateRange: setReservationsDateRange,
+    loading: reservationsLoading
+  } = useExtendedReservationsRange(defaultRange)
 
   const {
     modalState,
@@ -88,6 +91,31 @@ const CalendarPage = React.memo(function CalendarPage() {
   const openReservationModalWithoutInitialRange = useCallback(() => {
     openReservationModal(undefined)
   }, [openReservationModal])
+
+  const fetchPreviousData = useCallback(
+    (beforeDate: LocalDate) =>
+      setReservationsDateRange(getPreviousMonthRangeBeforeDate(beforeDate)),
+    [setReservationsDateRange]
+  )
+
+  // Based on the initial data fetch, index 1 represents the current month
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState(1)
+  const prevMonth = useCallback(
+    (beforeDate: LocalDate) => {
+      setSelectedMonthIndex((prevIndex) => {
+        if (prevIndex === 0) {
+          fetchPreviousData(beforeDate)
+        }
+        return prevIndex > 0 ? prevIndex - 1 : prevIndex
+      })
+    },
+    [fetchPreviousData]
+  )
+  const nextMonth = useCallback((monthDataLength: number) => {
+    setSelectedMonthIndex((prevIndex) =>
+      prevIndex < monthDataLength - 1 ? prevIndex + 1 : prevIndex
+    )
+  }, [])
 
   const dayIsReservable = useCallback(
     (date: LocalDate) =>
@@ -165,6 +193,8 @@ const CalendarPage = React.memo(function CalendarPage() {
                     dayIsHolidayPeriod={dayIsHolidayPeriod}
                     events={events}
                     showDiscussionAction={showDiscussions}
+                    fetchPrevious={fetchPreviousData}
+                    loading={reservationsLoading}
                   />
                 </ContentArea>
               </RenderOnlyOn>
@@ -190,6 +220,10 @@ const CalendarPage = React.memo(function CalendarPage() {
                   dayIsReservable={dayIsReservable}
                   events={events}
                   isDiscussionActionVisible={showDiscussions}
+                  loading={reservationsLoading}
+                  prevMonth={prevMonth}
+                  nextMonth={nextMonth}
+                  selectedMonthIndex={selectedMonthIndex}
                 />
               </RenderOnlyOn>
               {modalState?.type === 'day' && (
