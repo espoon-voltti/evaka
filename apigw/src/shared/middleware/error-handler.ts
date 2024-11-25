@@ -28,7 +28,9 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
       return
     }
     if (error instanceof SamlError) {
-      logError('SAML error', req, undefined, error)
+      if (!error.options?.silent) {
+        logError(error.message, req, undefined, error)
+      }
       if (res.headersSent) return
       if (error.options?.redirectUrl) {
         res.redirect(error.options.redirectUrl)

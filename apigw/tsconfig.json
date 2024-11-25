@@ -8,7 +8,7 @@
     "outDir": "dist",
     "sourceMap": true,
     "strict": true,
-    "target": "es2019"
+    "target": "es2023"
   },
   "exclude": [
     ".git",
