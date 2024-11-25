@@ -9,7 +9,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.pis.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.PasswordHashAlgorithm
+import fi.espoo.evaka.shared.auth.PasswordService
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -26,9 +26,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/personal-data")
-class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
-    private val passwordHashAlgorithm = PasswordHashAlgorithm.DEFAULT
-
+class PersonalDataControllerCitizen(
+    private val accessControl: AccessControl,
+    private val passwordService: PasswordService,
+) {
     @PutMapping
     fun updatePersonalData(
         db: Database,
@@ -136,6 +137,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         @RequestBody body: UpdatePasswordRequest,
     ) {
         Audit.CitizenPasswordUpdateAttempt.log(targetId = AuditId(user.id))
+        val password = passwordService.encode(body.password)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -145,7 +147,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                     Action.Citizen.Person.UPDATE_PASSWORD,
                     user.id,
                 )
-                tx.updatePassword(clock, user.id, passwordHashAlgorithm.encode(body.password))
+                tx.updatePassword(clock, user.id, password)
             }
         }
         Audit.CitizenPasswordUpdate.log(targetId = AuditId(user.id))

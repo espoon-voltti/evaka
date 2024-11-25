@@ -4,11 +4,7 @@
 
 package fi.espoo.evaka.shared.controllers
 
-import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.Unauthorized
+import fi.espoo.evaka.shared.domain.*
 import jakarta.servlet.http.HttpServletRequest
 import java.io.IOException
 import java.lang.Exception
@@ -65,6 +61,16 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     fun forbidden(req: HttpServletRequest, ex: Forbidden): ResponseEntity<ErrorResponse> {
         logger.warn("Forbidden (${ex.message})", ex)
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(errorCode = ex.errorCode))
+    }
+
+    @ExceptionHandler(value = [ServiceUnavailable::class])
+    fun serviceUnavailable(
+        req: HttpServletRequest,
+        ex: ServiceUnavailable,
+    ): ResponseEntity<ErrorResponse> {
+        logger.warn("Service unavailable (${ex.message})", ex)
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(ErrorResponse(errorCode = ex.errorCode))
     }
 

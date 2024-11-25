@@ -33,3 +33,9 @@ data class Unauthorized(
     val errorCode: String? = null,
     override val cause: Throwable? = null,
 ) : RuntimeException(message, cause)
+
+data class ServiceUnavailable(
+    override val message: String = "Service unavailable",
+    val errorCode: String? = null,
+    override val cause: Throwable? = null,
+) : RuntimeException(message, cause)
