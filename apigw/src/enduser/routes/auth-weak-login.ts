@@ -11,7 +11,7 @@ import { RedisClient } from '../../shared/redis-client.js'
 import { citizenWeakLogin } from '../../shared/service-client.js'
 
 const Request = z.object({
-  username: z.string().min(1).max(128),
+  username: z.string().min(1).max(128).transform((email) => email.toLowerCase()),
   password: z.string().min(1).max(128)
 })
 
