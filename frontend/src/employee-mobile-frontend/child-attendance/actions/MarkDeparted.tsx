@@ -454,10 +454,9 @@ const MarkDepartedWithParams = React.memo(function MarkDepartedWithParams({
 
 export default React.memo(function MarkDeparted({ unitId }: { unitId: UUID }) {
   const [searchParams] = useSearchParams()
-  const children = searchParams.get('children')
+  const children = searchParams.get('children') ?? ''
   const multiselect = searchParams.get('multiselect') === 'true'
-  if (children === null)
-    return <Navigate replace to={routes.unit(unitId).value} />
+
   const childIds = children.split(',').filter((id) => id.length > 0)
   if (childIds.length === 0)
     return <Navigate replace to={routes.unit(unitId).value} />
