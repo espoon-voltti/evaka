@@ -30,17 +30,17 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
-    @MockBean(name = "personService") lateinit var personService: PersonService
+    @MockitoBean(name = "personService") lateinit var personService: PersonService
 
-    @MockBean lateinit var parentshipService: ParentshipService
+    @MockitoBean lateinit var parentshipService: ParentshipService
 
     @Autowired lateinit var fridgeFamilyService: FridgeFamilyService
 
-    @MockBean protected lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @MockitoBean protected lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     lateinit var service: VTJBatchRefreshService
 

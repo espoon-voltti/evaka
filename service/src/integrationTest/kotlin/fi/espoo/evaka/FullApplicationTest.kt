@@ -36,9 +36,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.core.env.Environment
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
@@ -64,7 +64,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
 
     @Autowired protected lateinit var tracer: Tracer
 
-    @SpyBean protected lateinit var featureConfig: FeatureConfig
+    @MockitoSpyBean protected lateinit var featureConfig: FeatureConfig
 
     protected lateinit var db: Database.Connection
 
