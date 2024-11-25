@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactChild, ReactChildren, useLayoutEffect } from 'react'
+import React, { useLayoutEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { scrollToPos } from 'lib-common/utils/scrolling'
@@ -10,7 +10,7 @@ import { scrollToPos } from 'lib-common/utils/scrolling'
 export default React.memo(function ScrollToTop({
   children
 }: {
-  children: ReactChild | ReactChildren
+  children?: React.ReactNode
 }) {
   const location = useLocation()
 
