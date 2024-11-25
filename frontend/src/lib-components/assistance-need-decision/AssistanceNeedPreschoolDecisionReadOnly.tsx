@@ -321,8 +321,7 @@ export default React.memo(function DecisionFormReadView({
                   ))}
                 {decision.form.otherRepresentativeHeard && (
                   <li>
-                    {t.otherRepresentative}: $
-                    {decision.form.otherRepresentativeDetails}
+                    {`${t.otherRepresentative}: ${decision.form.otherRepresentativeDetails}`}
                   </li>
                 )}
               </StyledUl>
