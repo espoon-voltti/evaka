@@ -1241,7 +1241,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val area = DevCareArea()
         val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
-       // val employee = DevEmployee()
+        // val employee = DevEmployee()
 
         val adult = DevPerson()
         val child = DevPerson()
@@ -1249,7 +1249,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
-            //tx.insert(employee)
+            // tx.insert(employee)
 
             tx.insert(adult, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)

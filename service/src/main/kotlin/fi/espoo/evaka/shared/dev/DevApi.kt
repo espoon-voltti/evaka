@@ -2155,7 +2155,10 @@ data class DevMobileDevice(
     val name: String = "Laite",
     val longTermToken: UUID? = null,
     val pushNotificationCategories: Set<PushNotificationCategory> = emptySet(),
-)
+) {
+    val user: AuthenticatedUser.MobileDevice
+        @JsonIgnore get() = AuthenticatedUser.MobileDevice(id)
+}
 
 data class DevPersonalMobileDevice(
     val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),
