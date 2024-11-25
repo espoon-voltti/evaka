@@ -64,37 +64,53 @@ WHERE p.child_id = ${bind(childId)}
         .toList<Placement>()
 }
 
-fun Database.Read.getPlacementsForChildDuring(
-    childId: ChildId,
-    start: LocalDate,
-    end: LocalDate?,
-): List<Placement> {
-    return createQuery {
+fun Database.Read.getPlacements(where: Predicate): List<Placement> =
+    createQuery {
             sql(
                 """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.modified_at, p.modified_by
 FROM placement p
-WHERE p.child_id = ${bind(childId)}
-AND daterange(p.start_date, p.end_date, '[]') && daterange(${bind(start)}, ${bind(end)}, '[]')
+WHERE ${predicate(where.forTable("p"))}
 """
             )
         }
         .toList<Placement>()
-}
 
-fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildId): Placement? {
-    return createQuery {
-            sql(
-                """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.modified_at, p.modified_by
-FROM placement p
-WHERE p.child_id = ${bind(childId)}
-AND daterange(p.start_date, p.end_date, '[]') @> ${bind(clock.today())}
-"""
+fun Database.Read.getPlacementsForChildDuring(
+    childId: ChildId,
+    start: LocalDate,
+    end: LocalDate?,
+): List<Placement> =
+    getPlacements(
+        Predicate {
+            where(
+                "$it.child_id = ${bind(childId)} AND daterange($it.start_date, $it.end_date, '[]') && ${bind(DateRange(start, end))}"
             )
         }
-        .exactlyOneOrNull<Placement>()
-}
+    )
+
+fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildId): Placement? =
+    getPlacements(
+            Predicate {
+                where(
+                    "$it.child_id = ${bind(childId)} AND daterange($it.start_date, $it.end_date, '[]') @> ${bind(clock.today())}"
+                )
+            }
+        )
+        .firstOrNull()
+
+fun Database.Read.getPlacementsForChildrenAt(
+    childIds: Set<ChildId>,
+    date: LocalDate,
+): Map<ChildId, Placement> =
+    getPlacements(
+            Predicate {
+                where(
+                    "$it.child_id = ANY(${bind(childIds)}) AND daterange($it.start_date, $it.end_date, '[]') @> ${bind(date)}"
+                )
+            }
+        )
+        .associateBy { it.childId }
 
 fun Database.Transaction.insertPlacement(
     type: PlacementType,

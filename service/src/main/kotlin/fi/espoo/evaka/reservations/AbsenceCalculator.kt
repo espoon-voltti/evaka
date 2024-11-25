@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.placement.getPlacementsForChildrenAt
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -23,6 +24,30 @@ import java.time.LocalTime
 fun getExpectedAbsenceCategories(
     tx: Database.Read,
     date: LocalDate,
+    attendanceTimesByChild: Map<ChildId, List<TimeRange>>,
+): Map<ChildId, Set<AbsenceCategory>?> {
+    val childIds = attendanceTimesByChild.keys
+    val placements = tx.getPlacementsForChildrenAt(childIds, date)
+    val preschoolTerms = tx.getPreschoolTerms()
+
+    return attendanceTimesByChild.mapValues { (childId, childAttendanceTimes) ->
+        val placement = placements[childId] ?: throw BadRequest("child has no placement")
+        val daycare = tx.getDaycare(placement.unitId)!!
+        getExpectedAbsenceCategories(
+            date = date,
+            attendanceTimes = childAttendanceTimes,
+            placementType = placement.type,
+            unitLanguage = daycare.language,
+            dailyPreschoolTime = daycare.dailyPreschoolTime,
+            dailyPreparatoryTime = daycare.dailyPreparatoryTime,
+            preschoolTerms = preschoolTerms,
+        )
+    }
+}
+
+fun getExpectedAbsenceCategories(
+    tx: Database.Read,
+    date: LocalDate,
     childId: ChildId,
     attendanceTimes: List<TimeRange>,
 ): Set<AbsenceCategory>? {
@@ -30,6 +55,7 @@ fun getExpectedAbsenceCategories(
         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
             ?: throw BadRequest("child has no placement")
     val daycare = tx.getDaycare(placement.unitId)!!
+    val preschoolTerms = tx.getPreschoolTerms()
 
     return getExpectedAbsenceCategories(
         date = date,
@@ -38,7 +64,7 @@ fun getExpectedAbsenceCategories(
         unitLanguage = daycare.language,
         dailyPreschoolTime = daycare.dailyPreschoolTime,
         dailyPreparatoryTime = daycare.dailyPreparatoryTime,
-        preschoolTerms = tx.getPreschoolTerms(),
+        preschoolTerms = preschoolTerms,
     )
 }
 

@@ -295,24 +295,26 @@ class ChildAttendanceController(
                     val attendanceTimesToday =
                         tx.getCompletedAttendanceTimesForChildren(body.childIds, unitId, today)
 
-                    body.childIds
-                        .associateWith { childId ->
+                    val attendanceTimesByChild =
+                        body.childIds.associateWith { childId ->
                             val ongoingAttendance =
                                 ongoingAttendances[childId]
                                     ?: throw BadRequest("Cannot depart, has not yet arrived")
-                            val childAttendanceTimesToday =
-                                attendanceTimesToday.getOrDefault(childId, emptyList()) +
-                                    ongoingAttendance.toTimeRange(
-                                        HelsinkiDateTime.of(today, body.departed)
-                                    )
+
+                            attendanceTimesToday.getOrDefault(childId, emptyList()) +
+                                ongoingAttendance.toTimeRange(
+                                    HelsinkiDateTime.of(today, body.departed)
+                                )
+                        }
+
+                    ExpectedAbsencesOnDeparturesResponse(
+                        categoriesByChild =
                             getExpectedAbsenceCategories(
                                 tx = tx,
                                 date = today,
-                                childId = childId,
-                                attendanceTimes = childAttendanceTimesToday,
+                                attendanceTimesByChild = attendanceTimesByChild,
                             )
-                        }
-                        .let { ExpectedAbsencesOnDeparturesResponse(it) }
+                    )
                 }
             }
             .also {
