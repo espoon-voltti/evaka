@@ -140,7 +140,7 @@ export default function createSamlRouter(
           // These errors can happen for example when the user browses back to the login callback after login
           throw new SamlError('Login failed', {
             redirectUrl: req.user
-              ? validateRelayStateUrl(req) ?? defaultPageUrl
+              ? validateRelayStateUrl(req)?.toString() ?? defaultPageUrl
               : errorRedirectUrl(err),
             cause: err,
             // just ignore without logging to reduce noise in logs
@@ -191,7 +191,8 @@ export default function createSamlRouter(
         req.session.idpProvider = strategyName
         await sessions.saveLogoutToken(req, createLogoutToken(profile))
 
-        const redirectUrl = validateRelayStateUrl(req) ?? defaultPageUrl
+        const redirectUrl =
+          validateRelayStateUrl(req)?.toString() ?? defaultPageUrl
         logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
         return res.redirect(redirectUrl)
       } catch (err) {
@@ -287,7 +288,7 @@ export default function createSamlRouter(
             success
           )
         } else {
-          url = validateRelayStateUrl(req) ?? defaultPageUrl
+          url = validateRelayStateUrl(req)?.toString() ?? defaultPageUrl
         }
         return res.redirect(url)
       } catch (err) {

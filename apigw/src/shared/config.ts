@@ -426,7 +426,7 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
         JWT_PRIVATE_KEY: 'config/test-cert/jwt_private_key.pem',
         JWT_REFRESH_ENABLED: !isTest,
 
-        EVAKA_BASE_URL: 'local',
+        EVAKA_BASE_URL: 'http://localhost:9099',
         EVAKA_SERVICE_URL: 'http://localhost:8888',
 
         AD_MOCK: true,
@@ -786,7 +786,7 @@ export const jwtRefreshEnabled = required('JWT_REFRESH_ENABLED', parseBoolean)
 export const serviceName = 'evaka-api-gw'
 export const jwtKid = required('JWT_KID', unchanged)
 
-export const evakaBaseUrl = required('EVAKA_BASE_URL', unchanged)
+export const evakaBaseUrl = new URL(required('EVAKA_BASE_URL', unchanged))
 export const evakaServiceUrl = required('EVAKA_SERVICE_URL', unchanged)
 export const useSecureCookies = required('USE_SECURE_COOKIES', parseBoolean)
 
