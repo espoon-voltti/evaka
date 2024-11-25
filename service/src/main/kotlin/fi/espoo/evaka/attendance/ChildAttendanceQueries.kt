@@ -105,7 +105,6 @@ fun Database.Read.getCompletedAttendanceTimesForChildren(
 
 data class OngoingAttendance(
     val id: ChildAttendanceId,
-    val childId: ChildId,
     val date: LocalDate,
     val startTime: LocalTime,
 ) {
@@ -122,7 +121,7 @@ fun Database.Read.getOngoingAttendanceForChild(
 ): OngoingAttendance? =
     createQuery {
             sql(
-                "SELECT id, child_id, date, start_time FROM child_attendance WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)} AND end_time IS NULL"
+                "SELECT id, date, start_time FROM child_attendance WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)} AND end_time IS NULL"
             )
         }
         .exactlyOneOrNull()
@@ -136,8 +135,7 @@ fun Database.Read.getOngoingAttendanceForChildren(
                 "SELECT id, child_id, date, start_time FROM child_attendance WHERE child_id = ANY (${bind(children)}) AND unit_id = ${bind(unitId)} AND end_time IS NULL"
             )
         }
-        .toList<OngoingAttendance>()
-        .associateBy { it.childId }
+        .toMap { column<ChildId>("child_id") to row<OngoingAttendance>() }
 
 data class ChildBasics(
     val id: ChildId,
