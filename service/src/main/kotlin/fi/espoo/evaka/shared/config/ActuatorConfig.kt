@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.db.Database
 import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.actuate.health.AbstractHealthIndicator
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
@@ -17,9 +16,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class ActuatorConfig {
-
     @Bean
-    @Autowired
     fun databaseHealthEndpoint(jdbi: Jdbi, tracer: Tracer): HealthIndicator {
         return DatabaseHealthIndicator(jdbi, tracer)
     }
