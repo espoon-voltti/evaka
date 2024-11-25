@@ -13,6 +13,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   ExpandingInfoBox,
   InlineInfoButton
@@ -20,7 +21,7 @@ import {
 import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { fasExclamationTriangle } from 'lib-icons'
+import { faArrowsRotate, fasExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
@@ -60,6 +61,10 @@ interface MonthProps {
   events: CitizenCalendarEvent[]
   childImages: ChildImageData[]
   childSummaries: MonthlyTimeSummary[]
+  monthIndex: number
+  fetchPrevious: () => void
+  scrollToDate: LocalDate
+  loading: boolean
 }
 
 export default React.memo(function MonthElem({
@@ -69,7 +74,11 @@ export default React.memo(function MonthElem({
   dayIsReservable,
   events,
   childImages,
-  childSummaries
+  childSummaries,
+  monthIndex,
+  fetchPrevious,
+  scrollToDate,
+  loading
 }: MonthProps) {
   const i18n = useTranslation()
 
@@ -79,7 +88,7 @@ export default React.memo(function MonthElem({
     <div>
       <MonthSummaryContainer>
         <MonthTitle>
-          {i18n.common.datetime.months[calendarMonth.monthNumber - 1]}
+          {`${i18n.common.datetime.months[calendarMonth.monthNumber - 1]} ${calendarMonth.year}`}
           {childSummaries.length > 0 && (
             <InlineInfoButton
               onClick={toggleSummaryInfo}
@@ -106,8 +115,19 @@ export default React.memo(function MonthElem({
           />
         )}
       </MonthSummaryContainer>
-      {calendarMonth.calendarDays.map((day) => (
+      {calendarMonth.calendarDays.map((day, index) => (
         <div key={day.date.formatIso()}>
+          {monthIndex === 0 && index === 0 && (
+            <MonthFetchPrevious>
+              <MonthFetchButton
+                primary
+                icon={faArrowsRotate}
+                text={i18n.calendar.fetchPrevious}
+                onClick={fetchPrevious}
+                disabled={loading}
+              />
+            </MonthFetchPrevious>
+          )}
           {day.date.getIsoDayOfWeek() === 1 && (
             <WeekTitle>
               {i18n.common.datetime.week} {day.date.getIsoWeek()}
@@ -120,6 +140,7 @@ export default React.memo(function MonthElem({
             isHolidayPeriod={dayIsHolidayPeriod(day.date)}
             childImages={childImages}
             events={events}
+            scrollToDate={scrollToDate}
           />
         </div>
       ))}
@@ -168,6 +189,15 @@ const MonthTitle = styled(H2)`
   font-size: 1.25em;
   padding: 0 ${defaultMargins.s} 0 0;
   ${titleStyles};
+`
+const MonthFetchPrevious = styled.div`
+  background-color: ${(p) => p.theme.colors.main.m4};
+  padding: ${defaultMargins.s};
+  display: flex;
+  justify-content: center;
+`
+const MonthFetchButton = styled(Button)`
+  border-radius: 40px;
 `
 const WeekTitle = styled(H3)`
   padding: ${defaultMargins.s};

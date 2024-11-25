@@ -9,8 +9,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
-  useState
+  useRef
 } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
@@ -73,6 +72,10 @@ export interface Props {
   dayIsReservable: (date: LocalDate) => boolean
   events: CitizenCalendarEvent[]
   isDiscussionActionVisible: boolean
+  loading: boolean
+  selectedMonthIndex: number
+  nextMonth: (monthDataLength: number) => void
+  prevMonth: (beforeDate: LocalDate) => void
 }
 
 export function countEventsForDay(
@@ -129,7 +132,11 @@ export default React.memo(function CalendarMonthView({
   includeWeekends,
   dayIsReservable,
   events,
-  isDiscussionActionVisible
+  isDiscussionActionVisible,
+  loading: previousLoading,
+  selectedMonthIndex,
+  nextMonth,
+  prevMonth
 }: Props) {
   const i18n = useTranslation()
   const calendarMonths = useMemo(
@@ -138,20 +145,15 @@ export default React.memo(function CalendarMonthView({
   )
   const todayRef = useRef<HTMLButtonElement>(null)
 
-  // Based on the initial data fetch, index 1 represents the current month
-  const [selectedMonthIndex, setSelectedMonthIndex] = useState(1)
   const selectedMonthData = calendarMonths[selectedMonthIndex]
 
-  const prevMonth = useCallback(() => {
-    setSelectedMonthIndex((prevIndex) =>
-      prevIndex > 0 ? prevIndex - 1 : prevIndex
-    )
-  }, [])
-  const nextMonth = useCallback(() => {
-    setSelectedMonthIndex((prevIndex) =>
-      prevIndex < calendarMonths.length - 1 ? prevIndex + 1 : prevIndex
-    )
-  }, [calendarMonths.length])
+  const prevMonthCallback = useCallback(() => {
+    prevMonth(calendarMonths[0].weeks[0].calendarDays[0].date)
+  }, [calendarMonths, prevMonth])
+
+  const nextMonthCallback = useCallback(() => {
+    nextMonth(calendarMonths.length)
+  }, [calendarMonths.length, nextMonth])
 
   const isDateInCurrentMonth = useCallback(() => {
     if (!selectedDate) return false
@@ -167,17 +169,17 @@ export default React.memo(function CalendarMonthView({
   useEffect(() => {
     if (selectedDate && !isDateInCurrentMonth()) {
       if (selectedDate.isBefore(firstDayOfMonth)) {
-        prevMonth()
+        prevMonthCallback()
       } else {
-        nextMonth()
+        nextMonthCallback()
       }
     }
   }, [
     firstDayOfMonth,
     isDateInCurrentMonth,
-    nextMonth,
-    prevMonth,
-    selectedDate
+    selectedDate,
+    prevMonthCallback,
+    nextMonthCallback
   ])
 
   const onCreateAbsences = useCallback(
@@ -259,11 +261,12 @@ export default React.memo(function CalendarMonthView({
           selectedMonthData={selectedMonthData}
           currentIndex={selectedMonthIndex}
           monthDataLength={calendarMonths.length}
-          prevMonth={prevMonth}
-          nextMonth={nextMonth}
+          prevMonth={prevMonthCallback}
+          nextMonth={nextMonthCallback}
           toggleSummaryInfo={toggleSummaryInfo}
           summaryInfoOpen={summaryInfoOpen}
           displayAlert={displayAlert}
+          loading={previousLoading}
         />
         <Month
           key={`${selectedMonthData?.month}${selectedMonthData?.year}`}
@@ -615,7 +618,8 @@ const MonthPicker = React.memo(function MonthPicker({
   nextMonth,
   toggleSummaryInfo,
   summaryInfoOpen,
-  displayAlert
+  displayAlert,
+  loading
 }: {
   childSummaries: MonthlyTimeSummary[]
   selectedMonthData: MonthlyData
@@ -626,6 +630,7 @@ const MonthPicker = React.memo(function MonthPicker({
   toggleSummaryInfo: () => void
   summaryInfoOpen: boolean
   displayAlert: boolean
+  loading: boolean
 }) {
   const i18n = useTranslation()
   return (
@@ -646,8 +651,8 @@ const MonthPicker = React.memo(function MonthPicker({
       <Gap size="s" horizontal />
       <IconOnlyButton
         icon={faChevronLeft}
+        disabled={loading}
         onClick={prevMonth}
-        disabled={currentIndex === 0}
         aria-label={i18n.calendar.previousMonth}
         data-qa="previous-month-button"
       />
@@ -655,7 +660,7 @@ const MonthPicker = React.memo(function MonthPicker({
       <IconOnlyButton
         icon={faChevronRight}
         onClick={nextMonth}
-        disabled={currentIndex === monthDataLength - 1}
+        disabled={currentIndex === monthDataLength - 1 || loading}
         aria-label={i18n.calendar.nextMonth}
         data-qa="next-month-button"
       />

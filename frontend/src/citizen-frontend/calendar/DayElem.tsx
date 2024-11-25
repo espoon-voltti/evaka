@@ -36,6 +36,7 @@ interface DayProps {
   isHolidayPeriod: boolean
   childImages: ChildImageData[]
   events: CitizenCalendarEvent[]
+  scrollToDate: LocalDate
 }
 
 export default React.memo(function DayElem({
@@ -44,19 +45,22 @@ export default React.memo(function DayElem({
   isReservable,
   isHolidayPeriod,
   childImages,
-  events
+  events,
+  scrollToDate
 }: DayProps) {
   const [lang] = useLang()
   const ref = useRef<HTMLButtonElement>()
 
   const isToday = calendarDay.date.isToday()
+  const isScrollToDate = calendarDay.date.isEqual(scrollToDate)
+
   const setRef = useCallback(
     (e: HTMLButtonElement) => {
-      if (isToday) {
+      if (isScrollToDate) {
         ref.current = e ?? undefined
       }
     },
-    [isToday]
+    [isScrollToDate]
   )
 
   const highlight = useMemo(
@@ -77,11 +81,15 @@ export default React.memo(function DayElem({
     const top = ref.current?.getBoundingClientRect().top
 
     if (top) {
+      // Initial load scrolls smoothly to "today",
+      // subsequent loads to previous months use instant scroll to keep the list position
+      // at the place where "fetch previous" was clicked
       scrollToPos({
-        top: top - headerHeightMobile - 32
+        top: top - headerHeightMobile - 32,
+        behavior: isToday ? 'smooth' : 'instant'
       })
     }
-  }, [])
+  }, [isToday, scrollToDate])
 
   const eventCount = useMemo(
     () => countEventsForDay(events, calendarDay.date),
