@@ -938,7 +938,7 @@ export default {
           missing:
             'Päästäksesi valitsemaan palveluntarpeen valitse ensin toivottu aloituspäivä',
           info: {
-            DAYCARE: [],
+            DAYCARE: [] as React.ReactNode[],
             PRESCHOOL: [
               'Suomen- ja ruotsinkielinen esiopetus alkaa 8.8.2024. Jos tarvitsette varhaiskasvatusta 1.8.2024 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
             ],
@@ -1090,7 +1090,9 @@ export default {
           instructions2:
             'Esiopetushakemukselle pyydämme liittämään samassa taloudessa asuvien huoltajien osalta todistukset työnantajalta säännöllisestä vuorotyöstä tai oppilaitoksen edustajalta päätoimisesta iltaopiskelusta. Dokumenttien tulee olla kirjattu sinä vuonna, kun hakemus esiopetukseen tehdään',
           attachmentsMessage: {
-            text: 'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+            text: 'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.' as
+              | React.ReactNode
+              | string,
             subtitle:
               'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
           }
@@ -1356,7 +1358,7 @@ export default {
             vähälaktoosinen tai laktoositon ruokavalio, uskonnollisiin syihin
             perustuva ruokavalio tai kasvisruokavalio (lakto-ovo).
           </>
-        ),
+        ) as React.ReactNode,
         allergiesLabel: 'Allergiat',
         allergiesPlaceholder: 'Voit halutessasi ilmoittaa lapsen allergiat'
       },
