@@ -39,6 +39,10 @@ export default class CitizenIncomePage {
     await this.page.findByDataQa('new-income-statement-btn').click()
   }
 
+  async editIncomeStatement(n: number) {
+    await this.page.findAllByDataQa('edit-income-statement-btn').nth(n).click()
+  }
+
   async selectIncomeStatementType(
     type: 'highest-fee' | 'gross-income' | 'entrepreneur-income'
   ) {
@@ -54,6 +58,10 @@ export default class CitizenIncomePage {
   async setValidToDate(date: string) {
     await this.validToDate.fill(date)
     await this.page.findByDataQa('title').click()
+  }
+
+  async saveDraft() {
+    await this.page.findByDataQa('save-draft-btn').click()
   }
 
   async submit() {

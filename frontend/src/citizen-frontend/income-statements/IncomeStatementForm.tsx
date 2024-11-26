@@ -265,6 +265,7 @@ export default React.memo(
                   text={t.income.saveAsDraft}
                   onClick={() => onSave(true)}
                   onSuccess={onSuccess}
+                  data-qa="save-draft-btn"
                 />
               )}
               <AsyncButton

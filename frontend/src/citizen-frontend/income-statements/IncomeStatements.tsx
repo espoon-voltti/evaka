@@ -98,6 +98,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                       text={t.common.edit}
                       onClick={onEdit(item.id)}
                       altText={t.common.edit}
+                      data-qa="edit-income-statement-btn"
                     />
                     <Gap size="xs" horizontal />
                     <ResponsiveInlineButton
