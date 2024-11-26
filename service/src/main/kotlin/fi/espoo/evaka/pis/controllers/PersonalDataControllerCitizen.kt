@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.pis.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 class PersonalDataControllerCitizen(
     private val accessControl: AccessControl,
     private val passwordService: PasswordService,
+    private val env: EvakaEnv,
 ) {
     @PutMapping
     fun updatePersonalData(
@@ -136,6 +138,7 @@ class PersonalDataControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: UpdatePasswordRequest,
     ) {
+        if (!env.newCitizenWeakLoginEnabled) throw BadRequest("New citizen weak login is disabled")
         Audit.CitizenPasswordUpdateAttempt.log(targetId = AuditId(user.id))
         val password = passwordService.encode(body.password)
         db.connect { dbc ->

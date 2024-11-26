@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.PasswordService
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
@@ -95,6 +96,7 @@ class SystemController(
         @RequestBody request: CitizenWeakLoginRequest,
     ): CitizenUserIdentity {
         Audit.CitizenWeakLoginAttempt.log(targetId = AuditId(request.username))
+        if (!env.newCitizenWeakLoginEnabled) throw BadRequest("New citizen weak login is disabled")
         return db.connect { dbc ->
             val citizen = dbc.read { it.getCitizenWeakLoginDetails(request.username) }
             dbc.close() // avoid hogging the connection while we check the password
