@@ -55,7 +55,9 @@ export async function authWeakLogin(
     return
   } catch (e) {
     nextWeakLoginAttempt = HelsinkiDateTime.now().addSeconds(1)
-    if (
+    if (isAxiosError(e) && e.response?.status === 429) {
+      throw new Error('RATE_LIMITED')
+     }
       isAxiosError(e) &&
       e.response?.status === 429 &&
       opts.retryOnRateLimit
