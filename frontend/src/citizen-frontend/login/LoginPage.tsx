@@ -195,6 +195,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
   nextPath: string | null
 }) {
   const i18n = useTranslation()
+  const [rateLimitError, setRateLimitError] = useState(false)
 
   const form = useForm(
     weakLoginForm,
