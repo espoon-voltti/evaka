@@ -231,6 +231,10 @@ const WeakLoginForm = React.memo(function WeakLogin({
               authWeakLoginResult(form.state.username, form.state.password)
             }
             onSuccess={() => window.location.replace(nextPath ?? '/')}
+          onFailure={(error) => {
+              if (error.message === 'RATE_LIMITED') {
+                setRateLimitError(true)
+              }
           />
         </FixedSpaceColumn>
       </form>
