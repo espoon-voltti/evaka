@@ -67,7 +67,7 @@ fun Database.Read.getChildAttendanceId(
         .exactlyOneOrNull()
 }
 
-fun Database.Read.getCompletedChildAttendanceTimes(
+fun Database.Read.getCompletedAttendanceTimesForChild(
     childId: ChildId,
     unitId: DaycareId,
     date: LocalDate,
@@ -84,6 +84,25 @@ fun Database.Read.getCompletedChildAttendanceTimes(
         .toList()
 }
 
+fun Database.Read.getCompletedAttendanceTimesForChildren(
+    childIds: Set<ChildId>,
+    unitId: DaycareId,
+    date: LocalDate,
+): Map<ChildId, List<TimeRange>> {
+    data class ChildAttendance(val childId: ChildId, val timeRange: TimeRange)
+    return createQuery {
+            sql(
+                """
+        SELECT child_id, (start_time, end_time)::timerange as time_range
+        FROM child_attendance
+        WHERE child_id = ANY (${bind(childIds)}) AND unit_id = ${bind(unitId)} AND date = ${bind(date)} AND end_time IS NOT NULL 
+    """
+            )
+        }
+        .toList<ChildAttendance>()
+        .groupBy(keySelector = { it.childId }, valueTransform = { it.timeRange })
+}
+
 data class OngoingAttendance(
     val id: ChildAttendanceId,
     val date: LocalDate,
@@ -96,7 +115,7 @@ data class OngoingAttendance(
         )
 }
 
-fun Database.Read.getChildOngoingAttendance(
+fun Database.Read.getOngoingAttendanceForChild(
     childId: ChildId,
     unitId: DaycareId,
 ): OngoingAttendance? =
@@ -106,6 +125,17 @@ fun Database.Read.getChildOngoingAttendance(
             )
         }
         .exactlyOneOrNull()
+
+fun Database.Read.getOngoingAttendanceForChildren(
+    children: Set<ChildId>,
+    unitId: DaycareId,
+): Map<ChildId, OngoingAttendance> =
+    createQuery {
+            sql(
+                "SELECT id, child_id, date, start_time FROM child_attendance WHERE child_id = ANY (${bind(children)}) AND unit_id = ${bind(unitId)} AND end_time IS NULL"
+            )
+        }
+        .toMap { column<ChildId>("child_id") to row<OngoingAttendance>() }
 
 data class ChildBasics(
     val id: ChildId,

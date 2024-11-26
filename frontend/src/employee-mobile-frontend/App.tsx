@@ -164,6 +164,7 @@ function UnitRouter() {
         element={<ChildRouter unitId={unitId} />}
       />
       <Route path="/mark-present" element={<MarkPresent unitId={unitId} />} />
+      <Route path="/mark-departed" element={<MarkDeparted unitId={unitId} />} />
       <Route index element={<Navigate replace to="groups/all" />} />
     </Routes>
   )
@@ -278,10 +279,6 @@ function ChildRouter({ unitId }: { unitId: UUID }) {
       <Route
         path="/mark-absent-beforehand"
         element={<MarkAbsentBeforehand unitId={unitId} childId={childId} />}
-      />
-      <Route
-        path="/mark-departed"
-        element={<MarkDeparted unitId={unitId} childId={childId} />}
       />
       <Route
         path="/note"
@@ -405,6 +402,12 @@ export const routes = {
     if (multiselect) params.set('multiselect', 'true')
     return uri`${this.unit(unitId)}/mark-present`.appendQuery(params)
   },
+  markDeparted(unitId: UUID, childIds: UUID[], multiselect: boolean): Uri {
+    const params = new URLSearchParams()
+    params.set('children', childIds.join(','))
+    if (multiselect) params.set('multiselect', 'true')
+    return uri`${this.unit(unitId)}/mark-departed`.appendQuery(params)
+  },
   unitOrGroup(unitOrGroup: UnitOrGroup): Uri {
     const id = unitOrGroup.type === 'unit' ? 'all' : unitOrGroup.id
     return uri`${this.unit(unitOrGroup.unitId)}/groups/${id}`
@@ -432,9 +435,6 @@ export const routes = {
   },
   markAbsent(unitId: UUID, child: UUID): Uri {
     return uri`${this.child(unitId, child)}/mark-absent`
-  },
-  markDeparted(unitId: UUID, child: UUID): Uri {
-    return uri`${this.child(unitId, child)}/mark-departed`
   },
   markReservations(unitId: UUID, child: UUID): Uri {
     return uri`${this.child(unitId, child)}/mark-reservations`

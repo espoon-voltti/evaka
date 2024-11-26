@@ -167,10 +167,14 @@ export const fi = {
     },
     groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
     actions: {
-      arrivalMultiselect: {
+      multiselect: {
         toggle: 'Kirjaa useampi lapsi',
-        confirm: (count: number) =>
+        confirmArrival: (count: number) =>
           `Merkitse saapuneeksi${
+            count > 1 ? `: ${count} lasta` : count === 1 ? ': 1 lapsi' : ''
+          }`,
+        confirmDeparture: (count: number) =>
+          `Merkitse lähteneeksi${
             count > 1 ? `: ${count} lasta` : count === 1 ? ': 1 lapsi' : ''
           }`,
         select: 'Valitse',
@@ -285,7 +289,7 @@ export const fi = {
       otherThings: 'Muut asiat',
       childStickyNotes: 'Huomioitavaa lähipäivinä'
     },
-    absenceTitle: 'Poissaolomerkintä',
+    absenceTitle: 'Poissaolomerkinnät',
     staff: {
       errors: {
         employeeNotFound: 'Työntekijää ei löytynyt',

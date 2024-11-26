@@ -42,7 +42,8 @@ const features: Features = {
     jamixIntegration: true,
     forceUnpublishDocumentTemplate: true,
     invoiceDisplayAccountNumber: true,
-    serviceApplications: true
+    serviceApplications: true,
+    multiSelectDeparture: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -75,7 +76,8 @@ const features: Features = {
     jamixIntegration: true,
     forceUnpublishDocumentTemplate: true,
     invoiceDisplayAccountNumber: true,
-    serviceApplications: true
+    serviceApplications: true,
+    multiSelectDeparture: true
   },
   prod: {
     environmentLabel: null,
@@ -107,7 +109,8 @@ const features: Features = {
     discussionReservations: true,
     forceUnpublishDocumentTemplate: false,
     invoiceDisplayAccountNumber: true,
-    serviceApplications: false
+    serviceApplications: false,
+    multiSelectDeparture: false
   }
 }
 

@@ -23,6 +23,7 @@ import {
   SpacingSize
 } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faTimes } from 'lib-icons'
 
 import { routes } from '../App'
@@ -65,7 +66,8 @@ export default React.memo(function ChildList({
         <OrderedList spacing="zero">
           {items.length > 0 ? (
             <>
-              {type === 'COMING' && (
+              {(type === 'COMING' ||
+                (type === 'PRESENT' && featureFlags.multiSelectDeparture)) && (
                 <Li>
                   <MultiselectToggleBox>
                     <Checkbox
@@ -75,7 +77,7 @@ export default React.memo(function ChildList({
                           ? setMultiselectChildren([])
                           : setMultiselectChildren(null)
                       }
-                      label={i18n.attendances.actions.arrivalMultiselect.toggle}
+                      label={i18n.attendances.actions.multiselect.toggle}
                       data-qa="multiselect-toggle"
                     />
                   </MultiselectToggleBox>
@@ -127,20 +129,38 @@ export default React.memo(function ChildList({
               icon={faTimes}
               onClick={() => setMultiselectChildren(null)}
             />
-            <FloatingActionButton
-              appearance="button"
-              primary
-              text={i18n.attendances.actions.arrivalMultiselect.confirm(
-                multiselectChildren.length
-              )}
-              disabled={multiselectChildren.length === 0}
-              onClick={() =>
-                navigate(
-                  routes.markPresent(unitId, multiselectChildren, true).value
-                )
-              }
-              data-qa="mark-multiple-arrived"
-            />
+            {type === 'COMING' && (
+              <FloatingActionButton
+                appearance="button"
+                primary
+                text={i18n.attendances.actions.multiselect.confirmArrival(
+                  multiselectChildren.length
+                )}
+                disabled={multiselectChildren.length === 0}
+                onClick={() =>
+                  navigate(
+                    routes.markPresent(unitId, multiselectChildren, true).value
+                  )
+                }
+                data-qa="mark-multiple-arrived"
+              />
+            )}
+            {type === 'PRESENT' && (
+              <FloatingActionButton
+                appearance="button"
+                primary
+                text={i18n.attendances.actions.multiselect.confirmDeparture(
+                  multiselectChildren.length
+                )}
+                disabled={multiselectChildren.length === 0}
+                onClick={() =>
+                  navigate(
+                    routes.markDeparted(unitId, multiselectChildren, true).value
+                  )
+                }
+                data-qa="mark-multiple-departed"
+              />
+            )}
           </FixedSpaceRow>
         </MultiselectActions>
       )}

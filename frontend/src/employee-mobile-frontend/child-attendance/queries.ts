@@ -11,9 +11,9 @@ import { futureAbsencesOfChild } from '../generated/api-clients/absence'
 import {
   cancelFullDayAbsence,
   getAttendanceStatuses,
-  getChildExpectedAbsencesOnDeparture,
+  getExpectedAbsencesOnDepartures,
   postArrivals,
-  postDeparture,
+  postDepartures,
   postFullDayAbsence,
   returnToComing,
   returnToPresent
@@ -41,15 +41,15 @@ const queryKeys = createQueryKeys('childAttendance', {
     childId
   ],
   attendanceStatuses: (unitId: string) => ['attendanceStatuses', unitId],
-  childDeparture: ({
+  childDepartures: ({
     unitId,
-    childId,
+    childIds,
     departed
   }: {
     unitId: UUID
-    childId: UUID
+    childIds: UUID[]
     departed: LocalTime
-  }) => ['childDeparture', unitId, childId, departed],
+  }) => ['childDepartures', unitId, childIds, departed],
   confirmedDayReservations: (unitId: string, examinationDate: LocalDate) => [
     'confirmedDayReservations',
     unitId,
@@ -86,10 +86,10 @@ export const attendanceStatusesQuery = query({
   }
 })
 
-export const childExpectedAbsencesOnDepartureQuery = query({
-  api: getChildExpectedAbsencesOnDeparture,
-  queryKey: ({ unitId, childId, body: { departed } }) =>
-    queryKeys.childDeparture({ unitId, childId, departed })
+export const expectedAbsencesOnDeparturesQuery = query({
+  api: getExpectedAbsencesOnDepartures,
+  queryKey: ({ unitId, body: { departed, childIds } }) =>
+    queryKeys.childDepartures({ unitId, childIds, departed })
 })
 
 export const confirmedDayReservationsQuery = query({
@@ -135,8 +135,8 @@ export const createArrivalMutation = mutation({
   ]
 })
 
-export const createDepartureMutation = mutation({
-  api: postDeparture,
+export const createDeparturesMutation = mutation({
+  api: postDepartures,
   invalidateQueryKeys: ({ unitId }) => [
     attendanceStatusesQuery({ unitId }).queryKey
   ]

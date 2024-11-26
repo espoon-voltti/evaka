@@ -9,6 +9,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2023
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
@@ -122,13 +123,13 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
-            getExpectedAbsencesOnDeparture(LocalTime.of(9, 30)),
+            getExpectedAbsencesOnDeparture(LocalTime.of(9, 30), testChild_1.id),
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE),
-            getExpectedAbsencesOnDeparture(LocalTime.of(12, 45)),
+            getExpectedAbsencesOnDeparture(LocalTime.of(12, 45), testChild_1.id),
         )
-        assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 20)))
+        assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 20), testChild_1.id))
     }
 
     @Test
@@ -139,7 +140,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE),
-            getExpectedAbsencesOnDeparture(LocalTime.of(17, 20)),
+            getExpectedAbsencesOnDeparture(LocalTime.of(17, 20), testChild_1.id),
         )
     }
 
@@ -151,23 +152,27 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE),
-            getExpectedAbsencesOnDeparture(LocalTime.of(9, 45)),
+            getExpectedAbsencesOnDeparture(LocalTime.of(9, 45), testChild_1.id),
         )
-        assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 0)))
+        assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 0), testChild_1.id))
     }
 
     @Test
     fun `get expected absences - not yet present`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
-        assertThrows<BadRequest> { getExpectedAbsencesOnDeparture(LocalTime.of(13, 30)) }
+        assertThrows<BadRequest> {
+            getExpectedAbsencesOnDeparture(LocalTime.of(13, 30), testChild_1.id)
+        }
     }
 
     @Test
     fun `get expected absences - already departed`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted(arrived = LocalTime.of(9, 0), departed = LocalTime.of(13, 0))
-        assertThrows<BadRequest> { getExpectedAbsencesOnDeparture(LocalTime.of(13, 30)) }
+        assertThrows<BadRequest> {
+            getExpectedAbsencesOnDeparture(LocalTime.of(13, 30), testChild_1.id)
+        }
     }
 
     @Test
@@ -176,7 +181,12 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPresent(LocalTime.of(8, 0))
 
         val departed = LocalTime.of(16, 0)
-        markDeparted(departed, absenceTypeNonbillable = null, absenceTypeBillable = null)
+        markDeparted(
+            departed,
+            testChild_1.id,
+            absenceTypeNonbillable = null,
+            absenceTypeBillable = null,
+        )
         val child = expectOneAttendanceStatus()
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -195,7 +205,12 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         val departed = LocalTime.of(13, 0)
         val absenceType = AbsenceType.OTHER_ABSENCE
-        markDeparted(departed, absenceTypeNonbillable = null, absenceTypeBillable = absenceType)
+        markDeparted(
+            departed,
+            testChild_1.id,
+            absenceTypeNonbillable = null,
+            absenceTypeBillable = absenceType,
+        )
         val child = expectOneAttendanceStatus()
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -214,7 +229,12 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         val departed = LocalTime.of(18, 0)
         val absenceType = AbsenceType.UNKNOWN_ABSENCE
-        markDeparted(departed, absenceTypeNonbillable = absenceType, absenceTypeBillable = null)
+        markDeparted(
+            departed,
+            testChild_1.id,
+            absenceTypeNonbillable = absenceType,
+            absenceTypeBillable = null,
+        )
         val child = expectOneAttendanceStatus()
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -233,7 +253,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         val departed = LocalTime.of(9, 30)
         val absenceType = AbsenceType.SICKLEAVE
-        markDeparted(departed, absenceType, absenceType)
+        markDeparted(departed, testChild_1.id, absenceType, absenceType)
 
         val child = expectOneAttendanceStatus()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -254,7 +274,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
 
         val departed = mockClock.now().toLocalTime().minusMinutes(20).withSecond(0).withNano(0)
-        markDeparted(departed, null, null)
+        markDeparted(departed, testChild_1.id, null, null)
 
         val child = expectOneAttendanceStatus()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -266,7 +286,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
 
         val departed = mockClock.now().toLocalTime().withSecond(0).withNano(0).minusMinutes(40)
-        markDeparted(departed, null, null)
+        markDeparted(departed, testChild_1.id, null, null)
 
         val child = expectOneAttendanceStatus()
         assertEquals(AttendanceStatus.COMING, child.status)
@@ -277,7 +297,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted(arrived = LocalTime.of(9, 0), departed = LocalTime.of(14, 0))
 
-        assertThrows<BadRequest> { markDeparted(LocalTime.of(15, 0), null, null) }
+        assertThrows<BadRequest> { markDeparted(LocalTime.of(15, 0), testChild_1.id, null, null) }
     }
 
     @Test
@@ -536,34 +556,45 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         )
     }
 
-    private fun getExpectedAbsencesOnDeparture(departed: LocalTime): Set<AbsenceCategory>? {
+    private fun getExpectedAbsencesOnDeparture(
+        departed: LocalTime,
+        childId: ChildId,
+    ): Set<AbsenceCategory>? {
         return childAttendanceController
-            .getChildExpectedAbsencesOnDeparture(
+            .getExpectedAbsencesOnDepartures(
                 dbInstance(),
                 mobileUser,
                 mockClock,
                 testDaycare.id,
-                testChild_1.id,
-                ChildAttendanceController.ExpectedAbsencesOnDepartureRequest(departed),
+                ChildAttendanceController.ExpectedAbsencesOnDeparturesRequest(
+                    setOf(childId),
+                    departed,
+                ),
             )
-            .categories
+            .categoriesByChild[childId]
     }
 
     private fun markDeparted(
         departed: LocalTime,
+        childId: ChildId,
         absenceTypeNonbillable: AbsenceType?,
         absenceTypeBillable: AbsenceType?,
     ) {
-        childAttendanceController.postDeparture(
+        childAttendanceController.postDepartures(
             dbInstance(),
             mobileUser,
             mockClock,
             testDaycare.id,
-            testChild_1.id,
-            ChildAttendanceController.DepartureRequest(
+            ChildAttendanceController.DeparturesRequest(
                 departed = departed,
-                absenceTypeNonbillable = absenceTypeNonbillable,
-                absenceTypeBillable = absenceTypeBillable,
+                departures =
+                    listOf(
+                        ChildAttendanceController.ChildDeparture(
+                            childId = childId,
+                            absenceTypeNonbillable = absenceTypeNonbillable,
+                            absenceTypeBillable = absenceTypeBillable,
+                        )
+                    ),
             ),
         )
     }

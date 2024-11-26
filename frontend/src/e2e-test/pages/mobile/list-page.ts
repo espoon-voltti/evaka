@@ -16,6 +16,7 @@ export default class MobileListPage {
   groupSelectorButton: Element
   multiselectToggle: Checkbox
   markMultipleArrivedButton: Element
+  markMultipleDepartedutton: Element
   constructor(private readonly page: Page) {
     this.unreadMessagesIndicator = page.findByDataQa(
       'unread-messages-indicator'
@@ -30,6 +31,7 @@ export default class MobileListPage {
       page.findByDataQa('multiselect-toggle')
     )
     this.markMultipleArrivedButton = page.findByDataQa('mark-multiple-arrived')
+    this.markMultipleDepartedutton = page.findByDataQa('mark-multiple-departed')
   }
 
   childRow = (childId: UUID) => this.page.findByDataQa(`child-${childId}`)

@@ -28,7 +28,7 @@ export default React.memo(function AttendanceChildPresent({
       <WideLinkButton
         $primary
         data-qa="mark-departed-link"
-        to={routes.markDeparted(unitId, child.id).value}
+        to={routes.markDeparted(unitId, [child.id], false).value}
       >
         {i18n.attendances.actions.markDeparted}
       </WideLinkButton>
