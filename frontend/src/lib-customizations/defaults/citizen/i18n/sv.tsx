@@ -213,7 +213,9 @@ const sv: Translations = {
         </>
       ),
       email: 'E-post',
-      password: 'Lösenord'
+      password: 'Lösenord',
+      rateLimitError:
+        'Ditt konto har tillfälligt låsts på grund av ett stort antal inloggningsförsök. Vänligen försök igen senare.'
     },
     applying: {
       title: 'Logga in via Suomi.fi',

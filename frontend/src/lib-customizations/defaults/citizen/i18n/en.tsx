@@ -215,7 +215,9 @@ const en: Translations = {
         </>
       ),
       email: 'E-mail',
-      password: 'Password'
+      password: 'Password',
+      rateLimitError:
+        'Your account has been temporarily locked due to a large number of login attempts. Please try again later.'
     },
     applying: {
       title: 'Sign in using Suomi.fi',

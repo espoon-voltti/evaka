@@ -212,7 +212,9 @@ export default {
         </>
       ),
       email: 'Sähköpostiosoite',
-      password: 'Salasana'
+      password: 'Salasana',
+      rateLimitError:
+        'Käyttäjätunnuksesi on väliaikaisesti lukittu kirjautumisyritysten määrästä johtuen. Kokeile myöhemmin uudelleen.'
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',
