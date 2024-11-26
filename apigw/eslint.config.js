@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { fixupPluginRules } from '@eslint/compat'
 import eslint from '@eslint/js'
 import importPlugin from 'eslint-plugin-import'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
@@ -25,11 +24,11 @@ export default [
     ...typescriptEslint.configs.disableTypeChecked
   },
   {
-    // Compatibility tricks for plugins that don't support ESLint v9 flat configs yet
     plugins: {
-      import: fixupPluginRules(importPlugin)
+      import: importPlugin
     }
   },
+  importPlugin.flatConfigs.typescript,
   {
     rules: {
       '@typescript-eslint/no-empty-object-type': [
