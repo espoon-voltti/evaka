@@ -159,7 +159,7 @@ const BottomBar = styled.nav`
   height: ${mobileBottomNavHeight}px;
   width: 100%;
   padding: ${defaultMargins.xs};
-  position: sticky;
+  position: fixed;
   bottom: 0;
   left: 0;
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
