@@ -1089,10 +1089,6 @@ const sv: Translations = {
             'Med skiftvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00.',
           instructions2:
             'Om en vårdnadshavare som bor i samma hushåll regelbundet utför skiftarbete eller avlägger kvällsstudier som huvudsyssla, ska du bifoga ett intyg över detta (av arbetsgivaren eller en representant för läroanstalten) till ansökan om förskoleundervisning. Dokumenten ska ha registrerats det år då ansökan om förskoleundervisning görs.',
-          message: {
-            title: 'Kvälls- och skiftvård',
-            text: 'Kvälls- och skiftvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
-          },
           attachmentsMessage: {
             text: 'Kvälls- och skiftvård är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32, 02070 Esbo stad.',
             subtitle:
