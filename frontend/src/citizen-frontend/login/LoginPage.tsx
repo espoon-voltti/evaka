@@ -37,7 +37,7 @@ import Footer from '../Footer'
 import { authWeakLogin } from '../auth/api'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
-import { getStrongLoginUriWithPath, getWeakLoginUri } from '../navigation/const'
+import { getStrongLoginUri, getWeakLoginUri } from '../navigation/const'
 
 import { systemNotificationsQuery } from './queries'
 
@@ -45,29 +45,12 @@ const ParagraphInfoButton = styled(InfoButton)`
   margin-left: ${defaultMargins.xs};
 `
 
-/**
- * Ensures that the redirect URL will not contain any host
- * information, only the path/search params/hash.
- */
-const getSafeNextPath = (nextParam: string | null) => {
-  if (nextParam === null) {
-    return null
-  }
-  const url = parseUrlWithOrigin(window.location, nextParam)
-  if (!url) return null
-  return `${url.pathname}${url.search}${url.hash}`
-}
-
 export default React.memo(function LoginPage() {
   const i18n = useTranslation()
   const user = useUser()
 
   const [searchParams] = useSearchParams()
-
-  const nextPath = useMemo(
-    () => getSafeNextPath(searchParams.get('next')),
-    [searchParams]
-  )
+  const unvalidatedNextPath = searchParams.get('next')
 
   const [showInfoBoxText1, setShowInfoBoxText1] = useState(false)
   const [showInfoBoxText2, setShowInfoBoxText2] = useState(false)
@@ -122,12 +105,14 @@ export default React.memo(function LoginPage() {
             )}
             <Gap size="s" />
             <LinkButton
-              href={getWeakLoginUri(nextPath ?? '/')}
+              href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
               data-qa="weak-login"
             >
               {i18n.loginPage.login.link}
             </LinkButton>
-            {featureFlags.weakLogin && <WeakLoginForm nextPath={nextPath} />}
+            {featureFlags.weakLogin && (
+              <WeakLoginForm unvalidatedNextPath={unvalidatedNextPath} />
+            )}
           </ContentArea>
           <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.applying.title}</H2>
@@ -153,7 +138,7 @@ export default React.memo(function LoginPage() {
             </ul>
             <Gap size="s" />
             <LinkButton
-              href={getStrongLoginUriWithPath(nextPath ?? '/applications')}
+              href={getStrongLoginUri(unvalidatedNextPath ?? '/applications')}
               data-qa="strong-login"
             >
               {i18n.loginPage.applying.link}
@@ -190,12 +175,20 @@ const weakLoginForm = validated(
 const authWeakLoginResult = wrapResult(authWeakLogin)
 
 const WeakLoginForm = React.memo(function WeakLogin({
-  nextPath
+  unvalidatedNextPath
 }: {
-  nextPath: string | null
+  unvalidatedNextPath: string | null
 }) {
   const i18n = useTranslation()
   const [rateLimitError, setRateLimitError] = useState(false)
+
+  const nextUrl = useMemo(
+    () =>
+      unvalidatedNextPath
+        ? parseUrlWithOrigin(window.location, unvalidatedNextPath)
+        : undefined,
+    [unvalidatedNextPath]
+  )
 
   const form = useForm(
     weakLoginForm,
@@ -234,7 +227,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
             onClick={() =>
               authWeakLoginResult(form.state.username, form.state.password)
             }
-            onSuccess={() => window.location.replace(nextPath ?? '/')}
+            onSuccess={() => window.location.replace(nextUrl ?? '/')}
             onFailure={(error) => {
               if (error.statusCode === 429) {
                 setRateLimitError(true)
