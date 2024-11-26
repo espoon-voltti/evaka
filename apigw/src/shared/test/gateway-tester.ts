@@ -28,7 +28,7 @@ export class GatewayTester {
   public readonly nockScope: nock.Scope
 
   private readonly baseUrl: string
-  public antiCsrfToken: string | undefined
+  public setCsrfHeader = false
 
   private constructor(
     private readonly server: http.Server,
@@ -44,8 +44,8 @@ export class GatewayTester {
       includeCookiesInRequest(this.baseUrl, this.cookies, config)
     )
     this.client.interceptors.request.use((config) => {
-      if (this.antiCsrfToken) {
-        config.headers.set('x-evaka-csrf', this.antiCsrfToken)
+      if (this.setCsrfHeader) {
+        config.headers.set('x-evaka-csrf', '1')
       }
       return config
     })
@@ -87,7 +87,7 @@ export class GatewayTester {
   public async afterEach(): Promise<void> {
     nock.cleanAll()
     await this.cookies.removeAllCookies()
-    delete this.antiCsrfToken
+    this.setCsrfHeader = false
   }
 
   public async stop(): Promise<void> {

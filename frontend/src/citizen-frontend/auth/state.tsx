@@ -19,8 +19,6 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import { query, useQueryResult } from 'lib-common/query'
 
-import { setAntiCsrfToken } from '../api-client'
-
 import { getAuthStatus } from './api'
 
 export interface User extends CitizenUserDetails {
@@ -43,11 +41,7 @@ const defaultState: AuthState = {
 export const AuthContext = createContext<AuthState>(defaultState)
 
 const authStatusQuery = query({
-  api: () =>
-    getAuthStatus().then((status) => {
-      setAntiCsrfToken(status.loggedIn ? status.antiCsrfToken : undefined)
-      return status
-    }),
+  api: () => getAuthStatus(),
   queryKey: () => ['auth-status']
 })
 

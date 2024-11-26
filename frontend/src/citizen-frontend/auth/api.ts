@@ -12,7 +12,6 @@ export type AuthStatus =
   | { loggedIn: false; apiVersion: string }
   | {
       loggedIn: true
-      antiCsrfToken: string
       user: CitizenUserResponse
       apiVersion: string
       authLevel: CitizenAuthLevel

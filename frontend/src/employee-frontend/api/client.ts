@@ -13,12 +13,6 @@ export const client = axios.create({
 })
 client.defaults.headers.common['x-evaka-csrf'] = '1'
 
-export const setAntiCsrfToken = (value: string | undefined) => {
-  for (const method of ['delete', 'patch', 'post', 'put'] as const) {
-    client.defaults.headers[method]['x-evaka-csrf'] = value
-  }
-}
-
 if (isAutomatedTest) {
   client.interceptors.request.use((config) => {
     const evakaMockedTime =

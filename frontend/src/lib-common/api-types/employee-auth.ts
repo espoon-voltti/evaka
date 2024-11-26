@@ -46,7 +46,6 @@ export type AdRole = GlobalRole | ScopedRole
 
 export interface AuthStatus<U extends User | MobileUser> {
   loggedIn: boolean
-  antiCsrfToken?: string
   user?: U
   roles?: AdRole[]
   apiVersion: string

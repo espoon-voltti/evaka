@@ -18,7 +18,6 @@ import { Sessions } from '../../shared/session.js'
 
 export interface AuthStatus {
   loggedIn: boolean
-  antiCsrfToken?: string
   user?: EmployeeUser | MobileUser
   roles?: string[]
   globalRoles?: string[]
@@ -147,7 +146,6 @@ export default (sessions: Sessions) =>
       }
       status = {
         loggedIn: true,
-        antiCsrfToken: req.session.antiCsrfToken,
         user,
         globalRoles,
         allScopedRoles,

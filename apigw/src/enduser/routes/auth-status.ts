@@ -12,7 +12,6 @@ import {
 
 export interface AuthStatus {
   loggedIn: boolean
-  antiCsrfToken?: string
   user?: CitizenUserResponse
   apiVersion: string
   authLevel?: 'STRONG' | 'WEAK'
@@ -35,7 +34,6 @@ export default toRequestHandler(async (req, res) => {
     const data = await getCitizenDetails(req, req.user.id)
     status = {
       loggedIn: true,
-      antiCsrfToken: req.session.antiCsrfToken,
       user: data,
       apiVersion: appCommit,
       authLevel: getAuthLevel(req.user)
