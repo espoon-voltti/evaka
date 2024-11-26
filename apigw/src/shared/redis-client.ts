@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export interface RedisClient {
+export interface RedisCommands {}
+
+export interface RedisClient extends RedisCommands {
   isReady: boolean
 
   get(key: string): Promise<string | null>
@@ -17,7 +19,19 @@ export interface RedisClient {
 
   expire(key: string, seconds: number): Promise<boolean>
 
+  incr(key: string): Promise<number>
+
   ping(): Promise<string>
+
+  multi(): RedisTransaction
+}
+
+export interface RedisTransaction extends RedisCommands {
+  incr(key: string): RedisTransaction
+
+  expire(key: string, seconds: number): RedisTransaction
+
+  exec(): Promise<unknown[]>
 }
 
 export async function assertRedisConnection(

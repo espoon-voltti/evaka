@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RedisClient } from '../redis-client.js'
+import { RedisClient, RedisTransaction } from '../redis-client.js'
 
 export class MockRedisClient implements RedisClient {
   private time: number
@@ -60,7 +60,43 @@ export class MockRedisClient implements RedisClient {
     return Promise.resolve(true)
   }
 
+  incr(key: string): Promise<number> {
+    const record = this.db[key] ?? { value: '0', expires: null }
+    const value = Number.parseInt(record.value, 10) + 1
+    if (Number.isNaN(value)) throw new Error('Not a number')
+    this.db[key] = { ...record, value: value.toString() }
+    return Promise.resolve(value)
+  }
+
   ping(): Promise<string> {
     return Promise.resolve('PONG')
+  }
+
+  multi(): RedisTransaction {
+    return new MockTransaction(this)
+  }
+}
+
+class MockTransaction implements RedisTransaction {
+  constructor(private client: RedisClient) {}
+  #queue: (() => Promise<unknown>)[] = []
+  incr(key: string): RedisTransaction {
+    this.#queue.push(async () => {
+      await this.client.incr(key)
+    })
+    return this
+  }
+  expire(key: string, seconds: number): RedisTransaction {
+    this.#queue.push(async () => {
+      await this.client.expire(key, seconds)
+    })
+    return this
+  }
+  async exec(): Promise<unknown[]> {
+    const returnValues: unknown[] = []
+    for (const op of this.#queue) {
+      returnValues.push(await op())
+    }
+    return returnValues
   }
 }

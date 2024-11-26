@@ -32,7 +32,6 @@ deprecatedEnvVariables.forEach((name) => {
     logWarn(`Deprecated environment variable ${name} was specified`)
   }
 })
-
 const redisClient = redis.createClient(toRedisClientOpts(config))
 redisClient.on('error', (err) =>
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

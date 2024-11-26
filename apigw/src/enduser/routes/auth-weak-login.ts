@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { getHours } from 'date-fns/getHours'
 import { z } from 'zod'
 
 import { EvakaSessionUser, login } from '../../shared/auth/index.js'
@@ -21,21 +22,25 @@ const Request = z.object({
 
 const eventCode = (name: string) => `evaka.citizen_weak.${name}`
 
+const loginAttemptsPerHour = 20
+
 export const authWeakLogin = (redis: RedisClient) =>
   toRequestHandler(async (req, res) => {
     logAuditEvent(eventCode('sign_in_requested'), req, 'Login endpoint called')
     try {
       const body = Request.parse(req.body)
 
-      // Apply rate limit
-      const key = 'citizen-weak-login:' + body.username
-      const value = req.traceId ?? ''
-      const previous = await redis.set(key, value, {
-        EX: 1, // expiry in seconds
-        GET: true, // return previous value
-        NX: true // only set if key doesn't exist
-      })
-      if (previous) {
+      // Apply rate limit (attempts per hour)
+      // Reference: Redis Rate Limiting Best Practices
+      // https://redis.io/glossary/rate-limiting/
+      const hour = getHours(new Date())
+      const key = `citizen-weak-login:${body.username}:${hour}`
+      const value = Number.parseInt((await redis.get(key)) ?? '', 10)
+      if (Number.isNaN(value) || value < loginAttemptsPerHour) {
+        // expire in 1 hour, so there's no old entry when the hours value repeats the next day
+        const expirySeconds = 60 * 60
+        await redis.multi().incr(key).expire(key, expirySeconds).exec()
+      } else {
         res.sendStatus(429)
         return
       }
