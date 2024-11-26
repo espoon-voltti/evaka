@@ -94,14 +94,14 @@ const customizations: CitizenCustomizations = {
             <span>
               Jag försäkrar att de uppgifter jag lämnat in är riktiga och jag
               har bekantat mig med avgifter för småbarnspedagogik:{' '}
-              <a
-                href="https://www.espoo.fi/sv/artiklar/avgifter-smabarnspedagogik-fran-182023"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Avgifter för småbarnspedagogik | Esbo stad (espoo.fi)
-              </a>
             </span>
+            <a
+              href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/klientavgifterna-smabarnspedagogik#section-59617"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Avgifter för småbarnspedagogik | Esbo stad (espoo.fi)
+            </a>
           </MultiLineCheckboxLabel>
         ),
         incomeType: {
@@ -144,7 +144,7 @@ const customizations: CitizenCustomizations = {
               have reviewed the customer fee information:
             </span>
             <a
-              href="https://www.espoo.fi/en/articles/early-education-fees-1-august-2023"
+              href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees#section-59617"
               target="_blank"
               rel="noreferrer"
             >
