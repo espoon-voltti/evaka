@@ -207,6 +207,9 @@ const WeakLoginForm = React.memo(function WeakLogin({
       <Gap size="m" />
       <form action="" onSubmit={(e) => e.preventDefault()}>
         <FixedSpaceColumn spacing="xs">
+{rateLimitError && (
+            <AlertBox message="Käyttäjätunnuksesi on väliaikaisesti lukittu kirjautumisyritysten määrästä johtuen. Koita myöhemmin uudelleen." />
+          )}
           <InputFieldF
             autoComplete="email"
             bind={username}
