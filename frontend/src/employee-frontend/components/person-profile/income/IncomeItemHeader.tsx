@@ -89,50 +89,50 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
         </Title>
       </ItemTitle>
       <RightHandSide>
-      {modifiedAt && (
+        {modifiedAt && (
+          <Row>
+            <Tooltip
+              tooltip={
+                modifiedBy &&
+                i18n.personProfile.income.lastModifiedBy(modifiedBy.name)
+              }
+            >
+              {i18n.personProfile.income.lastModifiedAt(modifiedAt.format())}
+            </Tooltip>
+          </Row>
+        )}
         <Row>
-          <Tooltip
-            tooltip={
-              modifiedBy &&
-              i18n.personProfile.income.lastModifiedBy(modifiedBy.name)
-            }
-          >
-            {i18n.personProfile.income.lastModifiedAt(modifiedAt.format())}
-          </Tooltip>
+          {permittedActions.includes('UPDATE') && (
+            <Button
+              icon={faPen}
+              onClick={() => {
+                startEditing()
+                if (!isOpen) toggle()
+              }}
+              disabled={!editable}
+              data-qa="edit-income-item"
+              aria-label={i18n.common.edit}
+            />
+          )}
+          {permittedActions.includes('DELETE') && (
+            <Button
+              icon={faTrash}
+              onClick={() => {
+                startDeleting()
+              }}
+              disabled={!editable}
+              data-qa="delete-income-item"
+              aria-label={i18n.common.remove}
+            />
+          )}
+          <ToggleButton
+            icon={isOpen ? faChevronUp : faChevronDown}
+            onClick={toggle}
+            disabled={!toggleable}
+            data-qa="toggle-income-item"
+            aria-label={isOpen ? i18n.common.close : i18n.common.open}
+          />
         </Row>
-      )}
-      <Row>
-        {permittedActions.includes('UPDATE') && (
-          <Button
-            icon={faPen}
-            onClick={() => {
-              startEditing()
-              if (!isOpen) toggle()
-            }}
-            disabled={!editable}
-            data-qa="edit-income-item"
-            aria-label={i18n.common.edit}
-          />
-        )}
-        {permittedActions.includes('DELETE') && (
-          <Button
-            icon={faTrash}
-            onClick={() => {
-              startDeleting()
-            }}
-            disabled={!editable}
-            data-qa="delete-income-item"
-            aria-label={i18n.common.remove}
-          />
-        )}
-        <ToggleButton
-          icon={isOpen ? faChevronUp : faChevronDown}
-          onClick={toggle}
-          disabled={!toggleable}
-          data-qa="toggle-income-item"
-          aria-label={isOpen ? i18n.common.close : i18n.common.open}
-        />
-      </Row>
       </RightHandSide>
     </Container>
   )

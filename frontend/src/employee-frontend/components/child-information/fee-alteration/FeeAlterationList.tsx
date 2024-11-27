@@ -89,42 +89,42 @@ export default React.memo(function FeeAlterationList({
                 <span>{feeAlteration.notes}</span>
               </FixedSpaceRow>
               <RightHandSide>
-              {feeAlteration.modifiedAt && (
-                <FixedSpaceRow spacing="L">
-                  <Tooltip
-                    tooltip={
-                      feeAlteration.modifiedBy &&
-                      i18n.childInformation.feeAlteration.lastModifiedBy(
-                        feeAlteration.modifiedBy.name
-                      )
-                    }
-                  >
-                    {i18n.childInformation.feeAlteration.lastModifiedAt(
-                      feeAlteration.modifiedAt.format()
-                    )}
-                  </Tooltip>
-                </FixedSpaceRow>
-              )}
-              <FixedSpaceRow>
-                {permittedActions.includes('UPDATE') && (
-                  <IconOnlyButton
-                    icon={faPen}
-                    onClick={() => {
-                      if (feeAlteration.id !== null) {
-                        toggleEditing(feeAlteration.id)
+                {feeAlteration.modifiedAt && (
+                  <FixedSpaceRow spacing="L">
+                    <Tooltip
+                      tooltip={
+                        feeAlteration.modifiedBy &&
+                        i18n.childInformation.feeAlteration.lastModifiedBy(
+                          feeAlteration.modifiedBy.name
+                        )
                       }
-                    }}
-                    aria-label={i18n.common.edit}
-                  />
+                    >
+                      {i18n.childInformation.feeAlteration.lastModifiedAt(
+                        feeAlteration.modifiedAt.format()
+                      )}
+                    </Tooltip>
+                  </FixedSpaceRow>
                 )}
-                {permittedActions.includes('DELETE') && (
-                  <IconOnlyButton
-                    icon={faTrash}
-                    onClick={() => toggleDeleteModal(feeAlteration)}
-                    aria-label={i18n.common.remove}
-                  />
-                )}
-              </FixedSpaceRow>
+                <FixedSpaceRow>
+                  {permittedActions.includes('UPDATE') && (
+                    <IconOnlyButton
+                      icon={faPen}
+                      onClick={() => {
+                        if (feeAlteration.id !== null) {
+                          toggleEditing(feeAlteration.id)
+                        }
+                      }}
+                      aria-label={i18n.common.edit}
+                    />
+                  )}
+                  {permittedActions.includes('DELETE') && (
+                    <IconOnlyButton
+                      icon={faTrash}
+                      onClick={() => toggleDeleteModal(feeAlteration)}
+                      aria-label={i18n.common.remove}
+                    />
+                  )}
+                </FixedSpaceRow>
               </RightHandSide>
             </FixedSpaceRow>
             {feeAlteration.attachments.length > 0 && (
