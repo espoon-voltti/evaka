@@ -41,6 +41,11 @@ const Row = styled(FixedSpaceRow)`
   align-items: center;
 `
 
+const RightHandSide = styled(Row)`
+  min-width: 50%;
+  justify-content: space-between;
+`
+
 interface Props {
   title: string
   isOpen: boolean
@@ -83,6 +88,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           <span>{period}</span>
         </Title>
       </ItemTitle>
+      <RightHandSide>
       {modifiedAt && (
         <Row>
           <Tooltip
@@ -127,6 +133,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           aria-label={isOpen ? i18n.common.close : i18n.common.open}
         />
       </Row>
+      </RightHandSide>
     </Container>
   )
 })

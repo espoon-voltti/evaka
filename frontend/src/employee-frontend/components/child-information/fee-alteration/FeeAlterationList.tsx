@@ -88,6 +88,7 @@ export default React.memo(function FeeAlterationList({
                 }`}</Dates>
                 <span>{feeAlteration.notes}</span>
               </FixedSpaceRow>
+              <RightHandSide>
               {feeAlteration.modifiedAt && (
                 <FixedSpaceRow spacing="L">
                   <Tooltip
@@ -124,6 +125,7 @@ export default React.memo(function FeeAlterationList({
                   />
                 )}
               </FixedSpaceRow>
+              </RightHandSide>
             </FixedSpaceRow>
             {feeAlteration.attachments.length > 0 && (
               <FeeAlterationAttachments
@@ -183,4 +185,9 @@ const Dates = styled.span`
 const FileIcon = styled(FontAwesomeIcon)`
   color: ${(p) => p.theme.colors.main.m2};
   margin-right: ${defaultMargins.s};
+`
+
+const RightHandSide = styled(FixedSpaceRow)`
+  min-width: 50%;
+  justify-content: space-between;
 `
