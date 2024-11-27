@@ -7,7 +7,9 @@ import { Arg0, UUID } from 'lib-common/types'
 
 import {
   createInvoiceCorrection,
+  createReplacementDraftsForHeadOfFamily,
   deleteInvoiceCorrection,
+  getHeadOfFamilyInvoices,
   getIncomeMultipliers,
   getPersonInvoiceCorrections,
   updateInvoiceCorrectionNote
@@ -19,7 +21,8 @@ const queryKeys = createQueryKeys('personProfile', {
   invoiceCorrections: (args: Arg0<typeof getPersonInvoiceCorrections>) => [
     'invoiceCorrections',
     args
-  ]
+  ],
+  headOfFamilyInvoices: (args: { id: UUID }) => ['headOfFamilyInvoices', args]
 })
 
 export const incomeCoefficientMultipliersQuery = query({
@@ -52,5 +55,17 @@ export const deleteInvoiceCorrectionMutation = mutation({
     deleteInvoiceCorrection(args),
   invalidateQueryKeys: (args) => [
     queryKeys.invoiceCorrections({ personId: args.personId })
+  ]
+})
+
+export const headOfFamilyInvoicesQuery = query({
+  api: getHeadOfFamilyInvoices,
+  queryKey: queryKeys.headOfFamilyInvoices
+})
+
+export const createReplacementDraftsForHeadOfFamilyMutation = mutation({
+  api: createReplacementDraftsForHeadOfFamily,
+  invalidateQueryKeys: (arg) => [
+    queryKeys.headOfFamilyInvoices({ id: arg.headOfFamilyId })
   ]
 })

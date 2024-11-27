@@ -308,6 +308,32 @@ class InvoiceController(
         val permittedActions: Set<Action.Invoice>,
     )
 
+    @PostMapping("/create-replacement-drafts/{headOfFamilyId}")
+    fun createReplacementDraftsForHeadOfFamily(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable headOfFamilyId: PersonId,
+    ) {
+        db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.CREATE_REPLACEMENT_DRAFT_INVOICES,
+                        headOfFamilyId,
+                    )
+                }
+                generator.generateReplacementDraftInvoicesForHeadOfFamily(
+                    dbc,
+                    clock.today(),
+                    headOfFamilyId,
+                )
+            }
+            .also { Audit.InvoicesCreateReplacementDrafts.log(targetId = AuditId(headOfFamilyId)) }
+    }
+
     data class MarkReplacementDraftSentRequest(
         val reason: InvoiceReplacementReason,
         val notes: String,

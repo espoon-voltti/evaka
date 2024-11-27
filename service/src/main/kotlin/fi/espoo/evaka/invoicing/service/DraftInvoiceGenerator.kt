@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.data.DateMap
@@ -586,6 +587,10 @@ class DraftInvoiceGenerator(
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
     ) {
         val businessDayCount = businessDays.ranges().map { it.durationInDays() }.sum().toInt()
+
+        val decisionIds: Map<PersonId, List<FeeDecisionId>> by lazy {
+            decisions.mapValues { (_, decisions) -> decisions.map { it.id } }
+        }
     }
 
     class HeadOfFamilyInput(

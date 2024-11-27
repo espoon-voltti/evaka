@@ -3,24 +3,30 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { wrapResult } from 'lib-common/api'
+import { PersonContext } from 'employee-frontend/state/person'
+import { UserContext } from 'employee-frontend/state/user'
 import { formatCents } from 'lib-common/money'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
+import { faRefresh } from 'lib-icons'
 
-import { getHeadOfFamilyInvoices } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 import { formatInvoicePeriod } from '../invoice/utils'
 
-const getHeadOfFamilyInvoicesResult = wrapResult(getHeadOfFamilyInvoices)
+import {
+  createReplacementDraftsForHeadOfFamilyMutation,
+  headOfFamilyInvoicesQuery
+} from './queries'
 
 interface Props {
   id: UUID
@@ -32,11 +38,10 @@ export default React.memo(function PersonInvoices({
   open: startOpen
 }: Props) {
   const { i18n } = useTranslation()
+  const user = useContext(UserContext)
+  const { permittedActions } = useContext(PersonContext)
   const [open, setOpen] = useState(startOpen)
-  const [invoices] = useApiState(
-    () => getHeadOfFamilyInvoicesResult({ id }),
-    [id]
-  )
+  const invoices = useQueryResult(headOfFamilyInvoicesQuery({ id }))
 
   return (
     <div>
@@ -48,6 +53,18 @@ export default React.memo(function PersonInvoices({
         paddingVertical="L"
         data-qa="person-invoices-collapsible"
       >
+        {user?.user?.accessibleFeatures.replacementInvoices &&
+        permittedActions.has('CREATE_REPLACEMENT_DRAFT_INVOICES') ? (
+          <FixedSpaceColumn alignItems="flex-end">
+            <MutateButton
+              icon={faRefresh}
+              appearance="inline"
+              mutation={createReplacementDraftsForHeadOfFamilyMutation}
+              onClick={() => ({ headOfFamilyId: id })}
+              text={i18n.personProfile.invoice.createReplacementDrafts}
+            />
+          </FixedSpaceColumn>
+        ) : null}
         {renderResult(invoices, (invoices) => (
           <Table data-qa="table-of-invoices">
             <Thead>

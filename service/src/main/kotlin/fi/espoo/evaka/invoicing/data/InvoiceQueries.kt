@@ -195,6 +195,30 @@ fun Database.Read.getSentInvoicesOfMonth(month: YearMonth): List<InvoiceDetailed
         .toList()
 }
 
+fun Database.Read.getSentInvoiceOfMonth(
+    month: YearMonth,
+    headOfFamilyId: PersonId,
+): InvoiceDetailed? {
+    val periodStart = month.atDay(1)
+    val periodEnd = month.atEndOfMonth()
+    val statuses = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
+    return createQuery {
+            invoiceDetailedQuery(
+                Predicate {
+                    where(
+                        """
+                        $it.head_of_family = ${bind(headOfFamilyId)} AND
+                        $it.period_start = ${bind(periodStart)} AND
+                        $it.period_end = ${bind(periodEnd)} AND
+                        $it.status = ANY (${bind(statuses)})
+                        """
+                    )
+                }
+            )
+        }
+        .exactlyOneOrNull()
+}
+
 fun Database.Read.getInvoiceIdsByDates(
     range: FiniteDateRange,
     areas: List<String>,
@@ -422,10 +446,22 @@ WHERE id = ${bind { it.id }}
     }
 }
 
-fun Database.Transaction.deleteDraftInvoices(month: YearMonth, status: InvoiceStatus) {
+fun Database.Transaction.deleteDraftInvoices(
+    month: YearMonth,
+    status: InvoiceStatus,
+    headOfFamilyId: PersonId? = null, // null means all
+) {
     require(status == InvoiceStatus.DRAFT || status == InvoiceStatus.REPLACEMENT_DRAFT)
+    val headOfFamilyFilter =
+        if (headOfFamilyId != null) {
+            PredicateSql { where("head_of_family = ${bind(headOfFamilyId)}") }
+        } else {
+            PredicateSql.alwaysTrue()
+        }
     execute {
-        sql("DELETE FROM invoice WHERE status = ${bind(status)} AND period_start = ${bind(month)}")
+        sql(
+            "DELETE FROM invoice WHERE status = ${bind(status)} AND period_start = ${bind(month)} AND ${predicate(headOfFamilyFilter)}"
+        )
     }
 }
 

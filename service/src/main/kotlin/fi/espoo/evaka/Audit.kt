@@ -332,6 +332,7 @@ enum class Audit(
     InvoiceCorrectionsNoteUpdate,
     InvoiceCorrectionsRead,
     InvoicesCreate,
+    InvoicesCreateReplacementDrafts,
     InvoicesDeleteDrafts,
     InvoicesMarkSent,
     InvoicesMarkReplacementDraftSent,

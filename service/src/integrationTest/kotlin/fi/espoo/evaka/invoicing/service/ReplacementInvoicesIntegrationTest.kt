@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceReplacementReason
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
@@ -80,7 +81,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `replacement draft invoice is created when a force majeure absence is added retroactively`() {
         insertPlacementAndFeeDecision(fee = 29500)
 
-        val original = generateTestInvoice()
+        val original = generateAndSendInvoices().single()
         assertEquals(InvoiceStatus.SENT, original.status)
         assertEquals(29500, original.totalPrice)
 
@@ -119,7 +120,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `invoice is not replaced if total price doesn't change`() {
         insertPlacementAndFeeDecision()
-        generateTestInvoice()
+        generateAndSendInvoices()
 
         db.transaction { tx ->
             tx.insert(
@@ -139,7 +140,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `zero-priced replacement is created`() {
         insertPlacementAndFeeDecision()
-        val original = generateTestInvoice()
+        val original = generateAndSendInvoices().single()
 
         // Sick leave for whole month => no fee
         db.transaction { tx ->
@@ -216,11 +217,84 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     @Test
+    fun `replacement invoice are generated for a multiple heads of family`() {
+        val headOfFamily2 = DevPerson(ssn = "010101-9998")
+        val child2 = DevPerson()
+        db.transaction { tx ->
+            tx.insert(headOfFamily2, DevPersonType.ADULT)
+            tx.insert(child2, DevPersonType.CHILD)
+        }
+
+        insertPlacementAndFeeDecision(headOfFamily, child)
+        insertPlacementAndFeeDecision(headOfFamily2, child2)
+
+        val original = generateAndSendInvoices()
+
+        db.transaction { tx ->
+            listOf(child.id, child2.id).forEach { childId ->
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = previousMonth.atDay(1),
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                        absenceType = AbsenceType.FORCE_MAJEURE,
+                    )
+                )
+            }
+        }
+
+        val replacement = generateReplacementDrafts()
+
+        assertEquals(2, original.size)
+        assertTrue(original.any { it.headOfFamily.id == headOfFamily.id })
+        assertTrue(original.any { it.headOfFamily.id == headOfFamily2.id })
+        assertEquals(2, replacement.size)
+        assertTrue(replacement.any { it.headOfFamily.id == headOfFamily.id })
+        assertTrue(replacement.any { it.headOfFamily.id == headOfFamily2.id })
+    }
+
+    @Test
+    fun `replacement invoice are generated for an individual head of family`() {
+        val headOfFamily2 = DevPerson(ssn = "010101-9998")
+        val child2 = DevPerson()
+        db.transaction { tx ->
+            tx.insert(headOfFamily2, DevPersonType.ADULT)
+            tx.insert(child2, DevPersonType.CHILD)
+        }
+
+        insertPlacementAndFeeDecision(headOfFamily, child)
+        insertPlacementAndFeeDecision(headOfFamily2, child2)
+
+        val original = generateAndSendInvoices()
+
+        db.transaction { tx ->
+            listOf(child.id, child2.id).forEach { childId ->
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = previousMonth.atDay(1),
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                        absenceType = AbsenceType.FORCE_MAJEURE,
+                    )
+                )
+            }
+        }
+
+        val replacement = generateReplacementDraftsForHeadOfFamily(headOfFamily.id)
+
+        assertEquals(2, original.size)
+        assertTrue(original.any { it.headOfFamily.id == headOfFamily.id })
+        assertTrue(original.any { it.headOfFamily.id == headOfFamily2.id })
+        assertEquals(1, replacement.size)
+        assertEquals(headOfFamily.id, replacement.single().headOfFamily.id)
+    }
+
+    @Test
     fun `replacement invoice can be marked as sent`() {
         val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
 
         insertPlacementAndFeeDecision()
-        val original = generateTestInvoice()
+        val original = generateAndSendInvoices().single()
 
         db.transaction { tx ->
             tx.insert(employee)
@@ -286,7 +360,16 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
         return db.read { tx -> tx.searchInvoices(InvoiceStatus.REPLACEMENT_DRAFT) }
     }
 
+    private fun generateReplacementDraftsForHeadOfFamily(
+        headOfFamilyId: PersonId
+    ): List<InvoiceDetailed> {
+        invoiceGenerator.generateReplacementDraftInvoicesForHeadOfFamily(db, today, headOfFamilyId)
+        return db.read { tx -> tx.searchInvoices(InvoiceStatus.REPLACEMENT_DRAFT) }
+    }
+
     private fun insertPlacementAndFeeDecision(
+        headOfFamily: DevPerson = this.headOfFamily,
+        child: DevPerson = this.child,
         fee: Int = 29500,
         range: FiniteDateRange = FiniteDateRange.ofMonth(previousMonth),
     ) {
@@ -323,7 +406,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
     }
 
-    fun generateTestInvoice(): InvoiceDetailed =
+    fun generateAndSendInvoices(): List<InvoiceDetailed> =
         db.transaction { tx ->
             invoiceGenerator.generateAllDraftInvoices(tx, previousMonth)
             invoiceService.sendInvoices(
@@ -335,6 +418,6 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 null,
             )
 
-            tx.searchInvoices().single()
+            tx.searchInvoices()
         }
 }
