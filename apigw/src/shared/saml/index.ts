@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { readFileSync } from 'node:fs'
-import path from 'node:path'
 
 import { CacheProvider, Profile, SamlConfig } from '@node-saml/node-saml'
 import express from 'express'
@@ -13,6 +12,7 @@ import { EvakaSessionUser } from '../auth/index.js'
 import certificates, { TrustedCertificates } from '../certificates.js'
 import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
 import { logError } from '../logging.js'
+import { parseUrlWithOrigin } from '../parse-url-with-origin.js'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
@@ -109,20 +109,10 @@ export function validateRelayStateUrl(
   req: express.Request
 ): string | undefined {
   const relayState = getRawUnvalidatedRelayState(req)
-
-  if (relayState && path.isAbsolute(relayState)) {
-    if (evakaBaseUrl === 'local') {
-      return relayState
-    } else {
-      const baseUrl = evakaBaseUrl.replace(/\/$/, '')
-      const redirect = new URL(relayState, baseUrl)
-      if (redirect.origin == baseUrl) {
-        return redirect.href
-      }
-    }
+  if (relayState) {
+    const url = parseUrlWithOrigin(evakaBaseUrl, relayState)
+    if (url) return url.toString()
+    logError('Invalid RelayState in request', req)
   }
-
-  if (relayState) logError('Invalid RelayState in request', req)
-
   return undefined
 }

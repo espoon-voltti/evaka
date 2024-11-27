@@ -213,7 +213,11 @@ const en: Translations = {
             . You can also log in with strong authentication.
           </P>
         </>
-      )
+      ),
+      email: 'E-mail',
+      password: 'Password',
+      rateLimitError:
+        'Your account has been temporarily locked due to a large number of login attempts. Please try again later.'
     },
     applying: {
       title: 'Sign in using Suomi.fi',
@@ -1756,7 +1760,12 @@ const en: Translations = {
     },
     loginDetailsSection: {
       title: 'Login information',
-      keycloakEmail: 'Username'
+      weakLoginUsername: 'Username',
+      password: 'Password',
+      newPassword: 'New password',
+      repeatPassword: 'Confirm new password',
+      setPassword: 'Set password',
+      updatePassword: 'Change password'
     },
     notificationsSection: {
       title: 'Email notifications',

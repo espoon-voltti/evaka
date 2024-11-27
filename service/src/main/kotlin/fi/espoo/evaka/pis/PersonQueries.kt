@@ -69,14 +69,17 @@ data class CitizenUserDetails(
     val backupPhone: String,
     val email: String?,
     val keycloakEmail: String?,
+    val weakLoginUsername: String?,
 )
 
 fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
     createQuery {
             sql(
                 """
-SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, keycloak_email
-FROM person WHERE id = ${bind(id)}
+SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, keycloak_email, citizen_user.username AS weak_login_username
+FROM person
+LEFT JOIN citizen_user USING (id)
+WHERE id = ${bind(id)}
 """
             )
         }

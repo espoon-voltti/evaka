@@ -33,7 +33,22 @@ sealed interface TsNamedType<TypeArgs> : TsRepresentation<TypeArgs> {
         get() = clazz.qualifiedName ?: clazz.jvmName
 }
 
+/** Excludes a type from code generation completely */
 data object Excluded : TsRepresentation<Nothing>
+
+/**
+ * Marks a type to behave like a Kotlin-only wrapper parameterized with one type parameter.
+ *
+ * In Kotlin code, the type must have the form SomeType<T>. In generated TS code, the wrapper
+ * doesn't exist and the underlying type T is used directly. The Kotlin type must serialize to /
+ * deserialize from a single value of type T.
+ */
+data object GenericWrapper : TsRepresentation<KType> {
+    override fun getTypeArgs(typeArgs: List<KTypeProjection>): KType {
+        require(typeArgs.size == 1) { "Expected 1 type argument, got $typeArgs" }
+        return requireNotNull(typeArgs.single().type)
+    }
+}
 
 data class TsExternalTypeRef(
     val type: String,

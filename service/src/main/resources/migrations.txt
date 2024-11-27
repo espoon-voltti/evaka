@@ -463,3 +463,4 @@ V464__scheduled_tasks_priority.sql
 V465__invoice_replacement_info.sql
 V466__push_notification_calendar_event_reservation.sql
 V467__push_notification_calendar_event_reservation_defaults.sql
+V468__citizen_user.sql

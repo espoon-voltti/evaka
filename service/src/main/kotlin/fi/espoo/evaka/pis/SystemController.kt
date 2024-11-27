@@ -7,41 +7,32 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.daycare.anyUnitHasFeature
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.pairing.MobileDeviceDetails
-import fi.espoo.evaka.pairing.MobileDeviceIdentity
-import fi.espoo.evaka.pairing.getDevice
-import fi.espoo.evaka.pairing.getDeviceByToken
-import fi.espoo.evaka.pairing.updateDeviceTracking
+import fi.espoo.evaka.pairing.*
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.auth.PasswordService
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.security.AccessControl
-import fi.espoo.evaka.shared.security.AccessControlCitizen
-import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.security.CitizenFeatures
-import fi.espoo.evaka.shared.security.EmployeeFeatures
-import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.shared.security.upsertCitizenUser
-import fi.espoo.evaka.shared.security.upsertEmployeeUser
-import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
+import fi.espoo.evaka.shared.security.*
+import fi.espoo.evaka.user.getCitizenWeakLoginDetails
+import fi.espoo.evaka.user.updateLastStrongLogin
+import fi.espoo.evaka.user.updateLastWeakLogin
+import fi.espoo.evaka.user.updatePassword
 import fi.espoo.evaka.webpush.WebPush
-import java.util.UUID
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import java.util.*
+import org.springframework.web.bind.annotation.*
 
 /**
  * Controller for "system" endpoints intended to be only called from apigw as the system internal
@@ -53,6 +44,7 @@ class SystemController(
     private val accessControl: AccessControl,
     private val accessControlCitizen: AccessControlCitizen,
     private val env: EvakaEnv,
+    private val passwordService: PasswordService,
     private val webPush: WebPush?,
 ) {
     @PostMapping("/system/citizen-login")
@@ -74,6 +66,9 @@ class SystemController(
                                 )
                                 ?.let { CitizenUserIdentity(it.id) }
                             ?: error("No person found with ssn")
+                    if (request.keycloakEmail == null) {
+                        tx.updateLastStrongLogin(clock, citizen.id)
+                    }
                     tx.updateCitizenOnLogin(
                         clock,
                         citizen.id,
@@ -91,6 +86,49 @@ class SystemController(
                     meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName),
                 )
             }
+    }
+
+    @PostMapping("/system/citizen-weak-login")
+    fun citizenWeakLogin(
+        db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
+        @RequestBody request: CitizenWeakLoginRequest,
+    ): CitizenUserIdentity {
+        Audit.CitizenWeakLoginAttempt.log(targetId = AuditId(request.username))
+        if (!env.newCitizenWeakLoginEnabled) throw BadRequest("New citizen weak login is disabled")
+        return db.connect { dbc ->
+            val citizen = dbc.read { it.getCitizenWeakLoginDetails(request.username) }
+            dbc.close() // avoid hogging the connection while we check the password
+
+            // We want to run a constant-time password check even if we can't find the user,
+            // in order to avoid exposing information about username validity. A dummy
+            // placeholder is used if necessary, so we have *something* to compare against.
+            // Reference: OWASP Authentication Cheat Sheet - Authentication Responses
+            // https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-responses
+            val isMatch = passwordService.isMatch(request.password, citizen?.password)
+            if (!isMatch || citizen == null) throw Forbidden()
+
+            dbc.transaction { tx ->
+                    if (passwordService.needsRehashing(citizen.password)) {
+                        tx.updatePassword(
+                            clock = null, // avoid updating the password timestamp
+                            citizen.id,
+                            passwordService.encode(request.password),
+                        )
+                    }
+
+                    tx.updateLastWeakLogin(clock, citizen.id)
+                    personService.getPersonWithChildren(tx, user, citizen.id)
+                    CitizenUserIdentity(citizen.id)
+                }
+                .also {
+                    Audit.CitizenWeakLogin.log(
+                        targetId = AuditId(request.username),
+                        objectId = AuditId(it.id),
+                    )
+                }
+        }
     }
 
     @GetMapping("/system/citizen/{id}")
@@ -355,6 +393,8 @@ class SystemController(
         // null in SFI login requests, always set (but possibly empty) in Keycloak login requests
         val keycloakEmail: String?,
     )
+
+    data class CitizenWeakLoginRequest(val username: String, val password: Sensitive<String>)
 
     data class EmployeeUserResponse(
         val id: EmployeeId,

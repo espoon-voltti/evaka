@@ -161,6 +161,24 @@ export async function citizenLogin(
   return data
 }
 
+interface CitizenWeakLoginRequest {
+  username: string
+  password: string
+}
+
+export async function citizenWeakLogin(
+  request: CitizenWeakLoginRequest
+): Promise<CitizenUser> {
+  const { data } = await client.post<CitizenUser>(
+    `/system/citizen-weak-login`,
+    request,
+    {
+      headers: createServiceRequestHeaders(undefined, machineUser)
+    }
+  )
+  return data
+}
+
 export async function getCitizenDetails(
   req: express.Request,
   personId: string

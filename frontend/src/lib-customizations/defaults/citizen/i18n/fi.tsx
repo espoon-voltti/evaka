@@ -210,7 +210,11 @@ export default {
             . Voit kirjautua myös käyttämällä vahvaa tunnistautumista.
           </P>
         </>
-      )
+      ),
+      email: 'Sähköpostiosoite',
+      password: 'Salasana',
+      rateLimitError:
+        'Käyttäjätunnuksesi on väliaikaisesti lukittu kirjautumisyritysten määrästä johtuen. Kokeile myöhemmin uudelleen.'
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',
@@ -1999,7 +2003,12 @@ export default {
     },
     loginDetailsSection: {
       title: 'Kirjautumistiedot',
-      keycloakEmail: 'Käyttäjätunnus'
+      weakLoginUsername: 'Käyttäjätunnus',
+      password: 'Salasana',
+      newPassword: 'Uusi salasana',
+      repeatPassword: 'Vahvista uusi salasana',
+      setPassword: 'Aseta salasana',
+      updatePassword: 'Vaihda salasana'
     },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',

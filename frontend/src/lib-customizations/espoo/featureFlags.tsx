@@ -43,7 +43,8 @@ const features: Features = {
     forceUnpublishDocumentTemplate: true,
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
-    multiSelectDeparture: true
+    multiSelectDeparture: true,
+    weakLogin: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -77,7 +78,8 @@ const features: Features = {
     forceUnpublishDocumentTemplate: true,
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
-    multiSelectDeparture: true
+    multiSelectDeparture: true,
+    weakLogin: true
   },
   prod: {
     environmentLabel: null,
@@ -110,7 +112,8 @@ const features: Features = {
     forceUnpublishDocumentTemplate: false,
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
-    multiSelectDeparture: false
+    multiSelectDeparture: false,
+    weakLogin: false
   }
 }
 

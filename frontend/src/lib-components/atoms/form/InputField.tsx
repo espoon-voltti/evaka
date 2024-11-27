@@ -212,6 +212,7 @@ export interface InputProps extends BaseProps {
   autoFocus?: boolean
   inputRef?: RefObject<HTMLInputElement>
   wrapperClassName?: string
+  pattern?: string
 }
 
 interface ClearableInputProps extends OtherInputProps {

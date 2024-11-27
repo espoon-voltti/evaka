@@ -38,7 +38,7 @@ export function createDevAuthRouter({
           res.redirect(`${root}?loginError=true`)
         } else {
           await login(req, user)
-          res.redirect(validateRelayStateUrl(req) ?? root)
+          res.redirect(validateRelayStateUrl(req)?.toString() ?? root)
         }
       } catch (err) {
         if (!res.headersSent) {

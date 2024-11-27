@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka
 
+import com.fasterxml.jackson.annotation.JsonValue
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.job.JobSchedule
@@ -40,6 +41,7 @@ data class EvakaEnv(
     val plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean,
     val personAddressEnvelopeWindowPosition: Rectangle,
     val replacementInvoicesStart: YearMonth?,
+    val newCitizenWeakLoginEnabled: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -75,6 +77,8 @@ data class EvakaEnv(
                     env.lookup<String?>("evaka.replacement_invoices_start")?.let {
                         YearMonth.parse(it)
                     },
+                newCitizenWeakLoginEnabled =
+                    env.lookup("evaka.new_citizen_weak_login.enabled") ?: false,
             )
         }
     }
@@ -634,7 +638,7 @@ data class JamixEnv(val url: URI, val user: String, val password: Sensitive<Stri
     }
 }
 
-data class Sensitive<T>(val value: T) {
+data class Sensitive<T>(@JsonValue val value: T) {
     override fun toString(): String = "**REDACTED**"
 }
 

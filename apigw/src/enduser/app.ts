@@ -23,6 +23,7 @@ import { createDevSfiRouter } from './dev-sfi-auth.js'
 import { authenticateKeycloakCitizen } from './keycloak-citizen-saml.js'
 import mapRoutes from './mapRoutes.js'
 import authStatus from './routes/auth-status.js'
+import { authWeakLogin } from './routes/auth-weak-login.js'
 import { authenticateSuomiFi } from './suomi-fi-saml.js'
 
 export function enduserGwRouter(
@@ -89,6 +90,7 @@ export function enduserGwRouter(
     })
   )
   router.get('/auth/status', authStatus)
+  router.post('/auth/weak-login', express.json(), authWeakLogin(redisClient))
   router.use(requireAuthentication)
   router.use(csrf)
   router.all('/citizen/*', createProxy())

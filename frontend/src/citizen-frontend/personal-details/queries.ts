@@ -7,6 +7,7 @@ import { mutation, query } from 'lib-common/query'
 import {
   getNotificationSettings,
   updateNotificationSettings,
+  updatePassword,
   updatePersonalData
 } from '../generated/api-clients/pis'
 import { createQueryKeys } from '../query'
@@ -17,6 +18,10 @@ const queryKeys = createQueryKeys('personalDetails', {
 
 export const updatePersonalDetailsMutation = mutation({
   api: updatePersonalData
+})
+
+export const updatePasswordMutation = mutation({
+  api: updatePassword
 })
 
 export const notificationSettingsQuery = query({

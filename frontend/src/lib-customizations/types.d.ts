@@ -273,6 +273,11 @@ interface BaseFeatureFlags {
    * Allow marking multiple children as departed in the employee mobile
    */
   multiSelectDeparture?: boolean
+
+  /**
+   * Enable support for citizen weak login
+   */
+  weakLogin?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

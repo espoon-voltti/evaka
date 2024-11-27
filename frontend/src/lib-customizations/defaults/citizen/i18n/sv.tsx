@@ -211,7 +211,11 @@ const sv: Translations = {
             . Du kan också logga in med stark autentisering.
           </P>
         </>
-      )
+      ),
+      email: 'E-post',
+      password: 'Lösenord',
+      rateLimitError:
+        'Ditt konto har tillfälligt låsts på grund av ett stort antal inloggningsförsök. Vänligen försök igen senare.'
     },
     applying: {
       title: 'Logga in via Suomi.fi',
@@ -1996,7 +2000,12 @@ const sv: Translations = {
     },
     loginDetailsSection: {
       title: 'Inloggningsinformation',
-      keycloakEmail: 'Användarnamn'
+      weakLoginUsername: 'Användarnamn',
+      password: 'Lösenord',
+      newPassword: 'Nytt lösenord',
+      repeatPassword: 'Bekräfta lösenordet',
+      setPassword: 'Ställ in lösenord',
+      updatePassword: 'Uppdatera lösenord'
     },
     notificationsSection: {
       title: 'E-postmeddelanden',
