@@ -1130,7 +1130,11 @@ const sv: Translations = {
             'Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut.'
         },
         assistanceNeed: 'Behov av stöd för utveckling och lärande',
-        assistanceNeeded: 'Barnet har behov av stöd för utveckling och lärande',
+        assistanceNeeded: {
+          DAYCARE: 'Barnet har behov av stöd för utveckling och lärande',
+          PRESCHOOL: 'Barnet har behov av stöd för utveckling och lärande',
+          CLUB: 'Barnet har behov av stöd för utveckling och lärande'
+        },
         assistanceNeedLabel: 'Beskrivning av stödbehov',
         assistanceNeedPlaceholder:
           'Berätta om barnets behov av stöd för utveckling och lärande',
@@ -1141,10 +1145,16 @@ const sv: Translations = {
           PRESCHOOL:
             'Välj denna punkt i ansökan, om barnet behöver stöd för sin utveckling och/eller sitt lärande under förskoleåret. Stödet genomförs i barnets vardag som en del av verksamheten inom förskoleundervisningen och småbarnspedagogiken. Välj denna punkt också om det finns någon annan särskild orsak som direkt påverkar ordnandet av förskoleundervisningen och till vilken enhet barnet ska beviljas förskoleplats. Om barnet behöver stöd för sin utveckling och/eller sitt lärande, kontaktar en speciallärare inom småbarnspedagogik dig, så att vi kan beakta barnets behov vid beviljandet av förskoleplats.'
         },
+        assistanceNeedExtraInstructions: {
+          DAYCARE: null,
+          PRESCHOOL: null,
+          CLUB: null
+        },
         preparatory:
           'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen. Gäller inte svenskspråkig förskoleundervisning.',
         preparatoryInfo:
-          'Barn som ännu inte har kunskaper i finska eller som redan kan lite finska kan söka sig till förberedande undervisning för den grundläggande utbildningen inom förskoleundervisningen. Barnets nuvarande daghem rekommenderar förberedande förskoleundervisning för barnet. Förberedande undervisning för den grundläggande utbildningen för barn i förskoleåldern ordnas inom den finska kommunala förskoleundervisningen. Förberedande undervisning för den grundläggande utbildningen ges inom förskoleundervisningen fem timmar per dag. Undervisningen är gratis.'
+          'Barn som ännu inte har kunskaper i finska eller som redan kan lite finska kan söka sig till förberedande undervisning för den grundläggande utbildningen inom förskoleundervisningen. Barnets nuvarande daghem rekommenderar förberedande förskoleundervisning för barnet. Förberedande undervisning för den grundläggande utbildningen för barn i förskoleåldern ordnas inom den finska kommunala förskoleundervisningen. Förberedande undervisning för den grundläggande utbildningen ges inom förskoleundervisningen fem timmar per dag. Undervisningen är gratis.',
+        preparatoryExtraInstructions: null
       },
       unitPreference: {
         title: 'Ansökningsönskemål',

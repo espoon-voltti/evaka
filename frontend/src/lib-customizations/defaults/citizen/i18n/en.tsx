@@ -1173,7 +1173,11 @@ const en: Translations = {
             'Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies.'
         },
         assistanceNeed: 'Support need',
-        assistanceNeeded: 'The child needs support',
+        assistanceNeeded: {
+          DAYCARE: 'The child needs support',
+          PRESCHOOL: 'The child needs support',
+          CLUB: 'The child needs support'
+        },
         assistanceNeedLabel: 'Description',
         assistanceNeedPlaceholder:
           'Describe the need for support for the child.',
@@ -1184,10 +1188,16 @@ const en: Translations = {
           PRESCHOOL:
             'Select this section on the application if your child needs support for their development and/or learning during the pre-primary education year. Support is provided as part of pre-primary education and early childhood education activities. Select this section also if your child has another special reason that directly affects the organisation of pre-primary education or in which unit their pre-primary education should be organised. If your child needs support for development and/or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in pre-primary education.'
         },
+        assistanceNeedExtraInstructions: {
+          DAYCARE: null,
+          PRESCHOOL: null,
+          CLUB: null
+        },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
         preparatoryInfo:
-          'Instruction preparing for basic education is offered in connection with pre-primary education to children who do not yet have Finnish language skills or who know some Finnish. The child’s current day care centre has recommended the child attend preparatory pre-primary education. Instruction preparing for basic education is offered to children of pre-primary education age in Finnish-speaking municipal pre-primary education groups. Instruction preparing for basic education is available for 5 hours per day in connection with pre-primary education. Instruction is free of charge.'
+          'Instruction preparing for basic education is offered in connection with pre-primary education to children who do not yet have Finnish language skills or who know some Finnish. The child’s current day care centre has recommended the child attend preparatory pre-primary education. Instruction preparing for basic education is offered to children of pre-primary education age in Finnish-speaking municipal pre-primary education groups. Instruction preparing for basic education is available for 5 hours per day in connection with pre-primary education. Instruction is free of charge.',
+        preparatoryExtraInstructions: null
       },
       unitPreference: {
         title: 'Preferred units',

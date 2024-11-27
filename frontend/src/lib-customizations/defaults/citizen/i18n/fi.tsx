@@ -1127,7 +1127,11 @@ export default {
             'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
         },
         assistanceNeed: 'Tuen tarve',
-        assistanceNeeded: 'Lapsella on tuen tarve',
+        assistanceNeeded: {
+          DAYCARE: 'Lapsella on tuen tarve',
+          PRESCHOOL: 'Lapsella on tuen tarve',
+          CLUB: 'Lapsella on tuen tarve'
+        },
         assistanceNeedLabel: 'Tuen tarpeen kuvaus',
         assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
         assistanceNeedInstructions: {
@@ -1135,12 +1139,18 @@ export default {
             'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee tukea kehitykselleen, oppimiselleen tai hyvinvoinnilleen. Tukea toteutetaan lapsen arjessa osana varhaiskasvatuksen toimintaa. Jos lapsellanne on tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon varhaiskasvatuspaikkaa osoitettaessa.',
           CLUB: 'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee tukea kehitykselleen, oppimiselleen tai hyvinvoinnilleen. Tukea toteutetaan lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Jos lapsellanne on tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon varhaiskasvatuspaikkaa osoitettaessa.',
           PRESCHOOL:
-            'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee kasvulleen ja/tai oppimiselleen tukea esiopetusvuonna. Tukea toteutetaan lapsen arjessa osana esiopetuksen ja varhaiskasvatuksen toimintaa. Valitse tämä kohta myös, jos lapsella on muu erityinen syy, jolla on suoranaista vaikutusta esiopetuksen järjestämiseen ja siihen, missä yksikössä lapsen esiopetus tulee järjestää. Jos lapsella on kasvun ja/tai oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon esiopetuspaikkaa osoitettaessa.'
+            'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee kasvulleen ja/tai oppimiselleen tukea esiopetusvuonna. Tukea toteutetaan lapsen arjessa osana esiopetuksen ja varhaiskasvatuksen toimintaa. Valitse tämä kohta myös, jos lapsella on muu erityinen syy, jolla on suoranaista vaikutusta esiopetuksen järjestämiseen ja siihen, missä yksikössä lapsen esiopetus tulee järjestää. Jos lapsella on kasvun ja/tai oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon esiopetuspaikkaa osoitettaessa.' as React.ReactNode
+        },
+        assistanceNeedExtraInstructions: {
+          DAYCARE: null as React.ReactNode,
+          PRESCHOOL: null as React.ReactNode,
+          CLUB: null as React.ReactNode
         },
         preparatory:
           'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
         preparatoryInfo:
-          'Esiopetuksessa toteutettavaan perusopetukseen valmistavaan opetukseen voivat hakeutua lapset, joilla ei ole vielä suomen kielen taitoa tai jotka osaavat jo jonkin verran suomea. Lapselle on suositeltu valmistavaa esiopetusta nykyisestä päiväkodista. Esiopetusikäisten perusopetukseen valmistavaa opetusta järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä. '
+          'Esiopetuksessa toteutettavaan perusopetukseen valmistavaan opetukseen voivat hakeutua lapset, joilla ei ole vielä suomen kielen taitoa tai jotka osaavat jo jonkin verran suomea. Lapselle on suositeltu valmistavaa esiopetusta nykyisestä päiväkodista. Esiopetusikäisten perusopetukseen valmistavaa opetusta järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä. ' as React.ReactNode,
+        preparatoryExtraInstructions: null as React.ReactNode
       },
       unitPreference: {
         title: 'Hakutoive',
