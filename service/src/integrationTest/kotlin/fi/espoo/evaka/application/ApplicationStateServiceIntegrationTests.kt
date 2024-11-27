@@ -641,7 +641,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `setVerified and setUnverified - changes checkedByAdmin`() {
+    fun `setVerified - changes checkedByAdmin`() {
         db.transaction { tx ->
             // given
             tx.insertApplication(
@@ -661,16 +661,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(true, application.checkedByAdmin)
-        }
-        db.transaction { tx ->
-            // when
-            service.setUnverified(tx, serviceWorker, clock, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = tx.fetchApplicationDetails(applicationId)!!
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(false, application.checkedByAdmin)
         }
     }
 

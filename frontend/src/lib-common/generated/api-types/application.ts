@@ -109,6 +109,7 @@ export interface ApplicationDetails {
   checkedByAdmin: boolean
   childId: UUID
   childRestricted: boolean
+  confidential: boolean | null
   createdDate: HelsinkiDateTime | null
   dueDate: LocalDate | null
   dueDateSetManuallyAt: HelsinkiDateTime | null
@@ -277,6 +278,7 @@ export interface ApplicationSummary {
   assistanceNeed: boolean
   attachmentCount: number
   checkedByAdmin: boolean
+  confidential: boolean | null
   currentPlacementUnit: PreferredUnit | null
   dateOfBirth: LocalDate | null
   dueDate: LocalDate | null

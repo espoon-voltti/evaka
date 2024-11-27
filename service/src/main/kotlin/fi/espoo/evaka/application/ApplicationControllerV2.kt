@@ -51,6 +51,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 enum class ApplicationTypeToggle {
@@ -383,6 +384,21 @@ class ApplicationControllerV2(
         }
     }
 
+    @PostMapping("/{applicationId}/actions/set-verified")
+    fun setApplicationVerified(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId,
+        @RequestParam confidential: Boolean?,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.setVerified(it, user, clock, applicationId, confidential)
+            }
+        }
+    }
+
     @GetMapping("/{applicationId}/placement-draft")
     fun getPlacementPlanDraft(
         db: Database,
@@ -685,8 +701,6 @@ class ApplicationControllerV2(
                 "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
                 "return-to-sent" to applicationStateService::returnToSent,
                 "cancel-application" to applicationStateService::cancelApplication,
-                "set-verified" to applicationStateService::setVerified,
-                "set-unverified" to applicationStateService::setUnverified,
                 "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
                 "send-decisions-without-proposal" to
                     applicationStateService::sendDecisionsWithoutProposal,

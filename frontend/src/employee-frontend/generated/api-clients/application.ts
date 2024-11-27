@@ -28,6 +28,7 @@ import { SimpleBatchRequest } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import { UnitApplications } from 'lib-common/generated/api-types/application'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonApplicationNote } from 'lib-common/generated/api-types/application'
 import { deserializeJsonApplicationNoteResponse } from 'lib-common/generated/api-types/application'
 import { deserializeJsonApplicationResponse } from 'lib-common/generated/api-types/application'
@@ -271,6 +272,27 @@ export async function sendApplication(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}/actions/send-application`.toString(),
     method: 'POST'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationControllerV2.setApplicationVerified
+*/
+export async function setApplicationVerified(
+  request: {
+    applicationId: UUID,
+    confidential?: boolean | null
+  }
+): Promise<void> {
+  const params = createUrlSearchParams(
+    ['confidential', request.confidential?.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/applications/${request.applicationId}/actions/set-verified`.toString(),
+    method: 'POST',
+    params
   })
   return json
 }

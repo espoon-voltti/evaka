@@ -798,8 +798,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
             mapOf(
                 "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
                 "cancel-application" to applicationStateService::cancelApplication,
-                "set-verified" to applicationStateService::setVerified,
-                "set-unverified" to applicationStateService::setUnverified,
                 "send-decisions-without-proposal" to
                     applicationStateService::sendDecisionsWithoutProposal,
                 "send-placement-proposal" to applicationStateService::sendPlacementProposal,
