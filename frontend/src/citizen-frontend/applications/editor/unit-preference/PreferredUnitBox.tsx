@@ -93,7 +93,7 @@ export default React.memo(function PreferredUnitBox({
             </StaticChip>
           </FixedSpaceFlexWrap>
           <Gap size="xs" />
-          <FixedSpaceFlexWrap verticalSpacing="xs">
+          <FixedSpaceFlexWrap horizontalSpacing="xs">
             <Button
               appearance="inline"
               text={
