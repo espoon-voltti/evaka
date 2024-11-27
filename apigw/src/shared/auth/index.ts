@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { randomBytes } from 'node:crypto'
-
 import { Profile } from '@node-saml/node-saml'
 import express, { NextFunction, Request, Response } from 'express'
 
@@ -79,10 +77,6 @@ export const login = async (
   await fromCallback<void>((cb) => req.logIn(user, cb))
   // Passport has now regenerated the active session and saved it, so we have a
   // guarantee that the session ID has changed and Redis has stored the new session data
-
-  req.session.antiCsrfToken = (
-    await fromCallback<Buffer>((cb) => randomBytes(32, cb))
-  ).toString('base64')
 }
 
 export const logout = async (

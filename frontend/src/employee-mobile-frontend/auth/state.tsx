@@ -10,7 +10,6 @@ import { MobileUser } from 'lib-common/api-types/employee-auth'
 import { query, useQueryResult } from 'lib-common/query'
 
 import { renderResult } from '../async-rendering'
-import { setAntiCsrfToken } from '../client'
 
 import { getAuthStatus } from './api'
 
@@ -29,11 +28,7 @@ export const UserContext = createContext<UserState>({
 })
 
 const authStatusQuery = query({
-  api: () =>
-    getAuthStatus().then((status) => {
-      setAntiCsrfToken(status.antiCsrfToken)
-      return status
-    }),
+  api: () => getAuthStatus(),
   queryKey: () => ['auth-status']
 })
 

@@ -4,7 +4,6 @@
 
 import React, { createContext, useCallback, useMemo } from 'react'
 
-import { setAntiCsrfToken } from 'employee-frontend/api/client'
 import { AdRole, User } from 'lib-common/api-types/employee-auth'
 import { query, useQuery } from 'lib-common/query'
 
@@ -29,11 +28,7 @@ export const UserContext = createContext<UserState>({
 })
 
 const authStatusQuery = query({
-  api: () =>
-    getAuthStatus().then((status) => {
-      setAntiCsrfToken(status.antiCsrfToken)
-      return status
-    }),
+  api: () => getAuthStatus(),
   queryKey: () => ['auth-status']
 })
 

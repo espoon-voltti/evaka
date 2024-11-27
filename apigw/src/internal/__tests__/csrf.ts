@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  describe,
-  beforeAll,
-  afterEach,
   afterAll,
+  afterEach,
+  beforeAll,
   beforeEach,
+  describe,
   expect,
   it
 } from '@jest/globals'
@@ -15,7 +15,6 @@ import {
 import { configFromEnv } from '../../shared/config.js'
 import { EmployeeUser } from '../../shared/service-client.js'
 import { GatewayTester } from '../../shared/test/gateway-tester.js'
-import { AuthStatus } from '../routes/auth-status.js'
 
 const mockUser: EmployeeUser = {
   id: '8fc11215-6d55-4059-bd59-038bfa36f294',
@@ -34,17 +33,7 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
   afterEach(async () => tester.afterEach())
   afterAll(async () => tester?.stop())
 
-  async function setupAntiCsrfToken() {
-    tester.nockScope.get(`/system/employee/${mockUser.id}`).reply(200, mockUser)
-    const response = await tester.client.get('/api/internal/auth/status')
-    const authStatus = response.data as AuthStatus
-    tester.nockScope.done()
-
-    expect(authStatus.antiCsrfToken).toBeTruthy()
-    tester.antiCsrfToken = authStatus.antiCsrfToken
-  }
-
-  it('should fail POST to a proxied API when there is no CSRF token', async () => {
+  it('should fail POST to a proxied API when there is no CSRF header', async () => {
     const res = await tester.client.post(
       '/api/internal/employee/some-proxied-api',
       undefined,
@@ -62,27 +51,13 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
     tester.nockScope.done()
     expect(res.status).toBe(200)
   })
-  it('should pass POST to a proxied API after CSRF token has been set up by the auth/status endpoint', async () => {
-    await setupAntiCsrfToken()
-
+  it('should pass POST to a proxied API when CSRF header is present', async () => {
+    tester.setCsrfHeader = true
     tester.nockScope.post('/employee/some-proxied-api').reply(200)
     const res = await tester.client.post(
       '/api/internal/employee/some-proxied-api'
     )
     tester.nockScope.done()
     expect(res.status).toBe(200)
-  })
-  it('should not check CSRF if a session is not available', async () => {
-    await setupAntiCsrfToken()
-    await tester.expireSession()
-
-    const res = await tester.client.post(
-      '/api/internal/employee/some-proxied-api',
-      undefined,
-      {
-        validateStatus: () => true
-      }
-    )
-    expect(res.status).toBe(401)
   })
 })
