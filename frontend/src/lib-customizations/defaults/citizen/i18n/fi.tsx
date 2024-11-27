@@ -1087,15 +1087,44 @@ export default {
           label: 'Ilta- ja vuorohoito',
           instructions:
             'Vuorohoidolla tarkoitetaan viikonloppuna tai ympärivuorokautisesti tarvittavaa varhaiskasvatusta. Iltahoito on pääasiassa klo 6.30-18.00 ulkopuolella ja viikonloppuisin tapahtuvaa varhaiskasvatusta.',
-          instructions2:
-            'Esiopetushakemukselle pyydämme liittämään samassa taloudessa asuvien huoltajien osalta todistukset työnantajalta säännöllisestä vuorotyöstä tai oppilaitoksen edustajalta päätoimisesta iltaopiskelusta. Dokumenttien tulee olla kirjattu sinä vuonna, kun hakemus esiopetukseen tehdään',
           attachmentsMessage: {
-            text: 'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.' as
-              | React.ReactNode
-              | string,
-            subtitle:
-              'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
-          }
+            DAYCARE: (
+              <P>
+                Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat
+                vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti
+                iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi
+                toimitetaan molempien vanhempien osalta työnantajan todistus
+                vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon
+                tarpeesta. Jos et voi lisätä liitteitä hakemukselle sähköisesti,
+                lähetä ne postilla osoitteeseen Varhaiskasvatuksen
+                palveluohjaus, PL 3125, 02070 Espoon kaupunki.
+              </P>
+            ),
+            PRESCHOOL: (
+              <>
+                <P>
+                  Esiopetushakemukselle pyydämme liittämään samassa taloudessa
+                  asuvien huoltajien osalta todistukset työnantajalta
+                  säännöllisestä vuorotyöstä tai oppilaitoksen edustajalta
+                  päätoimisesta iltaopiskelusta. Dokumenttien tulee olla
+                  kirjattu sinä vuonna, kun hakemus esiopetukseen tehdään.
+                </P>
+                <P>
+                  Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat
+                  vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti
+                  iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi
+                  toimitetaan molempien vanhempien osalta työnantajan todistus
+                  vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon
+                  tarpeesta. Jos et voi lisätä liitteitä hakemukselle
+                  sähköisesti, lähetä ne postilla osoitteeseen
+                  Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon
+                  kaupunki.
+                </P>
+              </>
+            )
+          },
+          attachmentsSubtitle:
+            'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
         },
         assistanceNeed: 'Tuen tarve',
         assistanceNeeded: 'Lapsella on tuen tarve',

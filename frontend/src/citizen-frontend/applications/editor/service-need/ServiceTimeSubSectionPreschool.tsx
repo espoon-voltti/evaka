@@ -25,7 +25,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { H3, Label, P } from 'lib-components/typography'
+import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -364,25 +364,19 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
             <>
               <Gap size="xxs" />
 
-              <P fitted>
-                {t.applications.editor.serviceNeed.shiftCare.instructions2}
-              </P>
-
               <Gap size="s" />
 
-              <P fitted>
-                {
-                  t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
-                    .text
-                }
-              </P>
+              {
+                t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
+                  .PRESCHOOL
+              }
 
               <Gap size="s" />
 
               <strong>
                 {
-                  t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
-                    .subtitle
+                  t.applications.editor.serviceNeed.shiftCare
+                    .attachmentsSubtitle
                 }
               </strong>
 

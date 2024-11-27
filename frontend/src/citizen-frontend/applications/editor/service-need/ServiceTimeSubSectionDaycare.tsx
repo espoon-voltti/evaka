@@ -20,7 +20,7 @@ import {
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { H3, Label, P } from 'lib-components/typography'
+import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { placementTypes } from 'lib-customizations/employee'
@@ -338,20 +338,15 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         <>
           <Gap size="s" />
 
-          <P fitted data-qa="shiftcare-attachments-message">
-            {
-              t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
-                .text
-            }
-          </P>
+          {
+            t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
+              .DAYCARE
+          }
 
           <Gap size="s" />
 
           <strong>
-            {
-              t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
-                .subtitle
-            }
+            {t.applications.editor.serviceNeed.shiftCare.attachmentsSubtitle}
           </strong>
 
           <Gap size="s" />

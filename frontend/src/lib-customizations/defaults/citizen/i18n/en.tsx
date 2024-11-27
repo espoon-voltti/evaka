@@ -1127,13 +1127,50 @@ const en: Translations = {
           label: 'Evening and round-the-clock care',
           instructions:
             'Round-the-clock care refers to early childhood education needed on weekends or around the clock. Evening and round-the-clock care is mainly early childhood education taking place outside the weekday hours of 6:30 and 18:00.',
-          instructions2:
-            'If a guardian living in the same household does regular shift work or attends evening studies full-time, they must provide proof of this (a document issued by their employer or the educational institution) together with the application for pre-primary education.  The documents must be dated in the year when the application for pre-primary education is submitted.',
           attachmentsMessage: {
-            text: 'Evening and round-the-clock care is intended for children whose both parents do shift work or mainly study in the evening and/or during the weekends. In addition to the application, both parents will need to provide a document issued by their employer concerning shift work or a document concerning their studies as proof of the child’s need for evening or round-the-clock care. We recommend that you send the additional documents through this online system. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo.',
-            subtitle:
-              'Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies.'
-          }
+            DAYCARE: (
+              <P>
+                Evening and round-the-clock care is intended for children whose
+                both parents do shift work or mainly study in the evening and/or
+                during the weekends. In addition to the application, both
+                parents will need to provide a document issued by their employer
+                concerning shift work or a document concerning their studies as
+                proof of the child’s need for evening or round-the-clock care.
+                We recommend that you send the additional documents through this
+                online system. If you are unable to add attachments to your
+                online application, please send the documents by post to Early
+                childhood education service counselling, P.O. Box 3125, 02070
+                City of Espoo.
+              </P>
+            ),
+            PRESCHOOL: (
+              <>
+                <P>
+                  If a guardian living in the same household does regular shift
+                  work or attends evening studies full-time, they must provide
+                  proof of this (a document issued by their employer or the
+                  educational institution) together with the application for
+                  pre-primary education. The documents must be dated in the year
+                  when the application for pre-primary education is submitted.
+                </P>
+                <P>
+                  Evening and round-the-clock care is intended for children
+                  whose both parents do shift work or mainly study in the
+                  evening and/or during the weekends. In addition to the
+                  application, both parents will need to provide a document
+                  issued by their employer concerning shift work or a document
+                  concerning their studies as proof of the child’s need for
+                  evening or round-the-clock care. We recommend that you send
+                  the additional documents through this online system. If you
+                  are unable to add attachments to your online application,
+                  please send the documents by post to Early childhood education
+                  service counselling, P.O. Box 3125, 02070 City of Espoo.
+                </P>
+              </>
+            )
+          },
+          attachmentsSubtitle:
+            'Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies.'
         },
         assistanceNeed: 'Support need',
         assistanceNeeded: 'The child needs support',
