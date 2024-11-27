@@ -1307,8 +1307,8 @@ const en: Translations = {
             'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
           languageFilter: {
             label: 'Language of the location:',
-            fi: 'finnish',
-            sv: 'swedish'
+            fi: 'Finnish',
+            sv: 'Swedish'
           },
           select: {
             label: (maxUnits: number) =>
