@@ -56,6 +56,15 @@ export class InvalidRequest extends BaseError {}
 // Use TS interface merging to add fields to express req.session
 declare module 'express-session' {
   interface SessionData {
+    /**
+     * @deprecated
+     */
+    passport?: {
+      /**
+       * @deprecated
+       */
+      user?: Express.User
+    }
     idpProvider?: string | null
     logoutToken?: LogoutToken
     employeeIdToken?: string
@@ -69,6 +78,7 @@ declare global {
     interface Request {
       traceId?: string
       spanId?: string
+      user?: Express.User
     }
     interface User
       extends EvakaSessionUser,

@@ -5,10 +5,9 @@
 import express from 'express'
 import _ from 'lodash'
 
-import { logout } from '../../shared/auth/index.js'
+import { EvakaSessionUser } from '../../shared/auth/index.js'
 import { appCommit } from '../../shared/config.js'
 import { toRequestHandler } from '../../shared/express.js'
-import { fromCallback } from '../../shared/promise-utils.js'
 import {
   authenticateMobileDevice,
   getEmployeeDetails,
@@ -51,9 +50,9 @@ interface ValidatedUser {
 }
 
 async function validateUser(
-  req: express.Request
+  req: express.Request,
+  user: EvakaSessionUser
 ): Promise<ValidatedUser | undefined> {
-  const user = req.user
   if (!user || !user.id) return undefined
   switch (user.userType) {
     case 'MOBILE': {
@@ -121,28 +120,18 @@ const userChanged = (sessionUser: Express.User, user: ValidatedUser): boolean =>
 
 export default (sessions: Sessions) =>
   toRequestHandler(async (req, res) => {
-    const sessionUser = req.user
-    const validUser = sessionUser && (await validateUser(req))
+    const sessionUser = sessions.getUser(req)
+    const validUser = sessionUser && (await validateUser(req, sessionUser))
     let status: AuthStatus
     if (validUser) {
       const { user, globalRoles, allScopedRoles } = validUser
       // Refresh roles if necessary
       if (userChanged(sessionUser, validUser)) {
-        await fromCallback((cb) =>
-          req.logIn(
-            { ...sessionUser, globalRoles, allScopedRoles },
-            { session: true, keepSessionInfo: true },
-            cb
-          )
-        )
-        // Passport has unfortunately regenerated our session, so we need to
-        // update the logout token, which still points to the old session ID
-        await sessions.saveLogoutToken(req)
-        // No need to save session here, because passport has done that for us
-      } else {
-        // Explicitly save the session, since we may have changed the CSRF secret
-        // earlier in the request flow
-        await sessions.save(req)
+        await sessions.updateUser(req, {
+          ...sessionUser,
+          globalRoles,
+          allScopedRoles
+        })
       }
       status = {
         loggedIn: true,
@@ -153,9 +142,7 @@ export default (sessions: Sessions) =>
         apiVersion: appCommit
       }
     } else {
-      if (sessionUser) {
-        await logout(sessions, req, res)
-      }
+      await sessions.destroy(req, res)
       status = {
         loggedIn: false,
         apiVersion: appCommit

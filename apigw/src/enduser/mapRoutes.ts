@@ -80,7 +80,10 @@ router.get(
   digitransitApiEnabled
     ? createDigitransitProxy('/geocoding/v1/autocomplete')
     : enableDevApi
-      ? createProxy({ path: '/dev-api/digitransit/autocomplete' })
+      ? createProxy({
+          sessions: undefined,
+          path: '/dev-api/digitransit/autocomplete'
+        })
       : (_, res) => res.status(404)
 )
 
@@ -89,7 +92,7 @@ router.post(
   digitransitApiEnabled
     ? createDigitransitProxy('/routing/v1/routers/finland/index/graphql')
     : enableDevApi
-      ? createProxy({ path: '/dev-api/digitransit/query' })
+      ? createProxy({ sessions: undefined, path: '/dev-api/digitransit/query' })
       : (_, res) => res.status(404)
 )
 

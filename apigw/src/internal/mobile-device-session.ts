@@ -5,7 +5,6 @@
 import express, { CookieOptions } from 'express'
 import { v4 as uuid } from 'uuid'
 
-import { login } from '../shared/auth/index.js'
 import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config.js'
 import {
   assertStringProp,
@@ -19,6 +18,7 @@ import {
   MobileDeviceIdentity,
   validatePairing
 } from '../shared/service-client.js'
+import { Sessions } from '../shared/session.js'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
@@ -34,11 +34,12 @@ function daysToMillis(days: number): number {
 }
 
 async function mobileLogin(
+  sessions: Sessions,
   req: express.Request,
   res: express.Response,
   device: MobileDeviceIdentity
 ) {
-  await login(req, {
+  await sessions.login(req, {
     id: device.id,
     globalRoles: [],
     allScopedRoles: [],
@@ -52,51 +53,59 @@ async function mobileLogin(
   })
 }
 
-export const refreshMobileSession = toMiddleware(async (req, res) => {
-  if (!req.user) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-    const token = req.signedCookies[mobileLongTermCookieName]
-    if (token) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      const deviceIdentity = await identifyMobileDevice(req, token)
-      if (deviceIdentity) {
-        await mobileLogin(req, res, deviceIdentity)
-      } else {
-        // device has been removed or token has been rotated
-        res.clearCookie(mobileLongTermCookieName, mobileLongTermCookieOptions)
+export const refreshMobileSession = (sessions: Sessions) =>
+  toMiddleware(async (req, res) => {
+    const user = sessions.getUser(req)
+    if (!user) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+      const token = req.signedCookies[mobileLongTermCookieName]
+      if (token) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const deviceIdentity = await identifyMobileDevice(req, token)
+        if (deviceIdentity) {
+          await mobileLogin(sessions, req, res, deviceIdentity)
+        } else {
+          // device has been removed or token has been rotated
+          res.clearCookie(mobileLongTermCookieName, mobileLongTermCookieOptions)
+        }
       }
     }
-  }
-})
-
-export default toRequestHandler(async (req, res) => {
-  const id = assertStringProp(req.body, 'id')
-  const challengeKey = assertStringProp(req.body, 'challengeKey')
-  const responseKey = assertStringProp(req.body, 'responseKey')
-  const deviceIdentity = await validatePairing(req, id, {
-    challengeKey,
-    responseKey
   })
-  await mobileLogin(req, res, deviceIdentity)
-  res.sendStatus(204)
-})
 
-export const devApiE2ESignup = toRequestHandler(async (req, res) => {
-  const token = assertStringProp(req.query, 'token')
-  const deviceIdentity = await identifyMobileDevice(req, token)
-  if (deviceIdentity) {
-    await mobileLogin(req, res, deviceIdentity)
-    res.redirect('/employee/mobile')
-  } else {
-    res.sendStatus(404)
-  }
-})
+export const mobileDeviceSession = (sessions: Sessions) =>
+  toRequestHandler(async (req, res) => {
+    const id = assertStringProp(req.body, 'id')
+    const challengeKey = assertStringProp(req.body, 'challengeKey')
+    const responseKey = assertStringProp(req.body, 'responseKey')
+    const deviceIdentity = await validatePairing(req, id, {
+      challengeKey,
+      responseKey
+    })
+    await mobileLogin(sessions, req, res, deviceIdentity)
+    res.sendStatus(204)
+  })
+
+export const devApiE2ESignup = (sessions: Sessions) =>
+  toRequestHandler(async (req, res) => {
+    const token = assertStringProp(req.query, 'token')
+    const deviceIdentity = await identifyMobileDevice(req, token)
+    if (deviceIdentity) {
+      await mobileLogin(sessions, req, res, deviceIdentity)
+      res.redirect('/employee/mobile')
+    } else {
+      res.sendStatus(404)
+    }
+  })
 
 const toMobileEmployeeIdKey = (token: string) => `mobile-employee-id:${token}`
 
-export const pinLoginRequestHandler = (redisClient: RedisClient) =>
+export const pinLoginRequestHandler = (
+  sessions: Sessions,
+  redisClient: RedisClient
+) =>
   toRequestHandler(async (req, res) => {
-    if (req.user?.userType !== 'MOBILE') return
+    const user = sessions.getUser(req)
+    if (user?.userType !== 'MOBILE') return
 
     const employeeId = assertStringProp(req.body, 'employeeId')
     const response = await employeePinLogin(req)
@@ -112,24 +121,32 @@ export const pinLoginRequestHandler = (redisClient: RedisClient) =>
     res.status(200).send(response)
   })
 
-export const pinLogoutRequestHandler = (redisClient: RedisClient) =>
+export const pinLogoutRequestHandler = (
+  sessions: Sessions,
+  redisClient: RedisClient
+) =>
   toRequestHandler(async (req, res) => {
     const token = req.session.employeeIdToken
+    const user = sessions.getUser(req)
     if (token) {
       await redisClient.del(toMobileEmployeeIdKey(token))
       req.session.employeeIdToken = undefined
-      if (req.user) req.user.mobileEmployeeId = undefined
+      if (user) user.mobileEmployeeId = undefined
     }
 
     res.sendStatus(204)
   })
 
-export const checkMobileEmployeeIdToken = (redisClient: RedisClient) =>
+export const checkMobileEmployeeIdToken = (
+  sessions: Sessions,
+  redisClient: RedisClient
+) =>
   toMiddleware(async (req) => {
-    if (req.user?.userType !== 'MOBILE') return
+    const user = sessions.getUser(req)
+    if (user?.userType !== 'MOBILE') return
 
     if (!req.session.employeeIdToken) {
-      req.user.mobileEmployeeId = undefined
+      user.mobileEmployeeId = undefined
       return
     }
 
@@ -138,9 +155,9 @@ export const checkMobileEmployeeIdToken = (redisClient: RedisClient) =>
     if (employeeId) {
       // refresh session
       await redisClient.expire(tokenKey, pinSessionTimeoutSeconds)
-      req.user.mobileEmployeeId = employeeId
+      user.mobileEmployeeId = employeeId
     } else {
-      req.user.mobileEmployeeId = undefined
+      user.mobileEmployeeId = undefined
       req.session.employeeIdToken = undefined
     }
   })

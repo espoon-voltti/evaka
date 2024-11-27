@@ -56,7 +56,7 @@ export type ServiceRequestHeaders = Partial<
 
 export function createServiceRequestHeaders(
   req: express.Request | undefined,
-  user: EvakaSessionUser | undefined | null = req?.user
+  user: EvakaSessionUser | undefined | null
 ) {
   const headers: ServiceRequestHeaders = {
     Authorization: `Bearer ${getJwt()}`

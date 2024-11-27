@@ -5,11 +5,12 @@
 import { getHours } from 'date-fns/getHours'
 import { z } from 'zod'
 
-import { EvakaSessionUser, login } from '../../shared/auth/index.js'
+import { EvakaSessionUser } from '../../shared/auth/index.js'
 import { toRequestHandler } from '../../shared/express.js'
 import { logAuditEvent } from '../../shared/logging.js'
 import { RedisClient } from '../../shared/redis-client.js'
 import { citizenWeakLogin } from '../../shared/service-client.js'
+import { Sessions } from '../../shared/session.js'
 
 const Request = z.object({
   username: z
@@ -24,7 +25,7 @@ const eventCode = (name: string) => `evaka.citizen_weak.${name}`
 
 const loginAttemptsPerHour = 20
 
-export const authWeakLogin = (redis: RedisClient) =>
+export const authWeakLogin = (sessions: Sessions, redis: RedisClient) =>
   toRequestHandler(async (req, res) => {
     logAuditEvent(eventCode('sign_in_requested'), req, 'Login endpoint called')
     try {
@@ -52,7 +53,7 @@ export const authWeakLogin = (redis: RedisClient) =>
         globalRoles: [],
         allScopedRoles: []
       }
-      await login(req, user)
+      await sessions.login(req, user)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
       res.sendStatus(200)
     } catch (err) {

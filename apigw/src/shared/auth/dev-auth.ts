@@ -10,7 +10,7 @@ import { AsyncRequestHandler, toRequestHandler } from '../express.js'
 import { validateRelayStateUrl } from '../saml/index.js'
 import { Sessions } from '../session.js'
 
-import { EvakaSessionUser, login, logout } from './index.js'
+import { EvakaSessionUser } from './index.js'
 
 export interface DevAuthRouterOptions {
   sessions: Sessions
@@ -37,7 +37,7 @@ export function createDevAuthRouter({
         if (!user) {
           res.redirect(`${root}?loginError=true`)
         } else {
-          await login(req, user)
+          await sessions.login(req, user)
           res.redirect(validateRelayStateUrl(req)?.toString() ?? root)
         }
       } catch (err) {
@@ -60,7 +60,7 @@ export function createDevAuthRouter({
   router.get(
     `/logout`,
     toRequestHandler(async (req, res) => {
-      await logout(sessions, req, res)
+      await sessions.destroy(req, res)
       res.redirect(root)
     })
   )

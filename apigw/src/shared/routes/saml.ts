@@ -9,7 +9,7 @@ import { AxiosError } from 'axios'
 import express from 'express'
 import _ from 'lodash'
 
-import { createLogoutToken, login, logout } from '../auth/index.js'
+import { createLogoutToken } from '../auth/index.js'
 import { toRequestHandler } from '../express.js'
 import { logAuditEvent, logDebug } from '../logging.js'
 import {
@@ -54,8 +54,7 @@ export class SamlError extends Error {
   }
 }
 
-// Configures passport to use the given strategy, and returns an Express router
-// for handling SAML-related requests.
+// Returns an Express router for handling SAML-related requests.
 //
 // We support two SAML "bindings", which define how data is passed by the
 // browser to the SP (us) and the IDP.
@@ -139,7 +138,7 @@ export default function createSamlRouter(
         if (err instanceof Error && err.message === 'InResponseTo is not valid')
           // These errors can happen for example when the user browses back to the login callback after login
           throw new SamlError('Login failed', {
-            redirectUrl: req.user
+            redirectUrl: sessions.isAuthenticated(req)
               ? (validateRelayStateUrl(req)?.toString() ?? defaultPageUrl)
               : errorRedirectUrl(err),
             cause: err,
@@ -177,7 +176,7 @@ export default function createSamlRouter(
       }
       try {
         const user = await authenticate(profile)
-        await login(req, {
+        await sessions.login(req, {
           ...user,
           ...SamlProfileSchema.parse(profile)
         })
@@ -220,7 +219,8 @@ export default function createSamlRouter(
         'Logout endpoint called'
       )
       try {
-        const profile = SamlProfileSchema.safeParse(req.user)
+        const user = sessions.getUser(req)
+        const profile = SamlProfileSchema.safeParse(user)
         let url: string
         if (profile.success) {
           url = await saml.getLogoutUrlAsync(
@@ -232,8 +232,7 @@ export default function createSamlRouter(
         } else {
           url = defaultPageUrl
         }
-        logDebug('Logging user out from passport.', req)
-        await logout(sessions, req, res)
+        await sessions.destroy(req, res)
         return res.redirect(url)
       } catch (err) {
         logAuditEvent(
@@ -263,11 +262,12 @@ export default function createSamlRouter(
         // is complete, and we should redirect the user to some meaningful page
         if (profile) {
           let user: unknown
-          if (req.user) {
-            const userId = SamlProfileIdSchema.safeParse(req.user)
+          const sessionUser = sessions.getUser(req)
+          if (sessionUser) {
+            const userId = SamlProfileIdSchema.safeParse(sessionUser)
             user = userId.success ? userId.data : undefined
 
-            await logout(sessions, req, res)
+            await sessions.destroy(req, res)
           } else {
             // We're possibly doing SLO without a real session (e.g. browser has
             // 3rd party cookies disabled)

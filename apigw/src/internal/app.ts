@@ -6,9 +6,7 @@ import { SAML } from '@node-saml/node-saml'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
-import passport from 'passport'
 
-import { requireAuthentication } from '../shared/auth/index.js'
 import {
   appCommit,
   Config,
@@ -28,9 +26,10 @@ import { sessionSupport } from '../shared/session.js'
 import { authenticateAd } from './ad-saml.js'
 import { createDevAdRouter } from './dev-ad-auth.js'
 import { authenticateKeycloakEmployee } from './keycloak-employee-saml.js'
-import mobileDeviceSession, {
+import {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
+  mobileDeviceSession,
   pinLoginRequestHandler,
   pinLogoutRequestHandler,
   refreshMobileSession
@@ -46,7 +45,6 @@ export function internalGwRouter(
   const sessions = sessionSupport('employee', redisClient, config.employee)
 
   router.use(sessions.middleware)
-  router.use(passport.session())
   router.use(cookieParser(config.employee.cookieSecret))
 
   router.use(
@@ -65,7 +63,7 @@ export function internalGwRouter(
     })
   }
   router.use('/integration', expressBasicAuth({ users: integrationUsers }))
-  router.all('/integration/*', createProxy())
+  router.all('/integration/*', createProxy({ sessions }))
 
   router.all('/auth/*', (req: express.Request, res, next) => {
     if (req.session?.idpProvider === 'evaka') {
@@ -113,36 +111,43 @@ export function internalGwRouter(
   )
 
   if (enableDevApi) {
-    router.use('/dev-api', createProxy({ path: ({ url }) => `/dev-api${url}` }))
+    router.use(
+      '/dev-api',
+      createProxy({ sessions: undefined, path: ({ url }) => `/dev-api${url}` })
+    )
 
-    router.get('/auth/mobile-e2e-signup', devApiE2ESignup)
+    router.get('/auth/mobile-e2e-signup', devApiE2ESignup(sessions))
   }
 
-  router.post('/auth/mobile', express.json(), mobileDeviceSession)
+  router.post('/auth/mobile', express.json(), mobileDeviceSession(sessions))
 
-  router.use(checkMobileEmployeeIdToken(redisClient))
+  router.use(checkMobileEmployeeIdToken(sessions, redisClient))
 
-  router.get('/auth/status', refreshMobileSession, authStatus(sessions))
-  router.all('/employee/public/*', createProxy())
-  router.all('/employee-mobile/public/*', createProxy())
+  router.get(
+    '/auth/status',
+    refreshMobileSession(sessions),
+    authStatus(sessions)
+  )
+  router.all('/employee/public/*', createProxy({ sessions }))
+  router.all('/employee-mobile/public/*', createProxy({ sessions }))
   router.get('/version', (_, res) => {
     res.send({ commitId: appCommit })
   })
-  router.use(requireAuthentication)
+  router.use(sessions.requireAuthentication)
   router.use(csrf)
   router.post(
     '/auth/pin-login',
     express.json(),
-    pinLoginRequestHandler(redisClient)
+    pinLoginRequestHandler(sessions, redisClient)
   )
   router.post(
     '/auth/pin-logout',
     express.json(),
-    pinLogoutRequestHandler(redisClient)
+    pinLogoutRequestHandler(sessions, redisClient)
   )
 
-  router.all('/employee/*', createProxy())
-  router.all('/employee-mobile/*', createProxy())
+  router.all('/employee/*', createProxy({ sessions }))
+  router.all('/employee-mobile/*', createProxy({ sessions }))
   router.use(errorHandler(true))
   return router
 }

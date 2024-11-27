@@ -6,7 +6,6 @@ import './tracer.js'
 
 import express from 'express'
 import helmet from 'helmet'
-import passport from 'passport'
 import * as redis from 'redis'
 
 import { enduserGwRouter } from './enduser/app.js'
@@ -65,9 +64,6 @@ app.get('/health', (_, res) => {
 })
 app.use(tracing)
 app.use(loggingMiddleware)
-
-passport.serializeUser<Express.User>((user, done) => done(null, user))
-passport.deserializeUser<Express.User>((user, done) => done(null, user))
 
 app.use('/api/application', enduserGwRouter(config, redisClient))
 app.use('/api/csp', csp)

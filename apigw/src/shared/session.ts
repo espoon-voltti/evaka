@@ -12,6 +12,7 @@ import session from 'express-session'
 
 import { SessionConfig } from './config.js'
 import { LogoutToken, toMiddleware } from './express.js'
+import { logAuditEvent, logDebug } from './logging.js'
 import { fromCallback } from './promise-utils.js'
 import { RedisClient } from './redis-client.js'
 
@@ -36,6 +37,7 @@ export function sessionCookie(sessionType: SessionType) {
 export interface Sessions {
   cookieName: string
   middleware: express.RequestHandler
+  requireAuthentication: express.RequestHandler
 
   save(req: express.Request): Promise<void>
 
@@ -44,7 +46,13 @@ export interface Sessions {
     logoutToken?: LogoutToken['value']
   ): Promise<void>
   logoutWithToken(token: LogoutToken['value']): Promise<unknown>
-  consumeLogoutToken(token: LogoutToken['value']): Promise<void>
+
+  login(req: express.Request, user: Express.User): Promise<void>
+  destroy(req: express.Request, res: express.Response): Promise<void>
+
+  updateUser(req: express.Request, user: Express.User): Promise<void>
+  getUser(req: express.Request): Express.User | undefined
+  isAuthenticated(req: express.Request): boolean
 }
 
 export function sessionSupport(
@@ -74,6 +82,7 @@ export function sessionSupport(
   const extraMiddleware = toMiddleware(async (req) => {
     // Touch maxAge to guarantee session is rolling (= doesn't expire as long as you are active)
     req.session?.touch()
+    req.user = getUser(req)
 
     await refreshLogoutToken(req)
   })
@@ -85,9 +94,19 @@ export function sessionSupport(
     })
   }
 
+  const requireAuthentication: express.RequestHandler = (req, res, next) => {
+    const user = getUser(req)
+    if (!user || !user.id) {
+      logAuditEvent(`evaka.apigw.auth.not_found`, req, 'Could not find user')
+      res.sendStatus(401)
+      return
+    }
+    return next()
+  }
+
   async function save(req: express.Request) {
-    if (req.session) {
-      const session = req.session
+    const session = req.session
+    if (session) {
       await fromCallback((cb) => session.save(cb))
     }
   }
@@ -160,22 +179,66 @@ export function sessionSupport(
     return user
   }
 
-  async function consumeLogoutToken(token: LogoutToken['value']) {
-    // TODO: use Redis getdel operation once the client supports it
-    const sid = await redisClient.get(logoutKey(token))
-    if (sid) {
-      // Ensure both session and logout keys are cleared in case no cookies were
-      // available -> no req.session was available to be deleted.
-      await redisClient.del([sessionKey(sid), logoutKey(token)])
+  async function login(
+    req: express.Request,
+    user: Express.User
+  ): Promise<void> {
+    await fromCallback<void>((cb) => req.session.regenerate(cb))
+    // express-session has now regenerated the active session, so the ID has changed, and it's empty
+    await updateUser(req, user)
+  }
+
+  async function destroy(req: express.Request, res: express.Response) {
+    logDebug('Destroying session', req)
+    const logoutToken = req.session?.logoutToken?.value
+
+    if (req.session) {
+      await fromCallback((cb) => req.session.destroy(cb))
+      res.clearCookie(cookieName)
     }
+
+    if (logoutToken) {
+      // TODO: use Redis getdel operation once the client supports it
+      const sid = await redisClient.get(logoutKey(logoutToken))
+      if (sid) {
+        // Ensure both session and logout keys are cleared in case no cookies were
+        // available -> no req.session was available to be deleted.
+        await redisClient.del([sessionKey(sid), logoutKey(logoutToken)])
+      }
+    }
+  }
+
+  async function updateUser(
+    req: express.Request,
+    user: Express.User
+  ): Promise<void> {
+    if (!req.session)
+      throw new Error("Can't update user without an existing session")
+
+    req.session.passport = { user }
+    await save(req)
+    req.user = user
+  }
+
+  function getUser(req: express.Request): Express.User | undefined {
+    return req.session?.passport?.user ?? undefined
+  }
+
+  function isAuthenticated(req: express.Request): boolean {
+    return !!req.session?.passport?.user
   }
 
   return {
     cookieName,
     middleware,
+    requireAuthentication,
     save,
     saveLogoutToken,
     logoutWithToken,
-    consumeLogoutToken
+    login,
+    destroy,
+    updateUser,
+    getUser,
+    isAuthenticated
   }
 }

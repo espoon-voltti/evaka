@@ -10,16 +10,19 @@ import _ from 'lodash'
 
 import { evakaServiceUrl } from './config.js'
 import { createServiceRequestHeaders } from './service-client.js'
+import { Sessions } from './session.js'
 
 interface ProxyOptions {
+  sessions: Sessions | undefined
   path?: string | ((req: express.Request) => string)
   url?: string
 }
 
 export function createProxy({
+  sessions,
   path,
   url = evakaServiceUrl
-}: ProxyOptions = {}) {
+}: ProxyOptions) {
   return expressHttpProxy(url, {
     parseReqBody: false,
     proxyReqPathResolver: typeof path === 'string' ? () => path : path,
@@ -30,8 +33,10 @@ export function createProxy({
       delete originalHeaders['authorization']
       delete originalHeaders['x-user']
 
+      const user = sessions?.getUser(srcReq)
+
       const serviceHeaders = lowercaseHeaderNames(
-        createServiceRequestHeaders(srcReq)
+        createServiceRequestHeaders(srcReq, user)
       )
       proxyReqOpts.headers = {
         ...originalHeaders,
