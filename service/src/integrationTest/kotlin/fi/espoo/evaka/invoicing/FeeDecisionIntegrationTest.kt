@@ -525,6 +525,21 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `search works with distinctions param PRESCHOOL_CLUB`() {
+        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions + preschoolClubDecisions) }
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.PRESCHOOL_CLUB),
+                )
+            )
+
+        assertEquals(2, result.data.size)
+        assertEqualEnough(preschoolClubDecisions.map { toSummary(it) }, result.data)
+    }
+
+    @Test
     fun `search works as expected with existing area param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
@@ -2023,21 +2038,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
 
         getPdf(decision.id, adminUser)
-    }
-
-    @Test
-    fun `search works with distinctions param PRESCHOOL_CLUB`() {
-        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions + preschoolClubDecisions) }
-        val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(
-                    page = 0,
-                    distinctions = listOf(DistinctiveParams.PRESCHOOL_CLUB),
-                )
-            )
-
-        assertEquals(2, result.data.size)
-        assertEqualEnough(preschoolClubDecisions.map { toSummary(it) }, result.data)
     }
 
     @Test
