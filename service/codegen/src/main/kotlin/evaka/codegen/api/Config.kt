@@ -39,11 +39,7 @@ val forceIncludes: Set<KType> =
     )
 
 // these endpoint paths are deprecated, and API clients should not call them
-private val deprecatedEndpoints: Set<String> =
-    setOf(
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/departure/expected-absences",
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/departure",
-    )
+private val deprecatedEndpoints: Set<String> = setOf()
 
 // these endpoint paths are planned, and API clients should not call them *yet*
 private val plannedEndpoints: Set<String> = setOf()
