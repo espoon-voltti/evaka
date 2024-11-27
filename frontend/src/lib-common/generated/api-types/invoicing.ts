@@ -54,7 +54,8 @@ export const feeDecisionDistinctiveParams = [
   'RETROACTIVE',
   'NO_STARTING_PLACEMENTS',
   'MAX_FEE_ACCEPTED',
-  'PRESCHOOL_CLUB'
+  'PRESCHOOL_CLUB',
+  'NO_OPEN_INCOME_STATEMENTS'
 ] as const
 
 export type DistinctiveParams = typeof feeDecisionDistinctiveParams[number]
