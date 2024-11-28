@@ -16,7 +16,8 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
-import fi.espoo.evaka.application.notes.createApplicationNote
+import fi.espoo.evaka.application.notes.getServiceWorkerApplicationNote
+import fi.espoo.evaka.application.notes.updateServiceWorkerApplicationNote
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentType
@@ -47,6 +48,7 @@ import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.NewMessageStub
 import fi.espoo.evaka.messaging.getServiceWorkerAccountId
+import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
@@ -87,6 +89,9 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 import org.springframework.stereotype.Service
 
 @Service
@@ -692,7 +697,7 @@ class ApplicationStateService(
 
     fun confirmPlacementProposalChanges(
         tx: Database.Transaction,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         unitId: DaycareId,
         rejectReasonTranslations: Map<PlacementPlanRejectReason, String>,
@@ -706,6 +711,11 @@ class ApplicationStateService(
         )
 
         val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
+        val userInfo = tx.getEmployeeUser(user.id) ?: throw IllegalStateException("User not found")
+        val formatter =
+            DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                .withLocale(Locale.of("fi", "FI"))
+
         data class PlacementPlanReject(
             val applicationId: ApplicationId,
             val unitRejectReason: PlacementPlanRejectReason,
@@ -733,10 +743,17 @@ class ApplicationStateService(
                                 placementPlan.unitRejectReason == PlacementPlanRejectReason.OTHER &&
                                     it.isNotBlank()
                             }
-                        "Sijoitusehdotus hylätty (${unit.name}) - $translation${if (otherReason != null) ": $otherReason" else ""}"
+                        val modifierStamp =
+                            " - ${userInfo.firstName} ${userInfo.lastName} ${(clock.now().toZonedDateTime().format(formatter))}"
+                        "Sijoitusehdotus hylätty (${unit.name}) - $translation${if (otherReason != null) ": $otherReason" else ""}$modifierStamp"
                     }
                 if (reason != null) {
-                    tx.createApplicationNote(placementPlan.applicationId, reason, user.evakaUserId)
+                    val currentNote =
+                        tx.getServiceWorkerApplicationNote(placementPlan.applicationId)
+                    tx.updateServiceWorkerApplicationNote(
+                        placementPlan.applicationId,
+                        "${if (currentNote.isNotEmpty()) "$currentNote\n" else ""}$reason",
+                    )
                 }
             }
 

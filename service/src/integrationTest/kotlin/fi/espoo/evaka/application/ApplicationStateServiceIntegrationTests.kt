@@ -6,6 +6,8 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.notes.getApplicationNotes
+import fi.espoo.evaka.application.notes.getServiceWorkerApplicationNote
+import fi.espoo.evaka.application.notes.updateServiceWorkerApplicationNote
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
@@ -79,6 +81,9 @@ import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 import java.util.UUID
 import kotlin.enums.enumEntries
 import kotlin.test.assertEquals
@@ -87,7 +92,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -1509,8 +1513,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `confirmPlacementProposalChanges - reject reason is copied to application notes`() {
+    fun `confirmPlacementProposalChanges - reject reason is copied to service worker's application notes`() {
         val rejectReason = "päiväkoti täynnä"
+        val previousNoteContent = "Aiempi muistilapun sisältö."
         db.transaction { tx ->
             // given
             tx.insertApplication(
@@ -1534,6 +1539,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 ),
             )
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
+            tx.updateServiceWorkerApplicationNote(applicationId, previousNoteContent)
         }
         db.transaction { tx ->
             // when
@@ -1559,16 +1565,18 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val notes = tx.getApplicationNotes(applicationId)
-            assertThat(notes)
-                .extracting({ it.applicationId }, { it.content }, { it.createdBy })
-                .containsExactly(
-                    Tuple(
-                        applicationId,
-                        "Sijoitusehdotus hylätty (${testDaycare.name}) - $rejectReason",
-                        serviceWorker.evakaUserId,
+            val dateTimeString =
+                clock
+                    .now()
+                    .toZonedDateTime()
+                    .format(
+                        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                            .withLocale(Locale.of("fi", "FI"))
                     )
-                )
+            val expectedNote =
+                "$previousNoteContent\nSijoitusehdotus hylätty (${testDaycare.name}) - $rejectReason - ${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName} $dateTimeString"
+            val note = tx.getServiceWorkerApplicationNote(applicationId)
+            assertEquals(expectedNote, note)
 
             val decisionsByApplication =
                 tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
@@ -1583,8 +1591,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `confirmPlacementProposalChanges - reject other reason is copied to application notes`() {
+    fun `confirmPlacementProposalChanges - reject other reason is copied to service worker's application notes`() {
         val rejectReason = "päiväkoti täynnä"
+        val previousNoteContent = "Aiempi muistilapun sisältö."
         db.transaction { tx ->
             // given
             tx.insertApplication(
@@ -1608,6 +1617,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 ),
             )
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
+            tx.updateServiceWorkerApplicationNote(applicationId, previousNoteContent)
         }
         db.transaction { tx ->
             // when
@@ -1634,16 +1644,19 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val notes = tx.getApplicationNotes(applicationId)
-            assertThat(notes)
-                .extracting({ it.applicationId }, { it.content }, { it.createdBy })
-                .containsExactly(
-                    Tuple(
-                        applicationId,
-                        "Sijoitusehdotus hylätty (${testDaycare.name}) - Muu syy: $rejectReason",
-                        serviceWorker.evakaUserId,
+            val dateTimeString =
+                clock
+                    .now()
+                    .toZonedDateTime()
+                    .format(
+                        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                            .withLocale(Locale.of("fi", "FI"))
                     )
-                )
+
+            val expectedNote =
+                "$previousNoteContent\nSijoitusehdotus hylätty (${testDaycare.name}) - Muu syy: $rejectReason - ${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName} $dateTimeString"
+            val note = tx.getServiceWorkerApplicationNote(applicationId)
+            assertEquals(expectedNote, note)
 
             val decisionsByApplication =
                 tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
