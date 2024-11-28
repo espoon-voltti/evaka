@@ -44,9 +44,9 @@ export function internalGwRouter(
 
   const sessions = sessionSupport('employee', redisClient, config.employee)
 
+  // middlewares
   router.use(sessions.middleware)
   router.use(cookieParser(config.employee.cookieSecret))
-
   router.use(
     cacheControl((req) =>
       req.path.startsWith('/employee-mobile/child-images/')
@@ -54,6 +54,11 @@ export function internalGwRouter(
         : 'forbid-cache'
     )
   )
+  router.use(checkMobileEmployeeIdToken(sessions, redisClient))
+
+  router.get('/version', (_, res) => {
+    res.send({ commitId: appCommit })
+  })
 
   router.all('/system/*', (_, res) => res.sendStatus(404))
 
@@ -63,7 +68,7 @@ export function internalGwRouter(
     })
   }
   router.use('/integration', expressBasicAuth({ users: integrationUsers }))
-  router.all('/integration/*', createProxy({ sessions }))
+  router.all('/integration/*', createProxy({ sessions: undefined }))
 
   router.all('/auth/*', (req: express.Request, res, next) => {
     if (req.session?.idpProvider === 'evaka') {
@@ -119,22 +124,21 @@ export function internalGwRouter(
     router.get('/auth/mobile-e2e-signup', devApiE2ESignup(sessions))
   }
 
-  router.post('/auth/mobile', express.json(), mobileDeviceSession(sessions))
+  // CSRF checks apply to all the API endpoints that frontend uses
+  router.use(csrf)
 
-  router.use(checkMobileEmployeeIdToken(sessions, redisClient))
-
+  // public endpoints
+  router.all('/employee/public/*', createProxy({ sessions }))
+  router.all('/employee-mobile/public/*', createProxy({ sessions }))
   router.get(
     '/auth/status',
     refreshMobileSession(sessions),
     authStatus(sessions)
   )
-  router.all('/employee/public/*', createProxy({ sessions }))
-  router.all('/employee-mobile/public/*', createProxy({ sessions }))
-  router.get('/version', (_, res) => {
-    res.send({ commitId: appCommit })
-  })
+  router.post('/auth/mobile', express.json(), mobileDeviceSession(sessions))
+
+  // authenticated endpoints
   router.use(sessions.requireAuthentication)
-  router.use(csrf)
   router.post(
     '/auth/pin-login',
     express.json(),
@@ -145,9 +149,10 @@ export function internalGwRouter(
     express.json(),
     pinLogoutRequestHandler(sessions, redisClient)
   )
-
   router.all('/employee/*', createProxy({ sessions }))
   router.all('/employee-mobile/*', createProxy({ sessions }))
+
+  // global error middleware
   router.use(errorHandler(true))
   return router
 }

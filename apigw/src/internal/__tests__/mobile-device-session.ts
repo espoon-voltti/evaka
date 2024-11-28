@@ -37,11 +37,15 @@ describe('Mobile device pairing process', () => {
         id: mobileDeviceId,
         longTermToken: token
       })
-    await tester.client.post('/api/internal/auth/mobile', {
-      id: pairingId,
-      challengeKey: 'challenge',
-      responseKey: 'response'
-    })
+    await tester.client.post(
+      '/api/internal/auth/mobile',
+      {
+        id: pairingId,
+        challengeKey: 'challenge',
+        responseKey: 'response'
+      },
+      { headers: { 'x-evaka-csrf': 1 } }
+    )
     tester.nockScope.done()
 
     expect(await tester.getCookie(mobileLongTermCookieName)).toBeTruthy()

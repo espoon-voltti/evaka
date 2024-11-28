@@ -32,9 +32,9 @@ export function enduserGwRouter(
 
   const sessions = sessionSupport('enduser', redisClient, config.citizen)
 
+  // middlewares
   router.use(sessions.middleware)
   router.use(cookieParser())
-
   router.use(
     cacheControl((req) =>
       req.path.startsWith('/citizen/child-images/')
@@ -46,8 +46,6 @@ export function enduserGwRouter(
   router.get('/version', (_, res) => {
     res.send({ commitId: appCommit })
   })
-  router.all('/citizen/public/*', createProxy({ sessions }))
-  router.use(mapRoutes)
 
   if (config.sfi.type === 'mock') {
     router.use('/auth/saml', createDevSfiRouter(sessions))
@@ -86,15 +84,25 @@ export function enduserGwRouter(
       defaultPageUrl: '/'
     })
   )
+
+  // CSRF checks apply to all the API endpoints that frontend uses
+  router.use(csrf)
+
+  // public endpoints
+  router.all('/citizen/public/*', createProxy({ sessions }))
+  router.use(mapRoutes)
   router.get('/auth/status', authStatus(sessions))
   router.post(
     '/auth/weak-login',
     express.json(),
     authWeakLogin(sessions, redisClient)
   )
+
+  // authenticated endpoints
   router.use(sessions.requireAuthentication)
-  router.use(csrf)
   router.all('/citizen/*', createProxy({ sessions }))
+
+  // global error middleware
   router.use(errorHandler(false))
   return router
 }
