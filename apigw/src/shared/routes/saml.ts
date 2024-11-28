@@ -20,7 +20,7 @@ import {
   AuthenticateProfile,
   getRawUnvalidatedRelayState,
   SamlProfileIdSchema,
-  SamlProfileSchema,
+  SamlSessionSchema,
   validateRelayStateUrl
 } from '../saml/index.js'
 import { Sessions } from '../session.js'
@@ -176,10 +176,7 @@ export default function createSamlRouter(
       }
       try {
         const user = await authenticate(profile)
-        await sessions.login(req, {
-          ...user,
-          ...SamlProfileSchema.parse(profile)
-        })
+        await sessions.login(req, user)
         logAuditEvent(
           `evaka.saml.${strategyName}.sign_in`,
           req,
@@ -220,11 +217,11 @@ export default function createSamlRouter(
       )
       try {
         const user = sessions.getUser(req)
-        const profile = SamlProfileSchema.safeParse(user)
+        const samlSession = SamlSessionSchema.safeParse(user)
         let url: string
-        if (profile.success) {
+        if (samlSession.success) {
           url = await saml.getLogoutUrlAsync(
-            profile.data,
+            samlSession.data,
             // no need for validation here, because the value only matters in the logout callback request and is validated there
             getRawUnvalidatedRelayState(req) ?? '',
             samlRequestOptions(req)

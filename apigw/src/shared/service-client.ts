@@ -6,9 +6,9 @@ import axios from 'axios'
 import express from 'express'
 
 import {
+  createUserHeader,
   EvakaSessionUser,
-  integrationUserHeader,
-  createUserHeader
+  integrationUserHeader
 } from './auth/index.js'
 import { getJwt } from './auth/jwt.js'
 import { evakaServiceUrl } from './config.js'
@@ -19,18 +19,9 @@ export const client = axios.create({
 
 export type UUID = string
 
-const machineUser: EvakaSessionUser = {
-  id: '00000000-0000-0000-0000-000000000000',
-  roles: [],
-  userType: 'SYSTEM'
+const machineUser = {
+  userType: 'SYSTEM' as const
 }
-
-export type UserType =
-  | 'EMPLOYEE'
-  | 'MOBILE'
-  | 'SYSTEM'
-  | 'CITIZEN_STRONG'
-  | 'CITIZEN_WEAK'
 
 export type UserRole =
   | 'CITIZEN_WEAK'
@@ -56,7 +47,7 @@ export type ServiceRequestHeaders = Partial<
 
 export function createServiceRequestHeaders(
   req: express.Request | undefined,
-  user: EvakaSessionUser | undefined | null
+  user: EvakaSessionUser | { userType: 'SYSTEM' } | undefined | null
 ) {
   const headers: ServiceRequestHeaders = {
     Authorization: `Bearer ${getJwt()}`

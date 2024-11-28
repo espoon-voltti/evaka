@@ -5,6 +5,8 @@
 import { Request } from 'express'
 import { SerializedRequest, SerializedResponse } from 'pino-std-serializers'
 
+import { EvakaSessionUser } from './auth/index.js'
+
 export interface PinoRequest
   extends Omit<
     SerializedRequest,
@@ -30,7 +32,7 @@ export type PinoResSerializer = (res: PinoResponse) => PinoResponse
 export interface UserPinoRequest extends PinoRequest {
   spanId?: string
   traceId?: string
-  user?: Express.User
+  user?: EvakaSessionUser
 }
 
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug'

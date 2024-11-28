@@ -41,8 +41,7 @@ async function mobileLogin(
 ) {
   await sessions.login(req, {
     id: device.id,
-    globalRoles: [],
-    allScopedRoles: [],
+    authType: 'employee-mobile',
     userType: 'MOBILE'
   })
   // Unconditionally refresh long-term cookie on each login to refresh expiry
@@ -131,7 +130,7 @@ export const pinLogoutRequestHandler = (
     if (token) {
       await redisClient.del(toMobileEmployeeIdKey(token))
       req.session.employeeIdToken = undefined
-      if (user) user.mobileEmployeeId = undefined
+      if (user && user.userType === 'MOBILE') user.mobileEmployeeId = undefined
     }
 
     res.sendStatus(204)

@@ -4,20 +4,56 @@
 
 import { Profile } from '@node-saml/node-saml'
 
-import { UserType } from '../service-client.js'
+import { SamlSession } from '../saml/index.js'
 
-export interface EvakaSessionUser {
-  // eVaka id
-  id?: string | undefined
-  userType?: UserType | undefined
-  // all are optional because of legacy sessions
-  roles?: string[] | undefined
-  globalRoles?: string[] | undefined
-  allScopedRoles?: string[] | undefined
+export type CitizenSessionUser =
+  | {
+      id: string
+      authType: 'sfi'
+      userType: 'CITIZEN_STRONG'
+      samlSession: SamlSession
+    }
+  | { id: string; authType: 'citizen-weak'; userType: 'CITIZEN_WEAK' }
+  | {
+      id: string
+      authType: 'keycloak-citizen'
+      userType: 'CITIZEN_WEAK'
+      samlSession: SamlSession
+    }
+  | { id: string; authType: 'dev'; userType: 'CITIZEN_STRONG' }
+
+export type EmployeeSessionUser =
+  | {
+      id: string
+      authType: 'ad' | 'keycloak-employee'
+      userType: 'EMPLOYEE'
+      samlSession: SamlSession
+      globalRoles: string[]
+      allScopedRoles: string[]
+    }
+  | {
+      id: string
+      authType: 'dev'
+      userType: 'EMPLOYEE'
+      globalRoles: string[]
+      allScopedRoles: string[]
+    }
+
+export interface EmployeeMobileSessionUser {
+  id: string
+  authType: 'employee-mobile'
+  userType: 'MOBILE'
   mobileEmployeeId?: string | undefined
 }
 
-export function createUserHeader(user: EvakaSessionUser): string {
+export type EvakaSessionUser =
+  | CitizenSessionUser
+  | EmployeeSessionUser
+  | EmployeeMobileSessionUser
+
+export function createUserHeader(
+  user: EvakaSessionUser | { userType: 'SYSTEM' }
+): string {
   return JSON.stringify(
     ((): object => {
       switch (user.userType) {

@@ -90,6 +90,7 @@ export function createDevAdRouter(sessions: Sessions): Router {
       )
       return {
         id: person.id,
+        authType: 'dev',
         userType: 'EMPLOYEE',
         globalRoles: person.globalRoles,
         allScopedRoles: person.allScopedRoles

@@ -49,9 +49,8 @@ export const authWeakLogin = (sessions: Sessions, redis: RedisClient) =>
       const { id } = await citizenWeakLogin(body)
       const user: EvakaSessionUser = {
         id,
-        userType: 'CITIZEN_WEAK',
-        globalRoles: [],
-        allScopedRoles: []
+        authType: 'citizen-weak',
+        userType: 'CITIZEN_WEAK'
       }
       await sessions.login(req, user)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')

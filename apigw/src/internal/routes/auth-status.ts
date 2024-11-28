@@ -5,7 +5,10 @@
 import express from 'express'
 import _ from 'lodash'
 
-import { EvakaSessionUser } from '../../shared/auth/index.js'
+import {
+  EmployeeSessionUser,
+  EvakaSessionUser
+} from '../../shared/auth/index.js'
 import { appCommit } from '../../shared/config.js'
 import { toRequestHandler } from '../../shared/express.js'
 import {
@@ -114,7 +117,10 @@ async function validateUser(
 const rolesChanged = (a: string[] | undefined, b: string[] | undefined) =>
   !_.isEqual(new Set(a), new Set(b))
 
-const userChanged = (sessionUser: Express.User, user: ValidatedUser): boolean =>
+const userChanged = (
+  sessionUser: EmployeeSessionUser,
+  user: ValidatedUser
+): boolean =>
   rolesChanged(sessionUser.allScopedRoles, user.allScopedRoles) ||
   rolesChanged(sessionUser.globalRoles, user.globalRoles)
 
@@ -126,7 +132,10 @@ export default (sessions: Sessions) =>
     if (validUser) {
       const { user, globalRoles, allScopedRoles } = validUser
       // Refresh roles if necessary
-      if (userChanged(sessionUser, validUser)) {
+      if (
+        sessionUser?.userType === 'EMPLOYEE' &&
+        userChanged(sessionUser, validUser)
+      ) {
         await sessions.updateUser(req, {
           ...sessionUser,
           globalRoles,

@@ -25,7 +25,7 @@ const ssnRegex = /^[0-9]{6}[-+ABCDEFUVWXY][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/
 
 export const authenticateSuomiFi = authenticateProfile(
   Profile,
-  async (profile) => {
+  async (samlSession, profile) => {
     const socialSecurityNumber = profile[SUOMI_FI_SSN_KEY]?.trim()
     if (!socialSecurityNumber) throw Error('No SSN in SAML data')
     if (!ssnRegex.test(socialSecurityNumber)) {
@@ -38,9 +38,9 @@ export const authenticateSuomiFi = authenticateProfile(
     })
     return {
       id: person.id,
+      authType: 'sfi',
       userType: 'CITIZEN_STRONG',
-      globalRoles: [],
-      allScopedRoles: []
+      samlSession
     }
   }
 )

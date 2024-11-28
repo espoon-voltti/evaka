@@ -10,7 +10,9 @@ import { isDate } from 'date-fns/isDate'
 import express from 'express'
 import session from 'express-session'
 
+import { EvakaSessionUser } from './auth/index.js'
 import { SessionConfig } from './config.js'
+import { createSha256Hash } from './crypto.js'
 import { LogoutToken, toMiddleware } from './express.js'
 import { logAuditEvent, logDebug } from './logging.js'
 import { fromCallback } from './promise-utils.js'
@@ -47,11 +49,11 @@ export interface Sessions {
   ): Promise<void>
   logoutWithToken(token: LogoutToken['value']): Promise<unknown>
 
-  login(req: express.Request, user: Express.User): Promise<void>
+  login(req: express.Request, user: EvakaSessionUser): Promise<void>
   destroy(req: express.Request, res: express.Response): Promise<void>
 
-  updateUser(req: express.Request, user: Express.User): Promise<void>
-  getUser(req: express.Request): Express.User | undefined
+  updateUser(req: express.Request, user: EvakaSessionUser): Promise<void>
+  getUser(req: express.Request): EvakaSessionUser | undefined
   isAuthenticated(req: express.Request): boolean
 }
 
@@ -181,11 +183,20 @@ export function sessionSupport(
 
   async function login(
     req: express.Request,
-    user: Express.User
+    user: EvakaSessionUser
   ): Promise<void> {
     await fromCallback<void>((cb) => req.session.regenerate(cb))
     // express-session has now regenerated the active session, so the ID has changed, and it's empty
-    await updateUser(req, user)
+    await saveUser(req, {
+      ...user,
+      // spread saml session fields for backwards compatibility
+      ...(user.authType === 'sfi' ||
+      user.authType === 'ad' ||
+      user.authType === 'keycloak-employee' ||
+      user.authType === 'keycloak-citizen'
+        ? user.samlSession
+        : undefined)
+    })
   }
 
   async function destroy(req: express.Request, res: express.Response) {
@@ -210,17 +221,24 @@ export function sessionSupport(
 
   async function updateUser(
     req: express.Request,
-    user: Express.User
+    user: EvakaSessionUser
   ): Promise<void> {
     if (!req.session)
       throw new Error("Can't update user without an existing session")
+    await saveUser(req, user)
+  }
 
+  async function saveUser(req: express.Request, user: EvakaSessionUser) {
     req.session.passport = { user }
+    req.session.evaka = {
+      user,
+      userIdHash: createSha256Hash(user.id)
+    }
     await save(req)
     req.user = user
   }
 
-  function getUser(req: express.Request): Express.User | undefined {
+  function getUser(req: express.Request): EvakaSessionUser | undefined {
     return req.session?.passport?.user ?? undefined
   }
 

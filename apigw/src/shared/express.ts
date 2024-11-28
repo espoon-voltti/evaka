@@ -4,10 +4,8 @@
 
 import type express from 'express'
 import { BaseError } from 'make-error-cause'
-import { z } from 'zod'
 
 import { EvakaSessionUser } from './auth/index.js'
-import { SamlProfileSchema } from './saml/index.js'
 
 export interface LogoutToken {
   // milliseconds value of a Date. Not an actual Date because it will be JSONified
@@ -63,7 +61,11 @@ declare module 'express-session' {
       /**
        * @deprecated
        */
-      user?: Express.User
+      user?: EvakaSessionUser
+    }
+    evaka?: {
+      user: EvakaSessionUser
+      userIdHash: string
     }
     idpProvider?: string | null
     logoutToken?: LogoutToken
@@ -78,10 +80,7 @@ declare global {
     interface Request {
       traceId?: string
       spanId?: string
-      user?: Express.User
+      user?: EvakaSessionUser
     }
-    interface User
-      extends EvakaSessionUser,
-        Partial<z.infer<typeof SamlProfileSchema>> {}
   }
 }
