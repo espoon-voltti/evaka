@@ -648,11 +648,15 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(),
             IsCitizen(allowWeakLogin = false).ownerOfApplication(),
+            IsCitizen(allowWeakLogin = false)
+                .otherGuardianOfApplicationAndLivesInTheSameAddressAsChild(),
         ),
         REJECT_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(),
             IsCitizen(allowWeakLogin = false).ownerOfApplication(),
+            IsCitizen(allowWeakLogin = false)
+                .otherGuardianOfApplicationAndLivesInTheSameAddressAsChild(),
         ),
         READ_NOTES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),

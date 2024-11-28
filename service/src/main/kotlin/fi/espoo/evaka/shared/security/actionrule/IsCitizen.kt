@@ -408,6 +408,38 @@ AND (
             )
         }
 
+    fun otherGuardianOfApplicationAndLivesInTheSameAddressAsChild() =
+        rule<ApplicationId> { citizenId, now ->
+            sql(
+                """
+SELECT a.id
+FROM application a
+JOIN application_other_guardian aog ON a.id = aog.application_id
+JOIN person guardian ON aog.guardian_id = guardian.id
+JOIN person child ON a.child_id = child.id
+WHERE aog.guardian_id = ${bind(citizenId)}
+AND allow_other_guardian_access IS TRUE
+AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+)
+AND NOT guardian.restricted_details_enabled
+AND NOT child.restricted_details_enabled
+AND (
+    (trim(guardian.residence_code) != '' AND
+     trim(child.residence_code) != '' AND
+     guardian.residence_code = child.residence_code) OR
+    (trim(guardian.street_address) != '' AND
+     trim(child.street_address) != '' AND
+     trim(guardian.postal_code) != '' AND
+     trim(child.postal_code) != '' AND
+     lower(guardian.street_address) = lower(child.street_address) AND
+     guardian.postal_code = child.postal_code)
+)
+"""
+            )
+        }
+
     fun ownerOfApplicationOfSentDecision() =
         rule<DecisionId> { citizenId, _ ->
             sql(
