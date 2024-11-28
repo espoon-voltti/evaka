@@ -11,6 +11,7 @@ import fi.espoo.evaka.children.getChildIdsByHeadsOfFamily
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
+import fi.espoo.evaka.invoicing.data.getLastInvoicedMonth
 import fi.espoo.evaka.invoicing.data.getSentInvoicesOfMonth
 import fi.espoo.evaka.invoicing.data.insertDraftInvoices
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
@@ -130,7 +131,10 @@ class InvoiceGenerator(
         }
 
         val monthsToGenerate = 12L
-        val latestMonth = YearMonth.of(today.year, today.month).minusMonths(1)
+
+        val latestMonth: YearMonth =
+            dbc.read { tx -> tx.getLastInvoicedMonth() }
+                ?: YearMonth.of(today.year, today.month).minusMonths(1)
         val earliestMonth =
             maxOf(replacementInvoicesStart, latestMonth.minusMonths(monthsToGenerate - 1))
 
