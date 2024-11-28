@@ -620,3 +620,9 @@ WHERE id = ${bind(replacedInvoiceId)}
             .updateExactlyOne()
     }
 }
+
+fun Database.Read.getLastInvoicedMonth(): YearMonth? =
+    createQuery { sql("SELECT MAX(invoice_date) AS month FROM invoice WHERE status = 'SENT'") }
+        .exactlyOneOrNull<YearMonth>()
+        // Invoices of month M are sent in month M+1
+        ?.minusMonths(1)

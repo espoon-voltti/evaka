@@ -177,19 +177,40 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     @Test
-    fun `replacements are generated 12 months to the past`() {
+    fun `replacements are generated 12 months to the past from the last sent invoice`() {
+        val twoMonthsAgo = previousMonth.minusMonths(1)
+
+        // Generate and send an unrelated invoice to make `twoMonthsAgo` the last invoiced month
+        val headOfFamily2 = DevPerson(ssn = "010101-9998")
+        val child2 = DevPerson()
+        db.transaction { tx ->
+            tx.insert(headOfFamily2, DevPersonType.ADULT)
+            tx.insert(child2, DevPersonType.CHILD)
+        }
+        insertPlacementAndFeeDecision(
+            headOfFamily = headOfFamily2,
+            child = child2,
+            fee = 29500,
+            range = FiniteDateRange.ofMonth(twoMonthsAgo),
+        )
+        generateAndSendInvoices(twoMonthsAgo)
+
         insertPlacementAndFeeDecision(
             fee = 29500,
             range =
                 FiniteDateRange(
-                    previousMonth.minusMonths(12).atDay(1),
-                    previousMonth.atEndOfMonth(),
+                    previousMonth.minusMonths(13).atDay(1),
+                    YearMonth.from(today).atEndOfMonth(),
                 ),
         )
-
         val replacements = generateReplacementDrafts()
 
         assertEquals(replacements.size, 12)
+        assertEquals(
+            twoMonthsAgo.minusMonths(11),
+            replacements.minBy { it.periodStart }.targetMonth(),
+        )
+        assertEquals(twoMonthsAgo, replacements.maxBy { it.periodStart }.targetMonth())
         replacements.forEach { replacement ->
             assertEquals(InvoiceStatus.REPLACEMENT_DRAFT, replacement.status)
             assertEquals(null, replacement.replacedInvoiceId)
@@ -406,9 +427,9 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
     }
 
-    fun generateAndSendInvoices(): List<InvoiceDetailed> =
+    private fun generateAndSendInvoices(month: YearMonth = previousMonth): List<InvoiceDetailed> =
         db.transaction { tx ->
-            invoiceGenerator.generateAllDraftInvoices(tx, previousMonth)
+            invoiceGenerator.generateAllDraftInvoices(tx, month)
             invoiceService.sendInvoices(
                 tx,
                 AuthenticatedUser.SystemInternalUser.evakaUserId,
@@ -417,7 +438,6 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 null,
                 null,
             )
-
             tx.searchInvoices()
         }
 }
