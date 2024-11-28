@@ -3077,7 +3077,7 @@ export const fi = {
       NO_STARTING_PLACEMENTS: 'Piilota uudet aloittavat lapset',
       MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan maksuun',
       PRESCHOOL_CLUB: 'Vain esiopetuksen kerho',
-      NO_OPEN_INCOME_STATEMENTS: 'Piilota avonaiset tuloselvitykset'
+      NO_OPEN_INCOME_STATEMENTS: 'Ei avoimia tuloselvityksiä'
     },
     status: {
       DRAFT: 'Luonnos',
