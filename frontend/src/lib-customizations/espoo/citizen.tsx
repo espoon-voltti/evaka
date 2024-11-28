@@ -491,6 +491,11 @@ const customizations: CitizenCustomizations = {
           },
           verification: {
             serviceNeed: {
+              dailyTime: {
+                shiftCare: 'Vuorohoito',
+                withShiftCare: 'Tarvitaan vuorohoitoa',
+                withoutShiftCare: 'Ei tarvita vuorohoitoa'
+              },
               assistanceNeed: {
                 assistanceNeed: 'Kehitykseen tai oppimiseen liittyvä tuen tarve'
               }
@@ -1014,6 +1019,11 @@ const customizations: CitizenCustomizations = {
           },
           verification: {
             serviceNeed: {
+              dailyTime: {
+                shiftCare: 'Skiftvård',
+                withShiftCare: 'Behov av skiftvård',
+                withoutShiftCare: 'Behöver inte skiftvård'
+              },
               assistanceNeed: {
                 assistanceNeed:
                   'Behov av stöd i anslutning till utveckling eller lärande'
@@ -1578,6 +1588,11 @@ const customizations: CitizenCustomizations = {
           },
           verification: {
             serviceNeed: {
+              dailyTime: {
+                shiftCare: 'Shift care',
+                withShiftCare: 'Need for shift care',
+                withoutShiftCare: 'No need for shift care'
+              },
               assistanceNeed: {
                 assistanceNeed: 'Support for development or learning'
               }
