@@ -9,6 +9,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.createIncomeStatement
+import fi.espoo.evaka.incomestatement.updateIncomeStatementHandled
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionController
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
@@ -522,6 +525,181 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
 
         assertEqualEnough(listOf(toSummary(testDecisionWithNoStartingChild)), result.data)
+    }
+
+    @Test
+    fun `search works with distinctions param PRESCHOOL_CLUB`() {
+        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions + preschoolClubDecisions) }
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.PRESCHOOL_CLUB),
+                )
+            )
+
+        assertEquals(2, result.data.size)
+        assertEqualEnough(preschoolClubDecisions.map { toSummary(it) }, result.data)
+    }
+
+    @Test
+    fun `search works with distinctions param NO_OPEN_INCOME_STATEMENTS`() {
+        val clock = RealEvakaClock()
+        val decisionWithHandledStatement =
+            createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1))
+        val decisionWithOpenAdultStatement =
+            createFeeDecisionsForFamily(testAdult_3, testAdult_4, listOf(testChild_2))
+        val decisionWithFarAwayAndFutureOpenStatements =
+            createFeeDecisionsForFamily(testAdult_5, testAdult_6, listOf(testChild_3))
+        val decisionWithOpenChildStatement =
+            createFeeDecisionsForFamily(testAdult_7, partner = null, listOf(testChild_4))
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(
+                listOf(
+                    decisionWithHandledStatement,
+                    decisionWithOpenAdultStatement,
+                    decisionWithFarAwayAndFutureOpenStatements,
+                    decisionWithOpenChildStatement,
+                )
+            )
+            val adult1StatementId =
+                tx.createIncomeStatement(
+                    body =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    personId = testAdult_1.id,
+                )
+            // testAdult_2 statement not submitted
+            tx.updateIncomeStatementHandled(adult1StatementId, "handled", testDecisionMaker_1.id)
+            val adult3StatementId =
+                tx.createIncomeStatement(
+                    body =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    personId = testAdult_3.id,
+                )
+            tx.updateIncomeStatementHandled(adult3StatementId, "handled", testDecisionMaker_1.id)
+            tx.createIncomeStatement(
+                body =
+                    IncomeStatementBody.HighestFee(
+                        clock.today().minusMonths(2),
+                        clock.today().minusMonths(1),
+                    ),
+                personId = testAdult_4.id,
+            )
+            // testAdult_4 statement not handled
+            tx.createIncomeStatement(
+                body =
+                    IncomeStatementBody.HighestFee(
+                        clock.today().minusMonths(20),
+                        clock.today().minusMonths(14).minusDays(1),
+                    ),
+                personId = testAdult_5.id,
+            )
+            // testAdult_5 statement not handled
+            tx.createIncomeStatement(
+                body =
+                    IncomeStatementBody.HighestFee(
+                        clock.today().plusDays(1),
+                        clock.today().plusMonths(12),
+                    ),
+                personId = testAdult_6.id,
+            )
+            // testAdult_6 statement not handled
+            val adult7StatementId =
+                tx.createIncomeStatement(
+                    body =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    personId = testAdult_7.id,
+                )
+            tx.updateIncomeStatementHandled(adult7StatementId, "handled", testDecisionMaker_1.id)
+            tx.createIncomeStatement(
+                body =
+                    IncomeStatementBody.HighestFee(
+                        clock.today().minusMonths(2),
+                        clock.today().minusMonths(1),
+                    ),
+                personId = testChild_4.id,
+            )
+            // testChild_4 statement not handled
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(
+            listOf(
+                toSummary(decisionWithHandledStatement),
+                toSummary(decisionWithFarAwayAndFutureOpenStatements),
+            ),
+            result.data,
+        )
+    }
+
+    @Test
+    fun `search works with distinctions param NO_OPEN_INCOME_STATEMENTS for childless decisions`() {
+        val clock = RealEvakaClock()
+        val decisionWithHandledStatements =
+            createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf())
+        val decisionWithOpenStatements =
+            createFeeDecisionsForFamily(testAdult_3, testAdult_4, listOf())
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decisionWithHandledStatements, decisionWithOpenStatements))
+            val adult1StatementId =
+                tx.createIncomeStatement(
+                    body =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    personId = testAdult_1.id,
+                )
+            // testAdult_2 statement not submitted
+            tx.updateIncomeStatementHandled(adult1StatementId, "handled", testDecisionMaker_1.id)
+            val adult3StatementId =
+                tx.createIncomeStatement(
+                    body =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    personId = testAdult_3.id,
+                )
+            tx.updateIncomeStatementHandled(adult3StatementId, "handled", testDecisionMaker_1.id)
+            tx.createIncomeStatement(
+                body =
+                    IncomeStatementBody.HighestFee(
+                        clock.today().minusMonths(2),
+                        clock.today().minusMonths(1),
+                    ),
+                personId = testAdult_4.id,
+            )
+            // testAdult_4 statement not handled
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(listOf(toSummary(decisionWithHandledStatements)), result.data)
     }
 
     @Test
@@ -2023,21 +2201,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
 
         getPdf(decision.id, adminUser)
-    }
-
-    @Test
-    fun `search works with distinctions param PRESCHOOL_CLUB`() {
-        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions + preschoolClubDecisions) }
-        val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(
-                    page = 0,
-                    distinctions = listOf(DistinctiveParams.PRESCHOOL_CLUB),
-                )
-            )
-
-        assertEquals(2, result.data.size)
-        assertEqualEnough(preschoolClubDecisions.map { toSummary(it) }, result.data)
     }
 
     @Test

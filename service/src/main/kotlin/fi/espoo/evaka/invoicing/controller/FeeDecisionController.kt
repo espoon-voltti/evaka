@@ -68,6 +68,7 @@ enum class DistinctiveParams {
     NO_STARTING_PLACEMENTS,
     MAX_FEE_ACCEPTED,
     PRESCHOOL_CLUB,
+    NO_OPEN_INCOME_STATEMENTS,
 }
 
 @RestController

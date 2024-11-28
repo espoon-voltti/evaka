@@ -420,16 +420,13 @@ fun Database.Read.searchFeeDecisions(
         freeTextSearchQuery(listOf("head", "partner", "child"), searchTextWithoutNumbers)
 
     val withNullHours = distinctiveParams.contains(DistinctiveParams.UNCONFIRMED_HOURS)
-
     val havingExternalChildren = distinctiveParams.contains(DistinctiveParams.EXTERNAL_CHILD)
-
     val retroactiveOnly = distinctiveParams.contains(DistinctiveParams.RETROACTIVE)
-
     val noStartingPlacements = distinctiveParams.contains(DistinctiveParams.NO_STARTING_PLACEMENTS)
-
     val maxFeeAccepted = distinctiveParams.contains(DistinctiveParams.MAX_FEE_ACCEPTED)
-
     val preschoolClub = distinctiveParams.contains(DistinctiveParams.PRESCHOOL_CLUB)
+    val noOpenIncomeStatements =
+        distinctiveParams.contains(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS)
 
     val (numberQuery, numberParams) =
         disjointNumberQuery("decision", "decision_number", numberParamsRaw)
@@ -469,6 +466,16 @@ fun Database.Read.searchFeeDecisions(
                 "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
             else null,
             if (preschoolClub) "decisions_with_preschool_club_placement IS NOT NULL" else null,
+            if (noOpenIncomeStatements)
+                """
+                NOT EXISTS (
+                    SELECT FROM income_statement
+                    WHERE person_id IN (decision.head_of_family_id, decision.partner_id, part.child_id) AND
+                        daterange(start_date, end_date, '[]') && daterange((:now - interval '14 months')::date, :now::date, '[]') AND
+                        handler_id IS NULL
+                    )
+                """
+            else null,
         )
 
     val youngestChildQuery =
