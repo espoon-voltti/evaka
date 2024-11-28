@@ -491,6 +491,7 @@ export default {
     nextDay: 'Seuraava päivä',
     previousMonth: 'Edellinen kuukausi',
     nextMonth: 'Seuraava kuukausi',
+    fetchPrevious: 'Hae aiempia',
     dailyServiceTimeModifiedModal: {
       text: 'Varhaiskasvatusaikasopimusta on muutettu, tarkistathan että varaukset vastaavat uutta sopimusaikaa.',
       title: 'Tarkista läsnäoloilmoitukset',

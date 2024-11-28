@@ -487,6 +487,7 @@ const sv: Translations = {
     nextDay: 'Nästa dag',
     previousMonth: 'Edellinen kuukausi',
     nextMonth: 'Seuraava kuukausi',
+    fetchPrevious: 'Hämta tidigare',
     dailyServiceTimeModifiedModal: {
       text: 'Avtalet om tiden för småbarnspedagogik har ändrats, kontrollera att bokningarna motsvarar den nya avtalstiden.',
       title: 'Kontrollera bokningarna',
