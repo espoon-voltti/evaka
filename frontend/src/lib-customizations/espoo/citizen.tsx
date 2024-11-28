@@ -94,6 +94,29 @@ const customizations: CitizenCustomizations = {
                     * Tähdellä merkityt tiedot ovat pakollisia
                   </P>
                 </>
+              ),
+              PRESCHOOL: (
+                <>
+                  <P>
+                    Esiopetukseen osallistutaan oppivelvollisuuden alkamista
+                    edeltävänä vuonna. Esiopetus on maksutonta. Lukuvuoden
+                    2025–2026 esiopetukseen ilmoittaudutaan 8.–20.1.2025.
+                    Suomen- ja ruotsinkielinen esiopetus alkaa 7.8.2025.
+                  </P>
+                  <P>
+                    Päätökset tulevat{' '}
+                    <a
+                      href="https://www.suomi.fi/viestit"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Suomi.fi-viestit
+                    </a>{' '}
+                    -palveluun tai postitse, mikäli et ole ottanut Suomi.fi
+                    -palvelua käyttöön.
+                  </P>
+                  <P fitted>* Tähdellä merkityt tiedot ovat pakollisia</P>
+                </>
               )
             }
           },
@@ -111,10 +134,21 @@ const customizations: CitizenCustomizations = {
                   >
                     Lue lisää lapsen aloittamisesta varhaiskasvatuksesta täältä.
                   </a>
+                ],
+                PRESCHOOL: [
+                  'Suomen- ja ruotsinkielinen esiopetus alkaa 7.8.2025. Jos tarvitset varhaiskasvatusta elokuun alusta ennen esiopetuksen alkua, hae sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
                 ]
               },
               instructions: {
                 DAYCARE: (
+                  <>
+                    Voit muuttaa toivottua aloituspäivää myöhemmäksi niin kauan
+                    kuin hakemusta ei ole otettu käsittelyyn. Jos haluat tämän
+                    jälkeen muuttaa aloituspäivää, sinun tulee ottaa yhteyttä
+                    varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).
+                  </>
+                ),
+                PRESCHOOL: (
                   <>
                     Voit muuttaa toivottua aloituspäivää myöhemmäksi niin kauan
                     kuin hakemusta ei ole otettu käsittelyyn. Jos haluat tämän
@@ -152,6 +186,47 @@ const customizations: CitizenCustomizations = {
               false: 'Kokopäiväinen'
             },
             dailyTime: {
+              connectedDaycareInfo: (
+                <>
+                  <P>
+                    Hae lapselle tarvittaessa esiopetukseen liittyvää
+                    maksullista varhaiskasvatusta. Liittyvää varhaiskasvatusta
+                    järjestetään aamuisin ennen esiopetusta ja esiopetuksen
+                    jälkeen esiopetusyksikön aukioloaikojen mukaisesti.
+                    (Esiopetusaika yksiköissä on pääsääntöisesti klo 9-13).
+                  </P>
+                  <P>
+                    Jos tarvitset varhaiskasvatusta elokuun alusta ennen
+                    esiopetuksen alkua, huomioi tämä toivotun aloituspäivämäärän
+                    valinnassa.
+                  </P>
+                  <P>
+                    Liittyvää varhaiskasvatusta haetaan samasta yksiköstä
+                    (kunnallinen, palveluseteli) josta haet esiopetusta.
+                  </P>
+                  <P>
+                    Yksityisiin esiopetusyksiköihin haettaessa, liittyvä
+                    varhaiskasvatus haetaan suoraan yksiköstä (pois lukien
+                    palveluseteliyksiköt), yksiköt informoivat asiakkaita
+                    hakutavasta. Jos esiopetushakemuksessa on haettu liityvää
+                    varhaiskasvatusta yksityisestä yksiköstä, palveluohjaus
+                    muuttaa hakemuksen vain esiopetushakemukseksi.
+                  </P>
+                  <P>
+                    Saat varhaiskasvatuspaikasta erillisen kirjallisen
+                    päätöksen. Päätös tulee{' '}
+                    <a
+                      href="https://www.suomi.fi/viestit"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Suomi.fi-viestit
+                    </a>{' '}
+                    -palveluun tai postitse, mikäli et ole ottanut
+                    Suomi.fi-viestit -palvelua käyttöön.
+                  </P>
+                </>
+              ),
               instructions: {
                 DAYCARE:
                   'Ilmoita lapsen yleisimmin tarvitsema varhaiskasvatusaika. Aika tarkennetaan palvelusopimuksessa varhaiskasvatuksen alkaessa.'
@@ -162,9 +237,9 @@ const customizations: CitizenCustomizations = {
               instructions:
                 'Vuorohoito on varhaiskasvatusta, jota järjestetään päivällä tapahtuvan varhaiskasvatuksen lisäksi iltaisin, öisin, viikonloppuisin sekä arki- ja juhlapyhinä vuorohoitopäiväkodeissa.',
               attachmentsMessage: {
-                text: (
+                DAYCARE: (
                   <>
-                    <P fitted>
+                    <P>
                       Vuorohoito on tarkoitettu lapsille, joiden molemmat
                       huoltajat ovat vuorotyössä tai opiskelevat pääsääntöisesti
                       iltaisin tai viikonloppuisin. Oikeus vuorohoitoon päättyy,
@@ -186,15 +261,86 @@ const customizations: CitizenCustomizations = {
                     </P>
                   </>
                 ),
-                subtitle:
-                  'Lisää tähän molemmilta huoltajilta todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin'
-              }
+                PRESCHOOL: (
+                  <>
+                    <P>
+                      Vuorohoito on tarkoitettu lapsille, joiden molemmat
+                      huoltajat ovat vuorotyössä tai opiskelevat pääsääntöisesti
+                      iltaisin tai viikonloppuisin. Oikeus vuorohoitoon päättyy,
+                      mikäli lapsi ei enää tarvitse vuorohoitoa huoltajan
+                      työssäkäynnin tai opiskelun vuoksi.
+                    </P>
+                    <P>
+                      Vuorohoidossa esiopetusta annetaan klo 8.00–16.00 välillä
+                      noin neljä tuntia kerrallaan. Suunnittelemme tarkemman
+                      esiopetuksen ajankohdan lapsen läsnäoloaikojen pohjalta.
+                      Suunnittelussa huomioidaan, ettei lapsi joudu viettämään
+                      päiväkodissa liian pitkää aikaa.
+                    </P>
+                    <P>
+                      Liitä hakemukseen työnantajan todistus säännöllisestä
+                      vuorotyöstä tai oppilaitoksen edustajan todistus
+                      päätoimisesta ilta- tai viikonloppuopiskelusta. Toimita
+                      todistus molemmilta samassa taloudessa asuvilta
+                      huoltajilta.
+                    </P>
+                    <P>
+                      Jos et voi lisätä liitteitä hakemukselle sähköisesti,
+                      lähetä ne postilla osoitteeseen Varhaiskasvatuksen
+                      palveluohjaus, PL 3125, 02070 Espoon kaupunki.{' '}
+                    </P>
+                  </>
+                )
+              },
+              attachmentsSubtitle:
+                'Lisää tähän molemmilta huoltajilta todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin'
             },
-            assistanceNeeded:
-              'Lapsella on kehitykseen tai oppimiseen liittyvä tuen tarve',
+            preparatory:
+              'Lapsi tarvitsee tukea suomen kielen oppimisessa ja lapselle on suositeltu valmistavaa esiopetusta nykyisestä päiväkodista. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
+            preparatoryInfo: null,
+            preparatoryExtraInstructions: (
+              <>
+                <P>
+                  Esiopetuksessa toteutettavaan perusopetukseen valmistavaan
+                  opetukseen voivat hakeutua lapset, joilla ei ole vielä suomen
+                  kielen taitoa tai jotka osaavat jo jonkin verran suomea.
+                  Esiopetusikäisten perusopetukseen valmistavaa opetusta
+                  järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä.
+                </P>
+                <P>
+                  Pidennetyn oppivelvollisuuden piirissä olevilla lapsilla ei
+                  ole oikeutta perusopetukseen valmistavaan opetukseen. Mikäli
+                  lapsella on tai hänelle myöhemmin myönnetään pidennetyn
+                  oppivelvollisuuden päätös, lapsen sijoitus muutetaan
+                  esiopetussijoitukseksi
+                </P>
+              </>
+            ),
+            assistanceNeeded: {
+              DAYCARE:
+                'Lapsella on kehitykseen tai oppimiseen liittyvä tuen tarve',
+              PRESCHOOL:
+                'Valitse tämä kohta, jos lapsi tarvitsee kasvulleen ja/tai oppimiselleen tukea esiopetusvuonna.',
+              CLUB: 'Lapsella on kehitykseen tai oppimiseen liittyvä tuen tarve'
+            },
             assistanceNeedInstructions: {
               DAYCARE:
-                'Valitse tämä kohta, jos lapsesi tarvitsee tukea kehitykseen, oppimiseen tai hyvinvointiin. Tukea annetaan lapsen arjessa osana varhaiskasvatusta. Jos lapsella on tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä. Näin voimme huomioida lapsen tarpeet ja osoittaa hänelle sopivan varhaiskasvatuspaikan.'
+                'Valitse tämä kohta, jos lapsesi tarvitsee tukea kehitykseen, oppimiseen tai hyvinvointiin. Tukea annetaan lapsen arjessa osana varhaiskasvatusta. Jos lapsella on tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä. Näin voimme huomioida lapsen tarpeet ja osoittaa hänelle sopivan varhaiskasvatuspaikan.',
+              PRESCHOOL: null
+            },
+            assistanceNeedExtraInstructions: {
+              PRESCHOOL: (
+                <P>
+                  Tukea annetaan lapsen arjessa osana esiopetusta ja
+                  varhaiskasvatusta. Valitse tämä kohta myös, jos lapsella on
+                  muu erityinen syy, jolla on suoranaista vaikutusta
+                  esiopetuksen järjestämiseen ja siihen, missä yksikössä lapsen
+                  esiopetus tulee järjestää. Jos lapsella on kasvun ja/tai
+                  oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja
+                  ottaa hakijaan yhteyttä. Näin voimme huomioida lapsen tarpeet
+                  ja osoittaa hänelle sopivan esiopetuspaikan.
+                </P>
+              )
             }
           },
           unitPreference: {
@@ -222,6 +368,32 @@ const customizations: CitizenCustomizations = {
                       sisarus on.
                     </P>
                   </>
+                ),
+                PRESCHOOL: (
+                  <>
+                    <P>Esioppilaalla on sisarusperuste:</P>
+                    <ol type="a">
+                      <li>
+                        Oman palvelualueen päiväkotiin, jossa esioppilaalla on
+                        sisarus, jolla on päätöksentekohetkellä ja tulevana
+                        esiopetusvuonna paikka esiopetuspäiväkodissa.
+                      </li>
+                      <li>
+                        Kunnan osoittamaan lähikouluun, jota esioppilaan sisarus
+                        käy tulevana lukuvuonna.
+                      </li>
+                    </ol>
+                    <P>
+                      Valitse käytätkö sisarusperustetta kohdan a vai b
+                      mukaisesti, jos esioppilaalla on sisarusperuste molempien
+                      kohtien mukaan.
+                    </P>
+                    <P>
+                      Täytä nämä tiedot vain, jos käytät sisarusperustetta.
+                      Valitse lisäksi alla olevasta valikosta ensisijaiseksi
+                      hakutoiveeksi sama yksikkö, jossa lapsen sisarus on.
+                    </P>
+                  </>
                 )
               }
             },
@@ -232,6 +404,26 @@ const customizations: CitizenCustomizations = {
                     <P fitted>
                       Voit hakea 1-3 paikkaa toivomassasi järjestyksessä.
                       Hakutoiveet eivät takaa paikkaa toivotussa yksikössä,
+                      mutta mahdollisuus toivotun paikan saamiseen kasvaa, kun
+                      annat useamman vaihtoehdon.
+                    </P>
+                    <P>
+                      Hae palveluseteliä valitsemalla hakutoiveeksi se
+                      palveluseteliyksikkö, johon haluat hakea. Kun haet
+                      palveluseteliyksikköön, myös yksikön johtaja saa tiedon
+                      hakemuksestasi.
+                    </P>
+                    <P>
+                      Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla
+                      ‘Yksiköt kartalla’.
+                    </P>
+                  </>
+                ),
+                PRESCHOOL: (
+                  <>
+                    <P>
+                      Voit hakea 1-3 eri yksikköön toivomassasi järjestyksessä.
+                      Hakutoiveet eivät takaa paikkaa toivotusta yksiköstä,
                       mutta mahdollisuus toivotun paikan saamiseen kasvaa, kun
                       annat useamman vaihtoehdon.
                     </P>
@@ -409,6 +601,32 @@ const customizations: CitizenCustomizations = {
                     * Informationen markerad med en stjärna är obligatorisk
                   </P>
                 </>
+              ),
+              PRESCHOOL: (
+                <>
+                  <P>
+                    Barn deltar i förskoleundervisning året innan läroplikten
+                    inleds. Förskoleundervisningen är kostnadsfri. Anmälan till
+                    förskoleundervisning under läsåret 2025–2026 pågår 8–20
+                    januari 2025. Den finsk- och den svenskspråkiga
+                    förskoleundervisningen börjar den 7 augusti 2025.
+                  </P>
+                  <P>
+                    Du får ett skriftligt beslut om plats inom
+                    småbarnspedagogiken till tjänsten{' '}
+                    <a
+                      href="https://www.suomi.fi/meddelanden"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Suomi.fi-meddelanden
+                    </a>{' '}
+                    eller per post, om du inte använder Suomi.fi-tjänsten.
+                  </P>
+                  <P fitted={true}>
+                    * Informationen markerad med en stjärna är obligatorisk
+                  </P>
+                </>
               )
             }
           },
@@ -429,7 +647,13 @@ const customizations: CitizenCustomizations = {
                   >
                     Läs mer om barnets start i småbarnspedagogiken här
                   </a>
+                ],
+                PRESCHOOL: [
+                  'Den finsk- och den svenskspråkiga förskoleundervisningen börjar den 7 augusti 2025. Om du behöver småbarnspedagogik i början av augusti före förskoleundervisningen börjar, ska du ansöka om det med denna ansökan genom att kryssa för ”Jag ansöker också om småbarnspedagogik i samband med förskolan”.'
                 ]
+              },
+              label: {
+                PRESCHOOL: 'Önskat startdatum'
               },
               instructions: {
                 DAYCARE: (
@@ -437,7 +661,15 @@ const customizations: CitizenCustomizations = {
                     Du kan senarelägga det önskade startdatumet så länge
                     behandlingen av ansökan ännu inte har börjat. Om du vill
                     ändra startdatumet efter detta ska du kontakta
-                    småbarnspedagogikens servicehandledning (tfn 09 816 27600).{' '}
+                    småbarnspedagogikens servicehandledning (tfn 09 816 27600).
+                  </>
+                ),
+                PRESCHOOL: (
+                  <>
+                    Du kan senarelägga det önskade startdatumet så länge
+                    behandlingen av ansökan ännu inte har börjat. Om du vill
+                    ändra startdatumet efter detta ska du kontakta
+                    småbarnspedagogikens servicehandledning (tfn 09 816 27600).
                   </>
                 )
               }
@@ -472,6 +704,39 @@ const customizations: CitizenCustomizations = {
               false: 'Heldag'
             },
             dailyTime: {
+              connectedDaycareInfo: (
+                <>
+                  <P>
+                    Om det behövs, ska du ansöka om avgiftsbelagd
+                    småbarnspedagogik i samband med förskolan för barnet. Denna
+                    småbarnspedagogik ordnas på morgonen före förskolan och
+                    efter förskolan enligt öppettiderna för enheten för
+                    förskoleundervisning. (Tiden för förskoleundervisning vid
+                    enheterna är i regel kl. 9–13). Om du behöver
+                    småbarnspedagogik i början av augusti innan förskolan
+                    börjar, beakta detta när du väljer önskat startdatum.
+                  </P>
+                  <P>
+                    Småbarnspedagogik i samband med förskolan ansöks vid samma
+                    enhet där du ansöker om förskoleundervisning.
+                  </P>
+                  <P>
+                    När du söker till privata enheter för förskoleundervisning
+                    ansöker du om småbarnspedagogik i samband med förskolan
+                    direkt hos enheten (exklusive servicesedelenheter).
+                    Enheterna informerar kunderna om ansökningssättet. Om det i
+                    ansökan om förskoleplats har ansökts om småbarnspedagogik i
+                    en privat enhet, ändrar servicehanledningen ansökan till
+                    bara ansökan om förskoleplats.
+                  </P>
+                  <P>
+                    Du får ett separat skriftligt beslut om platsen inom
+                    småbarnspedagogiken. Beslutet kommer till tjänsten
+                    Suomi.fi-meddelanden eller per post om du inte har tagit
+                    tjänsten Suomi.fi-meddelanden i bruk.
+                  </P>
+                </>
+              ),
               instructions: {
                 DAYCARE:
                   'Ange vilka tider barnet oftast behöver småbarnspedagogik. Tiden preciseras i serviceavtalet när småbarnspedagogiken börjar.'
@@ -482,7 +747,7 @@ const customizations: CitizenCustomizations = {
               instructions:
                 'Skiftvård är småbarnspedagogik som ordnas utöver småbarnspedagogiken på dagtid på kvällar, nätter och veckoslut samt på söckenhelger och helgdagar i skiftdaghem.',
               attachmentsMessage: {
-                text: (
+                DAYCARE: (
                   <>
                     <P fitted>
                       Skiftvården är avsedd för barn vars båda föräldrar arbetar
@@ -507,17 +772,91 @@ const customizations: CitizenCustomizations = {
                     </P>
                   </>
                 ),
-                subtitle:
-                  'Bifoga intyg för båda vårdnadshavarna om skiftarbete eller studier på kvällstid eller under veckoslut'
-              }
+                PRESCHOOL: (
+                  <>
+                    <P>
+                      Skiftvården är avsedd för barn vars båda föräldrar arbetar
+                      skift eller studerar på kvällstid eller under veckoslut
+                      som sin huvudsyssla. Rätten till skiftvård upphör om
+                      barnet inte längre behöver skiftvård på grund av
+                      vårdnadshavarens arbete eller studier.
+                    </P>
+                    <P>
+                      I skiftvård ges förskoleundervisning ungefär fyra timmar i
+                      taget mellan kl. 8.00 och 16.00. Vi planerar den närmare
+                      tidpunkten för förskoleundervisningen utifrån barnets
+                      tider i daghemmet. I planeringen tar man hänsyn till att
+                      barnet inte behöver tillbringa alltför långa tider i
+                      daghemmet.
+                    </P>
+                    <P>
+                      Bifoga till ansökan arbetsgivarens intyg om regelbundet
+                      skiftarbete eller ett intyg från läroanstalten om studier
+                      på kvällstid eller under veckoslut, som är en huvudsyssla.
+                      Lämna in ett intyg för båda vårdnadshavarna som bor i
+                      samma hushåll.
+                    </P>
+                    <P>
+                      Om du inte kan lägga till bilagorna till ansökan
+                      elektroniskt, posta de till Småbarnspedagogikens
+                      servicehandledning, PB 32, 02070 Esbo stad.
+                    </P>
+                  </>
+                )
+              },
+              attachmentsSubtitle:
+                'Bifoga intyg för båda vårdnadshavarna om skiftarbete eller studier på kvällstid eller under veckoslut'
             },
             assistanceNeed: 'Stödbehov',
-            assistanceNeeded:
-              'Barnet behöver stöd för utvecklingen eller lärandet',
+            assistanceNeeded: {
+              DAYCARE: 'Barnet behöver stöd för utvecklingen eller lärandet',
+              PRESCHOOL: 'Barnet behöver stöd för utvecklingen eller lärandet',
+              CLUB: 'Barnet behöver stöd för utvecklingen eller lärandet'
+            },
             assistanceNeedInstructions: {
               DAYCARE:
-                'Kryssa för denna punkt om ditt barn behöver stöd för sin utveckling, sitt lärande eller sitt välbefinnande. Stöd ges i barnets vardag som en del av småbarnspedagogiken. Om barnet har stödbehov, kontaktar specialläraren inom småbarnspedagogiken den sökande. På så sätt kan vi ta hänsyn till barnets behov och anvisa barnet en lämplig plats inom småbarnspedagogiken.'
-            }
+                'Kryssa för denna punkt om ditt barn behöver stöd för sin utveckling, sitt lärande eller sitt välbefinnande. Stöd ges i barnets vardag som en del av småbarnspedagogiken. Om barnet har stödbehov, kontaktar specialläraren inom småbarnspedagogiken den sökande. På så sätt kan vi ta hänsyn till barnets behov och anvisa barnet en lämplig plats inom småbarnspedagogiken.',
+              PRESCHOOL: null
+            },
+            assistanceNeedExtraInstructions: {
+              PRESCHOOL: (
+                <P>
+                  Kryssa för denna punkt om barnet behöver stöd för sin uppväxt
+                  och/eller sitt lärande under förskoleåret. Stöd ges i barnets
+                  vardag som en del av förskoleundervisningen och
+                  småbarnspedagogiken. Kryssa för denna punkt också om det finns
+                  någon annan särskild anledning som direkt påverkar ordnandet
+                  av förskoleundervisningen och vid vilken enhet
+                  förskoleundervisningen bör ordnas för barnet. Om barnet
+                  behöver stöd för utvecklingen eller lärandet kontaktar
+                  specialläraren inom småbarnspedagogiken den sökande. På så
+                  sätt kan vi ta hänsyn till barnets behov och anvisa barnet en
+                  lämplig plats inom förskoleundervisningen.
+                </P>
+              )
+            },
+            preparatory:
+              'Barnet behöver stöd med att lära sig finska och ja barnets nuvarande daghem har rekommenderat att barnet deltar i undervisning som förbereder för grundläggande utbildning. Jag ansöker också till undervisning som förbereder för grundläggande utbildning. Gäller inte svenskspråkig förskoleundervisning.',
+            preparatoryInfo: null,
+            preparatoryExtraInstructions: (
+              <>
+                <P>
+                  Plats inom undervisning som förbereder för grundläggande
+                  utbildning och som genomförs inom förskoleundervisningen kan
+                  sökas för barn som ännu inte kan finska eller som kan lite
+                  finska. Undervisning som förbereder för grundläggande
+                  utbildning för barn i förskoleåldern ordnas i kommunala,
+                  finskspråkiga förskolegrupper.
+                </P>
+                <P>
+                  Barn med förlängd läroplikt har inte rätt att delta i
+                  undervisning som förbereder för grundläggande utbildning. Om
+                  barnet har ett beslut om förlängd läroplikt eller får ett
+                  sådant beslut senare ändras barnets placering till en
+                  placering inom förskoleundervisning.
+                </P>
+              </>
+            )
           },
           unitPreference: {
             title: 'Önskemål i ansökan',
@@ -546,7 +885,36 @@ const customizations: CitizenCustomizations = {
                       primärt önskemål.
                     </P>
                   </>
+                ),
+                PRESCHOOL: (
+                  <>
+                    <P>Förskoleeleven ansöker med syskongrund:</P>
+                    <ol type="a">
+                      <li>
+                        Till ett daghem i det egna serviceområdet som ger
+                        förskoleundervisning, där ett syskon till förskoleeleven
+                        har en plats vid tidpunkten för beslutet och under det
+                        kommande förskoleåret.
+                      </li>
+                      <li>
+                        Till en närskola som anvisats av kommunen, där ett
+                        syskon till förskoleeleven kommer att gå under det
+                        kommande läsåret.
+                      </li>
+                    </ol>
+                    <P>
+                      Välj om syskongrunden ska användas enligt punkt a eller b,
+                      om båda syskongrunderna existerar. Fyll i dessa uppgifter
+                      endast om syskongrunden ska användas. Utöver detta, välj i
+                      menyn endan den enhet där barnets syskon har en plats som
+                      primärt önskemål.
+                    </P>
+                  </>
                 )
+              },
+              checkbox: {
+                PRESCHOOL:
+                  'Jag ansöker i första hand till samma enhet där barnets syskon har en plats.'
               }
             },
             units: {
@@ -570,6 +938,23 @@ const customizations: CitizenCustomizations = {
                     <P>
                       Du ser läget för samtliga enheter för småbarnspedagogik
                       genom att klicka på ‘Enheterna på kartan’.
+                    </P>
+                  </>
+                ),
+                PRESCHOOL: (
+                  <>
+                    <P>
+                      Du kan söka till 1–3 olika enheter i valfri ordning.
+                      Önskemålen i ansökan garanterar inte en plats vid den
+                      önskade enheten, men chansen att få den önskade platsen är
+                      desto större ju fler alternativ du anger.
+                    </P>
+                    <P>
+                      Ansök om servicesedel genom att ange den önskade
+                      servicesedelsenheten som önskemål i ansökan. När du
+                      ansöker om en plats vid en servicesedelsenhet får också
+                      ledaren för enheten besked om din ansökan. Svenskspråkig
+                      förskola ordnas inte i servicesedelenheter.
                     </P>
                   </>
                 )
@@ -748,6 +1133,40 @@ const customizations: CitizenCustomizations = {
                     * Information marked with a star is required
                   </P>
                 </>
+              ),
+              PRESCHOOL: (
+                <>
+                  <P>
+                    Children attend pre-primary education during the year before
+                    the start of compulsory education. Pre-primary education is
+                    free of charge. Enrolment for pre-primary education for the
+                    school year 2025–2026 takes place between 8 and 20 January
+                    2025. Finnish and Swedish pre-primary education starts on 7
+                    August 2025.
+                  </P>
+                  <P>
+                    The decisions will be sent to the{' '}
+                    <a
+                      href="https://www.suomi.fi/messages"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Suomi.fi Messages
+                    </a>{' '}
+                    service or by post, if the applicant does not use the{' '}
+                    <a
+                      href="https://www.suomi.fi/messages"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Suomi.fi Messages
+                    </a>{' '}
+                    service.
+                  </P>
+                  <P fitted={true}>
+                    * Information marked with a star is required
+                  </P>
+                </>
               )
             }
           },
@@ -769,10 +1188,21 @@ const customizations: CitizenCustomizations = {
                   >
                     Read more about the start of early childhood education here.
                   </a>
+                ],
+                PRESCHOOL: [
+                  'Finnish and Swedish pre-primary education starts on 7 August 2025. If your child needs early childhood education at the beginning of August before pre-primary education starts, you can apply for it on this application by selecting  I also apply for early childhood education related to pre-primary education.'
                 ]
               },
               instructions: {
                 DAYCARE: (
+                  <>
+                    You can postpone your desired start date until the
+                    processing of your application starts. If you want to make
+                    changes to your start date later, you need to contact early
+                    childhood education service guidance (tel. 09 8163 1000).
+                  </>
+                ),
+                PRESCHOOL: (
                   <>
                     You can postpone your desired start date until the
                     processing of your application starts. If you want to make
@@ -813,6 +1243,64 @@ const customizations: CitizenCustomizations = {
               false: 'Full-day'
             },
             dailyTime: {
+              label: {
+                PRESCHOOL:
+                  'Need for early childhood education connected to pre-primary education'
+              },
+              connectedDaycareInfo: (
+                <>
+                  <P>
+                    If necessary, apply for early childhood education connected
+                    to pre-primary education for your child (fees apply). Early
+                    childhood education is provided in the morning before
+                    pre-primary education and in the afternoon after pre-primary
+                    education during the opening hours of the pre-primary
+                    education unit. (As a rule, pre-primary education is
+                    provided from 9:00 to 13:00.)
+                  </P>
+                  <P>
+                    If your child needs early childhood education at the
+                    beginning of August before pre-primary education starts,
+                    take this into account when choosing your desired start
+                    date.
+                  </P>
+                  <P>
+                    You can apply for connected early childhood education from
+                    the same unit (municipal or service voucher) from where you
+                    apply for pre-primary education.
+                  </P>
+                  <P>
+                    When applying for private pre-primary education units, apply
+                    for related early childhood education directly from the unit
+                    (with the exception of service voucher units); the units
+                    inform customers about the application procedure. If you
+                    have applied for related early childhood education from a
+                    private unit on the pre-primary education application, the
+                    service guidance will change your application to a
+                    pre-primary education application only.
+                  </P>
+                  <P>
+                    A separate written decision will be issued on the early
+                    childhood education place. The decision will be sent to the{' '}
+                    <a
+                      href="https://www.suomi.fi/messages"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Suomi.fi Messages
+                    </a>{' '}
+                    service or by post if you do not use the{' '}
+                    <a
+                      href="https://www.suomi.fi/messages"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Suomi.fi messages
+                    </a>{' '}
+                    service.
+                  </P>
+                </>
+              ),
               instructions: {
                 DAYCARE:
                   'Indicate the hours of early childhood education usually needed by your child. The hours will be specified in the service agreement when early childhood education starts.'
@@ -826,7 +1314,7 @@ const customizations: CitizenCustomizations = {
               instructions:
                 'Shift care refers to early childhood education that is provided, in addition to daytime early childhood education, in the evenings, at night, at weekends and on holidays at shift day care centres.',
               attachmentsMessage: {
-                text: (
+                DAYCARE: (
                   <>
                     <P fitted>
                       Shift care is intended for children whose both guardians
@@ -834,7 +1322,7 @@ const customizations: CitizenCustomizations = {
                       weekends. The right to shift care ends if the child no
                       longer needs shift care due to the guardian’s work or
                       studies, in which case the guardian must apply for a new
-                      early childhood education place for the child.{' '}
+                      early childhood education place for the child.
                     </P>
                     <P>
                       Your application must include a document issued by your
@@ -842,27 +1330,102 @@ const customizations: CitizenCustomizations = {
                       by a representative of your educational institution
                       concerning your full-time evening or weekend studies. Both
                       guardians living in the same household must provide the
-                      required document.{' '}
+                      required document.
                     </P>
                     <P>
                       If you are unable to add attachments to your online
                       application, you can send the documents by post to Early
                       Childhood Education Service Guidance, P.O. Box 3125, 02070
-                      City of Espoo.{' '}
+                      City of Espoo.
                     </P>
                   </>
                 ),
-                subtitle:
-                  'Add here both guardians’ documents concerning shift work or evening/weekend studies.'
-              }
+                PRESCHOOL: (
+                  <>
+                    <P>
+                      Shift care is intended for children whose both guardians
+                      do shift work or mainly study in the evening and/or at
+                      weekends. The right to shift care ends if the child no
+                      longer needs shift care due to their guardian’s work or
+                      studies.
+                    </P>
+                    <P>
+                      In shift care, pre-primary education is provided between
+                      8:00 and 16:00 for approximately four hours at a time. The
+                      exact hours of pre-primary education are planned based on
+                      the child’s hours of attendance. We always ensure that
+                      children do not have to spend too much time at the day
+                      care centre.
+                    </P>
+                    <P>
+                      Your application must include a document issued by your
+                      employer concerning your shift work or a document issued
+                      by a representative of your educational institution
+                      concerning your full-time evening or weekend studies. Both
+                      guardians living in the same household must provide the
+                      required document.
+                    </P>
+                    <P>
+                      If you are unable to add attachments to your online
+                      application, you can send the documents by post to Early
+                      Childhood Education Service Guidance, P.O. Box 3125, 02070
+                      City of Espoo.
+                    </P>
+                  </>
+                )
+              },
+              attachmentsSubtitle:
+                'Add here both guardians’ documents concerning shift work or evening/weekend studies.'
             },
             assistanceNeed: 'Need for support',
-            assistanceNeeded:
-              'My child needs support for development or learning',
+            assistanceNeeded: {
+              DAYCARE: 'My child needs support for development or learning',
+              PRESCHOOL: 'My child needs support for development or learning',
+              CLUB: 'My child needs support for development or learning'
+            },
             assistanceNeedInstructions: {
               DAYCARE:
-                'Tick this box if your child needs support for their development, learning or wellbeing. Support is provided as part of early childhood education. If your child needs support, a special needs teacher will contact you. This will ensure that your child’s needs are taken into account and your child is given a place in a suitable early childhood education unit.'
-            }
+                'Tick this box if your child needs support for their development, learning or wellbeing. Support is provided as part of early childhood education. If your child needs support, a special needs teacher will contact you. This will ensure that your child’s needs are taken into account and your child is given a place in a suitable early childhood education unit.',
+              PRESCHOOL: null
+            },
+            assistanceNeedExtraInstructions: {
+              PRESCHOOL: (
+                <P>
+                  Tick this box if your child needs support for their
+                  development and/or learning during the pre-primary education
+                  year. Support is provided as part of pre-primary education and
+                  early childhood education. Also tick this box if your child
+                  has another special reason that directly affects the provision
+                  of pre-primary education or the unit in which their
+                  pre-primary education should be provided. If your child needs
+                  support for development and/or learning, a special needs
+                  teacher will contact you. This will ensure that your child’s
+                  needs are taken into account and your child is given a place
+                  in a suitable pre-primary education unit.
+                </P>
+              )
+            },
+            preparatory:
+              'My child needs support in learning Finnish and the child’s current day care centre has recommended that the child attend preparatory pre-primary education. I am also applying for preparatory education. This does not apply to Swedish pre-primary education.',
+            preparatoryInfo: null,
+            preparatoryExtraInstructions: (
+              <>
+                <P>
+                  Preparatory education is offered in connection with
+                  pre-primary education to children who do not yet have Finnish
+                  language skills or who know some Finnish. Preparatory
+                  education is offered to children of pre-primary education age
+                  in Finnish-speaking municipal pre-primary education groups.
+                </P>
+                <P>
+                  Children attending extended compulsory education are not
+                  entitled to preparatory education. If the child has received
+                  or later receives a decision on extended compulsory education,
+                  the child’s placement will be changed to a pre-primary
+                  education placement.
+                </P>
+              </>
+            )
           },
           unitPreference: {
             siblingBasis: {
@@ -889,7 +1452,41 @@ const customizations: CitizenCustomizations = {
                       choice from the menu below
                     </P>
                   </>
+                ),
+                PRESCHOOL: (
+                  <>
+                    <P>
+                      A child enrolling for pre-primary education has a
+                      sibling-basis right to a
+                    </P>
+                    <ol type="a">
+                      <li>
+                        early childhood education in their own service area,
+                        where they have a sibling who has, at the moment of
+                        making the decision and in the coming pre-primary
+                        education year, a place at the pre-primary education
+                        unit
+                      </li>
+                      <li>
+                        local school determined by the city, which will be
+                        attended by their sibling in the coming school year.
+                      </li>
+                    </ol>
+                    <P>
+                      Select whether you wish to use the sibling principle based
+                      on section a or b if they both apply to your child.
+                    </P>
+                    <P>
+                      Only add this information if you are using the sibling
+                      principle. Also, select the sibling’s unit as your first
+                      choice from the menu below.
+                    </P>
+                  </>
                 )
+              },
+              checkbox: {
+                PRESCHOOL:
+                  'I am primarily applying for a place in the same unit in which the child’s sibling is.'
               }
             },
             units: {
