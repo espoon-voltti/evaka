@@ -756,4 +756,4 @@ fun DevPerson.toEvakaUser(type: EvakaUserType) =
     )
 
 fun DevMobileDevice.toEvakaUser() =
-    EvakaUser(id = EvakaUserId(this.id.raw), name = this.name, type = EvakaUserType.MOBILE_DEVICE)
+    EvakaUser(id = EvakaUserId(this.id.raw), name = this.name, type = EvakaUserType.EMPLOYEE)

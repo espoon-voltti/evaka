@@ -410,6 +410,8 @@ class ChildAttendanceController(
                                         unitId,
                                         date,
                                         TimeInterval(startTime, endTime),
+                                        clock.now(),
+                                        user.evakaUserId,
                                     )
                                 }
                         }
