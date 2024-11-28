@@ -118,8 +118,7 @@ const components: Translations = {
   },
   sessionTimeout: {
     sessionExpiredTitle: 'Din session har gått ut',
-    sessionExpiredMessage:
-      'Vänligen notera eventuellt meddelande du har skrivit och logga in igen.',
+    sessionExpiredMessage: 'Vänligen logga in igen.',
     goToLoginPage: 'Gå till inloggningssidan',
     cancel: 'Avbryt'
   },

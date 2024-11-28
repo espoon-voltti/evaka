@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo } from 'react'
 
 export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
+  // Default to 2 minutes and allow overriding this in automated tests
   const throttleTime =
     window.evaka?.keepSessionAliveThrottleTime ?? 2 * 60 * 1000
   const keepSessionAlive = useMemo(
@@ -23,7 +24,6 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
             console.error('Error occurred while keeping session alive', error)
           }
         },
-        // Default to 2 minutes and allow overriding this in automated tests
         throttleTime,
         {
           leading: true,
