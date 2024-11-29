@@ -514,6 +514,150 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
+    fun `Decision making calculates end date correctly when it is set and no other decision is in the future`() {
+        val testValidityPeriod =
+            DateRange(
+                testDecision.validityPeriod.start,
+                testDecision.validityPeriod.start.plusMonths(6),
+            )
+        MockSfiMessagesClient.clearMessages()
+
+        val assistanceNeedDecision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    decision = testDecision.copy(validityPeriod = testValidityPeriod)
+                )
+            )
+
+        sendAssistanceNeedDecision(assistanceNeedDecision.id)
+
+        decideAssistanceNeedDecision(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+        val decision = getAssistanceNeedDecision(assistanceNeedDecision.id)
+        assertEquals(clock.today(), decision.decisionMade)
+        assertEquals(testValidityPeriod, decision.validityPeriod)
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val messages = MockSfiMessagesClient.getMessages()
+        assertEquals(1, messages.size)
+        assertContains(messages[0].messageContent, "päätös tuesta")
+        assertEquals(
+            "assistance-need-decisions/assistance_need_decision_${assistanceNeedDecision.id}.pdf",
+            messages[0].documentKey,
+        )
+    }
+
+    @Test
+    fun `Decision making calculates end date correctly when it is set and other decision is in the future`() {
+        val futurePeriod = DateRange(clock.today().plusDays(10), clock.today().plusDays(20))
+        val previousPeriod =
+            DateRange(futurePeriod.start.minusDays(10), futurePeriod.start.minusDays(5))
+
+        MockSfiMessagesClient.clearMessages()
+
+        val futureDecision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    decision = testDecision.copy(validityPeriod = futurePeriod)
+                )
+            )
+
+        sendAssistanceNeedDecision(futureDecision.id)
+
+        decideAssistanceNeedDecision(
+            futureDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+
+        val previousAssistanceNeedDecision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    decision = testDecision.copy(validityPeriod = previousPeriod)
+                )
+            )
+
+        sendAssistanceNeedDecision(previousAssistanceNeedDecision.id)
+
+        decideAssistanceNeedDecision(
+            previousAssistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+
+        val futureAcceptedDecision = getAssistanceNeedDecision(futureDecision.id)
+        assertEquals(clock.today(), futureAcceptedDecision.decisionMade)
+        assertEquals(futurePeriod, futureAcceptedDecision.validityPeriod)
+
+        val previousAcceptedDecision = getAssistanceNeedDecision(previousAssistanceNeedDecision.id)
+        assertEquals(clock.today(), previousAcceptedDecision.decisionMade)
+        assertEquals(previousPeriod, previousAcceptedDecision.validityPeriod)
+    }
+
+    @Test
+    fun `Decision making calculates end date correctly when it overlaps with a future decision`() {
+        val futurePeriod = DateRange(clock.today().plusDays(10), clock.today().plusDays(20))
+        val overlappingPeriod =
+            DateRange(futurePeriod.start.minusDays(10), futurePeriod.end?.plusDays(5))
+
+        MockSfiMessagesClient.clearMessages()
+
+        val assistanceNeedDecision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    decision = testDecision.copy(validityPeriod = futurePeriod)
+                )
+            )
+
+        sendAssistanceNeedDecision(assistanceNeedDecision.id)
+
+        decideAssistanceNeedDecision(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+
+        val overlappingAssistanceNeedDecision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    decision = testDecision.copy(validityPeriod = overlappingPeriod)
+                )
+            )
+
+        sendAssistanceNeedDecision(overlappingAssistanceNeedDecision.id)
+
+        decideAssistanceNeedDecision(
+            overlappingAssistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+        val futureDecision = getAssistanceNeedDecision(assistanceNeedDecision.id)
+        assertEquals(clock.today(), futureDecision.decisionMade)
+        assertEquals(futurePeriod, futureDecision.validityPeriod)
+
+        val overlappingDecision = getAssistanceNeedDecision(overlappingAssistanceNeedDecision.id)
+        assertEquals(clock.today(), overlappingDecision.decisionMade)
+        assertEquals(
+            DateRange(overlappingDecision.validityPeriod.start, futurePeriod.start.minusDays(1)),
+            overlappingDecision.validityPeriod,
+        )
+    }
+
+    @Test
     fun `Metadata is collected`() {
         val assistanceNeedDecision =
             createAssistanceNeedDecision(AssistanceNeedDecisionRequest(decision = testDecision))

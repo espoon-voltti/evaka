@@ -66,7 +66,6 @@ class AssistanceNeedDecisionController(
                         body.decision.copy(
                             status = AssistanceNeedDecisionStatus.DRAFT,
                             sentForDecision = null,
-                            validityPeriod = body.decision.validityPeriod.copy(end = null),
                         )
                     if (decision.guardianInfo.isEmpty()) {
                         val guardianIds = tx.getChildGuardians(childId)
@@ -448,11 +447,23 @@ class AssistanceNeedDecisionController(
                                 decision.validityPeriod.start.minusDays(1),
                                 decision.child.id,
                             )
-                            tx.getNextAssistanceNeedDecisionValidFrom(
+
+                            val nextDecisionStartDate =
+                                tx.getNextAssistanceNeedDecisionValidFrom(
                                     decision.child.id,
                                     decision.validityPeriod.start,
                                 )
-                                ?.minusDays(1)
+
+                            if (nextDecisionStartDate == null) {
+                                decision.validityPeriod.end
+                            } else if (decision.validityPeriod.end == null) {
+                                nextDecisionStartDate.minusDays(1)
+                            } else {
+                                minOf(
+                                    nextDecisionStartDate.minusDays(1),
+                                    decision.validityPeriod.end,
+                                )
+                            }
                         } else null
 
                     tx.decideAssistanceNeedDecision(
