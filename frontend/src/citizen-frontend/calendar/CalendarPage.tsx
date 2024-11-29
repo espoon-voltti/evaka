@@ -139,7 +139,7 @@ const CalendarPage = React.memo(function CalendarPage() {
             (e) =>
               e.eventType === 'DISCUSSION_SURVEY' &&
               Object.values(e.timesByChild).some((times) =>
-                times.some((t) =>
+                times!.some((t) =>
                   showModalEventTime(t, LocalDate.todayInHelsinkiTz())
                 )
               )

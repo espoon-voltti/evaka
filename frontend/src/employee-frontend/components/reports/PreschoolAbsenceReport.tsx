@@ -247,12 +247,12 @@ const PreschoolAbsenceGrid = ({
           firstName: row.firstName,
           lastName: row.lastName,
           TOTAL:
-            row.hourlyTypeResults.OTHER_ABSENCE +
-            row.hourlyTypeResults.SICKLEAVE +
-            row.hourlyTypeResults.UNKNOWN_ABSENCE,
-          OTHER_ABSENCE: row.hourlyTypeResults.OTHER_ABSENCE,
-          SICKLEAVE: row.hourlyTypeResults.SICKLEAVE,
-          UNKNOWN_ABSENCE: row.hourlyTypeResults.UNKNOWN_ABSENCE
+            (row.hourlyTypeResults.OTHER_ABSENCE ?? 0) +
+            (row.hourlyTypeResults.SICKLEAVE ?? 0) +
+            (row.hourlyTypeResults.UNKNOWN_ABSENCE ?? 0),
+          OTHER_ABSENCE: row.hourlyTypeResults.OTHER_ABSENCE ?? 0,
+          SICKLEAVE: row.hourlyTypeResults.SICKLEAVE ?? 0,
+          UNKNOWN_ABSENCE: row.hourlyTypeResults.UNKNOWN_ABSENCE ?? 0
         }))
         return orderBy(displayRows, sortColumns, [
           sortDirection === 'ASC' ? 'asc' : 'desc'

@@ -79,7 +79,7 @@ export default React.memo(function ChildReservationList({
 
           return orderBy(
             groupReservations.map((ri) => {
-              const childInfo = childMap[ri.childId]
+              const childInfo = childMap[ri.childId]!
               let categoryInfo: CategoryInfo
 
               const [withTimes] = partition(

@@ -98,8 +98,8 @@ interface Props {
   open: boolean
   toggleOpen: () => void
   permittedActions: Action.Group[]
-  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
-  permittedGroupPlacementActions: Record<UUID, Action.Placement[]>
+  permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
+  permittedGroupPlacementActions: Partial<Record<UUID, Action.Placement[]>>
 }
 
 export interface GroupWithDetails extends DaycareGroupWithPlacements {
@@ -498,8 +498,8 @@ interface GroupPlacementRowProps {
   showChildCapacityFactor: boolean
   notesResponse: Result<NotesByGroupResponse>
   permittedActions: Action.Group[]
-  permittedGroupPlacementActions: Record<UUID, Action.Placement[]>
-  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
+  permittedGroupPlacementActions: Partial<Record<UUID, Action.Placement[]>>
+  permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
   onShowNote: (child?: IdAndName) => void
   onTransferRequested: (

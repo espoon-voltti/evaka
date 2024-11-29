@@ -49,18 +49,20 @@ function renderGroups(
   groups: DaycareGroup[],
   groupPermittedActions: Record<UUID, Action.Group[] | undefined>,
   placements: DaycarePlacementWithDetails[],
-  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>,
-  permittedGroupPlacementActions: Record<UUID, Action.GroupPlacement[]>,
+  permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>,
+  permittedGroupPlacementActions: Partial<
+    Record<UUID, Action.GroupPlacement[]>
+  >,
   backupCares: UnitBackupCare[],
-  groupCaretakers: Record<string, Caretakers>,
+  groupCaretakers: Partial<Record<string, Caretakers>>,
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void,
   openGroups: Record<string, boolean>,
   setOpenGroups: React.Dispatch<React.SetStateAction<Record<string, boolean>>>,
   unitChildrenCapacities: UnitChildrenCapacityFactors[],
-  confirmedOccupancies?: Record<string, OccupancyResponse>,
-  realizedOccupancies?: Record<string, OccupancyResponse>
+  confirmedOccupancies?: Partial<Record<string, OccupancyResponse>>,
+  realizedOccupancies?: Partial<Record<string, OccupancyResponse>>
 ) {
   const groupsWithPlacements = groups.map((group) => ({
     ...group,
@@ -111,13 +113,13 @@ type Props = {
   placements: DaycarePlacementWithDetails[]
   backupCares: UnitBackupCare[]
   groupPermittedActions: Record<UUID, Action.Group[] | undefined>
-  groupCaretakers: Record<string, Caretakers>
-  groupConfirmedOccupancies?: Record<string, OccupancyResponse>
-  groupRealizedOccupancies?: Record<string, OccupancyResponse>
+  groupCaretakers: Partial<Record<string, Caretakers>>
+  groupConfirmedOccupancies?: Partial<Record<string, OccupancyResponse>>
+  groupRealizedOccupancies?: Partial<Record<string, OccupancyResponse>>
   openGroups: Record<string, boolean>
   setOpenGroups: Dispatch<SetStateAction<Record<string, boolean>>>
-  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
-  permittedGroupPlacementActions: Record<UUID, Action.GroupPlacement[]>
+  permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
+  permittedGroupPlacementActions: Partial<Record<UUID, Action.GroupPlacement[]>>
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
 }
 

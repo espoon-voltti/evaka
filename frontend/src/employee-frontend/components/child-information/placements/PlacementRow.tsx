@@ -61,7 +61,7 @@ interface PlacementUpdate {
 interface Props {
   placement: DaycarePlacementWithDetails
   permittedActions: Action.Placement[]
-  permittedServiceNeedActions: Record<string, Action.ServiceNeed[]>
+  permittedServiceNeedActions: Partial<Record<string, Action.ServiceNeed[]>>
   onRefreshNeeded: () => void
   otherPlacementRanges: FiniteDateRange[]
   serviceNeedOptions: ServiceNeedOption[]

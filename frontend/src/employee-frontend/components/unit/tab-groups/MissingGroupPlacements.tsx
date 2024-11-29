@@ -146,8 +146,8 @@ type Props = {
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
   backupCares: UnitBackupCare[]
-  permittedPlacementActions: Record<UUID, Action.Placement[]>
-  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
+  permittedPlacementActions: Partial<Record<UUID, Action.Placement[]>>
+  permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
 }
 
 export default React.memo(function MissingGroupPlacements({
@@ -199,13 +199,13 @@ export default React.memo(function MissingGroupPlacements({
               row,
               () => addPlacementToGroup(row),
               i18n,
-              row.backup
+              (row.backup
                 ? permittedBackupCareActions[row.placementId]?.includes(
                     'UPDATE'
                   )
                 : permittedPlacementActions[row.placementId]?.includes(
                     'CREATE_GROUP_PLACEMENT'
-                  )
+                  )) ?? false
             )
           )}
         </Tbody>
