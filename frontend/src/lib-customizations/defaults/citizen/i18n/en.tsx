@@ -2337,43 +2337,44 @@ const en: Translations = {
       empty: 'Not defined'
     },
     serviceApplication: {
-      title: 'Palveluntarpeen muutoshakemukset',
-      sentAt: 'Lähetetty',
-      startDate: 'Ehdotettu aloituspäivä',
+      title: 'Applications concerning a change in the service need',
+      sentAt: 'Sent at',
+      startDate: 'Proposed starting date',
       startDateInfo:
-        'Valitse päivä, jolloin haluaisit uuden palveluntarpeen alkavan. Pääsääntöisesti palveluntarvetta voi vaihtaa vain kuukauden alusta.',
+        'Select the date on which you would like the new service need to start. As a rule, the service need can only be changed at the beginning of a month.',
       startDateOnlyFirstDayWarning:
-        'Palveluntarve voi vaihtua keskellä kuuta vain erikoistapauksissa. Valitse kuun ensimmäinen päivä tai perustele tarve lisätiedoissa.',
-      serviceNeed: 'Ehdotettu palveluntarve',
+        'The service need can change in the middle of a month only in special circumstances. Select the first day of the month or add your justification for a change on a different date in the additional information field.',
+      serviceNeed: 'Proposed new service need',
       serviceNeedInfo:
-        'Voit valita näistä palveluntarpeista. Jos haluat vaihtaa johonkin muuhun palveluntarpeesen, ota yhteys henkilökuntaan.',
-      additionalInfo: 'Lisätiedot',
+        'You can choose from the following service needs. If you wish to change to another service need, please contact the staff.',
+      additionalInfo: 'Additional information',
       additionalInfoInfo:
-        'Kirjoita tähän lisätietoja esim. miksi vaihdat palveluntarvetta',
-      additionalInfoRequired: 'Perustele tavallisesta poikkeava aloituspäivä',
-      cancelApplication: 'Peru hakemus',
-      status: 'Tila',
+        'Type additional information here, e.g., why your need for service changes',
+      additionalInfoRequired:
+        'Please add your justification for a start date other than usual',
+      cancelApplication: 'Cancel application',
+      status: 'Status',
       decision: {
         statuses: {
-          undecided: 'Ehdotettu',
-          ACCEPTED: 'Hyväksytty',
-          REJECTED: 'Hylätty'
+          undecided: 'Proposed',
+          ACCEPTED: 'Accepted',
+          REJECTED: 'Rejected'
         },
-        rejectedReason: 'Hylkäysperuste'
+        rejectedReason: 'Grounds for rejection'
       },
       openApplicationInfo:
-        'Olet ehdottanut lapselle uutta palveluntarvetta. Ehdotuksesi on yksikön johtajalla hyväksyttävänä.',
-      createButton: 'Ehdota muutosta palveluntarpeeseen',
+        'You have proposed a new service need for the child. Your proposal has been submitted to the director of the unit for approval.',
+      createButton: 'Propose a change to the need for service',
       createInfo:
-        'Tästä voit ehdottaa muutosta lapsesi palveluntarpeeseen. Varhaiskasvatusyksikön johtaja hyväksyy tai hylkää ehdotuksesi. Tarkempaa lisätietoa palveluntarpeen muuttamisesta voit kysyä lapsesi yksiköstä.',
-      createTitle: 'Palveluntarpeen muutoshakemus',
-      send: 'Lähetä',
+        "This allows you to propose a change in your child's need for service. The director of the early childhood education unit will accept or reject your proposal. For more information about changing the service need, ask directly at your child's unit.",
+      createTitle: 'Application for a change in the service need',
+      send: 'Send',
       noSuitablePlacementMessage:
-        'Lapsella ei ole sellaista varhaiskasvatussijoitusta, jonka palveluntarvetta voisi muuttaa eVakan kautta. Ota tarvittaessa yhteys yksikköön.',
+        'The child does not have an early childhood education placement where the service need could be changed through eVaka. If necessary, contact the unit.',
       noSuitablePlacementOnDateTitle:
-        'Valitulle päivälle ei voi ehdottaa uutta palveluntarvetta',
+        'A new service need cannot be proposed for the selected date',
       noSuitablePlacementOnDateMessage:
-        'Valittuna päivänä lapsella ei ole sellaista varhaiskasvatussijoitusta, jonka palveluntarvetta voisi muuttaa eVakan kautta. Ota tarvittaessa yhteys yksikköön.'
+        'On the selected date, the child does not have an early childhood education placement where the service need could be changed through eVaka. If necessary, contact the unit.'
     },
     childDocuments: {
       title: 'Pedagogical documents',

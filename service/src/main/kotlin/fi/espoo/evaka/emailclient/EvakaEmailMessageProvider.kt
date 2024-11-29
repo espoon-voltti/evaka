@@ -722,16 +722,25 @@ $unsubscribeEn
     ): EmailContent {
         val start = startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         return EmailContent.fromHtml(
-            subject = "Palveluntarpeen muutoshakemuksesi on käsitelty",
+            subject =
+                "Palveluntarpeen muutoshakemuksesi on käsitelty / Din ansökan om ändring av servicebehovet har behandlats. / Your application for a change in the service need has been processed",
             html =
                 if (accepted)
                     """
                 <p>Ehdottamasi palveluntarve on hyväksytty $start alkaen.</p>
+                <hr>
+                <p>Det servicebehov som du har föreslagit har godkänts från $start.</p>
+                <hr>
+                <p>The service need you have proposed has been accepted as of $start.</p>
             """
                         .trimIndent()
                 else
                     """
                 <p>Ehdottamasi palveluntarve on hylätty, lue lisätiedot hylkäyksestä eVakassa.</p>
+                <hr>
+                <p>Det servicebehov som du har föreslagit har avslagits, läs mer om avslaget i eVaka.</p>
+                <hr>
+                <p>The service need you have suggested has been rejected. Please log in to eVaka to read the grounds for rejection.</p>
             """
                         .trimIndent(),
         )
