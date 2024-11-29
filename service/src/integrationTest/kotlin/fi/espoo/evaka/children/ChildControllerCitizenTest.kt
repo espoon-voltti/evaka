@@ -330,6 +330,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         Action.Citizen.Child.CREATE_CALENDAR_EVENT_TIME_RESERVATION,
                         Action.Citizen.Child.READ_SERVICE_APPLICATIONS,
                     ),
+                serviceApplicationCreationPossible = false,
             )
         assertThat(
                 childControllerCitizen.getChildren(
