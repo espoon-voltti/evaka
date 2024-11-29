@@ -46,6 +46,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faExclamationTriangle } from 'lib-icons'
 import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -185,7 +186,7 @@ const ChildDocumentEditViewInner = React.memo(
 
     const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
     const [lastSavedContent, setLastSavedContent] = useState(document.content)
-    const [lockError, setLockError] = useState(false)
+    const [error, setError] = useState<'lock' | 'other' | null>(null)
 
     const { mutateAsync: updateChildDocumentContent, isPending: submitting } =
       useMutationResult(updateChildDocumentContentMutation)
@@ -212,8 +213,8 @@ const ChildDocumentEditViewInner = React.memo(
           setLastSaved(HelsinkiDateTime.now())
           setLastSavedContent(content)
         } else {
-          if (result.isFailure && result.errorCode === 'invalid-lock') {
-            setLockError(true)
+          if (result.isFailure) {
+            setError(result.errorCode === 'invalid-lock' ? 'lock' : 'other')
           }
         }
       },
@@ -232,19 +233,27 @@ const ChildDocumentEditViewInner = React.memo(
 
     useEffect(() => {
       if (
-        !lockError &&
+        error === null &&
         debouncedValidContent !== null &&
         !isEqual(lastSavedContent, debouncedValidContent) &&
         !submitting
       ) {
         void save(debouncedValidContent)
       }
-    }, [lockError, debouncedValidContent, lastSavedContent, save, submitting])
+    }, [error, debouncedValidContent, lastSavedContent, save, submitting])
+
+    useEffect(() => {
+      if (error === 'other') {
+        const handle = setTimeout(() => setError(null), 5000)
+        return () => clearTimeout(handle)
+      }
+      return undefined
+    }, [error])
 
     const goBack = () =>
       navigate(`/child-information/${childIdFromUrl ?? document.child.id}`)
 
-    if (lockError) {
+    if (error === 'lock') {
       return (
         <ConcurrentEditWarning
           documentId={document.id}
@@ -285,6 +294,15 @@ const ChildDocumentEditViewInner = React.memo(
                   </span>
                   {!saved && (
                     <Spinner size={defaultMargins.m} data-qa="saving-spinner" />
+                  )}
+                  {error === 'other' && (
+                    <span>
+                      <FontAwesomeIcon
+                        icon={faExclamationTriangle}
+                        color={colors.status.warning}
+                      />{' '}
+                      {i18n.childInformation.childDocuments.editor.saveError}
+                    </span>
                   )}
                 </FixedSpaceRow>
               </FixedSpaceRow>
