@@ -58,7 +58,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     // TODO Re-write this a bit to use DevMobileDevice instead of what it actually does.
 
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
-    private val mobileUser2 = DevMobileDevice(unitId = testDaycare2.id)
+    private val mobileUser2 = DevMobileDevice(unitId = testDaycare2.id, name = "Laite ")
     private val groupId = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
@@ -69,7 +69,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private val user2 = mobileUser2.toEvakaUser()
     private val employee2 =
-        DevEmployee(id = EmployeeId(user2.id.raw), lastName = user2.name, firstName = "")
+        DevEmployee(id = EmployeeId(user2.id.raw), lastName = "Laite", firstName = "")
 
     @BeforeEach
     fun beforeEach() {
@@ -452,6 +452,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = now.toLocalDate(),
                     startTime = null,
                     endTime = null,
+                    createdAt = now,
                     createdBy = mobileUser2.toEvakaUser().id,
                 )
             )
@@ -483,6 +484,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = now.toLocalDate(),
                     startTime = reservationStart,
                     endTime = reservationEnd,
+                    createdAt = now,
                     createdBy = mobileUser2.toEvakaUser().id,
                 )
             )
