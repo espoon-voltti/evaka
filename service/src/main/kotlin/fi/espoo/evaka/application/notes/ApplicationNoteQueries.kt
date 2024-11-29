@@ -100,6 +100,12 @@ FROM updated_note n
         }
         .exactlyOne()
 
+fun Database.Read.getServiceWorkerApplicationNote(id: ApplicationId) =
+    createQuery {
+            sql("SELECT application.service_worker_note FROM application WHERE id = ${bind(id)}")
+        }
+        .exactlyOne<String>()
+
 fun Database.Transaction.updateServiceWorkerApplicationNote(id: ApplicationId, content: String) =
     createUpdate {
             sql(
