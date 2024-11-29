@@ -224,6 +224,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   prevMonth={prevMonth}
                   nextMonth={nextMonth}
                   selectedMonthIndex={selectedMonthIndex}
+                  setSelectedMonthIndex={setSelectedMonthIndex}
                 />
               </RenderOnlyOn>
               {modalState?.type === 'day' && (

@@ -84,6 +84,7 @@ export default {
     errors: {
       genericGetError: 'Tietojen hakeminen ei onnistunut'
     },
+    today: 'Tänään',
     datetime: {
       dayShort: 'pv',
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],

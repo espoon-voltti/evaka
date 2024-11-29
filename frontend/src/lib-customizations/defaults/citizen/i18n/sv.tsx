@@ -85,6 +85,7 @@ const sv: Translations = {
     errors: {
       genericGetError: 'Hämtning av information misslyckades'
     },
+    today: 'Idag',
     datetime: {
       dayShort: 'pv',
       weekdaysShort: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
