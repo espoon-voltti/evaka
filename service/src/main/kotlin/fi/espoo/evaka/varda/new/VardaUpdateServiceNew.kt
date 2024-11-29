@@ -122,7 +122,7 @@ class VardaUpdateServiceNew(
         )
     }
 
-    fun planChildrenUpdate(dbc: Database.Connection, clock: EvakaClock, migrationSpeed: Int = 0) {
+    fun planChildrenUpdate(dbc: Database.Connection, clock: EvakaClock) {
         logger.info { "Planning Varda child updates" }
 
         val chunkSize = 1000
@@ -133,7 +133,7 @@ class VardaUpdateServiceNew(
 
         val childIds =
             dbc.transaction { tx ->
-                val count = tx.addNewChildrenForVardaUpdate(migrationSpeed)
+                val count = tx.addNewChildrenForVardaUpdate()
                 logger.info { "Added $count new children for Varda update" }
 
                 tx.getVardaUpdateChildIds()

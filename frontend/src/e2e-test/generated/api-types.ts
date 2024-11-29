@@ -910,25 +910,6 @@ export interface DevUpsertStaffOccupancyCoefficient {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.DevVardaReset
-*/
-export interface DevVardaReset {
-  evakaChildId: UUID
-  resetTimestamp: HelsinkiDateTime | null
-}
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.DevVardaServiceNeed
-*/
-export interface DevVardaServiceNeed {
-  errors: string[] | null
-  evakaChildId: UUID
-  evakaServiceNeedId: UUID
-  evakaServiceNeedUpdated: HelsinkiDateTime
-  updateFailed: boolean | null
-}
-
-/**
 * Generated from fi.espoo.evaka.emailclient.Email
 */
 export interface Email {
@@ -1531,22 +1512,6 @@ export function deserializeJsonDevTerminatePlacementRequest(json: JsonOf<DevTerm
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
     terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null
-  }
-}
-
-
-export function deserializeJsonDevVardaReset(json: JsonOf<DevVardaReset>): DevVardaReset {
-  return {
-    ...json,
-    resetTimestamp: (json.resetTimestamp != null) ? HelsinkiDateTime.parseIso(json.resetTimestamp) : null
-  }
-}
-
-
-export function deserializeJsonDevVardaServiceNeed(json: JsonOf<DevVardaServiceNeed>): DevVardaServiceNeed {
-  return {
-    ...json,
-    evakaServiceNeedUpdated: HelsinkiDateTime.parseIso(json.evakaServiceNeedUpdated)
   }
 }
 

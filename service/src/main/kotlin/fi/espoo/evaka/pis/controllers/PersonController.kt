@@ -34,7 +34,6 @@ import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.service.unblockGuardian
-import fi.espoo.evaka.pis.updateOphPersonOid
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -45,7 +44,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.varda.getDistinctVardaPersonOidsByEvakaPersonId
 import java.time.LocalDate
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.ContentDisposition
@@ -162,16 +160,6 @@ class PersonController(
                             }
                     parentRelationships.forEach { relationship ->
                         tx.createFosterParentRelationship(relationship, user, clock.now())
-                    }
-
-                    if (tx.getPersonById(duplicateId)!!.ophPersonOid.isNullOrBlank()) {
-                        val vardaPersonOids = tx.getDistinctVardaPersonOidsByEvakaPersonId(personId)
-                        if (vardaPersonOids.isNotEmpty()) {
-                            tx.updateOphPersonOid(
-                                duplicateId,
-                                vardaPersonOids.sorted().joinToString(","),
-                            )
-                        }
                     }
 
                     duplicateId

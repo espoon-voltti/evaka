@@ -15,20 +15,13 @@ import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { TableScrollable } from './common'
-import {
-  resetVardaChildMutation,
-  startVardaResetMutation,
-  startVardaUpdateMutation,
-  vardaChildErrorsQuery
-} from './queries'
+import { resetVardaChildMutation, vardaChildErrorsQuery } from './queries'
 
 const FlatList = styled.ul`
   list-style: none;
@@ -48,28 +41,6 @@ export default React.memo(function VardaChildErrors() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.vardaChildErrors.title}</Title>
-        <ExpandingInfo
-          data-qa="varda-expanding-info"
-          info={i18n.reports.vardaChildErrors.vardaInfo}
-        >
-          <FixedSpaceRow>
-            <MutateButton
-              primary
-              text={i18n.reports.vardaChildErrors.vardaUpdateButton}
-              mutation={startVardaUpdateMutation}
-              onClick={() => true}
-              data-qa="varda-update-button"
-            />
-            <MutateButton
-              primary
-              text={i18n.reports.vardaChildErrors.vardaResetButton}
-              mutation={startVardaResetMutation}
-              onClick={() => true}
-              data-qa="varda-reset-button"
-            />
-          </FixedSpaceRow>
-        </ExpandingInfo>
-
         <Gap size="xxs" />
         {renderResult(vardaErrorsResult, (rows) => (
           <>

@@ -68,26 +68,6 @@ private fun Database.Read.getVardaChildErrors(): List<VardaChildErrorReportRow> 
             sql(
                 """
 SELECT
-    vsn.evaka_service_need_id AS service_need_id,
-    daterange(sn.start_date, sn.end_date, '[]') as service_need_validity,
-    sno.name_fi as service_need_option_name,
-    vsn.evaka_child_id AS child_id,
-    vsn.updated,
-    CASE WHEN vrc.reset_timestamp IS NULL THEN vrc.updated ELSE vsn.created END AS created,
-    vsn.errors,
-    vrc.reset_timestamp
-FROM varda_service_need vsn
-JOIN service_need sn on vsn.evaka_service_need_id = sn.id
-JOIN service_need_option sno ON sn.option_id = sno.id
-LEFT JOIN varda_reset_child vrc ON vrc.evaka_child_id = vsn.evaka_child_id
-WHERE
-    vsn.update_failed AND
-    vrc.reset_timestamp IS NOT NULL AND
-    NOT EXISTS (SELECT FROM varda_state vs WHERE vs.child_id = vsn.evaka_child_id)
-
-UNION ALL
-
-SELECT
     NULL AS service_need_id,
     NULL AS service_need_validity,
     NULL AS service_need_option_name,
@@ -98,7 +78,6 @@ SELECT
     NULL AS reset_timestamp
 FROM varda_state
 WHERE errored_at IS NOT NULL
-
 ORDER BY updated DESC
     """
             )

@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
-import fi.espoo.evaka.shared.dev.DevVardaOrganizerChild
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -128,115 +127,6 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     .exactlyOne<PersonId>()
             }
         assertThat(duplicateOf).isEqualTo(person.id)
-    }
-
-    @Test
-    fun `duplicate person data with oph and varda oid should duplicate oph oid`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val person = createPerson(testPerson.copy(ophPersonOid = "ophPersonOid123"))
-        assertThat(person).extracting { it.identity }.isNotNull
-        db.transaction { tx ->
-            tx.insert(
-                DevVardaOrganizerChild(
-                    evakaPersonId = person.id,
-                    vardaPersonOid = "vardaPersonOid123",
-                )
-            )
-        }
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
-
-        val original = controller.getPerson(dbInstance(), user, clock, person.id)
-        val duplicate = controller.getPerson(dbInstance(), user, clock, duplicateId)
-        assertThat(duplicate)
-            .returns(null) { it.person.socialSecurityNumber }
-            .returns(null) { it.person.updatedFromVtj }
-            .returns(true) { it.person.ssnAddingDisabled }
-            .returns(person.id) { it.person.duplicateOf }
-            .usingRecursiveComparison()
-            .ignoringFields(
-                "person.id",
-                "person.duplicateOf",
-                "person.socialSecurityNumber",
-                "person.updatedFromVtj",
-                "person.ssnAddingDisabled",
-            )
-            .isEqualTo(original)
-    }
-
-    @Test
-    fun `duplicate person data with multiple same varda oids should duplicate oid once`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val person = createPerson()
-        assertThat(person).extracting { it.identity }.isNotNull
-        val vardaPersonOid = "vardaPersonOid123"
-        db.transaction { tx ->
-            tx.insert(
-                DevVardaOrganizerChild(evakaPersonId = person.id, vardaPersonOid = vardaPersonOid)
-            )
-            tx.insert(
-                DevVardaOrganizerChild(evakaPersonId = person.id, vardaPersonOid = vardaPersonOid)
-            )
-        }
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
-
-        val original = controller.getPerson(dbInstance(), user, clock, person.id)
-        val duplicate = controller.getPerson(dbInstance(), user, clock, duplicateId)
-        assertThat(duplicate)
-            .returns(null) { it.person.socialSecurityNumber }
-            .returns(null) { it.person.updatedFromVtj }
-            .returns(true) { it.person.ssnAddingDisabled }
-            .returns(person.id) { it.person.duplicateOf }
-            .returns(vardaPersonOid) { it.person.ophPersonOid }
-            .usingRecursiveComparison()
-            .ignoringFields(
-                "person.id",
-                "person.duplicateOf",
-                "person.socialSecurityNumber",
-                "person.updatedFromVtj",
-                "person.ssnAddingDisabled",
-                "person.ophPersonOid",
-            )
-            .isEqualTo(original)
-    }
-
-    @Test
-    fun `duplicate person data with multiple distinct varda oids duplicate all oids`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val person = createPerson()
-        assertThat(person).extracting { it.identity }.isNotNull
-        val vardaPersonOid1 = "vardaPersonOid123"
-        val vardaPersonOid2 = "vardaPersonOid456"
-        db.transaction { tx ->
-            tx.insert(
-                DevVardaOrganizerChild(evakaPersonId = person.id, vardaPersonOid = vardaPersonOid1)
-            )
-            tx.insert(
-                DevVardaOrganizerChild(evakaPersonId = person.id, vardaPersonOid = vardaPersonOid2)
-            )
-        }
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
-
-        val original = controller.getPerson(dbInstance(), user, clock, person.id)
-        val duplicate = controller.getPerson(dbInstance(), user, clock, duplicateId)
-        assertThat(duplicate)
-            .returns(null) { it.person.socialSecurityNumber }
-            .returns(null) { it.person.updatedFromVtj }
-            .returns(true) { it.person.ssnAddingDisabled }
-            .returns("$vardaPersonOid1,$vardaPersonOid2") { it.person.ophPersonOid }
-            .returns(person.id) { it.person.duplicateOf }
-            .usingRecursiveComparison()
-            .ignoringFields(
-                "person.id",
-                "person.duplicateOf",
-                "person.socialSecurityNumber",
-                "person.updatedFromVtj",
-                "person.ssnAddingDisabled",
-                "person.ophPersonOid",
-            )
-            .isEqualTo(original)
     }
 
     @Test

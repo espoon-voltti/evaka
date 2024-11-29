@@ -38,8 +38,6 @@ import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.titania.cleanTitaniaErrors
 import fi.espoo.evaka.varda.new.VardaUpdateServiceNew
-import fi.espoo.evaka.varda.old.VardaResetService
-import fi.espoo.evaka.varda.old.VardaUpdateService
 import java.time.LocalTime
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -142,14 +140,6 @@ enum class ScheduledJob(
             retryCount = 1,
         ),
     ),
-    VardaReset(
-        ScheduledJobs::vardaReset,
-        ScheduledJobSettings(
-            enabled = false,
-            schedule = JobSchedule.cron("0 0 23 * * 1,4"), // mon, thu @ 23 pm
-            retryCount = 1,
-        ),
-    ),
     InactivePeopleCleanup(
         ScheduledJobs::inactivePeopleCleanup,
         ScheduledJobSettings(
@@ -232,8 +222,6 @@ private val logger = KotlinLogging.logger {}
 @Component
 class ScheduledJobs(
     // private val vardaService: VardaService, // Use this once varda fixes MA003 retry glitch
-    private val vardaUpdateService: VardaUpdateService,
-    private val vardaResetService: VardaResetService,
     private val vardaUpdateServiceNew: VardaUpdateServiceNew,
     private val vardaEnv: VardaEnv,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
@@ -346,28 +334,8 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
-        if (vardaEnv.newIntegrationEnabled) {
-            vardaUpdateServiceNew.updateUnits(db, clock)
-            vardaUpdateServiceNew.planChildrenUpdate(
-                db,
-                clock,
-                vardaEnv.newIntegrationMigrationSpeed,
-            )
-        } else {
-            vardaUpdateService.updateUnits(db, clock)
-        }
-
-        // Run old integration in addition to the new one. The old integration can be removed when
-        // all children have been migrated to the new integration.
-        vardaUpdateService.planVardaChildrenUpdate(db, clock)
-    }
-
-    fun vardaReset(db: Database.Connection, clock: EvakaClock) {
-        vardaResetService.planVardaReset(
-            db,
-            clock,
-            addNewChildren = !vardaEnv.newIntegrationEnabled,
-        )
+        vardaUpdateServiceNew.updateUnits(db, clock)
+        vardaUpdateServiceNew.planChildrenUpdate(db, clock)
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {

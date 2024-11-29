@@ -212,7 +212,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 import mu.KotlinLogging
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
@@ -1328,47 +1327,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
         db.connect { dbc -> dbc.transaction { tx -> attendances.forEach { tx.insert(it) } } }
 
-    data class DevVardaReset(val evakaChildId: ChildId, val resetTimestamp: HelsinkiDateTime?)
-
-    @PostMapping("/varda/reset-child")
-    fun createVardaReset(db: Database, @RequestBody body: DevVardaReset) {
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate {
-                        sql(
-                            "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (${bind(body.evakaChildId)}, ${bind(body.resetTimestamp)})"
-                        )
-                    }
-                    .execute()
-            }
-        }
-    }
-
-    data class DevVardaServiceNeed(
-        val evakaServiceNeedId: ServiceNeedId,
-        val evakaServiceNeedUpdated: HelsinkiDateTime,
-        val evakaChildId: ChildId,
-        val updateFailed: Boolean?,
-        val errors: List<String>?,
-    )
-
-    @PostMapping("/varda/varda-service-need")
-    fun createVardaServiceNeed(db: Database, @RequestBody body: DevVardaServiceNeed) {
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate {
-                        sql(
-                            """
-INSERT INTO varda_service_need(evaka_service_need_id, evaka_service_need_updated, evaka_child_id, update_failed, errors)
-VALUES (${bind(body.evakaServiceNeedId)}, ${bind(body.evakaServiceNeedUpdated)}, ${bind(body.evakaChildId)}, ${bind(body.updateFailed)}, ${bind(body.errors)})
-"""
-                        )
-                    }
-                    .execute()
-            }
-        }
-    }
-
     @PostMapping("/occupancy-coefficient")
     fun upsertStaffOccupancyCoefficient(
         db: Database,
@@ -2432,15 +2390,6 @@ data class DevOtherAssistanceMeasure(
             name = "eVaka",
             type = EvakaUserType.EMPLOYEE,
         ),
-)
-
-data class DevVardaOrganizerChild(
-    val evakaPersonId: ChildId,
-    val vardaPersonOid: String = "vardaPersonOid123",
-    val vardaChildId: Long = Random.nextLong(),
-    val organizerOid: String = "organizerOid123",
-    val uploadedAt: HelsinkiDateTime? = null,
-    val vardaPersonId: Long = Random.nextLong(),
 )
 
 data class DevAssistanceActionOption(

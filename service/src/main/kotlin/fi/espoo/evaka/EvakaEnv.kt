@@ -237,12 +237,6 @@ data class VardaEnv(
     val startDate: LocalDate?,
     val endDate: LocalDate?,
     val localDevPort: Int?,
-
-    // These two fields can be removed once the new Varda integration is in use and
-    // all children have been migrated
-    val newIntegrationEnabled: Boolean,
-    /** How many children to move from the old integration to new per Varda run */
-    val newIntegrationMigrationSpeed: Int,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -252,10 +246,6 @@ data class VardaEnv(
                 basicAuth = Sensitive(env.lookup("evaka.integration.varda.basic_auth") ?: ""),
                 startDate = env.lookup("evaka.integration.varda.start_date"),
                 endDate = env.lookup("evaka.integration.varda.end_date"),
-                newIntegrationEnabled =
-                    env.lookup("evaka.integration.varda.new_integration.enabled") ?: false,
-                newIntegrationMigrationSpeed =
-                    env.lookup("evaka.integration.varda.new_integration.migration_speed") ?: 0,
 
                 // Port that's forwarded to Varda for local development
                 localDevPort = env.lookup("evaka.integration.varda.local_dev_port"),
