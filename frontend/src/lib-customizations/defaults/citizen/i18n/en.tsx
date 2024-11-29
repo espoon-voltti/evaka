@@ -87,6 +87,7 @@ const en: Translations = {
     errors: {
       genericGetError: 'Error in fetching the requested information'
     },
+    today: 'Today',
     datetime: {
       dayShort: 'd',
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],

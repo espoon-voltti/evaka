@@ -35,6 +35,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import {
   faCalendar,
+  faCalendarAlt,
   faCalendarPlus,
   faChevronLeft,
   faChevronRight,
@@ -76,6 +77,7 @@ export interface Props {
   selectedMonthIndex: number
   nextMonth: (monthDataLength: number) => void
   prevMonth: (beforeDate: LocalDate) => void
+  setSelectedMonthIndex: (monthIndex: number) => void
 }
 
 export function countEventsForDay(
@@ -136,7 +138,8 @@ export default React.memo(function CalendarMonthView({
   loading: previousLoading,
   selectedMonthIndex,
   nextMonth,
-  prevMonth
+  prevMonth,
+  setSelectedMonthIndex
 }: Props) {
   const i18n = useTranslation()
   const calendarMonths = useMemo(
@@ -154,6 +157,15 @@ export default React.memo(function CalendarMonthView({
   const nextMonthCallback = useCallback(() => {
     nextMonth(calendarMonths.length)
   }, [calendarMonths.length, nextMonth])
+
+  const goToThisMonth = useCallback(() => {
+    const currentMonthYear = LocalDate.todayInSystemTz().getYearMonth()
+    const currentIndex = calendarMonths.findIndex(
+      (m) =>
+        m.year === currentMonthYear.year && m.month === currentMonthYear.month
+    )
+    return setSelectedMonthIndex(currentIndex)
+  }, [calendarMonths, setSelectedMonthIndex])
 
   const isDateInCurrentMonth = useCallback(() => {
     if (!selectedDate) return false
@@ -267,6 +279,7 @@ export default React.memo(function CalendarMonthView({
           summaryInfoOpen={summaryInfoOpen}
           displayAlert={displayAlert}
           loading={previousLoading}
+          goToThisMonth={goToThisMonth}
         />
         <Month
           key={`${selectedMonthData?.month}${selectedMonthData?.year}`}
@@ -619,7 +632,8 @@ const MonthPicker = React.memo(function MonthPicker({
   toggleSummaryInfo,
   summaryInfoOpen,
   displayAlert,
-  loading
+  loading,
+  goToThisMonth
 }: {
   childSummaries: MonthlyTimeSummary[]
   selectedMonthData: MonthlyData
@@ -631,12 +645,18 @@ const MonthPicker = React.memo(function MonthPicker({
   summaryInfoOpen: boolean
   displayAlert: boolean
   loading: boolean
+  goToThisMonth: () => void
 }) {
   const i18n = useTranslation()
+  const monthTitle = `${i18n.common.datetime.months[selectedMonthData.month - 1]} ${selectedMonthData.year}`
   return (
     <MonthPickerContainer>
-      <MonthTitle data-qa="calendar-month-title">
-        {`${i18n.common.datetime.months[selectedMonthData.month - 1]} ${selectedMonthData.year}`}
+      <MonthTitle
+        data-qa="calendar-month-title"
+        aria-live="polite"
+        aria-label={monthTitle}
+      >
+        {monthTitle}
         {childSummaries.length > 0 && (
           <InlineInfoButton
             onClick={toggleSummaryInfo}
@@ -663,6 +683,13 @@ const MonthPicker = React.memo(function MonthPicker({
         disabled={currentIndex === monthDataLength - 1 || loading}
         aria-label={i18n.calendar.nextMonth}
         data-qa="next-month-button"
+      />
+      <Gap size="s" horizontal />
+      <Button
+        appearance="inline"
+        icon={faCalendarAlt}
+        text={i18n.common.today}
+        onClick={goToThisMonth}
       />
     </MonthPickerContainer>
   )
