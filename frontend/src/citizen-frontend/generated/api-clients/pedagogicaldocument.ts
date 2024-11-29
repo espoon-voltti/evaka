@@ -31,8 +31,8 @@ export async function getPedagogicalDocumentsForChild(
 /**
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentControllerCitizen.getUnreadPedagogicalDocumentCount
 */
-export async function getUnreadPedagogicalDocumentCount(): Promise<Record<UUID, number>> {
-  const { data: json } = await client.request<JsonOf<Record<UUID, number>>>({
+export async function getUnreadPedagogicalDocumentCount(): Promise<Partial<Record<UUID, number>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<UUID, number>>>>({
     url: uri`/citizen/pedagogical-documents/unread-count`.toString(),
     method: 'GET'
   })

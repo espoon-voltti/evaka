@@ -348,8 +348,8 @@ export interface FullAclInfo {
 * Generated from fi.espoo.evaka.daycare.controllers.GroupOccupancies
 */
 export interface GroupOccupancies {
-  confirmed: Record<UUID, OccupancyResponse>
-  realized: Record<UUID, OccupancyResponse>
+  confirmed: Partial<Record<UUID, OccupancyResponse>>
+  realized: Partial<Record<UUID, OccupancyResponse>>
 }
 
 /**
@@ -452,7 +452,7 @@ export interface PublicUnit {
 * Generated from fi.espoo.evaka.daycare.service.StaffAttendanceForDates
 */
 export interface StaffAttendanceForDates {
-  attendances: Record<string, GroupStaffAttendance>
+  attendances: Partial<Record<string, GroupStaffAttendance>>
   endDate: LocalDate | null
   groupId: UUID
   groupName: string
@@ -485,13 +485,13 @@ export interface UnitFeatures {
 */
 export interface UnitGroupDetails {
   backupCares: UnitBackupCare[]
-  caretakers: Record<UUID, Caretakers>
+  caretakers: Partial<Record<UUID, Caretakers>>
   groupOccupancies: GroupOccupancies | null
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
-  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
-  permittedGroupPlacementActions: Record<UUID, Action.GroupPlacement[]>
-  permittedPlacementActions: Record<UUID, Action.Placement[]>
+  permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
+  permittedGroupPlacementActions: Partial<Record<UUID, Action.GroupPlacement[]>>
+  permittedPlacementActions: Partial<Record<UUID, Action.Placement[]>>
   placements: DaycarePlacementWithDetails[]
   recentlyTerminatedPlacements: TerminatedPlacement[]
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
@@ -701,10 +701,10 @@ export function deserializeJsonGroupOccupancies(json: JsonOf<GroupOccupancies>):
   return {
     ...json,
     confirmed: Object.fromEntries(Object.entries(json.confirmed).map(
-      ([k, v]) => [k, deserializeJsonOccupancyResponse(v)]
+      ([k, v]) => [k, v !== undefined ? deserializeJsonOccupancyResponse(v) : v]
     )),
     realized: Object.fromEntries(Object.entries(json.realized).map(
-      ([k, v]) => [k, deserializeJsonOccupancyResponse(v)]
+      ([k, v]) => [k, v !== undefined ? deserializeJsonOccupancyResponse(v) : v]
     ))
   }
 }
@@ -766,7 +766,7 @@ export function deserializeJsonStaffAttendanceForDates(json: JsonOf<StaffAttenda
   return {
     ...json,
     attendances: Object.fromEntries(Object.entries(json.attendances).map(
-      ([k, v]) => [k, deserializeJsonGroupStaffAttendance(v)]
+      ([k, v]) => [k, v !== undefined ? deserializeJsonGroupStaffAttendance(v) : v]
     )),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     startDate: LocalDate.parseIso(json.startDate)

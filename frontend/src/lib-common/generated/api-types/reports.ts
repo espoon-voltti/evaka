@@ -79,16 +79,16 @@ export interface AssistanceNeedsAndActionsReportByChild {
 * Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow
 */
 export interface AssistanceNeedsAndActionsReportRow {
-  actionCounts: Record<string, number>
+  actionCounts: Partial<Record<string, number>>
   assistanceNeedVoucherCoefficientCount: number
   careAreaName: string
-  daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
+  daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
   groupId: UUID
   groupName: string
   noActionCount: number
   otherActionCount: number
-  otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
-  preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
+  otherAssistanceMeasureCounts: Partial<Record<OtherAssistanceMeasureType, number>>
+  preschoolAssistanceCounts: Partial<Record<PreschoolAssistanceLevel, number>>
   unitId: UUID
   unitName: string
 }
@@ -104,12 +104,12 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
   childFirstName: string
   childId: UUID
   childLastName: string
-  daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
+  daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
   groupId: UUID
   groupName: string
   otherAction: string
-  otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
-  preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
+  otherAssistanceMeasureCounts: Partial<Record<OtherAssistanceMeasureType, number>>
+  preschoolAssistanceCounts: Partial<Record<PreschoolAssistanceLevel, number>>
   unitId: UUID
   unitName: string
 }
@@ -212,7 +212,7 @@ export interface ChildAttendanceReportRow {
 export interface ChildPreschoolAbsenceRow {
   childId: UUID
   firstName: string
-  hourlyTypeResults: Record<AbsenceType, number>
+  hourlyTypeResults: Partial<Record<AbsenceType, number>>
   lastName: string
 }
 
@@ -574,7 +574,7 @@ export interface OccupancyGroupReportResultRow {
   areaName: string
   groupId: UUID
   groupName: string
-  occupancies: Record<string, OccupancyValues>
+  occupancies: Partial<Record<string, OccupancyValues>>
   unitId: UUID
   unitName: string
 }
@@ -585,7 +585,7 @@ export interface OccupancyGroupReportResultRow {
 export interface OccupancyUnitReportResultRow {
   areaId: UUID
   areaName: string
-  occupancies: Record<string, OccupancyValues>
+  occupancies: Partial<Record<string, OccupancyValues>>
   unitId: UUID
   unitName: string
 }

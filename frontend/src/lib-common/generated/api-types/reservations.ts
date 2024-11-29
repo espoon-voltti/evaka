@@ -134,7 +134,7 @@ export interface ConfirmedRangeDateUpdate {
 */
 export interface DailyChildReservationResult {
   childReservations: ChildReservationInfo[]
-  children: Record<UUID, ReservationChildInfo>
+  children: Partial<Record<UUID, ReservationChildInfo>>
 }
 
 
@@ -488,7 +488,7 @@ export function deserializeJsonDailyChildReservationResult(json: JsonOf<DailyChi
     ...json,
     childReservations: json.childReservations.map(e => deserializeJsonChildReservationInfo(e)),
     children: Object.fromEntries(Object.entries(json.children).map(
-      ([k, v]) => [k, deserializeJsonReservationChildInfo(v)]
+      ([k, v]) => [k, v !== undefined ? deserializeJsonReservationChildInfo(v) : v]
     ))
   }
 }

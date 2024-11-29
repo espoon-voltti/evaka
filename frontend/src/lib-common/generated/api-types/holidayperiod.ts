@@ -56,7 +56,7 @@ export interface FixedPeriodQuestionnaireBody {
 * Generated from fi.espoo.evaka.holidayperiod.FixedPeriodsBody
 */
 export interface FixedPeriodsBody {
-  fixedPeriods: Record<UUID, FiniteDateRange | null>
+  fixedPeriods: Partial<Record<UUID, FiniteDateRange | null>>
 }
 
 /**
@@ -175,7 +175,7 @@ export function deserializeJsonFixedPeriodsBody(json: JsonOf<FixedPeriodsBody>):
   return {
     ...json,
     fixedPeriods: Object.fromEntries(Object.entries(json.fixedPeriods).map(
-      ([k, v]) => [k, (v != null) ? FiniteDateRange.parseJson(v) : null]
+      ([k, v]) => [k, v !== undefined ? (v != null) ? FiniteDateRange.parseJson(v) : null : v]
     ))
   }
 }

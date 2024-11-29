@@ -608,7 +608,7 @@ export interface DevGuardian {
 * Generated from fi.espoo.evaka.shared.dev.DevIncome
 */
 export interface DevIncome {
-  data: Record<string, IncomeValue>
+  data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
   id: UUID
   isEntrepreneur: boolean
@@ -967,7 +967,7 @@ export interface Geometry {
 * Generated from fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
 */
 export interface MockVtjDataset {
-  guardianDependants: Record<string, string[]>
+  guardianDependants: Partial<Record<string, string[]>>
   persons: MockVtjPerson[]
 }
 

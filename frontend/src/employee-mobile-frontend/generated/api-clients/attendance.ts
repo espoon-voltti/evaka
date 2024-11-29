@@ -85,13 +85,13 @@ export async function getAttendanceStatuses(
   request: {
     unitId: UUID
   }
-): Promise<Record<UUID, ChildAttendanceStatusResponse>> {
-  const { data: json } = await client.request<JsonOf<Record<UUID, ChildAttendanceStatusResponse>>>({
+): Promise<Partial<Record<UUID, ChildAttendanceStatusResponse>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<UUID, ChildAttendanceStatusResponse>>>>({
     url: uri`/employee-mobile/attendances/units/${request.unitId}/attendances`.toString(),
     method: 'GET'
   })
   return Object.fromEntries(Object.entries(json).map(
-    ([k, v]) => [k, deserializeJsonChildAttendanceStatusResponse(v)]
+    ([k, v]) => [k, v !== undefined ? deserializeJsonChildAttendanceStatusResponse(v) : v]
   ))
 }
 
