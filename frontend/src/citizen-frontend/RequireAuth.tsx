@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import { createSearchParams, Navigate, useLocation } from 'react-router-dom'
 
 import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
@@ -10,7 +10,7 @@ import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredM
 import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 
 import { AuthContext } from './auth/state'
-import { sessionKeepalive } from './messages/utils'
+import { sessionKeepalive } from './auth/utils'
 import { getStrongLoginUri } from './navigation/const'
 
 interface Props {
@@ -24,43 +24,14 @@ export default React.memo(function RequireAuth({
 }: Props) {
   const location = useLocation()
   const { user } = useContext(AuthContext)
-  const {
-    keepSessionAlive,
-    showSessionExpiredModal,
-    setShowSessionExpiredModal
-  } = useKeepSessionAlive(sessionKeepalive)
+  const { showSessionExpiredModal, setShowSessionExpiredModal } =
+    useKeepSessionAlive(sessionKeepalive)
 
   const isStrong = user
     .map((usr) => usr?.authLevel === 'STRONG')
     .getOrElse(false)
   const isWeak = user.map((usr) => usr?.authLevel === 'WEAK').getOrElse(false)
   const isLoggedIn = isStrong || isWeak
-
-  useEffect(() => {
-    if (!isLoggedIn) return
-
-    // Listen for events in capture phase with passive listeners for better performance
-    const eventListenerOptions = { capture: true, passive: true }
-    const userActivityEvents = ['keydown', 'mousedown', 'wheel', 'touchstart']
-
-    const handleUserActivity = async () => {
-      await keepSessionAlive()
-    }
-
-    userActivityEvents.forEach((event) => {
-      document.addEventListener(event, handleUserActivity, eventListenerOptions)
-    })
-
-    return () => {
-      userActivityEvents.forEach((event) => {
-        document.removeEventListener(
-          event,
-          handleUserActivity,
-          eventListenerOptions
-        )
-      })
-    }
-  }, [isLoggedIn, keepSessionAlive])
 
   const returnUrl = `${location.pathname}${location.search}${location.hash}`
   return isLoggedIn ? (

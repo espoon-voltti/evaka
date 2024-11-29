@@ -10,7 +10,8 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
   // Default to 2 minutes and allow overriding this in automated tests
   const throttleTime =
     window.evaka?.keepSessionAliveThrottleTime ?? 2 * 60 * 1000
-  const keepSessionAlive = useMemo(
+
+  const throttledKeepAlive = useMemo(
     () =>
       throttle(
         async () => {
@@ -34,11 +35,26 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
   )
 
   useEffect(() => {
-    return () => keepSessionAlive.cancel()
-  }, [keepSessionAlive])
+    const eventListenerOptions = { capture: true, passive: true }
+    const userActivityEvents = ['keydown', 'mousedown', 'wheel', 'touchstart']
+
+    userActivityEvents.forEach((event) => {
+      document.addEventListener(event, throttledKeepAlive, eventListenerOptions)
+    })
+
+    return () => {
+      userActivityEvents.forEach((event) => {
+        document.removeEventListener(
+          event,
+          throttledKeepAlive,
+          eventListenerOptions
+        )
+      })
+      throttledKeepAlive.cancel()
+    }
+  }, [throttledKeepAlive])
 
   return {
-    keepSessionAlive,
     showSessionExpiredModal,
     setShowSessionExpiredModal
   }
