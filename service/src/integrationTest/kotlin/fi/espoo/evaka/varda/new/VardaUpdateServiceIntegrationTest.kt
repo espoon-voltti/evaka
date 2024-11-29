@@ -24,7 +24,6 @@ import fi.espoo.evaka.snDaycareFullDay35
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -129,126 +128,12 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(emptySet(), getPlannedChildIds())
     }
 
-    @Test
-    fun `children in varda_reset_child are not added to varda_state`() {
-        val area = DevCareArea()
-        val unit = DevDaycare(areaId = area.id)
-        val child1 = DevPerson(ssn = "030320A904N")
-        val child2 = DevPerson(ssn = "030320A905P")
-
-        db.transaction { tx ->
-            tx.insert(area)
-            tx.insert(unit)
-            tx.insert(child1, DevPersonType.CHILD)
-            tx.insert(child2, DevPersonType.CHILD)
-
-            tx.insert(
-                DevPlacement(
-                    childId = child1.id,
-                    unitId = unit.id,
-                    startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28),
-                )
-            )
-            tx.insert(
-                DevPlacement(
-                    childId = child2.id,
-                    unitId = unit.id,
-                    startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28),
-                )
-            )
-
-            tx.execute {
-                sql("INSERT INTO varda_reset_child (evaka_child_id) VALUES (${bind(child1.id)})")
-            }
-        }
-
-        vardaUpdateService.planChildrenUpdate(db, clock)
-
-        assertEquals(setOf(child2.id), getVardaStateChildIds())
-        assertEquals(setOf(child2.id), getPlannedChildIds())
-    }
-
-    @Test
-    fun `children are migrated from varda_reset_child and varda_organizer_child`() {
-        val area = DevCareArea()
-        val unit = DevDaycare(areaId = area.id)
-        val child1 = DevPerson(ssn = "030320A904N", ophPersonOid = null)
-        val child2 = DevPerson(ssn = "030320A905P", ophPersonOid = null)
-
-        val children = mapOf(child1.id to "child1oid", child2.id to "child2oid")
-
-        db.transaction { tx ->
-            tx.insert(area)
-            tx.insert(unit)
-            tx.insert(child1, DevPersonType.CHILD)
-            tx.insert(child2, DevPersonType.CHILD)
-
-            tx.insert(
-                DevPlacement(
-                    childId = child1.id,
-                    unitId = unit.id,
-                    startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28),
-                )
-            )
-            tx.insert(
-                DevPlacement(
-                    childId = child2.id,
-                    unitId = unit.id,
-                    startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28),
-                )
-            )
-
-            tx.executeBatch(children.entries) {
-                sql(
-                    """
-                    INSERT INTO varda_organizer_child (evaka_person_id, varda_person_oid, varda_child_id, varda_person_id, organizer_oid)
-                    VALUES (${bind { it.key }}, ${bind { it.value }}, ${bind(123)}, ${bind(456)}, ${bind(789)})
-                    """
-                )
-            }
-            tx.executeBatch(children.keys) {
-                sql("INSERT INTO varda_reset_child (evaka_child_id) VALUES (${bind { it }})")
-            }
-        }
-
-        vardaUpdateService.planChildrenUpdate(db, clock, migrationSpeed = 1)
-
-        val plannedChildIds = getPlannedChildIds()
-        assertEquals(1, plannedChildIds.size)
-        val plannedChildId = plannedChildIds.single()
-        assertTrue(plannedChildId in children.keys)
-
-        val remainingChildren = getVardaResetChildIds()
-        assertEquals(children.keys - plannedChildId, remainingChildren)
-
-        // OPH person OID should have been copied from varda_organizer_child
-        val ophPersonOid =
-            db.read {
-                it.createQuery {
-                        sql("SELECT oph_person_oid FROM person WHERE id = ${bind(plannedChildId)}")
-                    }
-                    .exactlyOne<String>()
-            }
-        assertEquals(children[plannedChildId], ophPersonOid)
-    }
-
     private fun getVardaStateChildIds(): Set<ChildId> =
         db.read { tx -> tx.getVardaUpdateChildIds() }.toSet()
 
     private fun getPlannedChildIds(): Set<ChildId> =
         db.read { tx ->
             tx.createQuery { sql("SELECT (payload->>'childId')::uuid FROM async_job") }
-                .mapTo<ChildId>()
-                .toSet()
-        }
-
-    private fun getVardaResetChildIds(): Set<ChildId> =
-        db.read { tx ->
-            tx.createQuery { sql("SELECT evaka_child_id FROM varda_reset_child") }
                 .mapTo<ChildId>()
                 .toSet()
         }

@@ -95,7 +95,6 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
-import fi.espoo.evaka.varda.VardaServiceNeed
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -1130,40 +1129,6 @@ fun Database.Transaction.insert(row: DevDaycareGroupAcl) {
 INSERT INTO daycare_group_acl (daycare_group_id, employee_id, created, updated)
 VALUES (${bind(row.groupId)}, ${bind(row.employeeId)}, ${bind(row.created)}, ${bind(row.updated)})
 """
-            )
-        }
-        .execute()
-}
-
-fun Database.Transaction.insert(row: DevVardaOrganizerChild) {
-    createUpdate {
-            sql(
-                """
-INSERT INTO varda_organizer_child (evaka_person_id, varda_person_oid, varda_child_id, organizer_oid, uploaded_at, varda_person_id)
-VALUES (${bind(row.evakaPersonId)}, ${bind(row.vardaPersonOid)}, ${bind(row.vardaChildId)}, ${bind(row.organizerOid)}, ${bind(row.uploadedAt)}, ${bind(row.vardaPersonId)})
-RETURNING evaka_person_id
-"""
-            )
-        }
-        .execute()
-}
-
-fun Database.Transaction.insertVardaServiceNeed(row: VardaServiceNeed) {
-    createUpdate {
-            sql(
-                """
-INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_updated, evaka_child_id, varda_decision_id, varda_placement_id, update_failed, errors)
-VALUES (
-    ${bind(row.evakaServiceNeedId)},
-    ${bind(row.evakaServiceNeedUpdated)},
-    ${bind(row.evakaChildId)},
-    ${bind(row.vardaDecisionId)},
-    ${bind(row.vardaPlacementId)},
-    ${bind(row.updateFailed)},
-    ${bind(row.errors)}
-)
-RETURNING evaka_service_need_id
-    """
             )
         }
         .execute()

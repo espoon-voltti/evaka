@@ -72,8 +72,6 @@ import { DevStaffAttendance } from './api-types'
 import { DevStaffAttendancePlan } from './api-types'
 import { DevTerminatePlacementRequest } from './api-types'
 import { DevUpsertStaffOccupancyCoefficient } from './api-types'
-import { DevVardaReset } from './api-types'
-import { DevVardaServiceNeed } from './api-types'
 import { Email } from './api-types'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
@@ -1395,48 +1393,6 @@ export async function createServiceNeeds(
       url: uri`/service-need`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevServiceNeed[]>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createVardaReset
-*/
-export async function createVardaReset(
-  request: {
-    body: DevVardaReset
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/varda/reset-child`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<DevVardaReset>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createVardaServiceNeed
-*/
-export async function createVardaServiceNeed(
-  request: {
-    body: DevVardaServiceNeed
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/varda/varda-service-need`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<DevVardaServiceNeed>
     })
     return json
   } catch (e) {

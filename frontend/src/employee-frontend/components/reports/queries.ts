@@ -34,11 +34,7 @@ import {
   getVardaChildErrorsReport,
   getVardaUnitErrorsReport
 } from '../../generated/api-clients/reports'
-import {
-  markChildForVardaReset,
-  runFullVardaReset,
-  runFullVardaUpdate
-} from '../../generated/api-clients/varda'
+import { markChildForVardaReset } from '../../generated/api-clients/varda'
 import { createQueryKeys } from '../../query'
 
 import { OccupancyReportFilters } from './Occupancies'
@@ -170,16 +166,6 @@ export const voucherServiceProvidersReportQuery = query({
 export const vardaChildErrorsQuery = query({
   api: getVardaChildErrorsReport,
   queryKey: queryKeys.vardaChildErrors
-})
-
-export const startVardaUpdateMutation = mutation({
-  api: runFullVardaUpdate,
-  invalidateQueryKeys: () => [queryKeys.vardaChildErrors()]
-})
-
-export const startVardaResetMutation = mutation({
-  api: runFullVardaReset,
-  invalidateQueryKeys: () => [queryKeys.vardaChildErrors()]
 })
 
 export const resetVardaChildMutation = mutation({

@@ -24,27 +24,3 @@ export async function markChildForVardaReset(
   })
   return json
 }
-
-
-/**
-* Generated from fi.espoo.evaka.varda.VardaController.runFullVardaReset
-*/
-export async function runFullVardaReset(): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/varda/start-reset`.toString(),
-    method: 'POST'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.varda.VardaController.runFullVardaUpdate
-*/
-export async function runFullVardaUpdate(): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/varda/start-update`.toString(),
-    method: 'POST'
-  })
-  return json
-}

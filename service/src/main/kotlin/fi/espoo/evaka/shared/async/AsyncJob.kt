@@ -46,7 +46,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.specialdiet.SpecialDiet
-import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -314,29 +313,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class UpdateVardaChild(
-        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class VardaUpdateChild(val childId: ChildId, val dryRun: Boolean = false) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class ResetVardaChild(val childId: ChildId) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class DeleteVardaChildOld(val vardaChildId: Long) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class ResetVardaChildOld(val childId: ChildId) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class DeleteVardaChild(val vardaChildId: Long) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -532,14 +509,7 @@ sealed interface AsyncJob : AsyncJobPayload {
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "varda"),
                 AsyncJobPool.Config(concurrency = 1),
-                setOf(
-                    VardaUpdateChild::class,
-                    UpdateVardaChild::class,
-                    ResetVardaChild::class,
-                    DeleteVardaChild::class,
-                    ResetVardaChildOld::class,
-                    DeleteVardaChildOld::class,
-                ),
+                setOf(VardaUpdateChild::class),
             )
     }
 }
