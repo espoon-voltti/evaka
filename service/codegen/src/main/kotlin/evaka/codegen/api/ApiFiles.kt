@@ -7,6 +7,7 @@ package evaka.codegen.api
 import evaka.codegen.fileHeader
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
+import kotlin.io.path.Path
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.jvmName
 import kotlin.reflect.typeOf
@@ -239,7 +240,9 @@ fun generateApiClients(
                     )
                 }
             }
-    val imports = clients.flatMap { it.imports }.toSet()
+    val imports =
+        clients.flatMap { it.imports }.toSet() +
+            TsImport.Named(TsFile(TsProject.NodeModules, Path("axios")), "AxiosHeaders")
     val sections = listOf(generateImports(file, imports)) + clients.map { it.text }
     return """$fileHeader
 ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
@@ -260,15 +263,15 @@ fun generateApiClient(
             )
             .takeIf { it.properties.isNotEmpty() }
             ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }
-    val tsArgument =
-        if (argumentType != null)
-            TsCode {
-                "\n" +
-                    "request: ${inline(generator.tsType(argumentType, compact = false))}"
-                        .prependIndent("  ") +
-                    "\n"
-            }
-        else null
+    val tsArgument = TsCode {
+        "\n" +
+            (if (argumentType == null) ""
+            else
+                ("request: ${inline(generator.tsType(argumentType, compact = false))}"
+                    .prependIndent("  ") + ",\n")) +
+            "  headers?: AxiosHeaders" +
+            "\n"
+    }
 
     val pathVariables =
         if (endpoint.pathVariables.isNotEmpty())
@@ -314,6 +317,7 @@ ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
         listOfNotNull(
             TsCode { "url: ${ref(Imports.uri)}`${inline(url)}`.toString()" },
             TsCode { "method: '${endpoint.httpMethod}'" },
+            TsCode { "headers" },
             createQueryParameters?.let { TsCode { "params" } },
             endpoint.requestBodyType?.let {
                 TsCode {
@@ -349,7 +353,7 @@ ${join(axiosArguments, ",\n").prependIndent("  ")}
 /**
 * Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
 */
-export async function ${endpoint.controllerMethod.name}(${inline(tsArgument ?: TsCode(""))}): Promise<${inline(tsResponseType)}> {
+export async function ${endpoint.controllerMethod.name}(${inline(tsArgument)}): Promise<${inline(tsResponseType)}> {
 ${inline(wrapBody(functionBody).prependIndent("  "))}
 }"""
     }

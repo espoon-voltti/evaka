@@ -83,6 +83,7 @@ private fun locateFrontendSrcDirectory(): Path {
 
 private fun absolutePath(srcPath: Path, file: TsFile): Path =
     when (file.project) {
+        TsProject.NodeModules -> file.path
         TsProject.LibCommon -> srcPath / "lib-common" / file.path
         TsProject.CitizenFrontend -> srcPath / "citizen-frontend" / file.path
         TsProject.EmployeeFrontend -> srcPath / "employee-frontend" / file.path

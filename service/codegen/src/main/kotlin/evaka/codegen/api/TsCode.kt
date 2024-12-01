@@ -9,6 +9,7 @@ import kotlin.io.path.div
 import kotlin.io.path.relativeTo
 
 enum class TsProject {
+    NodeModules,
     LibCommon,
     CitizenFrontend,
     EmployeeFrontend,
@@ -19,6 +20,7 @@ enum class TsProject {
 
     fun absoluteImportPath(path: Path): Path =
         when (this) {
+            NodeModules -> path
             LibCommon -> Path.of("lib-common") / path
             CitizenFrontend -> Path.of("citizen-frontend") / path
             EmployeeFrontend -> Path.of("employee-frontend") / path
@@ -31,6 +33,7 @@ enum class TsProject {
 data class TsFile(val project: TsProject, val path: Path) {
     fun importFrom(other: TsFile): String =
         when {
+                this.project == TsProject.NodeModules -> path.toString()
                 this.project == other.project ->
                     path.relativeTo(other.path.parent).let {
                         if (it.fileName == it) Path.of("./$it") else it
