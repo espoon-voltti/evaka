@@ -1913,6 +1913,9 @@ const en: Translations = {
       </P>
     ),
     addNew: 'New income statement',
+    send: 'Send',
+    updateSent: 'Save changes',
+    saveAsDraft: 'Save and continue later',
     incomeInfo: 'Income information',
     incomeInstructions:
       'Please submit an income statement after your child has got the place in early childhood education.',
@@ -2153,6 +2156,8 @@ const en: Translations = {
       startDate: 'Valid as of',
       endDate: 'Valid until',
       createdAt: 'Created',
+      sentAt: 'Sent',
+      notSent: 'Not sent',
       handled: 'Processed',
       openIncomeStatement: 'Open form',
       deleteConfirm: 'Do you want to delete the income statement?',

@@ -50,11 +50,13 @@ export class CitizenChildIncomeStatementEditPage {
   otherInfoInput: TextInput
   assure: Checkbox
   saveButton: Element
+  saveDraftButton: Element
   constructor(private readonly page: Page) {
     this.startDateInput = new TextInput(page.findByDataQa('start-date'))
     this.otherInfoInput = new TextInput(page.findByDataQa('other-info'))
     this.assure = new Checkbox(page.findByDataQa('assure-checkbox'))
     this.saveButton = page.findByDataQa('save-btn')
+    this.saveDraftButton = page.findByDataQa('save-draft-btn')
   }
 
   async waitUntilReady() {
@@ -72,6 +74,10 @@ export class CitizenChildIncomeStatementEditPage {
 
   async selectAssure() {
     await this.assure.check()
+  }
+
+  async saveDraft() {
+    await this.saveDraftButton.click()
   }
 
   async save() {

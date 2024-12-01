@@ -104,4 +104,23 @@ describe('Child Income statements', () => {
     await child1ISList.deleteChildIncomeStatement(0)
     await child1ISList.assertIncomeStatementMissingWarningIsShown()
   })
+
+  test('Save a highest fee income statement as draft, then update and send', async () => {
+    // Create
+    await header.selectTab('income')
+    await child1ISList.assertChildCount(1)
+
+    const editPage = await child1ISList.createIncomeStatement()
+    await editPage.setValidFromDate('01.02.2034')
+    await editPage.typeOtherInfo('foo bar baz')
+    await editPage.saveDraft()
+    await child1ISList.assertChildIncomeStatementRowCount(1)
+
+    // Edit and sent
+    await child1ISList.clickEditChildIncomeStatement(0)
+    await editPage.uploadAttachment(testFilePath1)
+    await editPage.selectAssure()
+    await editPage.save()
+    await child1ISList.assertChildIncomeStatementRowCount(1)
+  })
 })

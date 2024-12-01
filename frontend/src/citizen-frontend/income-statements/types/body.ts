@@ -9,7 +9,13 @@ import { stringToInt } from 'lib-common/utils/number'
 
 import * as Form from './form'
 
-type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handled' | 'handlerNote'
+type ReadOnlyFields =
+  | 'id'
+  | 'created'
+  | 'updated'
+  | 'sent_at'
+  | 'status'
+  | 'handlerNote'
 
 export type HighestFeeBody = Omit<
   ApiTypes.IncomeStatementBody.HighestFee,
@@ -36,13 +42,14 @@ export type IncomeStatementBody = HighestFeeBody | IncomeBody | ChildIncomeBody
 
 export function fromBody(
   personType: 'adult' | 'child',
-  formData: Form.IncomeStatementForm
+  formData: Form.IncomeStatementForm,
+  draft: boolean
 ): IncomeStatementBody | null {
-  if (!formData.assure) return null
+  if (!draft && !formData.assure) return null
 
   const startDate = formData.startDate
   if (startDate === null) return null
-  if (formData.endDate && startDate > formData.endDate) return null
+  if (!draft && formData.endDate && startDate > formData.endDate) return null
 
   if (formData.highestFee) {
     if (personType === 'child') {
@@ -50,21 +57,22 @@ export function fromBody(
     }
     return { type: 'HIGHEST_FEE', startDate, endDate: formData.endDate }
   } else {
-    if (personType === 'adult' && !formData.endDate) return null
+    if (!draft && personType === 'adult' && !formData.endDate) return null
   }
 
   if (formData.childIncome) {
-    return {
+    const childIncome: ChildIncomeBody = {
       type: 'CHILD_INCOME',
       startDate,
       endDate: formData.endDate,
       otherInfo: formData.otherInfo,
       attachmentIds: formData.attachments.map((a) => a.id)
-    } as ChildIncomeBody
+    }
+    return childIncome
   }
 
   const gross = validateGross(formData.gross)
-  const entrepreneur = validateEntrepreneur(formData.entrepreneur)
+  const entrepreneur = validateEntrepreneur(formData.entrepreneur, draft)
 
   if (
     gross === invalid ||
@@ -106,7 +114,7 @@ function validateGross(formData: Form.Gross) {
   }
 }
 
-function validateEntrepreneur(formData: Form.Entrepreneur) {
+function validateEntrepreneur(formData: Form.Entrepreneur, draft: boolean) {
   if (!formData.selected) return null
 
   const {
@@ -135,7 +143,7 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
 
   const accountant =
     limitedCompany || selfEmployed || partnership
-      ? validateAccountant(formData.accountant)
+      ? validateAccountant(formData.accountant, draft)
       : null
   if (accountant === invalid) {
     return invalid
@@ -201,13 +209,13 @@ function validateLimitedCompany(formData: Form.LimitedCompany) {
   return { incomeSource: formData.incomeSource }
 }
 
-function validateAccountant(accountant: Form.Accountant) {
+function validateAccountant(accountant: Form.Accountant, draft: boolean) {
   const result = {
     name: accountant.name.trim(),
     address: accountant.address.trim(),
     phone: accountant.phone.trim(),
     email: accountant.email.trim()
   }
-  if (!result.name || !result.phone || !result.email) return invalid
+  if (!draft && (!result.name || !result.phone || !result.email)) return invalid
   return result
 }

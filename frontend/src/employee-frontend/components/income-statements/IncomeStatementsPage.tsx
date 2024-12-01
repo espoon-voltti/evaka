@@ -80,10 +80,10 @@ function IncomeStatementsList({
           </SortableTh>
           <Th>{i18n.incomeStatement.table.area}</Th>
           <SortableTh
-            sorted={isSorted('CREATED')}
-            onClick={toggleSort('CREATED')}
+            sorted={isSorted('SENT_AT')}
+            onClick={toggleSort('SENT_AT')}
           >
-            {i18n.incomeStatement.table.created}
+            {i18n.incomeStatement.table.sentAt}
           </SortableTh>
           <SortableTh
             sorted={isSorted('START_DATE')}
@@ -125,7 +125,7 @@ function IncomeStatementsList({
               </Link>
             </Td>
             <Td>{row.primaryCareArea}</Td>
-            <Td>{row.created.toLocalDate().format()}</Td>
+            <Td>{row.sentAt.toLocalDate().format()}</Td>
             <Td>{row.startDate.format()}</Td>
             <Td>{row.incomeEndDate?.format() ?? '-'}</Td>
             <Td data-qa="income-statement-type">
@@ -164,7 +164,7 @@ export default React.memo(function IncomeStatementsPage() {
   const { i18n } = useTranslation()
 
   const [page, setPage] = useState(1)
-  const [sortBy, setSortBy] = useState<IncomeStatementSortParam>('CREATED')
+  const [sortBy, setSortBy] = useState<IncomeStatementSortParam>('SENT_AT')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
   const [searchParams, setSearchParams] = useState<{
     areas: string[] | null

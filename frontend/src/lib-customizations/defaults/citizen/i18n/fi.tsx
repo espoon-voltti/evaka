@@ -2158,6 +2158,9 @@ export default {
       </P>
     ),
     addNew: 'Uusi tuloselvitys',
+    send: 'Lähetä',
+    updateSent: 'Tallenna muutokset',
+    saveAsDraft: 'Tallenna ja jatka myöhemmin',
     incomeInfo: 'Tulotiedot',
     incomeInstructions:
       'Toimita tulotiedot vasta, kun lapsesi on saanut varhaiskasvatuspaikkapäätöksen.',
@@ -2389,6 +2392,8 @@ export default {
       startDate: 'Voimassa alkaen',
       endDate: 'Voimassa asti',
       createdAt: 'Luotu',
+      sentAt: 'Lähetetty',
+      notSent: 'Ei lähetetty',
       handled: 'Käsitelty',
       openIncomeStatement: 'Avaa lomake',
       deleteConfirm: 'Haluatko poistaa tuloselvityksen?',

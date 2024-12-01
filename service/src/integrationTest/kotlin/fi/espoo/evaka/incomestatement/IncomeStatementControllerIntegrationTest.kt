@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -93,13 +94,17 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val startDate = today
         val endDate = today.plusDays(30)
 
-        val id =
-            db.transaction { tx ->
-                tx.createIncomeStatement(
-                    citizenId,
-                    IncomeStatementBody.HighestFee(startDate, endDate),
-                )
-            }
+        val incomeStatement =
+            DevIncomeStatement(
+                personId = testAdult_1.id,
+                data = IncomeStatementBody.HighestFee(startDate, endDate),
+                status = IncomeStatementStatus.SENT,
+                createdAt = now.minusHours(10),
+                modifiedAt = now.minusHours(7),
+                sentAt = now.minusHours(5),
+            )
+        db.transaction { it.insert(incomeStatement) }
+        val id = incomeStatement.id
 
         val incomeStatement1 = getIncomeStatement(id)
         assertEquals(
@@ -110,9 +115,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
-                created = incomeStatement1.created,
-                updated = incomeStatement1.updated,
-                handled = false,
+                createdAt = incomeStatement.createdAt,
+                modifiedAt = incomeStatement.modifiedAt,
+                sentAt = incomeStatement.sentAt,
+                status = IncomeStatementStatus.SENT,
+                handledAt = null,
                 handlerNote = "",
             ),
             incomeStatement1,
@@ -132,9 +139,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
-                created = incomeStatement1.created,
-                updated = incomeStatement2.updated,
-                handled = true,
+                createdAt = incomeStatement.createdAt,
+                modifiedAt = incomeStatement2.modifiedAt,
+                sentAt = incomeStatement.sentAt,
+                status = IncomeStatementStatus.HANDLED,
+                handledAt = now,
                 handlerNote = "is cool",
             ),
             incomeStatement2,
@@ -154,23 +163,30 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 lastName = testAdult_1.lastName,
                 startDate = startDate,
                 endDate = endDate,
-                created = incomeStatement1.created,
-                updated = incomeStatement3.updated,
-                handled = false,
+                createdAt = incomeStatement3.createdAt,
+                modifiedAt = incomeStatement3.modifiedAt,
+                sentAt = incomeStatement3.sentAt,
+                status = IncomeStatementStatus.SENT,
+                handledAt = null,
                 handlerNote = "is not cool",
             ),
             incomeStatement3,
         )
 
-        assertEquals(listOf(false), getIncomeStatements(citizenId).data.map { it.handled })
+        assertEquals(
+            listOf(false),
+            getIncomeStatements(citizenId).data.map { it.status == IncomeStatementStatus.HANDLED },
+        )
     }
 
     @Test
     fun `add an attachment`() {
-        val id =
-            db.transaction { tx ->
-                tx.createIncomeStatement(
-                    citizenId,
+        val devIncomeStatement =
+            DevIncomeStatement(
+                personId = testAdult_1.id,
+                status = IncomeStatementStatus.DRAFT,
+                sentAt = null,
+                data =
                     IncomeStatementBody.Income(
                         startDate = today,
                         endDate = null,
@@ -187,8 +203,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         otherInfo = "",
                         attachmentIds = listOf(),
                     ),
-                )
-            }
+            )
+        db.transaction { it.insert(devIncomeStatement) }
+        val id = devIncomeStatement.id
 
         val attachmentId = uploadAttachment(id)
 
@@ -221,9 +238,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                             uploadedByEmployee = true,
                         )
                     ),
-                created = incomeStatement.created,
-                updated = incomeStatement.updated,
-                handled = false,
+                createdAt = incomeStatement.createdAt,
+                modifiedAt = incomeStatement.modifiedAt,
+                sentAt = null,
+                status = IncomeStatementStatus.DRAFT,
+                handledAt = null,
                 handlerNote = "",
             ),
             getIncomeStatement(id),
@@ -233,34 +252,46 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private fun createTestIncomeStatement(
         personId: PersonId,
         startDate: LocalDate? = null,
+        sentAt: HelsinkiDateTime = now,
     ): IncomeStatement {
-        val id =
-            db.transaction { tx ->
-                tx.createIncomeStatement(
-                    personId,
+        val incomeStatement =
+            DevIncomeStatement(
+                personId = personId,
+                data =
                     IncomeStatementBody.HighestFee(startDate = startDate ?: today, endDate = null),
-                )
-            }
-        return db.read { it.readIncomeStatementForPerson(personId, id, true)!! }
+                status = IncomeStatementStatus.SENT,
+                sentAt = sentAt,
+            )
+
+        return db.transaction { tx ->
+            tx.insert(incomeStatement)
+            tx.readIncomeStatementForPerson(personId, incomeStatement.id, true)!!
+        }
     }
 
     private fun createChildTestIncomeStatement(
         personId: PersonId,
         startDate: LocalDate? = null,
+        sentAt: HelsinkiDateTime = now,
     ): IncomeStatement {
-        val id =
-            db.transaction { tx ->
-                tx.createIncomeStatement(
-                    personId,
+        val incomeStatement =
+            DevIncomeStatement(
+                personId = personId,
+                data =
                     IncomeStatementBody.ChildIncome(
                         startDate = startDate ?: today,
                         endDate = null,
                         attachmentIds = listOf(),
                         otherInfo = "",
                     ),
-                )
-            }
-        return db.read { it.readIncomeStatementForPerson(personId, id, true)!! }
+                status = IncomeStatementStatus.SENT,
+                sentAt = sentAt,
+            )
+
+        return db.transaction { tx ->
+            tx.insert(incomeStatement)
+            tx.readIncomeStatementForPerson(personId, incomeStatement.id, true)!!
+        }
     }
 
     @Test
@@ -407,20 +438,21 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val incomeStatement1 = createTestIncomeStatement(citizenId)
-        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
-        val incomeStatement3 = createTestIncomeStatement(testAdult_3.id)
-        val incomeStatement4 = createTestIncomeStatement(testAdult_4.id)
-        val incomeStatement5 = createTestIncomeStatement(testAdult_5.id)
-        val incomeStatement6 = createTestIncomeStatement(testAdult_6.id)
-        val incomeStatement7 = createChildTestIncomeStatement(testChild_1.id)
+        val incomeStatement1 = createTestIncomeStatement(citizenId, sentAt = now.minusHours(7))
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id, sentAt = now.minusHours(6))
+        val incomeStatement3 = createTestIncomeStatement(testAdult_3.id, sentAt = now.minusHours(5))
+        val incomeStatement4 = createTestIncomeStatement(testAdult_4.id, sentAt = now.minusHours(4))
+        val incomeStatement5 = createTestIncomeStatement(testAdult_5.id, sentAt = now.minusHours(3))
+        val incomeStatement6 = createTestIncomeStatement(testAdult_6.id, sentAt = now.minusHours(2))
+        val incomeStatement7 =
+            createChildTestIncomeStatement(testChild_1.id, sentAt = now.minusHours(1))
 
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
-                        created = incomeStatement1.created,
+                        sentAt = incomeStatement1.sentAt!!,
                         startDate = incomeStatement1.startDate,
                         incomeEndDate = incomeDate1,
                         handlerNote = "",
@@ -432,7 +464,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
-                        created = incomeStatement2.created,
+                        sentAt = incomeStatement2.sentAt!!,
                         startDate = incomeStatement2.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -444,7 +476,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
-                        created = incomeStatement3.created,
+                        sentAt = incomeStatement3.sentAt!!,
                         startDate = incomeStatement3.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -456,7 +488,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement4.id,
-                        created = incomeStatement4.created,
+                        sentAt = incomeStatement4.sentAt!!,
                         startDate = incomeStatement4.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -468,7 +500,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement5.id,
-                        created = incomeStatement5.created,
+                        sentAt = incomeStatement5.sentAt!!,
                         startDate = incomeStatement5.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -480,7 +512,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement6.id,
-                        created = incomeStatement6.created,
+                        sentAt = incomeStatement6.sentAt!!,
                         startDate = incomeStatement6.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -492,7 +524,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement7.id,
-                        created = incomeStatement7.created,
+                        sentAt = incomeStatement7.sentAt!!,
                         startDate = incomeStatement7.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -564,7 +596,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
-                        created = incomeStatement2.created,
+                        sentAt = incomeStatement2.sentAt!!,
                         startDate = incomeStatement2.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -641,7 +673,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
-                        created = incomeStatement2.created,
+                        sentAt = incomeStatement2.sentAt!!,
                         startDate = incomeStatement2.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -713,7 +745,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
-                        created = incomeStatement2.created,
+                        sentAt = incomeStatement2.sentAt!!,
                         startDate = incomeStatement2.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -782,12 +814,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement1 = createTestIncomeStatement(citizenId)
         val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
 
-        val newCreated = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
+        val newSentAt = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
 
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE income_statement SET created = ${bind(newCreated)} WHERE id = ${bind(incomeStatement1.id)}"
+                    "UPDATE income_statement SET sent_at = ${bind(newSentAt)} WHERE id = ${bind(incomeStatement1.id)}"
                 )
             }
         }
@@ -797,7 +829,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
-                        created = newCreated,
+                        sentAt = newSentAt,
                         startDate = incomeStatement1.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -824,7 +856,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
-                        created = incomeStatement2.created,
+                        sentAt = incomeStatement2.sentAt!!,
                         startDate = incomeStatement2.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -907,12 +939,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
         val incomeStatement3 = createTestIncomeStatement(testAdult_3.id)
 
-        val newCreated = HelsinkiDateTime.of(LocalDate.of(2022, 10, 17), LocalTime.of(11, 4))
+        val newSentAt = HelsinkiDateTime.of(LocalDate.of(2022, 10, 17), LocalTime.of(11, 4))
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
-                .bind("newCreated", newCreated)
+            it.createUpdate("UPDATE income_statement SET sent_at = :newSentAt WHERE id = :id")
+                .bind("newSentAt", newSentAt)
                 .bind("id", incomeStatement1.id)
                 .execute()
         }
@@ -922,7 +954,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
-                        created = newCreated,
+                        sentAt = newSentAt,
                         startDate = incomeStatement1.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -934,7 +966,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
-                        created = incomeStatement2.created,
+                        sentAt = incomeStatement2.sentAt!!,
                         startDate = incomeStatement2.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -946,7 +978,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
-                        created = incomeStatement3.created,
+                        sentAt = incomeStatement3.sentAt!!,
                         startDate = incomeStatement3.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -970,7 +1002,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
-                        created = incomeStatement2.created,
+                        sentAt = incomeStatement2.sentAt!!,
                         startDate = incomeStatement2.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -995,7 +1027,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
-                        created = newCreated,
+                        sentAt = newSentAt,
                         startDate = incomeStatement1.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -1007,7 +1039,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
-                        created = incomeStatement2.created,
+                        sentAt = incomeStatement2.sentAt!!,
                         startDate = incomeStatement2.startDate,
                         incomeEndDate = null,
                         handlerNote = "",
@@ -1079,19 +1111,19 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement2 =
             createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
 
-        val newCreated = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
+        val newSentAt = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income_statement SET created = :newCreated")
-                .bind("newCreated", newCreated)
+            it.createUpdate("UPDATE income_statement SET sent_at = :newSentAt")
+                .bind("newSentAt", newSentAt)
                 .execute()
         }
 
         val expected1 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement1.id,
-                created = newCreated,
+                sentAt = newSentAt,
                 startDate = incomeStatement1.startDate,
                 incomeEndDate = null,
                 handlerNote = "",
@@ -1104,7 +1136,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected2 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement2.id,
-                created = newCreated,
+                sentAt = newSentAt,
                 startDate = incomeStatement2.startDate,
                 incomeEndDate = null,
                 handlerNote = "",
@@ -1202,7 +1234,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected1 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement1.id,
-                created = incomeStatement1.created,
+                sentAt = incomeStatement1.sentAt!!,
                 startDate = incomeStatement1.startDate,
                 incomeEndDate = incomeRange1.end,
                 handlerNote = "",
@@ -1215,7 +1247,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected2 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement2.id,
-                created = incomeStatement2.created,
+                sentAt = incomeStatement2.sentAt!!,
                 startDate = incomeStatement2.startDate,
                 incomeEndDate = incomeRange2.end,
                 handlerNote = "",
@@ -1295,7 +1327,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected1 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement1.id,
-                created = incomeStatement1.created,
+                sentAt = incomeStatement1.sentAt!!,
                 startDate = incomeStatement1.startDate,
                 incomeEndDate = null,
                 handlerNote = "",
@@ -1308,7 +1340,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected2 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement2.id,
-                created = incomeStatement2.created,
+                sentAt = incomeStatement2.sentAt!!,
                 startDate = incomeStatement2.startDate,
                 incomeEndDate = null,
                 handlerNote = "",
@@ -1402,7 +1434,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected1 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement1.id,
-                created = incomeStatement1.created,
+                sentAt = incomeStatement1.sentAt!!,
                 startDate = incomeStatement1.startDate,
                 incomeEndDate = null,
                 handlerNote = "a",
@@ -1415,7 +1447,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected2 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement2.id,
-                created = incomeStatement2.created,
+                sentAt = incomeStatement2.sentAt!!,
                 startDate = incomeStatement2.startDate,
                 incomeEndDate = null,
                 handlerNote = "b",
@@ -1495,7 +1527,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected1 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement1.id,
-                created = incomeStatement1.created,
+                sentAt = incomeStatement1.sentAt!!,
                 startDate = incomeStatement1.startDate,
                 incomeEndDate = null,
                 handlerNote = "",
@@ -1508,7 +1540,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val expected2 =
             IncomeStatementAwaitingHandler(
                 id = incomeStatement2.id,
-                created = incomeStatement2.created,
+                sentAt = incomeStatement2.sentAt!!,
                 startDate = incomeStatement2.startDate,
                 incomeEndDate = null,
                 handlerNote = "",

@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
+import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -40,11 +41,13 @@ import * as Form from './types/form'
 
 interface Props {
   incomeStatementId: UUID | undefined
+  status: IncomeStatementStatus
   formData: Form.IncomeStatementForm
   showFormErrors: boolean
   otherStartDates: LocalDate[]
+  draftSaveEnabled: boolean
   onChange: SetStateCallback<Form.IncomeStatementForm>
-  onSave: () => Promise<Result<unknown>> | undefined
+  onSave: (draft: boolean) => Promise<Result<unknown>> | undefined
   onSuccess: () => void
   onCancel: () => void
 }
@@ -215,9 +218,11 @@ export default React.memo(
   React.forwardRef(function ChildIncomeStatementForm(
     {
       incomeStatementId,
+      status,
       formData,
       showFormErrors,
       otherStartDates,
+      draftSaveEnabled,
       onChange,
       onSave,
       onSuccess,
@@ -256,7 +261,7 @@ export default React.memo(
       }
     }))
 
-    const saveButtonEnabled = formData.attachments.length > 0 && formData.assure
+    const sendButtonEnabled = formData.attachments.length > 0 && formData.assure
 
     return (
       <>
@@ -300,11 +305,19 @@ export default React.memo(
             </AssureCheckbox>
             <FixedSpaceRow>
               <LegacyButton text={t.common.cancel} onClick={onCancel} />
+              {status === 'DRAFT' && draftSaveEnabled && (
+                <AsyncButton
+                  text={t.income.saveAsDraft}
+                  onClick={() => onSave(true)}
+                  onSuccess={onSuccess}
+                  data-qa="save-draft-btn"
+                />
+              )}
               <AsyncButton
-                text={t.common.save}
+                text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
                 primary
-                onClick={onSave}
-                disabled={!saveButtonEnabled}
+                onClick={() => onSave(false)}
+                disabled={!sendButtonEnabled}
                 onSuccess={onSuccess}
                 data-qa="save-btn"
               />

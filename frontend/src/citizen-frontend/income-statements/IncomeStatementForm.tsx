@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -14,6 +14,7 @@ import {
   validInt
 } from 'lib-common/form-validation'
 import {
+  IncomeStatementStatus,
   OtherIncome,
   otherIncomes
 } from 'lib-common/generated/api-types/incomestatement'
@@ -61,11 +62,13 @@ import * as Form from './types/form'
 
 interface Props {
   incomeStatementId: UUID | undefined
+  status: IncomeStatementStatus
   formData: Form.IncomeStatementForm
   showFormErrors: boolean
   otherStartDates: LocalDate[]
+  draftSaveEnabled: boolean
   onChange: SetStateCallback<Form.IncomeStatementForm>
-  onSave: () => Promise<Result<unknown>> | undefined
+  onSave: (draft: boolean) => Promise<Result<unknown>> | undefined
   onSuccess: () => void
   onCancel: () => void
 }
@@ -74,9 +77,11 @@ export default React.memo(
   React.forwardRef(function IncomeStatementForm(
     {
       incomeStatementId,
+      status,
       formData,
       showFormErrors,
       otherStartDates,
+      draftSaveEnabled,
       onChange,
       onSave,
       onSuccess,
@@ -176,7 +181,7 @@ export default React.memo(
       [onChange]
     )
 
-    const saveButtonEnabled = useMemo(
+    const sendButtonEnabled = useMemo(
       () =>
         formData.startDate &&
         (formData.highestFee ||
@@ -243,6 +248,7 @@ export default React.memo(
               />
             </>
           )}
+          <Gap />
           <ActionContainer>
             <AssureCheckbox>
               <Checkbox
@@ -254,11 +260,19 @@ export default React.memo(
             </AssureCheckbox>
             <FixedSpaceRow>
               <LegacyButton text={t.common.cancel} onClick={onCancel} />
+              {status === 'DRAFT' && draftSaveEnabled && (
+                <AsyncButton
+                  text={t.income.saveAsDraft}
+                  onClick={() => onSave(true)}
+                  onSuccess={onSuccess}
+                  data-qa="save-draft-btn"
+                />
+              )}
               <AsyncButton
-                text={t.common.save}
+                text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
                 primary
-                onClick={onSave}
-                disabled={!saveButtonEnabled}
+                onClick={() => onSave(false)}
+                disabled={!sendButtonEnabled}
                 onSuccess={onSuccess}
               />
             </FixedSpaceRow>

@@ -149,42 +149,40 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
     }
 }
 
-fun createIncomeStatement(
-    dbc: Database.Connection,
-    incomeStatementPersonId: PersonId,
-    uploadedBy: AuthenticatedUser.Citizen,
+fun createValidatedIncomeStatement(
+    tx: Database.Transaction,
+    user: AuthenticatedUser.Citizen,
+    now: HelsinkiDateTime,
+    personId: PersonId, // may be either the user or their child
     body: IncomeStatementBody,
+    draft: Boolean,
 ): IncomeStatementId {
-    if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
+    if (!draft && !validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
 
-    if (
-        dbc.read { tx ->
-            tx.incomeStatementExistsForStartDate(incomeStatementPersonId, body.startDate)
-        }
-    ) {
+    if (tx.incomeStatementExistsForStartDate(user.id, body.startDate)) {
         throw BadRequest("An income statement for this start date already exists")
     }
 
-    return dbc.transaction { tx ->
-        val incomeStatementId = tx.createIncomeStatement(incomeStatementPersonId, body)
-        when (body) {
-            is IncomeStatementBody.Income ->
-                tx.associateOrphanAttachments(
-                    uploadedBy.evakaUserId,
-                    AttachmentParent.IncomeStatement(incomeStatementId),
-                    body.attachmentIds,
-                )
-            is IncomeStatementBody.ChildIncome -> {
-                tx.associateOrphanAttachments(
-                    uploadedBy.evakaUserId,
-                    AttachmentParent.IncomeStatement(incomeStatementId),
-                    body.attachmentIds,
-                )
-            }
-            else -> {}
+    val incomeStatementId = tx.insertIncomeStatement(user.evakaUserId, now, personId, body, draft)
+
+    when (body) {
+        is IncomeStatementBody.Income ->
+            tx.associateOrphanAttachments(
+                user.evakaUserId,
+                AttachmentParent.IncomeStatement(incomeStatementId),
+                body.attachmentIds,
+            )
+        is IncomeStatementBody.ChildIncome -> {
+            tx.associateOrphanAttachments(
+                user.evakaUserId,
+                AttachmentParent.IncomeStatement(incomeStatementId),
+                body.attachmentIds,
+            )
         }
-        incomeStatementId
+        else -> {}
     }
+
+    return incomeStatementId
 }
 
 private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean =
@@ -207,9 +205,11 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
     abstract val lastName: String
     abstract val startDate: LocalDate
     abstract val endDate: LocalDate?
-    abstract val created: HelsinkiDateTime
-    abstract val updated: HelsinkiDateTime
-    abstract val handled: Boolean
+    abstract val createdAt: HelsinkiDateTime
+    abstract val modifiedAt: HelsinkiDateTime
+    abstract val sentAt: HelsinkiDateTime?
+    abstract val handledAt: HelsinkiDateTime?
+    abstract val status: IncomeStatementStatus
     abstract val handlerNote: String
 
     @JsonTypeName("HIGHEST_FEE")
@@ -220,9 +220,11 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val lastName: String,
         override val startDate: LocalDate,
         override val endDate: LocalDate?,
-        override val created: HelsinkiDateTime,
-        override val updated: HelsinkiDateTime,
-        override val handled: Boolean,
+        override val createdAt: HelsinkiDateTime,
+        override val modifiedAt: HelsinkiDateTime,
+        override val sentAt: HelsinkiDateTime?,
+        override val handledAt: HelsinkiDateTime?,
+        override val status: IncomeStatementStatus,
         override val handlerNote: String,
     ) : IncomeStatement(IncomeStatementType.HIGHEST_FEE)
 
@@ -239,9 +241,11 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         val student: Boolean,
         val alimonyPayer: Boolean,
         val otherInfo: String,
-        override val created: HelsinkiDateTime,
-        override val updated: HelsinkiDateTime,
-        override val handled: Boolean,
+        override val createdAt: HelsinkiDateTime,
+        override val modifiedAt: HelsinkiDateTime,
+        override val sentAt: HelsinkiDateTime?,
+        override val handledAt: HelsinkiDateTime?,
+        override val status: IncomeStatementStatus,
         override val handlerNote: String,
         val attachments: List<Attachment>,
     ) : IncomeStatement(IncomeStatementType.INCOME)
@@ -255,9 +259,11 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val startDate: LocalDate,
         override val endDate: LocalDate?,
         val otherInfo: String,
-        override val created: HelsinkiDateTime,
-        override val updated: HelsinkiDateTime,
-        override val handled: Boolean,
+        override val createdAt: HelsinkiDateTime,
+        override val modifiedAt: HelsinkiDateTime,
+        override val sentAt: HelsinkiDateTime?,
+        override val handledAt: HelsinkiDateTime?,
+        override val status: IncomeStatementStatus,
         override val handlerNote: String,
         val attachments: List<Attachment>,
     ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)

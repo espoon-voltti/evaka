@@ -90,17 +90,19 @@ export namespace IncomeStatement {
   export interface ChildIncome {
     type: 'CHILD_INCOME'
     attachments: Attachment[]
-    created: HelsinkiDateTime
+    createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     firstName: string
-    handled: boolean
+    handledAt: HelsinkiDateTime | null
     handlerNote: string
     id: UUID
     lastName: string
+    modifiedAt: HelsinkiDateTime
     otherInfo: string
     personId: UUID
+    sentAt: HelsinkiDateTime | null
     startDate: LocalDate
-    updated: HelsinkiDateTime
+    status: IncomeStatementStatus
   }
 
   /**
@@ -108,16 +110,18 @@ export namespace IncomeStatement {
   */
   export interface HighestFee {
     type: 'HIGHEST_FEE'
-    created: HelsinkiDateTime
+    createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     firstName: string
-    handled: boolean
+    handledAt: HelsinkiDateTime | null
     handlerNote: string
     id: UUID
     lastName: string
+    modifiedAt: HelsinkiDateTime
     personId: UUID
+    sentAt: HelsinkiDateTime | null
     startDate: LocalDate
-    updated: HelsinkiDateTime
+    status: IncomeStatementStatus
   }
 
   /**
@@ -127,20 +131,22 @@ export namespace IncomeStatement {
     type: 'INCOME'
     alimonyPayer: boolean
     attachments: Attachment[]
-    created: HelsinkiDateTime
+    createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     entrepreneur: Entrepreneur | null
     firstName: string
     gross: Gross | null
-    handled: boolean
+    handledAt: HelsinkiDateTime | null
     handlerNote: string
     id: UUID
     lastName: string
+    modifiedAt: HelsinkiDateTime
     otherInfo: string
     personId: UUID
+    sentAt: HelsinkiDateTime | null
     startDate: LocalDate
+    status: IncomeStatementStatus
     student: boolean
-    updated: HelsinkiDateTime
   }
 }
 
@@ -154,7 +160,6 @@ export type IncomeStatement = IncomeStatement.ChildIncome | IncomeStatement.High
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {
-  created: HelsinkiDateTime
   handlerNote: string
   id: UUID
   incomeEndDate: LocalDate | null
@@ -163,6 +168,7 @@ export interface IncomeStatementAwaitingHandler {
   personLastName: string
   personName: string
   primaryCareArea: string | null
+  sentAt: HelsinkiDateTime
   startDate: LocalDate
   type: IncomeStatementType
 }
@@ -215,12 +221,20 @@ export type IncomeStatementBody = IncomeStatementBody.ChildIncome | IncomeStatem
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementSortParam
 */
 export type IncomeStatementSortParam =
-  | 'CREATED'
+  | 'SENT_AT'
   | 'START_DATE'
   | 'INCOME_END_DATE'
   | 'TYPE'
   | 'HANDLER_NOTE'
   | 'PERSON_NAME'
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementStatus
+*/
+export type IncomeStatementStatus =
+  | 'DRAFT'
+  | 'SENT'
+  | 'HANDLED'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementType
@@ -341,31 +355,37 @@ export function deserializeJsonEstimatedIncome(json: JsonOf<EstimatedIncome>): E
 export function deserializeJsonIncomeStatementChildIncome(json: JsonOf<IncomeStatement.ChildIncome>): IncomeStatement.ChildIncome {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
-    startDate: LocalDate.parseIso(json.startDate),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 
 export function deserializeJsonIncomeStatementHighestFee(json: JsonOf<IncomeStatement.HighestFee>): IncomeStatement.HighestFee {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
-    startDate: LocalDate.parseIso(json.startDate),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 
 export function deserializeJsonIncomeStatementIncome(json: JsonOf<IncomeStatement.Income>): IncomeStatement.Income {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     entrepreneur: (json.entrepreneur != null) ? deserializeJsonEntrepreneur(json.entrepreneur) : null,
-    startDate: LocalDate.parseIso(json.startDate),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 export function deserializeJsonIncomeStatement(json: JsonOf<IncomeStatement>): IncomeStatement {
@@ -381,8 +401,8 @@ export function deserializeJsonIncomeStatement(json: JsonOf<IncomeStatement>): I
 export function deserializeJsonIncomeStatementAwaitingHandler(json: JsonOf<IncomeStatementAwaitingHandler>): IncomeStatementAwaitingHandler {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
     incomeEndDate: (json.incomeEndDate != null) ? LocalDate.parseIso(json.incomeEndDate) : null,
+    sentAt: HelsinkiDateTime.parseIso(json.sentAt),
     startDate: LocalDate.parseIso(json.startDate)
   }
 }

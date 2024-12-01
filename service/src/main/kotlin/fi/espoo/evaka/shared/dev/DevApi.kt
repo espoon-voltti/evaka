@@ -66,8 +66,6 @@ import fi.espoo.evaka.holidayperiod.createFixedPeriodQuestionnaire
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.incomestatement.IncomeStatementBody
-import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
@@ -577,18 +575,10 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @RequestBody feeThresholds: FeeThresholds,
     ): FeeThresholdsId = db.connect { dbc -> dbc.transaction { it.insert(feeThresholds) } }
 
-    data class DevCreateIncomeStatements(
-        val personId: PersonId,
-        val data: List<IncomeStatementBody>,
-    )
-
-    @PostMapping("/income-statements")
-    fun createIncomeStatements(db: Database, @RequestBody body: DevCreateIncomeStatements) =
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                body.data.forEach { tx.createIncomeStatement(body.personId, it) }
-            }
-        }
+    @PostMapping("/income-statement")
+    fun createIncomeStatement(db: Database, @RequestBody body: DevIncomeStatement) {
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    }
 
     @PostMapping("/income")
     fun createIncome(db: Database, @RequestBody body: DevIncome) {

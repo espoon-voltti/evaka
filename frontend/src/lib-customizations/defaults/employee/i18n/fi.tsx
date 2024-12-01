@@ -1944,7 +1944,7 @@ export const fi = {
       custodianTitle: 'Huollettavien tuloselvitykset',
       noIncomeStatements: 'Ei tuloselvityksiä',
       incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
-      createdHeading: 'Saapumispäivä',
+      sentAtHeading: 'Saapumispäivä',
       handledHeading: 'Käsitelty',
       open: 'Avaa lomake',
       handled: 'Tuloselvitys käsitelty'
@@ -2074,7 +2074,7 @@ export const fi = {
       title: 'Käsittelyä odottavat tuloselvitykset',
       customer: 'Asiakas',
       area: 'Alue',
-      created: 'Luotu',
+      sentAt: 'Lähetetty',
       startDate: 'Voimassa',
       incomeEndDate: 'Tulotieto päättyy',
       type: 'Tyyppi',

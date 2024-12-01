@@ -13,7 +13,7 @@ import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
-import fi.espoo.evaka.incomestatement.IncomeStatementType
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.getCitizenMessageAccount
 import fi.espoo.evaka.messaging.insertMessage
@@ -26,7 +26,6 @@ import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
@@ -307,11 +306,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(
                 DevIncomeStatement(
-                    IncomeStatementId(UUID.randomUUID()),
-                    testAdult_1.id,
-                    LocalDate.now(),
-                    IncomeStatementType.INCOME,
-                    42,
+                    personId = testAdult_1.id,
+                    data = IncomeStatementBody.HighestFee(LocalDate.now(), null),
                 )
             )
         }

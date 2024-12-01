@@ -472,7 +472,7 @@ fun Database.Read.searchFeeDecisions(
                     SELECT FROM income_statement
                     WHERE person_id IN (decision.head_of_family_id, decision.partner_id, part.child_id) AND
                         daterange(start_date, end_date, '[]') && daterange((:now - interval '14 months')::date, :now::date, '[]') AND
-                        handler_id IS NULL
+                        status = 'SENT'
                     )
                 """
             else null,

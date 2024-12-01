@@ -8,7 +8,10 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.incomestatement.IncomeStatementType
+import fi.espoo.evaka.incomestatement.Gross
+import fi.espoo.evaka.incomestatement.IncomeSource
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.IncomeStatementStatus
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
@@ -311,11 +314,9 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
             it.insert(
                 DevIncomeStatement(
-                    id = IncomeStatementId(UUID.randomUUID()),
                     personId = fridgeHeadOfChildId,
-                    startDate = incomeExpirationDate.plusDays(1),
-                    type = IncomeStatementType.INCOME,
-                    grossEstimatedMonthlyIncome = 42,
+                    data = createGrossIncome(incomeExpirationDate.plusDays(1)),
+                    status = IncomeStatementStatus.SENT,
                     handlerId = null,
                 )
             )
@@ -342,10 +343,10 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 DevIncomeStatement(
                     id = IncomeStatementId(UUID.randomUUID()),
                     personId = fridgeHeadOfChildId,
-                    startDate = incomeExpirationDate.plusDays(1),
-                    type = IncomeStatementType.INCOME,
-                    grossEstimatedMonthlyIncome = 42,
+                    data = createGrossIncome(incomeExpirationDate.plusDays(1)),
+                    status = IncomeStatementStatus.HANDLED,
                     handlerId = employeeId,
+                    handledAt = clock.now(),
                 )
             )
         }
@@ -371,9 +372,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 DevIncomeStatement(
                     id = IncomeStatementId(UUID.randomUUID()),
                     personId = fridgeHeadOfChildId,
-                    startDate = incomeExpirationDate.plusDays(1),
-                    type = IncomeStatementType.INCOME,
-                    grossEstimatedMonthlyIncome = 42,
+                    data = createGrossIncome(incomeExpirationDate.plusDays(1)),
+                    status = IncomeStatementStatus.SENT,
                 )
             )
         }
@@ -685,6 +685,24 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             getIncomeNotifications(fridgeHeadOfChildId)[0].notificationType,
         )
     }
+
+    private fun createGrossIncome(startDate: LocalDate) =
+        IncomeStatementBody.Income(
+            startDate = startDate,
+            endDate = null,
+            gross =
+                Gross(
+                    incomeSource = IncomeSource.INCOMES_REGISTER,
+                    estimatedMonthlyIncome = 42,
+                    otherIncome = emptySet(),
+                    otherIncomeInfo = "",
+                ),
+            entrepreneur = null,
+            student = false,
+            alimonyPayer = false,
+            otherInfo = "",
+            attachmentIds = emptyList(),
+        )
 
     private fun getEmails(): List<Email> {
         scheduledJobs.sendOutdatedIncomeNotifications(db, clock)

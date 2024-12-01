@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result } from 'lib-common/api'
+import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
@@ -32,6 +33,7 @@ import { emptyIncomeStatementForm } from './types/form'
 
 interface EditorState {
   id: string | undefined
+  status: IncomeStatementStatus
   startDates: LocalDate[]
   formData: Form.IncomeStatementForm
 }
@@ -52,6 +54,7 @@ function useInitialEditorState(
   return combine(incomeStatement, startDates).map(
     ([incomeStatement, startDates]) => ({
       id,
+      status: incomeStatement?.status ?? 'DRAFT',
       startDates,
       formData:
         incomeStatement === null
@@ -106,42 +109,56 @@ export default React.memo(function ChildIncomeStatementEditor() {
     updateChildIncomeStatementMutation
   )
 
-  return renderResult(state, (state) => {
-    const { id, formData, startDates } = state
+  const draftBody = useMemo(
+    () => state.map((state) => fromBody('child', state.formData, true)),
+    [state]
+  )
 
-    const save = () => {
-      const validatedData = formData ? fromBody('child', formData) : undefined
-      if (validatedData) {
-        if (id) {
-          return updateChildIncomeStatement({
-            childId,
-            incomeStatementId: id,
-            body: validatedData
-          })
+  const validatedBody = useMemo(
+    () => state.map((state) => fromBody('child', state.formData, false)),
+    [state]
+  )
+
+  return renderResult(
+    combine(state, draftBody, validatedBody),
+    ([{ status, formData, startDates }, draftBody, validatedBody]) => {
+      const save = (draft: boolean) => {
+        const body = draft ? draftBody : validatedBody
+        if (body) {
+          if (incomeStatementId) {
+            return updateChildIncomeStatement({
+              childId,
+              incomeStatementId,
+              body,
+              draft
+            })
+          } else {
+            return createChildIncomeStatement({ childId, body, draft })
+          }
         } else {
-          return createChildIncomeStatement({ childId, body: validatedData })
+          setShowFormErrors(true)
+          if (form.current) form.current.scrollToErrors()
+          return
         }
-      } else {
-        setShowFormErrors(true)
-        if (form.current) form.current.scrollToErrors()
-        return
       }
-    }
 
-    return (
-      <Main>
-        <ChildIncomeStatementForm
-          incomeStatementId={id}
-          formData={formData}
-          showFormErrors={showFormErrors}
-          otherStartDates={startDates}
-          onChange={updateFormData}
-          onSave={save}
-          onSuccess={navigateToList}
-          onCancel={navigateToList}
-          ref={form}
-        />
-      </Main>
-    )
-  })
+      return (
+        <Main>
+          <ChildIncomeStatementForm
+            incomeStatementId={incomeStatementId}
+            status={status}
+            formData={formData}
+            showFormErrors={showFormErrors}
+            otherStartDates={startDates}
+            draftSaveEnabled={draftBody !== null}
+            onChange={updateFormData}
+            onSave={save}
+            onSuccess={navigateToList}
+            onCancel={navigateToList}
+            ref={form}
+          />
+        </Main>
+      )
+    }
+  )
 })

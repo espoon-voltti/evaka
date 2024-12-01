@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { testAdult, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
@@ -16,22 +16,29 @@ let page: Page
 let header: CitizenHeader
 let incomeStatementsPage: IncomeStatementsPage
 
+const now = HelsinkiDateTime.of(2024, 11, 25, 12)
+
 beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.person(testAdult).saveAdult({ updateMockVtjWithDependants: [] })
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: now })
   await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   incomeStatementsPage = new IncomeStatementsPage(page)
 })
 
-async function assertIncomeStatementCreated(startDate: string) {
+async function assertIncomeStatementCreated(
+  startDate: string,
+  sent: HelsinkiDateTime | null
+) {
   await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
-  await incomeStatementsPage.rows
-    .only()
-    .assertText((text) => text.includes(startDate))
+  const row = incomeStatementsPage.rows.only()
+  await row.assertText((text) => text.includes(startDate))
+  await row.assertText((text) =>
+    text.includes(sent ? sent.toLocalDate().format() : 'Ei lähetetty')
+  )
 }
 
 const assertRequiredAttachment = async (attachment: string, present = true) =>
@@ -59,7 +66,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate)
+      await assertIncomeStatementCreated(startDate, now)
     })
 
     test('Gross income', async () => {
@@ -69,10 +76,7 @@ describe('Income statements', () => {
 
       // Start date can be max 1y from now so an error is shown
       await incomeStatementsPage.setValidFromDate(
-        LocalDate.todayInHelsinkiTz()
-          .subMonths(12)
-          .subDays(1)
-          .format('d.M.yyyy')
+        now.toLocalDate().subMonths(12).subDays(1).format('d.M.yyyy')
       )
       await incomeStatementsPage.incomeStartDateInfo.waitUntilVisible()
 
@@ -94,7 +98,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
       await incomeStatementsPage.incomeValidMaxRangeInfo.waitUntilHidden()
       await incomeStatementsPage.submit()
-      await assertIncomeStatementCreated(startDate)
+      await assertIncomeStatementCreated(startDate, now)
     })
   })
 
@@ -109,7 +113,7 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurType('full-time')
       await incomeStatementsPage.setEntrepreneurStartDate(
-        LocalDate.todayInSystemTz().addYears(-10).format()
+        now.toLocalDate().addYears(-10).format()
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
@@ -136,7 +140,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate)
+      await assertIncomeStatementCreated(startDate, now)
     })
     test('Self employed', async () => {
       await header.selectTab('income')
@@ -148,7 +152,7 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurType('part-time')
       await incomeStatementsPage.setEntrepreneurStartDate(
-        LocalDate.todayInSystemTz().addYears(-5).addWeeks(-7).format()
+        now.toLocalDate().addYears(-5).addWeeks(-7).format()
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
@@ -173,7 +177,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate)
+      await assertIncomeStatementCreated(startDate, now)
     })
 
     test('Light entrepreneur', async () => {
@@ -186,7 +190,7 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurType('full-time')
       await incomeStatementsPage.setEntrepreneurStartDate(
-        LocalDate.todayInSystemTz().addMonths(-3).format()
+        now.toLocalDate().addMonths(-3).format()
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
@@ -207,7 +211,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate)
+      await assertIncomeStatementCreated(startDate, now)
     })
 
     test('Partnership', async () => {
@@ -220,7 +224,7 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurType('full-time')
       await incomeStatementsPage.setEntrepreneurStartDate(
-        LocalDate.todayInSystemTz().addMonths(-1).addDays(3).format()
+        now.toLocalDate().addMonths(-1).addDays(3).format()
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('yes')
 
@@ -234,7 +238,27 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate)
+      await assertIncomeStatementCreated(startDate, now)
+    })
+  })
+
+  describe('Saving as draft', () => {
+    test('No need to check assured', async () => {
+      await header.selectTab('income')
+      await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.setValidFromDate(startDate)
+      await incomeStatementsPage.selectIncomeStatementType('highest-fee')
+      await incomeStatementsPage.saveDraft()
+
+      await assertIncomeStatementCreated(startDate, null)
+
+      const startDate2 = '24.12.2044'
+      await incomeStatementsPage.editIncomeStatement(0)
+      await incomeStatementsPage.setValidFromDate(startDate2)
+      await incomeStatementsPage.checkAssured()
+      await incomeStatementsPage.submit()
+
+      await assertIncomeStatementCreated(startDate2, now)
     })
   })
 })

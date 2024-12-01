@@ -66,6 +66,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
         <Tr>
           <Th>{t.income.table.incomeStatementForm}</Th>
           <Th>{t.income.table.createdAt}</Th>
+          <Th>{t.income.table.sentAt}</Th>
           <Th />
         </Tr>
       </Thead>
@@ -80,10 +81,15 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                 {item.startDate.format()} - {item.endDate?.format()}
               </Link>
             </Td>
-            <Td>{item.created.toLocalDate().format()}</Td>
+            <Td>{item.createdAt.toLocalDate().format()}</Td>
+            <Td>
+              {item.sentAt
+                ? item.sentAt.toLocalDate().format()
+                : t.income.table.notSent}
+            </Td>
             <Td>
               <Buttons>
-                {item.handled ? (
+                {item.status === 'HANDLED' ? (
                   <Dimmed>{t.income.table.handled}</Dimmed>
                 ) : (
                   <>
@@ -92,6 +98,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                       text={t.common.edit}
                       onClick={onEdit(item.id)}
                       altText={t.common.edit}
+                      data-qa="edit-income-statement-btn"
                     />
                     <Gap size="xs" horizontal />
                     <ResponsiveInlineButton

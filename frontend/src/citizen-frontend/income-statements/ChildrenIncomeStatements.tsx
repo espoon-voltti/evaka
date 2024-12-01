@@ -79,6 +79,7 @@ const ChildIncomeStatementsTable = React.memo(
                   <Tr>
                     <Th>{t.income.table.incomeStatementForm}</Th>
                     <Th>{t.income.table.createdAt}</Th>
+                    <Th>{t.income.table.sentAt}</Th>
                     <Th />
                   </Tr>
                 </Thead>
@@ -93,10 +94,15 @@ const ChildIncomeStatementsTable = React.memo(
                           {item.startDate.format()} - {item.endDate?.format()}
                         </Link>
                       </Td>
-                      <Td>{item.created.toLocalDate().format()}</Td>
+                      <Td>{item.createdAt.toLocalDate().format()}</Td>
+                      <Td>
+                        {item.sentAt
+                          ? item.sentAt.toLocalDate().format()
+                          : t.income.table.notSent}
+                      </Td>
                       <Td>
                         <Buttons>
-                          {item.handled ? (
+                          {item.status === 'HANDLED' ? (
                             <Dimmed>{t.income.table.handled}</Dimmed>
                           ) : (
                             <>

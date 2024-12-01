@@ -10,13 +10,13 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
-import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testAdult_5
@@ -61,17 +61,16 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
     @Test
     fun `Citizen can upload income statement attachments up to a limit`() {
         val maxAttachments = evakaEnv.maxAttachmentsPerUser
-        val incomeStatementId =
-            db.transaction {
-                it.createIncomeStatement(
-                    testAdult_5.id,
-                    IncomeStatementBody.HighestFee(startDate = LocalDate.now(), endDate = null),
-                )
-            }
+        val incomeStatement =
+            DevIncomeStatement(
+                personId = testAdult_5.id,
+                data = IncomeStatementBody.HighestFee(startDate = LocalDate.now(), endDate = null),
+            )
+        db.transaction { it.insert(incomeStatement) }
         for (i in 1..maxAttachments) {
-            assertTrue(uploadIncomeStatementAttachment(incomeStatementId))
+            assertTrue(uploadIncomeStatementAttachment(incomeStatement.id))
         }
-        assertFalse(uploadIncomeStatementAttachment(incomeStatementId))
+        assertFalse(uploadIncomeStatementAttachment(incomeStatement.id))
     }
 
     @Test
