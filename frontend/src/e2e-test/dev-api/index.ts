@@ -15,6 +15,7 @@ import { BaseError } from 'make-error-cause'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../config'
+import { runJobs, simpleAction } from '../generated/api-clients'
 import { DevPerson, MockVtjDataset } from '../generated/api-types'
 
 export class DevApiError extends BaseError {
@@ -72,13 +73,7 @@ export async function execSimpleApplicationAction(
   mockedTime: HelsinkiDateTime
 ): Promise<void> {
   try {
-    await devClient.post(
-      `/applications/${applicationId}/actions/${action}`,
-      null,
-      {
-        headers: clockHeader(mockedTime)
-      }
-    )
+    await simpleAction({ applicationId, action }, clockHeader(mockedTime))
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -99,9 +94,7 @@ export async function runPendingAsyncJobs(
   mockedTime: HelsinkiDateTime
 ): Promise<void> {
   try {
-    await devClient.post(`/run-jobs`, null, {
-      headers: clockHeader(mockedTime)
-    })
+    await runJobs(clockHeader(mockedTime))
   } catch (e) {
     throw new DevApiError(e)
   }
