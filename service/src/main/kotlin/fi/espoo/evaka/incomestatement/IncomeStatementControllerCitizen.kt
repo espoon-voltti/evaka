@@ -321,7 +321,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean?,
     ) {
-        if (!validateIncomeStatementBody(body))
+        if (draft == false && !validateIncomeStatementBody(body))
             throw BadRequest("Invalid child income statement body")
 
         db.connect { dbc ->
