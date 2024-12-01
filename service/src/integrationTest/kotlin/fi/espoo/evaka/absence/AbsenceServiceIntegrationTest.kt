@@ -43,6 +43,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.isHoliday
 import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
@@ -71,7 +72,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val placementStart: LocalDate = LocalDate.of(2019, 8, 1)
     private val placementEnd: LocalDate = LocalDate.of(2019, 12, 31)
-    private val now = HelsinkiDateTime.now()
+    private val now = HelsinkiDateTime.of(LocalDate.of(2024, 12, 28), LocalTime.of(15, 30))
 
     private fun child(person: DevPerson) =
         GroupMonthCalendarChild(
@@ -143,7 +144,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         .map {
                             GroupMonthCalendarDay(
                                 date = it,
-                                isOperationDay = !it.isWeekend(),
+                                isOperationDay = !it.isWeekend() && !it.isHoliday(),
                                 isInHolidayPeriod = false,
                                 children = emptyList(),
                             )
@@ -1970,7 +1971,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                 optionId = serviceNeedOptionId,
                                 shiftCare = shiftCareType,
                                 confirmedBy = EvakaUserId(employeeId.raw),
-                                confirmedAt = HelsinkiDateTime.now(),
+                                confirmedAt = now,
                             )
                         )
                     }
