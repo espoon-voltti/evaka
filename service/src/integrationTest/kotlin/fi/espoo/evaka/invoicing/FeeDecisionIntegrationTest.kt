@@ -10,8 +10,7 @@ import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
-import fi.espoo.evaka.incomestatement.createIncomeStatement
-import fi.espoo.evaka.incomestatement.updateIncomeStatementHandled
+import fi.espoo.evaka.incomestatement.IncomeStatementStatus
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionController
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
@@ -43,6 +42,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -563,73 +563,122 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     decisionWithOpenChildStatement,
                 )
             )
-            val adult1StatementId =
-                tx.createIncomeStatement(
-                    body =
-                        IncomeStatementBody.HighestFee(
-                            clock.today().minusMonths(2),
-                            clock.today().minusMonths(1),
-                        ),
+
+            tx.insert(
+                DevIncomeStatement(
                     personId = testAdult_1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = testDecisionMaker_1.id,
                 )
+            )
+
             // testAdult_2 statement not submitted
-            tx.updateIncomeStatementHandled(adult1StatementId, "handled", testDecisionMaker_1.id)
-            val adult3StatementId =
-                tx.createIncomeStatement(
-                    body =
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_2.id,
+                    data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
                             clock.today().minusMonths(1),
                         ),
+                    status = IncomeStatementStatus.DRAFT,
+                    sentAt = null,
+                )
+            )
+
+            tx.insert(
+                DevIncomeStatement(
                     personId = testAdult_3.id,
-                )
-            tx.updateIncomeStatementHandled(adult3StatementId, "handled", testDecisionMaker_1.id)
-            tx.createIncomeStatement(
-                body =
-                    IncomeStatementBody.HighestFee(
-                        clock.today().minusMonths(2),
-                        clock.today().minusMonths(1),
-                    ),
-                personId = testAdult_4.id,
-            )
-            // testAdult_4 statement not handled
-            tx.createIncomeStatement(
-                body =
-                    IncomeStatementBody.HighestFee(
-                        clock.today().minusMonths(20),
-                        clock.today().minusMonths(14).minusDays(1),
-                    ),
-                personId = testAdult_5.id,
-            )
-            // testAdult_5 statement not handled
-            tx.createIncomeStatement(
-                body =
-                    IncomeStatementBody.HighestFee(
-                        clock.today().plusDays(1),
-                        clock.today().plusMonths(12),
-                    ),
-                personId = testAdult_6.id,
-            )
-            // testAdult_6 statement not handled
-            val adult7StatementId =
-                tx.createIncomeStatement(
-                    body =
+                    data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
                             clock.today().minusMonths(1),
                         ),
-                    personId = testAdult_7.id,
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = testDecisionMaker_1.id,
                 )
-            tx.updateIncomeStatementHandled(adult7StatementId, "handled", testDecisionMaker_1.id)
-            tx.createIncomeStatement(
-                body =
-                    IncomeStatementBody.HighestFee(
-                        clock.today().minusMonths(2),
-                        clock.today().minusMonths(1),
-                    ),
-                personId = testChild_4.id,
             )
+
+            // testAdult_4 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_4.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+
+            // testAdult_5 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_5.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(20),
+                            clock.today().minusMonths(14).minusDays(1),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+
+            // testAdult_6 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_6.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusDays(1),
+                            clock.today().plusMonths(12),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_7.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = testDecisionMaker_1.id,
+                )
+            )
+
             // testChild_4 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testChild_4.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
         }
 
         val result =
@@ -659,36 +708,59 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(listOf(decisionWithHandledStatements, decisionWithOpenStatements))
-            val adult1StatementId =
-                tx.createIncomeStatement(
-                    body =
-                        IncomeStatementBody.HighestFee(
-                            clock.today().minusMonths(2),
-                            clock.today().minusMonths(1),
-                        ),
+            tx.insert(
+                DevIncomeStatement(
                     personId = testAdult_1.id,
-                )
-            // testAdult_2 statement not submitted
-            tx.updateIncomeStatementHandled(adult1StatementId, "handled", testDecisionMaker_1.id)
-            val adult3StatementId =
-                tx.createIncomeStatement(
-                    body =
+                    data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
                             clock.today().minusMonths(1),
                         ),
-                    personId = testAdult_3.id,
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = testDecisionMaker_1.id,
                 )
-            tx.updateIncomeStatementHandled(adult3StatementId, "handled", testDecisionMaker_1.id)
-            tx.createIncomeStatement(
-                body =
-                    IncomeStatementBody.HighestFee(
-                        clock.today().minusMonths(2),
-                        clock.today().minusMonths(1),
-                    ),
-                personId = testAdult_4.id,
+            )
+            // testAdult_2 statement not submitted
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_2.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.DRAFT,
+                    sentAt = null,
+                )
+            )
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_3.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = testDecisionMaker_1.id,
+                )
             )
             // testAdult_4 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_4.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
         }
 
         val result =
