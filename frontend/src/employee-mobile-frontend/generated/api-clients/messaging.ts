@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import { AxiosHeaders } from 'axios'
 import { CreateMessageResponse } from 'lib-common/generated/api-types/messaging'
 import { DraftContent } from 'lib-common/generated/api-types/messaging'
 import { JsonCompatible } from 'lib-common/json'
@@ -38,11 +39,13 @@ export async function createMessage(
   request: {
     accountId: UUID,
     body: PostMessageBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CreateMessageResponse> {
   const { data: json } = await client.request<JsonOf<CreateMessageResponse>>({
     url: uri`/employee-mobile/messages/${request.accountId}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PostMessageBody>
   })
   return json
@@ -56,11 +59,13 @@ export async function createMessagePreflightCheck(
   request: {
     accountId: UUID,
     body: PostMessagePreflightBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PostMessagePreflightResponse> {
   const { data: json } = await client.request<JsonOf<PostMessagePreflightResponse>>({
     url: uri`/employee-mobile/messages/${request.accountId}/preflight-check`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PostMessagePreflightBody>
   })
   return json
@@ -74,11 +79,13 @@ export async function deleteDraftMessage(
   request: {
     accountId: UUID,
     draftId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee-mobile/messages/${request.accountId}/drafts/${request.draftId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -90,11 +97,13 @@ export async function deleteDraftMessage(
 export async function getAccountsByDevice(
   request: {
     unitId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AuthorizedMessageAccount[]> {
   const { data: json } = await client.request<JsonOf<AuthorizedMessageAccount[]>>({
     url: uri`/employee-mobile/messages/my-accounts/${request.unitId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -106,11 +115,13 @@ export async function getAccountsByDevice(
 export async function getDraftMessages(
   request: {
     accountId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DraftContent[]> {
   const { data: json } = await client.request<JsonOf<DraftContent[]>>({
     url: uri`/employee-mobile/messages/${request.accountId}/drafts`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonDraftContent(e))
 }
@@ -123,7 +134,8 @@ export async function getReceivedMessages(
   request: {
     accountId: UUID,
     page: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedMessageThreads> {
   const params = createUrlSearchParams(
     ['page', request.page.toString()]
@@ -131,6 +143,7 @@ export async function getReceivedMessages(
   const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
     url: uri`/employee-mobile/messages/${request.accountId}/received`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonPagedMessageThreads(json)
@@ -140,10 +153,13 @@ export async function getReceivedMessages(
 /**
 * Generated from fi.espoo.evaka.messaging.MessageController.getReceiversForNewMessage
 */
-export async function getReceiversForNewMessage(): Promise<MessageReceiversResponse[]> {
+export async function getReceiversForNewMessage(
+  headers?: AxiosHeaders
+): Promise<MessageReceiversResponse[]> {
   const { data: json } = await client.request<JsonOf<MessageReceiversResponse[]>>({
     url: uri`/employee-mobile/messages/receivers`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -156,7 +172,8 @@ export async function getSentMessages(
   request: {
     accountId: UUID,
     page: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedSentMessages> {
   const params = createUrlSearchParams(
     ['page', request.page.toString()]
@@ -164,6 +181,7 @@ export async function getSentMessages(
   const { data: json } = await client.request<JsonOf<PagedSentMessages>>({
     url: uri`/employee-mobile/messages/${request.accountId}/sent`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonPagedSentMessages(json)
@@ -177,11 +195,13 @@ export async function getThread(
   request: {
     accountId: UUID,
     threadId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<MessageThread> {
   const { data: json } = await client.request<JsonOf<MessageThread>>({
     url: uri`/employee-mobile/messages/${request.accountId}/thread/${request.threadId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonMessageThread(json)
 }
@@ -193,11 +213,13 @@ export async function getThread(
 export async function getUnreadMessagesByUnit(
   request: {
     unitId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UnreadCountByAccountAndGroup[]> {
   const { data: json } = await client.request<JsonOf<UnreadCountByAccountAndGroup[]>>({
     url: uri`/employee-mobile/messages/unread/${request.unitId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -209,11 +231,13 @@ export async function getUnreadMessagesByUnit(
 export async function initDraftMessage(
   request: {
     accountId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee-mobile/messages/${request.accountId}/drafts`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -226,11 +250,13 @@ export async function markThreadRead(
   request: {
     accountId: UUID,
     threadId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee-mobile/messages/${request.accountId}/threads/${request.threadId}/read`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -244,11 +270,13 @@ export async function replyToThread(
     accountId: UUID,
     messageId: UUID,
     body: ReplyToMessageBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ThreadReply> {
   const { data: json } = await client.request<JsonOf<ThreadReply>>({
     url: uri`/employee-mobile/messages/${request.accountId}/${request.messageId}/reply`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ReplyToMessageBody>
   })
   return deserializeJsonThreadReply(json)
@@ -263,11 +291,13 @@ export async function updateDraftMessage(
     accountId: UUID,
     draftId: UUID,
     body: UpdatableDraftContent
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee-mobile/messages/${request.accountId}/drafts/${request.draftId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<UpdatableDraftContent>
   })
   return json

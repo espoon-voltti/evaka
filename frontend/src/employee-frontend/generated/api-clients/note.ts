@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { ChildDailyNote } from 'lib-common/generated/api-types/note'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import { ChildStickyNote } from 'lib-common/generated/api-types/note'
@@ -28,11 +29,13 @@ import { uri } from 'lib-common/uri'
 export async function getNotesByGroup(
   request: {
     groupId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<NotesByGroupResponse> {
   const { data: json } = await client.request<JsonOf<NotesByGroupResponse>>({
     url: uri`/employee/daycare-groups/${request.groupId}/notes`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonNotesByGroupResponse(json)
 }
@@ -45,11 +48,13 @@ export async function createChildDailyNote(
   request: {
     childId: UUID,
     body: ChildDailyNoteBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/children/${request.childId}/child-daily-notes`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ChildDailyNoteBody>
   })
   return json
@@ -62,11 +67,13 @@ export async function createChildDailyNote(
 export async function deleteChildDailyNote(
   request: {
     noteId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-daily-notes/${request.noteId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -79,11 +86,13 @@ export async function updateChildDailyNote(
   request: {
     noteId: UUID,
     body: ChildDailyNoteBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildDailyNote> {
   const { data: json } = await client.request<JsonOf<ChildDailyNote>>({
     url: uri`/employee/child-daily-notes/${request.noteId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ChildDailyNoteBody>
   })
   return deserializeJsonChildDailyNote(json)
@@ -97,11 +106,13 @@ export async function createChildStickyNote(
   request: {
     childId: UUID,
     body: ChildStickyNoteBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/children/${request.childId}/child-sticky-notes`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ChildStickyNoteBody>
   })
   return json
@@ -114,11 +125,13 @@ export async function createChildStickyNote(
 export async function deleteChildStickyNote(
   request: {
     noteId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-sticky-notes/${request.noteId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -131,11 +144,13 @@ export async function updateChildStickyNote(
   request: {
     noteId: UUID,
     body: ChildStickyNoteBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildStickyNote> {
   const { data: json } = await client.request<JsonOf<ChildStickyNote>>({
     url: uri`/employee/child-sticky-notes/${request.noteId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ChildStickyNoteBody>
   })
   return deserializeJsonChildStickyNote(json)
@@ -149,11 +164,13 @@ export async function createGroupNote(
   request: {
     groupId: UUID,
     body: GroupNoteBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/daycare-groups/${request.groupId}/group-notes`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<GroupNoteBody>
   })
   return json
@@ -166,11 +183,13 @@ export async function createGroupNote(
 export async function deleteGroupNote(
   request: {
     noteId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/group-notes/${request.noteId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -183,11 +202,13 @@ export async function updateGroupNote(
   request: {
     noteId: UUID,
     body: GroupNoteBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<GroupNote> {
   const { data: json } = await client.request<JsonOf<GroupNote>>({
     url: uri`/employee/group-notes/${request.noteId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<GroupNoteBody>
   })
   return deserializeJsonGroupNote(json)

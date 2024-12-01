@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
@@ -21,11 +22,13 @@ import { uri } from 'lib-common/uri'
 export async function getPairingStatus(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PairingStatusRes> {
   const { data: json } = await client.request<JsonOf<PairingStatusRes>>({
     url: uri`/employee-mobile/public/pairings/${request.id}/status`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -37,11 +40,13 @@ export async function getPairingStatus(
 export async function postPairingChallenge(
   request: {
     body: PostPairingChallengeReq
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Pairing> {
   const { data: json } = await client.request<JsonOf<Pairing>>({
     url: uri`/employee-mobile/public/pairings/challenge`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PostPairingChallengeReq>
   })
   return deserializeJsonPairing(json)

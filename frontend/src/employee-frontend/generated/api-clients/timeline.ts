@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { JsonOf } from 'lib-common/json'
 import { Timeline } from 'lib-common/generated/api-types/timeline'
 import { UUID } from 'lib-common/types'
@@ -22,7 +23,8 @@ export async function getTimeline(
     personId: UUID,
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Timeline> {
   const params = createUrlSearchParams(
     ['personId', request.personId],
@@ -32,6 +34,7 @@ export async function getTimeline(
   const { data: json } = await client.request<JsonOf<Timeline>>({
     url: uri`/employee/timeline`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonTimeline(json)

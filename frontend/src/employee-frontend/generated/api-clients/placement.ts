@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { AxiosHeaders } from 'axios'
 import { GroupPlacementRequestBody } from 'lib-common/generated/api-types/placement'
 import { GroupTransferRequestBody } from 'lib-common/generated/api-types/placement'
 import { JsonCompatible } from 'lib-common/json'
@@ -25,11 +26,13 @@ export async function createGroupPlacement(
   request: {
     placementId: UUID,
     body: GroupPlacementRequestBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/placements/${request.placementId}/group-placements`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<GroupPlacementRequestBody>
   })
   return json
@@ -42,11 +45,13 @@ export async function createGroupPlacement(
 export async function createPlacement(
   request: {
     body: PlacementCreateRequestBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/placements`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PlacementCreateRequestBody>
   })
   return json
@@ -59,11 +64,13 @@ export async function createPlacement(
 export async function deleteGroupPlacement(
   request: {
     groupPlacementId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/group-placements/${request.groupPlacementId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -75,11 +82,13 @@ export async function deleteGroupPlacement(
 export async function deletePlacement(
   request: {
     placementId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/placements/${request.placementId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -91,11 +100,13 @@ export async function deletePlacement(
 export async function getChildPlacementPeriods(
   request: {
     adultId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FiniteDateRange[]> {
   const { data: json } = await client.request<JsonOf<FiniteDateRange[]>>({
     url: uri`/employee/placements/child-placement-periods/${request.adultId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => FiniteDateRange.parseJson(e))
 }
@@ -107,11 +118,13 @@ export async function getChildPlacementPeriods(
 export async function getChildPlacements(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PlacementResponse> {
   const { data: json } = await client.request<JsonOf<PlacementResponse>>({
     url: uri`/employee/children/${request.childId}/placements`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonPlacementResponse(json)
 }
@@ -124,11 +137,13 @@ export async function transferGroupPlacement(
   request: {
     groupPlacementId: UUID,
     body: GroupTransferRequestBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/group-placements/${request.groupPlacementId}/transfer`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<GroupTransferRequestBody>
   })
   return json
@@ -142,11 +157,13 @@ export async function updatePlacementById(
   request: {
     placementId: UUID,
     body: PlacementUpdateRequestBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/placements/${request.placementId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<PlacementUpdateRequestBody>
   })
   return json

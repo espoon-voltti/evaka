@@ -17,6 +17,7 @@ import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/ap
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedVoucherCoefficientRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedVoucherCoefficientResponse } from 'lib-common/generated/api-types/assistanceneed'
+import { AxiosHeaders } from 'axios'
 import { DecideAssistanceNeedDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { DecideAssistanceNeedPreschoolDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee } from 'lib-common/generated/api-types/pis'
@@ -45,11 +46,13 @@ export async function annulAssistanceNeedDecision(
   request: {
     id: UUID,
     body: AnnulAssistanceNeedDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-decision/${request.id}/annul`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AnnulAssistanceNeedDecisionRequest>
   })
   return json
@@ -63,11 +66,13 @@ export async function createAssistanceNeedDecision(
   request: {
     childId: UUID,
     body: AssistanceNeedDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecision>>({
     url: uri`/employee/children/${request.childId}/assistance-needs/decision`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceNeedDecisionRequest>
   })
   return deserializeJsonAssistanceNeedDecision(json)
@@ -81,11 +86,13 @@ export async function decideAssistanceNeedDecision(
   request: {
     id: UUID,
     body: DecideAssistanceNeedDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-decision/${request.id}/decide`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DecideAssistanceNeedDecisionRequest>
   })
   return json
@@ -98,11 +105,13 @@ export async function decideAssistanceNeedDecision(
 export async function deleteAssistanceNeedDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-decision/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -114,11 +123,13 @@ export async function deleteAssistanceNeedDecision(
 export async function getAssistanceDecisionMakerOptions(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
     url: uri`/employee/assistance-need-decision/${request.id}/decision-maker-option`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonEmployee(e))
 }
@@ -130,11 +141,13 @@ export async function getAssistanceDecisionMakerOptions(
 export async function getAssistanceNeedDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedDecisionResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionResponse>>({
     url: uri`/employee/assistance-need-decision/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonAssistanceNeedDecisionResponse(json)
 }
@@ -146,11 +159,13 @@ export async function getAssistanceNeedDecision(
 export async function getAssistanceNeedDecisions(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedDecisionBasicsResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionBasicsResponse[]>>({
     url: uri`/employee/children/${request.childId}/assistance-needs/decisions`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonAssistanceNeedDecisionBasicsResponse(e))
 }
@@ -162,11 +177,13 @@ export async function getAssistanceNeedDecisions(
 export async function markAssistanceNeedDecisionAsOpened(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-decision/${request.id}/mark-as-opened`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -178,11 +195,13 @@ export async function markAssistanceNeedDecisionAsOpened(
 export async function revertToUnsentAssistanceNeedDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-decision/${request.id}/revert-to-unsent`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -194,11 +213,13 @@ export async function revertToUnsentAssistanceNeedDecision(
 export async function sendAssistanceNeedDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-decision/${request.id}/send`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -211,11 +232,13 @@ export async function updateAssistanceNeedDecision(
   request: {
     id: UUID,
     body: AssistanceNeedDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-decision/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceNeedDecisionRequest>
   })
   return json
@@ -229,11 +252,13 @@ export async function updateAssistanceNeedDecisionDecisionMaker(
   request: {
     id: UUID,
     body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-decision/${request.id}/update-decision-maker`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UpdateDecisionMakerForAssistanceNeedDecisionRequest>
   })
   return json
@@ -247,11 +272,13 @@ export async function annulAssistanceNeedPreschoolDecision(
   request: {
     id: UUID,
     body: AnnulAssistanceNeedPreschoolDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}/annul`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AnnulAssistanceNeedPreschoolDecisionRequest>
   })
   return json
@@ -264,11 +291,13 @@ export async function annulAssistanceNeedPreschoolDecision(
 export async function createAssistanceNeedPreschoolDecision(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedPreschoolDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecision>>({
     url: uri`/employee/children/${request.childId}/assistance-need-preschool-decisions`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return deserializeJsonAssistanceNeedPreschoolDecision(json)
 }
@@ -281,11 +310,13 @@ export async function decideAssistanceNeedPreschoolDecision(
   request: {
     id: UUID,
     body: DecideAssistanceNeedPreschoolDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}/decide`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DecideAssistanceNeedPreschoolDecisionRequest>
   })
   return json
@@ -298,11 +329,13 @@ export async function decideAssistanceNeedPreschoolDecision(
 export async function deleteAssistanceNeedPreschoolDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -314,11 +347,13 @@ export async function deleteAssistanceNeedPreschoolDecision(
 export async function getAssistanceNeedPreschoolDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedPreschoolDecisionResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecisionResponse>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonAssistanceNeedPreschoolDecisionResponse(json)
 }
@@ -330,11 +365,13 @@ export async function getAssistanceNeedPreschoolDecision(
 export async function getAssistanceNeedPreschoolDecisions(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedPreschoolDecisionBasicsResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecisionBasicsResponse[]>>({
     url: uri`/employee/children/${request.childId}/assistance-need-preschool-decisions`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonAssistanceNeedPreschoolDecisionBasicsResponse(e))
 }
@@ -346,11 +383,13 @@ export async function getAssistanceNeedPreschoolDecisions(
 export async function getAssistancePreschoolDecisionMakerOptions(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}/decision-maker-options`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonEmployee(e))
 }
@@ -362,11 +401,13 @@ export async function getAssistancePreschoolDecisionMakerOptions(
 export async function markAssistanceNeedPreschoolDecisionAsOpened(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}/mark-as-opened`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -378,11 +419,13 @@ export async function markAssistanceNeedPreschoolDecisionAsOpened(
 export async function revertAssistanceNeedPreschoolDecisionToUnsent(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}/unsend`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -394,11 +437,13 @@ export async function revertAssistanceNeedPreschoolDecisionToUnsent(
 export async function sendAssistanceNeedPreschoolDecisionForDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}/send`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -411,11 +456,13 @@ export async function updateAssistanceNeedPreschoolDecision(
   request: {
     id: UUID,
     body: AssistanceNeedPreschoolDecisionForm
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceNeedPreschoolDecisionForm>
   })
   return json
@@ -429,11 +476,13 @@ export async function updateAssistanceNeedPreschoolDecisionDecisionMaker(
   request: {
     id: UUID,
     body: UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}/decision-maker`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest>
   })
   return json
@@ -447,11 +496,13 @@ export async function createAssistanceNeedVoucherCoefficient(
   request: {
     childId: UUID,
     body: AssistanceNeedVoucherCoefficientRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedVoucherCoefficient> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedVoucherCoefficient>>({
     url: uri`/employee/children/${request.childId}/assistance-need-voucher-coefficients`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceNeedVoucherCoefficientRequest>
   })
   return deserializeJsonAssistanceNeedVoucherCoefficient(json)
@@ -464,11 +515,13 @@ export async function createAssistanceNeedVoucherCoefficient(
 export async function deleteAssistanceNeedVoucherCoefficient(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-need-voucher-coefficients/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -480,11 +533,13 @@ export async function deleteAssistanceNeedVoucherCoefficient(
 export async function getAssistanceNeedVoucherCoefficients(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedVoucherCoefficientResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedVoucherCoefficientResponse[]>>({
     url: uri`/employee/children/${request.childId}/assistance-need-voucher-coefficients`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonAssistanceNeedVoucherCoefficientResponse(e))
 }
@@ -497,11 +552,13 @@ export async function updateAssistanceNeedVoucherCoefficient(
   request: {
     id: UUID,
     body: AssistanceNeedVoucherCoefficientRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedVoucherCoefficient> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedVoucherCoefficient>>({
     url: uri`/employee/assistance-need-voucher-coefficients/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceNeedVoucherCoefficientRequest>
   })
   return deserializeJsonAssistanceNeedVoucherCoefficient(json)

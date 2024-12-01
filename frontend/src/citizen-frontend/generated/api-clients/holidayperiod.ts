@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { ActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
+import { AxiosHeaders } from 'axios'
 import { FixedPeriodsBody } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { JsonCompatible } from 'lib-common/json'
@@ -23,11 +24,13 @@ export async function answerFixedPeriodQuestionnaire(
   request: {
     id: UUID,
     body: FixedPeriodsBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/holiday-period/questionnaire/fixed-period/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<FixedPeriodsBody>
   })
   return json
@@ -37,10 +40,13 @@ export async function answerFixedPeriodQuestionnaire(
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodControllerCitizen.getActiveQuestionnaires
 */
-export async function getActiveQuestionnaires(): Promise<ActiveQuestionnaire[]> {
+export async function getActiveQuestionnaires(
+  headers?: AxiosHeaders
+): Promise<ActiveQuestionnaire[]> {
   const { data: json } = await client.request<JsonOf<ActiveQuestionnaire[]>>({
     url: uri`/citizen/holiday-period/questionnaire`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonActiveQuestionnaire(e))
 }
@@ -49,10 +55,13 @@ export async function getActiveQuestionnaires(): Promise<ActiveQuestionnaire[]> 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodControllerCitizen.getHolidayPeriods
 */
-export async function getHolidayPeriods(): Promise<HolidayPeriod[]> {
+export async function getHolidayPeriods(
+  headers?: AxiosHeaders
+): Promise<HolidayPeriod[]> {
   const { data: json } = await client.request<JsonOf<HolidayPeriod[]>>({
     url: uri`/citizen/holiday-period`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonHolidayPeriod(e))
 }

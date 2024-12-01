@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -17,11 +18,13 @@ import { uri } from 'lib-common/uri'
 export async function dismissDailyServiceTimeNotification(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/daily-service-time-notifications/dismiss`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -31,10 +34,13 @@ export async function dismissDailyServiceTimeNotification(
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesCitizenController.getDailyServiceTimeNotifications
 */
-export async function getDailyServiceTimeNotifications(): Promise<UUID[]> {
+export async function getDailyServiceTimeNotifications(
+  headers?: AxiosHeaders
+): Promise<UUID[]> {
   const { data: json } = await client.request<JsonOf<UUID[]>>({
     url: uri`/citizen/daily-service-time-notifications`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }

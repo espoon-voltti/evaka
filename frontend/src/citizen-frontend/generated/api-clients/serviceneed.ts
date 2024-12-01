@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { CitizenServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -27,7 +28,8 @@ import { uri } from 'lib-common/uri'
 export async function getServiceNeedOptionPublicInfos(
   request: {
     placementTypes?: PlacementType[] | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ServiceNeedOptionPublicInfo[]> {
   const params = createUrlSearchParams(
     ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
@@ -35,6 +37,7 @@ export async function getServiceNeedOptionPublicInfos(
   const { data: json } = await client.request<JsonOf<ServiceNeedOptionPublicInfo[]>>({
     url: uri`/citizen/public/service-needs/options`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonServiceNeedOptionPublicInfo(e))
@@ -47,11 +50,13 @@ export async function getServiceNeedOptionPublicInfos(
 export async function createServiceApplication(
   request: {
     body: ServiceApplicationCreateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/service-applications`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ServiceApplicationCreateRequest>
   })
   return json
@@ -64,11 +69,13 @@ export async function createServiceApplication(
 export async function deleteServiceApplication(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/service-applications/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -80,7 +87,8 @@ export async function deleteServiceApplication(
 export async function getChildServiceApplications(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CitizenServiceApplication[]> {
   const params = createUrlSearchParams(
     ['childId', request.childId]
@@ -88,6 +96,7 @@ export async function getChildServiceApplications(
   const { data: json } = await client.request<JsonOf<CitizenServiceApplication[]>>({
     url: uri`/citizen/service-applications`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonCitizenServiceApplication(e))
@@ -101,7 +110,8 @@ export async function getChildServiceNeedOptions(
   request: {
     childId: UUID,
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ServiceNeedOptionBasics[]> {
   const params = createUrlSearchParams(
     ['childId', request.childId],
@@ -110,6 +120,7 @@ export async function getChildServiceNeedOptions(
   const { data: json } = await client.request<JsonOf<ServiceNeedOptionBasics[]>>({
     url: uri`/citizen/service-applications/options`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonServiceNeedOptionBasics(e))

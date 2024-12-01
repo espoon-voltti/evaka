@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { CurrentNotificationResponse } from 'lib-common/generated/api-types/systemnotifications'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../client'
@@ -14,10 +15,13 @@ import { uri } from 'lib-common/uri'
 /**
 * Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.getCurrentSystemNotificationEmployeeMobile
 */
-export async function getCurrentSystemNotificationEmployeeMobile(): Promise<CurrentNotificationResponse> {
+export async function getCurrentSystemNotificationEmployeeMobile(
+  headers?: AxiosHeaders
+): Promise<CurrentNotificationResponse> {
   const { data: json } = await client.request<JsonOf<CurrentNotificationResponse>>({
     url: uri`/employee-mobile/system-notifications/current`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonCurrentNotificationResponse(json)
 }

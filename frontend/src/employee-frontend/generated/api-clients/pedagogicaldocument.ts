@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
@@ -20,11 +21,13 @@ import { uri } from 'lib-common/uri'
 export async function createPedagogicalDocument(
   request: {
     body: PedagogicalDocumentPostBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PedagogicalDocument> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocument>>({
     url: uri`/employee/pedagogical-document`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PedagogicalDocumentPostBody>
   })
   return deserializeJsonPedagogicalDocument(json)
@@ -37,11 +40,13 @@ export async function createPedagogicalDocument(
 export async function deletePedagogicalDocument(
   request: {
     documentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/pedagogical-document/${request.documentId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -53,11 +58,13 @@ export async function deletePedagogicalDocument(
 export async function getChildPedagogicalDocuments(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PedagogicalDocument[]> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocument[]>>({
     url: uri`/employee/pedagogical-document/child/${request.childId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPedagogicalDocument(e))
 }
@@ -70,11 +77,13 @@ export async function updatePedagogicalDocument(
   request: {
     documentId: UUID,
     body: PedagogicalDocumentPostBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PedagogicalDocument> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocument>>({
     url: uri`/employee/pedagogical-document/${request.documentId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<PedagogicalDocumentPostBody>
   })
   return deserializeJsonPedagogicalDocument(json)

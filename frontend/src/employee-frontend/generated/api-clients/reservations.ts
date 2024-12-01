@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { ChildDatePresence } from 'lib-common/generated/api-types/reservations'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
@@ -28,7 +29,8 @@ export async function getAttendanceReservations(
     from: LocalDate,
     to: LocalDate,
     includeNonOperationalDays?: boolean | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UnitAttendanceReservations> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
@@ -39,6 +41,7 @@ export async function getAttendanceReservations(
   const { data: json } = await client.request<JsonOf<UnitAttendanceReservations>>({
     url: uri`/employee/attendance-reservations`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonUnitAttendanceReservations(json)
@@ -51,11 +54,13 @@ export async function getAttendanceReservations(
 export async function getExpectedAbsences(
   request: {
     body: ExpectedAbsencesRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ExpectedAbsencesResponse> {
   const { data: json } = await client.request<JsonOf<ExpectedAbsencesResponse>>({
     url: uri`/employee/attendance-reservations/child-date/expected-absences`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ExpectedAbsencesRequest>
   })
   return json
@@ -68,11 +73,13 @@ export async function getExpectedAbsences(
 export async function postChildDatePresence(
   request: {
     body: ChildDatePresence
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/attendance-reservations/child-date`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ChildDatePresence>
   })
   return json
@@ -85,11 +92,13 @@ export async function postChildDatePresence(
 export async function postReservations(
   request: {
     body: DailyReservationRequest[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/attendance-reservations`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
   })
   return json

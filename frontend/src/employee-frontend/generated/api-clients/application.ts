@@ -10,6 +10,7 @@ import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { ApplicationNoteResponse } from 'lib-common/generated/api-types/application'
 import { ApplicationResponse } from 'lib-common/generated/api-types/application'
 import { ApplicationUpdate } from 'lib-common/generated/api-types/application'
+import { AxiosHeaders } from 'axios'
 import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
 import { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
 import { DecisionDraftUpdate } from 'lib-common/generated/api-types/decision'
@@ -47,11 +48,13 @@ export async function acceptDecision(
   request: {
     applicationId: UUID,
     body: AcceptDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}/actions/accept-decision`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AcceptDecisionRequest>
   })
   return json
@@ -65,11 +68,13 @@ export async function acceptPlacementProposal(
   request: {
     unitId: UUID,
     body: AcceptPlacementProposalRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/placement-proposals/${request.unitId}/accept`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AcceptPlacementProposalRequest>
   })
   return json
@@ -82,11 +87,13 @@ export async function acceptPlacementProposal(
 export async function createPaperApplication(
   request: {
     body: PaperApplicationCreateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/applications`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PaperApplicationCreateRequest>
   })
   return json
@@ -100,11 +107,13 @@ export async function createPlacementPlan(
   request: {
     applicationId: UUID,
     body: DaycarePlacementPlan
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}/actions/create-placement-plan`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DaycarePlacementPlan>
   })
   return json
@@ -117,11 +126,13 @@ export async function createPlacementPlan(
 export async function getApplicationDetails(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ApplicationResponse> {
   const { data: json } = await client.request<JsonOf<ApplicationResponse>>({
     url: uri`/employee/applications/${request.applicationId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonApplicationResponse(json)
 }
@@ -133,11 +144,13 @@ export async function getApplicationDetails(
 export async function getApplicationSummaries(
   request: {
     body: SearchApplicationRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedApplicationSummaries> {
   const { data: json } = await client.request<JsonOf<PagedApplicationSummaries>>({
     url: uri`/employee/applications/search`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SearchApplicationRequest>
   })
   return deserializeJsonPagedApplicationSummaries(json)
@@ -150,11 +163,13 @@ export async function getApplicationSummaries(
 export async function getChildApplicationSummaries(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonApplicationSummary[]> {
   const { data: json } = await client.request<JsonOf<PersonApplicationSummary[]>>({
     url: uri`/employee/applications/by-child/${request.childId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPersonApplicationSummary(e))
 }
@@ -166,11 +181,13 @@ export async function getChildApplicationSummaries(
 export async function getDecisionDrafts(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DecisionDraftGroup> {
   const { data: json } = await client.request<JsonOf<DecisionDraftGroup>>({
     url: uri`/employee/applications/${request.applicationId}/decision-drafts`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonDecisionDraftGroup(json)
 }
@@ -182,11 +199,13 @@ export async function getDecisionDrafts(
 export async function getGuardianApplicationSummaries(
   request: {
     guardianId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonApplicationSummary[]> {
   const { data: json } = await client.request<JsonOf<PersonApplicationSummary[]>>({
     url: uri`/employee/applications/by-guardian/${request.guardianId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPersonApplicationSummary(e))
 }
@@ -198,11 +217,13 @@ export async function getGuardianApplicationSummaries(
 export async function getPlacementPlanDraft(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PlacementPlanDraft> {
   const { data: json } = await client.request<JsonOf<PlacementPlanDraft>>({
     url: uri`/employee/applications/${request.applicationId}/placement-draft`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonPlacementPlanDraft(json)
 }
@@ -214,11 +235,13 @@ export async function getPlacementPlanDraft(
 export async function getUnitApplications(
   request: {
     unitId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UnitApplications> {
   const { data: json } = await client.request<JsonOf<UnitApplications>>({
     url: uri`/employee/applications/units/${request.unitId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonUnitApplications(json)
 }
@@ -231,11 +254,13 @@ export async function rejectDecision(
   request: {
     applicationId: UUID,
     body: RejectDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}/actions/reject-decision`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<RejectDecisionRequest>
   })
   return json
@@ -249,11 +274,13 @@ export async function respondToPlacementProposal(
   request: {
     applicationId: UUID,
     body: PlacementProposalConfirmationUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}/actions/respond-to-placement-proposal`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PlacementProposalConfirmationUpdate>
   })
   return json
@@ -266,11 +293,13 @@ export async function respondToPlacementProposal(
 export async function sendApplication(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}/actions/send-application`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -283,11 +312,13 @@ export async function simpleApplicationAction(
   request: {
     applicationId: UUID,
     action: string
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}/actions/${request.action}`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -300,11 +331,13 @@ export async function simpleBatchAction(
   request: {
     action: string,
     body: SimpleBatchRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/batch/actions/${request.action}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SimpleBatchRequest>
   })
   return json
@@ -318,11 +351,13 @@ export async function updateApplication(
   request: {
     applicationId: UUID,
     body: ApplicationUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ApplicationUpdate>
   })
   return json
@@ -336,11 +371,13 @@ export async function updateDecisionDrafts(
   request: {
     applicationId: UUID,
     body: DecisionDraftUpdate[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/applications/${request.applicationId}/decision-drafts`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DecisionDraftUpdate[]>
   })
   return json
@@ -350,10 +387,13 @@ export async function updateDecisionDrafts(
 /**
 * Generated from fi.espoo.evaka.application.PlacementToolController.getNextPreschoolTerm
 */
-export async function getNextPreschoolTerm(): Promise<PreschoolTerm[]> {
+export async function getNextPreschoolTerm(
+  headers?: AxiosHeaders
+): Promise<PreschoolTerm[]> {
   const { data: json } = await client.request<JsonOf<PreschoolTerm[]>>({
     url: uri`/employee/placement-tool/next-term`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPreschoolTerm(e))
 }
@@ -366,11 +406,13 @@ export async function createNote(
   request: {
     applicationId: UUID,
     body: NoteRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ApplicationNote> {
   const { data: json } = await client.request<JsonOf<ApplicationNote>>({
     url: uri`/employee/note/application/${request.applicationId}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<NoteRequest>
   })
   return deserializeJsonApplicationNote(json)
@@ -383,11 +425,13 @@ export async function createNote(
 export async function deleteNote(
   request: {
     noteId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/note/${request.noteId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -399,11 +443,13 @@ export async function deleteNote(
 export async function getNotes(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ApplicationNoteResponse[]> {
   const { data: json } = await client.request<JsonOf<ApplicationNoteResponse[]>>({
     url: uri`/employee/note/application/${request.applicationId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonApplicationNoteResponse(e))
 }
@@ -416,11 +462,13 @@ export async function updateNote(
   request: {
     noteId: UUID,
     body: NoteRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/note/${request.noteId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<NoteRequest>
   })
   return json
@@ -434,11 +482,13 @@ export async function updateServiceWorkerNote(
   request: {
     applicationId: UUID,
     body: NoteRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/note/service-worker/application/${request.applicationId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<NoteRequest>
   })
   return json

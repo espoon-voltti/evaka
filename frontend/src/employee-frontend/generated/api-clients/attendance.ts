@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -25,7 +26,8 @@ import { uri } from 'lib-common/uri'
 export async function getOpenGroupAttendance(
   request: {
     userId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<OpenGroupAttendanceResponse> {
   const params = createUrlSearchParams(
     ['userId', request.userId]
@@ -33,6 +35,7 @@ export async function getOpenGroupAttendance(
   const { data: json } = await client.request<JsonOf<OpenGroupAttendanceResponse>>({
     url: uri`/employee/staff-attendances/realtime/open-attendance`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonOpenGroupAttendanceResponse(json)
@@ -47,7 +50,8 @@ export async function getRealtimeStaffAttendances(
     unitId: UUID,
     start: LocalDate,
     end: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<StaffAttendanceResponse> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
@@ -57,6 +61,7 @@ export async function getRealtimeStaffAttendances(
   const { data: json } = await client.request<JsonOf<StaffAttendanceResponse>>({
     url: uri`/employee/staff-attendances/realtime`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonStaffAttendanceResponse(json)
@@ -69,11 +74,13 @@ export async function getRealtimeStaffAttendances(
 export async function upsertDailyExternalRealtimeAttendances(
   request: {
     body: ExternalAttendanceBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/staff-attendances/realtime/upsert-external`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ExternalAttendanceBody>
   })
   return json
@@ -86,11 +93,13 @@ export async function upsertDailyExternalRealtimeAttendances(
 export async function upsertDailyStaffRealtimeAttendances(
   request: {
     body: StaffAttendanceBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/staff-attendances/realtime/upsert`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<StaffAttendanceBody>
   })
   return json

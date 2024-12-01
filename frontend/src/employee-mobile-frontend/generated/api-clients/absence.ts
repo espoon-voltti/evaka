@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { Absence } from 'lib-common/generated/api-types/absence'
+import { AxiosHeaders } from 'axios'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
@@ -18,11 +19,13 @@ import { uri } from 'lib-common/uri'
 export async function futureAbsencesOfChild(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Absence[]> {
   const { data: json } = await client.request<JsonOf<Absence[]>>({
     url: uri`/employee-mobile/absences/by-child/${request.childId}/future`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonAbsence(e))
 }

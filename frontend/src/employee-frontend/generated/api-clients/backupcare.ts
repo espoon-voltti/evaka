@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { BackupCareCreateResponse } from 'lib-common/generated/api-types/backupcare'
 import { BackupCareUpdateRequest } from 'lib-common/generated/api-types/backupcare'
 import { ChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
@@ -23,11 +24,13 @@ export async function createBackupCare(
   request: {
     childId: UUID,
     body: NewBackupCare
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<BackupCareCreateResponse> {
   const { data: json } = await client.request<JsonOf<BackupCareCreateResponse>>({
     url: uri`/employee/children/${request.childId}/backup-cares`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<NewBackupCare>
   })
   return json
@@ -40,11 +43,13 @@ export async function createBackupCare(
 export async function deleteBackupCare(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/backup-cares/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -56,11 +61,13 @@ export async function deleteBackupCare(
 export async function getChildBackupCares(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildBackupCaresResponse> {
   const { data: json } = await client.request<JsonOf<ChildBackupCaresResponse>>({
     url: uri`/employee/children/${request.childId}/backup-cares`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonChildBackupCaresResponse(json)
 }
@@ -73,11 +80,13 @@ export async function updateBackupCare(
   request: {
     id: UUID,
     body: BackupCareUpdateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/backup-cares/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<BackupCareUpdateRequest>
   })
   return json

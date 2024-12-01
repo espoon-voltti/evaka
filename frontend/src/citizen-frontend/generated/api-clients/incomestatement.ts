@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
@@ -27,7 +28,8 @@ export async function createChildIncomeStatement(
     childId: UUID,
     draft?: boolean | null,
     body: IncomeStatementBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['draft', request.draft?.toString()]
@@ -35,6 +37,7 @@ export async function createChildIncomeStatement(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/child/${request.childId}`.toString(),
     method: 'POST',
+    headers,
     params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
   })
@@ -49,7 +52,8 @@ export async function createIncomeStatement(
   request: {
     draft?: boolean | null,
     body: IncomeStatementBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['draft', request.draft?.toString()]
@@ -57,6 +61,7 @@ export async function createIncomeStatement(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements`.toString(),
     method: 'POST',
+    headers,
     params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
   })
@@ -70,11 +75,13 @@ export async function createIncomeStatement(
 export async function deleteIncomeStatement(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -87,11 +94,13 @@ export async function getChildIncomeStatement(
   request: {
     childId: UUID,
     incomeStatementId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<IncomeStatement> {
   const { data: json } = await client.request<JsonOf<IncomeStatement>>({
     url: uri`/citizen/income-statements/child/${request.childId}/${request.incomeStatementId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonIncomeStatement(json)
 }
@@ -103,11 +112,13 @@ export async function getChildIncomeStatement(
 export async function getChildIncomeStatementStartDates(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<LocalDate[]> {
   const { data: json } = await client.request<JsonOf<LocalDate[]>>({
     url: uri`/citizen/income-statements/child/start-dates/${request.childId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => LocalDate.parseIso(e))
 }
@@ -120,7 +131,8 @@ export async function getChildIncomeStatements(
   request: {
     childId: UUID,
     page: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedIncomeStatements> {
   const params = createUrlSearchParams(
     ['page', request.page.toString()]
@@ -128,6 +140,7 @@ export async function getChildIncomeStatements(
   const { data: json } = await client.request<JsonOf<PagedIncomeStatements>>({
     url: uri`/citizen/income-statements/child/${request.childId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonPagedIncomeStatements(json)
@@ -140,11 +153,13 @@ export async function getChildIncomeStatements(
 export async function getIncomeStatement(
   request: {
     incomeStatementId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<IncomeStatement> {
   const { data: json } = await client.request<JsonOf<IncomeStatement>>({
     url: uri`/citizen/income-statements/${request.incomeStatementId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonIncomeStatement(json)
 }
@@ -153,10 +168,13 @@ export async function getIncomeStatement(
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getIncomeStatementChildren
 */
-export async function getIncomeStatementChildren(): Promise<ChildBasicInfo[]> {
+export async function getIncomeStatementChildren(
+  headers?: AxiosHeaders
+): Promise<ChildBasicInfo[]> {
   const { data: json } = await client.request<JsonOf<ChildBasicInfo[]>>({
     url: uri`/citizen/income-statements/children`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -165,10 +183,13 @@ export async function getIncomeStatementChildren(): Promise<ChildBasicInfo[]> {
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getIncomeStatementStartDates
 */
-export async function getIncomeStatementStartDates(): Promise<LocalDate[]> {
+export async function getIncomeStatementStartDates(
+  headers?: AxiosHeaders
+): Promise<LocalDate[]> {
   const { data: json } = await client.request<JsonOf<LocalDate[]>>({
     url: uri`/citizen/income-statements/start-dates/`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => LocalDate.parseIso(e))
 }
@@ -180,7 +201,8 @@ export async function getIncomeStatementStartDates(): Promise<LocalDate[]> {
 export async function getIncomeStatements(
   request: {
     page: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedIncomeStatements> {
   const params = createUrlSearchParams(
     ['page', request.page.toString()]
@@ -188,6 +210,7 @@ export async function getIncomeStatements(
   const { data: json } = await client.request<JsonOf<PagedIncomeStatements>>({
     url: uri`/citizen/income-statements`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonPagedIncomeStatements(json)
@@ -201,11 +224,13 @@ export async function removeChildIncomeStatement(
   request: {
     childId: UUID,
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/child/${request.childId}/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -220,7 +245,8 @@ export async function updateChildIncomeStatement(
     incomeStatementId: UUID,
     draft?: boolean | null,
     body: IncomeStatementBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['draft', request.draft?.toString()]
@@ -228,6 +254,7 @@ export async function updateChildIncomeStatement(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/child/${request.childId}/${request.incomeStatementId}`.toString(),
     method: 'PUT',
+    headers,
     params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
   })
@@ -243,7 +270,8 @@ export async function updateIncomeStatement(
     incomeStatementId: UUID,
     draft?: boolean | null,
     body: IncomeStatementBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['draft', request.draft?.toString()]
@@ -251,6 +279,7 @@ export async function updateIncomeStatement(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/${request.incomeStatementId}`.toString(),
     method: 'PUT',
+    headers,
     params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
   })

@@ -10,6 +10,7 @@ import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
 import { AreaJSON } from 'lib-common/generated/api-types/daycare'
+import { AxiosHeaders } from 'axios'
 import { CaretakerRequest } from 'lib-common/generated/api-types/daycare'
 import { CaretakersResponse } from 'lib-common/generated/api-types/daycare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
@@ -62,11 +63,13 @@ import { uri } from 'lib-common/uri'
 export async function getAdditionalInfo(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AdditionalInformation> {
   const { data: json } = await client.request<JsonOf<AdditionalInformation>>({
     url: uri`/employee/children/${request.childId}/additional-information`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -78,11 +81,13 @@ export async function getAdditionalInfo(
 export async function getChild(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildResponse> {
   const { data: json } = await client.request<JsonOf<ChildResponse>>({
     url: uri`/employee/children/${request.childId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonChildResponse(json)
 }
@@ -95,11 +100,13 @@ export async function updateAdditionalInfo(
   request: {
     childId: UUID,
     body: AdditionalInformation
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/children/${request.childId}/additional-information`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AdditionalInformation>
   })
   return json
@@ -114,11 +121,13 @@ export async function createCaretakers(
     daycareId: UUID,
     groupId: UUID,
     body: CaretakerRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CaretakerRequest>
   })
   return json
@@ -131,11 +140,13 @@ export async function createCaretakers(
 export async function createDaycare(
   request: {
     body: DaycareFields
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CreateDaycareResponse> {
   const { data: json } = await client.request<JsonOf<CreateDaycareResponse>>({
     url: uri`/employee/daycares`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DaycareFields>
   })
   return json
@@ -149,11 +160,13 @@ export async function createGroup(
   request: {
     daycareId: UUID,
     body: CreateGroupRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DaycareGroup> {
   const { data: json } = await client.request<JsonOf<DaycareGroup>>({
     url: uri`/employee/daycares/${request.daycareId}/groups`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CreateGroupRequest>
   })
   return deserializeJsonDaycareGroup(json)
@@ -167,11 +180,13 @@ export async function deleteGroup(
   request: {
     daycareId: UUID,
     groupId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -184,11 +199,13 @@ export async function getCaretakers(
   request: {
     daycareId: UUID,
     groupId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CaretakersResponse> {
   const { data: json } = await client.request<JsonOf<CaretakersResponse>>({
     url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonCaretakersResponse(json)
 }
@@ -200,11 +217,13 @@ export async function getCaretakers(
 export async function getDaycare(
   request: {
     daycareId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DaycareResponse> {
   const { data: json } = await client.request<JsonOf<DaycareResponse>>({
     url: uri`/employee/daycares/${request.daycareId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonDaycareResponse(json)
 }
@@ -216,7 +235,8 @@ export async function getDaycare(
 export async function getDaycares(
   request: {
     includeClosed?: boolean | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Daycare[]> {
   const params = createUrlSearchParams(
     ['includeClosed', request.includeClosed?.toString()]
@@ -224,6 +244,7 @@ export async function getDaycares(
   const { data: json } = await client.request<JsonOf<Daycare[]>>({
     url: uri`/employee/daycares`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonDaycare(e))
@@ -238,7 +259,8 @@ export async function getGroups(
     daycareId: UUID,
     from?: LocalDate | null,
     to?: LocalDate | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DaycareGroup[]> {
   const params = createUrlSearchParams(
     ['from', request.from?.formatIso()],
@@ -247,6 +269,7 @@ export async function getGroups(
   const { data: json } = await client.request<JsonOf<DaycareGroup[]>>({
     url: uri`/employee/daycares/${request.daycareId}/groups`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonDaycareGroup(e))
@@ -256,10 +279,13 @@ export async function getGroups(
 /**
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitFeatures
 */
-export async function getUnitFeatures(): Promise<UnitFeatures[]> {
+export async function getUnitFeatures(
+  headers?: AxiosHeaders
+): Promise<UnitFeatures[]> {
   const { data: json } = await client.request<JsonOf<UnitFeatures[]>>({
     url: uri`/employee/daycares/features`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -273,7 +299,8 @@ export async function getUnitGroupDetails(
     unitId: UUID,
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UnitGroupDetails> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -282,6 +309,7 @@ export async function getUnitGroupDetails(
   const { data: json } = await client.request<JsonOf<UnitGroupDetails>>({
     url: uri`/employee/daycares/${request.unitId}/group-details`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonUnitGroupDetails(json)
@@ -294,11 +322,13 @@ export async function getUnitGroupDetails(
 export async function getUnitNotifications(
   request: {
     daycareId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UnitNotifications> {
   const { data: json } = await client.request<JsonOf<UnitNotifications>>({
     url: uri`/employee/daycares/${request.daycareId}/notifications`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -312,11 +342,13 @@ export async function removeCaretakers(
     daycareId: UUID,
     groupId: UUID,
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -331,11 +363,13 @@ export async function updateCaretakers(
     groupId: UUID,
     id: UUID,
     body: CaretakerRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<CaretakerRequest>
   })
   return json
@@ -349,11 +383,13 @@ export async function updateDaycare(
   request: {
     daycareId: UUID,
     body: DaycareFields
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DaycareFields>
   })
   return json
@@ -368,11 +404,13 @@ export async function updateGroup(
     daycareId: UUID,
     groupId: UUID,
     body: GroupUpdateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<GroupUpdateRequest>
   })
   return json
@@ -385,11 +423,13 @@ export async function updateGroup(
 export async function updateUnitFeatures(
   request: {
     body: UpdateFeaturesRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/unit-features`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<UpdateFeaturesRequest>
   })
   return json
@@ -402,11 +442,13 @@ export async function updateUnitFeatures(
 export async function getAllApplicableUnits(
   request: {
     applicationType: ApplicationType
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PublicUnit[]> {
   const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
     url: uri`/employee/public/units/${request.applicationType}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPublicUnit(e))
 }
@@ -420,7 +462,8 @@ export async function getApplicationUnits(
     type: ApplicationUnitType,
     date: LocalDate,
     shiftCare?: boolean | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PublicUnit[]> {
   const params = createUrlSearchParams(
     ['type', request.type.toString()],
@@ -430,6 +473,7 @@ export async function getApplicationUnits(
   const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
     url: uri`/employee/units`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonPublicUnit(e))
@@ -439,10 +483,13 @@ export async function getApplicationUnits(
 /**
 * Generated from fi.espoo.evaka.daycare.controllers.LocationController.getAreas
 */
-export async function getAreas(): Promise<AreaJSON[]> {
+export async function getAreas(
+  headers?: AxiosHeaders
+): Promise<AreaJSON[]> {
   const { data: json } = await client.request<JsonOf<AreaJSON[]>>({
     url: uri`/employee/areas`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -456,7 +503,8 @@ export async function getUnits(
     type: UnitTypeFilter,
     areaIds?: UUID[] | null,
     from?: LocalDate | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UnitStub[]> {
   const params = createUrlSearchParams(
     ['type', request.type.toString()],
@@ -466,6 +514,7 @@ export async function getUnits(
   const { data: json } = await client.request<JsonOf<UnitStub[]>>({
     url: uri`/employee/filters/units`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -480,7 +529,8 @@ export async function getStaffAttendancesByGroup(
     groupId: UUID,
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<StaffAttendanceForDates> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
@@ -489,6 +539,7 @@ export async function getStaffAttendancesByGroup(
   const { data: json } = await client.request<JsonOf<StaffAttendanceForDates>>({
     url: uri`/employee/staff-attendances/group/${request.groupId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonStaffAttendanceForDates(json)
@@ -502,11 +553,13 @@ export async function upsertStaffAttendance(
   request: {
     groupId: UUID,
     body: StaffAttendanceUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/staff-attendances/group/${request.groupId}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<StaffAttendanceUpdate>
   })
   return json
@@ -519,11 +572,13 @@ export async function upsertStaffAttendance(
 export async function createClubTerm(
   request: {
     body: ClubTermRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/club-terms`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ClubTermRequest>
   })
   return json
@@ -536,11 +591,13 @@ export async function createClubTerm(
 export async function createPreschoolTerm(
   request: {
     body: PreschoolTermRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/preschool-terms`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PreschoolTermRequest>
   })
   return json
@@ -553,11 +610,13 @@ export async function createPreschoolTerm(
 export async function deleteClubTerm(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/club-terms/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -569,11 +628,13 @@ export async function deleteClubTerm(
 export async function deletePreschoolTerm(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/preschool-terms/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -582,10 +643,13 @@ export async function deletePreschoolTerm(
 /**
 * Generated from fi.espoo.evaka.daycare.controllers.TermsController.getClubTerms
 */
-export async function getClubTerms(): Promise<ClubTerm[]> {
+export async function getClubTerms(
+  headers?: AxiosHeaders
+): Promise<ClubTerm[]> {
   const { data: json } = await client.request<JsonOf<ClubTerm[]>>({
     url: uri`/employee/public/club-terms`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonClubTerm(e))
 }
@@ -594,10 +658,13 @@ export async function getClubTerms(): Promise<ClubTerm[]> {
 /**
 * Generated from fi.espoo.evaka.daycare.controllers.TermsController.getPreschoolTerms
 */
-export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
+export async function getPreschoolTerms(
+  headers?: AxiosHeaders
+): Promise<PreschoolTerm[]> {
   const { data: json } = await client.request<JsonOf<PreschoolTerm[]>>({
     url: uri`/employee/public/preschool-terms`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPreschoolTerm(e))
 }
@@ -610,11 +677,13 @@ export async function updateClubTerm(
   request: {
     id: UUID,
     body: ClubTermRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/club-terms/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ClubTermRequest>
   })
   return json
@@ -628,11 +697,13 @@ export async function updatePreschoolTerm(
   request: {
     id: UUID,
     body: PreschoolTermRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/preschool-terms/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<PreschoolTermRequest>
   })
   return json
@@ -647,11 +718,13 @@ export async function addFullAclForRole(
     daycareId: UUID,
     employeeId: UUID,
     body: FullAclInfo
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/full-acl/${request.employeeId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<FullAclInfo>
   })
   return json
@@ -665,11 +738,13 @@ export async function createTemporaryEmployee(
   request: {
     unitId: UUID,
     body: TemporaryEmployee
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/daycares/${request.unitId}/temporary`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<TemporaryEmployee>
   })
   return json
@@ -683,11 +758,13 @@ export async function deleteEarlyChildhoodEducationSecretary(
   request: {
     daycareId: UUID,
     employeeId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/earlychildhoodeducationsecretary/${request.employeeId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -700,11 +777,13 @@ export async function deleteSpecialEducationTeacher(
   request: {
     daycareId: UUID,
     employeeId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/specialeducationteacher/${request.employeeId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -717,11 +796,13 @@ export async function deleteStaff(
   request: {
     daycareId: UUID,
     employeeId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/staff/${request.employeeId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -734,11 +815,13 @@ export async function deleteTemporaryEmployee(
   request: {
     unitId: UUID,
     employeeId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -751,11 +834,13 @@ export async function deleteTemporaryEmployeeAcl(
   request: {
     unitId: UUID,
     employeeId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}/acl`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -768,11 +853,13 @@ export async function deleteUnitSupervisor(
   request: {
     daycareId: UUID,
     employeeId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/supervisors/${request.employeeId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -784,11 +871,13 @@ export async function deleteUnitSupervisor(
 export async function getDaycareAcl(
   request: {
     daycareId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DaycareAclRow[]> {
   const { data: json } = await client.request<JsonOf<DaycareAclRow[]>>({
     url: uri`/employee/daycares/${request.daycareId}/acl`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -801,11 +890,13 @@ export async function getTemporaryEmployee(
   request: {
     unitId: UUID,
     employeeId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<TemporaryEmployee> {
   const { data: json } = await client.request<JsonOf<TemporaryEmployee>>({
     url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -817,11 +908,13 @@ export async function getTemporaryEmployee(
 export async function getTemporaryEmployees(
   request: {
     unitId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
     url: uri`/employee/daycares/${request.unitId}/temporary`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonEmployee(e))
 }
@@ -835,11 +928,13 @@ export async function updateGroupAclWithOccupancyCoefficient(
     daycareId: UUID,
     employeeId: UUID,
     body: AclUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/staff/${request.employeeId}/groups`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AclUpdate>
   })
   return json
@@ -854,11 +949,13 @@ export async function updateTemporaryEmployee(
     unitId: UUID,
     employeeId: UUID,
     body: TemporaryEmployee
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<TemporaryEmployee>
   })
   return json

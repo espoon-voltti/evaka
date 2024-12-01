@@ -6,6 +6,7 @@
 
 import DateRange from 'lib-common/date-range'
 import { AddSsnRequest } from 'lib-common/generated/api-types/pis'
+import { AxiosHeaders } from 'axios'
 import { CreateFosterParentRelationshipBody } from 'lib-common/generated/api-types/pis'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import { DisableSsnRequest } from 'lib-common/generated/api-types/pis'
@@ -71,11 +72,13 @@ import { uri } from 'lib-common/uri'
 export async function activateEmployee(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/employees/${request.id}/activate`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -87,11 +90,13 @@ export async function activateEmployee(
 export async function createEmployee(
   request: {
     body: NewEmployee
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Employee> {
   const { data: json } = await client.request<JsonOf<Employee>>({
     url: uri`/employee/employees`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<NewEmployee>
   })
   return deserializeJsonEmployee(json)
@@ -104,11 +109,13 @@ export async function createEmployee(
 export async function deactivateEmployee(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/employees/${request.id}/deactivate`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -120,11 +127,13 @@ export async function deactivateEmployee(
 export async function deleteEmployee(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/employees/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -137,7 +146,8 @@ export async function deleteEmployeeDaycareRoles(
   request: {
     id: UUID,
     daycareId?: UUID | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['daycareId', request.daycareId]
@@ -145,6 +155,7 @@ export async function deleteEmployeeDaycareRoles(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/employees/${request.id}/daycare-roles`.toString(),
     method: 'DELETE',
+    headers,
     params
   })
   return json
@@ -157,11 +168,13 @@ export async function deleteEmployeeDaycareRoles(
 export async function getEmployee(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Employee> {
   const { data: json } = await client.request<JsonOf<Employee>>({
     url: uri`/employee/employees/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonEmployee(json)
 }
@@ -173,11 +186,13 @@ export async function getEmployee(
 export async function getEmployeeDetails(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<EmployeeWithDaycareRoles> {
   const { data: json } = await client.request<JsonOf<EmployeeWithDaycareRoles>>({
     url: uri`/employee/employees/${request.id}/details`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonEmployeeWithDaycareRoles(json)
 }
@@ -186,10 +201,13 @@ export async function getEmployeeDetails(
 /**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployeePreferredFirstName
 */
-export async function getEmployeePreferredFirstName(): Promise<EmployeePreferredFirstName> {
+export async function getEmployeePreferredFirstName(
+  headers?: AxiosHeaders
+): Promise<EmployeePreferredFirstName> {
   const { data: json } = await client.request<JsonOf<EmployeePreferredFirstName>>({
     url: uri`/employee/employees/preferred-first-name`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -198,10 +216,13 @@ export async function getEmployeePreferredFirstName(): Promise<EmployeePreferred
 /**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployees
 */
-export async function getEmployees(): Promise<Employee[]> {
+export async function getEmployees(
+  headers?: AxiosHeaders
+): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
     url: uri`/employee/employees`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonEmployee(e))
 }
@@ -210,10 +231,13 @@ export async function getEmployees(): Promise<Employee[]> {
 /**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getFinanceDecisionHandlers
 */
-export async function getFinanceDecisionHandlers(): Promise<Employee[]> {
+export async function getFinanceDecisionHandlers(
+  headers?: AxiosHeaders
+): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
     url: uri`/employee/employees/finance-decision-handler`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonEmployee(e))
 }
@@ -222,10 +246,13 @@ export async function getFinanceDecisionHandlers(): Promise<Employee[]> {
 /**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.isPinLocked
 */
-export async function isPinLocked(): Promise<boolean> {
+export async function isPinLocked(
+  headers?: AxiosHeaders
+): Promise<boolean> {
   const { data: json } = await client.request<JsonOf<boolean>>({
     url: uri`/employee/employees/pin-code/is-pin-locked`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -237,11 +264,13 @@ export async function isPinLocked(): Promise<boolean> {
 export async function searchEmployees(
   request: {
     body: SearchEmployeeRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedEmployeesWithDaycareRoles> {
   const { data: json } = await client.request<JsonOf<PagedEmployeesWithDaycareRoles>>({
     url: uri`/employee/employees/search`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SearchEmployeeRequest>
   })
   return deserializeJsonPagedEmployeesWithDaycareRoles(json)
@@ -254,11 +283,13 @@ export async function searchEmployees(
 export async function setEmployeePreferredFirstName(
   request: {
     body: EmployeeSetPreferredFirstNameUpdateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/employees/preferred-first-name`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<EmployeeSetPreferredFirstNameUpdateRequest>
   })
   return json
@@ -272,11 +303,13 @@ export async function updateEmployeeGlobalRoles(
   request: {
     id: UUID,
     body: UserRole[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/employees/${request.id}/global-roles`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<UserRole[]>
   })
   return json
@@ -290,11 +323,13 @@ export async function upsertEmployeeDaycareRoles(
   request: {
     id: UUID,
     body: UpsertEmployeeDaycareRolesRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/employees/${request.id}/daycare-roles`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<UpsertEmployeeDaycareRolesRequest>
   })
   return json
@@ -307,11 +342,13 @@ export async function upsertEmployeeDaycareRoles(
 export async function upsertPinCode(
   request: {
     body: PinCode
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/employees/pin-code`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PinCode>
   })
   return json
@@ -324,11 +361,13 @@ export async function upsertPinCode(
 export async function getFamilyByPerson(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FamilyOverview> {
   const { data: json } = await client.request<JsonOf<FamilyOverview>>({
     url: uri`/employee/family/by-adult/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonFamilyOverview(json)
 }
@@ -340,7 +379,8 @@ export async function getFamilyByPerson(
 export async function getFamilyContactSummary(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FamilyContact[]> {
   const params = createUrlSearchParams(
     ['childId', request.childId]
@@ -348,6 +388,7 @@ export async function getFamilyContactSummary(
   const { data: json } = await client.request<JsonOf<FamilyContact[]>>({
     url: uri`/employee/family/contacts`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -360,11 +401,13 @@ export async function getFamilyContactSummary(
 export async function updateFamilyContactDetails(
   request: {
     body: FamilyContactUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/family/contacts`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<FamilyContactUpdate>
   })
   return json
@@ -377,11 +420,13 @@ export async function updateFamilyContactDetails(
 export async function updateFamilyContactPriority(
   request: {
     body: FamilyContactPriorityUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/family/contacts/priority`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<FamilyContactPriorityUpdate>
   })
   return json
@@ -394,11 +439,13 @@ export async function updateFamilyContactPriority(
 export async function createFosterParentRelationship(
   request: {
     body: CreateFosterParentRelationshipBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/foster-parent`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CreateFosterParentRelationshipBody>
   })
   return json
@@ -411,11 +458,13 @@ export async function createFosterParentRelationship(
 export async function deleteFosterParentRelationship(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/foster-parent/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -427,11 +476,13 @@ export async function deleteFosterParentRelationship(
 export async function getFosterChildren(
   request: {
     parentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FosterParentRelationship[]> {
   const { data: json } = await client.request<JsonOf<FosterParentRelationship[]>>({
     url: uri`/employee/foster-parent/by-parent/${request.parentId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonFosterParentRelationship(e))
 }
@@ -443,11 +494,13 @@ export async function getFosterChildren(
 export async function getFosterParents(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FosterParentRelationship[]> {
   const { data: json } = await client.request<JsonOf<FosterParentRelationship[]>>({
     url: uri`/employee/foster-parent/by-child/${request.childId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonFosterParentRelationship(e))
 }
@@ -460,11 +513,13 @@ export async function updateFosterParentRelationshipValidity(
   request: {
     id: UUID,
     body: DateRange
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/foster-parent/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DateRange>
   })
   return json
@@ -477,11 +532,13 @@ export async function updateFosterParentRelationshipValidity(
 export async function createParentship(
   request: {
     body: ParentshipRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/parentships`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ParentshipRequest>
   })
   return json
@@ -494,11 +551,13 @@ export async function createParentship(
 export async function deleteParentship(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/parentships/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -510,11 +569,13 @@ export async function deleteParentship(
 export async function getParentship(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Parentship> {
   const { data: json } = await client.request<JsonOf<Parentship>>({
     url: uri`/employee/parentships/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonParentship(json)
 }
@@ -527,7 +588,8 @@ export async function getParentships(
   request: {
     headOfChildId?: UUID | null,
     childId?: UUID | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ParentshipWithPermittedActions[]> {
   const params = createUrlSearchParams(
     ['headOfChildId', request.headOfChildId],
@@ -536,6 +598,7 @@ export async function getParentships(
   const { data: json } = await client.request<JsonOf<ParentshipWithPermittedActions[]>>({
     url: uri`/employee/parentships`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonParentshipWithPermittedActions(e))
@@ -548,11 +611,13 @@ export async function getParentships(
 export async function retryParentship(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/parentships/${request.id}/retry`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -565,11 +630,13 @@ export async function updateParentship(
   request: {
     id: UUID,
     body: ParentshipUpdateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/parentships/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ParentshipUpdateRequest>
   })
   return json
@@ -582,11 +649,13 @@ export async function updateParentship(
 export async function createPartnership(
   request: {
     body: PartnershipRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/partnerships`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PartnershipRequest>
   })
   return json
@@ -599,11 +668,13 @@ export async function createPartnership(
 export async function deletePartnership(
   request: {
     partnershipId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/partnerships/${request.partnershipId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -615,11 +686,13 @@ export async function deletePartnership(
 export async function getPartnership(
   request: {
     partnershipId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Partnership> {
   const { data: json } = await client.request<JsonOf<Partnership>>({
     url: uri`/employee/partnerships/${request.partnershipId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonPartnership(json)
 }
@@ -631,7 +704,8 @@ export async function getPartnership(
 export async function getPartnerships(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PartnershipWithPermittedActions[]> {
   const params = createUrlSearchParams(
     ['personId', request.personId]
@@ -639,6 +713,7 @@ export async function getPartnerships(
   const { data: json } = await client.request<JsonOf<PartnershipWithPermittedActions[]>>({
     url: uri`/employee/partnerships`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonPartnershipWithPermittedActions(e))
@@ -651,11 +726,13 @@ export async function getPartnerships(
 export async function retryPartnership(
   request: {
     partnershipId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/partnerships/${request.partnershipId}/retry`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -668,11 +745,13 @@ export async function updatePartnership(
   request: {
     partnershipId: UUID,
     body: PartnershipUpdateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/partnerships/${request.partnershipId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<PartnershipUpdateRequest>
   })
   return json
@@ -686,11 +765,13 @@ export async function addSsn(
   request: {
     personId: UUID,
     body: AddSsnRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
     url: uri`/employee/person/${request.personId}/ssn`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AddSsnRequest>
   })
   return deserializeJsonPersonJSON(json)
@@ -700,10 +781,13 @@ export async function addSsn(
 /**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.createEmpty
 */
-export async function createEmpty(): Promise<PersonIdentityResponseJSON> {
+export async function createEmpty(
+  headers?: AxiosHeaders
+): Promise<PersonIdentityResponseJSON> {
   const { data: json } = await client.request<JsonOf<PersonIdentityResponseJSON>>({
     url: uri`/employee/person`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -715,11 +799,13 @@ export async function createEmpty(): Promise<PersonIdentityResponseJSON> {
 export async function createPerson(
   request: {
     body: CreatePersonBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/person/create`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CreatePersonBody>
   })
   return json
@@ -733,11 +819,13 @@ export async function disableSsn(
   request: {
     personId: UUID,
     body: DisableSsnRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/person/${request.personId}/ssn/disable`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DisableSsnRequest>
   })
   return json
@@ -750,11 +838,13 @@ export async function disableSsn(
 export async function duplicatePerson(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/person/${request.personId}/duplicate`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -766,11 +856,13 @@ export async function duplicatePerson(
 export async function getOrCreatePersonBySsn(
   request: {
     body: GetOrCreatePersonBySsnRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
     url: uri`/employee/person/details/ssn`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<GetOrCreatePersonBySsnRequest>
   })
   return deserializeJsonPersonJSON(json)
@@ -783,11 +875,13 @@ export async function getOrCreatePersonBySsn(
 export async function getPerson(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonResponse> {
   const { data: json } = await client.request<JsonOf<PersonResponse>>({
     url: uri`/employee/person/${request.personId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonPersonResponse(json)
 }
@@ -799,11 +893,13 @@ export async function getPerson(
 export async function getPersonDependants(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonWithChildrenDTO[]> {
   const { data: json } = await client.request<JsonOf<PersonWithChildrenDTO[]>>({
     url: uri`/employee/person/dependants/${request.personId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPersonWithChildrenDTO(e))
 }
@@ -815,11 +911,13 @@ export async function getPersonDependants(
 export async function getPersonGuardians(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<GuardiansResponse> {
   const { data: json } = await client.request<JsonOf<GuardiansResponse>>({
     url: uri`/employee/person/guardians/${request.personId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonGuardiansResponse(json)
 }
@@ -831,11 +929,13 @@ export async function getPersonGuardians(
 export async function getPersonIdentity(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
     url: uri`/employee/person/details/${request.personId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonPersonJSON(json)
 }
@@ -847,11 +947,13 @@ export async function getPersonIdentity(
 export async function mergePeople(
   request: {
     body: MergeRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/person/merge`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<MergeRequest>
   })
   return json
@@ -864,11 +966,13 @@ export async function mergePeople(
 export async function safeDeletePerson(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/person/${request.personId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -880,11 +984,13 @@ export async function safeDeletePerson(
 export async function searchPerson(
   request: {
     body: SearchPersonBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonSummary[]> {
   const { data: json } = await client.request<JsonOf<PersonSummary[]>>({
     url: uri`/employee/person/search`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SearchPersonBody>
   })
   return json.map(e => deserializeJsonPersonSummary(e))
@@ -898,11 +1004,13 @@ export async function updateGuardianEvakaRights(
   request: {
     childId: UUID,
     body: EvakaRightsRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/person/${request.childId}/evaka-rights`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<EvakaRightsRequest>
   })
   return json
@@ -915,11 +1023,13 @@ export async function updateGuardianEvakaRights(
 export async function updatePersonAndFamilyFromVtj(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/person/${request.personId}/vtj-update`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -932,11 +1042,13 @@ export async function updatePersonDetails(
   request: {
     personId: UUID,
     body: PersonPatch
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
     url: uri`/employee/person/${request.personId}`.toString(),
     method: 'PATCH',
+    headers,
     data: request.body satisfies JsonCompatible<PersonPatch>
   })
   return deserializeJsonPersonJSON(json)

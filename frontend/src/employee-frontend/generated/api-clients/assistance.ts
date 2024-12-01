@@ -9,6 +9,7 @@ import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanc
 import { AssistanceActionRequest } from 'lib-common/generated/api-types/assistanceaction'
 import { AssistanceFactorUpdate } from 'lib-common/generated/api-types/assistance'
 import { AssistanceResponse } from 'lib-common/generated/api-types/assistance'
+import { AxiosHeaders } from 'axios'
 import { DaycareAssistanceUpdate } from 'lib-common/generated/api-types/assistance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -28,11 +29,13 @@ export async function createAssistanceAction(
   request: {
     childId: UUID,
     body: AssistanceActionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceAction> {
   const { data: json } = await client.request<JsonOf<AssistanceAction>>({
     url: uri`/employee/children/${request.childId}/assistance-actions`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceActionRequest>
   })
   return deserializeJsonAssistanceAction(json)
@@ -46,11 +49,13 @@ export async function createAssistanceFactor(
   request: {
     child: UUID,
     body: AssistanceFactorUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/children/${request.child}/assistance-factors`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceFactorUpdate>
   })
   return json
@@ -64,11 +69,13 @@ export async function createDaycareAssistance(
   request: {
     child: UUID,
     body: DaycareAssistanceUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/children/${request.child}/daycare-assistances`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DaycareAssistanceUpdate>
   })
   return json
@@ -82,11 +89,13 @@ export async function createOtherAssistanceMeasure(
   request: {
     child: UUID,
     body: OtherAssistanceMeasureUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/children/${request.child}/other-assistance-measures`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<OtherAssistanceMeasureUpdate>
   })
   return json
@@ -100,11 +109,13 @@ export async function createPreschoolAssistance(
   request: {
     child: UUID,
     body: PreschoolAssistanceUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/children/${request.child}/preschool-assistances`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PreschoolAssistanceUpdate>
   })
   return json
@@ -117,11 +128,13 @@ export async function createPreschoolAssistance(
 export async function deleteAssistanceAction(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-actions/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -133,11 +146,13 @@ export async function deleteAssistanceAction(
 export async function deleteAssistanceFactor(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-factors/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -149,11 +164,13 @@ export async function deleteAssistanceFactor(
 export async function deleteDaycareAssistance(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycare-assistances/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -165,11 +182,13 @@ export async function deleteDaycareAssistance(
 export async function deleteOtherAssistanceMeasure(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/other-assistance-measures/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -181,11 +200,13 @@ export async function deleteOtherAssistanceMeasure(
 export async function deletePreschoolAssistance(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/preschool-assistances/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -194,10 +215,13 @@ export async function deletePreschoolAssistance(
 /**
 * Generated from fi.espoo.evaka.assistance.AssistanceController.getAssistanceActionOptions
 */
-export async function getAssistanceActionOptions(): Promise<AssistanceActionOption[]> {
+export async function getAssistanceActionOptions(
+  headers?: AxiosHeaders
+): Promise<AssistanceActionOption[]> {
   const { data: json } = await client.request<JsonOf<AssistanceActionOption[]>>({
     url: uri`/employee/assistance-action-options`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -209,11 +233,13 @@ export async function getAssistanceActionOptions(): Promise<AssistanceActionOpti
 export async function getChildAssistance(
   request: {
     child: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceResponse>>({
     url: uri`/employee/children/${request.child}/assistance`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonAssistanceResponse(json)
 }
@@ -226,11 +252,13 @@ export async function updateAssistanceAction(
   request: {
     id: UUID,
     body: AssistanceActionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceAction> {
   const { data: json } = await client.request<JsonOf<AssistanceAction>>({
     url: uri`/employee/assistance-actions/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceActionRequest>
   })
   return deserializeJsonAssistanceAction(json)
@@ -244,11 +272,13 @@ export async function updateAssistanceFactor(
   request: {
     id: UUID,
     body: AssistanceFactorUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/assistance-factors/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AssistanceFactorUpdate>
   })
   return json
@@ -262,11 +292,13 @@ export async function updateDaycareAssistance(
   request: {
     id: UUID,
     body: DaycareAssistanceUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycare-assistances/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DaycareAssistanceUpdate>
   })
   return json
@@ -280,11 +312,13 @@ export async function updateOtherAssistanceMeasure(
   request: {
     id: UUID,
     body: OtherAssistanceMeasureUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/other-assistance-measures/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<OtherAssistanceMeasureUpdate>
   })
   return json
@@ -298,11 +332,13 @@ export async function updatePreschoolAssistance(
   request: {
     id: UUID,
     body: PreschoolAssistanceUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/preschool-assistances/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PreschoolAssistanceUpdate>
   })
   return json

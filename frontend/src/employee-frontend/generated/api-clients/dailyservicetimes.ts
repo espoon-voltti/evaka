@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { DailyServiceTimesEndDate } from 'lib-common/generated/api-types/dailyservicetimes'
 import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
@@ -21,11 +22,13 @@ import { uri } from 'lib-common/uri'
 export async function deleteDailyServiceTimes(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daily-service-times/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -37,11 +40,13 @@ export async function deleteDailyServiceTimes(
 export async function getDailyServiceTimes(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DailyServiceTimesResponse[]> {
   const { data: json } = await client.request<JsonOf<DailyServiceTimesResponse[]>>({
     url: uri`/employee/children/${request.childId}/daily-service-times`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonDailyServiceTimesResponse(e))
 }
@@ -54,11 +59,13 @@ export async function postDailyServiceTimes(
   request: {
     childId: UUID,
     body: DailyServiceTimesValue
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/children/${request.childId}/daily-service-times`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DailyServiceTimesValue>
   })
   return json
@@ -72,11 +79,13 @@ export async function putDailyServiceTimes(
   request: {
     id: UUID,
     body: DailyServiceTimesValue
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daily-service-times/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DailyServiceTimesValue>
   })
   return json
@@ -90,11 +99,13 @@ export async function putDailyServiceTimesEnd(
   request: {
     id: UUID,
     body: DailyServiceTimesEndDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daily-service-times/${request.id}/end`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DailyServiceTimesEndDate>
   })
   return json

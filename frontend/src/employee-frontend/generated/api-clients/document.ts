@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import DateRange from 'lib-common/date-range'
+import { AxiosHeaders } from 'axios'
 import { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/document'
 import { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { ChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
@@ -36,11 +37,13 @@ import { uri } from 'lib-common/uri'
 export async function createTemplate(
   request: {
     body: DocumentTemplateBasicsRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
     url: uri`/employee/document-templates`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
   return deserializeJsonDocumentTemplate(json)
@@ -53,11 +56,13 @@ export async function createTemplate(
 export async function deleteDraftTemplate(
   request: {
     templateId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/document-templates/${request.templateId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -70,11 +75,13 @@ export async function duplicateTemplate(
   request: {
     templateId: UUID,
     body: DocumentTemplateBasicsRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
     url: uri`/employee/document-templates/${request.templateId}/duplicate`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
   return deserializeJsonDocumentTemplate(json)
@@ -87,11 +94,13 @@ export async function duplicateTemplate(
 export async function exportTemplate(
   request: {
     templateId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ExportedDocumentTemplate> {
   const { data: json } = await client.request<JsonOf<ExportedDocumentTemplate>>({
     url: uri`/employee/document-templates/${request.templateId}/export`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonExportedDocumentTemplate(json)
 }
@@ -103,11 +112,13 @@ export async function exportTemplate(
 export async function forceUnpublishTemplate(
   request: {
     templateId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/document-templates/${request.templateId}/force-unpublish`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -119,7 +130,8 @@ export async function forceUnpublishTemplate(
 export async function getActiveTemplates(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DocumentTemplateSummary[]> {
   const params = createUrlSearchParams(
     ['childId', request.childId]
@@ -127,6 +139,7 @@ export async function getActiveTemplates(
   const { data: json } = await client.request<JsonOf<DocumentTemplateSummary[]>>({
     url: uri`/employee/document-templates/active`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonDocumentTemplateSummary(e))
@@ -139,11 +152,13 @@ export async function getActiveTemplates(
 export async function getTemplate(
   request: {
     templateId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
     url: uri`/employee/document-templates/${request.templateId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonDocumentTemplate(json)
 }
@@ -152,10 +167,13 @@ export async function getTemplate(
 /**
 * Generated from fi.espoo.evaka.document.DocumentTemplateController.getTemplates
 */
-export async function getTemplates(): Promise<DocumentTemplateSummary[]> {
+export async function getTemplates(
+  headers?: AxiosHeaders
+): Promise<DocumentTemplateSummary[]> {
   const { data: json } = await client.request<JsonOf<DocumentTemplateSummary[]>>({
     url: uri`/employee/document-templates`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonDocumentTemplateSummary(e))
 }
@@ -167,11 +185,13 @@ export async function getTemplates(): Promise<DocumentTemplateSummary[]> {
 export async function importTemplate(
   request: {
     body: ExportedDocumentTemplate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
     url: uri`/employee/document-templates/import`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ExportedDocumentTemplate>
   })
   return deserializeJsonDocumentTemplate(json)
@@ -184,11 +204,13 @@ export async function importTemplate(
 export async function publishTemplate(
   request: {
     templateId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/document-templates/${request.templateId}/publish`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -201,11 +223,13 @@ export async function updateDraftTemplateBasics(
   request: {
     templateId: UUID,
     body: DocumentTemplateBasicsRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/document-templates/${request.templateId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
   return json
@@ -219,11 +243,13 @@ export async function updateDraftTemplateContent(
   request: {
     templateId: UUID,
     body: DocumentTemplateContent
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/document-templates/${request.templateId}/content`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DocumentTemplateContent>
   })
   return json
@@ -237,11 +263,13 @@ export async function updateTemplateValidity(
   request: {
     templateId: UUID,
     body: DateRange
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/document-templates/${request.templateId}/validity`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DateRange>
   })
   return json
@@ -254,11 +282,13 @@ export async function updateTemplateValidity(
 export async function createDocument(
   request: {
     body: ChildDocumentCreateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/child-documents`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ChildDocumentCreateRequest>
   })
   return json
@@ -271,11 +301,13 @@ export async function createDocument(
 export async function deleteDraftDocument(
   request: {
     documentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-documents/${request.documentId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -287,11 +319,13 @@ export async function deleteDraftDocument(
 export async function getDocument(
   request: {
     documentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildDocumentWithPermittedActions> {
   const { data: json } = await client.request<JsonOf<ChildDocumentWithPermittedActions>>({
     url: uri`/employee/child-documents/${request.documentId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonChildDocumentWithPermittedActions(json)
 }
@@ -303,7 +337,8 @@ export async function getDocument(
 export async function getDocuments(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildDocumentSummaryWithPermittedActions[]> {
   const params = createUrlSearchParams(
     ['childId', request.childId]
@@ -311,6 +346,7 @@ export async function getDocuments(
   const { data: json } = await client.request<JsonOf<ChildDocumentSummaryWithPermittedActions[]>>({
     url: uri`/employee/child-documents`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonChildDocumentSummaryWithPermittedActions(e))
@@ -324,11 +360,13 @@ export async function nextDocumentStatus(
   request: {
     documentId: UUID,
     body: StatusChangeRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-documents/${request.documentId}/next-status`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<StatusChangeRequest>
   })
   return json
@@ -342,11 +380,13 @@ export async function prevDocumentStatus(
   request: {
     documentId: UUID,
     body: StatusChangeRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-documents/${request.documentId}/prev-status`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<StatusChangeRequest>
   })
   return json
@@ -359,11 +399,13 @@ export async function prevDocumentStatus(
 export async function publishDocument(
   request: {
     documentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-documents/${request.documentId}/publish`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }
@@ -375,11 +417,13 @@ export async function publishDocument(
 export async function takeDocumentWriteLock(
   request: {
     documentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DocumentLockResponse> {
   const { data: json } = await client.request<JsonOf<DocumentLockResponse>>({
     url: uri`/employee/child-documents/${request.documentId}/lock`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return deserializeJsonDocumentLockResponse(json)
 }
@@ -392,11 +436,13 @@ export async function updateDocumentContent(
   request: {
     documentId: UUID,
     body: DocumentContent
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-documents/${request.documentId}/content`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<DocumentContent>
   })
   return json

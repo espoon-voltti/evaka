@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { JsonOf } from 'lib-common/json'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { OccupancyResponseGroupLevel } from 'lib-common/generated/api-types/occupancy'
@@ -26,7 +27,8 @@ export async function getOccupancyPeriods(
     from: LocalDate,
     to: LocalDate,
     type: OccupancyType
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<OccupancyResponse> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -36,6 +38,7 @@ export async function getOccupancyPeriods(
   const { data: json } = await client.request<JsonOf<OccupancyResponse>>({
     url: uri`/employee-mobile/occupancy/by-unit/${request.unitId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonOccupancyResponse(json)
@@ -51,7 +54,8 @@ export async function getOccupancyPeriodsOnGroups(
     from: LocalDate,
     to: LocalDate,
     type: OccupancyType
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<OccupancyResponseGroupLevel[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -61,6 +65,7 @@ export async function getOccupancyPeriodsOnGroups(
   const { data: json } = await client.request<JsonOf<OccupancyResponseGroupLevel[]>>({
     url: uri`/employee-mobile/occupancy/by-unit/${request.unitId}/groups`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonOccupancyResponseGroupLevel(e))

@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeClearingForm } from 'lib-common/generated/api-types/calendarevent'
@@ -29,11 +30,13 @@ export async function addCalendarEventTime(
   request: {
     id: UUID,
     body: CalendarEventTimeForm
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/calendar-event/${request.id}/time`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CalendarEventTimeForm>
   })
   return json
@@ -46,11 +49,13 @@ export async function addCalendarEventTime(
 export async function clearEventTimesInEventForChild(
   request: {
     body: CalendarEventTimeClearingForm
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/calendar-event/clear-survey-reservations-for-child`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CalendarEventTimeClearingForm>
   })
   return json
@@ -63,11 +68,13 @@ export async function clearEventTimesInEventForChild(
 export async function createCalendarEvent(
   request: {
     body: CalendarEventForm
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/calendar-event`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CalendarEventForm>
   })
   return json
@@ -80,11 +87,13 @@ export async function createCalendarEvent(
 export async function deleteCalendarEvent(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/calendar-event/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -96,11 +105,13 @@ export async function deleteCalendarEvent(
 export async function deleteCalendarEventTime(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/calendar-event-time/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -112,11 +123,13 @@ export async function deleteCalendarEventTime(
 export async function getCalendarEvent(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CalendarEvent> {
   const { data: json } = await client.request<JsonOf<CalendarEvent>>({
     url: uri`/employee/calendar-event/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonCalendarEvent(json)
 }
@@ -131,7 +144,8 @@ export async function getGroupDiscussionReservationDays(
     groupId: UUID,
     start: LocalDate,
     end: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DiscussionReservationDay[]> {
   const params = createUrlSearchParams(
     ['start', request.start.formatIso()],
@@ -140,6 +154,7 @@ export async function getGroupDiscussionReservationDays(
   const { data: json } = await client.request<JsonOf<DiscussionReservationDay[]>>({
     url: uri`/employee/units/${request.unitId}/groups/${request.groupId}/discussion-reservation-days`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonDiscussionReservationDay(e))
@@ -153,11 +168,13 @@ export async function getGroupDiscussionSurveys(
   request: {
     unitId: UUID,
     groupId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CalendarEvent[]> {
   const { data: json } = await client.request<JsonOf<CalendarEvent[]>>({
     url: uri`/employee/units/${request.unitId}/groups/${request.groupId}/discussion-surveys`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonCalendarEvent(e))
 }
@@ -171,7 +188,8 @@ export async function getUnitCalendarEvents(
     unitId: UUID,
     start: LocalDate,
     end: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CalendarEvent[]> {
   const params = createUrlSearchParams(
     ['start', request.start.formatIso()],
@@ -180,6 +198,7 @@ export async function getUnitCalendarEvents(
   const { data: json } = await client.request<JsonOf<CalendarEvent[]>>({
     url: uri`/employee/units/${request.unitId}/calendar-events`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonCalendarEvent(e))
@@ -193,11 +212,13 @@ export async function modifyCalendarEvent(
   request: {
     id: UUID,
     body: CalendarEventUpdateForm
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/calendar-event/${request.id}`.toString(),
     method: 'PATCH',
+    headers,
     data: request.body satisfies JsonCompatible<CalendarEventUpdateForm>
   })
   return json
@@ -210,11 +231,13 @@ export async function modifyCalendarEvent(
 export async function setCalendarEventTimeReservation(
   request: {
     body: CalendarEventTimeEmployeeReservationForm
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/calendar-event/reservation`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CalendarEventTimeEmployeeReservationForm>
   })
   return json
@@ -228,11 +251,13 @@ export async function updateCalendarEvent(
   request: {
     id: UUID,
     body: CalendarEventUpdateForm
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/calendar-event/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<CalendarEventUpdateForm>
   })
   return json

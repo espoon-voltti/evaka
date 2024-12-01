@@ -6,6 +6,7 @@
 
 import LocalDate from 'lib-common/local-date'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import { AxiosHeaders } from 'axios'
 import { GetUnitOccupanciesForDayBody } from 'lib-common/generated/api-types/occupancy'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -32,7 +33,8 @@ export async function getOccupancyPeriodsSpeculated(
     to: LocalDate,
     preschoolDaycareFrom?: LocalDate | null,
     preschoolDaycareTo?: LocalDate | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<OccupancyResponseSpeculated> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -43,6 +45,7 @@ export async function getOccupancyPeriodsSpeculated(
   const { data: json } = await client.request<JsonOf<OccupancyResponseSpeculated>>({
     url: uri`/employee/occupancy/by-unit/${request.unitId}/speculated/${request.applicationId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -58,7 +61,8 @@ export async function getUnitOccupancies(
     from: LocalDate,
     to: LocalDate,
     groupId?: UUID | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UnitOccupancies> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -68,6 +72,7 @@ export async function getUnitOccupancies(
   const { data: json } = await client.request<JsonOf<UnitOccupancies>>({
     url: uri`/employee/occupancy/units/${request.unitId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonUnitOccupancies(json)
@@ -81,11 +86,13 @@ export async function getUnitPlannedOccupanciesForDay(
   request: {
     unitId: UUID,
     body: GetUnitOccupanciesForDayBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AttendanceReservationReportRow[]> {
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportRow[]>>({
     url: uri`/employee/occupancy/units/${request.unitId}/day/planned`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<GetUnitOccupanciesForDayBody>
   })
   return json.map(e => deserializeJsonAttendanceReservationReportRow(e))
@@ -99,11 +106,13 @@ export async function getUnitRealizedOccupanciesForDay(
   request: {
     unitId: UUID,
     body: GetUnitOccupanciesForDayBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<RealtimeOccupancy> {
   const { data: json } = await client.request<JsonOf<RealtimeOccupancy>>({
     url: uri`/employee/occupancy/units/${request.unitId}/day/realized`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<GetUnitOccupanciesForDayBody>
   })
   return deserializeJsonRealtimeOccupancy(json)

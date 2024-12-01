@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
 import { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
 import { DailyChildReservationResult } from 'lib-common/generated/api-types/reservations'
@@ -27,7 +28,8 @@ export async function getChildReservationsForDay(
   request: {
     unitId: UUID,
     examinationDate: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DailyChildReservationResult> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
@@ -36,6 +38,7 @@ export async function getChildReservationsForDay(
   const { data: json } = await client.request<JsonOf<DailyChildReservationResult>>({
     url: uri`/employee-mobile/attendance-reservations/confirmed-days/daily`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonDailyChildReservationResult(json)
@@ -48,11 +51,13 @@ export async function getChildReservationsForDay(
 export async function getConfirmedRangeData(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ConfirmedRangeDate[]> {
   const { data: json } = await client.request<JsonOf<ConfirmedRangeDate[]>>({
     url: uri`/employee-mobile/attendance-reservations/by-child/${request.childId}/confirmed-range`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonConfirmedRangeDate(e))
 }
@@ -64,7 +69,8 @@ export async function getConfirmedRangeData(
 export async function getReservationStatisticsForConfirmedDays(
   request: {
     unitId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DayReservationStatisticsResult[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId]
@@ -72,6 +78,7 @@ export async function getReservationStatisticsForConfirmedDays(
   const { data: json } = await client.request<JsonOf<DayReservationStatisticsResult[]>>({
     url: uri`/employee-mobile/attendance-reservations/confirmed-days/stats`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonDayReservationStatisticsResult(e))
@@ -85,11 +92,13 @@ export async function setConfirmedRangeReservations(
   request: {
     childId: UUID,
     body: ConfirmedRangeDateUpdate[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee-mobile/attendance-reservations/by-child/${request.childId}/confirmed-range`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ConfirmedRangeDateUpdate[]>
   })
   return json

@@ -6,6 +6,7 @@
 
 import YearMonth from 'lib-common/year-month'
 import { AttendanceSummary } from 'lib-common/generated/api-types/children'
+import { AxiosHeaders } from 'axios'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { DailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonOf } from 'lib-common/json'
@@ -24,11 +25,13 @@ export async function getChildAttendanceSummary(
   request: {
     childId: UUID,
     yearMonth: YearMonth
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AttendanceSummary> {
   const { data: json } = await client.request<JsonOf<AttendanceSummary>>({
     url: uri`/citizen/children/${request.childId}/attendance-summary/${request.yearMonth.formatIso()}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -40,11 +43,13 @@ export async function getChildAttendanceSummary(
 export async function getChildDailyServiceTimes(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DailyServiceTimes[]> {
   const { data: json } = await client.request<JsonOf<DailyServiceTimes[]>>({
     url: uri`/citizen/children/${request.childId}/daily-service-times`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonDailyServiceTimes(e))
 }
@@ -56,11 +61,13 @@ export async function getChildDailyServiceTimes(
 export async function getChildServiceNeeds(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ServiceNeedSummary[]> {
   const { data: json } = await client.request<JsonOf<ServiceNeedSummary[]>>({
     url: uri`/citizen/children/${request.childId}/service-needs`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonServiceNeedSummary(e))
 }
@@ -69,10 +76,13 @@ export async function getChildServiceNeeds(
 /**
 * Generated from fi.espoo.evaka.children.ChildControllerCitizen.getChildren
 */
-export async function getChildren(): Promise<ChildAndPermittedActions[]> {
+export async function getChildren(
+  headers?: AxiosHeaders
+): Promise<ChildAndPermittedActions[]> {
   const { data: json } = await client.request<JsonOf<ChildAndPermittedActions[]>>({
     url: uri`/citizen/children`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }

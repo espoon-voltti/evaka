@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { SystemNotification } from 'lib-common/generated/api-types/systemnotifications'
@@ -19,11 +20,13 @@ import { uri } from 'lib-common/uri'
 export async function deleteSystemNotification(
   request: {
     targetGroup: SystemNotificationTargetGroup
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/system-notifications/${request.targetGroup}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -32,10 +35,13 @@ export async function deleteSystemNotification(
 /**
 * Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.getAllSystemNotifications
 */
-export async function getAllSystemNotifications(): Promise<SystemNotification[]> {
+export async function getAllSystemNotifications(
+  headers?: AxiosHeaders
+): Promise<SystemNotification[]> {
   const { data: json } = await client.request<JsonOf<SystemNotification[]>>({
     url: uri`/employee/system-notifications`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonSystemNotification(e))
 }
@@ -47,11 +53,13 @@ export async function getAllSystemNotifications(): Promise<SystemNotification[]>
 export async function putSystemNotification(
   request: {
     body: SystemNotification
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/system-notifications`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<SystemNotification>
   })
   return json

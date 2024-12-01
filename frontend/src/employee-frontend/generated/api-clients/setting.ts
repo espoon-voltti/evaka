@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { SettingType } from 'lib-common/generated/api-types/setting'
@@ -14,10 +15,13 @@ import { uri } from 'lib-common/uri'
 /**
 * Generated from fi.espoo.evaka.setting.SettingController.getSettings
 */
-export async function getSettings(): Promise<Record<SettingType, string>> {
+export async function getSettings(
+  headers?: AxiosHeaders
+): Promise<Record<SettingType, string>> {
   const { data: json } = await client.request<JsonOf<Record<SettingType, string>>>({
     url: uri`/employee/settings`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -29,11 +33,13 @@ export async function getSettings(): Promise<Record<SettingType, string>> {
 export async function putSettings(
   request: {
     body: Record<SettingType, string>
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/settings`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<Record<SettingType, string>>
   })
   return json

@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
@@ -25,11 +26,13 @@ import { uri } from 'lib-common/uri'
 export async function deleteMobileDevice(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/mobile-devices/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -41,7 +44,8 @@ export async function deleteMobileDevice(
 export async function getMobileDevices(
   request: {
     unitId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<MobileDevice[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId]
@@ -49,6 +53,7 @@ export async function getMobileDevices(
   const { data: json } = await client.request<JsonOf<MobileDevice[]>>({
     url: uri`/employee/mobile-devices`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -58,10 +63,13 @@ export async function getMobileDevices(
 /**
 * Generated from fi.espoo.evaka.pairing.MobileDevicesController.getPersonalMobileDevices
 */
-export async function getPersonalMobileDevices(): Promise<MobileDevice[]> {
+export async function getPersonalMobileDevices(
+  headers?: AxiosHeaders
+): Promise<MobileDevice[]> {
   const { data: json } = await client.request<JsonOf<MobileDevice[]>>({
     url: uri`/employee/mobile-devices/personal`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -74,11 +82,13 @@ export async function putMobileDeviceName(
   request: {
     id: UUID,
     body: RenameRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/mobile-devices/${request.id}/name`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<RenameRequest>
   })
   return json
@@ -91,11 +101,13 @@ export async function putMobileDeviceName(
 export async function getPairingStatus(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PairingStatusRes> {
   const { data: json } = await client.request<JsonOf<PairingStatusRes>>({
     url: uri`/employee/public/pairings/${request.id}/status`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -107,11 +119,13 @@ export async function getPairingStatus(
 export async function postPairing(
   request: {
     body: PostPairingReq
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Pairing> {
   const { data: json } = await client.request<JsonOf<Pairing>>({
     url: uri`/employee/pairings`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PostPairingReq>
   })
   return deserializeJsonPairing(json)
@@ -125,11 +139,13 @@ export async function postPairingResponse(
   request: {
     id: UUID,
     body: PostPairingResponseReq
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Pairing> {
   const { data: json } = await client.request<JsonOf<Pairing>>({
     url: uri`/employee/pairings/${request.id}/response`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PostPairingResponseReq>
   })
   return deserializeJsonPairing(json)

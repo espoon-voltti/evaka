@@ -8,6 +8,7 @@ import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanc
 import { AssistanceNeedDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
+import { AxiosHeaders } from 'axios'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { UnreadAssistanceNeedDecisionItem } from 'lib-common/generated/api-types/assistanceneed'
@@ -25,11 +26,13 @@ import { uri } from 'lib-common/uri'
 export async function getAssistanceNeedDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecision>>({
     url: uri`/citizen/children/assistance-need-decision/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonAssistanceNeedDecision(json)
 }
@@ -38,10 +41,13 @@ export async function getAssistanceNeedDecision(
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionCitizenController.getAssistanceNeedDecisionUnreadCount
 */
-export async function getAssistanceNeedDecisionUnreadCount(): Promise<UnreadAssistanceNeedDecisionItem[]> {
+export async function getAssistanceNeedDecisionUnreadCount(
+  headers?: AxiosHeaders
+): Promise<UnreadAssistanceNeedDecisionItem[]> {
   const { data: json } = await client.request<JsonOf<UnreadAssistanceNeedDecisionItem[]>>({
     url: uri`/citizen/children/assistance-need-decisions/unread-counts`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -50,10 +56,13 @@ export async function getAssistanceNeedDecisionUnreadCount(): Promise<UnreadAssi
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionCitizenController.getAssistanceNeedDecisions
 */
-export async function getAssistanceNeedDecisions(): Promise<AssistanceNeedDecisionCitizenListItem[]> {
+export async function getAssistanceNeedDecisions(
+  headers?: AxiosHeaders
+): Promise<AssistanceNeedDecisionCitizenListItem[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionCitizenListItem[]>>({
     url: uri`/citizen/assistance-need-decisions`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonAssistanceNeedDecisionCitizenListItem(e))
 }
@@ -65,11 +74,13 @@ export async function getAssistanceNeedDecisions(): Promise<AssistanceNeedDecisi
 export async function markAssistanceNeedDecisionAsRead(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/children/assistance-need-decision/${request.id}/read`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -81,11 +92,13 @@ export async function markAssistanceNeedDecisionAsRead(
 export async function getAssistanceNeedPreschoolDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedPreschoolDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecision>>({
     url: uri`/citizen/children/assistance-need-preschool-decisions/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonAssistanceNeedPreschoolDecision(json)
 }
@@ -94,10 +107,13 @@ export async function getAssistanceNeedPreschoolDecision(
 /**
 * Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionCitizenController.getAssistanceNeedPreschoolDecisionUnreadCount
 */
-export async function getAssistanceNeedPreschoolDecisionUnreadCount(): Promise<UnreadAssistanceNeedDecisionItem[]> {
+export async function getAssistanceNeedPreschoolDecisionUnreadCount(
+  headers?: AxiosHeaders
+): Promise<UnreadAssistanceNeedDecisionItem[]> {
   const { data: json } = await client.request<JsonOf<UnreadAssistanceNeedDecisionItem[]>>({
     url: uri`/citizen/children/assistance-need-preschool-decisions/unread-counts`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -106,10 +122,13 @@ export async function getAssistanceNeedPreschoolDecisionUnreadCount(): Promise<U
 /**
 * Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionCitizenController.getAssistanceNeedPreschoolDecisions
 */
-export async function getAssistanceNeedPreschoolDecisions(): Promise<AssistanceNeedPreschoolDecisionCitizenListItem[]> {
+export async function getAssistanceNeedPreschoolDecisions(
+  headers?: AxiosHeaders
+): Promise<AssistanceNeedPreschoolDecisionCitizenListItem[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecisionCitizenListItem[]>>({
     url: uri`/citizen/assistance-need-preschool-decisions`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonAssistanceNeedPreschoolDecisionCitizenListItem(e))
 }
@@ -121,11 +140,13 @@ export async function getAssistanceNeedPreschoolDecisions(): Promise<AssistanceN
 export async function markAssistanceNeedPreschoolDecisionAsRead(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/children/assistance-need-preschool-decisions/${request.id}/read`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }

@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { ChildPlacementResponse } from 'lib-common/generated/api-types/placement'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -20,11 +21,13 @@ import { uri } from 'lib-common/uri'
 export async function getPlacements(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildPlacementResponse> {
   const { data: json } = await client.request<JsonOf<ChildPlacementResponse>>({
     url: uri`/citizen/children/${request.childId}/placements`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonChildPlacementResponse(json)
 }
@@ -37,11 +40,13 @@ export async function postPlacementTermination(
   request: {
     childId: UUID,
     body: PlacementTerminationRequestBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/children/${request.childId}/placements/terminate`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<PlacementTerminationRequestBody>
   })
   return json

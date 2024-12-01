@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { EmailMessageType } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -16,10 +17,13 @@ import { uri } from 'lib-common/uri'
 /**
 * Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.getNotificationSettings
 */
-export async function getNotificationSettings(): Promise<EmailMessageType[]> {
+export async function getNotificationSettings(
+  headers?: AxiosHeaders
+): Promise<EmailMessageType[]> {
   const { data: json } = await client.request<JsonOf<EmailMessageType[]>>({
     url: uri`/citizen/personal-data/notification-settings`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -31,11 +35,13 @@ export async function getNotificationSettings(): Promise<EmailMessageType[]> {
 export async function updateNotificationSettings(
   request: {
     body: EmailMessageType[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/personal-data/notification-settings`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<EmailMessageType[]>
   })
   return json
@@ -48,11 +54,13 @@ export async function updateNotificationSettings(
 export async function updatePassword(
   request: {
     body: UpdatePasswordRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/personal-data/password`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<UpdatePasswordRequest>
   })
   return json
@@ -65,11 +73,13 @@ export async function updatePassword(
 export async function updatePersonalData(
   request: {
     body: PersonalDataUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/personal-data`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<PersonalDataUpdate>
   })
   return json

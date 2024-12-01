@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JamixSpecialDiet } from 'lib-common/generated/api-types/jamix'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -16,10 +17,13 @@ import { uri } from 'lib-common/uri'
 /**
 * Generated from fi.espoo.evaka.specialdiet.MealTexturesController.getMealTextures
 */
-export async function getMealTextures(): Promise<MealTexture[]> {
+export async function getMealTextures(
+  headers?: AxiosHeaders
+): Promise<MealTexture[]> {
   const { data: json } = await client.request<JsonOf<MealTexture[]>>({
     url: uri`/employee/meal-textures`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -28,10 +32,13 @@ export async function getMealTextures(): Promise<MealTexture[]> {
 /**
 * Generated from fi.espoo.evaka.specialdiet.SpecialDietController.getDiets
 */
-export async function getDiets(): Promise<SpecialDiet[]> {
+export async function getDiets(
+  headers?: AxiosHeaders
+): Promise<SpecialDiet[]> {
   const { data: json } = await client.request<JsonOf<SpecialDiet[]>>({
     url: uri`/employee/diets`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -43,11 +50,13 @@ export async function getDiets(): Promise<SpecialDiet[]> {
 export async function putDiets(
   request: {
     body: JamixSpecialDiet[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/diets`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<JamixSpecialDiet[]>
   })
   return json

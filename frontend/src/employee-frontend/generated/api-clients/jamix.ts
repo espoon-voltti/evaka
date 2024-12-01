@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
@@ -19,7 +20,8 @@ export async function sendJamixOrders(
   request: {
     unitId: UUID,
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
@@ -28,6 +30,7 @@ export async function sendJamixOrders(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/jamix/send-orders`.toString(),
     method: 'PUT',
+    headers,
     params
   })
   return json

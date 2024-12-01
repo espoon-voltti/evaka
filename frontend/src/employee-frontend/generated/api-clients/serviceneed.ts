@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { AcceptServiceApplicationBody } from 'lib-common/generated/api-types/serviceneed'
+import { AxiosHeaders } from 'axios'
 import { EmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -31,11 +32,13 @@ import { uri } from 'lib-common/uri'
 export async function deleteServiceNeed(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/service-needs/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -47,7 +50,8 @@ export async function deleteServiceNeed(
 export async function getServiceNeedOptionPublicInfos(
   request: {
     placementTypes?: PlacementType[] | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ServiceNeedOptionPublicInfo[]> {
   const params = createUrlSearchParams(
     ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
@@ -55,6 +59,7 @@ export async function getServiceNeedOptionPublicInfos(
   const { data: json } = await client.request<JsonOf<ServiceNeedOptionPublicInfo[]>>({
     url: uri`/employee/public/service-needs/options`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonServiceNeedOptionPublicInfo(e))
@@ -64,10 +69,13 @@ export async function getServiceNeedOptionPublicInfos(
 /**
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.getServiceNeedOptions
 */
-export async function getServiceNeedOptions(): Promise<ServiceNeedOption[]> {
+export async function getServiceNeedOptions(
+  headers?: AxiosHeaders
+): Promise<ServiceNeedOption[]> {
   const { data: json } = await client.request<JsonOf<ServiceNeedOption[]>>({
     url: uri`/employee/service-needs/options`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonServiceNeedOption(e))
 }
@@ -79,11 +87,13 @@ export async function getServiceNeedOptions(): Promise<ServiceNeedOption[]> {
 export async function postServiceNeed(
   request: {
     body: ServiceNeedCreateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/service-needs`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ServiceNeedCreateRequest>
   })
   return json
@@ -97,11 +107,13 @@ export async function putServiceNeed(
   request: {
     id: UUID,
     body: ServiceNeedUpdateRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/service-needs/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ServiceNeedUpdateRequest>
   })
   return json
@@ -115,11 +127,13 @@ export async function acceptServiceApplication(
   request: {
     id: UUID,
     body: AcceptServiceApplicationBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/service-applications/${request.id}/accept`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<AcceptServiceApplicationBody>
   })
   return json
@@ -132,7 +146,8 @@ export async function acceptServiceApplication(
 export async function getChildServiceApplications(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<EmployeeServiceApplication[]> {
   const params = createUrlSearchParams(
     ['childId', request.childId]
@@ -140,6 +155,7 @@ export async function getChildServiceApplications(
   const { data: json } = await client.request<JsonOf<EmployeeServiceApplication[]>>({
     url: uri`/employee/service-applications`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonEmployeeServiceApplication(e))
@@ -152,7 +168,8 @@ export async function getChildServiceApplications(
 export async function getUndecidedServiceApplications(
   request: {
     unitId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UndecidedServiceApplicationSummary[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId]
@@ -160,6 +177,7 @@ export async function getUndecidedServiceApplications(
   const { data: json } = await client.request<JsonOf<UndecidedServiceApplicationSummary[]>>({
     url: uri`/employee/service-applications/undecided`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonUndecidedServiceApplicationSummary(e))
@@ -173,11 +191,13 @@ export async function rejectServiceApplication(
   request: {
     id: UUID,
     body: ServiceApplicationRejection
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/service-applications/${request.id}/reject`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ServiceApplicationRejection>
   })
   return json

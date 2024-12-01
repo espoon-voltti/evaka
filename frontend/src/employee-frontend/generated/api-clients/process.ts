@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonOf } from 'lib-common/json'
 import { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
 import { UUID } from 'lib-common/types'
@@ -18,11 +19,13 @@ import { uri } from 'lib-common/uri'
 export async function getApplicationMetadata(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
     url: uri`/employee/process-metadata/applications/${request.applicationId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonProcessMetadataResponse(json)
 }
@@ -34,11 +37,13 @@ export async function getApplicationMetadata(
 export async function getAssistanceNeedDecisionMetadata(
   request: {
     decisionId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
     url: uri`/employee/process-metadata/assistance-need-decisions/${request.decisionId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonProcessMetadataResponse(json)
 }
@@ -50,11 +55,13 @@ export async function getAssistanceNeedDecisionMetadata(
 export async function getAssistanceNeedPreschoolDecisionMetadata(
   request: {
     decisionId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
     url: uri`/employee/process-metadata/assistance-need-preschool-decisions/${request.decisionId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonProcessMetadataResponse(json)
 }
@@ -66,11 +73,13 @@ export async function getAssistanceNeedPreschoolDecisionMetadata(
 export async function getChildDocumentMetadata(
   request: {
     childDocumentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
     url: uri`/employee/process-metadata/child-documents/${request.childDocumentId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonProcessMetadataResponse(json)
 }

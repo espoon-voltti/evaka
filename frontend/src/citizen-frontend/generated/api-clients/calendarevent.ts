@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { CalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeCitizenReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -24,11 +25,13 @@ import { uri } from 'lib-common/uri'
 export async function addCalendarEventTimeReservation(
   request: {
     body: CalendarEventTimeCitizenReservationForm
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/calendar-event/reservation`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CalendarEventTimeCitizenReservationForm>
   })
   return json
@@ -42,7 +45,8 @@ export async function deleteCalendarEventTimeReservation(
   request: {
     calendarEventTimeId: UUID,
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['calendarEventTimeId', request.calendarEventTimeId],
@@ -51,6 +55,7 @@ export async function deleteCalendarEventTimeReservation(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/calendar-event/reservation`.toString(),
     method: 'DELETE',
+    headers,
     params
   })
   return json
@@ -64,7 +69,8 @@ export async function getCitizenCalendarEvents(
   request: {
     start: LocalDate,
     end: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CitizenCalendarEvent[]> {
   const params = createUrlSearchParams(
     ['start', request.start.formatIso()],
@@ -73,6 +79,7 @@ export async function getCitizenCalendarEvents(
   const { data: json } = await client.request<JsonOf<CitizenCalendarEvent[]>>({
     url: uri`/citizen/calendar-events`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonCitizenCalendarEvent(e))
@@ -86,7 +93,8 @@ export async function getReservableCalendarEventTimes(
   request: {
     eventId: UUID,
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CalendarEventTime[]> {
   const params = createUrlSearchParams(
     ['childId', request.childId]
@@ -94,6 +102,7 @@ export async function getReservableCalendarEventTimes(
   const { data: json } = await client.request<JsonOf<CalendarEventTime[]>>({
     url: uri`/citizen/calendar-event/${request.eventId}/time`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonCalendarEventTime(e))

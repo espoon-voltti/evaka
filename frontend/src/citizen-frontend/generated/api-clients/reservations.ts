@@ -6,6 +6,7 @@
 
 import LocalDate from 'lib-common/local-date'
 import { AbsenceRequest } from 'lib-common/generated/api-types/reservations'
+import { AxiosHeaders } from 'axios'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -23,7 +24,8 @@ export async function getReservations(
   request: {
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ReservationsResponse> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -32,6 +34,7 @@ export async function getReservations(
   const { data: json } = await client.request<JsonOf<ReservationsResponse>>({
     url: uri`/citizen/reservations`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonReservationsResponse(json)
@@ -44,11 +47,13 @@ export async function getReservations(
 export async function postAbsences(
   request: {
     body: AbsenceRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/absences`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AbsenceRequest>
   })
   return json
@@ -61,11 +66,13 @@ export async function postAbsences(
 export async function postReservations(
   request: {
     body: DailyReservationRequest[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/reservations`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
   })
   return json

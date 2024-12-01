@@ -10,6 +10,7 @@ import { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import { ApplicationFormUpdate } from 'lib-common/generated/api-types/application'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ApplicationsOfChild } from 'lib-common/generated/api-types/application'
+import { AxiosHeaders } from 'axios'
 import { CitizenApplicationUpdate } from 'lib-common/generated/api-types/application'
 import { CitizenChildren } from 'lib-common/generated/api-types/application'
 import { CreateApplicationBody } from 'lib-common/generated/api-types/application'
@@ -36,11 +37,13 @@ export async function acceptDecision(
   request: {
     applicationId: UUID,
     body: AcceptDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/applications/${request.applicationId}/actions/accept-decision`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AcceptDecisionRequest>
   })
   return json
@@ -53,11 +56,13 @@ export async function acceptDecision(
 export async function createApplication(
   request: {
     body: CreateApplicationBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/citizen/applications`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CreateApplicationBody>
   })
   return json
@@ -70,11 +75,13 @@ export async function createApplication(
 export async function deleteOrCancelUnprocessedApplication(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/applications/${request.applicationId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -86,11 +93,13 @@ export async function deleteOrCancelUnprocessedApplication(
 export async function getApplication(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ApplicationDetails> {
   const { data: json } = await client.request<JsonOf<ApplicationDetails>>({
     url: uri`/citizen/applications/${request.applicationId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonApplicationDetails(json)
 }
@@ -99,10 +108,13 @@ export async function getApplication(
 /**
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getApplicationChildren
 */
-export async function getApplicationChildren(): Promise<CitizenChildren[]> {
+export async function getApplicationChildren(
+  headers?: AxiosHeaders
+): Promise<CitizenChildren[]> {
   const { data: json } = await client.request<JsonOf<CitizenChildren[]>>({
     url: uri`/citizen/applications/children`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonCitizenChildren(e))
 }
@@ -114,11 +126,13 @@ export async function getApplicationChildren(): Promise<CitizenChildren[]> {
 export async function getApplicationDecisions(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DecisionWithValidStartDatePeriod[]> {
   const { data: json } = await client.request<JsonOf<DecisionWithValidStartDatePeriod[]>>({
     url: uri`/citizen/applications/${request.applicationId}/decisions`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonDecisionWithValidStartDatePeriod(e))
 }
@@ -130,11 +144,13 @@ export async function getApplicationDecisions(
 export async function getChildDuplicateApplications(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Record<ApplicationType, boolean>> {
   const { data: json } = await client.request<JsonOf<Record<ApplicationType, boolean>>>({
     url: uri`/citizen/applications/duplicates/${request.childId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -146,11 +162,13 @@ export async function getChildDuplicateApplications(
 export async function getChildPlacementStatusByApplicationType(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Record<ApplicationType, boolean>> {
   const { data: json } = await client.request<JsonOf<Record<ApplicationType, boolean>>>({
     url: uri`/citizen/applications/active-placements/${request.childId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -159,10 +177,13 @@ export async function getChildPlacementStatusByApplicationType(
 /**
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getDecisions
 */
-export async function getDecisions(): Promise<ApplicationDecisions> {
+export async function getDecisions(
+  headers?: AxiosHeaders
+): Promise<ApplicationDecisions> {
   const { data: json } = await client.request<JsonOf<ApplicationDecisions>>({
     url: uri`/citizen/decisions`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonApplicationDecisions(json)
 }
@@ -171,10 +192,13 @@ export async function getDecisions(): Promise<ApplicationDecisions> {
 /**
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getGuardianApplicationNotifications
 */
-export async function getGuardianApplicationNotifications(): Promise<number> {
+export async function getGuardianApplicationNotifications(
+  headers?: AxiosHeaders
+): Promise<number> {
   const { data: json } = await client.request<JsonOf<number>>({
     url: uri`/citizen/applications/by-guardian/notifications`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -183,10 +207,13 @@ export async function getGuardianApplicationNotifications(): Promise<number> {
 /**
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getGuardianApplications
 */
-export async function getGuardianApplications(): Promise<ApplicationsOfChild[]> {
+export async function getGuardianApplications(
+  headers?: AxiosHeaders
+): Promise<ApplicationsOfChild[]> {
   const { data: json } = await client.request<JsonOf<ApplicationsOfChild[]>>({
     url: uri`/citizen/applications/by-guardian`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonApplicationsOfChild(e))
 }
@@ -195,10 +222,13 @@ export async function getGuardianApplications(): Promise<ApplicationsOfChild[]> 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getLiableCitizenFinanceDecisions
 */
-export async function getLiableCitizenFinanceDecisions(): Promise<FinanceDecisionCitizenInfo[]> {
+export async function getLiableCitizenFinanceDecisions(
+  headers?: AxiosHeaders
+): Promise<FinanceDecisionCitizenInfo[]> {
   const { data: json } = await client.request<JsonOf<FinanceDecisionCitizenInfo[]>>({
     url: uri`/citizen/finance-decisions/by-liable-citizen`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonFinanceDecisionCitizenInfo(e))
 }
@@ -211,11 +241,13 @@ export async function rejectDecision(
   request: {
     applicationId: UUID,
     body: RejectDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/applications/${request.applicationId}/actions/reject-decision`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<RejectDecisionRequest>
   })
   return json
@@ -229,11 +261,13 @@ export async function saveApplicationAsDraft(
   request: {
     applicationId: UUID,
     body: ApplicationFormUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/applications/${request.applicationId}/draft`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ApplicationFormUpdate>
   })
   return json
@@ -246,11 +280,13 @@ export async function saveApplicationAsDraft(
 export async function sendApplication(
   request: {
     applicationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/applications/${request.applicationId}/actions/send-application`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -263,11 +299,13 @@ export async function updateApplication(
   request: {
     applicationId: UUID,
     body: CitizenApplicationUpdate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/applications/${request.applicationId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<CitizenApplicationUpdate>
   })
   return json

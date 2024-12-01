@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
 import { ChildBackupPickupContent } from 'lib-common/generated/api-types/backuppickup'
 import { ChildBackupPickupCreateResponse } from 'lib-common/generated/api-types/backuppickup'
@@ -21,11 +22,13 @@ export async function createBackupPickup(
   request: {
     childId: UUID,
     body: ChildBackupPickupContent
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildBackupPickupCreateResponse> {
   const { data: json } = await client.request<JsonOf<ChildBackupPickupCreateResponse>>({
     url: uri`/employee/children/${request.childId}/backup-pickups`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ChildBackupPickupContent>
   })
   return json
@@ -38,11 +41,13 @@ export async function createBackupPickup(
 export async function deleteBackupPickup(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/backup-pickups/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -54,11 +59,13 @@ export async function deleteBackupPickup(
 export async function getBackupPickups(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildBackupPickup[]> {
   const { data: json } = await client.request<JsonOf<ChildBackupPickup[]>>({
     url: uri`/employee/children/${request.childId}/backup-pickups`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -71,11 +78,13 @@ export async function updateBackupPickup(
   request: {
     id: UUID,
     body: ChildBackupPickupContent
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/backup-pickups/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ChildBackupPickupContent>
   })
   return json

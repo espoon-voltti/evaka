@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
 import { JsonOf } from 'lib-common/json'
@@ -21,11 +22,13 @@ import { uri } from 'lib-common/uri'
 export async function getDocument(
   request: {
     documentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildDocumentCitizenDetails> {
   const { data: json } = await client.request<JsonOf<ChildDocumentCitizenDetails>>({
     url: uri`/citizen/child-documents/${request.documentId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonChildDocumentCitizenDetails(json)
 }
@@ -37,7 +40,8 @@ export async function getDocument(
 export async function getDocuments(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildDocumentCitizenSummary[]> {
   const params = createUrlSearchParams(
     ['childId', request.childId]
@@ -45,6 +49,7 @@ export async function getDocuments(
   const { data: json } = await client.request<JsonOf<ChildDocumentCitizenSummary[]>>({
     url: uri`/citizen/child-documents`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonChildDocumentCitizenSummary(e))
@@ -54,10 +59,13 @@ export async function getDocuments(
 /**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getUnreadDocumentsCount
 */
-export async function getUnreadDocumentsCount(): Promise<Record<UUID, number>> {
+export async function getUnreadDocumentsCount(
+  headers?: AxiosHeaders
+): Promise<Record<UUID, number>> {
   const { data: json } = await client.request<JsonOf<Record<UUID, number>>>({
     url: uri`/citizen/child-documents/unread-count`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -69,11 +77,13 @@ export async function getUnreadDocumentsCount(): Promise<Record<UUID, number>> {
 export async function putDocumentRead(
   request: {
     documentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/child-documents/${request.documentId}/read`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    headers
   })
   return json
 }

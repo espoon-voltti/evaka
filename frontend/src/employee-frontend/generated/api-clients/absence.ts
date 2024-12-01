@@ -6,6 +6,7 @@
 
 import { Absence } from 'lib-common/generated/api-types/absence'
 import { AbsenceUpsert } from 'lib-common/generated/api-types/absence'
+import { AxiosHeaders } from 'axios'
 import { GroupMonthCalendar } from 'lib-common/generated/api-types/absence'
 import { HolidayReservationsDelete } from 'lib-common/generated/api-types/absence'
 import { JsonCompatible } from 'lib-common/json'
@@ -26,11 +27,13 @@ export async function addPresences(
   request: {
     groupId: UUID,
     body: Presence[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/absences/${request.groupId}/present`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<Presence[]>
   })
   return json
@@ -44,11 +47,13 @@ export async function deleteHolidayReservations(
   request: {
     groupId: UUID,
     body: HolidayReservationsDelete[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/absences/${request.groupId}/delete-holiday-reservations`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<HolidayReservationsDelete[]>
   })
   return json
@@ -63,7 +68,8 @@ export async function getAbsencesOfChild(
     childId: UUID,
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<Absence[]> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
@@ -72,6 +78,7 @@ export async function getAbsencesOfChild(
   const { data: json } = await client.request<JsonOf<Absence[]>>({
     url: uri`/employee/absences/by-child/${request.childId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonAbsence(e))
@@ -86,7 +93,8 @@ export async function groupMonthCalendar(
     groupId: UUID,
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<GroupMonthCalendar> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
@@ -95,6 +103,7 @@ export async function groupMonthCalendar(
   const { data: json } = await client.request<JsonOf<GroupMonthCalendar>>({
     url: uri`/employee/absences/${request.groupId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonGroupMonthCalendar(json)
@@ -108,11 +117,13 @@ export async function upsertAbsences(
   request: {
     groupId: UUID,
     body: AbsenceUpsert[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/absences/${request.groupId}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AbsenceUpsert[]>
   })
   return json

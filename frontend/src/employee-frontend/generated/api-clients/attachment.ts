@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
@@ -16,11 +17,13 @@ import { uri } from 'lib-common/uri'
 export async function deleteAttachment(
   request: {
     attachmentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/attachments/${request.attachmentId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }

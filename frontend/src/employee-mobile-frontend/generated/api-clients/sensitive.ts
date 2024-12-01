@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { ChildBasicInformation } from 'lib-common/generated/api-types/sensitive'
 import { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
 import { JsonOf } from 'lib-common/json'
@@ -19,11 +20,13 @@ import { uri } from 'lib-common/uri'
 export async function getBasicInfo(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildBasicInformation> {
   const { data: json } = await client.request<JsonOf<ChildBasicInformation>>({
     url: uri`/employee-mobile/children/${request.childId}/basic-info`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonChildBasicInformation(json)
 }
@@ -35,11 +38,13 @@ export async function getBasicInfo(
 export async function getSensitiveInfo(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildSensitiveInformation> {
   const { data: json } = await client.request<JsonOf<ChildSensitiveInformation>>({
     url: uri`/employee-mobile/children/${request.childId}/sensitive-info`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }

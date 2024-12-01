@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { AxiosHeaders } from 'axios'
 import { CreateRetroactiveFeeDecisionsBody } from 'lib-common/generated/api-types/invoicing'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
@@ -73,11 +74,13 @@ import { uri } from 'lib-common/uri'
 export async function createFeeAlteration(
   request: {
     body: FeeAlteration
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-alterations`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<FeeAlteration>
   })
   return json
@@ -90,11 +93,13 @@ export async function createFeeAlteration(
 export async function deleteFeeAlteration(
   request: {
     feeAlterationId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-alterations/${request.feeAlterationId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -106,7 +111,8 @@ export async function deleteFeeAlteration(
 export async function getFeeAlterations(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FeeAlterationWithPermittedActions[]> {
   const params = createUrlSearchParams(
     ['personId', request.personId]
@@ -114,6 +120,7 @@ export async function getFeeAlterations(
   const { data: json } = await client.request<JsonOf<FeeAlterationWithPermittedActions[]>>({
     url: uri`/employee/fee-alterations`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonFeeAlterationWithPermittedActions(e))
@@ -127,11 +134,13 @@ export async function updateFeeAlteration(
   request: {
     feeAlterationId: UUID,
     body: FeeAlteration
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-alterations/${request.feeAlterationId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<FeeAlteration>
   })
   return json
@@ -145,7 +154,8 @@ export async function confirmFeeDecisionDrafts(
   request: {
     decisionHandlerId?: UUID | null,
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['decisionHandlerId', request.decisionHandlerId]
@@ -153,6 +163,7 @@ export async function confirmFeeDecisionDrafts(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/confirm`.toString(),
     method: 'POST',
+    headers,
     params,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -167,11 +178,13 @@ export async function generateRetroactiveFeeDecisions(
   request: {
     id: UUID,
     body: CreateRetroactiveFeeDecisionsBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/head-of-family/${request.id}/create-retroactive`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CreateRetroactiveFeeDecisionsBody>
   })
   return json
@@ -184,11 +197,13 @@ export async function generateRetroactiveFeeDecisions(
 export async function getFeeDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FeeDecisionDetailed> {
   const { data: json } = await client.request<JsonOf<FeeDecisionDetailed>>({
     url: uri`/employee/fee-decisions/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonFeeDecisionDetailed(json)
 }
@@ -200,11 +215,13 @@ export async function getFeeDecision(
 export async function getHeadOfFamilyFeeDecisions(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FeeDecision[]> {
   const { data: json } = await client.request<JsonOf<FeeDecision[]>>({
     url: uri`/employee/fee-decisions/head-of-family/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonFeeDecision(e))
 }
@@ -216,11 +233,13 @@ export async function getHeadOfFamilyFeeDecisions(
 export async function ignoreFeeDecisionDrafts(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/ignore`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -233,11 +252,13 @@ export async function ignoreFeeDecisionDrafts(
 export async function searchFeeDecisions(
   request: {
     body: SearchFeeDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedFeeDecisionSummaries> {
   const { data: json } = await client.request<JsonOf<PagedFeeDecisionSummaries>>({
     url: uri`/employee/fee-decisions/search`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SearchFeeDecisionRequest>
   })
   return deserializeJsonPagedFeeDecisionSummaries(json)
@@ -250,11 +271,13 @@ export async function searchFeeDecisions(
 export async function setFeeDecisionSent(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/mark-sent`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -268,11 +291,13 @@ export async function setFeeDecisionType(
   request: {
     id: UUID,
     body: FeeDecisionTypeRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/set-type/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<FeeDecisionTypeRequest>
   })
   return json
@@ -285,11 +310,13 @@ export async function setFeeDecisionType(
 export async function unignoreFeeDecisionDrafts(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/unignore`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -302,11 +329,13 @@ export async function unignoreFeeDecisionDrafts(
 export async function generateDecisions(
   request: {
     body: GenerateDecisionsBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decision-generator/generate`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<GenerateDecisionsBody>
   })
   return json
@@ -319,11 +348,13 @@ export async function generateDecisions(
 export async function createFeeThresholds(
   request: {
     body: FeeThresholds
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/finance-basics/fee-thresholds`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<FeeThresholds>
   })
   return json
@@ -336,11 +367,13 @@ export async function createFeeThresholds(
 export async function createVoucherValue(
   request: {
     body: ServiceNeedOptionVoucherValueRange
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/finance-basics/voucher-values`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<ServiceNeedOptionVoucherValueRange>
   })
   return json
@@ -353,11 +386,13 @@ export async function createVoucherValue(
 export async function deleteVoucherValue(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/finance-basics/voucher-values/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -366,10 +401,13 @@ export async function deleteVoucherValue(
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.getFeeThresholds
 */
-export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
+export async function getFeeThresholds(
+  headers?: AxiosHeaders
+): Promise<FeeThresholdsWithId[]> {
   const { data: json } = await client.request<JsonOf<FeeThresholdsWithId[]>>({
     url: uri`/employee/finance-basics/fee-thresholds`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonFeeThresholdsWithId(e))
 }
@@ -378,10 +416,13 @@ export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.getVoucherValues
 */
-export async function getVoucherValues(): Promise<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>> {
+export async function getVoucherValues(
+  headers?: AxiosHeaders
+): Promise<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>> {
   const { data: json } = await client.request<JsonOf<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>>>({
     url: uri`/employee/finance-basics/voucher-values`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return Object.fromEntries(Object.entries(json).map(
     ([k, v]) => [k, v.map(e => deserializeJsonServiceNeedOptionVoucherValueRangeWithId(e))]
@@ -396,11 +437,13 @@ export async function updateFeeThresholds(
   request: {
     id: UUID,
     body: FeeThresholds
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/finance-basics/fee-thresholds/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<FeeThresholds>
   })
   return json
@@ -414,11 +457,13 @@ export async function updateVoucherValue(
   request: {
     id: UUID,
     body: ServiceNeedOptionVoucherValueRange
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/finance-basics/voucher-values/${request.id}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<ServiceNeedOptionVoucherValueRange>
   })
   return json
@@ -428,10 +473,13 @@ export async function updateVoucherValue(
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.FinanceDecisionController.getSelectableFinanceDecisionHandlers
 */
-export async function getSelectableFinanceDecisionHandlers(): Promise<Employee[]> {
+export async function getSelectableFinanceDecisionHandlers(
+  headers?: AxiosHeaders
+): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
     url: uri`/employee/finance-decisions/selectable-handlers`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonEmployee(e))
 }
@@ -443,11 +491,13 @@ export async function getSelectableFinanceDecisionHandlers(): Promise<Employee[]
 export async function createIncome(
   request: {
     body: IncomeRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/employee/incomes`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<IncomeRequest>
   })
   return json
@@ -460,11 +510,13 @@ export async function createIncome(
 export async function deleteIncome(
   request: {
     incomeId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/incomes/${request.incomeId}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -473,10 +525,13 @@ export async function deleteIncome(
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getIncomeMultipliers
 */
-export async function getIncomeMultipliers(): Promise<Record<IncomeCoefficient, number>> {
+export async function getIncomeMultipliers(
+  headers?: AxiosHeaders
+): Promise<Record<IncomeCoefficient, number>> {
   const { data: json } = await client.request<JsonOf<Record<IncomeCoefficient, number>>>({
     url: uri`/employee/incomes/multipliers`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -488,7 +543,8 @@ export async function getIncomeMultipliers(): Promise<Record<IncomeCoefficient, 
 export async function getIncomeNotifications(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<IncomeNotification[]> {
   const params = createUrlSearchParams(
     ['personId', request.personId]
@@ -496,6 +552,7 @@ export async function getIncomeNotifications(
   const { data: json } = await client.request<JsonOf<IncomeNotification[]>>({
     url: uri`/employee/incomes/notifications`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonIncomeNotification(e))
@@ -505,10 +562,13 @@ export async function getIncomeNotifications(
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getIncomeTypeOptions
 */
-export async function getIncomeTypeOptions(): Promise<IncomeTypeOptions> {
+export async function getIncomeTypeOptions(
+  headers?: AxiosHeaders
+): Promise<IncomeTypeOptions> {
   const { data: json } = await client.request<JsonOf<IncomeTypeOptions>>({
     url: uri`/employee/incomes/types`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -520,7 +580,8 @@ export async function getIncomeTypeOptions(): Promise<IncomeTypeOptions> {
 export async function getPersonIncomes(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<IncomeWithPermittedActions[]> {
   const params = createUrlSearchParams(
     ['personId', request.personId]
@@ -528,6 +589,7 @@ export async function getPersonIncomes(
   const { data: json } = await client.request<JsonOf<IncomeWithPermittedActions[]>>({
     url: uri`/employee/incomes`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonIncomeWithPermittedActions(e))
@@ -541,11 +603,13 @@ export async function updateIncome(
   request: {
     incomeId: UUID,
     body: IncomeRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/incomes/${request.incomeId}`.toString(),
     method: 'PUT',
+    headers,
     data: request.body satisfies JsonCompatible<IncomeRequest>
   })
   return json
@@ -555,10 +619,13 @@ export async function updateIncome(
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.createDraftInvoices
 */
-export async function createDraftInvoices(): Promise<void> {
+export async function createDraftInvoices(
+  headers?: AxiosHeaders
+): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/create-drafts`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -570,11 +637,13 @@ export async function createDraftInvoices(): Promise<void> {
 export async function createReplacementDraftsForHeadOfFamily(
   request: {
     headOfFamilyId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/create-replacement-drafts/${request.headOfFamilyId}`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -586,11 +655,13 @@ export async function createReplacementDraftsForHeadOfFamily(
 export async function deleteDraftInvoices(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/delete-drafts`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -603,11 +674,13 @@ export async function deleteDraftInvoices(
 export async function getHeadOfFamilyInvoices(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<InvoiceDetailed[]> {
   const { data: json } = await client.request<JsonOf<InvoiceDetailed[]>>({
     url: uri`/employee/invoices/head-of-family/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonInvoiceDetailed(e))
 }
@@ -619,11 +692,13 @@ export async function getHeadOfFamilyInvoices(
 export async function getInvoice(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<InvoiceDetailedResponse> {
   const { data: json } = await client.request<JsonOf<InvoiceDetailedResponse>>({
     url: uri`/employee/invoices/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonInvoiceDetailedResponse(json)
 }
@@ -632,10 +707,13 @@ export async function getInvoice(
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.getInvoiceCodes
 */
-export async function getInvoiceCodes(): Promise<InvoiceCodes> {
+export async function getInvoiceCodes(
+  headers?: AxiosHeaders
+): Promise<InvoiceCodes> {
   const { data: json } = await client.request<JsonOf<InvoiceCodes>>({
     url: uri`/employee/invoices/codes`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -647,11 +725,13 @@ export async function getInvoiceCodes(): Promise<InvoiceCodes> {
 export async function markInvoicesSent(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/mark-sent`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -665,11 +745,13 @@ export async function markReplacementDraftSent(
   request: {
     invoiceId: UUID,
     body: MarkReplacementDraftSentRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/${request.invoiceId}/mark-replacement-draft-sent`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<MarkReplacementDraftSentRequest>
   })
   return json
@@ -682,11 +764,13 @@ export async function markReplacementDraftSent(
 export async function searchInvoices(
   request: {
     body: SearchInvoicesRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedInvoiceSummaryResponses> {
   const { data: json } = await client.request<JsonOf<PagedInvoiceSummaryResponses>>({
     url: uri`/employee/invoices/search`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SearchInvoicesRequest>
   })
   return deserializeJsonPagedInvoiceSummaryResponses(json)
@@ -701,7 +785,8 @@ export async function sendInvoices(
     invoiceDate?: LocalDate | null,
     dueDate?: LocalDate | null,
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['invoiceDate', request.invoiceDate?.formatIso()],
@@ -710,6 +795,7 @@ export async function sendInvoices(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/send`.toString(),
     method: 'POST',
+    headers,
     params,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -723,11 +809,13 @@ export async function sendInvoices(
 export async function sendInvoicesByDate(
   request: {
     body: InvoicePayload
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/send/by-date`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<InvoicePayload>
   })
   return json
@@ -740,11 +828,13 @@ export async function sendInvoicesByDate(
 export async function createInvoiceCorrection(
   request: {
     body: InvoiceCorrectionInsert
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoice-corrections`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<InvoiceCorrectionInsert>
   })
   return json
@@ -757,11 +847,13 @@ export async function createInvoiceCorrection(
 export async function deleteInvoiceCorrection(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoice-corrections/${request.id}`.toString(),
-    method: 'DELETE'
+    method: 'DELETE',
+    headers
   })
   return json
 }
@@ -773,11 +865,13 @@ export async function deleteInvoiceCorrection(
 export async function getPersonInvoiceCorrections(
   request: {
     personId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<InvoiceCorrectionWithPermittedActions[]> {
   const { data: json } = await client.request<JsonOf<InvoiceCorrectionWithPermittedActions[]>>({
     url: uri`/employee/invoice-corrections/${request.personId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonInvoiceCorrectionWithPermittedActions(e))
 }
@@ -790,11 +884,13 @@ export async function updateInvoiceCorrectionNote(
   request: {
     id: UUID,
     body: NoteUpdateBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoice-corrections/${request.id}/note`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<NoteUpdateBody>
   })
   return json
@@ -807,11 +903,13 @@ export async function updateInvoiceCorrectionNote(
 export async function confirmDraftPayments(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/payments/confirm`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -821,10 +919,13 @@ export async function confirmDraftPayments(
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.PaymentController.createPaymentDrafts
 */
-export async function createPaymentDrafts(): Promise<void> {
+export async function createPaymentDrafts(
+  headers?: AxiosHeaders
+): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/payments/create-drafts`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
@@ -836,11 +937,13 @@ export async function createPaymentDrafts(): Promise<void> {
 export async function deleteDraftPayments(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/payments/delete-drafts`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -853,11 +956,13 @@ export async function deleteDraftPayments(
 export async function revertPaymentsToDrafts(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/payments/revert-to-draft`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -870,11 +975,13 @@ export async function revertPaymentsToDrafts(
 export async function searchPayments(
   request: {
     body: SearchPaymentsRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedPayments> {
   const { data: json } = await client.request<JsonOf<PagedPayments>>({
     url: uri`/employee/payments/search`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SearchPaymentsRequest>
   })
   return deserializeJsonPagedPayments(json)
@@ -887,11 +994,13 @@ export async function searchPayments(
 export async function sendPayments(
   request: {
     body: SendPaymentsRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/payments/send`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SendPaymentsRequest>
   })
   return json
@@ -905,11 +1014,13 @@ export async function generateRetroactiveVoucherValueDecisions(
   request: {
     id: UUID,
     body: CreateRetroactiveFeeDecisionsBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/head-of-family/${request.id}/create-retroactive`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<CreateRetroactiveFeeDecisionsBody>
   })
   return json
@@ -922,11 +1033,13 @@ export async function generateRetroactiveVoucherValueDecisions(
 export async function getHeadOfFamilyVoucherValueDecisions(
   request: {
     headOfFamilyId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<VoucherValueDecisionSummary[]> {
   const { data: json } = await client.request<JsonOf<VoucherValueDecisionSummary[]>>({
     url: uri`/employee/value-decisions/head-of-family/${request.headOfFamilyId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonVoucherValueDecisionSummary(e))
 }
@@ -938,11 +1051,13 @@ export async function getHeadOfFamilyVoucherValueDecisions(
 export async function getVoucherValueDecision(
   request: {
     id: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<VoucherValueDecisionDetailed> {
   const { data: json } = await client.request<JsonOf<VoucherValueDecisionDetailed>>({
     url: uri`/employee/value-decisions/${request.id}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return deserializeJsonVoucherValueDecisionDetailed(json)
 }
@@ -954,11 +1069,13 @@ export async function getVoucherValueDecision(
 export async function ignoreVoucherValueDecisionDrafts(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/ignore`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -971,11 +1088,13 @@ export async function ignoreVoucherValueDecisionDrafts(
 export async function markVoucherValueDecisionSent(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/mark-sent`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json
@@ -988,11 +1107,13 @@ export async function markVoucherValueDecisionSent(
 export async function searchVoucherValueDecisions(
   request: {
     body: SearchVoucherValueDecisionRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PagedVoucherValueDecisionSummaries> {
   const { data: json } = await client.request<JsonOf<PagedVoucherValueDecisionSummaries>>({
     url: uri`/employee/value-decisions/search`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<SearchVoucherValueDecisionRequest>
   })
   return deserializeJsonPagedVoucherValueDecisionSummaries(json)
@@ -1006,7 +1127,8 @@ export async function sendVoucherValueDecisionDrafts(
   request: {
     decisionHandlerId?: UUID | null,
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['decisionHandlerId', request.decisionHandlerId]
@@ -1014,6 +1136,7 @@ export async function sendVoucherValueDecisionDrafts(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/send`.toString(),
     method: 'POST',
+    headers,
     params,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -1028,11 +1151,13 @@ export async function setVoucherValueDecisionType(
   request: {
     id: UUID,
     body: VoucherValueDecisionTypeRequest
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/set-type/${request.id}`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<VoucherValueDecisionTypeRequest>
   })
   return json
@@ -1045,11 +1170,13 @@ export async function setVoucherValueDecisionType(
 export async function unignoreVoucherValueDecisionDrafts(
   request: {
     body: UUID[]
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/unignore`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json

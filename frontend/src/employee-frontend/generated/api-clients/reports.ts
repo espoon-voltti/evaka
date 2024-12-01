@@ -13,6 +13,7 @@ import { AssistanceNeedsAndActionsReportByChild } from 'lib-common/generated/api
 import { AttendanceReservationReportByChildBody } from 'lib-common/generated/api-types/reports'
 import { AttendanceReservationReportByChildGroup } from 'lib-common/generated/api-types/reports'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import { AxiosHeaders } from 'axios'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import { ChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
@@ -101,7 +102,8 @@ export async function getApplicationsReport(
   request: {
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ApplicationsReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -110,6 +112,7 @@ export async function getApplicationsReport(
   const { data: json } = await client.request<JsonOf<ApplicationsReportRow[]>>({
     url: uri`/employee/reports/applications`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -119,10 +122,13 @@ export async function getApplicationsReport(
 /**
 * Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReport.getAssistanceNeedDecisionsReport
 */
-export async function getAssistanceNeedDecisionsReport(): Promise<AssistanceNeedDecisionsReportRow[]> {
+export async function getAssistanceNeedDecisionsReport(
+  headers?: AxiosHeaders
+): Promise<AssistanceNeedDecisionsReportRow[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionsReportRow[]>>({
     url: uri`/employee/reports/assistance-need-decisions`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonAssistanceNeedDecisionsReportRow(e))
 }
@@ -131,10 +137,13 @@ export async function getAssistanceNeedDecisionsReport(): Promise<AssistanceNeed
 /**
 * Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReport.getAssistanceNeedDecisionsReportUnreadCount
 */
-export async function getAssistanceNeedDecisionsReportUnreadCount(): Promise<number> {
+export async function getAssistanceNeedDecisionsReportUnreadCount(
+  headers?: AxiosHeaders
+): Promise<number> {
   const { data: json } = await client.request<JsonOf<number>>({
     url: uri`/employee/reports/assistance-need-decisions/unread-count`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -146,7 +155,8 @@ export async function getAssistanceNeedDecisionsReportUnreadCount(): Promise<num
 export async function getAssistanceNeedsAndActionsReport(
   request: {
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedsAndActionsReport> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()]
@@ -154,6 +164,7 @@ export async function getAssistanceNeedsAndActionsReport(
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReport>>({
     url: uri`/employee/reports/assistance-needs-and-actions`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -166,7 +177,8 @@ export async function getAssistanceNeedsAndActionsReport(
 export async function getAssistanceNeedsAndActionsReportByChild(
   request: {
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AssistanceNeedsAndActionsReportByChild> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()]
@@ -174,6 +186,7 @@ export async function getAssistanceNeedsAndActionsReportByChild(
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReportByChild>>({
     url: uri`/employee/reports/assistance-needs-and-actions/by-child`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -186,11 +199,13 @@ export async function getAssistanceNeedsAndActionsReportByChild(
 export async function getAttendanceReservationReportByChild(
   request: {
     body: AttendanceReservationReportByChildBody
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AttendanceReservationReportByChildGroup[]> {
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportByChildGroup[]>>({
     url: uri`/employee/reports/attendance-reservation/by-child`.toString(),
     method: 'POST',
+    headers,
     data: request.body satisfies JsonCompatible<AttendanceReservationReportByChildBody>
   })
   return json.map(e => deserializeJsonAttendanceReservationReportByChildGroup(e))
@@ -206,7 +221,8 @@ export async function getAttendanceReservationReportByUnit(
     start: LocalDate,
     end: LocalDate,
     groupIds?: UUID[] | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<AttendanceReservationReportRow[]> {
   const params = createUrlSearchParams(
     ['start', request.start.formatIso()],
@@ -216,6 +232,7 @@ export async function getAttendanceReservationReportByUnit(
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportRow[]>>({
     url: uri`/employee/reports/attendance-reservation/${request.unitId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonAttendanceReservationReportRow(e))
@@ -228,7 +245,8 @@ export async function getAttendanceReservationReportByUnit(
 export async function getChildAgeLanguageReport(
   request: {
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildAgeLanguageReportRow[]> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()]
@@ -236,6 +254,7 @@ export async function getChildAgeLanguageReport(
   const { data: json } = await client.request<JsonOf<ChildAgeLanguageReportRow[]>>({
     url: uri`/employee/reports/child-age-language`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -250,7 +269,8 @@ export async function getChildAttendanceReport(
     childId: UUID,
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildAttendanceReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -259,6 +279,7 @@ export async function getChildAttendanceReport(
   const { data: json } = await client.request<JsonOf<ChildAttendanceReportRow[]>>({
     url: uri`/employee/reports/child-attendance/${request.childId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonChildAttendanceReportRow(e))
@@ -268,10 +289,13 @@ export async function getChildAttendanceReport(
 /**
 * Generated from fi.espoo.evaka.reports.ChildrenInDifferentAddressReportController.getChildrenInDifferentAddressReport
 */
-export async function getChildrenInDifferentAddressReport(): Promise<ChildrenInDifferentAddressReportRow[]> {
+export async function getChildrenInDifferentAddressReport(
+  headers?: AxiosHeaders
+): Promise<ChildrenInDifferentAddressReportRow[]> {
   const { data: json } = await client.request<JsonOf<ChildrenInDifferentAddressReportRow[]>>({
     url: uri`/employee/reports/children-in-different-address`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -286,7 +310,8 @@ export async function getCustomerFeesReport(
     areaId?: UUID | null,
     unitId?: UUID | null,
     decisionType: FinanceDecisionType
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<CustomerFeesReportRow[]> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()],
@@ -297,6 +322,7 @@ export async function getCustomerFeesReport(
   const { data: json } = await client.request<JsonOf<CustomerFeesReportRow[]>>({
     url: uri`/employee/reports/customer-fees`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -310,7 +336,8 @@ export async function getDecisionsReport(
   request: {
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DecisionsReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -319,6 +346,7 @@ export async function getDecisionsReport(
   const { data: json } = await client.request<JsonOf<DecisionsReportRow[]>>({
     url: uri`/employee/reports/decisions`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -331,7 +359,8 @@ export async function getDecisionsReport(
 export async function getDuplicatePeopleReport(
   request: {
     showIntentionalDuplicates?: boolean | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<DuplicatePeopleReportRow[]> {
   const params = createUrlSearchParams(
     ['showIntentionalDuplicates', request.showIntentionalDuplicates?.toString()]
@@ -339,6 +368,7 @@ export async function getDuplicatePeopleReport(
   const { data: json } = await client.request<JsonOf<DuplicatePeopleReportRow[]>>({
     url: uri`/employee/reports/duplicate-people`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonDuplicatePeopleReportRow(e))
@@ -352,7 +382,8 @@ export async function getEndedPlacementsReport(
   request: {
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<EndedPlacementsReportRow[]> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
@@ -361,6 +392,7 @@ export async function getEndedPlacementsReport(
   const { data: json } = await client.request<JsonOf<EndedPlacementsReportRow[]>>({
     url: uri`/employee/reports/ended-placements`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonEndedPlacementsReportRow(e))
@@ -375,7 +407,8 @@ export async function getExceededServiceNeedReportRows(
     unitId: UUID,
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ExceededServiceNeedReportRow[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
@@ -385,6 +418,7 @@ export async function getExceededServiceNeedReportRows(
   const { data: json } = await client.request<JsonOf<ExceededServiceNeedReportRow[]>>({
     url: uri`/employee/reports/exceeded-service-need/rows`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -394,10 +428,13 @@ export async function getExceededServiceNeedReportRows(
 /**
 * Generated from fi.espoo.evaka.reports.ExceededServiceNeedsReportController.getExceededServiceNeedReportUnits
 */
-export async function getExceededServiceNeedReportUnits(): Promise<ExceededServiceNeedReportUnit[]> {
+export async function getExceededServiceNeedReportUnits(
+  headers?: AxiosHeaders
+): Promise<ExceededServiceNeedReportUnit[]> {
   const { data: json } = await client.request<JsonOf<ExceededServiceNeedReportUnit[]>>({
     url: uri`/employee/reports/exceeded-service-need/units`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -406,10 +443,13 @@ export async function getExceededServiceNeedReportUnits(): Promise<ExceededServi
 /**
 * Generated from fi.espoo.evaka.reports.FamilyConflictReportController.getFamilyConflictsReport
 */
-export async function getFamilyConflictsReport(): Promise<FamilyConflictReportRow[]> {
+export async function getFamilyConflictsReport(
+  headers?: AxiosHeaders
+): Promise<FamilyConflictReportRow[]> {
   const { data: json } = await client.request<JsonOf<FamilyConflictReportRow[]>>({
     url: uri`/employee/reports/family-conflicts`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -422,7 +462,8 @@ export async function getFamilyContactsReport(
   request: {
     unitId: UUID,
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FamilyContactReportRow[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
@@ -431,6 +472,7 @@ export async function getFamilyContactsReport(
   const { data: json } = await client.request<JsonOf<FamilyContactReportRow[]>>({
     url: uri`/employee/reports/family-contacts`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -444,7 +486,8 @@ export async function getFamilyDaycareMealReport(
   request: {
     startDate: LocalDate,
     endDate: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<FamilyDaycareMealReportResult> {
   const params = createUrlSearchParams(
     ['startDate', request.startDate.formatIso()],
@@ -453,6 +496,7 @@ export async function getFamilyDaycareMealReport(
   const { data: json } = await client.request<JsonOf<FamilyDaycareMealReportResult>>({
     url: uri`/employee/reports/family-daycare-meal-count`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -462,10 +506,13 @@ export async function getFamilyDaycareMealReport(
 /**
 * Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersReport
 */
-export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersReportRow[]> {
+export async function getFuturePreschoolersReport(
+  headers?: AxiosHeaders
+): Promise<FuturePreschoolersReportRow[]> {
   const { data: json } = await client.request<JsonOf<FuturePreschoolersReportRow[]>>({
     url: uri`/employee/reports/future-preschoolers`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonFuturePreschoolersReportRow(e))
 }
@@ -474,10 +521,13 @@ export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersR
 /**
 * Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersSourceUnitsReport
 */
-export async function getFuturePreschoolersSourceUnitsReport(): Promise<SourceUnitsReportRow[]> {
+export async function getFuturePreschoolersSourceUnitsReport(
+  headers?: AxiosHeaders
+): Promise<SourceUnitsReportRow[]> {
   const { data: json } = await client.request<JsonOf<SourceUnitsReportRow[]>>({
     url: uri`/employee/reports/future-preschoolers/source-units`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -486,10 +536,13 @@ export async function getFuturePreschoolersSourceUnitsReport(): Promise<SourceUn
 /**
 * Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersUnitsReport
 */
-export async function getFuturePreschoolersUnitsReport(): Promise<PreschoolUnitsReportRow[]> {
+export async function getFuturePreschoolersUnitsReport(
+  headers?: AxiosHeaders
+): Promise<PreschoolUnitsReportRow[]> {
   const { data: json } = await client.request<JsonOf<PreschoolUnitsReportRow[]>>({
     url: uri`/employee/reports/future-preschoolers/units`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -502,7 +555,8 @@ export async function getHolidayPeriodAttendanceReport(
   request: {
     unitId: UUID,
     periodId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<HolidayPeriodAttendanceReportRow[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
@@ -511,6 +565,7 @@ export async function getHolidayPeriodAttendanceReport(
   const { data: json } = await client.request<JsonOf<HolidayPeriodAttendanceReportRow[]>>({
     url: uri`/employee/reports/holiday-period-attendance`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonHolidayPeriodAttendanceReportRow(e))
@@ -520,10 +575,13 @@ export async function getHolidayPeriodAttendanceReport(
 /**
 * Generated from fi.espoo.evaka.reports.IncompleteIncomeReport.getIncompleteIncomeReport
 */
-export async function getIncompleteIncomeReport(): Promise<IncompleteIncomeDbRow[]> {
+export async function getIncompleteIncomeReport(
+  headers?: AxiosHeaders
+): Promise<IncompleteIncomeDbRow[]> {
   const { data: json } = await client.request<JsonOf<IncompleteIncomeDbRow[]>>({
     url: uri`/employee/reports/incomplete-income`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonIncompleteIncomeDbRow(e))
 }
@@ -535,7 +593,8 @@ export async function getIncompleteIncomeReport(): Promise<IncompleteIncomeDbRow
 export async function getInvoiceReport(
   request: {
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<InvoiceReport> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()]
@@ -543,6 +602,7 @@ export async function getInvoiceReport(
   const { data: json } = await client.request<JsonOf<InvoiceReport>>({
     url: uri`/employee/reports/invoices`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -555,7 +615,8 @@ export async function getInvoiceReport(
 export async function getManualDuplicationReport(
   request: {
     viewMode?: ManualDuplicationReportViewMode | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ManualDuplicationReportRow[]> {
   const params = createUrlSearchParams(
     ['viewMode', request.viewMode?.toString()]
@@ -563,6 +624,7 @@ export async function getManualDuplicationReport(
   const { data: json } = await client.request<JsonOf<ManualDuplicationReportRow[]>>({
     url: uri`/employee/reports/manual-duplication`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonManualDuplicationReportRow(e))
@@ -576,7 +638,8 @@ export async function getMealReportByUnit(
   request: {
     unitId: UUID,
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<MealReportData> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()]
@@ -584,6 +647,7 @@ export async function getMealReportByUnit(
   const { data: json } = await client.request<JsonOf<MealReportData>>({
     url: uri`/employee/reports/meal/${request.unitId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonMealReportData(json)
@@ -598,7 +662,8 @@ export async function getMissingHeadOfFamilyReport(
     from: LocalDate,
     to?: LocalDate | null,
     showIntentionalDuplicates?: boolean | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<MissingHeadOfFamilyReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -608,6 +673,7 @@ export async function getMissingHeadOfFamilyReport(
   const { data: json } = await client.request<JsonOf<MissingHeadOfFamilyReportRow[]>>({
     url: uri`/employee/reports/missing-head-of-family`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonMissingHeadOfFamilyReportRow(e))
@@ -621,7 +687,8 @@ export async function getMissingServiceNeedReport(
   request: {
     from: LocalDate,
     to?: LocalDate | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<MissingServiceNeedReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -630,6 +697,7 @@ export async function getMissingServiceNeedReport(
   const { data: json } = await client.request<JsonOf<MissingServiceNeedReportRow[]>>({
     url: uri`/employee/reports/missing-service-need`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -639,10 +707,13 @@ export async function getMissingServiceNeedReport(
 /**
 * Generated from fi.espoo.evaka.reports.NonSsnChildrenReportController.getNonSsnChildrenReportRows
 */
-export async function getNonSsnChildrenReportRows(): Promise<NonSsnChildrenReportRow[]> {
+export async function getNonSsnChildrenReportRows(
+  headers?: AxiosHeaders
+): Promise<NonSsnChildrenReportRow[]> {
   const { data: json } = await client.request<JsonOf<NonSsnChildrenReportRow[]>>({
     url: uri`/employee/reports/non-ssn-children`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonNonSsnChildrenReportRow(e))
 }
@@ -659,7 +730,8 @@ export async function getOccupancyGroupReport(
     unitTypes?: CareType[] | null,
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<OccupancyGroupReportResultRow[]> {
   const params = createUrlSearchParams(
     ['type', request.type.toString()],
@@ -672,6 +744,7 @@ export async function getOccupancyGroupReport(
   const { data: json } = await client.request<JsonOf<OccupancyGroupReportResultRow[]>>({
     url: uri`/employee/reports/occupancy-by-group`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -689,7 +762,8 @@ export async function getOccupancyUnitReport(
     unitTypes?: CareType[] | null,
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<OccupancyUnitReportResultRow[]> {
   const params = createUrlSearchParams(
     ['type', request.type.toString()],
@@ -702,6 +776,7 @@ export async function getOccupancyUnitReport(
   const { data: json } = await client.request<JsonOf<OccupancyUnitReportResultRow[]>>({
     url: uri`/employee/reports/occupancy-by-unit`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -711,10 +786,13 @@ export async function getOccupancyUnitReport(
 /**
 * Generated from fi.espoo.evaka.reports.PartnersInDifferentAddressReportController.getPartnersInDifferentAddressReport
 */
-export async function getPartnersInDifferentAddressReport(): Promise<PartnersInDifferentAddressReportRow[]> {
+export async function getPartnersInDifferentAddressReport(
+  headers?: AxiosHeaders
+): Promise<PartnersInDifferentAddressReportRow[]> {
   const { data: json } = await client.request<JsonOf<PartnersInDifferentAddressReportRow[]>>({
     url: uri`/employee/reports/partners-in-different-address`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -728,7 +806,8 @@ export async function getPlacementCountReport(
     examinationDate: LocalDate,
     providerTypes?: ProviderType[] | null,
     placementTypes?: PlacementType[] | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PlacementCountReportResult> {
   const params = createUrlSearchParams(
     ['examinationDate', request.examinationDate.formatIso()],
@@ -738,6 +817,7 @@ export async function getPlacementCountReport(
   const { data: json } = await client.request<JsonOf<PlacementCountReportResult>>({
     url: uri`/employee/reports/placement-count`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -751,7 +831,8 @@ export async function getPlacementGuaranteeReport(
   request: {
     date: LocalDate,
     unitId?: UUID | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PlacementGuaranteeReportRow[]> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()],
@@ -760,6 +841,7 @@ export async function getPlacementGuaranteeReport(
   const { data: json } = await client.request<JsonOf<PlacementGuaranteeReportRow[]>>({
     url: uri`/employee/reports/placement-guarantee`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonPlacementGuaranteeReportRow(e))
@@ -776,7 +858,8 @@ export async function getPlacementSketchingReport(
     applicationStatus?: ApplicationStatus[] | null,
     earliestApplicationSentDate?: LocalDate | null,
     latestApplicationSentDate?: LocalDate | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PlacementSketchingReportRow[]> {
   const params = createUrlSearchParams(
     ['placementStartDate', request.placementStartDate.formatIso()],
@@ -788,6 +871,7 @@ export async function getPlacementSketchingReport(
   const { data: json } = await client.request<JsonOf<PlacementSketchingReportRow[]>>({
     url: uri`/employee/reports/placement-sketching`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonPlacementSketchingReportRow(e))
@@ -803,7 +887,8 @@ export async function getPreschoolAbsenceReport(
     groupId?: UUID | null,
     termStart: LocalDate,
     termEnd: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ChildPreschoolAbsenceRow[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
@@ -814,6 +899,7 @@ export async function getPreschoolAbsenceReport(
   const { data: json } = await client.request<JsonOf<ChildPreschoolAbsenceRow[]>>({
     url: uri`/employee/reports/preschool-absence`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -823,10 +909,13 @@ export async function getPreschoolAbsenceReport(
 /**
 * Generated from fi.espoo.evaka.reports.PreschoolApplicationReport.getPreschoolApplicationReport
 */
-export async function getPreschoolApplicationReport(): Promise<PreschoolApplicationReportRow[]> {
+export async function getPreschoolApplicationReport(
+  headers?: AxiosHeaders
+): Promise<PreschoolApplicationReportRow[]> {
   const { data: json } = await client.request<JsonOf<PreschoolApplicationReportRow[]>>({
     url: uri`/employee/reports/preschool-application`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPreschoolApplicationReportRow(e))
 }
@@ -839,7 +928,8 @@ export async function getPresenceReport(
   request: {
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PresenceReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -848,6 +938,7 @@ export async function getPresenceReport(
   const { data: json } = await client.request<JsonOf<PresenceReportRow[]>>({
     url: uri`/employee/reports/presences`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonPresenceReportRow(e))
@@ -861,7 +952,8 @@ export async function getRawReport(
   request: {
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<RawReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -870,6 +962,7 @@ export async function getRawReport(
   const { data: json } = await client.request<JsonOf<RawReportRow[]>>({
     url: uri`/employee/reports/raw`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonRawReportRow(e))
@@ -879,10 +972,13 @@ export async function getRawReport(
 /**
 * Generated from fi.espoo.evaka.reports.ReportPermissions.getPermittedReports
 */
-export async function getPermittedReports(): Promise<Report[]> {
+export async function getPermittedReports(
+  headers?: AxiosHeaders
+): Promise<Report[]> {
   const { data: json } = await client.request<JsonOf<Report[]>>({
     url: uri`/employee/reports`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -894,7 +990,8 @@ export async function getPermittedReports(): Promise<Report[]> {
 export async function getServiceNeedReport(
   request: {
     date: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ServiceNeedReportRow[]> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()]
@@ -902,6 +999,7 @@ export async function getServiceNeedReport(
   const { data: json } = await client.request<JsonOf<ServiceNeedReportRow[]>>({
     url: uri`/employee/reports/service-need`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -916,7 +1014,8 @@ export async function getServiceVoucherReportForAllUnits(
     year: number,
     month: number,
     areaId?: UUID | null
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ServiceVoucherReport> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
@@ -926,6 +1025,7 @@ export async function getServiceVoucherReportForAllUnits(
   const { data: json } = await client.request<JsonOf<ServiceVoucherReport>>({
     url: uri`/employee/reports/service-voucher-value/units`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonServiceVoucherReport(json)
@@ -940,7 +1040,8 @@ export async function getServiceVoucherReportForUnit(
     unitId: UUID,
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<ServiceVoucherUnitReport> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
@@ -949,6 +1050,7 @@ export async function getServiceVoucherReportForUnit(
   const { data: json } = await client.request<JsonOf<ServiceVoucherUnitReport>>({
     url: uri`/employee/reports/service-voucher-value/units/${request.unitId}`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return deserializeJsonServiceVoucherUnitReport(json)
@@ -962,7 +1064,8 @@ export async function getSextetReport(
   request: {
     year: number,
     placementType: PlacementType
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<SextetReportRow[]> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
@@ -971,6 +1074,7 @@ export async function getSextetReport(
   const { data: json } = await client.request<JsonOf<SextetReportRow[]>>({
     url: uri`/employee/reports/sextet`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json
@@ -984,7 +1088,8 @@ export async function getStartingPlacementsReport(
   request: {
     year: number,
     month: number
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<StartingPlacementsRow[]> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
@@ -993,6 +1098,7 @@ export async function getStartingPlacementsReport(
   const { data: json } = await client.request<JsonOf<StartingPlacementsRow[]>>({
     url: uri`/employee/reports/starting-placements`.toString(),
     method: 'GET',
+    headers,
     params
   })
   return json.map(e => deserializeJsonStartingPlacementsRow(e))
@@ -1002,10 +1108,13 @@ export async function getStartingPlacementsReport(
 /**
 * Generated from fi.espoo.evaka.reports.TitaniaErrorReport.getTitaniaErrorsReport
 */
-export async function getTitaniaErrorsReport(): Promise<TitaniaErrorReportRow[]> {
+export async function getTitaniaErrorsReport(
+  headers?: AxiosHeaders
+): Promise<TitaniaErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<TitaniaErrorReportRow[]>>({
     url: uri`/employee/reports/titania-errors`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonTitaniaErrorReportRow(e))
 }
@@ -1014,10 +1123,13 @@ export async function getTitaniaErrorsReport(): Promise<TitaniaErrorReportRow[]>
 /**
 * Generated from fi.espoo.evaka.reports.UnitsReportController.getUnitsReport
 */
-export async function getUnitsReport(): Promise<UnitsReportRow[]> {
+export async function getUnitsReport(
+  headers?: AxiosHeaders
+): Promise<UnitsReportRow[]> {
   const { data: json } = await client.request<JsonOf<UnitsReportRow[]>>({
     url: uri`/employee/reports/units`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -1026,10 +1138,13 @@ export async function getUnitsReport(): Promise<UnitsReportRow[]> {
 /**
 * Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaChildErrorsReport
 */
-export async function getVardaChildErrorsReport(): Promise<VardaChildErrorReportRow[]> {
+export async function getVardaChildErrorsReport(
+  headers?: AxiosHeaders
+): Promise<VardaChildErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<VardaChildErrorReportRow[]>>({
     url: uri`/employee/reports/varda-child-errors`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonVardaChildErrorReportRow(e))
 }
@@ -1038,10 +1153,13 @@ export async function getVardaChildErrorsReport(): Promise<VardaChildErrorReport
 /**
 * Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaUnitErrorsReport
 */
-export async function getVardaUnitErrorsReport(): Promise<VardaUnitErrorReportRow[]> {
+export async function getVardaUnitErrorsReport(
+  headers?: AxiosHeaders
+): Promise<VardaUnitErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<VardaUnitErrorReportRow[]>>({
     url: uri`/employee/reports/varda-unit-errors`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonVardaUnitErrorReportRow(e))
 }
@@ -1054,7 +1172,8 @@ export async function sendPatuReport(
   request: {
     from: LocalDate,
     to: LocalDate
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
@@ -1063,6 +1182,7 @@ export async function sendPatuReport(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/patu-report`.toString(),
     method: 'POST',
+    headers,
     params
   })
   return json

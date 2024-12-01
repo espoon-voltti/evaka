@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AxiosHeaders } from 'axios'
 import { JsonOf } from 'lib-common/json'
 import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { UUID } from 'lib-common/types'
@@ -18,11 +19,13 @@ import { uri } from 'lib-common/uri'
 export async function getPedagogicalDocumentsForChild(
   request: {
     childId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<PedagogicalDocumentCitizen[]> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocumentCitizen[]>>({
     url: uri`/citizen/children/${request.childId}/pedagogical-documents`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json.map(e => deserializeJsonPedagogicalDocumentCitizen(e))
 }
@@ -31,10 +34,13 @@ export async function getPedagogicalDocumentsForChild(
 /**
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentControllerCitizen.getUnreadPedagogicalDocumentCount
 */
-export async function getUnreadPedagogicalDocumentCount(): Promise<Record<UUID, number>> {
+export async function getUnreadPedagogicalDocumentCount(
+  headers?: AxiosHeaders
+): Promise<Record<UUID, number>> {
   const { data: json } = await client.request<JsonOf<Record<UUID, number>>>({
     url: uri`/citizen/pedagogical-documents/unread-count`.toString(),
-    method: 'GET'
+    method: 'GET',
+    headers
   })
   return json
 }
@@ -46,11 +52,13 @@ export async function getUnreadPedagogicalDocumentCount(): Promise<Record<UUID, 
 export async function markPedagogicalDocumentRead(
   request: {
     documentId: UUID
-  }
+  },
+  headers?: AxiosHeaders
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/pedagogical-documents/${request.documentId}/mark-read`.toString(),
-    method: 'POST'
+    method: 'POST',
+    headers
   })
   return json
 }
