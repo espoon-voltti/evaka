@@ -64,10 +64,10 @@ export default React.memo(function EmployeePinCodePage() {
     setDirty(pin.length > 0)
   }
 
-  function savePinCode() {
-    return upsertPinCodeResult({ body: { pin } })
-      .then(() => setDirty(false))
-      .then(isPinLockedResult)
+  async function savePinCode() {
+    await upsertPinCodeResult({ body: { pin } })
+    setDirty(false)
+    return isPinLockedResult()
   }
 
   function getInputInfo(): InputInfo | undefined {
