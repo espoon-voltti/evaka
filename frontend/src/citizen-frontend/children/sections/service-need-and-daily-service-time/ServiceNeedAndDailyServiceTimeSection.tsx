@@ -134,6 +134,11 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
         renderResult(
           combine(serviceApplications, serviceApplicationCreationPossible),
           ([serviceApplications, serviceApplicationCreationPossible]) => {
+            const hasApplications = serviceApplications.length > 0
+
+            if (!hasApplications && !serviceApplicationCreationPossible)
+              return null
+
             return (
               <>
                 <TabletAndDesktop>
