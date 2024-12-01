@@ -211,7 +211,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestBody body: IncomeStatementBody,
-        @RequestParam draft: Boolean?,
+        @RequestParam draft: Boolean,
     ) {
         val id =
             db.connect { dbc ->
@@ -229,7 +229,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         now = clock.now(),
                         personId = user.id,
                         body = body,
-                        draft = draft ?: false,
+                        draft = draft,
                     )
                 }
             }
@@ -275,9 +275,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody,
-        @RequestParam draft: Boolean?,
+        @RequestParam draft: Boolean,
     ) {
-        if (draft == false && !validateIncomeStatementBody(body))
+        if (!draft && !validateIncomeStatementBody(body))
             throw BadRequest("Invalid income statement body")
 
         db.connect { dbc ->
@@ -296,7 +296,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     clock.now(),
                     incomeStatementId,
                     body,
-                    draft ?: false,
+                    draft,
                 )
 
                 val parent = AttachmentParent.IncomeStatement(incomeStatementId)
@@ -319,9 +319,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody,
-        @RequestParam draft: Boolean?,
+        @RequestParam draft: Boolean,
     ) {
-        if (draft == false && !validateIncomeStatementBody(body))
+        if (!draft && !validateIncomeStatementBody(body))
             throw BadRequest("Invalid child income statement body")
 
         db.connect { dbc ->
@@ -340,7 +340,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     clock.now(),
                     incomeStatementId,
                     body,
-                    draft ?: false,
+                    draft,
                 )
 
                 val parent = AttachmentParent.IncomeStatement(incomeStatementId)

@@ -47,12 +47,12 @@ export async function createChildIncomeStatement(
 */
 export async function createIncomeStatement(
   request: {
-    draft?: boolean | null,
+    draft: boolean,
     body: IncomeStatementBody
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
-    ['draft', request.draft?.toString()]
+    ['draft', request.draft.toString()]
   )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements`.toString(),
@@ -218,12 +218,12 @@ export async function updateChildIncomeStatement(
   request: {
     childId: UUID,
     incomeStatementId: UUID,
-    draft?: boolean | null,
+    draft: boolean,
     body: IncomeStatementBody
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
-    ['draft', request.draft?.toString()]
+    ['draft', request.draft.toString()]
   )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/child/${request.childId}/${request.incomeStatementId}`.toString(),
@@ -241,12 +241,12 @@ export async function updateChildIncomeStatement(
 export async function updateIncomeStatement(
   request: {
     incomeStatementId: UUID,
-    draft?: boolean | null,
+    draft: boolean,
     body: IncomeStatementBody
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
-    ['draft', request.draft?.toString()]
+    ['draft', request.draft.toString()]
   )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/income-statements/${request.incomeStatementId}`.toString(),
