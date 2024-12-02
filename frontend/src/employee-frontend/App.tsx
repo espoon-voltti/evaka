@@ -5,7 +5,7 @@
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useContext } from 'react'
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
+import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { Notifications } from 'lib-components/Notifications'

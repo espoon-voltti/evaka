@@ -11,7 +11,7 @@ import {
   Route,
   Routes,
   useNavigate
-} from 'react-router-dom'
+} from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
@@ -197,7 +197,7 @@ function GroupRouter({ unitId }: { unitId: UUID }) {
         (group) => group.id === unitOrGroup.id
       )
       if (!validGroupId) {
-        navigate(
+        void navigate(
           routes.childAttendances(toUnitOrGroup(unitOrGroup.unitId)).value
         )
       }

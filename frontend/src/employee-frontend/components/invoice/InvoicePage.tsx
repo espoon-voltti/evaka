@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { combine } from 'lib-common/api'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
@@ -50,7 +50,7 @@ export const SettingsPage = React.memo(function SettingsPage({
                 unitId={unitId}
                 onBack={
                   user && user.unitIds.length > 1
-                    ? () => navigate('/units')
+                    ? () => void navigate('/units')
                     : undefined
                 }
               />

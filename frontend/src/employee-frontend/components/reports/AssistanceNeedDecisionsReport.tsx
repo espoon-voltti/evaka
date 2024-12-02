@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'

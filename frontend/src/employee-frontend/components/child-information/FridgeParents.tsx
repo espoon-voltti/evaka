@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'

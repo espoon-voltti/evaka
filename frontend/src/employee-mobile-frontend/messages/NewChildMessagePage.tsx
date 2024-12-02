@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -68,7 +68,7 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
   }, [child.id, messageReceivers])
 
   const onHide = useCallback(() => {
-    navigate(-1)
+    void navigate(-1)
   }, [navigate])
 
   return renderResult(receivers, (receivers) =>

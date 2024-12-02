@@ -9,7 +9,7 @@ import ReactCrop, {
   Crop,
   makeAspectCrop
 } from 'react-image-crop'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { useMutationResult } from 'lib-common/query'
@@ -57,7 +57,7 @@ export default React.memo(function ImageEditor({
 
     const popStateHandler = (e: PopStateEvent) => {
       e.preventDefault()
-      navigate(1)
+      void navigate(1)
       onReturn()
     }
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
@@ -43,7 +43,7 @@ export default React.memo(function PreschoolTermsSection() {
       if (term.finnishPreschool.start.isBefore(LocalDate.todayInSystemTz())) {
         setTermToEdit(term.id)
       } else {
-        navigate(`/holiday-periods/preschool-term/${term.id}`)
+        void navigate(`/holiday-periods/preschool-term/${term.id}`)
       }
     },
     [setTermToEdit, navigate]
@@ -54,12 +54,12 @@ export default React.memo(function PreschoolTermsSection() {
   }, [setTermToEdit])
 
   const navigateToNewTerm = useCallback(() => {
-    navigate('/holiday-periods/preschool-term/new')
+    void navigate('/holiday-periods/preschool-term/new')
   }, [navigate])
 
   const closeModalAndNavigateToEditTerm = useCallback(() => {
     if (termToEdit) {
-      navigate(`/holiday-periods/preschool-term/${termToEdit}`)
+      void navigate(`/holiday-periods/preschool-term/${termToEdit}`)
     }
   }, [navigate, termToEdit])
 

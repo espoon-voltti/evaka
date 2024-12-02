@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -369,7 +369,7 @@ export default React.memo(function AttendanceChildPage({
             action: () => {
               void returnToComing({ unitId, childId }).finally(() => {
                 setUiMode('default')
-                navigate(-1)
+                void navigate(-1)
               })
             }
           }}

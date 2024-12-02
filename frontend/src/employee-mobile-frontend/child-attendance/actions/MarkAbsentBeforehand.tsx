@@ -4,7 +4,7 @@
 
 import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
@@ -110,7 +110,7 @@ export default React.memo(function MarkAbsentBeforehand({
       selectedAbsenceType !== 'NO_ABSENCE'
     ) {
       await postAbsence(selectedAbsenceType)
-      navigate(-1)
+      void navigate(-1)
     }
   }, [navigate, postAbsence, selectedAbsenceType])
 
@@ -134,7 +134,7 @@ export default React.memo(function MarkAbsentBeforehand({
   }, [])
 
   const goBack = useCallback(() => {
-    navigate(-1)
+    void navigate(-1)
   }, [navigate])
 
   return (

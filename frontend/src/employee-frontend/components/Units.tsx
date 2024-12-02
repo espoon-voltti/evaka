@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { careTypes, Daycare } from 'lib-common/generated/api-types/daycare'
@@ -188,7 +188,7 @@ export default React.memo(function Units() {
               <LegacyButton
                 data-qa="create-new-unit"
                 className="units-wrapper-create"
-                onClick={() => navigate('/units/new')}
+                onClick={() => void navigate('/units/new')}
                 text={i18n.unit.create}
               />
             </div>

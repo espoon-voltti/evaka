@@ -6,7 +6,7 @@ import concat from 'lodash/concat'
 import isEmpty from 'lodash/isEmpty'
 import omit from 'lodash/omit'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
@@ -138,9 +138,12 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       formState.status !== 'NEEDS_WORK' &&
       (formState.status !== 'DRAFT' || formState.sentForDecision !== null)
     ) {
-      navigate(`/child-information/${childId}/assistance-need-decision/${id}`, {
-        replace: true
-      })
+      void navigate(
+        `/child-information/${childId}/assistance-need-decision/${id}`,
+        {
+          replace: true
+        }
+      )
     }
   }, [formState, childId, id, navigate])
 

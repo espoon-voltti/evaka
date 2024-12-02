@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import DateRange from 'lib-common/date-range'
 import {

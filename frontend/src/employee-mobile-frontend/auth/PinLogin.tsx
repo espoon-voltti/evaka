@@ -10,7 +10,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import concat from 'lodash/concat'
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'

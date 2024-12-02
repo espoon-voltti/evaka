@@ -4,7 +4,7 @@
 
 import { shade } from 'polished'
 import React, { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'

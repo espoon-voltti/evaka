@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { wrapResult } from 'lib-common/api'
 import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'

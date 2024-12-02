@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { combine, Success, wrapResult } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -70,7 +70,7 @@ export default React.memo(function StaffPage({
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      navigate(routes.staff(toUnitOrGroup(unitId, group?.id)).value)
+      void navigate(routes.staff(toUnitOrGroup(unitId, group?.id)).value)
     },
     [navigate, unitId]
   )

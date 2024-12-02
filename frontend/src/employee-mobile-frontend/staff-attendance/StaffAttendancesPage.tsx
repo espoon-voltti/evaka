@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -53,7 +53,7 @@ export default React.memo(function StaffAttendancesPage({
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      navigate(
+      void navigate(
         routes.staffAttendances(toUnitOrGroup(unitId, group?.id), tab).value
       )
     },

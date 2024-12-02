@@ -10,7 +10,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -96,11 +96,11 @@ export default function MessagesPage({
   }, [unitOrGroup])
 
   const onSelectThread = (threadId: UUID) => {
-    navigate(routes.receivedThread(unitOrGroup, threadId).value)
+    void navigate(routes.receivedThread(unitOrGroup, threadId).value)
   }
 
   const onNewMessageClick = () => {
-    navigate(routes.newMessage(unitOrGroup).value)
+    void navigate(routes.newMessage(unitOrGroup).value)
   }
 
   const selectSentMessage = useCallback(
@@ -116,7 +116,7 @@ export default function MessagesPage({
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       if (group)
-        navigate(routes.messages(toUnitOrGroup(unitId, group.id)).value)
+        void navigate(routes.messages(toUnitOrGroup(unitId, group.id)).value)
     },
     [navigate, unitId]
   )

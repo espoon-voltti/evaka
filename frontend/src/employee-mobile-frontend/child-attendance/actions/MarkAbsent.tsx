@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -101,7 +101,7 @@ export default React.memo(function MarkAbsent({
                       })
                     }
                     onSuccess={() => {
-                      navigate(-1)
+                      void navigate(-1)
                     }}
                     data-qa="mark-absent-btn"
                   />

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { combine, Failure, Result, Success } from 'lib-common/api'
 import { ClubTerm } from 'lib-common/generated/api-types/daycare'
@@ -23,7 +23,7 @@ export default React.memo(function ClubTermPeriodEditor() {
   const clubTerms = useQueryResult(clubTermsQuery())
 
   const navigateToList = useCallback(
-    () => navigate('/holiday-periods'),
+    () => void navigate('/holiday-periods'),
     [navigate]
   )
 

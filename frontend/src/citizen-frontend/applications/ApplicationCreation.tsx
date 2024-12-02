@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
@@ -177,7 +177,7 @@ export default React.memo(function ApplicationCreation() {
               />
               <LegacyButton
                 text={t.common.cancel}
-                onClick={() => navigate('/applications')}
+                onClick={() => void navigate('/applications')}
               />
             </ButtonContainer>
           </ContentArea>

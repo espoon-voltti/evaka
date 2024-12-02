@@ -7,7 +7,7 @@ import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 import mapValues from 'lodash/mapValues'
 import range from 'lodash/range'
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import styled, { css } from 'styled-components'
 
 import { combine } from 'lib-common/api'

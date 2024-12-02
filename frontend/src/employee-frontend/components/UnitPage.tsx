@@ -15,7 +15,7 @@ import {
   Routes,
   useNavigate,
   useSearchParams
-} from 'react-router-dom'
+} from 'react-router'
 import styled from 'styled-components'
 
 import { DaycareResponse } from 'lib-common/generated/api-types/daycare'

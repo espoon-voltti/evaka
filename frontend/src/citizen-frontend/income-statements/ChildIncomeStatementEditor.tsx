@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { combine, Loading, Result } from 'lib-common/api'
 import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
@@ -89,7 +89,7 @@ export default React.memo(function ChildIncomeStatementEditor() {
   const [showFormErrors, setShowFormErrors] = useState(false)
 
   const navigateToList = useCallback(() => {
-    navigate('/income')
+    void navigate('/income')
   }, [navigate])
 
   const form = useRef<IncomeStatementFormAPI | null>(null)

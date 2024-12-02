@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
@@ -45,7 +45,7 @@ export default React.memo(function ChildIncomeStatementView() {
   )
 
   const handleEdit = useCallback(() => {
-    navigate(`/child-income/${childId}/${incomeStatementId}/edit`)
+    void navigate(`/child-income/${childId}/${incomeStatementId}/edit`)
   }, [navigate, childId, incomeStatementId])
 
   return renderResult(result, (incomeStatement) => (

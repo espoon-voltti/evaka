@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import { isLoading } from 'lib-common/api'
@@ -83,7 +83,7 @@ export default React.memo(function CalendarNotifications({
             incomeExpirationDate.format()
           ),
           onClick: () => {
-            navigate('/income')
+            void navigate('/income')
             removeNotification('expiring-income-cta')
           },
           dataQa: 'expiring-income-cta'

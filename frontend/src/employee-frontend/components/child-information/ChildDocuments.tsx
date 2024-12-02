@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -132,7 +132,7 @@ const CreationModal = React.memo(function CreationModal({
       }
     })
     if (res.isSuccess) {
-      navigate(`/child-documents/${res.value}`)
+      void navigate(`/child-documents/${res.value}`)
     }
     return res
   }

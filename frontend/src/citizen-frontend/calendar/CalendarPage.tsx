@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { focusElementOnNextFrame } from 'citizen-frontend/utils/focus'
@@ -354,13 +354,13 @@ export function useCalendarModalState(): UseModalStateResult {
   const openModal = useCallback(
     (modal: URLModalState) => {
       setNonUrlModalState(undefined)
-      navigate(`/calendar?${buildQueryString(modal)}`)
+      void navigate(`/calendar?${buildQueryString(modal)}`)
     },
     [navigate]
   )
   const closeModal = useCallback(() => {
     setNonUrlModalState(undefined)
-    navigate('/calendar')
+    void navigate('/calendar')
   }, [navigate])
 
   const openDayModal = useCallback(

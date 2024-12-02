@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, ReactNode, useContext, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'

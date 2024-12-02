@@ -5,7 +5,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -249,7 +249,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
       decision.status === 'NEEDS_WORK' ||
       (decision.status === 'DRAFT' && !decision.sentForDecision)
     if (!editable)
-      navigate(
+      void navigate(
         `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}`
       )
   }, [decision, navigate])
@@ -981,7 +981,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
             disabled={!saved || (displayValidation && !isValid)}
             onClick={() => {
               if (isValid) {
-                navigate(
+                void navigate(
                   `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}`
                 )
               } else {

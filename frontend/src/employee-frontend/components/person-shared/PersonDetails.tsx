@@ -10,7 +10,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { API_URL } from 'employee-frontend/api/client'
@@ -216,7 +216,7 @@ export default React.memo(function PersonDetails({
     void duplicatePersonResult({ personId: person.id }).then((response) => {
       setDuplicateOngoing(false)
       if (response.isSuccess) {
-        navigate(`/child-information/${response.value}`)
+        void navigate(`/child-information/${response.value}`)
       }
     })
   }

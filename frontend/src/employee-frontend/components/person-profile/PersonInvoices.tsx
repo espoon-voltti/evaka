@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { PersonContext } from 'employee-frontend/state/person'
 import { UserContext } from 'employee-frontend/state/user'

@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
@@ -48,7 +48,7 @@ export default React.memo(function DiscussionReservationSurveysPage() {
 
   const navigateToSurvey = useCallback(
     (surveyId: string) => {
-      navigate(
+      void navigate(
         `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${surveyId}`
       )
     },
@@ -68,7 +68,7 @@ export default React.memo(function DiscussionReservationSurveysPage() {
       <ReturnButton
         label={i18n.common.goBack}
         onClick={() => {
-          navigate(`/units/${unitId}/calendar/?group=${groupId}`)
+          void navigate(`/units/${unitId}/calendar/?group=${groupId}`)
         }}
       />
       <ContentArea opaque>

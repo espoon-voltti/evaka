@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -49,7 +49,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
     [deleteHolidayPeriod, periodToDelete]
   )
   const navigateToNewHolidayPeriod = useCallback(() => {
-    navigate('/holiday-periods/new')
+    void navigate('/holiday-periods/new')
   }, [navigate])
 
   const [questionnaireToDelete, setQuestionnaireToDelete] = useState<UUID>()
@@ -64,7 +64,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
     [deleteQuestionnaire, questionnaireToDelete]
   )
   const navigateToNewQuestionnaire = useCallback(() => {
-    navigate('/holiday-periods/questionnaire/new')
+    void navigate('/holiday-periods/questionnaire/new')
   }, [navigate])
 
   return (

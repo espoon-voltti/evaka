@@ -4,7 +4,7 @@
 
 import isEqual from 'lodash/isEqual'
 import React, { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'

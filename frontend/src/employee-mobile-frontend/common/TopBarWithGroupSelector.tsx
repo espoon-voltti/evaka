@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { UserContext } from 'employee-mobile-frontend/auth/state'
 import { combine } from 'lib-common/api'
@@ -48,7 +48,7 @@ export default React.memo(function TopBarWithGroupSelector({
           const title = unitInfo.name
           const onBack =
             user && user.unitIds.length > 1
-              ? () => navigate('/units')
+              ? () => void navigate('/units')
               : undefined
           return { title, onBack }
         })

@@ -5,7 +5,7 @@
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
 import {
@@ -189,7 +189,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faExclamation,
           resolve: {
             action: () => {
-              navigate('/applications')
+              void navigate('/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.draftPolicyInfo.ok
@@ -221,14 +221,14 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faCheck,
           resolve: {
             action: () => {
-              navigate('/applications')
+              void navigate('/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.sentInfo.ok
           },
           'data-qa': 'info-message-application-sent'
         })
-        navigate('/applications')
+        void navigate('/applications')
       })
       .catch(() => {
         setErrorMessage({
@@ -253,14 +253,14 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faCheck,
           resolve: {
             action: () => {
-              navigate('/applications')
+              void navigate('/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.updateInfo.ok
           },
           'data-qa': 'info-message-application-sent'
         })
-        navigate('/applications')
+        void navigate('/applications')
       })
       .catch(() => {
         setErrorMessage({

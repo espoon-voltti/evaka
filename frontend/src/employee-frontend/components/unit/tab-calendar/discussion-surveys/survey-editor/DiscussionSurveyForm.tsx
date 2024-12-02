@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
@@ -102,12 +102,12 @@ export default React.memo(function DiscussionSurveyForm({
             action: () => {
               setCancelConfirmModalVisible(false)
               if (eventData) {
-                navigate(
+                void navigate(
                   `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}`,
                   { replace: true }
                 )
               } else {
-                navigate(
+                void navigate(
                   `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
                   { replace: true }
                 )

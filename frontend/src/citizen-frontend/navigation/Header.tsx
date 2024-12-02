@@ -4,7 +4,7 @@
 
 import sumBy from 'lodash/sumBy'
 import React from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router'
 import styled from 'styled-components'
 
 import { useQuery } from 'lib-common/query'

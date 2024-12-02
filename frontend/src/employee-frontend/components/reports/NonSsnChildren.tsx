@@ -5,7 +5,7 @@
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { NonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'

@@ -5,7 +5,7 @@
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'

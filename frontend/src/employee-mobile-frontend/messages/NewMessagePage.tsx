@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router'
 
 import {
   toUnitOrGroup,
@@ -31,7 +31,7 @@ export default function NewMessagePage({
   const navigate = useNavigate()
 
   const onClose = () => {
-    navigate(routes.messages(unitOrGroup).value)
+    void navigate(routes.messages(unitOrGroup).value)
   }
 
   if (unitOrGroup.type === 'unit') {

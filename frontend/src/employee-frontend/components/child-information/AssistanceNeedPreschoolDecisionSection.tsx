@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -72,7 +72,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
             onClick={async () => {
               const res = await createDecision({ childId })
               if (res.isSuccess) {
-                navigate(
+                void navigate(
                   `/child-information/${childId}/assistance-need-preschool-decisions/${res.value.id}/edit`
                 )
               }

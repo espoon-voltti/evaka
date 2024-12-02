@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
 import { useQueryResult } from 'lib-common/query'
@@ -60,7 +60,7 @@ export default React.memo(function DecisionResponseList() {
     if (warnAboutMissingResponse) {
       setDisplayDecisionWithNoResponseWarning(true)
     } else {
-      navigate('/decisions')
+      void navigate('/decisions')
     }
   }
 
@@ -127,7 +127,7 @@ export default React.memo(function DecisionResponseList() {
                   t.decisions.applicationDecisions.warnings
                     .decisionWithNoResponseWarning.resolveLabel,
                 action: () => {
-                  navigate('/decisions')
+                  void navigate('/decisions')
                 }
               }}
               reject={{

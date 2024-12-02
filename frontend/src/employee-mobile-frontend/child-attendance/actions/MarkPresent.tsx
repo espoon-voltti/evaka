@@ -4,7 +4,7 @@
 
 import { isAfter } from 'date-fns'
 import React, { useMemo, useState } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -148,7 +148,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
                   : Promise.reject()
               }
               onSuccess={() => {
-                navigate(multiselect ? -1 : -2)
+                void navigate(multiselect ? -1 : -2)
               }}
               data-qa="mark-present-btn"
             />

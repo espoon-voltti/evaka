@@ -11,7 +11,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 
 import { Failure, Loading, Result, wrapResult } from 'lib-common/api'
 import {

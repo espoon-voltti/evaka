@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { swapElements } from 'lib-common/array'
@@ -152,7 +152,7 @@ export default React.memo(function TemplateContentEditor({
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
           <LegacyButton
             text={i18n.common.goBack}
-            onClick={() => navigate('/document-templates')}
+            onClick={() => void navigate('/document-templates')}
           />
 
           {featureFlags.forceUnpublishDocumentTemplate &&
@@ -197,7 +197,7 @@ export default React.memo(function TemplateContentEditor({
                       : res
                   )
                 }
-                onSuccess={() => navigate('/document-templates')}
+                onSuccess={() => void navigate('/document-templates')}
               />
             </FixedSpaceRow>
           )}

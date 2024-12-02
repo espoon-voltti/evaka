@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
@@ -83,7 +83,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       response.hasMissingFields &&
       canBeEdited(response.decision)
     ) {
-      navigate(
+      void navigate(
         `/child-information/${childId}/assistance-need-decision/${id}/edit`,
         {
           replace: true

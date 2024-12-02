@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'

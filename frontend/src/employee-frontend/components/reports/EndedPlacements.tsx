@@ -5,7 +5,7 @@
 import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'

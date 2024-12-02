@@ -10,7 +10,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router'
 import styled, { css } from 'styled-components'
 
 import { routes } from 'employee-mobile-frontend/App'

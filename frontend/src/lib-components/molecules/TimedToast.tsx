@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
 import { useStableCallback } from 'lib-common/utils/useStableCallback'

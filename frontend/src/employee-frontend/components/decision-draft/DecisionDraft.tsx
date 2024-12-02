@@ -11,7 +11,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { NavigateFunction, useNavigate } from 'react-router-dom'
+import { NavigateFunction, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
@@ -156,7 +156,7 @@ const decisionTypesRequiringPreschoolDecisionName: DecisionType[] = [
 ]
 
 function redirectToMainPage(navigate: NavigateFunction) {
-  navigate('/applications')
+  void navigate('/applications')
 }
 
 export default React.memo(function Decision() {
