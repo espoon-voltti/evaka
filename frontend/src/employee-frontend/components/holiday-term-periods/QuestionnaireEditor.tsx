@@ -24,7 +24,7 @@ export default React.memo(function QuestionnaireEditor() {
   const navigate = useNavigate()
 
   const navigateToList = useCallback(
-    () => navigate('/holiday-periods'),
+    () => void navigate('/holiday-periods'),
     [navigate]
   )
 

@@ -31,7 +31,7 @@ export default function NewMessagePage({
   const navigate = useNavigate()
 
   const onClose = () => {
-    navigate(routes.messages(unitOrGroup).value)
+    void navigate(routes.messages(unitOrGroup).value)
   }
 
   if (unitOrGroup.type === 'unit') {

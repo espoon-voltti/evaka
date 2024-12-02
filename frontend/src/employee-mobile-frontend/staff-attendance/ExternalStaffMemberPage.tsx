@@ -128,7 +128,7 @@ export default React.memo(function ExternalStaffMemberPage({
                 : cancelMutation
             }
             onSuccess={() => {
-              navigate(-1)
+              void navigate(-1)
             }}
           />
         </FixedSpaceColumn>

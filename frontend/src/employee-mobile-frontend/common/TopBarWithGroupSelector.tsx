@@ -48,7 +48,7 @@ export default React.memo(function TopBarWithGroupSelector({
           const title = unitInfo.name
           const onBack =
             user && user.unitIds.length > 1
-              ? () => navigate('/units')
+              ? () => void navigate('/units')
               : undefined
           return { title, onBack }
         })

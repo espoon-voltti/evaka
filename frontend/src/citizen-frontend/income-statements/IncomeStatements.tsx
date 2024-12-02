@@ -178,7 +178,7 @@ export default React.memo(function IncomeStatements() {
             <HeadingContainer>
               <H2>{t.income.table.title}</H2>
               <ResponsiveAddButton
-                onClick={() => navigate('/income/new/edit')}
+                onClick={() => void navigate('/income/new/edit')}
                 text={t.income.addNew}
                 data-qa="new-income-statement-btn"
               />

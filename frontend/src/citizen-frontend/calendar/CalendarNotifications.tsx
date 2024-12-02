@@ -83,7 +83,7 @@ export default React.memo(function CalendarNotifications({
             incomeExpirationDate.format()
           ),
           onClick: () => {
-            navigate('/income')
+            void navigate('/income')
             removeNotification('expiring-income-cta')
           },
           dataQa: 'expiring-income-cta'

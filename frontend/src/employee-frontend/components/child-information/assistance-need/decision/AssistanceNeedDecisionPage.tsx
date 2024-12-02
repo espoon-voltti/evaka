@@ -83,7 +83,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       response.hasMissingFields &&
       canBeEdited(response.decision)
     ) {
-      navigate(
+      void navigate(
         `/child-information/${childId}/assistance-need-decision/${id}/edit`,
         {
           replace: true

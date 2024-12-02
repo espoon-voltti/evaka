@@ -72,7 +72,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
             onClick={async () => {
               const res = await createDecision({ childId })
               if (res.isSuccess) {
-                navigate(
+                void navigate(
                   `/child-information/${childId}/assistance-need-preschool-decisions/${res.value.id}/edit`
                 )
               }

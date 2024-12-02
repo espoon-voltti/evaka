@@ -23,7 +23,7 @@ export default React.memo(function PreschoolTermPeriodEditor() {
   const preschoolTerms = useQueryResult(preschoolTermsQuery())
 
   const navigateToList = useCallback(
-    () => navigate('/holiday-periods'),
+    () => void navigate('/holiday-periods'),
     [navigate]
   )
 

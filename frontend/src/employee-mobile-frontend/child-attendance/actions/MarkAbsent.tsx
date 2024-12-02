@@ -101,7 +101,7 @@ export default React.memo(function MarkAbsent({
                       })
                     }
                     onSuccess={() => {
-                      navigate(-1)
+                      void navigate(-1)
                     }}
                     data-qa="mark-absent-btn"
                   />

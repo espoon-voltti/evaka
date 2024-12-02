@@ -369,7 +369,7 @@ export default React.memo(function AttendanceChildPage({
             action: () => {
               void returnToComing({ unitId, childId }).finally(() => {
                 setUiMode('default')
-                navigate(-1)
+                void navigate(-1)
               })
             }
           }}

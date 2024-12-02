@@ -50,7 +50,7 @@ export const SettingsPage = React.memo(function SettingsPage({
                 unitId={unitId}
                 onBack={
                   user && user.unitIds.length > 1
-                    ? () => navigate('/units')
+                    ? () => void navigate('/units')
                     : undefined
                 }
               />

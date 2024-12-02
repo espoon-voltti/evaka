@@ -249,7 +249,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
       decision.status === 'NEEDS_WORK' ||
       (decision.status === 'DRAFT' && !decision.sentForDecision)
     if (!editable)
-      navigate(
+      void navigate(
         `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}`
       )
   }, [decision, navigate])
@@ -981,7 +981,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
             disabled={!saved || (displayValidation && !isValid)}
             onClick={() => {
               if (isValid) {
-                navigate(
+                void navigate(
                   `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}`
                 )
               } else {

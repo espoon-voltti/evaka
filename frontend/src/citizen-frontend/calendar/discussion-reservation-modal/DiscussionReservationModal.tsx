@@ -143,7 +143,7 @@ export default React.memo(function DiscussionReservationModal({
 
   const returnToSurveyModal = useCallback(() => {
     close()
-    navigate(`/calendar?modal=discussions`)
+    void navigate(`/calendar?modal=discussions`)
   }, [navigate, close])
 
   return (

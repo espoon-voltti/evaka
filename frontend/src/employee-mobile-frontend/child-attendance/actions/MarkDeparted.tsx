@@ -405,7 +405,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                 })
               }}
               onSuccess={() => {
-                navigate(multiselect ? -1 : -2)
+                void navigate(multiselect ? -1 : -2)
               }}
               data-qa="mark-departed-btn"
             />

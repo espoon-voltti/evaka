@@ -102,12 +102,12 @@ export default React.memo(function DiscussionSurveyForm({
             action: () => {
               setCancelConfirmModalVisible(false)
               if (eventData) {
-                navigate(
+                void navigate(
                   `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}`,
                   { replace: true }
                 )
               } else {
-                navigate(
+                void navigate(
                   `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
                   { replace: true }
                 )

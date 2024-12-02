@@ -60,7 +60,7 @@ export default React.memo(function DecisionResponseList() {
     if (warnAboutMissingResponse) {
       setDisplayDecisionWithNoResponseWarning(true)
     } else {
-      navigate('/decisions')
+      void navigate('/decisions')
     }
   }
 
@@ -127,7 +127,7 @@ export default React.memo(function DecisionResponseList() {
                   t.decisions.applicationDecisions.warnings
                     .decisionWithNoResponseWarning.resolveLabel,
                 action: () => {
-                  navigate('/decisions')
+                  void navigate('/decisions')
                 }
               }}
               reject={{

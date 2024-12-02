@@ -354,13 +354,13 @@ export function useCalendarModalState(): UseModalStateResult {
   const openModal = useCallback(
     (modal: URLModalState) => {
       setNonUrlModalState(undefined)
-      navigate(`/calendar?${buildQueryString(modal)}`)
+      void navigate(`/calendar?${buildQueryString(modal)}`)
     },
     [navigate]
   )
   const closeModal = useCallback(() => {
     setNonUrlModalState(undefined)
-    navigate('/calendar')
+    void navigate('/calendar')
   }, [navigate])
 
   const openDayModal = useCallback(

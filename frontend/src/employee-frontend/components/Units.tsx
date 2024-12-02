@@ -188,7 +188,7 @@ export default React.memo(function Units() {
               <LegacyButton
                 data-qa="create-new-unit"
                 className="units-wrapper-create"
-                onClick={() => navigate('/units/new')}
+                onClick={() => void navigate('/units/new')}
                 text={i18n.unit.create}
               />
             </div>

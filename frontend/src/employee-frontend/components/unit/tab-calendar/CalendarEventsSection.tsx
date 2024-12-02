@@ -240,7 +240,7 @@ export default React.memo(function CalendarEventsSection({
     const event = events.getOrElse([]).find(({ id }) => id === calendarEventId)
 
     if (!event && events.isSuccess) {
-      navigate(`/units/${unitId}/calendar`)
+      void navigate(`/units/${unitId}/calendar`)
       return undefined
     }
 
@@ -278,7 +278,7 @@ export default React.memo(function CalendarEventsSection({
             if (shouldRefresh) {
               void reloadEvents()
             }
-            navigate(`/units/${unitId}/calendar`)
+            void navigate(`/units/${unitId}/calendar`)
           }}
         />
       )}
@@ -306,7 +306,7 @@ export default React.memo(function CalendarEventsSection({
             groupId={groupId}
             placements={groups.placements}
             onClose={() => {
-              navigate(`/units/${unitId}/calendar`)
+              void navigate(`/units/${unitId}/calendar`)
             }}
           />
         ) : null

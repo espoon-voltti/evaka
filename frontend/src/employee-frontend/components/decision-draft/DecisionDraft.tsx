@@ -156,7 +156,7 @@ const decisionTypesRequiringPreschoolDecisionName: DecisionType[] = [
 ]
 
 function redirectToMainPage(navigate: NavigateFunction) {
-  navigate('/applications')
+  void navigate('/applications')
 }
 
 export default React.memo(function Decision() {

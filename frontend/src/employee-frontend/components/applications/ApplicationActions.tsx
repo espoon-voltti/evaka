@@ -146,7 +146,7 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          navigate(`/applications/${application.id}/placement`)
+          void navigate(`/applications/${application.id}/placement`)
         },
         primaryStatus: 'WAITING_PLACEMENT'
       },
@@ -172,7 +172,7 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          navigate(`/applications/${application.id}/decisions`)
+          void navigate(`/applications/${application.id}/decisions`)
         },
         primaryStatus: 'WAITING_DECISION'
       },

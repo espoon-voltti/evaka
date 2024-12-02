@@ -46,7 +46,7 @@ export default React.memo(function IncomeStatementView() {
   const result = useQueryResult(incomeStatementQuery({ incomeStatementId }))
 
   const handleEdit = useCallback(() => {
-    navigate('edit')
+    void navigate('edit')
   }, [navigate])
 
   return renderResult(result, (incomeStatement) => (

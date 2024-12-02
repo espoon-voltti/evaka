@@ -177,7 +177,7 @@ export default React.memo(function ApplicationCreation() {
               />
               <LegacyButton
                 text={t.common.cancel}
-                onClick={() => navigate('/applications')}
+                onClick={() => void navigate('/applications')}
               />
             </ButtonContainer>
           </ContentArea>

@@ -110,7 +110,7 @@ export default React.memo(function MarkAbsentBeforehand({
       selectedAbsenceType !== 'NO_ABSENCE'
     ) {
       await postAbsence(selectedAbsenceType)
-      navigate(-1)
+      void navigate(-1)
     }
   }, [navigate, postAbsence, selectedAbsenceType])
 
@@ -134,7 +134,7 @@ export default React.memo(function MarkAbsentBeforehand({
   }, [])
 
   const goBack = useCallback(() => {
-    navigate(-1)
+    void navigate(-1)
   }, [navigate])
 
   return (

@@ -73,9 +73,9 @@ export default React.memo(function MessagesPage() {
   const changeEditorVisibility = useCallback(
     (setEditorVisible: boolean) => {
       if (!setEditorVisible) {
-        navigate('/messages')
+        void navigate('/messages')
       } else {
-        navigate(`/messages?editorVisible=true`)
+        void navigate(`/messages?editorVisible=true`)
       }
     },
     [navigate]
@@ -91,10 +91,10 @@ export default React.memo(function MessagesPage() {
   const selectThread = useCallback(
     (threadId: UUID | undefined) => {
       if (!threadId) {
-        navigate('/messages')
+        void navigate('/messages')
       } else {
         if (params.threadId !== threadId) {
-          navigate(`/messages/${threadId}`)
+          void navigate(`/messages/${threadId}`)
         } else {
           threadView.current?.focusThreadTitle()
         }

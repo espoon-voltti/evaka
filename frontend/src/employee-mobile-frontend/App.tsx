@@ -197,7 +197,7 @@ function GroupRouter({ unitId }: { unitId: UUID }) {
         (group) => group.id === unitOrGroup.id
       )
       if (!validGroupId) {
-        navigate(
+        void navigate(
           routes.childAttendances(toUnitOrGroup(unitOrGroup.unitId)).value
         )
       }

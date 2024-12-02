@@ -157,7 +157,7 @@ export default React.memo(function PlacementDraft() {
   }
 
   const redirectToMainPage = useCallback(
-    () => navigate('/applications'),
+    () => void navigate('/applications'),
     [navigate]
   )
 

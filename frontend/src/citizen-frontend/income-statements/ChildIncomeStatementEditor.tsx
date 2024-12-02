@@ -89,7 +89,7 @@ export default React.memo(function ChildIncomeStatementEditor() {
   const [showFormErrors, setShowFormErrors] = useState(false)
 
   const navigateToList = useCallback(() => {
-    navigate('/income')
+    void navigate('/income')
   }, [navigate])
 
   const form = useRef<IncomeStatementFormAPI | null>(null)

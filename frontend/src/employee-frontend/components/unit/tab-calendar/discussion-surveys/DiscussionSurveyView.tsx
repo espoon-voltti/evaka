@@ -226,7 +226,7 @@ export default React.memo(function DiscussionReservationSurveyView({
 
   const { setErrorMessage } = useContext(UIContext)
   const onEdit = useCallback(() => {
-    navigate(
+    void navigate(
       `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}/edit`,
       { replace: true }
     )
@@ -347,7 +347,7 @@ export default React.memo(function DiscussionReservationSurveyView({
                 })
                 .finally(() => {
                   setDeleteConfirmModalVisible(false)
-                  navigate(
+                  void navigate(
                     `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
                     { replace: true }
                   )

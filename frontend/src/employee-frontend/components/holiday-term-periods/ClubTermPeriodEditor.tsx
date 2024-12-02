@@ -23,7 +23,7 @@ export default React.memo(function ClubTermPeriodEditor() {
   const clubTerms = useQueryResult(clubTermsQuery())
 
   const navigateToList = useCallback(
-    () => navigate('/holiday-periods'),
+    () => void navigate('/holiday-periods'),
     [navigate]
   )
 

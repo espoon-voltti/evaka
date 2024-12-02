@@ -132,7 +132,7 @@ const CreationModal = React.memo(function CreationModal({
       }
     })
     if (res.isSuccess) {
-      navigate(`/child-documents/${res.value}`)
+      void navigate(`/child-documents/${res.value}`)
     }
     return res
   }

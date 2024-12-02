@@ -227,7 +227,7 @@ export default React.memo(function MarkReservations({
   const absences = useQueryResult(getFutureAbsencesByChildQuery({ childId }))
   const [mode, setMode] = useState<Mode>('view')
   const goBack = useCallback(() => {
-    navigate(-1)
+    void navigate(-1)
   }, [navigate])
 
   return (

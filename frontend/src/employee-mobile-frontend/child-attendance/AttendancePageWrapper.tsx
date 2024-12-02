@@ -64,7 +64,9 @@ export default React.memo(function AttendancePageWrapper({
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      navigate(routes.childAttendances(toUnitOrGroup(unitId, group?.id)).value)
+      void navigate(
+        routes.childAttendances(toUnitOrGroup(unitId, group?.id)).value
+      )
     },
     [navigate, unitId]
   )

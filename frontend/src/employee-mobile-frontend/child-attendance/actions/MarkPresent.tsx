@@ -148,7 +148,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
                   : Promise.reject()
               }
               onSuccess={() => {
-                navigate(multiselect ? -1 : -2)
+                void navigate(multiselect ? -1 : -2)
               }}
               data-qa="mark-present-btn"
             />

@@ -57,7 +57,7 @@ export default React.memo(function ImageEditor({
 
     const popStateHandler = (e: PopStateEvent) => {
       e.preventDefault()
-      navigate(1)
+      void navigate(1)
       onReturn()
     }
 

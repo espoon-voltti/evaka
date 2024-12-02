@@ -68,7 +68,7 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
   }, [child.id, messageReceivers])
 
   const onHide = useCallback(() => {
-    navigate(-1)
+    void navigate(-1)
   }, [navigate])
 
   return renderResult(receivers, (receivers) =>

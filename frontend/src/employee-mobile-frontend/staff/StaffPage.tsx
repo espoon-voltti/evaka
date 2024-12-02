@@ -70,7 +70,7 @@ export default React.memo(function StaffPage({
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      navigate(routes.staff(toUnitOrGroup(unitId, group?.id)).value)
+      void navigate(routes.staff(toUnitOrGroup(unitId, group?.id)).value)
     },
     [navigate, unitId]
   )
