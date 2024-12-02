@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -13,17 +13,25 @@ import {
 } from 'lib-common/generated/api-types/application'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import Radio from 'lib-components/atoms/form/Radio'
 import StickyFooter from 'lib-components/layout/StickyFooter'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import {
   sendApplication,
+  setApplicationVerified,
   updateApplication
 } from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
 
 const updateApplicationResult = wrapResult(updateApplication)
 const sendApplicationResult = wrapResult(sendApplication)
+const setApplicationVerifiedResult = wrapResult(setApplicationVerified)
 
 type Props = {
   applicationStatus: ApplicationStatus
@@ -45,7 +53,54 @@ export default React.memo(function ApplicationActionsBar({
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
+  const [confidential, setConfidential] = useState<boolean | null>(null)
+
   const actions = [
+    {
+      id: 'set-verified',
+      enabled:
+        !editing &&
+        !editedApplication.checkedByAdmin &&
+        applicationStatus === 'WAITING_PLACEMENT',
+      component: (
+        <FixedSpaceRow spacing="X3L">
+          {editedApplication.confidential === null && (
+            <FixedSpaceColumn spacing="xs">
+              <Label>{i18n.application.selectConfidentialityLabel} *</Label>
+              <FixedSpaceRow spacing="XL">
+                <Radio
+                  checked={confidential === true}
+                  label={i18n.common.yes}
+                  onChange={() => setConfidential(true)}
+                  data-qa="confidential-yes"
+                />
+                <Radio
+                  checked={confidential === false}
+                  label={i18n.common.no}
+                  onChange={() => setConfidential(false)}
+                  data-qa="confidential-no"
+                />
+              </FixedSpaceRow>
+            </FixedSpaceColumn>
+          )}
+          <AsyncButton
+            onClick={() =>
+              setApplicationVerifiedResult({
+                applicationId: editedApplication.id,
+                confidential: confidential
+              })
+            }
+            disabled={
+              editedApplication.confidential === null && confidential === null
+            }
+            onSuccess={reloadApplication}
+            text={i18n.applications.actions.setVerified}
+            primary
+            data-qa="set-verified"
+          />
+        </FixedSpaceRow>
+      )
+    },
     {
       id: 'start-editing',
       enabled:

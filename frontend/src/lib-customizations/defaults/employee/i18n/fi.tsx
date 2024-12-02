@@ -409,6 +409,7 @@ export const fi = {
       CANCELLED: 'Poistettu käsittelystä',
       ALL: 'Kaikki'
     },
+    selectConfidentialityLabel: 'Onko hakemus salassapidettävä?',
     selectAll: 'Valitse kaikki',
     unselectAll: 'Poista valinnat',
     transfer: 'Siirtohakemus',
