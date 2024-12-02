@@ -101,7 +101,7 @@ fun Database.Transaction.insertAttachment(
             sql(
                 """
 INSERT INTO attachment (created, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
-VALUES (${bind(now)}, ${bind(name)}, ${bind(contentType)}, ${bind(fk.applicationId)}, ${bind(fk.incomeStatementId)}, ${bind(fk.incomeId)}, ${bind(fk.messageDraftId)}, ${bind(fk.pedagogicalDocumentId)}, ${bind(fk.feeAlterationId)}, ${bind(user.evakaUserId)}, ${bind(type ?: "")})
+VALUES (${bind(now)}, ${bind(name)}, ${bind(contentType)}, ${bind(fk.applicationId)}, ${bind(fk.incomeStatementId)}, ${bind(fk.incomeId)}, ${bind(fk.messageDraftId)}, ${bind(fk.pedagogicalDocumentId)}, ${bind(fk.feeAlterationId)}, ${bind(user.evakaUserId)}, ${bind(type?.name ?: "")})
 RETURNING id
 """
             )

@@ -195,6 +195,7 @@ allprojects {
         compilerOptions {
             jvmTarget = JvmTarget.fromTarget(libs.versions.java.get())
             allWarningsAsErrors = true
+            freeCompilerArgs = listOf("-Xconsistent-data-class-copy-visibility")
         }
     }
 
