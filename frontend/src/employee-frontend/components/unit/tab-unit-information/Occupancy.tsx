@@ -119,7 +119,7 @@ export default React.memo(function OccupancyContainer({
             items={[null, ...activeGroups]}
             selectedItem={
               groupIds !== null && groupIds.length > 0
-                ? activeGroups.find((g) => g.id === groupIds[0]) ?? null
+                ? (activeGroups.find((g) => g.id === groupIds[0]) ?? null)
                 : null
             }
             onChange={(g) => setGroupIds(g ? [g.id] : null)}
@@ -152,14 +152,14 @@ export default React.memo(function OccupancyContainer({
           ) : (
             <SimpleOccupanciesForSingleDay
               unitId={unitId}
-              groupId={groupIds !== null ? groupIds[0] ?? null : null}
+              groupId={groupIds !== null ? (groupIds[0] ?? null) : null}
               date={startDate}
             />
           )
         ) : (
           <OccupanciesForDateRange
             unitId={unitId}
-            groupId={groupIds !== null ? groupIds[0] ?? null : null}
+            groupId={groupIds !== null ? (groupIds[0] ?? null) : null}
             from={startDate}
             to={endDate}
           />

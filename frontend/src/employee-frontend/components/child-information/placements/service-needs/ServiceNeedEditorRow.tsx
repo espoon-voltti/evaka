@@ -125,7 +125,7 @@ function ServiceNeedEditorRow({
         partWeek:
           selectedOption && selectedOption.partWeek !== null
             ? selectedOption.partWeek
-            : editedServiceNeed?.partWeek ?? false
+            : (editedServiceNeed?.partWeek ?? false)
       }
     },
     i18n.validationErrors,

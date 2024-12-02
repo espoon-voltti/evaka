@@ -530,7 +530,7 @@ export default React.memo(function PersonDetails({
                         />
                       </>
                     ) : (
-                      person.ophPersonOid ?? ''
+                      (person.ophPersonOid ?? '')
                     )
                 }
               ]

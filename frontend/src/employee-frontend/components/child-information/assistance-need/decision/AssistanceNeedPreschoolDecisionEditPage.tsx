@@ -634,7 +634,8 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   items={units}
                   selectedItem={
                     selectedUnit
-                      ? units.find((u) => u.id === selectedUnit.value()) ?? null
+                      ? (units.find((u) => u.id === selectedUnit.value()) ??
+                        null)
                       : null
                   }
                   getItemLabel={(u) => u?.name ?? ''}
@@ -841,9 +842,9 @@ const DecisionEditor = React.memo(function DecisionEditor({
                       filterItems={filterEmployees}
                       selectedItem={
                         preparer1EmployeeId
-                          ? employees.find(
+                          ? (employees.find(
                               (e) => e.id === preparer1EmployeeId.value()
-                            ) ?? null
+                            ) ?? null)
                           : null
                       }
                       onChange={(e) => preparer1EmployeeId.set(e?.id ?? null)}
@@ -875,9 +876,9 @@ const DecisionEditor = React.memo(function DecisionEditor({
                       items={employees}
                       selectedItem={
                         preparer2EmployeeId
-                          ? employees.find(
+                          ? (employees.find(
                               (e) => e.id === preparer2EmployeeId.value()
-                            ) ?? null
+                            ) ?? null)
                           : null
                       }
                       getItemLabel={formatEmployeeName}
@@ -913,9 +914,9 @@ const DecisionEditor = React.memo(function DecisionEditor({
                         items={decisionMakers}
                         selectedItem={
                           decisionMakerEmployeeId
-                            ? decisionMakers.find(
+                            ? (decisionMakers.find(
                                 (e) => e.id === decisionMakerEmployeeId.value()
-                              ) ?? null
+                              ) ?? null)
                             : null
                         }
                         getItemLabel={formatEmployeeName}

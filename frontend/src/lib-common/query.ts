@@ -346,8 +346,8 @@ export function useSelectMutation<ArgA, DataA, SelectA, ArgB, DataB, SelectB>(
           : mutationB.api(arg.value).then((r) => second(r)),
       invalidateQueryKeys: (arg: Either<ArgA, ArgB>): QueryKey[] =>
         arg.tag === 'first'
-          ? mutationA.invalidateQueryKeys?.(arg.value) ?? []
-          : mutationB.invalidateQueryKeys?.(arg.value) ?? []
+          ? (mutationA.invalidateQueryKeys?.(arg.value) ?? [])
+          : (mutationB.invalidateQueryKeys?.(arg.value) ?? [])
     }),
     [mutationA, mutationB]
   )

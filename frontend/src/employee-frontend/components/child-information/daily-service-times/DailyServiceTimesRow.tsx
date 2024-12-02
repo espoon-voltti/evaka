@@ -185,8 +185,9 @@ export const DailyServiceTimesReadOnly = React.memo(
         return (
           <div>
             <Gap size="xs" />
-            {i18n.childInformation.dailyServiceTimes.weekdays.monday}–
-            {i18n.childInformation.dailyServiceTimes.weekdays.friday}{' '}
+            {
+              i18n.childInformation.dailyServiceTimes.weekdays.monday
+            }–{i18n.childInformation.dailyServiceTimes.weekdays.friday}{' '}
             {times.regularTimes.format()}
           </div>
         )

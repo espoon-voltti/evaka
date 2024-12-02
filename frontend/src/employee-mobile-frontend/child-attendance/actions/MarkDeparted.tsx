@@ -392,12 +392,12 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                         absenceTypeNonbillable:
                           expectedCategories?.includes('NONBILLABLE') &&
                           absences?.nonBillable !== 'NO_ABSENCE'
-                            ? absences?.nonBillable ?? null
+                            ? (absences?.nonBillable ?? null)
                             : null,
                         absenceTypeBillable:
                           expectedCategories.includes('BILLABLE') &&
                           absences?.billable !== 'NO_ABSENCE'
-                            ? absences?.billable ?? null
+                            ? (absences?.billable ?? null)
                             : null
                       }
                     })
