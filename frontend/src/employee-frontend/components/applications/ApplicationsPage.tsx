@@ -131,6 +131,19 @@ export default React.memo(function ApplicationsPage() {
     loadApplications()
   }, [loadApplications])
 
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void loadApplications()
+      }
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () =>
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [loadApplications])
+
   // when changing filters, sorting, etc, set page to 1 and reload
   useEffect(() => {
     setPage(1)
