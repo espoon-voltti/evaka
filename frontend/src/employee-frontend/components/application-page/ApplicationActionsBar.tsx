@@ -96,7 +96,7 @@ export default React.memo(function ApplicationActionsBar({
             onSuccess={reloadApplication}
             text={i18n.applications.actions.setVerified}
             primary
-            data-qa="set-verified"
+            data-qa="set-verified-btn"
           />
         </FixedSpaceRow>
       )

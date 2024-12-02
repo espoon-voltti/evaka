@@ -9,7 +9,6 @@ import { UUID } from 'lib-common/types'
 
 import { waitUntilTrue } from '../../utils'
 import { Checkbox, Combobox, Page, Element } from '../../utils/page'
-import ApplicationListView from '../employee/applications/application-list-view'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
 
 import ApplicationDetailsPage from './application-details-page'
@@ -115,17 +114,19 @@ export class ApplicationWorkbenchPage {
     return new ApplicationDetailsPage(popup)
   }
 
-  async openDaycarePlacementDialogById(id: string) {
-    await this.getApplicationById(id)
-      .findByDataQa('primary-action-create-placement-plan')
-      .click()
-    return new PlacementDraftPage(this.page)
+  getPrimaryActionCheck(id: string) {
+    return this.getApplicationById(id).findByDataQa('primary-action-check')
   }
 
-  async verifyApplication(applicationId: string) {
-    const list = new ApplicationListView(this.page)
-    await list.actionsMenu(applicationId).click()
-    await list.actionsMenuItems.setVerified.click()
+  getPrimaryActionCreatePlacementPlan(id: string) {
+    return this.getApplicationById(id).findByDataQa(
+      'primary-action-create-placement-plan'
+    )
+  }
+
+  async openDaycarePlacementDialogById(id: string) {
+    await this.getPrimaryActionCreatePlacementPlan(id).click()
+    return new PlacementDraftPage(this.page)
   }
 
   async clickApplicationCheckbox(applicationId: string) {

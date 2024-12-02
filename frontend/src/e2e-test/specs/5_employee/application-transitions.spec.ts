@@ -186,6 +186,132 @@ describe('Application transitions', () => {
     await applicationReadView.assertApplicationStatus('Odottaa postitusta')
   })
 
+  test('Application with e.g. diet must be checked before placing', async () => {
+    const preferredStartDate = mockedTime
+    const fixture: DevApplicationWithForm = {
+      ...applicationFixture(
+        testChild2,
+        familyWithTwoGuardians.guardian,
+        undefined,
+        'DAYCARE',
+        null,
+        [testDaycare.id],
+        true,
+        'SENT',
+        preferredStartDate
+      )
+    }
+    fixture.form.child.diet = 'Vegaani'
+
+    const applicationId = fixture.id
+
+    await createApplications({ body: [fixture] })
+
+    await execSimpleApplicationActions(
+      applicationId,
+      ['MOVE_TO_WAITING_PLACEMENT'],
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    )
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    await applicationWorkbench.waitUntilLoaded()
+    await applicationWorkbench.openPlacementQueue()
+
+    await applicationWorkbench
+      .getPrimaryActionCheck(applicationId)
+      .waitUntilVisible()
+    await applicationWorkbench
+      .getPrimaryActionCreatePlacementPlan(applicationId)
+      .waitUntilHidden()
+
+    await applicationWorkbench.getPrimaryActionCheck(applicationId).click()
+
+    const applicationReadView = new ApplicationReadView(page)
+    await applicationReadView.setVerifiedButton.waitUntilVisible()
+    // confidentiality has been set automatically
+    await applicationReadView.confidentialRadioYes.waitUntilHidden()
+    await applicationReadView.confidentialRadioNo.waitUntilHidden()
+
+    await applicationReadView.setVerifiedButton.click()
+    await page.goBack()
+
+    await applicationWorkbench
+      .getPrimaryActionCreatePlacementPlan(applicationId)
+      .waitUntilVisible()
+    await applicationWorkbench
+      .getPrimaryActionCheck(applicationId)
+      .waitUntilHidden()
+
+    const placementDraftPage =
+      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await placementDraftPage.waitUntilLoaded()
+  })
+
+  test('Confidentiality must be set on an application before placing if other info is the only potential source of confidentiality', async () => {
+    const preferredStartDate = mockedTime
+    const fixture: DevApplicationWithForm = {
+      ...applicationFixture(
+        testChild2,
+        familyWithTwoGuardians.guardian,
+        undefined,
+        'DAYCARE',
+        null,
+        [testDaycare.id],
+        true,
+        'SENT',
+        preferredStartDate
+      )
+    }
+    fixture.form.otherInfo = 'Eipä ihmeempiä'
+
+    const applicationId = fixture.id
+
+    await createApplications({ body: [fixture] })
+
+    await execSimpleApplicationActions(
+      applicationId,
+      ['MOVE_TO_WAITING_PLACEMENT'],
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    )
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    await applicationWorkbench.waitUntilLoaded()
+    await applicationWorkbench.openPlacementQueue()
+
+    await applicationWorkbench
+      .getPrimaryActionCheck(applicationId)
+      .waitUntilVisible()
+    await applicationWorkbench
+      .getPrimaryActionCreatePlacementPlan(applicationId)
+      .waitUntilHidden()
+
+    await applicationWorkbench.getPrimaryActionCheck(applicationId).click()
+
+    const applicationReadView = new ApplicationReadView(page)
+    await applicationReadView.setVerifiedButton.waitUntilVisible()
+    await applicationReadView.setVerifiedButton.assertDisabled(true)
+
+    await applicationReadView.confidentialRadioYes.click()
+    await applicationReadView.confidentialRadioNo.click()
+
+    await applicationReadView.setVerifiedButton.assertDisabled(false)
+    await applicationReadView.setVerifiedButton.click()
+    await page.goBack()
+
+    await applicationWorkbench
+      .getPrimaryActionCreatePlacementPlan(applicationId)
+      .waitUntilVisible()
+    await applicationWorkbench
+      .getPrimaryActionCheck(applicationId)
+      .waitUntilHidden()
+
+    const placementDraftPage =
+      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await placementDraftPage.waitUntilLoaded()
+  })
+
   test('Placement dialog works', async () => {
     const preferredStartDate = mockedTime
 
