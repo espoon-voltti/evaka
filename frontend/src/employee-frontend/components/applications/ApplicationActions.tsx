@@ -104,15 +104,19 @@ export default React.memo(function ApplicationActions({
         }
       },
       {
-        id: 'create-placement-plan',
-        label: i18n.applications.actions.createPlacementPlan,
-        enabled:
-          application.checkedByAdmin &&
-          application.status === 'WAITING_PLACEMENT',
+        id: application.checkedByAdmin ? 'create-placement-plan' : 'check',
+        label: application.checkedByAdmin
+          ? i18n.applications.actions.createPlacementPlan
+          : i18n.applications.actions.check,
+        enabled: application.status === 'WAITING_PLACEMENT',
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          void navigate(`/applications/${application.id}/placement`)
+          if (application.checkedByAdmin) {
+            void navigate(`/applications/${application.id}/placement`)
+          } else {
+            void navigate(`/applications/${application.id}`)
+          }
         },
         primaryStatus: 'WAITING_PLACEMENT'
       },
