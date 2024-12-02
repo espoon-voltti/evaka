@@ -7,7 +7,6 @@ import React, { useState } from 'react'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
 import { combine, Failure, Result, Success, wrapResult } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -72,13 +71,13 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
     childServiceApplicationsQuery({ childId })
   )
 
-  const permittedActions: Result<Action.Citizen.Child[]> = useQueryResult(
+  const serviceApplicationCreationPossible: Result<boolean> = useQueryResult(
     childrenQuery()
   )
     .map((children) => children.find((child) => child.id === childId))
     .chain((child) =>
       child
-        ? Success.of(child.permittedActions)
+        ? Success.of(child.serviceApplicationCreationPossible)
         : Failure.of({ message: 'Child not found' })
     )
 
@@ -133,14 +132,12 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
       )}
       {featureFlags.serviceApplications &&
         renderResult(
-          combine(serviceApplications, permittedActions),
-          ([serviceApplications, permittedActions]) => {
-            const canCreate = permittedActions.includes(
-              'CREATE_SERVICE_APPLICATION'
-            )
+          combine(serviceApplications, serviceApplicationCreationPossible),
+          ([serviceApplications, serviceApplicationCreationPossible]) => {
             const hasApplications = serviceApplications.length > 0
 
-            if (!hasApplications && !canCreate) return null
+            if (!hasApplications && !serviceApplicationCreationPossible)
+              return null
 
             return (
               <>
@@ -154,7 +151,7 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
                 <ServiceApplications
                   childId={childId}
                   applications={serviceApplications}
-                  canCreate={canCreate}
+                  canCreate={serviceApplicationCreationPossible}
                 />
               </>
             )

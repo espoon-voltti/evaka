@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChild
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.utils.letIf
 import java.time.LocalDate
 import java.time.YearMonth
 import org.springframework.web.bind.annotation.GetMapping
@@ -58,20 +57,18 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                             clock.today(),
                         )
                     val permittedActions =
-                        accessControl
-                            .getPermittedActions<ChildId, Action.Citizen.Child>(
-                                tx,
-                                user,
-                                clock,
-                                childIds,
-                            )
-                            .mapValues { (childId, actions) ->
-                                actions.letIf(!serviceApplicationPossible.contains(childId)) {
-                                    it - Action.Citizen.Child.CREATE_SERVICE_APPLICATION
-                                }
-                            }
+                        accessControl.getPermittedActions<ChildId, Action.Citizen.Child>(
+                            tx,
+                            user,
+                            clock,
+                            childIds,
+                        )
                     children.map { c ->
-                        ChildAndPermittedActions.fromChild(c, permittedActions[c.id]!!)
+                        ChildAndPermittedActions.fromChild(
+                            c,
+                            permittedActions[c.id]!!,
+                            serviceApplicationPossible.contains(c.id),
+                        )
                     }
                 }
             }

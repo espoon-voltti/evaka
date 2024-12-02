@@ -28,6 +28,7 @@ export interface ChildAndPermittedActions {
   lastName: string
   permittedActions: Action.Citizen.Child[]
   preferredName: string
+  serviceApplicationCreationPossible: boolean
   unit: Unit | null
   upcomingPlacementType: PlacementType | null
 }
