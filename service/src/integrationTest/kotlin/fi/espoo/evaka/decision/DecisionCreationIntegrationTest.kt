@@ -15,6 +15,7 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.DecisionDraftGroup
 import fi.espoo.evaka.application.DecisionSummary
 import fi.espoo.evaka.application.GuardianInfo
+import fi.espoo.evaka.application.SimpleApplicationAction
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
@@ -563,7 +564,7 @@ WHERE id = ${bind(testDaycare.id)}
             serviceWorker,
             RealEvakaClock(),
             applicationId,
-            "send-decisions-without-proposal",
+            SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL,
         )
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 

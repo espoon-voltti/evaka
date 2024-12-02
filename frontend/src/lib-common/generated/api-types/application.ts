@@ -746,6 +746,19 @@ export interface SiblingBasis {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.SimpleApplicationAction
+*/
+export type SimpleApplicationAction =
+  | 'MOVE_TO_WAITING_PLACEMENT'
+  | 'RETURN_TO_SENT'
+  | 'CANCEL_APPLICATION'
+  | 'CANCEL_PLACEMENT_PLAN'
+  | 'SEND_DECISIONS_WITHOUT_PROPOSAL'
+  | 'SEND_PLACEMENT_PROPOSAL'
+  | 'WITHDRAW_PLACEMENT_PROPOSAL'
+  | 'CONFIRM_DECISION_MAILED'
+
+/**
 * Generated from fi.espoo.evaka.application.SimpleBatchRequest
 */
 export interface SimpleBatchRequest {

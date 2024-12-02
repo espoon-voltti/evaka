@@ -94,6 +94,17 @@ import java.time.format.FormatStyle
 import java.util.Locale
 import org.springframework.stereotype.Service
 
+enum class SimpleApplicationAction {
+    MOVE_TO_WAITING_PLACEMENT,
+    RETURN_TO_SENT,
+    CANCEL_APPLICATION,
+    CANCEL_PLACEMENT_PLAN,
+    SEND_DECISIONS_WITHOUT_PROPOSAL,
+    SEND_PLACEMENT_PROPOSAL,
+    WITHDRAW_PLACEMENT_PROPOSAL,
+    CONFIRM_DECISION_MAILED,
+}
+
 @Service
 class ApplicationStateService(
     private val accessControl: AccessControl,
@@ -105,6 +116,40 @@ class ApplicationStateService(
     private val messageProvider: IMessageProvider,
     private val messageService: MessageService,
 ) {
+    fun doSimpleAction(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        action: SimpleApplicationAction,
+        applicationId: ApplicationId,
+    ) {
+        when (action) {
+            SimpleApplicationAction.MOVE_TO_WAITING_PLACEMENT ->
+                moveToWaitingPlacement(tx, user, clock, applicationId)
+            SimpleApplicationAction.RETURN_TO_SENT -> returnToSent(tx, user, clock, applicationId)
+            SimpleApplicationAction.CANCEL_APPLICATION ->
+                cancelApplication(tx, user, clock, applicationId)
+            SimpleApplicationAction.CANCEL_PLACEMENT_PLAN ->
+                cancelPlacementPlan(tx, user, clock, applicationId)
+            SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL ->
+                sendDecisionsWithoutProposal(tx, user, clock, applicationId)
+            SimpleApplicationAction.SEND_PLACEMENT_PROPOSAL ->
+                sendPlacementProposal(tx, user, clock, applicationId)
+            SimpleApplicationAction.WITHDRAW_PLACEMENT_PROPOSAL ->
+                withdrawPlacementProposal(tx, user, clock, applicationId)
+            SimpleApplicationAction.CONFIRM_DECISION_MAILED ->
+                confirmDecisionMailed(tx, user, clock, applicationId)
+        }
+    }
+
+    fun doSimpleAction(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        action: SimpleApplicationAction,
+        applicationIds: Set<ApplicationId>,
+    ) = applicationIds.forEach { doSimpleAction(tx, user, clock, action, it) }
+
     fun createApplication(
         tx: Database.Transaction,
         user: AuthenticatedUser,

@@ -24,6 +24,7 @@ import { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-ty
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { RejectDecisionRequest } from 'lib-common/generated/api-types/application'
 import { SearchApplicationRequest } from 'lib-common/generated/api-types/application'
+import { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
 import { SimpleBatchRequest } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import { UnitApplications } from 'lib-common/generated/api-types/application'
@@ -304,7 +305,7 @@ export async function setApplicationVerified(
 export async function simpleApplicationAction(
   request: {
     applicationId: UUID,
-    action: string
+    action: SimpleApplicationAction
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -320,7 +321,7 @@ export async function simpleApplicationAction(
 */
 export async function simpleBatchAction(
   request: {
-    action: string,
+    action: SimpleApplicationAction,
     body: SimpleBatchRequest
   }
 ): Promise<void> {

@@ -343,7 +343,6 @@ export const fi = {
         'Haluatko varmasti poistaa hakemuksen käsittelystä?',
       check: 'Tarkista',
       setVerified: 'Merkitse tarkistetuksi',
-      setUnverified: 'Merkitse tarkistamattomaksi',
       createPlacementPlan: 'Sijoita',
       cancelPlacementPlan: 'Palauta sijoitettaviin',
       editDecisions: 'Päätökset',

@@ -70,7 +70,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'move-to-waiting-placement'
+              action: 'MOVE_TO_WAITING_PLACEMENT'
             })
           )
         }
@@ -87,7 +87,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'return-to-sent'
+              action: 'RETURN_TO_SENT'
             })
           )
         }
@@ -101,40 +101,6 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setConfirmingApplicationCancel(true)
-        }
-      },
-      {
-        id: 'set-verified',
-        label: i18n.applications.actions.setVerified,
-        enabled:
-          application.status === 'WAITING_PLACEMENT' &&
-          !application.checkedByAdmin,
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'set-verified'
-            })
-          )
-        }
-      },
-      {
-        id: 'set-unverified',
-        label: i18n.applications.actions.setUnverified,
-        enabled:
-          application.status === 'WAITING_PLACEMENT' &&
-          application.checkedByAdmin,
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'set-unverified'
-            })
-          )
         }
       },
       {
@@ -160,7 +126,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'cancel-placement-plan'
+              action: 'CANCEL_PLACEMENT_PLAN'
             })
           )
         }
@@ -186,7 +152,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'send-decisions-without-proposal'
+              action: 'SEND_DECISIONS_WITHOUT_PROPOSAL'
             })
           )
         }
@@ -201,7 +167,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'send-placement-proposal'
+              action: 'SEND_PLACEMENT_PROPOSAL'
             })
           )
         }
@@ -216,7 +182,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'withdraw-placement-proposal'
+              action: 'WITHDRAW_PLACEMENT_PROPOSAL'
             })
           )
         }
@@ -231,7 +197,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'confirm-decision-mailed'
+              action: 'CONFIRM_DECISION_MAILED'
             })
           )
         }
@@ -266,7 +232,7 @@ export default React.memo(function ApplicationActions({
               handlePromise(
                 simpleApplicationAction({
                   applicationId: application.id,
-                  action: 'cancel-application'
+                  action: 'CANCEL_APPLICATION'
                 })
               )
             },

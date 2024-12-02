@@ -10,6 +10,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.ServiceNeedOption
+import fi.espoo.evaka.application.SimpleApplicationAction
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
@@ -632,7 +633,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             serviceWorker,
             clock,
             applicationId,
-            "send-placement-proposal",
+            SimpleApplicationAction.SEND_PLACEMENT_PROPOSAL,
         )
         return PlacementPlanDetails(
             id = placementPlanId,
