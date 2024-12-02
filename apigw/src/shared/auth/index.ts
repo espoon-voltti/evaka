@@ -51,9 +51,7 @@ export type EvakaSessionUser =
   | EmployeeSessionUser
   | EmployeeMobileSessionUser
 
-export function createUserHeader(
-  user: EvakaSessionUser | { userType: 'SYSTEM' }
-): string {
+export function createUserHeader(user: EvakaSessionUser): string {
   return JSON.stringify(
     ((): object => {
       switch (user.userType) {
@@ -74,14 +72,14 @@ export function createUserHeader(
             id: user.id,
             employeeId: user.mobileEmployeeId
           }
-        case 'SYSTEM':
-          return { type: 'system' }
         case undefined:
           throw new Error('User type is undefined')
       }
     })()
   )
 }
+
+export const systemUserHeader = JSON.stringify({ type: 'system' })
 
 export const integrationUserHeader = JSON.stringify({ type: 'integration' })
 

@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser'
 import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
+import { integrationUserHeader } from '../shared/auth/index.js'
 import {
   appCommit,
   Config,
@@ -43,6 +44,7 @@ export function internalGwRouter(
   const router = express.Router()
 
   const sessions = sessionSupport('employee', redisClient, config.employee)
+  const getUserHeader = (req: express.Request) => sessions.getUserHeader(req)
 
   // middlewares
   router.use(sessions.middleware)
@@ -68,7 +70,10 @@ export function internalGwRouter(
     })
   }
   router.use('/integration', expressBasicAuth({ users: integrationUsers }))
-  router.all('/integration/*', createProxy({ sessions: undefined }))
+  router.all(
+    '/integration/*',
+    createProxy({ getUserHeader: (_) => integrationUserHeader })
+  )
 
   router.all('/auth/*', (req: express.Request, res, next) => {
     if (req.session?.idpProvider === 'evaka') {
@@ -118,7 +123,10 @@ export function internalGwRouter(
   if (enableDevApi) {
     router.use(
       '/dev-api',
-      createProxy({ sessions: undefined, path: ({ url }) => `/dev-api${url}` })
+      createProxy({
+        getUserHeader: () => undefined,
+        path: ({ url }) => `/dev-api${url}`
+      })
     )
 
     router.get('/auth/mobile-e2e-signup', devApiE2ESignup(sessions))
@@ -128,8 +136,8 @@ export function internalGwRouter(
   router.use(csrf)
 
   // public endpoints
-  router.all('/employee/public/*', createProxy({ sessions }))
-  router.all('/employee-mobile/public/*', createProxy({ sessions }))
+  router.all('/employee/public/*', createProxy({ getUserHeader }))
+  router.all('/employee-mobile/public/*', createProxy({ getUserHeader }))
   router.get(
     '/auth/status',
     refreshMobileSession(sessions),
@@ -149,8 +157,8 @@ export function internalGwRouter(
     express.json(),
     pinLogoutRequestHandler(sessions, redisClient)
   )
-  router.all('/employee/*', createProxy({ sessions }))
-  router.all('/employee-mobile/*', createProxy({ sessions }))
+  router.all('/employee/*', createProxy({ getUserHeader }))
+  router.all('/employee-mobile/*', createProxy({ getUserHeader }))
 
   // global error middleware
   router.use(errorHandler(true))

@@ -5,11 +5,7 @@
 import axios from 'axios'
 import express from 'express'
 
-import {
-  createUserHeader,
-  EvakaSessionUser,
-  integrationUserHeader
-} from './auth/index.js'
+import { systemUserHeader } from './auth/index.js'
 import { getJwt } from './auth/jwt.js'
 import { evakaServiceUrl } from './config.js'
 
@@ -18,10 +14,6 @@ export const client = axios.create({
 })
 
 export type UUID = string
-
-const machineUser = {
-  userType: 'SYSTEM' as const
-}
 
 export type UserRole =
   | 'CITIZEN_WEAK'
@@ -47,16 +39,13 @@ export type ServiceRequestHeaders = Partial<
 
 export function createServiceRequestHeaders(
   req: express.Request | undefined,
-  user: EvakaSessionUser | { userType: 'SYSTEM' } | undefined | null
+  userHeader: string | undefined
 ) {
   const headers: ServiceRequestHeaders = {
     Authorization: `Bearer ${getJwt()}`
   }
-  if (req?.path.startsWith('/integration/')) {
-    headers['X-User'] = integrationUserHeader
-  }
-  if (user) {
-    headers['X-User'] = createUserHeader(user)
+  if (userHeader) {
+    headers['X-User'] = userHeader
   }
   if (req?.traceId) {
     headers['X-Request-ID'] = req.traceId
@@ -112,7 +101,7 @@ export async function employeeLogin(
     `/system/employee-login`,
     employee,
     {
-      headers: createServiceRequestHeaders(undefined, machineUser)
+      headers: createServiceRequestHeaders(undefined, systemUserHeader)
     }
   )
   return data
@@ -126,7 +115,7 @@ export async function getEmployeeDetails(
     const { data } = await client.get<EmployeeUserResponse>(
       `/system/employee/${employeeId}`,
       {
-        headers: createServiceRequestHeaders(req, machineUser)
+        headers: createServiceRequestHeaders(req, systemUserHeader)
       }
     )
     return data
@@ -146,7 +135,7 @@ export async function citizenLogin(
     `/system/citizen-login`,
     person,
     {
-      headers: createServiceRequestHeaders(undefined, machineUser)
+      headers: createServiceRequestHeaders(undefined, systemUserHeader)
     }
   )
   return data
@@ -164,7 +153,7 @@ export async function citizenWeakLogin(
     `/system/citizen-weak-login`,
     request,
     {
-      headers: createServiceRequestHeaders(undefined, machineUser)
+      headers: createServiceRequestHeaders(undefined, systemUserHeader)
     }
   )
   return data
@@ -177,7 +166,7 @@ export async function getCitizenDetails(
   const { data } = await client.get<CitizenUserResponse>(
     `/system/citizen/${encodeURIComponent(personId)}`,
     {
-      headers: createServiceRequestHeaders(req, machineUser)
+      headers: createServiceRequestHeaders(req, systemUserHeader)
     }
   )
   return data
@@ -202,7 +191,7 @@ export async function validatePairing(
     `/system/pairings/${encodeURIComponent(id)}/validation`,
     request,
     {
-      headers: createServiceRequestHeaders(req, machineUser)
+      headers: createServiceRequestHeaders(req, systemUserHeader)
     }
   )
   return data
@@ -225,7 +214,7 @@ export async function identifyMobileDevice(
     const { data } = await client.get<MobileDeviceIdentity | undefined>(
       `/system/mobile-identity/${encodeURIComponent(token)}`,
       {
-        headers: createServiceRequestHeaders(req, machineUser)
+        headers: createServiceRequestHeaders(req, systemUserHeader)
       }
     )
     return data
@@ -249,7 +238,7 @@ export async function authenticateMobileDevice(
         userAgent: req.headers['user-agent'] ?? ''
       },
       {
-        headers: createServiceRequestHeaders(req, machineUser)
+        headers: createServiceRequestHeaders(req, systemUserHeader)
       }
     )
     return data
@@ -274,7 +263,7 @@ export async function employeePinLogin(
     `/system/mobile-pin-login`,
     req.body,
     {
-      headers: createServiceRequestHeaders(req, machineUser)
+      headers: createServiceRequestHeaders(req, systemUserHeader)
     }
   )
   return data

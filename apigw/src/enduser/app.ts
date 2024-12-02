@@ -31,6 +31,7 @@ export function enduserGwRouter(
   const router = express.Router()
 
   const sessions = sessionSupport('enduser', redisClient, config.citizen)
+  const getUserHeader = (req: express.Request) => sessions.getUserHeader(req)
 
   // middlewares
   router.use(sessions.middleware)
@@ -89,7 +90,7 @@ export function enduserGwRouter(
   router.use(csrf)
 
   // public endpoints
-  router.all('/citizen/public/*', createProxy({ sessions }))
+  router.all('/citizen/public/*', createProxy({ getUserHeader }))
   router.use(mapRoutes)
   router.get('/auth/status', authStatus(sessions))
   router.post(
@@ -100,7 +101,7 @@ export function enduserGwRouter(
 
   // authenticated endpoints
   router.use(sessions.requireAuthentication)
-  router.all('/citizen/*', createProxy({ sessions }))
+  router.all('/citizen/*', createProxy({ getUserHeader }))
 
   // global error middleware
   router.use(errorHandler(false))

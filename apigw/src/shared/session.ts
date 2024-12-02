@@ -10,7 +10,7 @@ import { isDate } from 'date-fns/isDate'
 import express from 'express'
 import session from 'express-session'
 
-import { EvakaSessionUser } from './auth/index.js'
+import { createUserHeader, EvakaSessionUser } from './auth/index.js'
 import { SessionConfig } from './config.js'
 import { createSha256Hash } from './crypto.js'
 import { LogoutToken, toMiddleware } from './express.js'
@@ -54,6 +54,7 @@ export interface Sessions {
 
   updateUser(req: express.Request, user: EvakaSessionUser): Promise<void>
   getUser(req: express.Request): EvakaSessionUser | undefined
+  getUserHeader(req: express.Request): string | undefined
   isAuthenticated(req: express.Request): boolean
 }
 
@@ -242,6 +243,11 @@ export function sessionSupport(
     return req.session?.passport?.user ?? undefined
   }
 
+  function getUserHeader(req: express.Request): string | undefined {
+    const user = getUser(req)
+    return user ? createUserHeader(user) : undefined
+  }
+
   function isAuthenticated(req: express.Request): boolean {
     return !!req.session?.passport?.user
   }
@@ -257,6 +263,7 @@ export function sessionSupport(
     destroy,
     updateUser,
     getUser,
+    getUserHeader,
     isAuthenticated
   }
 }
