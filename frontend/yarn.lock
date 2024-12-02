@@ -3156,7 +3156,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-leaflet/core@npm:^2.1.0":
+"@react-leaflet/core@npm:2.1.0":
   version: 2.1.0
   resolution: "@react-leaflet/core@npm:2.1.0"
   peerDependencies:
@@ -3164,6 +3164,17 @@ __metadata:
     react: ^18.0.0
     react-dom: ^18.0.0
   checksum: 10/12ce28b85cf6712a1a7b7c49466b941fc619bc7b1535308bc5711a35f7e89eb16298babfd62f6b3a92e64abf94dcf517b2bc460f59fcf20599821bc6ab3b3048
+  languageName: node
+  linkType: hard
+
+"@react-leaflet/core@patch:@react-leaflet/core@npm%3A2.1.0#~/.yarn/patches/@react-leaflet-core-npm-2.1.0-de483ca53f.patch":
+  version: 2.1.0
+  resolution: "@react-leaflet/core@patch:@react-leaflet/core@npm%3A2.1.0#~/.yarn/patches/@react-leaflet-core-npm-2.1.0-de483ca53f.patch::version=2.1.0&hash=178615"
+  peerDependencies:
+    leaflet: ^1.9.0
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: 10/00e3a5982d41a27dd41113de55af31b47e2719151d5a4dd472115899a9ed3881b824c285f38c32a579034eefad1743332e9a27be205114fd14768ebb862835eb
   languageName: node
   linkType: hard
 

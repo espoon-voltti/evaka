@@ -157,7 +157,8 @@
     }
   },
   "resolutions": {
-    "webpack@npm:5.37.1/terser-webpack-plugin": "5.1.1"
+    "webpack@npm:5.37.1/terser-webpack-plugin": "5.1.1",
+    "@react-leaflet/core@npm:^2.1.0": "patch:@react-leaflet/core@npm%3A2.1.0#~/.yarn/patches/@react-leaflet-core-npm-2.1.0-de483ca53f.patch"
   },
   "engines": {
     "node": ">= 20.9.0"
