@@ -146,6 +146,7 @@ export interface DevApplicationWithForm {
   allowOtherGuardianAccess: boolean
   checkedByAdmin: boolean
   childId: UUID
+  confidential: boolean | null
   createdDate: HelsinkiDateTime | null
   dueDate: LocalDate | null
   form: ApplicationForm

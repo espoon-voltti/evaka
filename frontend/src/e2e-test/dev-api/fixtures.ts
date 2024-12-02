@@ -2912,7 +2912,9 @@ export const applicationFixture = (
   status: ApplicationStatus = 'SENT',
   preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
   transferApplication = false,
-  assistanceNeeded = false
+  assistanceNeeded = false,
+  checkedByAdmin = false,
+  confidential: boolean | null = null
 ): DevApplicationWithForm => ({
   id: applicationFixtureId,
   type: type,
@@ -2931,7 +2933,8 @@ export const applicationFixture = (
     connectedDaycare,
     assistanceNeeded
   ),
-  checkedByAdmin: false,
+  checkedByAdmin,
+  confidential,
   hideFromGuardian: false,
   origin: 'ELECTRONIC',
   status,

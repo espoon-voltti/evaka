@@ -73,6 +73,8 @@ describe('Search person', () => {
         'WAITING_PLACEMENT',
         preferredStartDate,
         false,
+        true,
+        true,
         true
       ),
       id: uuidv4()
@@ -90,6 +92,8 @@ describe('Search person', () => {
         'WAITING_PLACEMENT',
         preferredStartDate,
         false,
+        false,
+        true,
         false
       ),
       id: uuidv4()
