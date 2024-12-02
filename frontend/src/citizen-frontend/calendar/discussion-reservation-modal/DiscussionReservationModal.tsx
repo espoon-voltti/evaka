@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { Failure } from 'lib-common/api'

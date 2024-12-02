@@ -11,7 +11,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { NavigateFunction, useNavigate } from 'react-router-dom'
+import { NavigateFunction, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'

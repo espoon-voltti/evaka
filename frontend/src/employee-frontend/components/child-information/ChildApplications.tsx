@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { useQueryResult } from 'lib-common/query'

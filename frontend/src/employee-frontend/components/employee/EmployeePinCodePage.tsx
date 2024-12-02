@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useState } from 'react'
-import { unstable_usePrompt as usePrompt } from 'react-router-dom'
+import { unstable_usePrompt as usePrompt } from 'react-router'
 
 import { wrapResult } from 'lib-common/api'
 import Title from 'lib-components/atoms/Title'

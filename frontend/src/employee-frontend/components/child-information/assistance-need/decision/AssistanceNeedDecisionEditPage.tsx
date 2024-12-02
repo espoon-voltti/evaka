@@ -6,7 +6,7 @@ import concat from 'lodash/concat'
 import isEmpty from 'lodash/isEmpty'
 import omit from 'lodash/omit'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'

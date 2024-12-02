@@ -7,7 +7,7 @@ import initial from 'lodash/initial'
 import last from 'lodash/last'
 import orderBy from 'lodash/orderBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'

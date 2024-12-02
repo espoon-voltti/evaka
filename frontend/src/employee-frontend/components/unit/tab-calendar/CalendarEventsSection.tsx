@@ -15,7 +15,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { formatPersonName } from 'employee-frontend/utils'

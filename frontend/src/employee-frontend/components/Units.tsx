@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { careTypes, Daycare } from 'lib-common/generated/api-types/daycare'

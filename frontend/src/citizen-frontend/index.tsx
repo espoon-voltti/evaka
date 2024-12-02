@@ -7,7 +7,7 @@ import * as Sentry from '@sentry/browser'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import 'lib-common/assets/fonts/fonts.css'
-import { RouterProvider } from 'react-router-dom'
+import { RouterProvider } from 'react-router/dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { sentryEventFilter } from 'lib-common/sentry'

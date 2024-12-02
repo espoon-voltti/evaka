@@ -6,7 +6,7 @@ import { faX } from '@fortawesome/free-solid-svg-icons'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
 import React, { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'

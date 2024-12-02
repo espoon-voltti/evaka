@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useRef } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate } from 'react-router'
 
 import { useQueryResult } from 'lib-common/query'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'

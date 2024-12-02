@@ -4,7 +4,7 @@
 
 import { animated, useSpring } from '@react-spring/web'
 import React, { useCallback, useMemo, useState } from 'react'
-import { Outlet, useNavigate, useOutletContext } from 'react-router-dom'
+import { Outlet, useNavigate, useOutletContext } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'

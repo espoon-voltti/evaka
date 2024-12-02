@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'

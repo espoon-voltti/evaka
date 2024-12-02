@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'

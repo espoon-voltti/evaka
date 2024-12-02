@@ -5,7 +5,7 @@
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
 import {

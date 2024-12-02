@@ -12,7 +12,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { isLoading, Loading, Result, Success, wrapResult } from 'lib-common/api'

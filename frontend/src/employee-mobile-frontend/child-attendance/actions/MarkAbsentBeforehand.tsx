@@ -4,7 +4,7 @@
 
 import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'

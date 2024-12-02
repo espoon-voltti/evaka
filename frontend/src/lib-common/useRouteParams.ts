@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as Sentry from '@sentry/browser'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 export default function useRouteParams<
   const Required extends string[],

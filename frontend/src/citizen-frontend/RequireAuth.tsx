@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { createSearchParams, Navigate, useLocation } from 'react-router-dom'
+import { createSearchParams, Navigate, useLocation } from 'react-router'
 
 import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
 

@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
 import { useQueryResult } from 'lib-common/query'
