@@ -140,7 +140,7 @@ export default function createSamlRouter(
           // These errors can happen for example when the user browses back to the login callback after login
           throw new SamlError('Login failed', {
             redirectUrl: req.user
-              ? validateRelayStateUrl(req)?.toString() ?? defaultPageUrl
+              ? (validateRelayStateUrl(req)?.toString() ?? defaultPageUrl)
               : errorRedirectUrl(err),
             cause: err,
             // just ignore without logging to reduce noise in logs
