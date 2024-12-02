@@ -50,7 +50,7 @@ export const MessageContextProvider = React.memo(
     const { user } = useContext(UserContext)
     const pinLoggedEmployeeId = user
       .map((u) =>
-        u && u.pinLoginActive ? u.employeeId ?? undefined : undefined
+        u && u.pinLoginActive ? (u.employeeId ?? undefined) : undefined
       )
       .getOrElse(undefined)
     const shouldFetch = !!unitId && !!pinLoggedEmployeeId

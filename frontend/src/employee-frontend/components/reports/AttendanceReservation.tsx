@@ -160,8 +160,8 @@ export default React.memo(function AttendanceReservation() {
 
   const tableComponents = entries.map(([groupId, rowsByTime]) => {
     const groupName = showGroupTitle
-      ? filteredGroups.find((group) => group.id === groupId)?.name ??
-        i18n.reports.attendanceReservation.ungrouped
+      ? (filteredGroups.find((group) => group.id === groupId)?.name ??
+        i18n.reports.attendanceReservation.ungrouped)
       : undefined
     return (
       <TableScrollable

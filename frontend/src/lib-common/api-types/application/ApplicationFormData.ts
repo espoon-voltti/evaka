@@ -212,10 +212,10 @@ export function apiDataToFormData(
       vtjSiblings: vtjSiblingsSiblingBasis,
       siblingName: siblingBasisFromVtj
         ? ''
-        : application.form.preferences.siblingBasis?.siblingName ?? '',
+        : (application.form.preferences.siblingBasis?.siblingName ?? ''),
       siblingSsn: siblingBasisFromVtj
         ? ''
-        : application.form.preferences.siblingBasis?.siblingSsn ?? '',
+        : (application.form.preferences.siblingBasis?.siblingSsn ?? ''),
       siblingUnit: application.form.preferences.siblingBasis?.siblingUnit ?? '',
       preferredUnits: application.form.preferences.preferredUnits
     },

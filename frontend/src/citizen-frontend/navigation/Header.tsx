@@ -90,7 +90,9 @@ const HeaderContainer = styled.header`
 
   @media (min-width: ${desktopMin}) {
     position: static;
-    grid: minmax(${headerHeightDesktop}px, min-content) / max-content max-content auto;
+    grid:
+      minmax(${headerHeightDesktop}px, min-content)
+      / max-content max-content auto;
     height: ${headerHeightDesktop}px;
     background-color: transparent;
     box-shadow: none;

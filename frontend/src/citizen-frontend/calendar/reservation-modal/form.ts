@@ -260,11 +260,11 @@ export const reservationForm = mapped(
               )
               return index === -1
                 ? []
-                : toDailyReservationRequest(
+                : (toDailyReservationRequest(
                     childId,
                     date,
                     timesValue[index].day
-                  ) ?? []
+                  ) ?? [])
             })
           }
           case 'irregularTimes':

@@ -483,9 +483,9 @@ const getFormTree = (tree: TreeNode[]) => {
       .map((group) => [
         group.key,
         hasUncheckedChildren(group)
-          ? group.children
+          ? (group.children
               ?.filter((child) => child.checked)
-              .map((child) => child.key) ?? []
+              .map((child) => child.key) ?? [])
           : null
       ]) ?? []
   )

@@ -72,7 +72,7 @@ export default React.memo(function ChildDayReservation({
   const actualOperationTimes = hasShiftCare
     ? dateInfo.isHoliday && !dateInfo.shiftCareOpenOnHoliday
       ? null
-      : dateInfo.shiftCareOperatingTimes ?? dateInfo.normalOperatingTimes
+      : (dateInfo.shiftCareOperatingTimes ?? dateInfo.normalOperatingTimes)
     : dateInfo.isHoliday
       ? null
       : dateInfo.normalOperatingTimes

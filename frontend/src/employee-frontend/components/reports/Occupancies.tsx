@@ -297,8 +297,8 @@ function calculateAverages(
         const dateKey = toOccupancyKey(date)
         const dividend =
           usedValues === 'headcount'
-            ? row.occupancies[dateKey]?.headcount ?? 0
-            : row.occupancies[dateKey]?.percentage ?? 0
+            ? (row.occupancies[dateKey]?.headcount ?? 0)
+            : (row.occupancies[dateKey]?.percentage ?? 0)
         const divider =
           usedValues === 'headcount'
             ? 1
@@ -453,8 +453,8 @@ export default React.memo(function Occupancies() {
                   selectedItem={
                     filters.careAreaId === undefined
                       ? careAreaAll
-                      : areas.find((area) => area.id === filters.careAreaId) ??
-                        null
+                      : (areas.find((area) => area.id === filters.careAreaId) ??
+                        null)
                   }
                   placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
                   getItemLabel={(item) => item.name}
@@ -623,8 +623,8 @@ export default React.memo(function Occupancies() {
                     filters.type,
                     filters.careAreaId === undefined
                       ? i18n.common.all
-                      : areas.find((area) => area.id == filters.careAreaId)
-                          ?.name ?? ''
+                      : (areas.find((area) => area.id == filters.careAreaId)
+                          ?.name ?? '')
                   )}
                 />
                 <TableScrollable>

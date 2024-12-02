@@ -597,8 +597,8 @@ const StaffAttendanceEditor = ({
               appearance="inline"
               text={
                 groupIdDomValue !== emptyGroupIdDomValue
-                  ? groups.find((group) => group.id === groupIdDomValue)
-                      ?.name ?? '-'
+                  ? (groups.find((group) => group.id === groupIdDomValue)
+                      ?.name ?? '-')
                   : i18n.attendances.noGroup
               }
               onClick={() => groupEditMode.update(() => true)}

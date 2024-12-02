@@ -103,8 +103,12 @@ export const FixedSpaceFlexWrap = styled.div<FixedSpaceFlexWrapProps>`
   justify-content: flex-start;
   align-items: flex-start;
 
-  margin-bottom: -${(p) => (p.verticalSpacing ? defaultMargins[p.verticalSpacing] : defaultMargins.s)};
-  margin-right: -${(p) => (p.horizontalSpacing ? defaultMargins[p.horizontalSpacing] : defaultMargins.s)};
+  margin-bottom: -${(p) =>
+      p.verticalSpacing ? defaultMargins[p.verticalSpacing] : defaultMargins.s};
+  margin-right: -${(p) =>
+      p.horizontalSpacing
+        ? defaultMargins[p.horizontalSpacing]
+        : defaultMargins.s};
 
   > * {
     margin-bottom: ${(p) =>

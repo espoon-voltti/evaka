@@ -280,10 +280,10 @@ export default React.memo(function AttendanceReservationByChild() {
                             fullDayAbsence: item.fullDayAbsence ? 'Poissa' : '',
                             reservationStartTime: item.fullDayAbsence
                               ? ''
-                              : item.reservation?.start.format() ?? '-',
+                              : (item.reservation?.start.format() ?? '-'),
                             reservationEndTime: item.fullDayAbsence
                               ? ''
-                              : item.reservation?.end.format() ?? '-'
+                              : (item.reservation?.end.format() ?? '-')
                           }
                         : []
                     )

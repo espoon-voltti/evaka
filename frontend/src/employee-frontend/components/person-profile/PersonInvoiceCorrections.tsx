@@ -251,9 +251,9 @@ const ChildSection = React.memo(function ChildSection({
               childId={child.id}
               row={
                 editTarget?.correctionId
-                  ? corrections.find(
+                  ? (corrections.find(
                       (c) => c.data.id === editTarget.correctionId
-                    )?.data ?? null
+                    )?.data ?? null)
                   : null
               }
               products={products}
