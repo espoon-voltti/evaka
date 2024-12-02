@@ -6,6 +6,7 @@ package evaka.codegen.api
 
 import evaka.codegen.fileHeader
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.utils.letIf
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.jvmName
@@ -82,6 +83,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             }
             .mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
+                    ApiClientConfig(mockedTimeSupport = false),
                     generator,
                     file,
                     TsImport.Named(TsProject.CitizenFrontend / "api-client.ts", "client"),
@@ -108,6 +110,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             }
             .mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
+                    ApiClientConfig(mockedTimeSupport = false),
                     generator,
                     file,
                     TsImport.Named(TsProject.EmployeeFrontend / "api/client.ts", "client"),
@@ -132,6 +135,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             }
             .mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
+                    ApiClientConfig(mockedTimeSupport = false),
                     generator,
                     file,
                     TsImport.Named(TsProject.EmployeeMobileFrontend / "client.ts", "client"),
@@ -144,6 +148,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             mapOf(
                 file to
                     generateApiClients(
+                        ApiClientConfig(mockedTimeSupport = true),
                         generator,
                         file,
                         TsImport.Named(TsProject.E2ETest / "dev-api", "devClient"),
@@ -211,7 +216,10 @@ fun generateImports(currentFile: TsFile, imports: Iterable<TsImport>): String =
             }
         }
 
+data class ApiClientConfig(val mockedTimeSupport: Boolean)
+
 fun generateApiClients(
+    config: ApiClientConfig,
     generator: TsCodeGenerator,
     file: TsFile,
     axiosClient: TsImport,
@@ -231,7 +239,7 @@ fun generateApiClients(
             .sortedWith(compareBy({ it.controllerClass.jvmName }, { it.controllerMethod.name }))
             .map {
                 try {
-                    generateApiClient(generator, axiosClient, it, wrapBody)
+                    generateApiClient(config, generator, axiosClient, it, wrapBody)
                 } catch (e: Exception) {
                     throw RuntimeException(
                         "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod.name}",
@@ -239,7 +247,11 @@ fun generateApiClients(
                     )
                 }
             }
-    val imports = clients.flatMap { it.imports }.toSet()
+    val imports =
+        clients
+            .flatMap { it.imports }
+            .toSet()
+            .letIf(config.mockedTimeSupport) { it + Imports.helsinkiDateTime }
     val sections = listOf(generateImports(file, imports)) + clients.map { it.text }
     return """$fileHeader
 ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
@@ -247,6 +259,7 @@ ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
 }
 
 fun generateApiClient(
+    config: ApiClientConfig,
     generator: TsCodeGenerator,
     axiosClient: TsImport,
     endpoint: EndpointMetadata,
@@ -260,15 +273,22 @@ fun generateApiClient(
             )
             .takeIf { it.properties.isNotEmpty() }
             ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }
-    val tsArgument =
-        if (argumentType != null)
-            TsCode {
-                "\n" +
+
+    val tsArgument = TsCode {
+        listOfNotNull(
+                if (argumentType != null)
                     "request: ${inline(generator.tsType(argumentType, compact = false))}"
-                        .prependIndent("  ") +
-                    "\n"
+                        .prependIndent("  ")
+                else null,
+                if (config.mockedTimeSupport) "  options?: { mockedTime?: HelsinkiDateTime }"
+                else null,
+            )
+            .let { params ->
+                if (params.isNotEmpty())
+                    params.joinToString(separator = ",\n", prefix = "\n", postfix = "\n")
+                else ""
             }
-        else null
+    }
 
     val pathVariables =
         if (endpoint.pathVariables.isNotEmpty())
@@ -314,6 +334,9 @@ ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
         listOfNotNull(
             TsCode { "url: ${ref(Imports.uri)}`${inline(url)}`.toString()" },
             TsCode { "method: '${endpoint.httpMethod}'" },
+            if (config.mockedTimeSupport)
+                TsCode { "headers: { EvakaMockedTime: options?.mockedTime?.formatIso() }" }
+            else null,
             createQueryParameters?.let { TsCode { "params" } },
             endpoint.requestBodyType?.let {
                 TsCode {
@@ -349,7 +372,7 @@ ${join(axiosArguments, ",\n").prependIndent("  ")}
 /**
 * Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
 */
-export async function ${endpoint.controllerMethod.name}(${inline(tsArgument ?: TsCode(""))}): Promise<${inline(tsResponseType)}> {
+export async function ${endpoint.controllerMethod.name}(${inline(tsArgument)}): Promise<${inline(tsResponseType)}> {
 ${inline(wrapBody(functionBody).prependIndent("  "))}
 }"""
     }
