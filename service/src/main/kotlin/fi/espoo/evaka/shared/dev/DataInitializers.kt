@@ -431,8 +431,8 @@ fun Database.Transaction.insertTestApplication(
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access, document, form_modified)
-VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(formModified)})
+INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access, document, form_modified, confidential)
+VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(formModified)}, NULL)
 """
             )
         }
@@ -942,6 +942,7 @@ INSERT INTO application(
     child_id,
     origin,
     checkedbyadmin,
+    confidential,
     hidefromguardian,
     transferapplication,
     allow_other_guardian_access,
@@ -958,6 +959,7 @@ VALUES (
     ${bind(application.childId)},
     ${bind(application.origin)}::application_origin_type,
     ${bind(application.checkedByAdmin)},
+    ${bind(application.confidential)},
     ${bind(application.hideFromGuardian)},
     ${bind(application.transferApplication)},
     ${bind(application.allowOtherGuardianAccess)},

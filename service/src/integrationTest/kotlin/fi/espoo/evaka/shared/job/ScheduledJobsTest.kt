@@ -314,6 +314,13 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = ApplicationStatus.WAITING_PLACEMENT,
             )
         db.transaction {
+            applicationStateService.setVerified(
+                it,
+                serviceWorker,
+                RealEvakaClock(),
+                applicationId,
+                false,
+            )
             applicationStateService.createPlacementPlan(
                 it,
                 serviceWorker,

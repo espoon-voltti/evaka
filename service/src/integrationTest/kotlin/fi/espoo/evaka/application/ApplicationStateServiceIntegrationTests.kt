@@ -529,7 +529,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             // given
             tx.insertApplication(
-                hasAdditionalInfo = false,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
@@ -552,7 +551,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             // given
             tx.insertApplication(
-                hasAdditionalInfo = true,
+                otherInfo = "something",
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
@@ -623,7 +622,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // given
             tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
-                hasAdditionalInfo = true,
+                diet = "vegaani",
+                allergies = "pähkinät",
                 applicationId = applicationId,
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
@@ -635,8 +635,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.read { tx ->
             // then
             val childDetails = tx.getChild(testChild_6.id)!!.additionalInformation
-            assertEquals("diet", childDetails.diet)
-            assertEquals("allergies", childDetails.allergies)
+            assertEquals("vegaani", childDetails.diet)
+            assertEquals("pähkinät", childDetails.allergies)
         }
     }
 
@@ -645,7 +645,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             // given
             tx.insertApplication(
-                hasAdditionalInfo = true,
+                diet = "vegaani",
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
@@ -654,7 +654,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.setVerified(tx, serviceWorker, clock, applicationId)
+            service.setVerified(tx, serviceWorker, clock, applicationId, confidential = null)
         }
         db.read { tx ->
             // then

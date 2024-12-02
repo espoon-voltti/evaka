@@ -624,6 +624,13 @@ WHERE id = ${bind(testDaycare.id)}
                         ),
                 )
 
+            applicationStateService.setVerified(
+                tx,
+                serviceWorker,
+                RealEvakaClock(),
+                applicationId,
+                false,
+            )
             applicationStateService.createPlacementPlan(
                 tx,
                 serviceWorker,

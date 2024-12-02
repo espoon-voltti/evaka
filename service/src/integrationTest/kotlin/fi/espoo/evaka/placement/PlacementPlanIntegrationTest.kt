@@ -664,6 +664,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         type: PlacementType,
         proposal: DaycarePlacementPlan,
     ): PlacementPlanId {
+        applicationController.setApplicationVerified(
+            dbInstance(),
+            serviceWorker,
+            clock,
+            applicationId,
+            false,
+        )
         applicationController.createPlacementPlan(
             dbInstance(),
             serviceWorker,
