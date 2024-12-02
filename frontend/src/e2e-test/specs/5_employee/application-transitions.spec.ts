@@ -87,9 +87,9 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-decisions-without-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
@@ -113,9 +113,9 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-decisions-without-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
@@ -142,7 +142,7 @@ describe('Application transitions', () => {
     await createApplications({ body: [fixture] })
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement', 'create-default-placement-plan'],
+      ['MOVE_TO_WAITING_PLACEMENT', 'CREATE_DEFAULT_PLACEMENT_PLAN'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -170,7 +170,7 @@ describe('Application transitions', () => {
     await createApplications({ body: [fixture] })
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement', 'create-default-placement-plan'],
+      ['MOVE_TO_WAITING_PLACEMENT', 'CREATE_DEFAULT_PLACEMENT_PLAN'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -239,7 +239,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -295,7 +295,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -331,7 +331,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 40))
     )
 
@@ -358,7 +358,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['send-decisions-without-proposal'],
+      ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
     )
 
@@ -393,7 +393,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 40))
     )
 
@@ -421,7 +421,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['send-decisions-without-proposal'],
+      ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
     )
 
@@ -454,18 +454,18 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
     await execSimpleApplicationActions(
       applicationId2,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
@@ -512,7 +512,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['confirm-decision-mailed'],
+      ['CONFIRM_DECISION_MAILED'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -535,9 +535,9 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       now
     )
@@ -583,9 +583,9 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )

@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
+import fi.espoo.evaka.application.SimpleApplicationAction
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
@@ -792,23 +793,12 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @PathVariable action: String,
+        @PathVariable action: SimpleApplicationAction,
     ) {
-        val simpleActions =
-            mapOf(
-                "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
-                "cancel-application" to applicationStateService::cancelApplication,
-                "send-decisions-without-proposal" to
-                    applicationStateService::sendDecisionsWithoutProposal,
-                "send-placement-proposal" to applicationStateService::sendPlacementProposal,
-                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed,
-            )
-
-        val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                actionFn.invoke(tx, fakeAdmin, clock, applicationId)
+                applicationStateService.doSimpleAction(tx, fakeAdmin, clock, action, applicationId)
             }
         }
         runAllAsyncJobs(clock)
@@ -2130,6 +2120,7 @@ data class DevApplicationWithForm(
     val childId: ChildId,
     val origin: ApplicationOrigin,
     val checkedByAdmin: Boolean,
+    val confidential: Boolean?,
     val hideFromGuardian: Boolean,
     val transferApplication: Boolean,
     val allowOtherGuardianAccess: Boolean = true,

@@ -97,9 +97,9 @@ describe('Employee application attachments', () => {
     await execSimpleApplicationActions(
       applicationFixtureId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       HelsinkiDateTime.now() // TODO: use mock clock
     )
@@ -152,9 +152,9 @@ describe('Employee application attachments', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       HelsinkiDateTime.now() // TODO: use mock clock
     )

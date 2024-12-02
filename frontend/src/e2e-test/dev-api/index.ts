@@ -8,10 +8,15 @@ import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
+import { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../config'
-import { runJobs, simpleAction } from '../generated/api-clients'
+import {
+  createDefaultPlacementPlan,
+  runJobs,
+  simpleAction
+} from '../generated/api-clients'
 import { DevPerson, MockVtjDataset } from '../generated/api-types'
 
 export class DevApiError extends BaseError {
@@ -46,24 +51,21 @@ export const devClient = axios.create({
   baseURL: config.devApiGwUrl
 })
 
-type ApplicationActionSimple =
-  | 'move-to-waiting-placement'
-  | 'cancel-application'
-  | 'set-verified'
-  | 'set-unverified'
-  | 'create-default-placement-plan'
-  | 'confirm-placement-without-decision'
-  | 'send-decisions-without-proposal'
-  | 'send-placement-proposal'
-  | 'confirm-decision-mailed'
+type DevApplicationAction =
+  | SimpleApplicationAction
+  | 'CREATE_DEFAULT_PLACEMENT_PLAN'
 
 export async function execSimpleApplicationAction(
   applicationId: string,
-  action: ApplicationActionSimple,
+  action: DevApplicationAction,
   mockedTime: HelsinkiDateTime
 ): Promise<void> {
   try {
-    await simpleAction({ applicationId, action }, { mockedTime })
+    if (action === 'CREATE_DEFAULT_PLACEMENT_PLAN') {
+      await createDefaultPlacementPlan({ applicationId }, { mockedTime })
+    } else {
+      await simpleAction({ applicationId, action }, { mockedTime })
+    }
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -71,7 +73,7 @@ export async function execSimpleApplicationAction(
 
 export async function execSimpleApplicationActions(
   applicationId: string,
-  actions: ApplicationActionSimple[],
+  actions: DevApplicationAction[],
   mockedTime: HelsinkiDateTime
 ): Promise<void> {
   for (const action of actions) {
