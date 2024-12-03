@@ -8,7 +8,7 @@ import { Link } from 'react-router'
 
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { Decision } from 'lib-common/generated/api-types/decision'
-import { UUID } from 'lib-common/types'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
@@ -43,7 +43,7 @@ const isDownloadAvailable = (decision: Decision) =>
   decision.documentKey !== null
 
 type Props = {
-  applicationId: UUID
+  applicationId: ApplicationId
   decisions: Decision[]
   reloadApplication: () => void
   applicationStatus: ApplicationStatus

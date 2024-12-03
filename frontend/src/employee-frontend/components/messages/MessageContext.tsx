@@ -27,7 +27,9 @@ import {
   PagedSentMessages,
   PagedMessageCopies
 } from 'lib-common/generated/api-types/messaging'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { fromNullableUuid } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
@@ -109,7 +111,7 @@ export interface MessagesState {
   messageCopiesAsThreads: Result<MessageThread[]>
   prefilledRecipient: string | null
   prefilledTitle: string | null
-  relatedApplicationId: UUID | null
+  relatedApplicationId: ApplicationId | null
   accountAllowsNewMessage: () => boolean
 }
 
@@ -182,7 +184,9 @@ export const MessageContextProvider = React.memo(
     const threadId = searchParams.get('threadId')
     const prefilledTitle = searchParams.get('title')
     const prefilledRecipient = searchParams.get('recipient')
-    const relatedApplicationId = searchParams.get('applicationId')
+    const relatedApplicationId = fromNullableUuid<ApplicationId>(
+      searchParams.get('applicationId')
+    )
     const replyBoxActive = searchParams.get('reply')
 
     const setParams = useCallback(

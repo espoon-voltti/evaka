@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { fromUuid } from 'lib-common/id-type'
 
 import config from '../../config'
 import { execSimpleApplicationAction, runPendingAsyncJobs } from '../../dev-api'
@@ -61,7 +63,7 @@ beforeEach(async () => {
       familyWithTwoGuardians.guardian,
       familyWithTwoGuardians.otherGuardian
     ),
-    id: '8634e2b9-200b-4a68-b956-66c5126f86a0'
+    id: fromUuid<ApplicationId>('8634e2b9-200b-4a68-b956-66c5126f86a0')
   }
   separatedFamilyApplication = {
     ...applicationFixture(
@@ -71,7 +73,7 @@ beforeEach(async () => {
       'DAYCARE',
       'NOT_AGREED'
     ),
-    id: '0c8b9ad3-d283-460d-a5d4-77bdcbc69374'
+    id: fromUuid<ApplicationId>('0c8b9ad3-d283-460d-a5d4-77bdcbc69374')
   }
   restrictedDetailsGuardianApplication = {
     ...applicationFixture(
@@ -81,7 +83,7 @@ beforeEach(async () => {
       'DAYCARE',
       'NOT_AGREED'
     ),
-    id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+    id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
   }
   await cleanUpMessages()
 

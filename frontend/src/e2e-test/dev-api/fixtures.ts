@@ -37,9 +37,10 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import { fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -848,7 +849,9 @@ export class Fixture {
   }
 
   static placementPlan(
-    initial: SemiPartial<PlacementPlan, 'unitId'> & { applicationId: UUID }
+    initial: SemiPartial<PlacementPlan, 'unitId'> & {
+      applicationId: ApplicationId
+    }
   ): PlacementPlanBuilder {
     return new PlacementPlanBuilder({
       periodStart: LocalDate.todayInSystemTz(),
@@ -1668,7 +1671,7 @@ export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
 }
 
 export class PlacementPlanBuilder extends FixtureBuilder<
-  PlacementPlan & { applicationId: UUID }
+  PlacementPlan & { applicationId: ApplicationId }
 > {
   async save() {
     const { applicationId, ...body } = this.data
@@ -2901,7 +2904,9 @@ const applicationForm = (
   }
 }
 
-export const applicationFixtureId = '9dd0e1ba-9b3b-11ea-bb37-0242ac130002'
+export const applicationFixtureId = fromUuid<ApplicationId>(
+  '9dd0e1ba-9b3b-11ea-bb37-0242ac130002'
+)
 export const applicationFixture = (
   child: DevPerson,
   guardian: DevPerson,
@@ -2957,7 +2962,7 @@ const feeThresholds = {
 }
 
 export const decisionFixture = (
-  applicationId: string,
+  applicationId: ApplicationId,
   startDate: LocalDate,
   endDate: LocalDate
 ): DecisionRequest => ({

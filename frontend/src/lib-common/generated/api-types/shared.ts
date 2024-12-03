@@ -5,9 +5,10 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { Id } from '../../id-type'
 import { JsonOf } from '../../json'
 
-export type ApplicationId = string
+export type ApplicationId = Id<'Application'>
 
 export type ApplicationNoteId = string
 

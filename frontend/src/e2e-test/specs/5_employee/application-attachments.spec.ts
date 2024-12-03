@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 
 import config from '../../config'
 import { execSimpleApplicationActions } from '../../dev-api'
@@ -128,7 +130,7 @@ describe('Employee application attachments', () => {
       id: daycareId
     }).save()
 
-    const applicationId = uuidv4()
+    const applicationId = randomId<ApplicationId>()
     await createApplications({
       body: [
         {

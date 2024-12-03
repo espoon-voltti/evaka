@@ -5,18 +5,19 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 
 import { ApplicationUIContext } from '../../state/application-ui'
 
 type Props = {
-  applicationId: string
+  applicationId: ApplicationId
 }
 
 export default React.memo(function ActionCheckbox({ applicationId }: Props) {
   const { checkedIds, setCheckedIds, showCheckboxes } =
     useContext(ApplicationUIContext)
-  const updateCheckedIds = (applicationId: string, checked: boolean) => {
+  const updateCheckedIds = (applicationId: ApplicationId, checked: boolean) => {
     if (checked) {
       setCheckedIds(checkedIds.concat(applicationId))
     } else {

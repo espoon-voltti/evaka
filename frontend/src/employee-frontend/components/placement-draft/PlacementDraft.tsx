@@ -23,9 +23,10 @@ import {
   PlacementPlanDraft,
   PlacementSummary
 } from 'lib-common/generated/api-types/placement'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -114,7 +115,7 @@ export interface DaycarePlacementPlanForm {
 }
 
 export default React.memo(function PlacementDraft() {
-  const { id: applicationId } = useRouteParams(['id'])
+  const applicationId = useIdRouteParam<ApplicationId>('id')
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const [placementDraft, setPlacementDraft] = useState<

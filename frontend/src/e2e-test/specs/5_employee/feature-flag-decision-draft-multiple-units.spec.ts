@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -73,7 +75,7 @@ describe('Application transitions', () => {
         'SENT',
         mockedTime
       ),
-      id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
     const applicationId = fixture.id
     await createApplications({ body: [fixture] })
@@ -135,7 +137,7 @@ describe('Application transitions', () => {
         'SENT',
         mockedTime
       ),
-      id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
     const applicationId = fixture.id
     await createApplications({ body: [fixture] })
