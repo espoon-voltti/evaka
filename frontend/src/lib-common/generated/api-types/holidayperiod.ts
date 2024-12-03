@@ -7,15 +7,17 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { AbsenceType } from './absence'
+import { HolidayPeriodId } from './shared'
+import { HolidayQuestionnaireId } from './shared'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 import { Translatable } from './shared'
-import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.ActiveQuestionnaire
 */
 export interface ActiveQuestionnaire {
-  eligibleChildren: UUID[]
+  eligibleChildren: PersonId[]
   previousAnswers: HolidayQuestionnaireAnswer[]
   questionnaire: FixedPeriodQuestionnaire
 }
@@ -29,7 +31,7 @@ export interface FixedPeriodQuestionnaire {
   conditions: QuestionnaireConditions
   description: Translatable
   descriptionLink: Translatable
-  id: UUID
+  id: HolidayQuestionnaireId
   periodOptionLabel: Translatable
   periodOptions: FiniteDateRange[]
   requiresStrongAuth: boolean
@@ -56,14 +58,14 @@ export interface FixedPeriodQuestionnaireBody {
 * Generated from fi.espoo.evaka.holidayperiod.FixedPeriodsBody
 */
 export interface FixedPeriodsBody {
-  fixedPeriods: Partial<Record<UUID, FiniteDateRange | null>>
+  fixedPeriods: Partial<Record<PersonId, FiniteDateRange | null>>
 }
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriod
 */
 export interface HolidayPeriod {
-  id: UUID
+  id: HolidayPeriodId
   period: FiniteDateRange
   reservationDeadline: LocalDate
   reservationsOpenOn: LocalDate
@@ -122,9 +124,9 @@ export interface HolidayPeriodUpdate {
 * Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireAnswer
 */
 export interface HolidayQuestionnaireAnswer {
-  childId: UUID
+  childId: PersonId
   fixedPeriod: FiniteDateRange | null
-  questionnaireId: UUID
+  questionnaireId: HolidayQuestionnaireId
 }
 
 /**

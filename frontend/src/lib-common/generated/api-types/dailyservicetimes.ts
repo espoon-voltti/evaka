@@ -8,15 +8,16 @@ import DateRange from '../../date-range'
 import LocalDate from '../../local-date'
 import TimeRange from '../../time-range'
 import { Action } from '../action'
+import { DailyServicesTimeId } from './shared'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 */
 export interface DailyServiceTimes {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: DailyServicesTimeId
   times: DailyServiceTimesValue
 }
 

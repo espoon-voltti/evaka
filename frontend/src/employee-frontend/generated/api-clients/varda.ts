@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 
@@ -15,7 +15,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function markChildForVardaReset(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({

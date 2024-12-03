@@ -5,16 +5,19 @@
 // GENERATED FILE: no manual modifications
 
 import { AcceptServiceApplicationBody } from 'lib-common/generated/api-types/serviceneed'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { EmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ServiceApplicationId } from 'lib-common/generated/api-types/shared'
 import { ServiceApplicationRejection } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedCreateRequest } from 'lib-common/generated/api-types/serviceneed'
+import { ServiceNeedId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedUpdateRequest } from 'lib-common/generated/api-types/serviceneed'
-import { UUID } from 'lib-common/types'
 import { UndecidedServiceApplicationSummary } from 'lib-common/generated/api-types/serviceneed'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -30,7 +33,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function deleteServiceNeed(
   request: {
-    id: UUID
+    id: ServiceNeedId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -95,7 +98,7 @@ export async function postServiceNeed(
 */
 export async function putServiceNeed(
   request: {
-    id: UUID,
+    id: ServiceNeedId,
     body: ServiceNeedUpdateRequest
   }
 ): Promise<void> {
@@ -113,7 +116,7 @@ export async function putServiceNeed(
 */
 export async function acceptServiceApplication(
   request: {
-    id: UUID,
+    id: ServiceApplicationId,
     body: AcceptServiceApplicationBody
   }
 ): Promise<void> {
@@ -131,7 +134,7 @@ export async function acceptServiceApplication(
 */
 export async function getChildServiceApplications(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<EmployeeServiceApplication[]> {
   const params = createUrlSearchParams(
@@ -151,7 +154,7 @@ export async function getChildServiceApplications(
 */
 export async function getUndecidedServiceApplications(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<UndecidedServiceApplicationSummary[]> {
   const params = createUrlSearchParams(
@@ -171,7 +174,7 @@ export async function getUndecidedServiceApplications(
 */
 export async function rejectServiceApplication(
   request: {
-    id: UUID,
+    id: ServiceApplicationId,
     body: ServiceApplicationRejection
   }
 ): Promise<void> {

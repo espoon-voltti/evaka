@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
-import { UUID } from '../../types'
+import { EvakaUserId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.user.EvakaUser
 */
 export interface EvakaUser {
-  id: UUID
+  id: EvakaUserId
   name: string
   type: EvakaUserType
 }

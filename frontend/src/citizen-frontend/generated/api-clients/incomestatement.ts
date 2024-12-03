@@ -8,10 +8,11 @@ import LocalDate from 'lib-common/local-date'
 import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
+import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PagedIncomeStatements } from 'lib-common/generated/api-types/incomestatement'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonIncomeStatement } from 'lib-common/generated/api-types/incomestatement'
@@ -24,7 +25,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function createChildIncomeStatement(
   request: {
-    childId: UUID,
+    childId: PersonId,
     draft?: boolean | null,
     body: IncomeStatementBody
   }
@@ -69,7 +70,7 @@ export async function createIncomeStatement(
 */
 export async function deleteIncomeStatement(
   request: {
-    id: UUID
+    id: IncomeStatementId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -85,8 +86,8 @@ export async function deleteIncomeStatement(
 */
 export async function getChildIncomeStatement(
   request: {
-    childId: UUID,
-    incomeStatementId: UUID
+    childId: PersonId,
+    incomeStatementId: IncomeStatementId
   }
 ): Promise<IncomeStatement> {
   const { data: json } = await client.request<JsonOf<IncomeStatement>>({
@@ -102,7 +103,7 @@ export async function getChildIncomeStatement(
 */
 export async function getChildIncomeStatementStartDates(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<LocalDate[]> {
   const { data: json } = await client.request<JsonOf<LocalDate[]>>({
@@ -118,7 +119,7 @@ export async function getChildIncomeStatementStartDates(
 */
 export async function getChildIncomeStatements(
   request: {
-    childId: UUID,
+    childId: PersonId,
     page: number
   }
 ): Promise<PagedIncomeStatements> {
@@ -139,7 +140,7 @@ export async function getChildIncomeStatements(
 */
 export async function getIncomeStatement(
   request: {
-    incomeStatementId: UUID
+    incomeStatementId: IncomeStatementId
   }
 ): Promise<IncomeStatement> {
   const { data: json } = await client.request<JsonOf<IncomeStatement>>({
@@ -199,8 +200,8 @@ export async function getIncomeStatements(
 */
 export async function removeChildIncomeStatement(
   request: {
-    childId: UUID,
-    id: UUID
+    childId: PersonId,
+    id: IncomeStatementId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -216,8 +217,8 @@ export async function removeChildIncomeStatement(
 */
 export async function updateChildIncomeStatement(
   request: {
-    childId: UUID,
-    incomeStatementId: UUID,
+    childId: PersonId,
+    incomeStatementId: IncomeStatementId,
     draft: boolean,
     body: IncomeStatementBody
   }
@@ -240,7 +241,7 @@ export async function updateChildIncomeStatement(
 */
 export async function updateIncomeStatement(
   request: {
-    incomeStatementId: UUID,
+    incomeStatementId: IncomeStatementId,
     draft: boolean,
     body: IncomeStatementBody
   }

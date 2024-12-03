@@ -4,7 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
-import { UUID } from '../../types'
+import { AttachmentId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.attachment.AttachmentType
@@ -18,7 +18,7 @@ export type AttachmentType =
 */
 export interface IncomeAttachment {
   contentType: string
-  id: UUID
+  id: AttachmentId
   name: string
 }
 
@@ -27,6 +27,6 @@ export interface IncomeAttachment {
 */
 export interface MessageAttachment {
   contentType: string
-  id: UUID
+  id: AttachmentId
   name: string
 }

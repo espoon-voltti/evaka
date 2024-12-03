@@ -7,9 +7,9 @@
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
+import { PairingId } from 'lib-common/generated/api-types/shared'
 import { PairingStatusRes } from 'lib-common/generated/api-types/pairing'
 import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
-import { UUID } from 'lib-common/types'
 import { client } from '../../client'
 import { deserializeJsonPairing } from 'lib-common/generated/api-types/pairing'
 import { uri } from 'lib-common/uri'
@@ -20,7 +20,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getPairingStatus(
   request: {
-    id: UUID
+    id: PairingId
   }
 ): Promise<PairingStatusRes> {
   const { data: json } = await client.request<JsonOf<PairingStatusRes>>({

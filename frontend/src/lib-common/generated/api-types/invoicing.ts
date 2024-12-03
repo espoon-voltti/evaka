@@ -10,20 +10,37 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import YearMonth from '../../year-month'
 import { Action } from '../action'
+import { ApplicationId } from './shared'
+import { AreaId } from './shared'
+import { AttachmentId } from './shared'
 import { CareType } from './daycare'
+import { DaycareId } from './shared'
+import { EmployeeId } from './shared'
 import { EvakaUser } from './user'
+import { EvakaUserId } from './shared'
+import { FeeAlterationId } from './shared'
+import { FeeDecisionId } from './shared'
+import { FeeThresholdsId } from './shared'
 import { IncomeAttachment } from './attachment'
+import { IncomeId } from './shared'
+import { InvoiceCorrectionId } from './shared'
+import { InvoiceId } from './shared'
+import { InvoiceRowId } from './shared'
 import { JsonOf } from '../../json'
+import { PaymentId } from './shared'
+import { PersonId } from './shared'
 import { PlacementType } from './placement'
 import { ProviderType } from './daycare'
-import { UUID } from '../../types'
+import { ServiceNeedOptionId } from './shared'
+import { ServiceNeedOptionVoucherValueId } from './shared'
+import { VoucherValueDecisionId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 */
 export interface ChildWithDateOfBirth {
   dateOfBirth: LocalDate
-  id: UUID
+  id: PersonId
 }
 
 /**
@@ -65,7 +82,7 @@ export type DistinctiveParams = typeof feeDecisionDistinctiveParams[number]
 */
 export interface EmployeeWithName {
   firstName: string
-  id: UUID
+  id: EmployeeId
   lastName: string
 }
 
@@ -75,12 +92,12 @@ export interface EmployeeWithName {
 export interface FeeAlteration {
   amount: number
   attachments: FeeAlterationAttachment[]
-  id: UUID | null
+  id: FeeAlterationId | null
   isAbsolute: boolean
   modifiedAt: HelsinkiDateTime | null
   modifiedBy: EvakaUser | null
   notes: string
-  personId: UUID
+  personId: PersonId
   type: FeeAlterationType
   validFrom: LocalDate
   validTo: LocalDate | null
@@ -91,7 +108,7 @@ export interface FeeAlteration {
 */
 export interface FeeAlterationAttachment {
   contentType: string
-  id: UUID
+  id: AttachmentId
   name: string
 }
 
@@ -129,20 +146,20 @@ export interface FeeAlterationWithPermittedActions {
 */
 export interface FeeDecision {
   approvedAt: HelsinkiDateTime | null
-  approvedById: UUID | null
+  approvedById: EmployeeId | null
   children: FeeDecisionChild[]
   created: HelsinkiDateTime
-  decisionHandlerId: UUID | null
+  decisionHandlerId: EmployeeId | null
   decisionNumber: number | null
   decisionType: FeeDecisionType
   difference: FeeDecisionDifference[]
   documentKey: string | null
   familySize: number
   feeThresholds: FeeDecisionThresholds
-  headOfFamilyId: UUID
+  headOfFamilyId: PersonId
   headOfFamilyIncome: DecisionIncome | null
-  id: UUID
-  partnerId: UUID | null
+  id: FeeDecisionId
+  partnerId: PersonId | null
   partnerIncome: DecisionIncome | null
   sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
@@ -183,7 +200,7 @@ export interface FeeDecisionChildDetailed {
   serviceNeedDescriptionSv: string
   serviceNeedFeeCoefficient: number
   serviceNeedMissing: boolean
-  serviceNeedOptionId: UUID | null
+  serviceNeedOptionId: ServiceNeedOptionId | null
   siblingDiscount: number
 }
 
@@ -205,7 +222,7 @@ export interface FeeDecisionDetailed {
   financeDecisionHandlerLastName: string | null
   headOfFamily: PersonDetailed
   headOfFamilyIncome: DecisionIncome | null
-  id: UUID
+  id: FeeDecisionId
   incomeEffect: IncomeEffect
   isRetroactive: boolean
   partner: PersonDetailed | null
@@ -241,7 +258,7 @@ export type FeeDecisionDifference = typeof feeDecisionDifferences[number]
 */
 export interface FeeDecisionPlacement {
   type: PlacementType
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -253,7 +270,7 @@ export interface FeeDecisionServiceNeed {
   descriptionSv: string
   feeCoefficient: number
   missing: boolean
-  optionId: UUID | null
+  optionId: ServiceNeedOptionId | null
 }
 
 /**
@@ -291,7 +308,7 @@ export interface FeeDecisionSummary {
   difference: FeeDecisionDifference[]
   finalPrice: number
   headOfFamily: PersonBasic
-  id: UUID
+  id: FeeDecisionId
   sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
   validDuring: FiniteDateRange
@@ -359,7 +376,7 @@ export interface FeeThresholds {
 * Generated from fi.espoo.evaka.invoicing.controller.FeeThresholdsWithId
 */
 export interface FeeThresholdsWithId {
-  id: UUID
+  id: FeeThresholdsId
   thresholds: FeeThresholds
 }
 
@@ -378,23 +395,23 @@ export type FinanceDecisionType = typeof financeDecisionTypes[number]
 */
 export interface GenerateDecisionsBody {
   starting: string
-  targetHeads: (UUID | null)[]
+  targetHeads: (PersonId | null)[]
 }
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.Income
 */
 export interface Income {
-  applicationId: UUID | null
+  applicationId: ApplicationId | null
   attachments: IncomeAttachment[]
   data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
-  id: UUID
+  id: IncomeId
   isEntrepreneur: boolean
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
   notes: string
-  personId: UUID
+  personId: PersonId
   total: number
   totalExpenses: number
   totalIncome: number
@@ -433,7 +450,7 @@ export type IncomeEffect =
 export interface IncomeNotification {
   created: HelsinkiDateTime
   notificationType: IncomeNotificationType
-  receiverId: UUID
+  receiverId: PersonId
 }
 
 /**
@@ -465,7 +482,7 @@ export interface IncomeRequest {
   effect: IncomeEffect
   isEntrepreneur: boolean
   notes: string
-  personId: UUID
+  personId: PersonId
   validFrom: LocalDate
   validTo: LocalDate | null
   worksAtECHA: boolean
@@ -510,16 +527,16 @@ export interface InvoiceCodes {
 */
 export interface InvoiceCorrection {
   amount: number
-  childId: UUID
+  childId: PersonId
   description: string
-  headOfFamilyId: UUID
-  id: UUID
+  headOfFamilyId: PersonId
+  id: InvoiceCorrectionId
   invoice: InvoiceWithCorrection | null
   note: string
   period: FiniteDateRange
   product: string
   targetMonth: YearMonth | null
-  unitId: UUID
+  unitId: DaycareId
   unitPrice: number
 }
 
@@ -528,13 +545,13 @@ export interface InvoiceCorrection {
 */
 export interface InvoiceCorrectionInsert {
   amount: number
-  childId: UUID
+  childId: PersonId
   description: string
-  headOfFamilyId: UUID
+  headOfFamilyId: PersonId
   note: string
   period: FiniteDateRange
   product: string
-  unitId: UUID
+  unitId: DaycareId
   unitPrice: number
 }
 
@@ -551,7 +568,7 @@ export interface InvoiceCorrectionWithPermittedActions {
 */
 export interface InvoiceDaycare {
   costCenter: string | null
-  id: UUID
+  id: DaycareId
   name: string
 }
 
@@ -561,17 +578,17 @@ export interface InvoiceDaycare {
 export interface InvoiceDetailed {
   account: number
   agreementType: number | null
-  areaId: UUID
+  areaId: AreaId
   codebtor: PersonDetailed | null
   dueDate: LocalDate
   headOfFamily: PersonDetailed
-  id: UUID
+  id: InvoiceId
   invoiceDate: LocalDate
   number: number | null
   periodEnd: LocalDate
   periodStart: LocalDate
   relatedFeeDecisions: RelatedFeeDecision[]
-  replacedInvoiceId: UUID | null
+  replacedInvoiceId: InvoiceId | null
   replacementNotes: string | null
   replacementReason: InvoiceReplacementReason | null
   revisionNumber: number
@@ -629,11 +646,11 @@ export type InvoiceReplacementReason = typeof invoiceReplacementReasons[number]
 export interface InvoiceRowDetailed {
   amount: number
   child: PersonDetailed
-  correctionId: UUID | null
+  correctionId: InvoiceCorrectionId | null
   costCenter: string
   daycareType: CareType[]
   description: string
-  id: UUID
+  id: InvoiceRowId
   note: string | null
   periodEnd: LocalDate
   periodStart: LocalDate
@@ -641,7 +658,7 @@ export interface InvoiceRowDetailed {
   product: string
   savedCostCenter: string | null
   subCostCenter: string | null
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
   unitPrice: number
   unitProviderType: ProviderType
@@ -676,12 +693,12 @@ export interface InvoiceSummary {
   children: PersonBasic[]
   createdAt: HelsinkiDateTime | null
   headOfFamily: PersonDetailed
-  id: UUID
+  id: InvoiceId
   periodEnd: LocalDate
   periodStart: LocalDate
   revisionNumber: number
   sentAt: HelsinkiDateTime | null
-  sentBy: UUID | null
+  sentBy: EvakaUserId | null
   status: InvoiceStatus
   totalPrice: number
 }
@@ -698,7 +715,7 @@ export interface InvoiceSummaryResponse {
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceWithCorrection
 */
 export interface InvoiceWithCorrection {
-  id: UUID
+  id: InvoiceId
   status: InvoiceStatus
 }
 
@@ -760,12 +777,12 @@ export interface Payment {
   amount: number
   created: HelsinkiDateTime
   dueDate: LocalDate | null
-  id: UUID
+  id: PaymentId
   number: number | null
   paymentDate: LocalDate | null
   period: DateRange
   sentAt: HelsinkiDateTime | null
-  sentBy: UUID | null
+  sentBy: EvakaUserId | null
   status: PaymentStatus
   unit: PaymentUnit
   updated: HelsinkiDateTime
@@ -802,7 +819,7 @@ export interface PaymentUnit {
   businessId: string | null
   careType: CareType[]
   iban: string | null
-  id: UUID
+  id: DaycareId
   name: string
   providerId: string | null
 }
@@ -813,7 +830,7 @@ export interface PaymentUnit {
 export interface PersonBasic {
   dateOfBirth: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   ssn: string | null
 }
@@ -827,7 +844,7 @@ export interface PersonDetailed {
   email: string | null
   firstName: string
   forceManualFeeDecisions: boolean
-  id: UUID
+  id: PersonId
   invoiceRecipientName: string
   invoicingPostOffice: string
   invoicingPostalCode: string
@@ -856,7 +873,7 @@ export interface ProductWithName {
 */
 export interface RelatedFeeDecision {
   decisionNumber: number
-  id: UUID
+  id: FeeDecisionId
 }
 
 /**
@@ -867,7 +884,7 @@ export interface SearchFeeDecisionRequest {
   difference: FeeDecisionDifference[] | null
   distinctions: DistinctiveParams[] | null
   endDate: LocalDate | null
-  financeDecisionHandlerId: UUID | null
+  financeDecisionHandlerId: EmployeeId | null
   page: number
   searchByStartDate: boolean
   searchTerms: string | null
@@ -875,7 +892,7 @@ export interface SearchFeeDecisionRequest {
   sortDirection: SortDirection | null
   startDate: LocalDate | null
   statuses: FeeDecisionStatus[] | null
-  unit: UUID | null
+  unit: DaycareId | null
 }
 
 /**
@@ -891,7 +908,7 @@ export interface SearchInvoicesRequest {
   sortBy: InvoiceSortParam | null
   sortDirection: SortDirection | null
   status: InvoiceStatus
-  unit: UUID | null
+  unit: DaycareId | null
 }
 
 /**
@@ -907,7 +924,7 @@ export interface SearchPaymentsRequest {
   sortBy: PaymentSortParam
   sortDirection: SortDirection
   status: PaymentStatus
-  unit: UUID | null
+  unit: DaycareId | null
 }
 
 /**
@@ -918,7 +935,7 @@ export interface SearchVoucherValueDecisionRequest {
   difference: VoucherValueDecisionDifference[] | null
   distinctions: VoucherValueDecisionDistinctiveParams[] | null
   endDate: LocalDate | null
-  financeDecisionHandlerId: UUID | null
+  financeDecisionHandlerId: EmployeeId | null
   page: number
   searchByStartDate: boolean
   searchTerms: string | null
@@ -926,7 +943,7 @@ export interface SearchVoucherValueDecisionRequest {
   sortDirection: SortDirection | null
   startDate: LocalDate | null
   statuses: VoucherValueDecisionStatus[]
-  unit: UUID | null
+  unit: DaycareId | null
 }
 
 /**
@@ -935,7 +952,7 @@ export interface SearchVoucherValueDecisionRequest {
 export interface SendPaymentsRequest {
   dueDate: LocalDate
   paymentDate: LocalDate
-  paymentIds: UUID[]
+  paymentIds: PaymentId[]
 }
 
 /**
@@ -947,7 +964,7 @@ export interface ServiceNeedOptionVoucherValueRange {
   coefficient: number
   coefficientUnder3y: number
   range: DateRange
-  serviceNeedOptionId: UUID
+  serviceNeedOptionId: ServiceNeedOptionId
   value: number
   valueUnder3y: number
 }
@@ -956,7 +973,7 @@ export interface ServiceNeedOptionVoucherValueRange {
 * Generated from fi.espoo.evaka.invoicing.controller.ServiceNeedOptionVoucherValueRangeWithId
 */
 export interface ServiceNeedOptionVoucherValueRangeWithId {
-  id: UUID
+  id: ServiceNeedOptionVoucherValueId
   voucherValues: ServiceNeedOptionVoucherValueRange
 }
 
@@ -971,9 +988,9 @@ export type SortDirection =
 * Generated from fi.espoo.evaka.invoicing.domain.UnitData
 */
 export interface UnitData {
-  areaId: UUID
+  areaId: AreaId
   areaName: string
-  id: UUID
+  id: DaycareId
   language: string
   name: string
 }
@@ -1004,7 +1021,7 @@ export interface VoucherValueDecisionDetailed {
   financeDecisionHandlerLastName: string | null
   headOfFamily: PersonDetailed
   headOfFamilyIncome: DecisionIncome | null
-  id: UUID
+  id: VoucherValueDecisionId
   incomeEffect: IncomeEffect
   isRetroactive: boolean
   partner: PersonDetailed | null
@@ -1113,7 +1130,7 @@ export interface VoucherValueDecisionSummary {
   difference: VoucherValueDecisionDifference[]
   finalCoPayment: number
   headOfFamily: PersonBasic
-  id: UUID
+  id: VoucherValueDecisionId
   sentAt: HelsinkiDateTime | null
   status: VoucherValueDecisionStatus
   validFrom: LocalDate

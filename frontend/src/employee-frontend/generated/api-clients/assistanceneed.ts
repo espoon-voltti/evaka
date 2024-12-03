@@ -8,13 +8,16 @@ import { AnnulAssistanceNeedDecisionRequest } from 'lib-common/generated/api-typ
 import { AnnulAssistanceNeedPreschoolDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { AssistanceNeedDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedVoucherCoefficientId } from 'lib-common/generated/api-types/shared'
 import { AssistanceNeedVoucherCoefficientRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedVoucherCoefficientResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { DecideAssistanceNeedDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
@@ -22,7 +25,7 @@ import { DecideAssistanceNeedPreschoolDecisionRequest } from 'lib-common/generat
 import { Employee } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { UpdateDecisionMakerForAssistanceNeedDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { client } from '../../api/client'
@@ -43,7 +46,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function annulAssistanceNeedDecision(
   request: {
-    id: UUID,
+    id: AssistanceNeedDecisionId,
     body: AnnulAssistanceNeedDecisionRequest
   }
 ): Promise<void> {
@@ -61,7 +64,7 @@ export async function annulAssistanceNeedDecision(
 */
 export async function createAssistanceNeedDecision(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: AssistanceNeedDecisionRequest
   }
 ): Promise<AssistanceNeedDecision> {
@@ -79,7 +82,7 @@ export async function createAssistanceNeedDecision(
 */
 export async function decideAssistanceNeedDecision(
   request: {
-    id: UUID,
+    id: AssistanceNeedDecisionId,
     body: DecideAssistanceNeedDecisionRequest
   }
 ): Promise<void> {
@@ -97,7 +100,7 @@ export async function decideAssistanceNeedDecision(
 */
 export async function deleteAssistanceNeedDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -113,7 +116,7 @@ export async function deleteAssistanceNeedDecision(
 */
 export async function getAssistanceDecisionMakerOptions(
   request: {
-    id: UUID
+    id: AssistanceNeedDecisionId
   }
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
@@ -129,7 +132,7 @@ export async function getAssistanceDecisionMakerOptions(
 */
 export async function getAssistanceNeedDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedDecisionId
   }
 ): Promise<AssistanceNeedDecisionResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionResponse>>({
@@ -145,7 +148,7 @@ export async function getAssistanceNeedDecision(
 */
 export async function getAssistanceNeedDecisions(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<AssistanceNeedDecisionBasicsResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionBasicsResponse[]>>({
@@ -161,7 +164,7 @@ export async function getAssistanceNeedDecisions(
 */
 export async function markAssistanceNeedDecisionAsOpened(
   request: {
-    id: UUID
+    id: AssistanceNeedDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -177,7 +180,7 @@ export async function markAssistanceNeedDecisionAsOpened(
 */
 export async function revertToUnsentAssistanceNeedDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -193,7 +196,7 @@ export async function revertToUnsentAssistanceNeedDecision(
 */
 export async function sendAssistanceNeedDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -209,7 +212,7 @@ export async function sendAssistanceNeedDecision(
 */
 export async function updateAssistanceNeedDecision(
   request: {
-    id: UUID,
+    id: AssistanceNeedDecisionId,
     body: AssistanceNeedDecisionRequest
   }
 ): Promise<void> {
@@ -227,7 +230,7 @@ export async function updateAssistanceNeedDecision(
 */
 export async function updateAssistanceNeedDecisionDecisionMaker(
   request: {
-    id: UUID,
+    id: AssistanceNeedDecisionId,
     body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
   }
 ): Promise<void> {
@@ -245,7 +248,7 @@ export async function updateAssistanceNeedDecisionDecisionMaker(
 */
 export async function annulAssistanceNeedPreschoolDecision(
   request: {
-    id: UUID,
+    id: AssistanceNeedPreschoolDecisionId,
     body: AnnulAssistanceNeedPreschoolDecisionRequest
   }
 ): Promise<void> {
@@ -263,7 +266,7 @@ export async function annulAssistanceNeedPreschoolDecision(
 */
 export async function createAssistanceNeedPreschoolDecision(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<AssistanceNeedPreschoolDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecision>>({
@@ -279,7 +282,7 @@ export async function createAssistanceNeedPreschoolDecision(
 */
 export async function decideAssistanceNeedPreschoolDecision(
   request: {
-    id: UUID,
+    id: AssistanceNeedPreschoolDecisionId,
     body: DecideAssistanceNeedPreschoolDecisionRequest
   }
 ): Promise<void> {
@@ -297,7 +300,7 @@ export async function decideAssistanceNeedPreschoolDecision(
 */
 export async function deleteAssistanceNeedPreschoolDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -313,7 +316,7 @@ export async function deleteAssistanceNeedPreschoolDecision(
 */
 export async function getAssistanceNeedPreschoolDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<AssistanceNeedPreschoolDecisionResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecisionResponse>>({
@@ -329,7 +332,7 @@ export async function getAssistanceNeedPreschoolDecision(
 */
 export async function getAssistanceNeedPreschoolDecisions(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<AssistanceNeedPreschoolDecisionBasicsResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecisionBasicsResponse[]>>({
@@ -345,7 +348,7 @@ export async function getAssistanceNeedPreschoolDecisions(
 */
 export async function getAssistancePreschoolDecisionMakerOptions(
   request: {
-    id: UUID
+    id: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
@@ -361,7 +364,7 @@ export async function getAssistancePreschoolDecisionMakerOptions(
 */
 export async function markAssistanceNeedPreschoolDecisionAsOpened(
   request: {
-    id: UUID
+    id: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -377,7 +380,7 @@ export async function markAssistanceNeedPreschoolDecisionAsOpened(
 */
 export async function revertAssistanceNeedPreschoolDecisionToUnsent(
   request: {
-    id: UUID
+    id: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -393,7 +396,7 @@ export async function revertAssistanceNeedPreschoolDecisionToUnsent(
 */
 export async function sendAssistanceNeedPreschoolDecisionForDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -409,7 +412,7 @@ export async function sendAssistanceNeedPreschoolDecisionForDecision(
 */
 export async function updateAssistanceNeedPreschoolDecision(
   request: {
-    id: UUID,
+    id: AssistanceNeedPreschoolDecisionId,
     body: AssistanceNeedPreschoolDecisionForm
   }
 ): Promise<void> {
@@ -427,7 +430,7 @@ export async function updateAssistanceNeedPreschoolDecision(
 */
 export async function updateAssistanceNeedPreschoolDecisionDecisionMaker(
   request: {
-    id: UUID,
+    id: AssistanceNeedPreschoolDecisionId,
     body: UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest
   }
 ): Promise<void> {
@@ -445,7 +448,7 @@ export async function updateAssistanceNeedPreschoolDecisionDecisionMaker(
 */
 export async function createAssistanceNeedVoucherCoefficient(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: AssistanceNeedVoucherCoefficientRequest
   }
 ): Promise<AssistanceNeedVoucherCoefficient> {
@@ -463,7 +466,7 @@ export async function createAssistanceNeedVoucherCoefficient(
 */
 export async function deleteAssistanceNeedVoucherCoefficient(
   request: {
-    id: UUID
+    id: AssistanceNeedVoucherCoefficientId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -479,7 +482,7 @@ export async function deleteAssistanceNeedVoucherCoefficient(
 */
 export async function getAssistanceNeedVoucherCoefficients(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<AssistanceNeedVoucherCoefficientResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedVoucherCoefficientResponse[]>>({
@@ -495,7 +498,7 @@ export async function getAssistanceNeedVoucherCoefficients(
 */
 export async function updateAssistanceNeedVoucherCoefficient(
   request: {
-    id: UUID,
+    id: AssistanceNeedVoucherCoefficientId,
     body: AssistanceNeedVoucherCoefficientRequest
   }
 ): Promise<AssistanceNeedVoucherCoefficient> {
