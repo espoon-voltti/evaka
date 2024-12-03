@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { useNavigate } from 'react-router'
 
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { featureFlags } from 'lib-customizations/employee'
 
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 
 import FixedPeriodQuestionnaireForm from './FixedPeriodQuestionnaireForm'
@@ -18,6 +18,7 @@ import { questionnaireQuery } from './queries'
 
 export default React.memo(function QuestionnaireEditor() {
   const { id } = useRouteParams(['id'])
+  const { user } = useContext(UserContext)
 
   const questionnaire = useQueryResult(questionnaireQuery({ id }), {
     enabled: id !== 'new'
@@ -34,7 +35,7 @@ export default React.memo(function QuestionnaireEditor() {
     <Container>
       <ContentArea opaque>
         {id === 'new' ? (
-          featureFlags.holidayQuestionnaireType === 'OPEN_RANGES' ? (
+          user?.accessibleFeatures.openRangesHolidayQuestionnaire ? (
             <OpenRangesQuestionnaireForm
               onSuccess={navigateToList}
               onCancel={navigateToList}
