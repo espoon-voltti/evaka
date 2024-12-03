@@ -181,6 +181,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       .subDays(today.getIsoDayOfWeek() - 1)
 
     const reservationsModal = await calendarPage.openReservationModal()
+    await reservationsModal.waitUntilVisible()
     await reservationsModal.deselectAllChildren()
     await reservationsModal.selectChild(testChildRestricted.id)
     await reservationsModal.startDate.fill(firstReservationDay)
