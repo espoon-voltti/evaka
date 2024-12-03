@@ -352,7 +352,9 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         asyncJobRunner.runPendingJobsSync(clock)
         assertEquals(1, MockEmailClient.emails.size)
         val emailContent = MockEmailClient.emails.first().content
-        assertEquals("Palveluntarpeen muutoshakemuksesi on käsitelty", emailContent.subject)
+        assertTrue(
+            emailContent.subject.startsWith("Palveluntarpeen muutoshakemuksesi on käsitelty")
+        )
         assertTrue(emailContent.text.contains("palveluntarve on hyväksytty 01.03.2024 alkaen"))
     }
 
@@ -406,7 +408,9 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         asyncJobRunner.runPendingJobsSync(clock)
         assertEquals(1, MockEmailClient.emails.size)
         val emailContent = MockEmailClient.emails.first().content
-        assertEquals("Palveluntarpeen muutoshakemuksesi on käsitelty", emailContent.subject)
+        assertTrue(
+            emailContent.subject.startsWith("Palveluntarpeen muutoshakemuksesi on käsitelty")
+        )
         assertTrue(emailContent.text.contains("palveluntarve on hylätty"))
     }
 

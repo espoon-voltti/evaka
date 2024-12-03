@@ -2637,43 +2637,44 @@ const sv: Translations = {
       empty: 'Inte definierat'
     },
     serviceApplication: {
-      title: 'Palveluntarpeen muutoshakemukset',
-      sentAt: 'Lähetetty',
-      startDate: 'Ehdotettu aloituspäivä',
+      title: 'Ansökningar om ändring av servicebehov',
+      sentAt: 'Skickad',
+      startDate: 'Föreslaget startdatum',
       startDateInfo:
-        'Valitse päivä, jolloin haluaisit uuden palveluntarpeen alkavan. Pääsääntöisesti palveluntarvetta voi vaihtaa vain kuukauden alusta.',
+        'Välj en dag för när du vill att det nya servicebehovet ska börja. I regel kan servicebehovet endast ändras i början av en månad.',
       startDateOnlyFirstDayWarning:
-        'Palveluntarve voi vaihtua keskellä kuuta vain erikoistapauksissa. Valitse kuun ensimmäinen päivä tai perustele tarve lisätiedoissa.',
-      serviceNeed: 'Ehdotettu palveluntarve',
+        'Servicebehovet kan ändras mitt under en månad endast i särskilda fall. Välj den första dagen i månaden eller motivera ditt behov i fältet Mer information.',
+      serviceNeed: 'Föreslaget servicebehov',
       serviceNeedInfo:
-        'Voit valita näistä palveluntarpeista. Jos haluat vaihtaa johonkin muuhun palveluntarpeesen, ota yhteys henkilökuntaan.',
-      additionalInfo: 'Lisätiedot',
+        'Välj bland dessa servicebehov. Kontakta personalen om du vill byta till något annat servicebehov.',
+      additionalInfo: 'Mer information',
       additionalInfoInfo:
-        'Kirjoita tähän lisätietoja esim. miksi vaihdat palveluntarvetta',
-      additionalInfoRequired: 'Perustele tavallisesta poikkeava aloituspäivä',
-      cancelApplication: 'Peru hakemus',
-      status: 'Tila',
+        'Fyll i mer information här, t.ex. varför du ändrar servicebehovet',
+      additionalInfoRequired:
+        'Motivera startdatum som avviker från det normala',
+      cancelApplication: 'Ångra ansökan',
+      status: 'Status',
       decision: {
         statuses: {
-          undecided: 'Ehdotettu',
-          ACCEPTED: 'Hyväksytty',
-          REJECTED: 'Hylätty'
+          undecided: 'Under behandling',
+          ACCEPTED: 'Godkänd',
+          REJECTED: 'Avslagen'
         },
-        rejectedReason: 'Hylkäysperuste'
+        rejectedReason: 'Grund för avslag'
       },
       openApplicationInfo:
-        'Olet ehdottanut lapselle uutta palveluntarvetta. Ehdotuksesi on yksikön johtajalla hyväksyttävänä.',
-      createButton: 'Ehdota muutosta palveluntarpeeseen',
+        'Du har föreslagit ett nytt servicebehov för ett barn. Ditt förslag behandlas av enhetschefen.',
+      createButton: 'Föreslå ändring i servicebehov',
       createInfo:
-        'Tästä voit ehdottaa muutosta lapsesi palveluntarpeeseen. Varhaiskasvatusyksikön johtaja hyväksyy tai hylkää ehdotuksesi. Tarkempaa lisätietoa palveluntarpeen muuttamisesta voit kysyä lapsesi yksiköstä.',
-      createTitle: 'Palveluntarpeen muutoshakemus',
-      send: 'Lähetä',
+        'Här kan du föreslå en ändring i ditt barns servicebehov. Chefen för småbarnspedagogiska enheten godkänner eller avslår ditt förslag. Du får närmare information om att ändra servicebehovet från ditt barns enhet.',
+      createTitle: 'Ansökan om ändring av servicebehov',
+      send: 'Skicka',
       noSuitablePlacementMessage:
-        'Lapsella ei ole sellaista varhaiskasvatussijoitusta, jonka palveluntarvetta voisi muuttaa eVakan kautta. Ota tarvittaessa yhteys yksikköön.',
+        'Barnet inte en sådan placering inom småbarnspedagogiken vars servicebehov kan ändras via eVaka. Kontakta enheten vid behov.',
       noSuitablePlacementOnDateTitle:
-        'Valitulle päivälle ei voi ehdottaa uutta palveluntarvetta',
+        'Nytt servicebehov kan inte föreslås för den dag som du valt',
       noSuitablePlacementOnDateMessage:
-        'Valittuna päivänä lapsella ei ole sellaista varhaiskasvatussijoitusta, jonka palveluntarvetta voisi muuttaa eVakan kautta. Ota tarvittaessa yhteys yksikköön.'
+        'Den valda dagen har barnet inte en sådan placering inom småbarnspedagogiken vars servicebehov kan ändras via eVaka. Kontakta enheten vid behov.'
     },
     childDocuments: {
       title: 'Pedagogiska dokument',
