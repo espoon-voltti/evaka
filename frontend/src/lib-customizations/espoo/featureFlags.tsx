@@ -44,8 +44,7 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    weakLogin: true,
-    holidayQuestionnaireType: 'FIXED_PERIOD'
+    weakLogin: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -80,8 +79,7 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    weakLogin: true,
-    holidayQuestionnaireType: 'FIXED_PERIOD'
+    weakLogin: true
   },
   prod: {
     environmentLabel: null,
@@ -115,8 +113,7 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
     multiSelectDeparture: false,
-    weakLogin: false,
-    holidayQuestionnaireType: 'FIXED_PERIOD'
+    weakLogin: false
   }
 }
 
