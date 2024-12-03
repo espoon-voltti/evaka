@@ -22,7 +22,8 @@ import {
   DecisionType,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import useRouteParams from 'lib-common/useRouteParams'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -160,7 +161,7 @@ function redirectToMainPage(navigate: NavigateFunction) {
 }
 
 export default React.memo(function Decision() {
-  const { id: applicationId } = useRouteParams(['id'])
+  const applicationId = useIdRouteParam<ApplicationId>('id')
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const [decisionDraftGroup, setDecisionDraftGroup] = useState<

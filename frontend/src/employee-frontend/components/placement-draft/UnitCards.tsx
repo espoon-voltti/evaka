@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { DaycarePlacementPlanForm } from './PlacementDraft'
@@ -22,7 +22,7 @@ const FlexContainer = styled.div`
 interface Props {
   additionalUnits: PublicUnit[]
   setAdditionalUnits: Dispatch<SetStateAction<PublicUnit[]>>
-  applicationId: UUID
+  applicationId: ApplicationId
   placement: DaycarePlacementPlanForm
   setPlacement: Dispatch<SetStateAction<DaycarePlacementPlanForm>>
   placementDraft: PlacementPlanDraft

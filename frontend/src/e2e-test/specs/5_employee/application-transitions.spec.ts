@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -13,7 +15,6 @@ import {
   decisionFixture,
   Fixture,
   testPreschool,
-  uuidv4,
   familyWithRestrictedDetailsGuardian,
   familyWithSeparatedGuardians,
   familyWithTwoGuardians,
@@ -48,7 +49,7 @@ let applicationWorkbench: ApplicationWorkbenchPage
 let applicationReadView: ApplicationReadView
 
 let serviceWorker: DevEmployee
-let applicationId: string
+let applicationId: ApplicationId
 
 beforeEach(async () => {
   await resetServiceState()
@@ -396,7 +397,7 @@ describe('Application transitions', () => {
         'SENT',
         preferredStartDate
       ),
-      id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
     const applicationId = fixture.id
 
@@ -452,7 +453,7 @@ describe('Application transitions', () => {
         'DAYCARE',
         'NOT_AGREED'
       ),
-      id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
     const applicationId = restrictedDetailsGuardianApplication.id
 
@@ -489,7 +490,7 @@ describe('Application transitions', () => {
         'SENT',
         mockedTime
       ),
-      id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
     const applicationId = fixture.id
     await createApplications({ body: [fixture] })
@@ -551,7 +552,7 @@ describe('Application transitions', () => {
         'SENT',
         mockedTime
       ),
-      id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
     const applicationId = fixture.id
     await createApplications({ body: [fixture] })
@@ -608,7 +609,9 @@ describe('Application transitions', () => {
     }
     applicationId = fixture1.id
 
-    const applicationId2 = 'dd54782e-231c-4014-abaf-a63eed4e2627'
+    const applicationId2 = fromUuid<ApplicationId>(
+      'dd54782e-231c-4014-abaf-a63eed4e2627'
+    )
     const fixture2 = {
       ...applicationFixture(testChild2, familyWithSeparatedGuardians.guardian),
       status: 'SENT' as const,
@@ -809,12 +812,12 @@ describe('Application transitions', () => {
   test('Application rejected by citizen is shown for 2 weeks', async () => {
     const application1: DevApplicationWithForm = {
       ...applicationFixture(testChild, testAdult),
-      id: uuidv4(),
+      id: randomId<ApplicationId>(),
       status: 'WAITING_CONFIRMATION'
     }
     const application2: DevApplicationWithForm = {
       ...applicationFixture(testChild2, testAdult),
-      id: uuidv4(),
+      id: randomId<ApplicationId>(),
       status: 'WAITING_CONFIRMATION'
     }
     const placementStartDate = LocalDate.of(2021, 8, 16)

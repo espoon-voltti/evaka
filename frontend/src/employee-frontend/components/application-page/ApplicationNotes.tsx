@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -23,7 +24,7 @@ const Sticky = styled.div`
 `
 
 type Props = {
-  applicationId: UUID
+  applicationId: ApplicationId
   allowCreate: boolean
 }
 

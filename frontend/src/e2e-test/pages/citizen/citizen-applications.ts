@@ -5,6 +5,8 @@
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -215,7 +217,7 @@ class CitizenApplicationEditor {
 
   getNewApplicationId() {
     const urlParts = this.page.url.split('/')
-    return urlParts[urlParts.length - 2]
+    return fromUuid<ApplicationId>(urlParts[urlParts.length - 2])
   }
 
   async goToVerification() {

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -15,7 +17,6 @@ import {
   testAdult,
   familyWithTwoGuardians,
   Fixture,
-  uuidv4,
   testCareArea
 } from '../../dev-api/fixtures'
 import {
@@ -46,7 +47,7 @@ beforeEach(async () => {
   const admin = await Fixture.employee().admin().save()
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
+    randomId<ApplicationId>(),
     testChild.id,
     testDaycare.id
   )
@@ -58,7 +59,7 @@ beforeEach(async () => {
       familyWithTwoGuardians.guardian,
       testAdult
     ),
-    id: uuidv4()
+    id: randomId<ApplicationId>()
   }
 
   const startDate = LocalDate.of(2021, 8, 16)
@@ -73,7 +74,7 @@ beforeEach(async () => {
       {
         ...decisionFixture(application2.id, startDate, startDate),
         employeeId: admin.id,
-        id: uuidv4()
+        id: randomId<ApplicationId>()
       }
     ]
   })
