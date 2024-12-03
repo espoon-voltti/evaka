@@ -15,9 +15,9 @@ import {
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -47,7 +47,7 @@ import {
 const form = transformed(
   object({
     startDate: required(localDate()),
-    serviceNeed: required(oneOf<UUID>()),
+    serviceNeed: required(oneOf<ServiceNeedOptionId>()),
     additionalInfo: value<string>()
   }),
   (res) => {

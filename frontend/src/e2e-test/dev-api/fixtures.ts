@@ -451,7 +451,7 @@ export class Fixture {
     const id = uniqueLabel()
 
     return new ServiceNeedOptionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       daycareHoursPerWeek: 0,
       contractDaysPerMonth: null,
       daycareHoursPerMonth: null,
