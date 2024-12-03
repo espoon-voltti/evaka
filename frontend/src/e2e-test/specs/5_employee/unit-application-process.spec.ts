@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -12,7 +14,6 @@ import {
   testChild2,
   testAdult,
   Fixture,
-  uuidv4,
   familyWithTwoGuardians,
   testCareArea
 } from '../../dev-api/fixtures'
@@ -36,7 +37,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let unitPage: UnitPage
-const groupId: UUID = uuidv4()
+const groupId: UUID = randomId<ApplicationId>()
 let child1Fixture: DevPerson
 let child2Fixture: DevPerson
 let child1DaycarePlacementId: UUID
@@ -66,7 +67,7 @@ beforeEach(async () => {
   }).save()
 
   child1Fixture = familyWithTwoGuardians.children[0]
-  child1DaycarePlacementId = uuidv4()
+  child1DaycarePlacementId = randomId<ApplicationId>()
   await Fixture.placement({
     id: child1DaycarePlacementId,
     childId: child1Fixture.id,
@@ -80,7 +81,7 @@ beforeEach(async () => {
     children: [testChild, testChild2]
   }).save()
   child2Fixture = testChild2
-  child2DaycarePlacementId = uuidv4()
+  child2DaycarePlacementId = randomId<ApplicationId>()
   await Fixture.placement({
     id: child2DaycarePlacementId,
     childId: child2Fixture.id,
@@ -110,12 +111,12 @@ describe('Unit groups - placement plans / proposals', () => {
 
     const application1: DevApplicationWithForm = {
       ...applicationFixture(testChild, testAdult),
-      id: uuidv4(),
+      id: randomId<ApplicationId>(),
       status: 'WAITING_UNIT_CONFIRMATION'
     }
     const application2: DevApplicationWithForm = {
       ...applicationFixture(testChild2, testAdult),
-      id: uuidv4(),
+      id: randomId<ApplicationId>(),
       status: 'WAITING_UNIT_CONFIRMATION'
     }
 

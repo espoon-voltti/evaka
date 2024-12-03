@@ -15,10 +15,10 @@ import {
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
@@ -88,14 +88,14 @@ const getMessageSubject = (
 const ApplicationMetadataSection = React.memo(function DecisionMetadataSection({
   applicationId
 }: {
-  applicationId: UUID
+  applicationId: ApplicationId
 }) {
   const result = useQueryResult(applicationMetadataQuery({ applicationId }))
   return <MetadataSection metadataResult={result} />
 })
 
 export default React.memo(function ApplicationPage() {
-  const { id: applicationId } = useRouteParams(['id'])
+  const applicationId = useIdRouteParam<ApplicationId>('id')
 
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)

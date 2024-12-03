@@ -8,6 +8,7 @@ import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../config'
@@ -58,7 +59,7 @@ type ApplicationActionSimple =
   | 'confirm-decision-mailed'
 
 export async function execSimpleApplicationAction(
-  applicationId: string,
+  applicationId: ApplicationId,
   action: ApplicationActionSimple,
   mockedTime: HelsinkiDateTime
 ): Promise<void> {
@@ -70,7 +71,7 @@ export async function execSimpleApplicationAction(
 }
 
 export async function execSimpleApplicationActions(
-  applicationId: string,
+  applicationId: ApplicationId,
   actions: ApplicationActionSimple[],
   mockedTime: HelsinkiDateTime
 ): Promise<void> {

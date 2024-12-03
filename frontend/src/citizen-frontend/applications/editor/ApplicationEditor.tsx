@@ -18,9 +18,10 @@ import {
   ApplicationDetails as ApplicationDetailsGen,
   CitizenChildren
 } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -470,7 +471,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 })
 
 export default React.memo(function ApplicationEditor() {
-  const { applicationId } = useRouteParams(['applicationId'])
+  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const t = useTranslation()
   const application = useQueryResult(applicationQuery({ applicationId }))
   const children = useQueryResult(applicationChildrenQuery())

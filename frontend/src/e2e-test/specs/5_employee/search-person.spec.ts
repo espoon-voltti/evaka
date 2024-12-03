@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -13,8 +15,7 @@ import {
   testCareArea,
   testChild,
   testChild2,
-  testDaycare,
-  uuidv4
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createApplicationPlacementPlan,
@@ -75,7 +76,7 @@ describe('Search person', () => {
         false,
         true
       ),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
 
     const appWithoutAssistanceNeeded = {
@@ -92,7 +93,7 @@ describe('Search person', () => {
         false,
         false
       ),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
 
     await createApplications({
