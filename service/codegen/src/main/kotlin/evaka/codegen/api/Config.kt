@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.MessageReceiver
 import fi.espoo.evaka.pairing.MobileDeviceDetails
 import fi.espoo.evaka.pis.SystemController
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.DateRange
@@ -48,6 +49,7 @@ private val plannedEndpoints: Set<String> = setOf()
 val endpointExcludes = plannedEndpoints + deprecatedEndpoints
 
 object Imports {
+    val id = TsImport.Named(LibCommon / "id-type.ts", "Id")
     val localDate = TsImport.Default(LibCommon / "local-date.ts", "LocalDate")
     val localTime = TsImport.Default(LibCommon / "local-time.ts", "LocalTime")
     val helsinkiDateTime =
@@ -68,6 +70,94 @@ object Imports {
     val createUrlSearchParams = TsImport.Named(LibCommon / "api.ts", "createUrlSearchParams")
     val devApiError = TsImport.Named(E2ETest / "dev-api", "DevApiError")
 }
+
+// For lenient id types, a string type alias is generated: `type FooId = string`.
+// For others, a strict type is generated: `type FooId = Id<'Foo'>`.
+val lenientIdTypes =
+    setOf(
+        DatabaseTable.Absence::class,
+        DatabaseTable.Application::class,
+        DatabaseTable.ApplicationNote::class,
+        DatabaseTable.ArchivedProcess::class,
+        DatabaseTable.Area::class,
+        DatabaseTable.AssistanceAction::class,
+        DatabaseTable.AssistanceActionOption::class,
+        DatabaseTable.AssistanceFactor::class,
+        DatabaseTable.AssistanceNeedDecision::class,
+        DatabaseTable.AssistanceNeedDecisionGuardian::class,
+        DatabaseTable.AssistanceNeedPreschoolDecision::class,
+        DatabaseTable.AssistanceNeedPreschoolDecisionGuardian::class,
+        DatabaseTable.AssistanceNeedVoucherCoefficient::class,
+        DatabaseTable.Attachment::class,
+        DatabaseTable.AttendanceReservation::class,
+        DatabaseTable.BackupCare::class,
+        DatabaseTable.BackupPickup::class,
+        DatabaseTable.CalendarEvent::class,
+        DatabaseTable.CalendarEventAttendee::class,
+        DatabaseTable.CalendarEventTime::class,
+        DatabaseTable.ChildAttendance::class,
+        DatabaseTable.ChildDailyNote::class,
+        DatabaseTable.ChildDocument::class,
+        DatabaseTable.ChildImage::class,
+        DatabaseTable.ChildStickyNote::class,
+        DatabaseTable.ClubTerm::class,
+        DatabaseTable.GroupNote::class,
+        DatabaseTable.DailyServicesTime::class,
+        DatabaseTable.DailyServicesTimeNotification::class,
+        DatabaseTable.Daycare::class,
+        DatabaseTable.DaycareAssistance::class,
+        DatabaseTable.DaycareCaretaker::class,
+        DatabaseTable.Decision::class,
+        DatabaseTable.DocumentTemplate::class,
+        DatabaseTable.Employee::class,
+        DatabaseTable.EmployeePin::class,
+        DatabaseTable.EvakaUser::class,
+        DatabaseTable.FamilyContact::class,
+        DatabaseTable.FeeAlteration::class,
+        DatabaseTable.FeeDecision::class,
+        DatabaseTable.FeeThresholds::class,
+        DatabaseTable.FosterParent::class,
+        DatabaseTable.Group::class,
+        DatabaseTable.GroupPlacement::class,
+        DatabaseTable.HolidayPeriod::class,
+        DatabaseTable.HolidayQuestionnaire::class,
+        DatabaseTable.Income::class,
+        DatabaseTable.IncomeNotification::class,
+        DatabaseTable.IncomeStatement::class,
+        DatabaseTable.Invoice::class,
+        DatabaseTable.InvoiceCorrection::class,
+        DatabaseTable.InvoiceRow::class,
+        DatabaseTable.KoskiStudyRight::class,
+        DatabaseTable.Message::class,
+        DatabaseTable.MessageAccount::class,
+        DatabaseTable.MessageContent::class,
+        DatabaseTable.MessageDraft::class,
+        DatabaseTable.MessageRecipients::class,
+        DatabaseTable.MessageThread::class,
+        DatabaseTable.MessageThreadFolder::class,
+        DatabaseTable.MobileDevice::class,
+        DatabaseTable.OtherAssistanceMeasure::class,
+        DatabaseTable.Pairing::class,
+        DatabaseTable.Parentship::class,
+        DatabaseTable.Partnership::class,
+        DatabaseTable.Payment::class,
+        DatabaseTable.PedagogicalDocument::class,
+        DatabaseTable.Person::class,
+        DatabaseTable.Placement::class,
+        DatabaseTable.PlacementPlan::class,
+        DatabaseTable.PreschoolAssistance::class,
+        DatabaseTable.PreschoolTerm::class,
+        DatabaseTable.ServiceApplication::class,
+        DatabaseTable.ServiceNeed::class,
+        DatabaseTable.ServiceNeedOption::class,
+        DatabaseTable.ServiceNeedOptionVoucherValue::class,
+        DatabaseTable.StaffAttendance::class,
+        DatabaseTable.StaffAttendanceRealtime::class,
+        DatabaseTable.StaffAttendanceExternal::class,
+        DatabaseTable.StaffAttendancePlan::class,
+        DatabaseTable.StaffOccupancyCoefficient::class,
+        DatabaseTable.VoucherValueDecision::class,
+    )
 
 val defaultMetadata =
     TypeMetadata(
@@ -195,21 +285,13 @@ val defaultMetadata =
                 serializeRequestParam = { value, _ -> value },
                 Imports.uuid,
             ),
-        Id::class to
-            TsExternalTypeRef(
-                "UUID",
-                keyRepresentation = TsCode(Imports.uuid),
-                deserializeJson = null,
-                serializePathVariable = { value -> value },
-                serializeRequestParam = { value, _ -> value },
-                Imports.uuid,
-            ),
+        Id::class to GenericWrapper(default = String::class),
         List::class to TsArray,
         Set::class to TsArray,
         Map::class to TsRecord,
         Pair::class to TsTuple(size = 2),
         Triple::class to TsTuple(size = 3),
-        Sensitive::class to GenericWrapper,
+        Sensitive::class to GenericWrapper(),
         Void::class to Excluded,
         ExternalId::class to TsPlain("string"),
         YearMonth::class to
