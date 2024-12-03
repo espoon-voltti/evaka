@@ -121,7 +121,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     ) =
         tx.execute {
             sql(
-                "UPDATE application SET created = ${bind(created)} WHERE id = ${bind(applicationId)}"
+                "UPDATE application SET created_at = ${bind(created)} WHERE id = ${bind(applicationId)}"
             )
         }
 

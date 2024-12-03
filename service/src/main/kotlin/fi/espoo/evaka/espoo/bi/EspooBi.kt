@@ -115,7 +115,7 @@ FROM daycare_caretaker
             sql(
                 """
 SELECT
-    id, created, updated, type, transferapplication, origin, status, additionaldaycareapplication, sentdate, duedate,
+    id, created_at, updated_at, type, transferapplication, origin, status, additionaldaycareapplication, sentdate, duedate,
     (
       SELECT array_agg(e::UUID)
       FROM jsonb_array_elements_text(document -> 'apply' -> 'preferredUnits') e
