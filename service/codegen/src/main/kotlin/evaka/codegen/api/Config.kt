@@ -147,7 +147,6 @@ val lenientIdTypes =
         DatabaseTable.PreschoolTerm::class,
         DatabaseTable.ServiceApplication::class,
         DatabaseTable.ServiceNeed::class,
-        DatabaseTable.ServiceNeedOption::class,
         DatabaseTable.ServiceNeedOptionVoucherValue::class,
         DatabaseTable.StaffAttendance::class,
         DatabaseTable.StaffAttendanceRealtime::class,
