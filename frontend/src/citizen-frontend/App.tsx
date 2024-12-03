@@ -16,6 +16,8 @@ import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
+import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
+import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -28,6 +30,7 @@ import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
+import { sessionKeepalive } from './auth/utils'
 import CalendarPage from './calendar/CalendarPage'
 import ChildDocumentPage from './child-documents/ChildDocumentPage'
 import ChildPage from './children/ChildPage'
@@ -108,6 +111,12 @@ const Content = React.memo(function Content() {
   const { apiVersion } = useContext(AuthContext)
   const { modalOpen } = useContext(OverlayContext)
 
+  const { user } = useContext(AuthContext)
+  const { showSessionExpiredModal, setShowSessionExpiredModal } =
+    useKeepSessionAlive(
+      sessionKeepalive,
+      user.map((usr) => !!usr).getOrElse(false)
+    )
   return (
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
@@ -117,6 +126,11 @@ const Content = React.memo(function Content() {
         <Outlet />
       </MainContainer>
       <MobileNav />
+      {showSessionExpiredModal && (
+        <SessionExpiredModal
+          onClose={() => setShowSessionExpiredModal(false)}
+        />
+      )}
       {!!featureFlags.environmentLabel && (
         <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
       )}

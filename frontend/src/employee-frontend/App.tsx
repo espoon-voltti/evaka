@@ -12,6 +12,8 @@ import { Notifications } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
+import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
+import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -44,6 +46,7 @@ import AssistanceNeedDecisionPage from './components/child-information/assistanc
 import AssistanceNeedPreschoolDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionEditPage'
 import AssistanceNeedPreschoolDecisionReadPage from './components/child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionReadPage'
 import ErrorMessage from './components/common/ErrorMessage'
+import { sessionKeepalive } from './components/common/sessionKeepalive'
 import DecisionPage from './components/decision-draft/DecisionDraft'
 import DocumentTemplatesPage from './components/document-templates/template-editor/DocumentTemplatesPage'
 import TemplateEditorPage from './components/document-templates/template-editor/TemplateEditorPage'
@@ -155,6 +158,9 @@ function App() {
 const Content = React.memo(function Content() {
   const { apiVersion, loaded } = useContext(UserContext)
 
+  const { loggedIn } = useContext(UserContext)
+  const { showSessionExpiredModal, setShowSessionExpiredModal } =
+    useKeepSessionAlive(sessionKeepalive, loggedIn)
   if (!loaded) return null
 
   return (
@@ -172,6 +178,11 @@ const Content = React.memo(function Content() {
       <ErrorMessage />
       <LoginErrorModal />
       <PairingModal />
+      {showSessionExpiredModal && (
+        <SessionExpiredModal
+          onClose={() => setShowSessionExpiredModal(false)}
+        />
+      )}
     </>
   )
 })

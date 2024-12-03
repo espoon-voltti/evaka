@@ -5,15 +5,11 @@
 import React, { useContext, useEffect } from 'react'
 import { Navigate } from 'react-router'
 
-import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
-import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { Translations } from 'lib-customizations/employee'
 
 import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { UserContext } from '../state/user'
-
-import { sessionKeepalive } from './common/sessionKeepalive'
 
 interface Props {
   title?: keyof Translations['titles']
@@ -44,19 +40,6 @@ const RequireAuth = React.memo(function EnsureAuthenticated({
 }: {
   element: React.ReactNode
 }) {
-  const { showSessionExpiredModal, setShowSessionExpiredModal } =
-    useKeepSessionAlive(sessionKeepalive)
   const { loggedIn } = useContext(UserContext)
-  return loggedIn ? (
-    <>
-      {element}
-      {showSessionExpiredModal && (
-        <SessionExpiredModal
-          onClose={() => setShowSessionExpiredModal(false)}
-        />
-      )}
-    </>
-  ) : (
-    <Navigate replace to="/" />
-  )
+  return loggedIn ? <>{element}</> : <Navigate replace to="/" />
 })

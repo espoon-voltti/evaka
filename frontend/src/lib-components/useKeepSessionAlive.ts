@@ -5,7 +5,10 @@
 import throttle from 'lodash/throttle'
 import { useState, useEffect, useMemo } from 'react'
 
-export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
+export function useKeepSessionAlive(
+  sessionKeepAlive: () => Promise<boolean>,
+  enabled: boolean
+) {
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
   // Default to 2 minutes and allow overriding this in automated tests
   const throttleTime =
@@ -35,6 +38,8 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
   )
 
   useEffect(() => {
+    if (!enabled) return
+
     const eventListenerOptions = { capture: true, passive: true }
     const userActivityEvents = ['keydown', 'mousedown', 'wheel', 'touchstart']
 
@@ -52,7 +57,7 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
       })
       throttledKeepAlive.cancel()
     }
-  }, [throttledKeepAlive])
+  }, [throttledKeepAlive, enabled])
 
   return {
     showSessionExpiredModal,
