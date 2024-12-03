@@ -48,6 +48,9 @@ export default React.memo(function AssistanceNeedSubSection({
               }
             />
           </ExpandingInfo>
+
+          {t.applications.editor.serviceNeed.preparatoryExtraInstructions}
+
           <Gap size="m" />
         </>
       )}
@@ -61,7 +64,7 @@ export default React.memo(function AssistanceNeedSubSection({
         <Checkbox
           checked={formData.assistanceNeeded}
           data-qa="assistanceNeeded-input"
-          label={t.applications.editor.serviceNeed.assistanceNeeded}
+          label={t.applications.editor.serviceNeed.assistanceNeeded[type]}
           onChange={(checked) =>
             updateFormData({
               assistanceNeeded: checked
@@ -69,6 +72,8 @@ export default React.memo(function AssistanceNeedSubSection({
           }
         />
       </ExpandingInfo>
+
+      {t.applications.editor.serviceNeed.assistanceNeedExtraInstructions[type]}
 
       {formData.assistanceNeeded && (
         <>

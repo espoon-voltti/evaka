@@ -1087,20 +1087,54 @@ const sv: Translations = {
           label: 'Kvälls- och skiftvård',
           instructions:
             'Med skiftvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00.',
-          instructions2:
-            'Om en vårdnadshavare som bor i samma hushåll regelbundet utför skiftarbete eller avlägger kvällsstudier som huvudsyssla, ska du bifoga ett intyg över detta (av arbetsgivaren eller en representant för läroanstalten) till ansökan om förskoleundervisning. Dokumenten ska ha registrerats det år då ansökan om förskoleundervisning görs.',
-          message: {
-            title: 'Kvälls- och skiftvård',
-            text: 'Kvälls- och skiftvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
-          },
           attachmentsMessage: {
-            text: 'Kvälls- och skiftvård är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32, 02070 Esbo stad.',
-            subtitle:
-              'Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut.'
-          }
+            DAYCARE: (
+              <P>
+                Kvälls- och skiftvård är avsedd för barn vars båda föräldrar har
+                skiftarbete eller studerar huvudsakligen på kvällar och/eller
+                veckoslut. Som bilaga till ansökan ska av båda föräldrarna
+                lämnas ett intyg av arbetsgivaren över skiftarbete eller studier
+                som orsakar behovet av kvälls- eller skiftomsorg. Vi
+                rekommenderar att bilagan skickas elektroniskt här. Om du inte
+                kan lägga till bilagor till ansökan elektroniskt, skicka dem per
+                post till adressen Servicehandledning inom småbarnspedagogik PB
+                32, 02070 Esbo stad.
+              </P>
+            ),
+            PRESCHOOL: (
+              <>
+                <P>
+                  Kvälls- och skiftvård är avsedd för barn vars båda föräldrar
+                  har skiftarbete eller studerar huvudsakligen på kvällar
+                  och/eller veckoslut. Som bilaga till ansökan ska av båda
+                  föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete
+                  eller studier som orsakar behovet av kvälls- eller
+                  skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt
+                  här. Om du inte kan lägga till bilagor till ansökan
+                  elektroniskt, skicka dem per post till adressen
+                  Servicehandledning inom småbarnspedagogik PB 32, 02070 Esbo
+                  stad.
+                </P>
+                <P>
+                  Om en vårdnadshavare som bor i samma hushåll regelbundet utför
+                  skiftarbete eller avlägger kvällsstudier som huvudsyssla, ska
+                  du bifoga ett intyg över detta (av arbetsgivaren eller en
+                  representant för läroanstalten) till ansökan om
+                  förskoleundervisning. Dokumenten ska ha registrerats det år då
+                  ansökan om förskoleundervisning görs.
+                </P>
+              </>
+            )
+          },
+          attachmentsSubtitle:
+            'Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut.'
         },
         assistanceNeed: 'Behov av stöd för utveckling och lärande',
-        assistanceNeeded: 'Barnet har behov av stöd för utveckling och lärande',
+        assistanceNeeded: {
+          DAYCARE: 'Barnet har behov av stöd för utveckling och lärande',
+          PRESCHOOL: 'Barnet har behov av stöd för utveckling och lärande',
+          CLUB: 'Barnet har behov av stöd för utveckling och lärande'
+        },
         assistanceNeedLabel: 'Beskrivning av stödbehov',
         assistanceNeedPlaceholder:
           'Berätta om barnets behov av stöd för utveckling och lärande',
@@ -1111,10 +1145,16 @@ const sv: Translations = {
           PRESCHOOL:
             'Välj denna punkt i ansökan, om barnet behöver stöd för sin utveckling och/eller sitt lärande under förskoleåret. Stödet genomförs i barnets vardag som en del av verksamheten inom förskoleundervisningen och småbarnspedagogiken. Välj denna punkt också om det finns någon annan särskild orsak som direkt påverkar ordnandet av förskoleundervisningen och till vilken enhet barnet ska beviljas förskoleplats. Om barnet behöver stöd för sin utveckling och/eller sitt lärande, kontaktar en speciallärare inom småbarnspedagogik dig, så att vi kan beakta barnets behov vid beviljandet av förskoleplats.'
         },
+        assistanceNeedExtraInstructions: {
+          DAYCARE: null,
+          PRESCHOOL: null,
+          CLUB: null
+        },
         preparatory:
           'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen. Gäller inte svenskspråkig förskoleundervisning.',
         preparatoryInfo:
-          'Barn som ännu inte har kunskaper i finska eller som redan kan lite finska kan söka sig till förberedande undervisning för den grundläggande utbildningen inom förskoleundervisningen. Barnets nuvarande daghem rekommenderar förberedande förskoleundervisning för barnet. Förberedande undervisning för den grundläggande utbildningen för barn i förskoleåldern ordnas inom den finska kommunala förskoleundervisningen. Förberedande undervisning för den grundläggande utbildningen ges inom förskoleundervisningen fem timmar per dag. Undervisningen är gratis.'
+          'Barn som ännu inte har kunskaper i finska eller som redan kan lite finska kan söka sig till förberedande undervisning för den grundläggande utbildningen inom förskoleundervisningen. Barnets nuvarande daghem rekommenderar förberedande förskoleundervisning för barnet. Förberedande undervisning för den grundläggande utbildningen för barn i förskoleåldern ordnas inom den finska kommunala förskoleundervisningen. Förberedande undervisning för den grundläggande utbildningen ges inom förskoleundervisningen fem timmar per dag. Undervisningen är gratis.',
+        preparatoryExtraInstructions: null
       },
       unitPreference: {
         title: 'Ansökningsönskemål',

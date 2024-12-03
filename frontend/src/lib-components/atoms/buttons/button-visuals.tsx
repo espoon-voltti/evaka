@@ -170,7 +170,6 @@ const StyledButton = styled.button<{
           border-width: 0;
           background: none;
           padding: 0;
-          margin: 0;
           display: inline-flex;
           flex-wrap: nowrap;
           align-items: center;

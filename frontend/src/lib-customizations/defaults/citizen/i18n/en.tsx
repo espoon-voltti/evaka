@@ -1127,20 +1127,57 @@ const en: Translations = {
           label: 'Evening and round-the-clock care',
           instructions:
             'Round-the-clock care refers to early childhood education needed on weekends or around the clock. Evening and round-the-clock care is mainly early childhood education taking place outside the weekday hours of 6:30 and 18:00.',
-          instructions2:
-            'If a guardian living in the same household does regular shift work or attends evening studies full-time, they must provide proof of this (a document issued by their employer or the educational institution) together with the application for pre-primary education.  The documents must be dated in the year when the application for pre-primary education is submitted.',
-          message: {
-            title: 'Evening and round-the-clock care',
-            text: 'Evening and round-the-clock care is intended for children whose both parents do shift work or study mainly in the evenings and/or on weekends. The application must be appended with both parents’ proof of shift work from the employer or studies that cause the need for evening and round-the-clock care.'
-          },
           attachmentsMessage: {
-            text: 'Evening and round-the-clock care is intended for children whose both parents do shift work or mainly study in the evening and/or during the weekends. In addition to the application, both parents will need to provide a document issued by their employer concerning shift work or a document concerning their studies as proof of the child’s need for evening or round-the-clock care. We recommend that you send the additional documents through this online system. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo.',
-            subtitle:
-              'Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies.'
-          }
+            DAYCARE: (
+              <P>
+                Evening and round-the-clock care is intended for children whose
+                both parents do shift work or mainly study in the evening and/or
+                during the weekends. In addition to the application, both
+                parents will need to provide a document issued by their employer
+                concerning shift work or a document concerning their studies as
+                proof of the child’s need for evening or round-the-clock care.
+                We recommend that you send the additional documents through this
+                online system. If you are unable to add attachments to your
+                online application, please send the documents by post to Early
+                childhood education service counselling, P.O. Box 3125, 02070
+                City of Espoo.
+              </P>
+            ),
+            PRESCHOOL: (
+              <>
+                <P>
+                  If a guardian living in the same household does regular shift
+                  work or attends evening studies full-time, they must provide
+                  proof of this (a document issued by their employer or the
+                  educational institution) together with the application for
+                  pre-primary education. The documents must be dated in the year
+                  when the application for pre-primary education is submitted.
+                </P>
+                <P>
+                  Evening and round-the-clock care is intended for children
+                  whose both parents do shift work or mainly study in the
+                  evening and/or during the weekends. In addition to the
+                  application, both parents will need to provide a document
+                  issued by their employer concerning shift work or a document
+                  concerning their studies as proof of the child’s need for
+                  evening or round-the-clock care. We recommend that you send
+                  the additional documents through this online system. If you
+                  are unable to add attachments to your online application,
+                  please send the documents by post to Early childhood education
+                  service counselling, P.O. Box 3125, 02070 City of Espoo.
+                </P>
+              </>
+            )
+          },
+          attachmentsSubtitle:
+            'Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies.'
         },
         assistanceNeed: 'Support need',
-        assistanceNeeded: 'The child needs support',
+        assistanceNeeded: {
+          DAYCARE: 'The child needs support',
+          PRESCHOOL: 'The child needs support',
+          CLUB: 'The child needs support'
+        },
         assistanceNeedLabel: 'Description',
         assistanceNeedPlaceholder:
           'Describe the need for support for the child.',
@@ -1151,10 +1188,16 @@ const en: Translations = {
           PRESCHOOL:
             'Select this section on the application if your child needs support for their development and/or learning during the pre-primary education year. Support is provided as part of pre-primary education and early childhood education activities. Select this section also if your child has another special reason that directly affects the organisation of pre-primary education or in which unit their pre-primary education should be organised. If your child needs support for development and/or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in pre-primary education.'
         },
+        assistanceNeedExtraInstructions: {
+          DAYCARE: null,
+          PRESCHOOL: null,
+          CLUB: null
+        },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
         preparatoryInfo:
-          'Instruction preparing for basic education is offered in connection with pre-primary education to children who do not yet have Finnish language skills or who know some Finnish. The child’s current day care centre has recommended the child attend preparatory pre-primary education. Instruction preparing for basic education is offered to children of pre-primary education age in Finnish-speaking municipal pre-primary education groups. Instruction preparing for basic education is available for 5 hours per day in connection with pre-primary education. Instruction is free of charge.'
+          'Instruction preparing for basic education is offered in connection with pre-primary education to children who do not yet have Finnish language skills or who know some Finnish. The child’s current day care centre has recommended the child attend preparatory pre-primary education. Instruction preparing for basic education is offered to children of pre-primary education age in Finnish-speaking municipal pre-primary education groups. Instruction preparing for basic education is available for 5 hours per day in connection with pre-primary education. Instruction is free of charge.',
+        preparatoryExtraInstructions: null
       },
       unitPreference: {
         title: 'Preferred units',
@@ -1311,8 +1354,8 @@ const en: Translations = {
             'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
           languageFilter: {
             label: 'Language of the location:',
-            fi: 'finnish',
-            sv: 'swedish'
+            fi: 'Finnish',
+            sv: 'Swedish'
           },
           select: {
             label: (maxUnits: number) =>
