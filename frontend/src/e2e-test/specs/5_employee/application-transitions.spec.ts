@@ -293,8 +293,8 @@ describe('Application transitions', () => {
     await applicationReadView.setVerifiedButton.waitUntilVisible()
     await applicationReadView.setVerifiedButton.assertDisabled(true)
 
-    await applicationReadView.confidentialRadioYes.click()
-    await applicationReadView.confidentialRadioNo.click()
+    await applicationReadView.confidentialRadioYes.check()
+    await applicationReadView.confidentialRadioNo.check()
 
     await applicationReadView.setVerifiedButton.assertDisabled(false)
     await applicationReadView.setVerifiedButton.click()
@@ -310,6 +310,47 @@ describe('Application transitions', () => {
     const placementDraftPage =
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
+  })
+
+  test('Confidentiality must be set on an application before cancelling if other info is the only potential source of confidentiality', async () => {
+    const preferredStartDate = mockedTime
+    const fixture: DevApplicationWithForm = {
+      ...applicationFixture(
+        testChild2,
+        familyWithTwoGuardians.guardian,
+        undefined,
+        'DAYCARE',
+        null,
+        [testDaycare.id],
+        true,
+        'SENT',
+        preferredStartDate
+      )
+    }
+    fixture.form.otherInfo = 'Eipä ihmeempiä'
+
+    const applicationId = fixture.id
+
+    await createApplications({ body: [fixture] })
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    await applicationWorkbench.waitUntilLoaded()
+
+    const applicationList = new ApplicationListView(page)
+    await applicationList.actionsMenu(applicationId).click()
+    await applicationList.actionsMenuItems.cancelApplication.click()
+
+    await applicationList.cancelConfirmation.submitButton.assertDisabled(true)
+    await applicationList.cancelConfirmation.confidentialRadioYes.waitUntilVisible()
+    await applicationList.cancelConfirmation.confidentialRadioYes.check()
+    await applicationList.cancelConfirmation.submitButton.assertDisabled(false)
+    await applicationList.cancelConfirmation.submitButton.click()
+
+    await applicationWorkbench.applicationsAll.click()
+    await applicationWorkbench
+      .getApplicationListItem(applicationId)
+      .assertText((text) => text.includes('Poistettu käsittelystä'))
   })
 
   test('Placement dialog works', async () => {
