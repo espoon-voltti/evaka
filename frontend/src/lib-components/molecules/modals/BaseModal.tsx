@@ -44,6 +44,7 @@ export default React.memo(function BaseModal(props: Props) {
         className={props.className}
         zIndex={props.zIndex}
         data-qa={props['data-qa']}
+        onClick={(e) => e.stopPropagation()}
       >
         <ModalContainer
           mobileFullScreen={props.mobileFullScreen}
@@ -184,6 +185,7 @@ const ModalContainer = styled.div<{
 `
 
 const ModalWrapper = styled.div<{ zIndex?: number }>`
+  cursor: default;
   align-items: center;
   display: flex;
   flex-direction: column;
