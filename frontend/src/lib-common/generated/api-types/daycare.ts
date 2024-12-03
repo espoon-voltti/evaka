@@ -10,17 +10,26 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import TimeRange from '../../time-range'
 import { Action } from '../action'
+import { AreaId } from './shared'
+import { BackupCareId } from './shared'
+import { ClubTermId } from './shared'
 import { Coordinate } from './shared'
+import { DaycareCaretakerId } from './shared'
+import { DaycareId } from './shared'
 import { DaycarePlacementWithDetails } from './placement'
+import { EmployeeId } from './shared'
+import { GroupId } from './shared'
+import { GroupPlacementId } from './shared'
 import { JsonOf } from '../../json'
 import { MealTexture } from './specialdiet'
 import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
+import { PlacementId } from './shared'
+import { PreschoolTermId } from './shared'
 import { SpecialDiet } from './specialdiet'
 import { TerminatedPlacement } from './placement'
-import { UUID } from '../../types'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
 import { UserRole } from './shared'
@@ -35,7 +44,7 @@ import { deserializeJsonUnitBackupCare } from './backupcare'
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.AclUpdate
 */
 export interface AclUpdate {
-  groupIds: UUID[] | null
+  groupIds: GroupId[] | null
   hasStaffOccupancyEffect: boolean | null
 }
 
@@ -67,7 +76,7 @@ export type ApplicationUnitType =
 * Generated from fi.espoo.evaka.daycare.controllers.AreaJSON
 */
 export interface AreaJSON {
-  id: UUID
+  id: AreaId
   name: string
   shortName: string
 }
@@ -92,8 +101,8 @@ export type CareType = typeof careTypes[number]
 export interface CaretakerAmount {
   amount: number
   endDate: LocalDate | null
-  groupId: UUID
-  id: UUID
+  groupId: GroupId
+  id: DaycareCaretakerId
   startDate: LocalDate
 }
 
@@ -138,7 +147,7 @@ export interface ChildResponse {
 */
 export interface ClubTerm {
   applicationPeriod: FiniteDateRange
-  id: UUID
+  id: ClubTermId
   term: FiniteDateRange
   termBreaks: FiniteDateRange[]
 }
@@ -156,7 +165,7 @@ export interface ClubTermRequest {
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.CreateDaycareResponse
 */
 export interface CreateDaycareResponse {
-  id: UUID
+  id: DaycareId
 }
 
 /**
@@ -189,7 +198,7 @@ export interface Daycare {
   financeDecisionHandler: FinanceDecisionHandler | null
   ghostUnit: boolean
   iban: string
-  id: UUID
+  id: DaycareId
   invoicedByMunicipality: boolean
   language: Language
   location: Coordinate | null
@@ -222,7 +231,7 @@ export interface Daycare {
 * Generated from fi.espoo.evaka.daycare.DaycareCareArea
 */
 export interface DaycareCareArea {
-  id: UUID
+  id: AreaId
   name: string
   shortName: string
 }
@@ -242,7 +251,7 @@ export interface DaycareDecisionCustomization {
 */
 export interface DaycareFields {
   additionalInfo: string | null
-  areaId: UUID
+  areaId: AreaId
   businessId: string
   capacity: number
   closingDate: LocalDate | null
@@ -254,7 +263,7 @@ export interface DaycareFields {
   decisionCustomization: DaycareDecisionCustomization
   dwCostCenter: string | null
   email: string | null
-  financeDecisionHandlerId: UUID | null
+  financeDecisionHandlerId: EmployeeId | null
   ghostUnit: boolean
   iban: string
   invoicedByMunicipality: boolean
@@ -287,10 +296,10 @@ export interface DaycareFields {
 * Generated from fi.espoo.evaka.daycare.service.DaycareGroup
 */
 export interface DaycareGroup {
-  daycareId: UUID
+  daycareId: DaycareId
   deletable: boolean
   endDate: LocalDate | null
-  id: UUID
+  id: GroupId
   jamixCustomerNumber: number | null
   name: string
   startDate: LocalDate
@@ -301,7 +310,7 @@ export interface DaycareGroup {
 */
 export interface DaycareGroupResponse {
   endDate: LocalDate | null
-  id: UUID
+  id: GroupId
   name: string
   permittedActions: Action.Group[]
 }
@@ -332,7 +341,7 @@ export interface DaycareResponse {
 */
 export interface FinanceDecisionHandler {
   firstName: string
-  id: UUID
+  id: EmployeeId
   lastName: string
 }
 
@@ -348,8 +357,8 @@ export interface FullAclInfo {
 * Generated from fi.espoo.evaka.daycare.controllers.GroupOccupancies
 */
 export interface GroupOccupancies {
-  confirmed: Partial<Record<UUID, OccupancyResponse>>
-  realized: Partial<Record<UUID, OccupancyResponse>>
+  confirmed: Partial<Record<GroupId, OccupancyResponse>>
+  realized: Partial<Record<GroupId, OccupancyResponse>>
 }
 
 /**
@@ -359,7 +368,7 @@ export interface GroupStaffAttendance {
   count: number
   countOther: number
   date: LocalDate
-  groupId: UUID
+  groupId: GroupId
   updated: HelsinkiDateTime
 }
 
@@ -398,7 +407,7 @@ export interface PreschoolTerm {
   applicationPeriod: FiniteDateRange
   extendedTerm: FiniteDateRange
   finnishPreschool: FiniteDateRange
-  id: UUID
+  id: PreschoolTermId
   swedishPreschool: FiniteDateRange
   termBreaks: FiniteDateRange[]
 }
@@ -433,7 +442,7 @@ export interface PublicUnit {
   daycareApplyPeriod: DateRange | null
   email: string | null
   ghostUnit: boolean | null
-  id: UUID
+  id: DaycareId
   language: Language
   location: Coordinate | null
   name: string
@@ -454,7 +463,7 @@ export interface PublicUnit {
 export interface StaffAttendanceForDates {
   attendances: Partial<Record<string, GroupStaffAttendance>>
   endDate: LocalDate | null
-  groupId: UUID
+  groupId: GroupId
   groupName: string
   startDate: LocalDate
 }
@@ -466,7 +475,7 @@ export interface StaffAttendanceUpdate {
   count: number | null
   countOther: number | null
   date: LocalDate
-  groupId: UUID
+  groupId: GroupId
 }
 
 /**
@@ -474,7 +483,7 @@ export interface StaffAttendanceUpdate {
 */
 export interface UnitFeatures {
   features: PilotFeature[]
-  id: UUID
+  id: DaycareId
   name: string
   providerType: ProviderType
   type: CareType[]
@@ -485,13 +494,13 @@ export interface UnitFeatures {
 */
 export interface UnitGroupDetails {
   backupCares: UnitBackupCare[]
-  caretakers: Partial<Record<UUID, Caretakers>>
+  caretakers: Partial<Record<GroupId, Caretakers>>
   groupOccupancies: GroupOccupancies | null
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
-  permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
-  permittedGroupPlacementActions: Partial<Record<UUID, Action.GroupPlacement[]>>
-  permittedPlacementActions: Partial<Record<UUID, Action.Placement[]>>
+  permittedBackupCareActions: Partial<Record<BackupCareId, Action.BackupCare[]>>
+  permittedGroupPlacementActions: Partial<Record<GroupPlacementId, Action.GroupPlacement[]>>
+  permittedPlacementActions: Partial<Record<PlacementId, Action.Placement[]>>
   placements: DaycarePlacementWithDetails[]
   recentlyTerminatedPlacements: TerminatedPlacement[]
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
@@ -530,7 +539,7 @@ export interface UnitStaffAttendance {
 */
 export interface UnitStub {
   careTypes: CareType[]
-  id: UUID
+  id: DaycareId
   name: string
 }
 
@@ -549,7 +558,7 @@ export type UnitTypeFilter =
 export interface UpdateFeaturesRequest {
   enable: boolean
   features: PilotFeature[]
-  unitIds: UUID[]
+  unitIds: DaycareId[]
 }
 
 /**

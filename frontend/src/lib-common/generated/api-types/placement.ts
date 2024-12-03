@@ -8,13 +8,20 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { ApplicationId } from './shared'
+import { DaycareId } from './shared'
 import { EvakaUser } from './user'
+import { GroupId } from './shared'
+import { GroupPlacementId } from './shared'
 import { JsonOf } from '../../json'
 import { Language } from './daycare'
+import { PersonId } from './shared'
 import { PilotFeature } from './shared'
+import { PlacementId } from './shared'
+import { PlacementPlanId } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
-import { UUID } from '../../types'
+import { ServiceNeedId } from './shared'
 import { Unit } from './children'
 import { deserializeJsonServiceNeed } from './serviceneed'
 
@@ -24,7 +31,7 @@ import { deserializeJsonServiceNeed } from './serviceneed'
 export interface ChildBasics {
   dateOfBirth: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   socialSecurityNumber: string | null
 }
@@ -33,15 +40,15 @@ export interface ChildBasics {
 * Generated from fi.espoo.evaka.placement.ChildPlacement
 */
 export interface ChildPlacement {
-  childId: UUID
+  childId: PersonId
   endDate: LocalDate
-  id: UUID
+  id: PlacementId
   startDate: LocalDate
   terminatable: boolean
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -58,7 +65,7 @@ export interface ChildPlacementResponse {
 export interface DaycareBasics {
   area: string
   enabledPilotFeatures: PilotFeature[]
-  id: UUID
+  id: DaycareId
   language: Language
   name: string
   providerType: ProviderType
@@ -68,11 +75,11 @@ export interface DaycareBasics {
 * Generated from fi.espoo.evaka.placement.DaycareGroupPlacement
 */
 export interface DaycareGroupPlacement {
-  daycarePlacementId: UUID
+  daycarePlacementId: PlacementId
   endDate: LocalDate
-  groupId: UUID | null
+  groupId: GroupId | null
   groupName: string | null
-  id: UUID | null
+  id: GroupPlacementId | null
   startDate: LocalDate
 }
 
@@ -85,7 +92,7 @@ export interface DaycarePlacementWithDetails {
   defaultServiceNeedOptionNameFi: string | null
   endDate: LocalDate
   groupPlacements: DaycareGroupPlacement[]
-  id: UUID
+  id: PlacementId
   isRestrictedFromUser: boolean
   missingServiceNeedDays: number
   modifiedAt: HelsinkiDateTime | null
@@ -103,7 +110,7 @@ export interface DaycarePlacementWithDetails {
 */
 export interface GroupPlacementRequestBody {
   endDate: LocalDate
-  groupId: UUID
+  groupId: GroupId
   startDate: LocalDate
 }
 
@@ -111,7 +118,7 @@ export interface GroupPlacementRequestBody {
 * Generated from fi.espoo.evaka.placement.GroupTransferRequestBody
 */
 export interface GroupTransferRequestBody {
-  groupId: UUID
+  groupId: GroupId
   startDate: LocalDate
 }
 
@@ -120,14 +127,14 @@ export interface GroupTransferRequestBody {
 */
 export interface MissingGroupPlacement {
   backup: boolean
-  childId: UUID
+  childId: PersonId
   dateOfBirth: LocalDate
   defaultServiceNeedOptionNameFi: string | null
   firstName: string
   fromUnits: string[]
   gap: FiniteDateRange
   lastName: string
-  placementId: UUID
+  placementId: PlacementId
   placementPeriod: FiniteDateRange
   placementType: PlacementType | null
   serviceNeeds: MissingGroupPlacementServiceNeed[]
@@ -146,12 +153,12 @@ export interface MissingGroupPlacementServiceNeed {
 * Generated from fi.espoo.evaka.placement.PlacementCreateRequestBody
 */
 export interface PlacementCreateRequestBody {
-  childId: UUID
+  childId: PersonId
   endDate: LocalDate
   placeGuarantee: boolean
   startDate: LocalDate
   type: PlacementType
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -160,7 +167,7 @@ export interface PlacementCreateRequestBody {
 export interface PlacementDraftChild {
   dob: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
 }
 
@@ -168,7 +175,7 @@ export interface PlacementDraftChild {
 * Generated from fi.espoo.evaka.placement.PlacementDraftUnit
 */
 export interface PlacementDraftUnit {
-  id: UUID
+  id: DaycareId
   name: string
 }
 
@@ -178,7 +185,7 @@ export interface PlacementDraftUnit {
 export interface PlacementPlanChild {
   dateOfBirth: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
 }
 
@@ -195,16 +202,16 @@ export type PlacementPlanConfirmationStatus =
 * Generated from fi.espoo.evaka.placement.PlacementPlanDetails
 */
 export interface PlacementPlanDetails {
-  applicationId: UUID
+  applicationId: ApplicationId
   child: PlacementPlanChild
-  id: UUID
+  id: PlacementPlanId
   period: FiniteDateRange
   preschoolDaycarePeriod: FiniteDateRange | null
   rejectedByCitizen: boolean
   type: PlacementType
   unitAcceptDisabled: boolean
   unitConfirmationStatus: PlacementPlanConfirmationStatus
-  unitId: UUID
+  unitId: DaycareId
   unitRejectOtherReason: string | null
   unitRejectReason: PlacementPlanRejectReason | null
 }
@@ -235,8 +242,8 @@ export type PlacementPlanRejectReason =
 * Generated from fi.espoo.evaka.placement.PlacementResponse
 */
 export interface PlacementResponse {
-  permittedPlacementActions: Partial<Record<UUID, Action.Placement[]>>
-  permittedServiceNeedActions: Partial<Record<UUID, Action.ServiceNeed[]>>
+  permittedPlacementActions: Partial<Record<PlacementId, Action.Placement[]>>
+  permittedServiceNeedActions: Partial<Record<ServiceNeedId, Action.ServiceNeed[]>>
   placements: DaycarePlacementWithDetails[]
 }
 
@@ -244,9 +251,9 @@ export interface PlacementResponse {
 * Generated from fi.espoo.evaka.placement.PlacementSummary
 */
 export interface PlacementSummary {
-  childId: UUID
+  childId: PersonId
   endDate: LocalDate
-  id: UUID
+  id: PlacementId
   startDate: LocalDate
   type: PlacementType
   unit: Unit
@@ -259,7 +266,7 @@ export interface PlacementTerminationRequestBody {
   terminateDaycareOnly: boolean | null
   terminationDate: LocalDate
   type: TerminatablePlacementType
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -308,7 +315,7 @@ export interface TerminatablePlacementGroup {
   startDate: LocalDate
   terminatable: boolean
   type: TerminatablePlacementType
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -329,7 +336,7 @@ export interface TerminatedPlacement {
   connectedDaycareOnly: boolean
   currentDaycareGroupName: string | null
   endDate: LocalDate
-  id: UUID
+  id: PlacementId
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
@@ -340,7 +347,7 @@ export interface TerminatedPlacement {
 */
 export interface UnitChildrenCapacityFactors {
   assistanceNeedFactor: number
-  childId: UUID
+  childId: PersonId
   serviceNeedFactor: number
 }
 

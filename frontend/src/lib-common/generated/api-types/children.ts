@@ -5,8 +5,11 @@
 // GENERATED FILE: no manual modifications
 
 import { Action } from '../action'
+import { ChildImageId } from './shared'
+import { DaycareId } from './shared'
+import { GroupId } from './shared'
+import { PersonId } from './shared'
 import { PlacementType } from './placement'
-import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.children.AttendanceSummary
@@ -19,12 +22,12 @@ export interface AttendanceSummary {
 * Generated from fi.espoo.evaka.children.ChildAndPermittedActions
 */
 export interface ChildAndPermittedActions {
-  duplicateOf: UUID | null
+  duplicateOf: PersonId | null
   firstName: string
   group: Group | null
   hasPedagogicalDocuments: boolean
-  id: UUID
-  imageId: UUID | null
+  id: PersonId
+  imageId: ChildImageId | null
   lastName: string
   permittedActions: Action.Citizen.Child[]
   preferredName: string
@@ -37,7 +40,7 @@ export interface ChildAndPermittedActions {
 * Generated from fi.espoo.evaka.children.Group
 */
 export interface Group {
-  id: UUID
+  id: GroupId
   name: string
 }
 
@@ -45,6 +48,6 @@ export interface Group {
 * Generated from fi.espoo.evaka.children.Unit
 */
 export interface Unit {
-  id: UUID
+  id: DaycareId
   name: string
 }

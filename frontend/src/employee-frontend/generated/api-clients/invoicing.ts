@@ -7,24 +7,31 @@
 import LocalDate from 'lib-common/local-date'
 import { CreateRetroactiveFeeDecisionsBody } from 'lib-common/generated/api-types/invoicing'
 import { Employee } from 'lib-common/generated/api-types/pis'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
+import { FeeAlterationId } from 'lib-common/generated/api-types/shared'
 import { FeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { FeeDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
 import { FeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
 import { GenerateDecisionsBody } from 'lib-common/generated/api-types/invoicing'
 import { IncomeCoefficient } from 'lib-common/generated/api-types/invoicing'
+import { IncomeId } from 'lib-common/generated/api-types/shared'
 import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { IncomeRequest } from 'lib-common/generated/api-types/invoicing'
 import { IncomeTypeOptions } from 'lib-common/generated/api-types/invoicing'
 import { IncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCodes } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceCorrectionId } from 'lib-common/generated/api-types/shared'
 import { InvoiceCorrectionInsert } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCorrectionWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceId } from 'lib-common/generated/api-types/shared'
 import { InvoicePayload } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -34,15 +41,19 @@ import { PagedFeeDecisionSummaries } from 'lib-common/generated/api-types/invoic
 import { PagedInvoiceSummaryResponses } from 'lib-common/generated/api-types/invoicing'
 import { PagedPayments } from 'lib-common/generated/api-types/invoicing'
 import { PagedVoucherValueDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
+import { PaymentId } from 'lib-common/generated/api-types/shared'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { SearchFeeDecisionRequest } from 'lib-common/generated/api-types/invoicing'
 import { SearchInvoicesRequest } from 'lib-common/generated/api-types/invoicing'
 import { SearchPaymentsRequest } from 'lib-common/generated/api-types/invoicing'
 import { SearchVoucherValueDecisionRequest } from 'lib-common/generated/api-types/invoicing'
 import { SendPaymentsRequest } from 'lib-common/generated/api-types/invoicing'
+import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
+import { ServiceNeedOptionVoucherValueId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
-import { UUID } from 'lib-common/types'
 import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { client } from '../../api/client'
@@ -89,7 +100,7 @@ export async function createFeeAlteration(
 */
 export async function deleteFeeAlteration(
   request: {
-    feeAlterationId: UUID
+    feeAlterationId: FeeAlterationId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -105,7 +116,7 @@ export async function deleteFeeAlteration(
 */
 export async function getFeeAlterations(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<FeeAlterationWithPermittedActions[]> {
   const params = createUrlSearchParams(
@@ -125,7 +136,7 @@ export async function getFeeAlterations(
 */
 export async function updateFeeAlteration(
   request: {
-    feeAlterationId: UUID,
+    feeAlterationId: FeeAlterationId,
     body: FeeAlteration
   }
 ): Promise<void> {
@@ -143,8 +154,8 @@ export async function updateFeeAlteration(
 */
 export async function confirmFeeDecisionDrafts(
   request: {
-    decisionHandlerId?: UUID | null,
-    body: UUID[]
+    decisionHandlerId?: EmployeeId | null,
+    body: FeeDecisionId[]
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
@@ -154,7 +165,7 @@ export async function confirmFeeDecisionDrafts(
     url: uri`/employee/fee-decisions/confirm`.toString(),
     method: 'POST',
     params,
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<FeeDecisionId[]>
   })
   return json
 }
@@ -165,7 +176,7 @@ export async function confirmFeeDecisionDrafts(
 */
 export async function generateRetroactiveFeeDecisions(
   request: {
-    id: UUID,
+    id: PersonId,
     body: CreateRetroactiveFeeDecisionsBody
   }
 ): Promise<void> {
@@ -183,7 +194,7 @@ export async function generateRetroactiveFeeDecisions(
 */
 export async function getFeeDecision(
   request: {
-    id: UUID
+    id: FeeDecisionId
   }
 ): Promise<FeeDecisionDetailed> {
   const { data: json } = await client.request<JsonOf<FeeDecisionDetailed>>({
@@ -199,7 +210,7 @@ export async function getFeeDecision(
 */
 export async function getHeadOfFamilyFeeDecisions(
   request: {
-    id: UUID
+    id: PersonId
   }
 ): Promise<FeeDecision[]> {
   const { data: json } = await client.request<JsonOf<FeeDecision[]>>({
@@ -215,13 +226,13 @@ export async function getHeadOfFamilyFeeDecisions(
 */
 export async function ignoreFeeDecisionDrafts(
   request: {
-    body: UUID[]
+    body: FeeDecisionId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/ignore`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<FeeDecisionId[]>
   })
   return json
 }
@@ -249,13 +260,13 @@ export async function searchFeeDecisions(
 */
 export async function setFeeDecisionSent(
   request: {
-    body: UUID[]
+    body: FeeDecisionId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/mark-sent`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<FeeDecisionId[]>
   })
   return json
 }
@@ -266,7 +277,7 @@ export async function setFeeDecisionSent(
 */
 export async function setFeeDecisionType(
   request: {
-    id: UUID,
+    id: FeeDecisionId,
     body: FeeDecisionTypeRequest
   }
 ): Promise<void> {
@@ -284,13 +295,13 @@ export async function setFeeDecisionType(
 */
 export async function unignoreFeeDecisionDrafts(
   request: {
-    body: UUID[]
+    body: FeeDecisionId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/fee-decisions/unignore`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<FeeDecisionId[]>
   })
   return json
 }
@@ -352,7 +363,7 @@ export async function createVoucherValue(
 */
 export async function deleteVoucherValue(
   request: {
-    id: UUID
+    id: ServiceNeedOptionVoucherValueId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -378,8 +389,8 @@ export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.getVoucherValues
 */
-export async function getVoucherValues(): Promise<Partial<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>>> {
-  const { data: json } = await client.request<JsonOf<Partial<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>>>>({
+export async function getVoucherValues(): Promise<Partial<Record<ServiceNeedOptionId, ServiceNeedOptionVoucherValueRangeWithId[]>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<ServiceNeedOptionId, ServiceNeedOptionVoucherValueRangeWithId[]>>>>({
     url: uri`/employee/finance-basics/voucher-values`.toString(),
     method: 'GET'
   })
@@ -394,7 +405,7 @@ export async function getVoucherValues(): Promise<Partial<Record<UUID, ServiceNe
 */
 export async function updateFeeThresholds(
   request: {
-    id: UUID,
+    id: FeeThresholdsId,
     body: FeeThresholds
   }
 ): Promise<void> {
@@ -412,7 +423,7 @@ export async function updateFeeThresholds(
 */
 export async function updateVoucherValue(
   request: {
-    id: UUID,
+    id: ServiceNeedOptionVoucherValueId,
     body: ServiceNeedOptionVoucherValueRange
   }
 ): Promise<void> {
@@ -444,8 +455,8 @@ export async function createIncome(
   request: {
     body: IncomeRequest
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<IncomeId> {
+  const { data: json } = await client.request<JsonOf<IncomeId>>({
     url: uri`/employee/incomes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<IncomeRequest>
@@ -459,7 +470,7 @@ export async function createIncome(
 */
 export async function deleteIncome(
   request: {
-    incomeId: UUID
+    incomeId: IncomeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -487,7 +498,7 @@ export async function getIncomeMultipliers(): Promise<Partial<Record<IncomeCoeff
 */
 export async function getIncomeNotifications(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<IncomeNotification[]> {
   const params = createUrlSearchParams(
@@ -519,7 +530,7 @@ export async function getIncomeTypeOptions(): Promise<IncomeTypeOptions> {
 */
 export async function getPersonIncomes(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<IncomeWithPermittedActions[]> {
   const params = createUrlSearchParams(
@@ -539,7 +550,7 @@ export async function getPersonIncomes(
 */
 export async function updateIncome(
   request: {
-    incomeId: UUID,
+    incomeId: IncomeId,
     body: IncomeRequest
   }
 ): Promise<void> {
@@ -569,7 +580,7 @@ export async function createDraftInvoices(): Promise<void> {
 */
 export async function createReplacementDraftsForHeadOfFamily(
   request: {
-    headOfFamilyId: UUID
+    headOfFamilyId: PersonId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -585,13 +596,13 @@ export async function createReplacementDraftsForHeadOfFamily(
 */
 export async function deleteDraftInvoices(
   request: {
-    body: UUID[]
+    body: InvoiceId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/delete-drafts`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<InvoiceId[]>
   })
   return json
 }
@@ -602,7 +613,7 @@ export async function deleteDraftInvoices(
 */
 export async function getHeadOfFamilyInvoices(
   request: {
-    id: UUID
+    id: PersonId
   }
 ): Promise<InvoiceDetailed[]> {
   const { data: json } = await client.request<JsonOf<InvoiceDetailed[]>>({
@@ -618,7 +629,7 @@ export async function getHeadOfFamilyInvoices(
 */
 export async function getInvoice(
   request: {
-    id: UUID
+    id: InvoiceId
   }
 ): Promise<InvoiceDetailedResponse> {
   const { data: json } = await client.request<JsonOf<InvoiceDetailedResponse>>({
@@ -646,13 +657,13 @@ export async function getInvoiceCodes(): Promise<InvoiceCodes> {
 */
 export async function markInvoicesSent(
   request: {
-    body: UUID[]
+    body: InvoiceId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/invoices/mark-sent`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<InvoiceId[]>
   })
   return json
 }
@@ -663,7 +674,7 @@ export async function markInvoicesSent(
 */
 export async function markReplacementDraftSent(
   request: {
-    invoiceId: UUID,
+    invoiceId: InvoiceId,
     body: MarkReplacementDraftSentRequest
   }
 ): Promise<void> {
@@ -700,7 +711,7 @@ export async function sendInvoices(
   request: {
     invoiceDate?: LocalDate | null,
     dueDate?: LocalDate | null,
-    body: UUID[]
+    body: InvoiceId[]
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
@@ -711,7 +722,7 @@ export async function sendInvoices(
     url: uri`/employee/invoices/send`.toString(),
     method: 'POST',
     params,
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<InvoiceId[]>
   })
   return json
 }
@@ -756,7 +767,7 @@ export async function createInvoiceCorrection(
 */
 export async function deleteInvoiceCorrection(
   request: {
-    id: UUID
+    id: InvoiceCorrectionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -772,7 +783,7 @@ export async function deleteInvoiceCorrection(
 */
 export async function getPersonInvoiceCorrections(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<InvoiceCorrectionWithPermittedActions[]> {
   const { data: json } = await client.request<JsonOf<InvoiceCorrectionWithPermittedActions[]>>({
@@ -788,7 +799,7 @@ export async function getPersonInvoiceCorrections(
 */
 export async function updateInvoiceCorrectionNote(
   request: {
-    id: UUID,
+    id: InvoiceCorrectionId,
     body: NoteUpdateBody
   }
 ): Promise<void> {
@@ -806,13 +817,13 @@ export async function updateInvoiceCorrectionNote(
 */
 export async function confirmDraftPayments(
   request: {
-    body: UUID[]
+    body: PaymentId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/payments/confirm`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<PaymentId[]>
   })
   return json
 }
@@ -835,13 +846,13 @@ export async function createPaymentDrafts(): Promise<void> {
 */
 export async function deleteDraftPayments(
   request: {
-    body: UUID[]
+    body: PaymentId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/payments/delete-drafts`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<PaymentId[]>
   })
   return json
 }
@@ -852,13 +863,13 @@ export async function deleteDraftPayments(
 */
 export async function revertPaymentsToDrafts(
   request: {
-    body: UUID[]
+    body: PaymentId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/payments/revert-to-draft`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<PaymentId[]>
   })
   return json
 }
@@ -903,7 +914,7 @@ export async function sendPayments(
 */
 export async function generateRetroactiveVoucherValueDecisions(
   request: {
-    id: UUID,
+    id: PersonId,
     body: CreateRetroactiveFeeDecisionsBody
   }
 ): Promise<void> {
@@ -921,7 +932,7 @@ export async function generateRetroactiveVoucherValueDecisions(
 */
 export async function getHeadOfFamilyVoucherValueDecisions(
   request: {
-    headOfFamilyId: UUID
+    headOfFamilyId: PersonId
   }
 ): Promise<VoucherValueDecisionSummary[]> {
   const { data: json } = await client.request<JsonOf<VoucherValueDecisionSummary[]>>({
@@ -937,7 +948,7 @@ export async function getHeadOfFamilyVoucherValueDecisions(
 */
 export async function getVoucherValueDecision(
   request: {
-    id: UUID
+    id: VoucherValueDecisionId
   }
 ): Promise<VoucherValueDecisionDetailed> {
   const { data: json } = await client.request<JsonOf<VoucherValueDecisionDetailed>>({
@@ -953,13 +964,13 @@ export async function getVoucherValueDecision(
 */
 export async function ignoreVoucherValueDecisionDrafts(
   request: {
-    body: UUID[]
+    body: VoucherValueDecisionId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/ignore`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<VoucherValueDecisionId[]>
   })
   return json
 }
@@ -970,13 +981,13 @@ export async function ignoreVoucherValueDecisionDrafts(
 */
 export async function markVoucherValueDecisionSent(
   request: {
-    body: UUID[]
+    body: VoucherValueDecisionId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/mark-sent`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<VoucherValueDecisionId[]>
   })
   return json
 }
@@ -1004,8 +1015,8 @@ export async function searchVoucherValueDecisions(
 */
 export async function sendVoucherValueDecisionDrafts(
   request: {
-    decisionHandlerId?: UUID | null,
-    body: UUID[]
+    decisionHandlerId?: EmployeeId | null,
+    body: VoucherValueDecisionId[]
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
@@ -1015,7 +1026,7 @@ export async function sendVoucherValueDecisionDrafts(
     url: uri`/employee/value-decisions/send`.toString(),
     method: 'POST',
     params,
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<VoucherValueDecisionId[]>
   })
   return json
 }
@@ -1026,7 +1037,7 @@ export async function sendVoucherValueDecisionDrafts(
 */
 export async function setVoucherValueDecisionType(
   request: {
-    id: UUID,
+    id: VoucherValueDecisionId,
     body: VoucherValueDecisionTypeRequest
   }
 ): Promise<void> {
@@ -1044,13 +1055,13 @@ export async function setVoucherValueDecisionType(
 */
 export async function unignoreVoucherValueDecisionDrafts(
   request: {
-    body: UUID[]
+    body: VoucherValueDecisionId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/value-decisions/unignore`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<VoucherValueDecisionId[]>
   })
   return json
 }

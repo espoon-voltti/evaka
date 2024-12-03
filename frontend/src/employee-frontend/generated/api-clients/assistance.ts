@@ -5,16 +5,21 @@
 // GENERATED FILE: no manual modifications
 
 import { AssistanceAction } from 'lib-common/generated/api-types/assistanceaction'
+import { AssistanceActionId } from 'lib-common/generated/api-types/shared'
 import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import { AssistanceActionRequest } from 'lib-common/generated/api-types/assistanceaction'
+import { AssistanceFactorId } from 'lib-common/generated/api-types/shared'
 import { AssistanceFactorUpdate } from 'lib-common/generated/api-types/assistance'
 import { AssistanceResponse } from 'lib-common/generated/api-types/assistance'
+import { DaycareAssistanceId } from 'lib-common/generated/api-types/shared'
 import { DaycareAssistanceUpdate } from 'lib-common/generated/api-types/assistance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { OtherAssistanceMeasureId } from 'lib-common/generated/api-types/shared'
 import { OtherAssistanceMeasureUpdate } from 'lib-common/generated/api-types/assistance'
+import { PersonId } from 'lib-common/generated/api-types/shared'
+import { PreschoolAssistanceId } from 'lib-common/generated/api-types/shared'
 import { PreschoolAssistanceUpdate } from 'lib-common/generated/api-types/assistance'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { deserializeJsonAssistanceAction } from 'lib-common/generated/api-types/assistanceaction'
 import { deserializeJsonAssistanceResponse } from 'lib-common/generated/api-types/assistance'
@@ -26,7 +31,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function createAssistanceAction(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: AssistanceActionRequest
   }
 ): Promise<AssistanceAction> {
@@ -44,11 +49,11 @@ export async function createAssistanceAction(
 */
 export async function createAssistanceFactor(
   request: {
-    child: UUID,
+    child: PersonId,
     body: AssistanceFactorUpdate
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<AssistanceFactorId> {
+  const { data: json } = await client.request<JsonOf<AssistanceFactorId>>({
     url: uri`/employee/children/${request.child}/assistance-factors`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AssistanceFactorUpdate>
@@ -62,11 +67,11 @@ export async function createAssistanceFactor(
 */
 export async function createDaycareAssistance(
   request: {
-    child: UUID,
+    child: PersonId,
     body: DaycareAssistanceUpdate
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<DaycareAssistanceId> {
+  const { data: json } = await client.request<JsonOf<DaycareAssistanceId>>({
     url: uri`/employee/children/${request.child}/daycare-assistances`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DaycareAssistanceUpdate>
@@ -80,11 +85,11 @@ export async function createDaycareAssistance(
 */
 export async function createOtherAssistanceMeasure(
   request: {
-    child: UUID,
+    child: PersonId,
     body: OtherAssistanceMeasureUpdate
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<OtherAssistanceMeasureId> {
+  const { data: json } = await client.request<JsonOf<OtherAssistanceMeasureId>>({
     url: uri`/employee/children/${request.child}/other-assistance-measures`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<OtherAssistanceMeasureUpdate>
@@ -98,11 +103,11 @@ export async function createOtherAssistanceMeasure(
 */
 export async function createPreschoolAssistance(
   request: {
-    child: UUID,
+    child: PersonId,
     body: PreschoolAssistanceUpdate
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<PreschoolAssistanceId> {
+  const { data: json } = await client.request<JsonOf<PreschoolAssistanceId>>({
     url: uri`/employee/children/${request.child}/preschool-assistances`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PreschoolAssistanceUpdate>
@@ -116,7 +121,7 @@ export async function createPreschoolAssistance(
 */
 export async function deleteAssistanceAction(
   request: {
-    id: UUID
+    id: AssistanceActionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -132,7 +137,7 @@ export async function deleteAssistanceAction(
 */
 export async function deleteAssistanceFactor(
   request: {
-    id: UUID
+    id: AssistanceFactorId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -148,7 +153,7 @@ export async function deleteAssistanceFactor(
 */
 export async function deleteDaycareAssistance(
   request: {
-    id: UUID
+    id: DaycareAssistanceId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -164,7 +169,7 @@ export async function deleteDaycareAssistance(
 */
 export async function deleteOtherAssistanceMeasure(
   request: {
-    id: UUID
+    id: OtherAssistanceMeasureId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -180,7 +185,7 @@ export async function deleteOtherAssistanceMeasure(
 */
 export async function deletePreschoolAssistance(
   request: {
-    id: UUID
+    id: PreschoolAssistanceId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -208,7 +213,7 @@ export async function getAssistanceActionOptions(): Promise<AssistanceActionOpti
 */
 export async function getChildAssistance(
   request: {
-    child: UUID
+    child: PersonId
   }
 ): Promise<AssistanceResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceResponse>>({
@@ -224,7 +229,7 @@ export async function getChildAssistance(
 */
 export async function updateAssistanceAction(
   request: {
-    id: UUID,
+    id: AssistanceActionId,
     body: AssistanceActionRequest
   }
 ): Promise<AssistanceAction> {
@@ -242,7 +247,7 @@ export async function updateAssistanceAction(
 */
 export async function updateAssistanceFactor(
   request: {
-    id: UUID,
+    id: AssistanceFactorId,
     body: AssistanceFactorUpdate
   }
 ): Promise<void> {
@@ -260,7 +265,7 @@ export async function updateAssistanceFactor(
 */
 export async function updateDaycareAssistance(
   request: {
-    id: UUID,
+    id: DaycareAssistanceId,
     body: DaycareAssistanceUpdate
   }
 ): Promise<void> {
@@ -278,7 +283,7 @@ export async function updateDaycareAssistance(
 */
 export async function updateOtherAssistanceMeasure(
   request: {
-    id: UUID,
+    id: OtherAssistanceMeasureId,
     body: OtherAssistanceMeasureUpdate
   }
 ): Promise<void> {
@@ -296,7 +301,7 @@ export async function updateOtherAssistanceMeasure(
 */
 export async function updatePreschoolAssistance(
   request: {
-    id: UUID,
+    id: PreschoolAssistanceId,
     body: PreschoolAssistanceUpdate
   }
 ): Promise<void> {

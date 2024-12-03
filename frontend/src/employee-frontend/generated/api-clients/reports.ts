@@ -7,6 +7,7 @@
 import LocalDate from 'lib-common/local-date'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
+import { AreaId } from 'lib-common/generated/api-types/shared'
 import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { AssistanceNeedsAndActionsReport } from 'lib-common/generated/api-types/reports'
 import { AssistanceNeedsAndActionsReportByChild } from 'lib-common/generated/api-types/reports'
@@ -19,6 +20,7 @@ import { ChildAttendanceReportRow } from 'lib-common/generated/api-types/reports
 import { ChildPreschoolAbsenceRow } from 'lib-common/generated/api-types/reports'
 import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import { CustomerFeesReportRow } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
@@ -29,7 +31,9 @@ import { FamilyContactReportRow } from 'lib-common/generated/api-types/reports'
 import { FamilyDaycareMealReportResult } from 'lib-common/generated/api-types/reports'
 import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { FuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { HolidayPeriodAttendanceReportRow } from 'lib-common/generated/api-types/reports'
+import { HolidayPeriodId } from 'lib-common/generated/api-types/shared'
 import { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
 import { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import { JsonCompatible } from 'lib-common/json'
@@ -44,6 +48,7 @@ import { OccupancyGroupReportResultRow } from 'lib-common/generated/api-types/re
 import { OccupancyType } from 'lib-common/generated/api-types/occupancy'
 import { OccupancyUnitReportResultRow } from 'lib-common/generated/api-types/reports'
 import { PartnersInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PlacementCountReportResult } from 'lib-common/generated/api-types/reports'
 import { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
@@ -61,7 +66,6 @@ import { SextetReportRow } from 'lib-common/generated/api-types/reports'
 import { SourceUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import { TitaniaErrorReportRow } from 'lib-common/generated/api-types/reports'
-import { UUID } from 'lib-common/types'
 import { UnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { VardaChildErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { VardaUnitErrorReportRow } from 'lib-common/generated/api-types/reports'
@@ -202,10 +206,10 @@ export async function getAttendanceReservationReportByChild(
 */
 export async function getAttendanceReservationReportByUnit(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     start: LocalDate,
     end: LocalDate,
-    groupIds?: UUID[] | null
+    groupIds?: GroupId[] | null
   }
 ): Promise<AttendanceReservationReportRow[]> {
   const params = createUrlSearchParams(
@@ -247,7 +251,7 @@ export async function getChildAgeLanguageReport(
 */
 export async function getChildAttendanceReport(
   request: {
-    childId: UUID,
+    childId: PersonId,
     from: LocalDate,
     to: LocalDate
   }
@@ -283,8 +287,8 @@ export async function getChildrenInDifferentAddressReport(): Promise<ChildrenInD
 export async function getCustomerFeesReport(
   request: {
     date: LocalDate,
-    areaId?: UUID | null,
-    unitId?: UUID | null,
+    areaId?: AreaId | null,
+    unitId?: DaycareId | null,
     decisionType: FinanceDecisionType
   }
 ): Promise<CustomerFeesReportRow[]> {
@@ -372,7 +376,7 @@ export async function getEndedPlacementsReport(
 */
 export async function getExceededServiceNeedReportRows(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     year: number,
     month: number
   }
@@ -420,7 +424,7 @@ export async function getFamilyConflictsReport(): Promise<FamilyConflictReportRo
 */
 export async function getFamilyContactsReport(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     date: LocalDate
   }
 ): Promise<FamilyContactReportRow[]> {
@@ -500,8 +504,8 @@ export async function getFuturePreschoolersUnitsReport(): Promise<PreschoolUnits
 */
 export async function getHolidayPeriodAttendanceReport(
   request: {
-    unitId: UUID,
-    periodId: UUID
+    unitId: DaycareId,
+    periodId: HolidayPeriodId
   }
 ): Promise<HolidayPeriodAttendanceReportRow[]> {
   const params = createUrlSearchParams(
@@ -574,7 +578,7 @@ export async function getManualDuplicationReport(
 */
 export async function getMealReportByUnit(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     date: LocalDate
   }
 ): Promise<MealReportData> {
@@ -654,7 +658,7 @@ export async function getNonSsnChildrenReportRows(): Promise<NonSsnChildrenRepor
 export async function getOccupancyGroupReport(
   request: {
     type: OccupancyType,
-    careAreaId?: UUID | null,
+    careAreaId?: AreaId | null,
     providerType?: ProviderType | null,
     unitTypes?: CareType[] | null,
     year: number,
@@ -684,7 +688,7 @@ export async function getOccupancyGroupReport(
 export async function getOccupancyUnitReport(
   request: {
     type: OccupancyType,
-    careAreaId?: UUID | null,
+    careAreaId?: AreaId | null,
     providerType?: ProviderType | null,
     unitTypes?: CareType[] | null,
     year: number,
@@ -750,7 +754,7 @@ export async function getPlacementCountReport(
 export async function getPlacementGuaranteeReport(
   request: {
     date: LocalDate,
-    unitId?: UUID | null
+    unitId?: DaycareId | null
   }
 ): Promise<PlacementGuaranteeReportRow[]> {
   const params = createUrlSearchParams(
@@ -799,8 +803,8 @@ export async function getPlacementSketchingReport(
 */
 export async function getPreschoolAbsenceReport(
   request: {
-    unitId: UUID,
-    groupId?: UUID | null,
+    unitId: DaycareId,
+    groupId?: GroupId | null,
     termStart: LocalDate,
     termEnd: LocalDate
   }
@@ -915,7 +919,7 @@ export async function getServiceVoucherReportForAllUnits(
   request: {
     year: number,
     month: number,
-    areaId?: UUID | null
+    areaId?: AreaId | null
   }
 ): Promise<ServiceVoucherReport> {
   const params = createUrlSearchParams(
@@ -937,7 +941,7 @@ export async function getServiceVoucherReportForAllUnits(
 */
 export async function getServiceVoucherReportForUnit(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     year: number,
     month: number
   }
