@@ -6,8 +6,9 @@
 
 import { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
+import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
@@ -20,7 +21,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getDocument(
   request: {
-    documentId: UUID
+    documentId: ChildDocumentId
   }
 ): Promise<ChildDocumentCitizenDetails> {
   const { data: json } = await client.request<JsonOf<ChildDocumentCitizenDetails>>({
@@ -36,7 +37,7 @@ export async function getDocument(
 */
 export async function getDocuments(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ChildDocumentCitizenSummary[]> {
   const params = createUrlSearchParams(
@@ -54,8 +55,8 @@ export async function getDocuments(
 /**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getUnreadDocumentsCount
 */
-export async function getUnreadDocumentsCount(): Promise<Partial<Record<UUID, number>>> {
-  const { data: json } = await client.request<JsonOf<Partial<Record<UUID, number>>>>({
+export async function getUnreadDocumentsCount(): Promise<Partial<Record<PersonId, number>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<PersonId, number>>>>({
     url: uri`/citizen/child-documents/unread-count`.toString(),
     method: 'GET'
   })
@@ -68,7 +69,7 @@ export async function getUnreadDocumentsCount(): Promise<Partial<Record<UUID, nu
 */
 export async function putDocumentRead(
   request: {
-    documentId: UUID
+    documentId: ChildDocumentId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({

@@ -8,11 +8,12 @@ import { CitizenMessageBody } from 'lib-common/generated/api-types/messaging'
 import { GetReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MessageId } from 'lib-common/generated/api-types/shared'
+import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { MyAccountResponse } from 'lib-common/generated/api-types/messaging'
 import { PagedCitizenMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonPagedCitizenMessageThreads } from 'lib-common/generated/api-types/messaging'
@@ -25,7 +26,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function archiveThread(
   request: {
-    threadId: UUID
+    threadId: MessageThreadId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -97,7 +98,7 @@ export async function getUnreadMessages(): Promise<number> {
 */
 export async function markThreadRead(
   request: {
-    threadId: UUID
+    threadId: MessageThreadId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -115,8 +116,8 @@ export async function newMessage(
   request: {
     body: CitizenMessageBody
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<MessageThreadId> {
+  const { data: json } = await client.request<JsonOf<MessageThreadId>>({
     url: uri`/citizen/messages`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CitizenMessageBody>
@@ -130,7 +131,7 @@ export async function newMessage(
 */
 export async function replyToThread(
   request: {
-    messageId: UUID,
+    messageId: MessageId,
     body: ReplyToMessageBody
   }
 ): Promise<ThreadReply> {

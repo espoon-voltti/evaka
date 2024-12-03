@@ -5,16 +5,18 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { AttachmentId } from './shared'
 import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+import { PedagogicalDocumentId } from './shared'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.pedagogicaldocument.Attachment
 */
 export interface Attachment {
   contentType: string
-  id: UUID
+  id: AttachmentId
   name: string
 }
 
@@ -23,11 +25,11 @@ export interface Attachment {
 */
 export interface PedagogicalDocument {
   attachments: Attachment[]
-  childId: UUID
+  childId: PersonId
   createdAt: HelsinkiDateTime
   createdBy: EvakaUser
   description: string
-  id: UUID
+  id: PedagogicalDocumentId
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
 }
@@ -37,10 +39,10 @@ export interface PedagogicalDocument {
 */
 export interface PedagogicalDocumentCitizen {
   attachments: Attachment[]
-  childId: UUID
+  childId: PersonId
   createdAt: HelsinkiDateTime
   description: string
-  id: UUID
+  id: PedagogicalDocumentId
   isRead: boolean
 }
 
@@ -48,7 +50,7 @@ export interface PedagogicalDocumentCitizen {
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentPostBody
 */
 export interface PedagogicalDocumentPostBody {
-  childId: UUID
+  childId: PersonId
   description: string
 }
 

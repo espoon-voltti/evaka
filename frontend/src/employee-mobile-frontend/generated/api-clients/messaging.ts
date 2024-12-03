@@ -6,11 +6,16 @@
 
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import { CreateMessageResponse } from 'lib-common/generated/api-types/messaging'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DraftContent } from 'lib-common/generated/api-types/messaging'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import { MessageDraftId } from 'lib-common/generated/api-types/shared'
+import { MessageId } from 'lib-common/generated/api-types/shared'
 import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { PagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { PagedSentMessages } from 'lib-common/generated/api-types/messaging'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
@@ -18,7 +23,6 @@ import { PostMessagePreflightBody } from 'lib-common/generated/api-types/messagi
 import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/messaging'
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
 import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
 import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../client'
@@ -36,7 +40,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function createMessage(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     body: PostMessageBody
   }
 ): Promise<CreateMessageResponse> {
@@ -54,7 +58,7 @@ export async function createMessage(
 */
 export async function createMessagePreflightCheck(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     body: PostMessagePreflightBody
   }
 ): Promise<PostMessagePreflightResponse> {
@@ -72,8 +76,8 @@ export async function createMessagePreflightCheck(
 */
 export async function deleteDraftMessage(
   request: {
-    accountId: UUID,
-    draftId: UUID
+    accountId: MessageAccountId,
+    draftId: MessageDraftId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -89,7 +93,7 @@ export async function deleteDraftMessage(
 */
 export async function getAccountsByDevice(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<AuthorizedMessageAccount[]> {
   const { data: json } = await client.request<JsonOf<AuthorizedMessageAccount[]>>({
@@ -105,7 +109,7 @@ export async function getAccountsByDevice(
 */
 export async function getDraftMessages(
   request: {
-    accountId: UUID
+    accountId: MessageAccountId
   }
 ): Promise<DraftContent[]> {
   const { data: json } = await client.request<JsonOf<DraftContent[]>>({
@@ -121,7 +125,7 @@ export async function getDraftMessages(
 */
 export async function getReceivedMessages(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     page: number
   }
 ): Promise<PagedMessageThreads> {
@@ -154,7 +158,7 @@ export async function getReceiversForNewMessage(): Promise<MessageReceiversRespo
 */
 export async function getSentMessages(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     page: number
   }
 ): Promise<PagedSentMessages> {
@@ -175,8 +179,8 @@ export async function getSentMessages(
 */
 export async function getThread(
   request: {
-    accountId: UUID,
-    threadId: UUID
+    accountId: MessageAccountId,
+    threadId: MessageThreadId
   }
 ): Promise<MessageThread> {
   const { data: json } = await client.request<JsonOf<MessageThread>>({
@@ -192,7 +196,7 @@ export async function getThread(
 */
 export async function getUnreadMessagesByUnit(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<UnreadCountByAccountAndGroup[]> {
   const { data: json } = await client.request<JsonOf<UnreadCountByAccountAndGroup[]>>({
@@ -208,10 +212,10 @@ export async function getUnreadMessagesByUnit(
 */
 export async function initDraftMessage(
   request: {
-    accountId: UUID
+    accountId: MessageAccountId
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<MessageDraftId> {
+  const { data: json } = await client.request<JsonOf<MessageDraftId>>({
     url: uri`/employee-mobile/messages/${request.accountId}/drafts`.toString(),
     method: 'POST'
   })
@@ -224,8 +228,8 @@ export async function initDraftMessage(
 */
 export async function markThreadRead(
   request: {
-    accountId: UUID,
-    threadId: UUID
+    accountId: MessageAccountId,
+    threadId: MessageThreadId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -241,8 +245,8 @@ export async function markThreadRead(
 */
 export async function replyToThread(
   request: {
-    accountId: UUID,
-    messageId: UUID,
+    accountId: MessageAccountId,
+    messageId: MessageId,
     body: ReplyToMessageBody
   }
 ): Promise<ThreadReply> {
@@ -260,8 +264,8 @@ export async function replyToThread(
 */
 export async function updateDraftMessage(
   request: {
-    accountId: UUID,
-    draftId: UUID,
+    accountId: MessageAccountId,
+    draftId: MessageDraftId,
     body: UpdatableDraftContent
   }
 ): Promise<void> {

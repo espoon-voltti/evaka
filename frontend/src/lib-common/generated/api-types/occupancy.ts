@@ -8,8 +8,9 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Caretakers } from './daycare'
+import { GroupId } from './shared'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.occupancy.ChildCapacityPoint
@@ -25,7 +26,7 @@ export interface ChildCapacityPoint {
 export interface ChildOccupancyAttendance {
   arrived: HelsinkiDateTime
   capacity: number
-  childId: UUID
+  childId: PersonId
   departed: HelsinkiDateTime | null
 }
 
@@ -34,7 +35,7 @@ export interface ChildOccupancyAttendance {
 */
 export interface GetUnitOccupanciesForDayBody {
   date: LocalDate
-  groupIds: UUID[] | null
+  groupIds: GroupId[] | null
 }
 
 /**
@@ -71,7 +72,7 @@ export interface OccupancyResponse {
 * Generated from fi.espoo.evaka.occupancy.OccupancyResponseGroupLevel
 */
 export interface OccupancyResponseGroupLevel {
-  groupId: UUID
+  groupId: GroupId
   occupancies: OccupancyResponse
 }
 

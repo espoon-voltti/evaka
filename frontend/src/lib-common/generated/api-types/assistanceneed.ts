@@ -9,10 +9,17 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { AssistanceNeedDecisionGuardianId } from './shared'
+import { AssistanceNeedDecisionId } from './shared'
+import { AssistanceNeedPreschoolDecisionGuardianId } from './shared'
+import { AssistanceNeedPreschoolDecisionId } from './shared'
+import { AssistanceNeedVoucherCoefficientId } from './shared'
+import { DaycareId } from './shared'
+import { EmployeeId } from './shared'
 import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
 import { OfficialLanguage } from './shared'
-import { UUID } from '../../types'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.AnnulAssistanceNeedDecisionRequest
@@ -53,7 +60,7 @@ export interface AssistanceNeedDecision {
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
   hasDocument: boolean
-  id: UUID
+  id: AssistanceNeedDecisionId
   language: OfficialLanguage
   motivationForDecision: string | null
   otherRepresentativeDetails: string | null
@@ -78,7 +85,7 @@ export interface AssistanceNeedDecision {
 export interface AssistanceNeedDecisionBasics {
   created: HelsinkiDateTime
   decisionMade: LocalDate | null
-  id: UUID
+  id: AssistanceNeedDecisionId
   selectedUnit: UnitInfoBasics | null
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
@@ -98,7 +105,7 @@ export interface AssistanceNeedDecisionBasicsResponse {
 */
 export interface AssistanceNeedDecisionChild {
   dateOfBirth: LocalDate | null
-  id: UUID | null
+  id: PersonId | null
   name: string | null
 }
 
@@ -108,9 +115,9 @@ export interface AssistanceNeedDecisionChild {
 export interface AssistanceNeedDecisionCitizenListItem {
   annulmentReason: string
   assistanceLevels: AssistanceLevel[]
-  childId: UUID
+  childId: PersonId
   decisionMade: LocalDate
-  id: UUID
+  id: AssistanceNeedDecisionId
   isUnread: boolean
   selectedUnit: UnitInfoBasics | null
   status: AssistanceNeedDecisionStatus
@@ -121,7 +128,7 @@ export interface AssistanceNeedDecisionCitizenListItem {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 */
 export interface AssistanceNeedDecisionEmployee {
-  employeeId: UUID | null
+  employeeId: EmployeeId | null
   name: string | null
   phoneNumber: string | null
   title: string | null
@@ -131,7 +138,7 @@ export interface AssistanceNeedDecisionEmployee {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployeeForm
 */
 export interface AssistanceNeedDecisionEmployeeForm {
-  employeeId: UUID | null
+  employeeId: EmployeeId | null
   phoneNumber: string | null
   title: string | null
 }
@@ -172,17 +179,17 @@ export interface AssistanceNeedDecisionForm {
 */
 export interface AssistanceNeedDecisionGuardian {
   details: string | null
-  id: UUID | null
+  id: AssistanceNeedDecisionGuardianId | null
   isHeard: boolean
   name: string
-  personId: UUID | null
+  personId: PersonId | null
 }
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionMaker
 */
 export interface AssistanceNeedDecisionMaker {
-  employeeId: UUID | null
+  employeeId: EmployeeId | null
   name: string | null
   title: string | null
 }
@@ -191,7 +198,7 @@ export interface AssistanceNeedDecisionMaker {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionMakerForm
 */
 export interface AssistanceNeedDecisionMakerForm {
-  employeeId: UUID | null
+  employeeId: EmployeeId | null
   title: string | null
 }
 
@@ -233,7 +240,7 @@ export interface AssistanceNeedPreschoolDecision {
   decisionNumber: number
   form: AssistanceNeedPreschoolDecisionForm
   hasDocument: boolean
-  id: UUID
+  id: AssistanceNeedPreschoolDecisionId
   isValid: boolean
   preparer1Name: string | null
   preparer2Name: string | null
@@ -250,15 +257,15 @@ export interface AssistanceNeedPreschoolDecision {
 */
 export interface AssistanceNeedPreschoolDecisionBasics {
   annulmentReason: string
-  childId: UUID
+  childId: PersonId
   created: HelsinkiDateTime
   decisionMade: LocalDate | null
-  id: UUID
+  id: AssistanceNeedPreschoolDecisionId
   selectedUnit: UnitInfoBasics | null
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
   type: AssistanceNeedPreschoolDecisionType | null
-  unreadGuardianIds: UUID[] | null
+  unreadGuardianIds: PersonId[] | null
   validFrom: LocalDate | null
   validTo: LocalDate | null
 }
@@ -276,7 +283,7 @@ export interface AssistanceNeedPreschoolDecisionBasicsResponse {
 */
 export interface AssistanceNeedPreschoolDecisionChild {
   dateOfBirth: LocalDate
-  id: UUID
+  id: PersonId
   name: string
 }
 
@@ -285,9 +292,9 @@ export interface AssistanceNeedPreschoolDecisionChild {
 */
 export interface AssistanceNeedPreschoolDecisionCitizenListItem {
   annulmentReason: string
-  childId: UUID
+  childId: PersonId
   decisionMade: LocalDate
-  id: UUID
+  id: AssistanceNeedPreschoolDecisionId
   isUnread: boolean
   status: AssistanceNeedDecisionStatus
   type: AssistanceNeedPreschoolDecisionType
@@ -311,7 +318,7 @@ export interface AssistanceNeedPreschoolDecisionForm {
   basisDocumentSocialReportDate: LocalDate | null
   basisDocumentsInfo: string
   decisionBasis: string
-  decisionMakerEmployeeId: UUID | null
+  decisionMakerEmployeeId: EmployeeId | null
   decisionMakerTitle: string
   extendedCompulsoryEducation: boolean
   extendedCompulsoryEducationInfo: string
@@ -324,14 +331,14 @@ export interface AssistanceNeedPreschoolDecisionForm {
   language: OfficialLanguage
   otherRepresentativeDetails: string
   otherRepresentativeHeard: boolean
-  preparer1EmployeeId: UUID | null
+  preparer1EmployeeId: EmployeeId | null
   preparer1PhoneNumber: string
   preparer1Title: string
-  preparer2EmployeeId: UUID | null
+  preparer2EmployeeId: EmployeeId | null
   preparer2PhoneNumber: string
   preparer2Title: string
   primaryGroup: string
-  selectedUnit: UUID | null
+  selectedUnit: DaycareId | null
   type: AssistanceNeedPreschoolDecisionType | null
   validFrom: LocalDate | null
   validTo: LocalDate | null
@@ -343,10 +350,10 @@ export interface AssistanceNeedPreschoolDecisionForm {
 */
 export interface AssistanceNeedPreschoolDecisionGuardian {
   details: string
-  id: UUID
+  id: AssistanceNeedPreschoolDecisionGuardianId
   isHeard: boolean
   name: string
-  personId: UUID
+  personId: PersonId
 }
 
 /**
@@ -369,9 +376,9 @@ export type AssistanceNeedPreschoolDecisionType =
 * Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
 */
 export interface AssistanceNeedVoucherCoefficient {
-  childId: UUID
+  childId: PersonId
   coefficient: number
-  id: UUID
+  id: AssistanceNeedVoucherCoefficientId
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser | null
   validityPeriod: FiniteDateRange
@@ -434,14 +441,14 @@ export interface StructuralMotivationOptions {
 * Generated from fi.espoo.evaka.assistanceneed.decision.UnitIdInfo
 */
 export interface UnitIdInfo {
-  id: UUID | null
+  id: DaycareId | null
 }
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.UnitInfo
 */
 export interface UnitInfo {
-  id: UUID | null
+  id: DaycareId | null
   name: string | null
   postOffice: string | null
   postalCode: string | null
@@ -452,7 +459,7 @@ export interface UnitInfo {
 * Generated from fi.espoo.evaka.assistanceneed.decision.UnitInfoBasics
 */
 export interface UnitInfoBasics {
-  id: UUID | null
+  id: DaycareId | null
   name: string | null
 }
 
@@ -460,7 +467,7 @@ export interface UnitInfoBasics {
 * Generated from fi.espoo.evaka.assistanceneed.decision.UnreadAssistanceNeedDecisionItem
 */
 export interface UnreadAssistanceNeedDecisionItem {
-  childId: UUID
+  childId: PersonId
   count: number
 }
 

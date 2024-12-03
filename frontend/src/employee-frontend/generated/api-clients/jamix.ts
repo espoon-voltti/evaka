@@ -5,8 +5,8 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { uri } from 'lib-common/uri'
@@ -17,7 +17,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function sendJamixOrders(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     date: LocalDate
   }
 ): Promise<void> {

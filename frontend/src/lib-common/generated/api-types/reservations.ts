@@ -10,13 +10,16 @@ import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
 import { AbsenceCategory } from './absence'
 import { AbsenceType } from './absence'
+import { ChildImageId } from './shared'
 import { ChildServiceNeedInfo } from './absence'
 import { DailyServiceTimesValue } from './dailyservicetimes'
+import { DaycareId } from './shared'
+import { GroupId } from './shared'
 import { HolidayPeriodEffect } from './holidayperiod'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 import { PlacementType } from './placement'
 import { ScheduleType } from './placement'
-import { UUID } from '../../types'
 import { deserializeJsonChildServiceNeedInfo } from './absence'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
 import { deserializeJsonHolidayPeriodEffect } from './holidayperiod'
@@ -34,7 +37,7 @@ export interface AbsenceInfo {
 */
 export interface AbsenceRequest {
   absenceType: AbsenceType
-  childIds: UUID[]
+  childIds: PersonId[]
   dateRange: FiniteDateRange
 }
 
@@ -59,7 +62,7 @@ export type BackupPlacementType =
 export interface Child {
   dateOfBirth: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   preferredName: string
   serviceNeeds: ChildServiceNeedInfo[]
@@ -72,10 +75,10 @@ export interface ChildDatePresence {
   absenceBillable: AbsenceType | null
   absenceNonbillable: AbsenceType | null
   attendances: TimeInterval[]
-  childId: UUID
+  childId: PersonId
   date: LocalDate
   reservations: Reservation[]
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -85,10 +88,10 @@ export interface ChildRecordOfDay {
   absenceBillable: AbsenceTypeResponse | null
   absenceNonbillable: AbsenceTypeResponse | null
   attendances: TimeInterval[]
-  backupGroupId: UUID | null
-  childId: UUID
+  backupGroupId: GroupId | null
+  childId: PersonId
   dailyServiceTimes: DailyServiceTimesValue | null
-  groupId: UUID | null
+  groupId: GroupId | null
   inOtherUnit: boolean
   possibleAbsenceCategories: AbsenceCategory[]
   reservations: ReservationResponse[]
@@ -101,9 +104,9 @@ export interface ChildRecordOfDay {
 export interface ChildReservationInfo {
   absent: boolean
   backupPlacement: BackupPlacementType | null
-  childId: UUID
+  childId: PersonId
   dailyServiceTimes: DailyServiceTimesValue | null
-  groupId: UUID | null
+  groupId: GroupId | null
   isInHolidayPeriod: boolean
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
@@ -134,7 +137,7 @@ export interface ConfirmedRangeDateUpdate {
 */
 export interface DailyChildReservationResult {
   childReservations: ChildReservationInfo[]
-  children: Partial<Record<UUID, ReservationChildInfo>>
+  children: Partial<Record<PersonId, ReservationChildInfo>>
 }
 
 
@@ -144,7 +147,7 @@ export namespace DailyReservationRequest {
   */
   export interface Absent {
     type: 'ABSENT'
-    childId: UUID
+    childId: PersonId
     date: LocalDate
   }
 
@@ -153,7 +156,7 @@ export namespace DailyReservationRequest {
   */
   export interface Nothing {
     type: 'NOTHING'
-    childId: UUID
+    childId: PersonId
     date: LocalDate
   }
 
@@ -162,7 +165,7 @@ export namespace DailyReservationRequest {
   */
   export interface Present {
     type: 'PRESENT'
-    childId: UUID
+    childId: PersonId
     date: LocalDate
   }
 
@@ -171,7 +174,7 @@ export namespace DailyReservationRequest {
   */
   export interface Reservations {
     type: 'RESERVATIONS'
-    childId: UUID
+    childId: PersonId
     date: LocalDate
     reservation: TimeRange
     secondReservation: TimeRange | null
@@ -197,7 +200,7 @@ export interface DayReservationStatisticsResult {
 */
 export interface ExpectedAbsencesRequest {
   attendances: TimeRange[]
-  childId: UUID
+  childId: PersonId
   date: LocalDate
 }
 
@@ -214,7 +217,7 @@ export interface ExpectedAbsencesResponse {
 export interface GroupReservationStatisticResult {
   absentCount: number
   calculatedPresent: number
-  groupId: UUID | null
+  groupId: GroupId | null
   presentCount: number
 }
 
@@ -299,10 +302,10 @@ export type Reservation = Reservation.NoTimes | Reservation.Times
 * Generated from fi.espoo.evaka.reservations.ReservationChild
 */
 export interface ReservationChild {
-  duplicateOf: UUID | null
+  duplicateOf: PersonId | null
   firstName: string
-  id: UUID
-  imageId: UUID | null
+  id: PersonId
+  imageId: ChildImageId | null
   lastName: string
   monthSummaries: MonthSummary[]
   preferredName: string
@@ -315,7 +318,7 @@ export interface ReservationChild {
 export interface ReservationChildInfo {
   dateOfBirth: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   preferredName: string
 }
@@ -324,7 +327,7 @@ export interface ReservationChildInfo {
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ReservationGroup
 */
 export interface ReservationGroup {
-  id: UUID
+  id: GroupId
   name: string
 }
 
@@ -369,7 +372,7 @@ export interface ReservationResponseDay {
 export interface ReservationResponseDayChild {
   absence: AbsenceInfo | null
   attendances: TimeInterval[]
-  childId: UUID
+  childId: PersonId
   holidayPeriodEffect: HolidayPeriodEffect | null
   reservableTimeRange: ReservableTimeRange
   reservations: ReservationResponse[]

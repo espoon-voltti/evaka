@@ -8,10 +8,13 @@ import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { ChildDocumentId } from './shared'
+import { DocumentTemplateId } from './shared'
+import { EmployeeId } from './shared'
 import { JsonOf } from '../../json'
 import { OfficialLanguage } from './shared'
+import { PersonId } from './shared'
 import { PlacementType } from './placement'
-import { UUID } from '../../types'
 
 
 export namespace AnsweredQuestion {
@@ -108,7 +111,7 @@ export interface CheckboxGroupQuestionOption {
 export interface ChildBasics {
   dateOfBirth: LocalDate | null
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
 }
 
@@ -119,7 +122,7 @@ export interface ChildDocumentCitizenDetails {
   child: ChildBasics
   content: DocumentContent
   downloadable: boolean
-  id: UUID
+  id: ChildDocumentId
   publishedAt: HelsinkiDateTime | null
   status: DocumentStatus
   template: DocumentTemplate
@@ -129,7 +132,7 @@ export interface ChildDocumentCitizenDetails {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCitizenSummary
 */
 export interface ChildDocumentCitizenSummary {
-  id: UUID
+  id: ChildDocumentId
   publishedAt: HelsinkiDateTime
   status: DocumentStatus
   templateName: string
@@ -141,8 +144,8 @@ export interface ChildDocumentCitizenSummary {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
 */
 export interface ChildDocumentCreateRequest {
-  childId: UUID
-  templateId: UUID
+  childId: PersonId
+  templateId: DocumentTemplateId
 }
 
 /**
@@ -151,7 +154,7 @@ export interface ChildDocumentCreateRequest {
 export interface ChildDocumentDetails {
   child: ChildBasics
   content: DocumentContent
-  id: UUID
+  id: ChildDocumentId
   publishedAt: HelsinkiDateTime | null
   publishedContent: DocumentContent | null
   status: DocumentStatus
@@ -162,11 +165,11 @@ export interface ChildDocumentDetails {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentSummary
 */
 export interface ChildDocumentSummary {
-  id: UUID
+  id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
   status: DocumentStatus
-  templateId: UUID
+  templateId: DocumentTemplateId
   templateName: string
   type: DocumentType
 }
@@ -217,7 +220,7 @@ export interface DocumentTemplate {
   archiveDurationMonths: number | null
   confidential: boolean
   content: DocumentTemplateContent
-  id: UUID
+  id: DocumentTemplateId
   language: OfficialLanguage
   legalBasis: string
   name: string
@@ -255,7 +258,7 @@ export interface DocumentTemplateContent {
 */
 export interface DocumentTemplateSummary {
   documentCount: number
-  id: UUID
+  id: DocumentTemplateId
   language: OfficialLanguage
   name: string
   placementTypes: PlacementType[]
@@ -284,7 +287,7 @@ export type DocumentType = typeof documentTypes[number]
 * Generated from fi.espoo.evaka.document.childdocument.DocumentWriteLock
 */
 export interface DocumentWriteLock {
-  modifiedBy: UUID
+  modifiedBy: EmployeeId
   modifiedByName: string
   opensAt: HelsinkiDateTime
 }

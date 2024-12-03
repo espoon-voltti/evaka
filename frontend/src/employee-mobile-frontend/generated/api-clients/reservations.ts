@@ -9,9 +9,10 @@ import { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
 import { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
 import { DailyChildReservationResult } from 'lib-common/generated/api-types/reservations'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
@@ -25,7 +26,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getChildReservationsForDay(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     examinationDate: LocalDate
   }
 ): Promise<DailyChildReservationResult> {
@@ -47,7 +48,7 @@ export async function getChildReservationsForDay(
 */
 export async function getConfirmedRangeData(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ConfirmedRangeDate[]> {
   const { data: json } = await client.request<JsonOf<ConfirmedRangeDate[]>>({
@@ -63,7 +64,7 @@ export async function getConfirmedRangeData(
 */
 export async function getReservationStatisticsForConfirmedDays(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<DayReservationStatisticsResult[]> {
   const params = createUrlSearchParams(
@@ -83,7 +84,7 @@ export async function getReservationStatisticsForConfirmedDays(
 */
 export async function setConfirmedRangeReservations(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: ConfirmedRangeDateUpdate[]
   }
 ): Promise<void> {

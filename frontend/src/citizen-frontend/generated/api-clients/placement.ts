@@ -7,8 +7,8 @@
 import { ChildPlacementResponse } from 'lib-common/generated/api-types/placement'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PlacementTerminationRequestBody } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
 import { deserializeJsonChildPlacementResponse } from 'lib-common/generated/api-types/placement'
 import { uri } from 'lib-common/uri'
@@ -19,7 +19,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getPlacements(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ChildPlacementResponse> {
   const { data: json } = await client.request<JsonOf<ChildPlacementResponse>>({
@@ -35,7 +35,7 @@ export async function getPlacements(
 */
 export async function postPlacementTermination(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: PlacementTerminationRequestBody
   }
 ): Promise<void> {

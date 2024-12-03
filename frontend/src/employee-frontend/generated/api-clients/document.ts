@@ -6,6 +6,7 @@
 
 import DateRange from 'lib-common/date-range'
 import { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/document'
+import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { ChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
@@ -13,12 +14,13 @@ import { DocumentLockResponse } from 'lib-common/generated/api-types/document'
 import { DocumentTemplate } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateBasicsRequest } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
+import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
 import { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { StatusChangeRequest } from 'lib-common/generated/api-types/document'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
@@ -52,7 +54,7 @@ export async function createTemplate(
 */
 export async function deleteDraftTemplate(
   request: {
-    templateId: UUID
+    templateId: DocumentTemplateId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -68,7 +70,7 @@ export async function deleteDraftTemplate(
 */
 export async function duplicateTemplate(
   request: {
-    templateId: UUID,
+    templateId: DocumentTemplateId,
     body: DocumentTemplateBasicsRequest
   }
 ): Promise<DocumentTemplate> {
@@ -86,7 +88,7 @@ export async function duplicateTemplate(
 */
 export async function exportTemplate(
   request: {
-    templateId: UUID
+    templateId: DocumentTemplateId
   }
 ): Promise<ExportedDocumentTemplate> {
   const { data: json } = await client.request<JsonOf<ExportedDocumentTemplate>>({
@@ -102,7 +104,7 @@ export async function exportTemplate(
 */
 export async function forceUnpublishTemplate(
   request: {
-    templateId: UUID
+    templateId: DocumentTemplateId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -118,7 +120,7 @@ export async function forceUnpublishTemplate(
 */
 export async function getActiveTemplates(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<DocumentTemplateSummary[]> {
   const params = createUrlSearchParams(
@@ -138,7 +140,7 @@ export async function getActiveTemplates(
 */
 export async function getTemplate(
   request: {
-    templateId: UUID
+    templateId: DocumentTemplateId
   }
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
@@ -183,7 +185,7 @@ export async function importTemplate(
 */
 export async function publishTemplate(
   request: {
-    templateId: UUID
+    templateId: DocumentTemplateId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -199,7 +201,7 @@ export async function publishTemplate(
 */
 export async function updateDraftTemplateBasics(
   request: {
-    templateId: UUID,
+    templateId: DocumentTemplateId,
     body: DocumentTemplateBasicsRequest
   }
 ): Promise<void> {
@@ -217,7 +219,7 @@ export async function updateDraftTemplateBasics(
 */
 export async function updateDraftTemplateContent(
   request: {
-    templateId: UUID,
+    templateId: DocumentTemplateId,
     body: DocumentTemplateContent
   }
 ): Promise<void> {
@@ -235,7 +237,7 @@ export async function updateDraftTemplateContent(
 */
 export async function updateTemplateValidity(
   request: {
-    templateId: UUID,
+    templateId: DocumentTemplateId,
     body: DateRange
   }
 ): Promise<void> {
@@ -255,8 +257,8 @@ export async function createDocument(
   request: {
     body: ChildDocumentCreateRequest
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<ChildDocumentId> {
+  const { data: json } = await client.request<JsonOf<ChildDocumentId>>({
     url: uri`/employee/child-documents`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildDocumentCreateRequest>
@@ -270,7 +272,7 @@ export async function createDocument(
 */
 export async function deleteDraftDocument(
   request: {
-    documentId: UUID
+    documentId: ChildDocumentId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -286,7 +288,7 @@ export async function deleteDraftDocument(
 */
 export async function getDocument(
   request: {
-    documentId: UUID
+    documentId: ChildDocumentId
   }
 ): Promise<ChildDocumentWithPermittedActions> {
   const { data: json } = await client.request<JsonOf<ChildDocumentWithPermittedActions>>({
@@ -302,7 +304,7 @@ export async function getDocument(
 */
 export async function getDocuments(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ChildDocumentSummaryWithPermittedActions[]> {
   const params = createUrlSearchParams(
@@ -322,7 +324,7 @@ export async function getDocuments(
 */
 export async function nextDocumentStatus(
   request: {
-    documentId: UUID,
+    documentId: ChildDocumentId,
     body: StatusChangeRequest
   }
 ): Promise<void> {
@@ -340,7 +342,7 @@ export async function nextDocumentStatus(
 */
 export async function prevDocumentStatus(
   request: {
-    documentId: UUID,
+    documentId: ChildDocumentId,
     body: StatusChangeRequest
   }
 ): Promise<void> {
@@ -358,7 +360,7 @@ export async function prevDocumentStatus(
 */
 export async function publishDocument(
   request: {
-    documentId: UUID
+    documentId: ChildDocumentId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -374,7 +376,7 @@ export async function publishDocument(
 */
 export async function takeDocumentWriteLock(
   request: {
-    documentId: UUID
+    documentId: ChildDocumentId
   }
 ): Promise<DocumentLockResponse> {
   const { data: json } = await client.request<JsonOf<DocumentLockResponse>>({
@@ -390,7 +392,7 @@ export async function takeDocumentWriteLock(
 */
 export async function updateDocumentContent(
   request: {
-    documentId: UUID,
+    documentId: ChildDocumentId,
     body: DocumentContent
   }
 ): Promise<void> {

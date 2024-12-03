@@ -6,13 +6,17 @@
 
 import { ChildDailyNote } from 'lib-common/generated/api-types/note'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import { ChildDailyNoteId } from 'lib-common/generated/api-types/shared'
 import { ChildStickyNote } from 'lib-common/generated/api-types/note'
 import { ChildStickyNoteBody } from 'lib-common/generated/api-types/note'
+import { ChildStickyNoteId } from 'lib-common/generated/api-types/shared'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { GroupNote } from 'lib-common/generated/api-types/note'
 import { GroupNoteBody } from 'lib-common/generated/api-types/note'
+import { GroupNoteId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { deserializeJsonChildDailyNote } from 'lib-common/generated/api-types/note'
 import { deserializeJsonChildStickyNote } from 'lib-common/generated/api-types/note'
@@ -25,11 +29,11 @@ import { uri } from 'lib-common/uri'
 */
 export async function createChildDailyNote(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: ChildDailyNoteBody
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<ChildDailyNoteId> {
+  const { data: json } = await client.request<JsonOf<ChildDailyNoteId>>({
     url: uri`/employee-mobile/children/${request.childId}/child-daily-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildDailyNoteBody>
@@ -43,7 +47,7 @@ export async function createChildDailyNote(
 */
 export async function deleteChildDailyNote(
   request: {
-    noteId: UUID
+    noteId: ChildDailyNoteId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -59,7 +63,7 @@ export async function deleteChildDailyNote(
 */
 export async function updateChildDailyNote(
   request: {
-    noteId: UUID,
+    noteId: ChildDailyNoteId,
     body: ChildDailyNoteBody
   }
 ): Promise<ChildDailyNote> {
@@ -77,11 +81,11 @@ export async function updateChildDailyNote(
 */
 export async function createChildStickyNote(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: ChildStickyNoteBody
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<ChildStickyNoteId> {
+  const { data: json } = await client.request<JsonOf<ChildStickyNoteId>>({
     url: uri`/employee-mobile/children/${request.childId}/child-sticky-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildStickyNoteBody>
@@ -95,7 +99,7 @@ export async function createChildStickyNote(
 */
 export async function deleteChildStickyNote(
   request: {
-    noteId: UUID
+    noteId: ChildStickyNoteId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -111,7 +115,7 @@ export async function deleteChildStickyNote(
 */
 export async function updateChildStickyNote(
   request: {
-    noteId: UUID,
+    noteId: ChildStickyNoteId,
     body: ChildStickyNoteBody
   }
 ): Promise<ChildStickyNote> {
@@ -129,11 +133,11 @@ export async function updateChildStickyNote(
 */
 export async function createGroupNote(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     body: GroupNoteBody
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<GroupNoteId> {
+  const { data: json } = await client.request<JsonOf<GroupNoteId>>({
     url: uri`/employee-mobile/daycare-groups/${request.groupId}/group-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<GroupNoteBody>
@@ -147,7 +151,7 @@ export async function createGroupNote(
 */
 export async function deleteGroupNote(
   request: {
-    noteId: UUID
+    noteId: GroupNoteId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -163,7 +167,7 @@ export async function deleteGroupNote(
 */
 export async function getGroupNotes(
   request: {
-    groupId: UUID
+    groupId: GroupId
   }
 ): Promise<GroupNote[]> {
   const { data: json } = await client.request<JsonOf<GroupNote[]>>({
@@ -179,7 +183,7 @@ export async function getGroupNotes(
 */
 export async function updateGroupNote(
   request: {
-    noteId: UUID,
+    noteId: GroupNoteId,
     body: GroupNoteBody
   }
 ): Promise<GroupNote> {

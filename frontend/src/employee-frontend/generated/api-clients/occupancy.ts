@@ -5,13 +5,15 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { GetUnitOccupanciesForDayBody } from 'lib-common/generated/api-types/occupancy'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
-import { UUID } from 'lib-common/types'
 import { UnitOccupancies } from 'lib-common/generated/api-types/occupancy'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -26,8 +28,8 @@ import { uri } from 'lib-common/uri'
 */
 export async function getOccupancyPeriodsSpeculated(
   request: {
-    unitId: UUID,
-    applicationId: UUID,
+    unitId: DaycareId,
+    applicationId: ApplicationId,
     from: LocalDate,
     to: LocalDate,
     preschoolDaycareFrom?: LocalDate | null,
@@ -54,10 +56,10 @@ export async function getOccupancyPeriodsSpeculated(
 */
 export async function getUnitOccupancies(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     from: LocalDate,
     to: LocalDate,
-    groupId?: UUID | null
+    groupId?: GroupId | null
   }
 ): Promise<UnitOccupancies> {
   const params = createUrlSearchParams(
@@ -79,7 +81,7 @@ export async function getUnitOccupancies(
 */
 export async function getUnitPlannedOccupanciesForDay(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     body: GetUnitOccupanciesForDayBody
   }
 ): Promise<AttendanceReservationReportRow[]> {
@@ -97,7 +99,7 @@ export async function getUnitPlannedOccupanciesForDay(
 */
 export async function getUnitRealizedOccupanciesForDay(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     body: GetUnitOccupanciesForDayBody
   }
 ): Promise<RealtimeOccupancy> {

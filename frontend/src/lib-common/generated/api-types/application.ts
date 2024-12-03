@@ -8,21 +8,33 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { ApplicationId } from './shared'
+import { ApplicationNoteId } from './shared'
+import { AreaId } from './shared'
+import { AttachmentId } from './shared'
 import { AttachmentType } from './attachment'
 import { CreatePersonBody } from './pis'
+import { DaycareId } from './shared'
 import { Decision } from './decision'
 import { DecisionDraft } from './decision'
+import { DecisionId } from './shared'
 import { DecisionStatus } from './decision'
 import { DecisionType } from './decision'
 import { DecisionUnit } from './decision'
+import { EmployeeId } from './shared'
 import { EvakaUser } from './user'
+import { EvakaUserId } from './shared'
 import { FinanceDecisionType } from './invoicing'
 import { JsonOf } from '../../json'
+import { MessageContentId } from './shared'
+import { MessageThreadId } from './shared'
+import { PersonId } from './shared'
 import { PersonJSON } from './pis'
 import { PlacementPlanConfirmationStatus } from './placement'
 import { PlacementPlanDetails } from './placement'
 import { PlacementPlanRejectReason } from './placement'
 import { PlacementType } from './placement'
+import { ServiceNeedOptionId } from './shared'
 import { UUID } from '../../types'
 import { deserializeJsonCreatePersonBody } from './pis'
 import { deserializeJsonDecision } from './decision'
@@ -34,7 +46,7 @@ import { deserializeJsonPlacementPlanDetails } from './placement'
 * Generated from fi.espoo.evaka.application.AcceptDecisionRequest
 */
 export interface AcceptDecisionRequest {
-  decisionId: UUID
+  decisionId: DecisionId
   requestedStartDate: LocalDate
 }
 
@@ -59,13 +71,13 @@ export interface Address {
 */
 export interface ApplicationAttachment {
   contentType: string
-  id: UUID
+  id: AttachmentId
   name: string
   receivedAt: HelsinkiDateTime
   type: AttachmentType
   updated: HelsinkiDateTime
-  uploadedByEmployee: UUID | null
-  uploadedByPerson: UUID | null
+  uploadedByEmployee: EmployeeId | null
+  uploadedByPerson: PersonId | null
 }
 
 /**
@@ -94,9 +106,9 @@ export type ApplicationDateType =
 * Generated from fi.espoo.evaka.application.ApplicationDecisions
 */
 export interface ApplicationDecisions {
-  decidableApplications: UUID[]
+  decidableApplications: ApplicationId[]
   decisions: DecisionSummary[]
-  permittedActions: Partial<Record<UUID, Action.Citizen.Decision[]>>
+  permittedActions: Partial<Record<DecisionId, Action.Citizen.Decision[]>>
 }
 
 /**
@@ -107,7 +119,7 @@ export interface ApplicationDetails {
   allowOtherGuardianAccess: boolean
   attachments: ApplicationAttachment[]
   checkedByAdmin: boolean
-  childId: UUID
+  childId: PersonId
   childRestricted: boolean
   confidential: boolean | null
   createdDate: HelsinkiDateTime | null
@@ -115,11 +127,11 @@ export interface ApplicationDetails {
   dueDateSetManuallyAt: HelsinkiDateTime | null
   form: ApplicationForm
   guardianDateOfDeath: LocalDate | null
-  guardianId: UUID
+  guardianId: PersonId
   guardianRestricted: boolean
   hasOtherGuardian: boolean
   hideFromGuardian: boolean
-  id: UUID
+  id: ApplicationId
   modifiedDate: HelsinkiDateTime | null
   origin: ApplicationOrigin
   otherGuardianLivesInSameAddress: boolean | null
@@ -169,16 +181,16 @@ export interface ApplicationFormUpdate {
 * Generated from fi.espoo.evaka.application.ApplicationNote
 */
 export interface ApplicationNote {
-  applicationId: UUID
+  applicationId: ApplicationId
   content: string
   created: HelsinkiDateTime
-  createdBy: UUID
+  createdBy: EvakaUserId
   createdByName: string
-  id: UUID
-  messageContentId: UUID | null
-  messageThreadId: UUID | null
+  id: ApplicationNoteId
+  messageContentId: MessageContentId | null
+  messageThreadId: MessageThreadId | null
   updated: HelsinkiDateTime
-  updatedBy: UUID
+  updatedBy: EvakaUserId
   updatedByName: string
 }
 
@@ -285,7 +297,7 @@ export interface ApplicationSummary {
   duplicateApplication: boolean
   extendedCare: boolean
   firstName: string
-  id: UUID
+  id: ApplicationId
   lastName: string
   origin: ApplicationOrigin
   placementPlanStartDate: LocalDate | null
@@ -326,7 +338,7 @@ export type ApplicationTypeToggle =
 * Generated from fi.espoo.evaka.application.ApplicationUnitSummary
 */
 export interface ApplicationUnitSummary {
-  applicationId: UUID
+  applicationId: ApplicationId
   dateOfBirth: LocalDate
   extendedCare: boolean
   firstName: string
@@ -355,11 +367,11 @@ export interface ApplicationUpdate {
 */
 export interface ApplicationsOfChild {
   applicationSummaries: CitizenApplicationSummary[]
-  childId: UUID
+  childId: PersonId
   childName: string
-  decidableApplications: UUID[]
-  duplicateOf: UUID | null
-  permittedActions: Partial<Record<UUID, Action.Citizen.Application[]>>
+  decidableApplications: ApplicationId[]
+  duplicateOf: PersonId | null
+  permittedActions: Partial<Record<ApplicationId, Action.Citizen.Application[]>>
 }
 
 /**
@@ -403,9 +415,9 @@ export interface ChildInfo {
 */
 export interface CitizenApplicationSummary {
   allPreferredUnitNames: string[]
-  applicationId: UUID
+  applicationId: ApplicationId
   applicationStatus: ApplicationStatus
-  childId: UUID
+  childId: PersonId
   childName: string | null
   createdDate: HelsinkiDateTime
   modifiedDate: HelsinkiDateTime
@@ -429,9 +441,9 @@ export interface CitizenApplicationUpdate {
 */
 export interface CitizenChildren {
   dateOfBirth: LocalDate
-  duplicateOf: UUID | null
+  duplicateOf: PersonId | null
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   socialSecurityNumber: string | null
 }
@@ -448,7 +460,7 @@ export interface ClubDetails {
 * Generated from fi.espoo.evaka.application.CreateApplicationBody
 */
 export interface CreateApplicationBody {
-  childId: UUID
+  childId: PersonId
   type: ApplicationType
 }
 
@@ -458,7 +470,7 @@ export interface CreateApplicationBody {
 export interface DaycarePlacementPlan {
   period: FiniteDateRange
   preschoolDaycarePeriod: FiniteDateRange | null
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -477,9 +489,9 @@ export interface DecisionDraftGroup {
 * Generated from fi.espoo.evaka.application.DecisionSummary
 */
 export interface DecisionSummary {
-  applicationId: UUID
-  childId: UUID
-  id: UUID
+  applicationId: ApplicationId
+  childId: PersonId
+  id: DecisionId
   resolved: LocalDate | null
   sentDate: LocalDate
   status: DecisionStatus
@@ -501,7 +513,7 @@ export interface DecisionWithValidStartDatePeriod {
 */
 export interface FinanceDecisionChildInfo {
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
 }
 
@@ -544,7 +556,7 @@ export interface Guardian {
 */
 export interface GuardianInfo {
   firstName: string
-  id: UUID | null
+  id: PersonId | null
   isVtjGuardian: boolean
   lastName: string
   ssn: string | null
@@ -564,7 +576,7 @@ export interface GuardianUpdate {
 */
 export interface LiableCitizenInfo {
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
 }
 
@@ -596,8 +608,8 @@ export interface PagedApplicationSummaries {
 * Generated from fi.espoo.evaka.application.PaperApplicationCreateRequest
 */
 export interface PaperApplicationCreateRequest {
-  childId: UUID
-  guardianId: UUID | null
+  childId: PersonId
+  guardianId: PersonId | null
   guardianSsn: string | null
   guardianToBeCreated: CreatePersonBody | null
   hideFromGuardian: boolean
@@ -610,15 +622,15 @@ export interface PaperApplicationCreateRequest {
 * Generated from fi.espoo.evaka.application.PersonApplicationSummary
 */
 export interface PersonApplicationSummary {
-  applicationId: UUID
-  childId: UUID
+  applicationId: ApplicationId
+  childId: PersonId
   childName: string | null
   childSsn: string | null
   connectedDaycare: boolean
-  guardianId: UUID
+  guardianId: PersonId
   guardianName: string
   preferredStartDate: LocalDate | null
-  preferredUnitId: UUID | null
+  preferredUnitId: DaycareId | null
   preferredUnitName: string | null
   preparatoryEducation: boolean
   sentDate: LocalDate | null
@@ -672,7 +684,7 @@ export interface Preferences {
 * Generated from fi.espoo.evaka.application.PreferredUnit
 */
 export interface PreferredUnit {
-  id: UUID
+  id: DaycareId
   name: string
 }
 
@@ -680,14 +692,14 @@ export interface PreferredUnit {
 * Generated from fi.espoo.evaka.application.RejectDecisionRequest
 */
 export interface RejectDecisionRequest {
-  decisionId: UUID
+  decisionId: DecisionId
 }
 
 /**
 * Generated from fi.espoo.evaka.application.SearchApplicationRequest
 */
 export interface SearchApplicationRequest {
-  areas: UUID[] | null
+  areas: AreaId[] | null
   basis: ApplicationBasis[] | null
   dateType: ApplicationDateType[] | null
   distinctions: ApplicationDistinctions[] | null
@@ -701,7 +713,7 @@ export interface SearchApplicationRequest {
   statuses: ApplicationStatusOption[] | null
   transferApplications: TransferApplicationFilter | null
   type: ApplicationTypeToggle
-  units: UUID[] | null
+  units: DaycareId[] | null
   voucherApplications: VoucherApplicationFilter | null
 }
 
@@ -729,7 +741,7 @@ export interface ServiceNeed {
 * Generated from fi.espoo.evaka.application.ServiceNeedOption
 */
 export interface ServiceNeedOption {
-  id: UUID
+  id: ServiceNeedOptionId
   nameEn: string
   nameFi: string
   nameSv: string
@@ -761,7 +773,7 @@ export type SimpleApplicationAction =
 * Generated from fi.espoo.evaka.application.SimpleBatchRequest
 */
 export interface SimpleBatchRequest {
-  applicationIds: UUID[]
+  applicationIds: ApplicationId[]
 }
 
 /**

@@ -8,17 +8,25 @@ import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { ApplicationId } from './shared'
 import { ApplicationType } from './application'
 import { CitizenAuthLevel } from './shared'
 import { CitizenFeatures } from './shared'
+import { DaycareId } from './shared'
 import { EmployeeFeatures } from './shared'
+import { EmployeeId } from './shared'
 import { EvakaUser } from './user'
+import { EvakaUserId } from './shared'
+import { FosterParentId } from './shared'
+import { GroupId } from './shared'
 import { IncomeEffect } from './invoicing'
 import { JsonOf } from '../../json'
 import { MobileDevice } from './pairing'
 import { Nationality } from './vtjclient'
 import { NativeLanguage } from './vtjclient'
-import { UUID } from '../../types'
+import { ParentshipId } from './shared'
+import { PartnershipId } from './shared'
+import { PersonId } from './shared'
 import { UserRole } from './shared'
 
 /**
@@ -35,7 +43,7 @@ export interface CitizenUserDetails {
   backupPhone: string
   email: string | null
   firstName: string
-  id: UUID
+  id: PersonId
   keycloakEmail: string | null
   lastName: string
   phone: string
@@ -59,8 +67,8 @@ export interface CitizenUserResponse {
 * Generated from fi.espoo.evaka.pis.controllers.CreateFosterParentRelationshipBody
 */
 export interface CreateFosterParentRelationshipBody {
-  childId: UUID
-  parentId: UUID
+  childId: PersonId
+  parentId: PersonId
   validDuring: DateRange
 }
 
@@ -92,13 +100,13 @@ export type CreateSource =
 export interface CreationModificationMetadata {
   createSource: CreateSource | null
   createdAt: HelsinkiDateTime | null
-  createdBy: UUID | null
+  createdBy: EvakaUserId | null
   createdByName: string | null
-  createdFromApplication: UUID | null
+  createdFromApplication: ApplicationId | null
   createdFromApplicationCreated: HelsinkiDateTime | null
   createdFromApplicationType: ApplicationType | null
   modifiedAt: HelsinkiDateTime | null
-  modifiedBy: UUID | null
+  modifiedBy: EvakaUserId | null
   modifiedByName: string | null
   modifySource: ModifySource | null
 }
@@ -107,9 +115,9 @@ export interface CreationModificationMetadata {
 * Generated from fi.espoo.evaka.pis.DaycareGroupRole
 */
 export interface DaycareGroupRole {
-  daycareId: UUID
+  daycareId: DaycareId
   daycareName: string
-  groupId: UUID
+  groupId: GroupId
   groupName: string
 }
 
@@ -117,7 +125,7 @@ export interface DaycareGroupRole {
 * Generated from fi.espoo.evaka.pis.DaycareRole
 */
 export interface DaycareRole {
-  daycareId: UUID
+  daycareId: DaycareId
   daycareName: string
   role: UserRole
 }
@@ -156,10 +164,10 @@ export interface Employee {
   email: string | null
   externalId: string | null
   firstName: string
-  id: UUID
+  id: EmployeeId
   lastName: string
   preferredFirstName: string | null
-  temporaryInUnitId: UUID | null
+  temporaryInUnitId: DaycareId | null
   updated: HelsinkiDateTime | null
 }
 
@@ -186,7 +194,7 @@ export interface EmployeeUserResponse {
   allScopedRoles: UserRole[]
   firstName: string
   globalRoles: UserRole[]
-  id: UUID
+  id: EmployeeId
   lastName: string
   permittedGlobalActions: Action.Global[]
 }
@@ -204,7 +212,7 @@ export interface EmployeeWithDaycareRoles {
   externalId: string | null
   firstName: string
   globalRoles: UserRole[]
-  id: UUID
+  id: EmployeeId
   lastLogin: HelsinkiDateTime | null
   lastName: string
   personalMobileDevices: MobileDevice[]
@@ -217,7 +225,7 @@ export interface EmployeeWithDaycareRoles {
 */
 export interface EvakaRightsRequest {
   denied: boolean
-  guardianId: UUID
+  guardianId: PersonId
 }
 
 /**
@@ -227,7 +235,7 @@ export interface FamilyContact {
   backupPhone: string
   email: string | null
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   phone: string
   postOffice: string
@@ -241,8 +249,8 @@ export interface FamilyContact {
 * Generated from fi.espoo.evaka.pis.controllers.FamilyContactPriorityUpdate
 */
 export interface FamilyContactPriorityUpdate {
-  childId: UUID
-  contactPersonId: UUID
+  childId: PersonId
+  contactPersonId: PersonId
   priority: number | null
 }
 
@@ -262,8 +270,8 @@ export type FamilyContactRole =
 */
 export interface FamilyContactUpdate {
   backupPhone: string | null
-  childId: UUID
-  contactPersonId: UUID
+  childId: PersonId
+  contactPersonId: PersonId
   email: string | null
   phone: string | null
 }
@@ -292,10 +300,10 @@ export interface FamilyOverviewIncome {
 export interface FamilyOverviewPerson {
   dateOfBirth: LocalDate
   firstName: string
-  headOfChild: UUID | null
+  headOfChild: PersonId | null
   income: FamilyOverviewIncome | null
   lastName: string
-  personId: UUID
+  personId: PersonId
   postOffice: string
   postalCode: string
   restrictedDetailsEnabled: boolean
@@ -310,7 +318,7 @@ export interface FosterParentRelationship {
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
   parent: PersonSummary
-  relationshipId: UUID
+  relationshipId: FosterParentId
   validDuring: DateRange
 }
 
@@ -334,8 +342,8 @@ export interface GuardiansResponse {
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.MergeRequest
 */
 export interface MergeRequest {
-  duplicate: UUID
-  master: UUID
+  duplicate: PersonId
+  master: PersonId
 }
 
 /**
@@ -356,7 +364,7 @@ export interface NewEmployee {
   firstName: string
   lastName: string
   roles: UserRole[]
-  temporaryInUnitId: UUID | null
+  temporaryInUnitId: DaycareId | null
 }
 
 /**
@@ -381,12 +389,12 @@ export interface PagedEmployeesWithDaycareRoles {
 */
 export interface Parentship {
   child: PersonJSON
-  childId: UUID
+  childId: PersonId
   conflict: boolean
   endDate: LocalDate
   headOfChild: PersonJSON
-  headOfChildId: UUID
-  id: UUID
+  headOfChildId: PersonId
+  id: ParentshipId
   startDate: LocalDate
 }
 
@@ -395,13 +403,13 @@ export interface Parentship {
 */
 export interface ParentshipDetailed {
   child: PersonJSON
-  childId: UUID
+  childId: PersonId
   conflict: boolean
   creationModificationMetadata: CreationModificationMetadata
   endDate: LocalDate
   headOfChild: PersonJSON
-  headOfChildId: UUID
-  id: UUID
+  headOfChildId: PersonId
+  id: ParentshipId
   startDate: LocalDate
 }
 
@@ -409,9 +417,9 @@ export interface ParentshipDetailed {
 * Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipRequest
 */
 export interface ParentshipRequest {
-  childId: UUID
+  childId: PersonId
   endDate: LocalDate
-  headOfChildId: UUID
+  headOfChildId: PersonId
   startDate: LocalDate
 }
 
@@ -438,7 +446,7 @@ export interface Partnership {
   conflict: boolean
   creationModificationMetadata: CreationModificationMetadata
   endDate: LocalDate | null
-  id: UUID
+  id: PartnershipId
   partners: PersonJSON[]
   startDate: LocalDate
 }
@@ -448,8 +456,8 @@ export interface Partnership {
 */
 export interface PartnershipRequest {
   endDate: LocalDate | null
-  person1Id: UUID
-  person2Id: UUID
+  person1Id: PersonId
+  person2Id: PersonId
   startDate: LocalDate
 }
 
@@ -484,7 +492,7 @@ export interface PersonAddressDTO {
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.PersonIdentityResponseJSON
 */
 export interface PersonIdentityResponseJSON {
-  id: UUID
+  id: PersonId
   socialSecurityNumber: string | null
 }
 
@@ -495,11 +503,11 @@ export interface PersonJSON {
   backupPhone: string
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
-  duplicateOf: UUID | null
+  duplicateOf: PersonId | null
   email: string | null
   firstName: string
   forceManualFeeDecisions: boolean
-  id: UUID
+  id: PersonId
   invoiceRecipientName: string
   invoicingPostOffice: string
   invoicingPostalCode: string
@@ -554,7 +562,7 @@ export interface PersonSummary {
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   restrictedDetailsEnabled: boolean
   socialSecurityNumber: string | null
@@ -570,10 +578,10 @@ export interface PersonWithChildrenDTO {
   children: PersonWithChildrenDTO[]
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
-  duplicateOf: UUID | null
+  duplicateOf: PersonId | null
   email: string | null
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   nationalities: Nationality[]
   nativeLanguage: NativeLanguage | null
@@ -656,7 +664,7 @@ export interface SearchPersonBody {
 */
 export interface TemporaryEmployee {
   firstName: string
-  groupIds: UUID[]
+  groupIds: GroupId[]
   hasStaffOccupancyEffect: boolean
   lastName: string
   pinCode: PinCode | null
@@ -673,7 +681,7 @@ export interface UpdatePasswordRequest {
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.UpsertEmployeeDaycareRolesRequest
 */
 export interface UpsertEmployeeDaycareRolesRequest {
-  daycareIds: UUID[]
+  daycareIds: DaycareId[]
   role: UserRole
 }
 

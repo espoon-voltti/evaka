@@ -5,12 +5,14 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { CalendarEventAttendeeId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeCitizenReservationForm } from 'lib-common/generated/api-types/calendarevent'
+import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
@@ -40,8 +42,8 @@ export async function addCalendarEventTimeReservation(
 */
 export async function deleteCalendarEventTimeReservation(
   request: {
-    calendarEventTimeId: UUID,
-    childId: UUID
+    calendarEventTimeId: CalendarEventTimeId,
+    childId: PersonId
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
@@ -84,8 +86,8 @@ export async function getCitizenCalendarEvents(
 */
 export async function getReservableCalendarEventTimes(
   request: {
-    eventId: UUID,
-    childId: UUID
+    eventId: CalendarEventAttendeeId,
+    childId: PersonId
   }
 ): Promise<CalendarEventTime[]> {
   const params = createUrlSearchParams(

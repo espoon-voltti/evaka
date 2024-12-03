@@ -4,12 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import { BackupPickupId } from 'lib-common/generated/api-types/shared'
 import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
 import { ChildBackupPickupContent } from 'lib-common/generated/api-types/backuppickup'
 import { ChildBackupPickupCreateResponse } from 'lib-common/generated/api-types/backuppickup'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 
@@ -19,7 +20,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function createBackupPickup(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: ChildBackupPickupContent
   }
 ): Promise<ChildBackupPickupCreateResponse> {
@@ -37,7 +38,7 @@ export async function createBackupPickup(
 */
 export async function deleteBackupPickup(
   request: {
-    id: UUID
+    id: BackupPickupId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -53,7 +54,7 @@ export async function deleteBackupPickup(
 */
 export async function getBackupPickups(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ChildBackupPickup[]> {
   const { data: json } = await client.request<JsonOf<ChildBackupPickup[]>>({
@@ -69,7 +70,7 @@ export async function getBackupPickups(
 */
 export async function updateBackupPickup(
   request: {
-    id: UUID,
+    id: BackupPickupId,
     body: ChildBackupPickupContent
   }
 ): Promise<void> {

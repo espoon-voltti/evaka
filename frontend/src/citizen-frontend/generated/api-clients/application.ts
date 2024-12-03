@@ -8,6 +8,7 @@ import { AcceptDecisionRequest } from 'lib-common/generated/api-types/applicatio
 import { ApplicationDecisions } from 'lib-common/generated/api-types/application'
 import { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import { ApplicationFormUpdate } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ApplicationsOfChild } from 'lib-common/generated/api-types/application'
 import { CitizenApplicationUpdate } from 'lib-common/generated/api-types/application'
@@ -17,8 +18,8 @@ import { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types
 import { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { RejectDecisionRequest } from 'lib-common/generated/api-types/application'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
 import { deserializeJsonApplicationDecisions } from 'lib-common/generated/api-types/application'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
@@ -34,7 +35,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function acceptDecision(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: AcceptDecisionRequest
   }
 ): Promise<void> {
@@ -54,8 +55,8 @@ export async function createApplication(
   request: {
     body: CreateApplicationBody
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<ApplicationId> {
+  const { data: json } = await client.request<JsonOf<ApplicationId>>({
     url: uri`/citizen/applications`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreateApplicationBody>
@@ -69,7 +70,7 @@ export async function createApplication(
 */
 export async function deleteOrCancelUnprocessedApplication(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -85,7 +86,7 @@ export async function deleteOrCancelUnprocessedApplication(
 */
 export async function getApplication(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<ApplicationDetails> {
   const { data: json } = await client.request<JsonOf<ApplicationDetails>>({
@@ -113,7 +114,7 @@ export async function getApplicationChildren(): Promise<CitizenChildren[]> {
 */
 export async function getApplicationDecisions(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<DecisionWithValidStartDatePeriod[]> {
   const { data: json } = await client.request<JsonOf<DecisionWithValidStartDatePeriod[]>>({
@@ -129,7 +130,7 @@ export async function getApplicationDecisions(
 */
 export async function getChildDuplicateApplications(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<Partial<Record<ApplicationType, boolean>>> {
   const { data: json } = await client.request<JsonOf<Partial<Record<ApplicationType, boolean>>>>({
@@ -145,7 +146,7 @@ export async function getChildDuplicateApplications(
 */
 export async function getChildPlacementStatusByApplicationType(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<Partial<Record<ApplicationType, boolean>>> {
   const { data: json } = await client.request<JsonOf<Partial<Record<ApplicationType, boolean>>>>({
@@ -209,7 +210,7 @@ export async function getLiableCitizenFinanceDecisions(): Promise<FinanceDecisio
 */
 export async function rejectDecision(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: RejectDecisionRequest
   }
 ): Promise<void> {
@@ -227,7 +228,7 @@ export async function rejectDecision(
 */
 export async function saveApplicationAsDraft(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: ApplicationFormUpdate
   }
 ): Promise<void> {
@@ -245,7 +246,7 @@ export async function saveApplicationAsDraft(
 */
 export async function sendApplication(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -261,7 +262,7 @@ export async function sendApplication(
 */
 export async function updateApplication(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: CitizenApplicationUpdate
   }
 ): Promise<void> {

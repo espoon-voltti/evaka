@@ -7,11 +7,11 @@
 import LocalDate from 'lib-common/local-date'
 import { ChildDatePresence } from 'lib-common/generated/api-types/reservations'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
 import { ExpectedAbsencesResponse } from 'lib-common/generated/api-types/reservations'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { UnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -24,7 +24,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getAttendanceReservations(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     from: LocalDate,
     to: LocalDate,
     includeNonOperationalDays?: boolean | null

@@ -6,7 +6,8 @@
 
 import { JsonOf } from 'lib-common/json'
 import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { UUID } from 'lib-common/types'
+import { PedagogicalDocumentId } from 'lib-common/generated/api-types/shared'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { deserializeJsonPedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { uri } from 'lib-common/uri'
@@ -17,7 +18,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getPedagogicalDocumentsForChild(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<PedagogicalDocumentCitizen[]> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocumentCitizen[]>>({
@@ -31,8 +32,8 @@ export async function getPedagogicalDocumentsForChild(
 /**
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentControllerCitizen.getUnreadPedagogicalDocumentCount
 */
-export async function getUnreadPedagogicalDocumentCount(): Promise<Partial<Record<UUID, number>>> {
-  const { data: json } = await client.request<JsonOf<Partial<Record<UUID, number>>>>({
+export async function getUnreadPedagogicalDocumentCount(): Promise<Partial<Record<PersonId, number>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<PersonId, number>>>>({
     url: uri`/citizen/pedagogical-documents/unread-count`.toString(),
     method: 'GET'
   })
@@ -45,7 +46,7 @@ export async function getUnreadPedagogicalDocumentCount(): Promise<Partial<Recor
 */
 export async function markPedagogicalDocumentRead(
   request: {
-    documentId: UUID
+    documentId: PedagogicalDocumentId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({

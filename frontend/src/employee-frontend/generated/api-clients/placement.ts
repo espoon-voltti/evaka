@@ -5,14 +5,16 @@
 // GENERATED FILE: no manual modifications
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { GroupPlacementId } from 'lib-common/generated/api-types/shared'
 import { GroupPlacementRequestBody } from 'lib-common/generated/api-types/placement'
 import { GroupTransferRequestBody } from 'lib-common/generated/api-types/placement'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PlacementCreateRequestBody } from 'lib-common/generated/api-types/placement'
+import { PlacementId } from 'lib-common/generated/api-types/shared'
 import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { PlacementUpdateRequestBody } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { deserializeJsonPlacementResponse } from 'lib-common/generated/api-types/placement'
 import { uri } from 'lib-common/uri'
@@ -23,11 +25,11 @@ import { uri } from 'lib-common/uri'
 */
 export async function createGroupPlacement(
   request: {
-    placementId: UUID,
+    placementId: PlacementId,
     body: GroupPlacementRequestBody
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<GroupPlacementId> {
+  const { data: json } = await client.request<JsonOf<GroupPlacementId>>({
     url: uri`/employee/placements/${request.placementId}/group-placements`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<GroupPlacementRequestBody>
@@ -58,7 +60,7 @@ export async function createPlacement(
 */
 export async function deleteGroupPlacement(
   request: {
-    groupPlacementId: UUID
+    groupPlacementId: GroupPlacementId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -74,7 +76,7 @@ export async function deleteGroupPlacement(
 */
 export async function deletePlacement(
   request: {
-    placementId: UUID
+    placementId: PlacementId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -90,7 +92,7 @@ export async function deletePlacement(
 */
 export async function getChildPlacementPeriods(
   request: {
-    adultId: UUID
+    adultId: PersonId
   }
 ): Promise<FiniteDateRange[]> {
   const { data: json } = await client.request<JsonOf<FiniteDateRange[]>>({
@@ -106,7 +108,7 @@ export async function getChildPlacementPeriods(
 */
 export async function getChildPlacements(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<PlacementResponse> {
   const { data: json } = await client.request<JsonOf<PlacementResponse>>({
@@ -122,7 +124,7 @@ export async function getChildPlacements(
 */
 export async function transferGroupPlacement(
   request: {
-    groupPlacementId: UUID,
+    groupPlacementId: GroupPlacementId,
     body: GroupTransferRequestBody
   }
 ): Promise<void> {
@@ -140,7 +142,7 @@ export async function transferGroupPlacement(
 */
 export async function updatePlacementById(
   request: {
-    placementId: UUID,
+    placementId: PlacementId,
     body: PlacementUpdateRequestBody
   }
 ): Promise<void> {

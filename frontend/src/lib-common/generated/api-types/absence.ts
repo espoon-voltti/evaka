@@ -9,11 +9,12 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import TimeRange from '../../time-range'
 import { EvakaUserType } from './user'
+import { GroupId } from './shared'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 import { Reservation } from './reservations'
 import { ScheduleType } from './placement'
 import { ShiftCareType } from './serviceneed'
-import { UUID } from '../../types'
 import { deserializeJsonReservation } from './reservations'
 
 /**
@@ -22,7 +23,7 @@ import { deserializeJsonReservation } from './reservations'
 export interface Absence {
   absenceType: AbsenceType
   category: AbsenceCategory
-  childId: UUID
+  childId: PersonId
   date: LocalDate
   modifiedAt: HelsinkiDateTime
   modifiedByStaff: boolean
@@ -54,7 +55,7 @@ export type AbsenceType =
 export interface AbsenceUpsert {
   absenceType: AbsenceType
   category: AbsenceCategory
-  childId: UUID
+  childId: PersonId
   date: LocalDate
 }
 
@@ -81,7 +82,7 @@ export interface ChildReservation {
 * Generated from fi.espoo.evaka.absence.ChildServiceNeedInfo
 */
 export interface ChildServiceNeedInfo {
-  childId: UUID
+  childId: PersonId
   daycareHoursPerMonth: number | null
   hasContractDays: boolean
   optionName: string
@@ -98,7 +99,7 @@ export interface GroupMonthCalendar {
   daycareName: string
   daycareOperationTimes: (TimeRange | null)[]
   days: GroupMonthCalendarDay[]
-  groupId: UUID
+  groupId: GroupId
   groupName: string
   shiftCareOperationTimes: (TimeRange | null)[] | null
 }
@@ -111,7 +112,7 @@ export interface GroupMonthCalendarChild {
   attendanceTotalHours: number
   dateOfBirth: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   reservationTotalHours: number
   usedService: UsedServiceTotals | null
@@ -134,7 +135,7 @@ export interface GroupMonthCalendarDayChild {
   absenceCategories: AbsenceCategory[]
   absences: AbsenceWithModifierInfo[]
   backupCare: boolean
-  childId: UUID
+  childId: PersonId
   dailyServiceTimes: TimeRange | null
   missingHolidayReservation: boolean
   reservations: ChildReservation[]
@@ -146,7 +147,7 @@ export interface GroupMonthCalendarDayChild {
 * Generated from fi.espoo.evaka.absence.AbsenceController.HolidayReservationsDelete
 */
 export interface HolidayReservationsDelete {
-  childId: UUID
+  childId: PersonId
   date: LocalDate
 }
 
@@ -155,7 +156,7 @@ export interface HolidayReservationsDelete {
 */
 export interface Presence {
   category: AbsenceCategory
-  childId: UUID
+  childId: PersonId
   date: LocalDate
 }
 

@@ -6,10 +6,11 @@
 
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { AssistanceNeedPreschoolDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { UnreadAssistanceNeedDecisionItem } from 'lib-common/generated/api-types/assistanceneed'
 import { client } from '../../api-client'
 import { deserializeJsonAssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
@@ -24,7 +25,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getAssistanceNeedDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedDecisionId
   }
 ): Promise<AssistanceNeedDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecision>>({
@@ -64,7 +65,7 @@ export async function getAssistanceNeedDecisions(): Promise<AssistanceNeedDecisi
 */
 export async function markAssistanceNeedDecisionAsRead(
   request: {
-    id: UUID
+    id: AssistanceNeedDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -80,7 +81,7 @@ export async function markAssistanceNeedDecisionAsRead(
 */
 export async function getAssistanceNeedPreschoolDecision(
   request: {
-    id: UUID
+    id: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<AssistanceNeedPreschoolDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecision>>({
@@ -120,7 +121,7 @@ export async function getAssistanceNeedPreschoolDecisions(): Promise<AssistanceN
 */
 export async function markAssistanceNeedPreschoolDecisionAsRead(
   request: {
-    id: UUID
+    id: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({

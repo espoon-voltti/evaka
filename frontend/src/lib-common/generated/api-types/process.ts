@@ -5,9 +5,9 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { ArchivedProcessId } from './shared'
 import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.process.ArchivedProcess
@@ -15,7 +15,7 @@ import { UUID } from '../../types'
 export interface ArchivedProcess {
   archiveDurationMonths: number
   history: ArchivedProcessHistoryRow[]
-  id: UUID
+  id: ArchivedProcessId
   number: number
   organization: string
   processDefinitionNumber: string
