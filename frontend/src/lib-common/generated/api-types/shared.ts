@@ -244,7 +244,7 @@ export type ServiceApplicationId = string
 
 export type ServiceNeedId = string
 
-export type ServiceNeedOptionId = string
+export type ServiceNeedOptionId = Id<'ServiceNeedOption'>
 
 export type ServiceNeedOptionVoucherValueId = string
 
