@@ -676,7 +676,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.cancelApplication(tx, serviceWorker, clock, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId, null)
         }
         db.read { tx ->
             // then
@@ -698,7 +698,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.cancelApplication(tx, serviceWorker, clock, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId, null)
         }
         db.read { tx ->
             // then
@@ -738,7 +738,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
-            service.cancelApplication(tx, serviceWorker, clock, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId, null)
 
             val process = tx.getArchiveProcessByApplicationId(applicationId)
             assertNotNull(process)

@@ -97,7 +97,6 @@ import org.springframework.stereotype.Service
 enum class SimpleApplicationAction {
     MOVE_TO_WAITING_PLACEMENT,
     RETURN_TO_SENT,
-    CANCEL_APPLICATION,
     CANCEL_PLACEMENT_PLAN,
     SEND_DECISIONS_WITHOUT_PROPOSAL,
     SEND_PLACEMENT_PROPOSAL,
@@ -127,8 +126,6 @@ class ApplicationStateService(
             SimpleApplicationAction.MOVE_TO_WAITING_PLACEMENT ->
                 moveToWaitingPlacement(tx, user, clock, applicationId)
             SimpleApplicationAction.RETURN_TO_SENT -> returnToSent(tx, user, clock, applicationId)
-            SimpleApplicationAction.CANCEL_APPLICATION ->
-                cancelApplication(tx, user, clock, applicationId)
             SimpleApplicationAction.CANCEL_PLACEMENT_PLAN ->
                 cancelPlacementPlan(tx, user, clock, applicationId)
             SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL ->
@@ -518,6 +515,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         applicationId: ApplicationId,
+        confidential: Boolean?,
     ) {
         accessControl.requirePermissionFor(
             tx,
@@ -529,6 +527,17 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
+
+        if (application.confidential == null) {
+            when {
+                user is AuthenticatedUser.Citizen ->
+                    tx.setApplicationConfidentiality(applicationId, true)
+                confidential != null ->
+                    tx.setApplicationConfidentiality(applicationId, confidential)
+                else -> throw BadRequest("Confidentiality must be set")
+            }
+        } else if (confidential != null) throw BadRequest("Confidentiality is already set")
+
         tx.updateApplicationStatus(application.id, CANCELLED, user.evakaUserId, clock.now())
 
         tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->

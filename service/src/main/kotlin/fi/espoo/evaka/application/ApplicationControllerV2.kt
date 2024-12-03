@@ -658,6 +658,27 @@ class ApplicationControllerV2(
         }
     }
 
+    @PostMapping("/{applicationId}/actions/cancel-application")
+    fun cancelApplication(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId,
+        @RequestParam confidential: Boolean?,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                applicationStateService.cancelApplication(
+                    tx,
+                    user,
+                    clock,
+                    applicationId,
+                    confidential,
+                )
+            }
+        }
+    }
+
     @PostMapping("/{applicationId}/actions/{action}")
     fun simpleApplicationAction(
         db: Database,

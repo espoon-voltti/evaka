@@ -7,11 +7,20 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import Radio from 'lib-components/atoms/form/Radio'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { Label } from 'lib-components/typography'
 
 import ActionCheckbox from '../../components/applications/ActionCheckbox'
 import PrimaryAction from '../../components/applications/PrimaryAction'
-import { simpleApplicationAction } from '../../generated/api-clients/application'
+import {
+  cancelApplication,
+  simpleApplicationAction
+} from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import EllipsisMenu, { MenuItem } from '../common/EllipsisMenu'
@@ -227,30 +236,78 @@ export default React.memo(function ApplicationActions({
         <ActionCheckbox applicationId={application.id} />
       </ActionsContainer>
       {confirmingApplicationCancel && (
-        <InfoModal
-          type="warning"
-          title={i18n.applications.actions.cancelApplicationConfirm}
-          resolve={{
-            action: () => {
-              setActionInFlight(true)
-              handlePromise(
-                simpleApplicationAction({
-                  applicationId: application.id,
-                  action: 'CANCEL_APPLICATION'
-                })
-              )
-            },
-            label: i18n.common.confirm
-          }}
-          reject={{
-            action: () => setConfirmingApplicationCancel(false),
-            label: i18n.common.cancel
-          }}
+        <ConfirmCancelApplicationModal
+          application={application}
+          onSubmit={() => setActionInFlight(true)}
+          handlePromise={handlePromise}
+          onClose={() => setConfirmingApplicationCancel(false)}
         />
       )}
     </>
   )
 })
+
+const ConfirmCancelApplicationModal = React.memo(
+  function ConfirmCancelApplicationModal({
+    application,
+    onSubmit,
+    handlePromise,
+    onClose
+  }: {
+    application: ApplicationSummary
+    onSubmit: () => void
+    handlePromise: (promise: Promise<void>) => void
+    onClose: () => void
+  }) {
+    const { i18n } = useTranslation()
+    const [confidential, setConfidential] = useState<boolean | null>(null)
+    return (
+      <InfoModal
+        type="warning"
+        title={i18n.applications.actions.cancelApplicationConfirm}
+        resolve={{
+          action: () => {
+            onSubmit()
+            handlePromise(
+              cancelApplication({
+                applicationId: application.id,
+                confidential
+              })
+            )
+          },
+          label: i18n.common.confirm,
+          disabled: application.confidential === null && confidential === null
+        }}
+        reject={{
+          action: onClose,
+          label: i18n.common.cancel
+        }}
+      >
+        {application.confidential === null && (
+          <FixedSpaceColumn>
+            <Label>
+              {i18n.applications.actions.cancelApplicationConfidentiality}
+            </Label>
+            <FixedSpaceRow spacing="XL">
+              <Radio
+                checked={confidential === true}
+                label={i18n.common.yes}
+                onChange={() => setConfidential(true)}
+                data-qa="confidential-yes"
+              />
+              <Radio
+                checked={confidential === false}
+                label={i18n.common.no}
+                onChange={() => setConfidential(false)}
+                data-qa="confidential-no"
+              />
+            </FixedSpaceRow>
+          </FixedSpaceColumn>
+        )}
+      </InfoModal>
+    )
+  }
+)
 
 const ActionsContainer = styled.div`
   display: flex;

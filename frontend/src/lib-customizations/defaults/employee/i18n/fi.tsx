@@ -341,6 +341,7 @@ export const fi = {
       cancelApplication: 'Poista käsittelystä',
       cancelApplicationConfirm:
         'Haluatko varmasti poistaa hakemuksen käsittelystä?',
+      cancelApplicationConfidentiality: 'Onko hakemus salassapidettävä?',
       check: 'Tarkista',
       setVerified: 'Merkitse tarkistetuksi',
       createPlacementPlan: 'Sijoita',

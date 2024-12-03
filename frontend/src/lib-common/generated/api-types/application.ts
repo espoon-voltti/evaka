@@ -751,7 +751,6 @@ export interface SiblingBasis {
 export type SimpleApplicationAction =
   | 'MOVE_TO_WAITING_PLACEMENT'
   | 'RETURN_TO_SENT'
-  | 'CANCEL_APPLICATION'
   | 'CANCEL_PLACEMENT_PLAN'
   | 'SEND_DECISIONS_WITHOUT_PROPOSAL'
   | 'SEND_PLACEMENT_PROPOSAL'

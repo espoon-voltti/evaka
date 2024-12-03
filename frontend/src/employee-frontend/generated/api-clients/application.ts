@@ -79,6 +79,27 @@ export async function acceptPlacementProposal(
 
 
 /**
+* Generated from fi.espoo.evaka.application.ApplicationControllerV2.cancelApplication
+*/
+export async function cancelApplication(
+  request: {
+    applicationId: UUID,
+    confidential?: boolean | null
+  }
+): Promise<void> {
+  const params = createUrlSearchParams(
+    ['confidential', request.confidential?.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/applications/${request.applicationId}/actions/cancel-application`.toString(),
+    method: 'POST',
+    params
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.application.ApplicationControllerV2.createPaperApplication
 */
 export async function createPaperApplication(
