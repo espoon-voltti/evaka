@@ -85,7 +85,7 @@ export default React.memo(function DayElem({
       // subsequent loads to previous months use instant scroll to keep the list position
       // at the place where "fetch previous" was clicked
       scrollToPos({
-        top: top - headerHeightMobile - 32,
+        top: top - headerHeightMobile - 54,
         behavior: isToday ? 'smooth' : 'instant'
       })
     }
