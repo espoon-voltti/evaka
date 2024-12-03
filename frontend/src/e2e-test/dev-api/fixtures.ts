@@ -39,6 +39,7 @@ import { DailyReservationRequest } from 'lib-common/generated/api-types/reservat
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -1058,7 +1059,7 @@ export class Fixture {
 
   static absence(initial: SemiPartial<DevAbsence, 'childId'>): AbsenceBuilder {
     return new AbsenceBuilder({
-      id: uuidv4(),
+      id: randomId(),
       date: LocalDate.todayInHelsinkiTz(),
       absenceType: 'OTHER_ABSENCE',
       modifiedAt: HelsinkiDateTime.now(),

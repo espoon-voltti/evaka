@@ -64,6 +64,7 @@ import { FosterParentId } from 'lib-common/generated/api-types/shared'
 import { GroupId } from 'lib-common/generated/api-types/shared'
 import { GroupPlacementId } from 'lib-common/generated/api-types/shared'
 import { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
+import { Id } from 'lib-common/id-type'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
 import { IncomeId } from 'lib-common/generated/api-types/shared'
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
@@ -121,7 +122,7 @@ import { deserializeJsonChildWithDateOfBirth } from 'lib-common/generated/api-ty
 import { deserializeJsonDocumentContent } from 'lib-common/generated/api-types/document'
 import { deserializeJsonIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 
-export type AbsenceId = string
+export type AbsenceId = Id<'Absence'>
 
 export type AssistanceActionOptionId = string
 
