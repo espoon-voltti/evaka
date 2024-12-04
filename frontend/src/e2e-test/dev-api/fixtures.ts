@@ -1143,7 +1143,7 @@ export class Fixture {
     initial?: Partial<DevAssistanceActionOption>
   ): AssistanceActionOptionBuilder {
     return new AssistanceActionOptionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       descriptionFi: 'a description',
       nameFi: 'a test assistance action option',
       value: 'TEST_ASSISTANCE_ACTION_OPTION',

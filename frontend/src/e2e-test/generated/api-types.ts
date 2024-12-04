@@ -124,7 +124,7 @@ import { deserializeJsonIncomeStatementBody } from 'lib-common/generated/api-typ
 
 export type AbsenceId = Id<'Absence'>
 
-export type AssistanceActionOptionId = string
+export type AssistanceActionOptionId = Id<'AssistanceActionOption'>
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Autocomplete
