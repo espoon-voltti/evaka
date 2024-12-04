@@ -295,7 +295,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             dateOfDeath = person.dateOfDeath,
             streetAddress = person.streetAddress,
             postalCode = person.postalCode,
-            postOffice = person.city,
+            postOffice = person.postOffice,
             residenceCode = person.residenceCode,
             restrictedDetailsEnabled = person.restrictedDetailsEnabled,
             restrictedDetailsEndDate = person.restrictedDetailsEndDate,
@@ -330,7 +330,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                         origin = PersonAddressDTO.Origin.VTJ,
                         streetAddress = person.streetAddress,
                         postalCode = person.postalCode,
-                        city = person.city,
+                        city = person.postOffice,
                         residenceCode = person.residenceCode,
                     )
                 } else {
@@ -380,7 +380,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     private fun hasRestriction(person: VtjPersonDTO) = person.restrictedDetailsEnabled
 
     private fun hasAddress(person: VtjPersonDTO): Boolean =
-        setOf(person.streetAddress, person.postalCode, person.city).all(String::isNotBlank)
+        setOf(person.streetAddress, person.postalCode, person.postOffice).all(String::isNotBlank)
 }
 
 data class PersonDTO(
@@ -427,9 +427,9 @@ data class PersonDTO(
             nativeLanguage = NativeLanguage(code = this.language ?: ""),
             streetAddress = this.streetAddress,
             postalCode = this.postalCode,
-            city = this.postOffice,
+            postOffice = this.postOffice,
             streetAddressSe = "",
-            citySe = "",
+            postOfficeSe = "",
             residenceCode = this.residenceCode,
         )
 }
@@ -715,13 +715,13 @@ private fun getStreetAddressByLanguage(vtjPerson: VtjPersonDTO): String {
 }
 
 private fun getPostOfficeByLanguage(vtjPerson: VtjPersonDTO): String {
-    if (vtjPerson.nativeLanguage == null || vtjPerson.citySe == "") {
-        return vtjPerson.city
+    if (vtjPerson.nativeLanguage == null || vtjPerson.postOfficeSe == "") {
+        return vtjPerson.postOffice
     }
 
     return when (vtjPerson.nativeLanguage.code) {
-        "sv" -> vtjPerson.citySe
-        else -> vtjPerson.city
+        "sv" -> vtjPerson.postOfficeSe
+        else -> vtjPerson.postOffice
     }
 }
 
