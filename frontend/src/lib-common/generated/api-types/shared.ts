@@ -28,7 +28,7 @@ export type AssistanceNeedPreschoolDecisionGuardianId = Id<'AssistanceNeedPresch
 
 export type AssistanceNeedPreschoolDecisionId = Id<'AssistanceNeedPreschoolDecision'>
 
-export type AssistanceNeedVoucherCoefficientId = string
+export type AssistanceNeedVoucherCoefficientId = Id<'AssistanceNeedVoucherCoefficient'>
 
 export type AttachmentId = string
 

@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
 import { UIContext } from 'employee-frontend/state/ui'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedVoucherCoefficientId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -156,7 +157,7 @@ const DeleteAssistanceNeedVoucherCoefficientModal = React.memo(
     onClose
   }: {
     childId: UUID
-    coefficientId: UUID
+    coefficientId: AssistanceNeedVoucherCoefficientId
     onClose: () => void
   }) {
     const { mutateAsync: deleteAssistanceNeedVoucherCoefficient } =
