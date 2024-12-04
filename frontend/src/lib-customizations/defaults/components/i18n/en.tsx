@@ -118,8 +118,7 @@ const components: Translations = {
   },
   sessionTimeout: {
     sessionExpiredTitle: 'Your session has timed out',
-    sessionExpiredMessage:
-      'Please make note of any message you have typed and log in again.',
+    sessionExpiredMessage: 'Please log in again.',
     goToLoginPage: 'Go to login page',
     cancel: 'Cancel'
   },

@@ -116,8 +116,7 @@ const components: Translations = {
   },
   sessionTimeout: {
     sessionExpiredTitle: 'Istuntosi on aikakatkaistu',
-    sessionExpiredMessage:
-      'Ole hyvä ja ota kirjaamasi viesti muistiin ja kirjaudu sisään uudelleen.',
+    sessionExpiredMessage: 'Ole hyvä ja kirjaudu sisään uudelleen.',
     goToLoginPage: 'Siirry kirjautumissivulle',
     cancel: 'Peruuta'
   },

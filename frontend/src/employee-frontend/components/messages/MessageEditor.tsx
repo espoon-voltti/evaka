@@ -58,9 +58,7 @@ import FileUpload, {
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { SelectOption } from 'lib-components/molecules/Select'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
 import { Bold } from 'lib-components/typography'
-import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import {
@@ -76,7 +74,6 @@ import {
 import { useTranslation } from '../../state/i18n'
 
 import { createMessagePreflightCheckQuery } from './queries'
-import { sessionKeepalive } from './utils'
 
 type Message = Omit<
   UpdatableDraftContent,
@@ -512,11 +509,6 @@ export default React.memo(function MessageEditor({
     () => setSensitiveInfoOpen((prev) => !prev),
     []
   )
-  const {
-    keepSessionAlive,
-    showSessionExpiredModal,
-    setShowSessionExpiredModal
-  } = useKeepSessionAlive(sessionKeepalive)
 
   const sensitiveCheckbox = (
     <FixedSpaceRow spacing="xs" alignItems="center">
@@ -814,7 +806,6 @@ export default React.memo(function MessageEditor({
               value={message.content}
               onChange={(e) => updateMessage({ content: e.target.value })}
               data-qa="input-content"
-              onKeyUp={keepSessionAlive}
             />
             {!simpleMode && (
               <FileUpload
@@ -894,12 +885,6 @@ export default React.memo(function MessageEditor({
           )}
         </Container>
       </FullScreenContainer>
-
-      {showSessionExpiredModal && (
-        <SessionExpiredModal
-          onClose={() => setShowSessionExpiredModal(false)}
-        />
-      )}
     </>
   )
 })

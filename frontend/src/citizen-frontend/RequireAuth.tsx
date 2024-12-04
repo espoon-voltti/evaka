@@ -29,7 +29,6 @@ export default React.memo(function RequireAuth({
   const isLoggedIn = isStrong || isWeak
 
   const returnUrl = `${location.pathname}${location.search}${location.hash}`
-
   return isLoggedIn ? (
     strength === 'STRONG' && !isStrong ? (
       refreshRedirect(getStrongLoginUri(returnUrl))

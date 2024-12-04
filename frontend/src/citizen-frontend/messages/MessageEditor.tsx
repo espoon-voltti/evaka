@@ -38,9 +38,7 @@ import FileUpload, {
   UploadStatus
 } from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
-import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
 import { Bold, P } from 'lib-components/typography'
-import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
@@ -50,8 +48,6 @@ import { getAttachmentUrl, saveMessageAttachment } from '../attachments'
 import { useUser } from '../auth/state'
 import { deleteAttachment } from '../generated/api-clients/attachment'
 import { useTranslation } from '../localization'
-
-import { sessionKeepalive } from './utils'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',
@@ -131,11 +127,6 @@ export default React.memo(function MessageEditor({
         .catch((e) => Failure.fromError<void>(e)),
     []
   )
-  const {
-    keepSessionAlive,
-    showSessionExpiredModal,
-    setShowSessionExpiredModal
-  } = useKeepSessionAlive(sessionKeepalive)
 
   useEffect(
     () =>
@@ -396,7 +387,6 @@ export default React.memo(function MessageEditor({
                   }))
                 }
                 data-qa="input-content"
-                onKeyUp={keepSessionAlive}
               />
             </TextAreaLabel>
 
@@ -444,11 +434,6 @@ export default React.memo(function MessageEditor({
           </FormArea>
         </Container>
       </FocusLock>
-      {showSessionExpiredModal && (
-        <SessionExpiredModal
-          onClose={() => setShowSessionExpiredModal(false)}
-        />
-      )}
     </ModalAccessibilityWrapper>
   )
 })

@@ -5,11 +5,16 @@
 import throttle from 'lodash/throttle'
 import { useState, useEffect, useMemo } from 'react'
 
-export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
+export function useKeepSessionAlive(
+  sessionKeepAlive: () => Promise<boolean>,
+  enabled: boolean
+) {
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
+  // Default to 2 minutes and allow overriding this in automated tests
   const throttleTime =
     window.evaka?.keepSessionAliveThrottleTime ?? 2 * 60 * 1000
-  const keepSessionAlive = useMemo(
+
+  const throttledKeepAlive = useMemo(
     () =>
       throttle(
         async () => {
@@ -20,10 +25,8 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
             }
           } catch (error) {
             // ignore errors that might happen e.g. because client is offline or server temporarily unreachable
-            console.error('Error occurred while keeping session alive', error)
           }
         },
-        // Default to 2 minutes and allow overriding this in automated tests
         throttleTime,
         {
           leading: true,
@@ -34,11 +37,28 @@ export function useKeepSessionAlive(sessionKeepAlive: () => Promise<boolean>) {
   )
 
   useEffect(() => {
-    return () => keepSessionAlive.cancel()
-  }, [keepSessionAlive])
+    if (!enabled) return
+
+    const eventListenerOptions = { capture: true, passive: true }
+    const userActivityEvents = ['keydown', 'mousedown', 'wheel', 'touchstart']
+
+    userActivityEvents.forEach((event) => {
+      document.addEventListener(event, throttledKeepAlive, eventListenerOptions)
+    })
+
+    return () => {
+      userActivityEvents.forEach((event) => {
+        document.removeEventListener(
+          event,
+          throttledKeepAlive,
+          eventListenerOptions
+        )
+      })
+      throttledKeepAlive.cancel()
+    }
+  }, [throttledKeepAlive, enabled])
 
   return {
-    keepSessionAlive,
     showSessionExpiredModal,
     setShowSessionExpiredModal
   }
