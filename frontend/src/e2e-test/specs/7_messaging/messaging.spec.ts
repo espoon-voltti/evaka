@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -221,7 +222,7 @@ describe('Sending and receiving messages', () => {
         await createBackupCares({
           body: [
             {
-              id: uuidv4(),
+              id: randomId(),
               childId: testChild2.id,
               unitId: testDaycare.id,
               groupId: testDaycareGroup.id,
@@ -276,7 +277,7 @@ describe('Sending and receiving messages', () => {
         await createBackupCares({
           body: [
             {
-              id: uuidv4(),
+              id: randomId(),
               childId,
               unitId: backupDaycareId,
               groupId: backupGroupFixtureId,

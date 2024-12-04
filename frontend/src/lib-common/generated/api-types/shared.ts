@@ -32,7 +32,7 @@ export type AssistanceNeedVoucherCoefficientId = Id<'AssistanceNeedVoucherCoeffi
 
 export type AttachmentId = Id<'Attachment'>
 
-export type BackupCareId = string
+export type BackupCareId = Id<'BackupCare'>
 
 export type BackupPickupId = string
 
