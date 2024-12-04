@@ -16,7 +16,7 @@ export type ArchivedProcessId = Id<'ArchivedProcess'>
 
 export type AreaId = Id<'Area'>
 
-export type AssistanceActionId = string
+export type AssistanceActionId = Id<'AssistanceAction'>
 
 export type AssistanceFactorId = string
 
