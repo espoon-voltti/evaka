@@ -774,7 +774,13 @@ fun Database.Read.fetchApplicationDetails(
                         a.additionaldaycareapplication,
                         a.hidefromguardian,
                         a.created_at,
+                        e_created.id AS created_by_id,
+                        e_created.name AS created_by_name,
+                        e_created.type AS created_by_type,
                         a.modified_at,
+                        e_modified.id AS modified_by_id,
+                        e_modified.name AS modified_by_name,
+                        e_modified.type AS modified_by_type,
                         a.sentdate,
                         a.duedate,
                         a.duedate_set_manually_at,
@@ -785,6 +791,8 @@ fun Database.Read.fetchApplicationDetails(
                     FROM application a
                     LEFT JOIN person c ON c.id = a.child_id
                     LEFT JOIN person g1 ON g1.id = a.guardian_id
+                    LEFT JOIN evaka_user e_created ON a.created_by = e_created.id
+                    LEFT JOIN evaka_user e_modified ON a.modified_by = e_modified.id
                     LEFT JOIN (
                         SELECT application_id, jsonb_agg(jsonb_build_object(
                             'id', attachment.id,
@@ -832,8 +840,20 @@ fun Database.Read.fetchApplicationDetails(
                     guardianDateOfDeath = column("guardian_date_of_death"),
                     transferApplication = column("transferapplication"),
                     additionalDaycareApplication = column("additionaldaycareapplication"),
-                    createdDate = column("created_at"),
-                    modifiedDate = column("modified_at"),
+                    createdAt = column("created_at"),
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    modifiedAt = column("modified_at"),
+                    modifiedBy =
+                        EvakaUser(
+                            id = column("modified_by_id"),
+                            name = column("modified_by_name"),
+                            type = column("modified_by_type"),
+                        ),
                     sentDate = column("sentdate"),
                     dueDate = column("duedate"),
                     dueDateSetManuallyAt = column("duedate_set_manually_at"),

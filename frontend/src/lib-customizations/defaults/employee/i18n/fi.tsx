@@ -577,6 +577,7 @@ export const fi = {
       origin: 'Hakemuksen lähetysmuoto',
       sent: 'Saapunut',
       modified: 'Muokattu viimeksi',
+      modifiedBy: 'Muokkaaja',
       due: 'Käsiteltävä viimeistään'
     },
     date: {

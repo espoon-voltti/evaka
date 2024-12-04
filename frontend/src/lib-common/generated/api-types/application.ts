@@ -109,7 +109,8 @@ export interface ApplicationDetails {
   checkedByAdmin: boolean
   childId: UUID
   childRestricted: boolean
-  createdDate: HelsinkiDateTime | null
+  createdAt: HelsinkiDateTime | null
+  createdBy: EvakaUser | null
   dueDate: LocalDate | null
   dueDateSetManuallyAt: HelsinkiDateTime | null
   form: ApplicationForm
@@ -119,7 +120,8 @@ export interface ApplicationDetails {
   hasOtherGuardian: boolean
   hideFromGuardian: boolean
   id: UUID
-  modifiedDate: HelsinkiDateTime | null
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: EvakaUser | null
   origin: ApplicationOrigin
   otherGuardianLivesInSameAddress: boolean | null
   sentDate: LocalDate | null
@@ -805,12 +807,12 @@ export function deserializeJsonApplicationDetails(json: JsonOf<ApplicationDetail
   return {
     ...json,
     attachments: json.attachments.map(e => deserializeJsonApplicationAttachment(e)),
-    createdDate: (json.createdDate != null) ? HelsinkiDateTime.parseIso(json.createdDate) : null,
+    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
     dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
     dueDateSetManuallyAt: (json.dueDateSetManuallyAt != null) ? HelsinkiDateTime.parseIso(json.dueDateSetManuallyAt) : null,
     form: deserializeJsonApplicationForm(json.form),
     guardianDateOfDeath: (json.guardianDateOfDeath != null) ? LocalDate.parseIso(json.guardianDateOfDeath) : null,
-    modifiedDate: (json.modifiedDate != null) ? HelsinkiDateTime.parseIso(json.modifiedDate) : null,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,
     sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
   }
 }
