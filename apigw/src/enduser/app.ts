@@ -6,7 +6,7 @@ import { SAML } from '@node-saml/node-saml'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 
-import { appCommit, Config } from '../shared/config.js'
+import { Config } from '../shared/config.js'
 import { csrf } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import { createProxy } from '../shared/proxy-utils.js'
@@ -35,10 +35,6 @@ export function enduserGwRouter(
   // middlewares
   router.use(sessions.middleware)
   router.use(cookieParser())
-
-  router.get('/version', (_, res) => {
-    res.send({ commitId: appCommit })
-  })
 
   if (config.sfi.type === 'mock') {
     router.use('/auth/saml', createDevSfiRouter(sessions))
