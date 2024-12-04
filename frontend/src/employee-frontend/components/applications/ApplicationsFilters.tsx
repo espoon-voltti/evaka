@@ -11,7 +11,7 @@ import {
   ApplicationTypeToggle
 } from 'lib-common/generated/api-types/application'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
-import { UUID } from 'lib-common/types'
+import { AreaId } from 'lib-common/generated/api-types/shared'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Label } from 'lib-components/typography'
@@ -304,8 +304,8 @@ export default React.memo(function ApplicationFilters() {
 
 type AreaMultiSelectProps = {
   areas: DaycareCareArea[]
-  selected: UUID[]
-  onSelect: (areaIds: UUID[]) => void
+  selected: AreaId[]
+  onSelect: (areaIds: AreaId[]) => void
 }
 
 const AreaMultiSelect = React.memo(function AreaMultiSelect({

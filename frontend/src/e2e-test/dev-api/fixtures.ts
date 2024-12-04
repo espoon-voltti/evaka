@@ -262,7 +262,7 @@ export class Fixture {
   static careArea(initial?: Partial<DevCareArea>): CareAreaBuilder {
     const id = uniqueLabel()
     return new CareAreaBuilder({
-      id: uuidv4(),
+      id: randomId(),
       name: `Care Area ${id}`,
       shortName: `careArea_${id}`,
       areaCode: 2230,
@@ -2046,7 +2046,7 @@ export const clubTerms = [
 ]
 
 export const testCareArea: DevCareArea = {
-  id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
+  id: fromUuid('674dfb66-8849-489e-b094-e6a0ebfb3c71'),
   name: 'Superkeskus',
   shortName: 'super-keskus',
   areaCode: 299,
@@ -2054,7 +2054,7 @@ export const testCareArea: DevCareArea = {
 }
 
 export const testCareArea2: DevCareArea = {
-  id: '7a5b42db-451b-4394-b6a6-86993ea0ed45',
+  id: fromUuid('7a5b42db-451b-4394-b6a6-86993ea0ed45'),
   name: 'Hyperkeskus',
   shortName: 'hyper-keskus',
   areaCode: 298,

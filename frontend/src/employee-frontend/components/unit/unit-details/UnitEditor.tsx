@@ -21,7 +21,7 @@ import {
   Language,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import { AreaId, Coordinate } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -66,7 +66,7 @@ type FormData = {
   name: string
   openingDate: LocalDate | null
   closingDate: LocalDate | null
-  areaId: string
+  areaId: AreaId | null
   careTypes: Record<OnlyCareType, boolean>
   dailyPreschoolTime: EditableTimeRange
   dailyPreparatoryTime: EditableTimeRange
@@ -410,7 +410,7 @@ function validateForm(
   if (!name) {
     errors.push({ text: i18n.unitEditor.error.name, key: 'unit-name' })
   }
-  if (!form.areaId) {
+  if (form.areaId == null) {
     errors.push({ text: i18n.unitEditor.error.area, key: 'unit-area' })
   }
   if (Object.values(form.careTypes).every((v) => !v)) {
@@ -681,6 +681,7 @@ function validateForm(
 
   if (
     name &&
+    areaId &&
     visitingAddress.streetAddress &&
     visitingAddress.postalCode &&
     visitingAddress.postOffice
@@ -784,7 +785,7 @@ function toFormData(unit: Daycare | undefined): FormData {
     name: unit?.name ?? '',
     openingDate: unit?.openingDate ?? null,
     closingDate: unit?.closingDate ?? null,
-    areaId: unit?.area?.id ?? '',
+    areaId: unit?.area?.id ?? null,
     careTypes: {
       DAYCARE:
         type?.some(
