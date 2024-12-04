@@ -1243,7 +1243,7 @@ const ReportByChildTable = ({
                     </Td>
                   ))}
                   <Td />
-                  <Td />
+                  {report.showAssistanceNeedVoucherCoefficient && <Td />}
                 </Tr>
               )}
               {data.rows
