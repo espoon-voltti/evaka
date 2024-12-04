@@ -18,7 +18,7 @@ export type AreaId = Id<'Area'>
 
 export type AssistanceActionId = Id<'AssistanceAction'>
 
-export type AssistanceFactorId = string
+export type AssistanceFactorId = Id<'AssistanceFactor'>
 
 export type AssistanceNeedDecisionGuardianId = string
 

@@ -498,7 +498,7 @@ export class Fixture {
     initial: SemiPartial<AssistanceFactor, 'childId'>
   ): AssistanceFactorBuilder {
     return new AssistanceFactorBuilder({
-      id: uuidv4(),
+      id: randomId(),
       capacityFactor: 1.0,
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
