@@ -19,8 +19,8 @@ import {
   GetReceiversResponse,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -118,7 +118,7 @@ export default React.memo(function MessageEditor({
   )
 
   const handleAttachmentDelete = useCallback(
-    async (id: UUID) =>
+    async (id: AttachmentId) =>
       deleteAttachment({ attachmentId: id })
         .then(() => {
           setAttachments((prev) => prev.filter((a) => a.id !== id))

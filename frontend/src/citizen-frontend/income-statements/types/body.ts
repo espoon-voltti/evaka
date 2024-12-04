@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { stringToInt } from 'lib-common/utils/number'
 
 import * as Form from './form'
@@ -27,7 +27,7 @@ export interface ChildIncomeBody
     ApiTypes.IncomeStatementBody.ChildIncome,
     ReadOnlyFields | 'attachments'
   > {
-  attachmentIds: UUID[]
+  attachmentIds: AttachmentId[]
 }
 
 export interface IncomeBody
@@ -35,7 +35,7 @@ export interface IncomeBody
     ApiTypes.IncomeStatementBody.Income,
     ReadOnlyFields | 'attachments'
   > {
-  attachmentIds: UUID[]
+  attachmentIds: AttachmentId[]
 }
 
 export type IncomeStatementBody = HighestFeeBody | IncomeBody | ChildIncomeBody

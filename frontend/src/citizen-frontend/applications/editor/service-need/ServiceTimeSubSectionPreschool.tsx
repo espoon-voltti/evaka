@@ -9,10 +9,13 @@ import { Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import {
+  ApplicationId,
+  AttachmentId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -63,7 +66,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 }: ServiceTimeSubSectionProps) {
   const [lang] = useLang()
   const t = useTranslation()
-  const { applicationId } = useRouteParams(['applicationId'])
+  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const labelId = useUniqueId()
 
   const serviceNeedOptionsByType = useMemo(
@@ -84,7 +87,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
   const uploadExtendedCareAttachment = (
     file: File,
     onUploadProgress: (percentage: number) => void
-  ): Promise<Result<UUID>> =>
+  ): Promise<Result<AttachmentId>> =>
     saveApplicationAttachment(
       applicationId,
       file,
@@ -111,7 +114,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
       return result
     })
 
-  const deleteExtendedCareAttachment = (id: UUID) =>
+  const deleteExtendedCareAttachment = (id: AttachmentId) =>
     deleteAttachmentResult({ attachmentId: id }).then((result) => {
       if (result.isSuccess) {
         updateFormData({

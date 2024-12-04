@@ -30,7 +30,7 @@ export type AssistanceNeedPreschoolDecisionId = Id<'AssistanceNeedPreschoolDecis
 
 export type AssistanceNeedVoucherCoefficientId = Id<'AssistanceNeedVoucherCoefficient'>
 
-export type AttachmentId = string
+export type AttachmentId = Id<'Attachment'>
 
 export type BackupCareId = string
 
