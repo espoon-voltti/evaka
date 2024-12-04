@@ -35,6 +35,7 @@ import {
   getPreschoolApplicationReport,
   getServiceVoucherReportForAllUnits,
   getStartingPlacementsReport,
+  getTampereRegionalSurvey,
   getTitaniaErrorsReport,
   getUnitsReport,
   getVardaChildErrorsReport,
@@ -142,3 +143,5 @@ export const incompleteIncomeReportQuery = q.query(getIncompleteIncomeReport)
 export const startingPlacementsReportQuery = q.query(
   getStartingPlacementsReport
 )
+
+export const tampereRegionalSurveyReport = q.query(getTampereRegionalSurvey)

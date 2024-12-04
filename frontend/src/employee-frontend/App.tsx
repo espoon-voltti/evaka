@@ -109,6 +109,7 @@ import ReportRaw from './components/reports/Raw'
 import ReportServiceNeeds from './components/reports/ServiceNeeds'
 import ReportSextet from './components/reports/Sextet'
 import ReportStartingPlacements from './components/reports/StartingPlacements'
+import TampereRegionalSurvey from './components/reports/TampereRegionalSurvey'
 import TitaniaErrors from './components/reports/TitaniaErrors'
 import ReportUnits from './components/reports/Units'
 import VardaChildErrors from './components/reports/VardaChildErrors'
@@ -901,6 +902,15 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <IncompleteIncomes />
+            </EmployeeRoute>
+          )
+        },
+
+        {
+          path: '/reports/regional-survey/monthly',
+          element: (
+            <EmployeeRoute title="reports">
+              <TampereRegionalSurvey />
             </EmployeeRoute>
           )
         },

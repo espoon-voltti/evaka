@@ -702,6 +702,24 @@ export default React.memo(function Reports() {
                     />
                   )
                 }
+              : null,
+            reports.has('TAMPERE_REGIONAL_SURVEY')
+              ? {
+                  name: 'Seutuselvitysraportti',
+                  item: (
+                    <Report
+                      path="/reports/regional-survey/monthly"
+                      color={colors.main.m2Active}
+                      icon={faDatabase}
+                      i18n={{
+                        title: 'Seutuselvitysraportti',
+                        description:
+                          'Raportti tarjoaa Seutuselvitykseen liittyvät lukumäärätiedot'
+                      }}
+                      data-qa="report-holiday-period-attendance"
+                    />
+                  )
+                }
               : null
           ]
 

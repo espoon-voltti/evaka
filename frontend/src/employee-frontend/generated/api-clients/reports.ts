@@ -64,6 +64,7 @@ import { PreschoolUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { RawReportRow } from 'lib-common/generated/api-types/reports'
+import { RegionalSurveyReportResult } from 'lib-common/generated/api-types/reports'
 import { Report } from 'lib-common/generated/api-types/reports'
 import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
@@ -1070,6 +1071,26 @@ export async function clearTitaniaErrors(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/reports/titania-errors/${request.conflictId}`.toString(),
     method: 'DELETE'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurvey
+*/
+export async function getTampereRegionalSurvey(
+  request: {
+    year: number
+  }
+): Promise<RegionalSurveyReportResult> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<RegionalSurveyReportResult>>({
+    url: uri`/employee/reports/tampere-regional-survey/monthly`.toString(),
+    method: 'GET',
+    params
   })
   return json
 }
