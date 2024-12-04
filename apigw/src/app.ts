@@ -8,6 +8,7 @@ import { enduserGwRouter } from './enduser/app.js'
 import { internalGwRouter } from './internal/app.js'
 import { appCommit, Config } from './shared/config.js'
 import { cacheControl } from './shared/middleware/cache-control.js'
+import { errorHandler } from './shared/middleware/error-handler.js'
 import { RedisClient } from './shared/redis-client.js'
 import { handleCspReport } from './shared/routes/csp.js'
 
@@ -40,5 +41,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.use('/application', enduserGwRouter(config, redisClient))
   router.use('/internal', internalGwRouter(config, redisClient))
 
+  // global error middleware
+  router.use(errorHandler(false))
   return router
 }
