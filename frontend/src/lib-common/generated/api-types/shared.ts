@@ -14,7 +14,7 @@ export type ApplicationNoteId = Id<'ApplicationNote'>
 
 export type ArchivedProcessId = Id<'ArchivedProcess'>
 
-export type AreaId = string
+export type AreaId = Id<'Area'>
 
 export type AssistanceActionId = string
 

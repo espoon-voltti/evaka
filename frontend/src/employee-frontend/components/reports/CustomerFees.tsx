@@ -14,6 +14,7 @@ import {
   FinanceDecisionType,
   financeDecisionTypes
 } from 'lib-common/generated/api-types/invoicing'
+import { AreaId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -35,7 +36,7 @@ import { customerFeesReportQuery } from './queries'
 
 const filterForm = object({
   date: required(localDate()),
-  areaId: oneOf<UUID>(),
+  areaId: oneOf<AreaId>(),
   unitId: oneOf<UUID>(),
   decisionType: required(oneOf<FinanceDecisionType>())
 })
@@ -45,7 +46,7 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
   areaOptions
 }: {
   unitOptions: { id: UUID; name: string }[]
-  areaOptions: { id: UUID; name: string }[]
+  areaOptions: { id: AreaId; name: string }[]
 }) {
   const { i18n, lang } = useTranslation()
 
