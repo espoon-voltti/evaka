@@ -22,7 +22,7 @@ export type AssistanceFactorId = Id<'AssistanceFactor'>
 
 export type AssistanceNeedDecisionGuardianId = string
 
-export type AssistanceNeedDecisionId = string
+export type AssistanceNeedDecisionId = Id<'AssistanceNeedDecision'>
 
 export type AssistanceNeedPreschoolDecisionGuardianId = string
 
