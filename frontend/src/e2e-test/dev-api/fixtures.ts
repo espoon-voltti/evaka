@@ -690,7 +690,7 @@ export class Fixture {
     initial: SemiPartial<DevAssistanceNeedPreschoolDecision, 'childId'>
   ): AssistanceNeedPreschoolDecisionBuilder {
     return new AssistanceNeedPreschoolDecisionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       decisionNumber: 1000,
       status: 'DRAFT',
       annulmentReason: '',
