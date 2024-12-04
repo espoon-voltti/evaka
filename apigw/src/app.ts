@@ -11,6 +11,7 @@ import { cacheControl } from './shared/middleware/cache-control.js'
 import { errorHandler } from './shared/middleware/error-handler.js'
 import { RedisClient } from './shared/redis-client.js'
 import { handleCspReport } from './shared/routes/csp.js'
+import { sessionSupport } from './shared/session.js'
 
 export function apiRouter(config: Config, redisClient: RedisClient) {
   const router = express.Router()
@@ -38,8 +39,21 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     res.send({ commitId: appCommit })
   })
 
-  router.use('/application', enduserGwRouter(config, redisClient))
-  router.use('/internal', internalGwRouter(config, redisClient))
+  const citizenSessions = sessionSupport('enduser', redisClient, config.citizen)
+  const internalSessions = sessionSupport(
+    'employee',
+    redisClient,
+    config.employee
+  )
+
+  router.use(
+    '/application',
+    enduserGwRouter(config, redisClient, { citizenSessions })
+  )
+  router.use(
+    '/internal',
+    internalGwRouter(config, redisClient, { internalSessions })
+  )
 
   // global error middleware
   router.use(errorHandler(false))
