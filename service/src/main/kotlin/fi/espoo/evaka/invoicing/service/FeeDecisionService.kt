@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.lockFeeDecisions
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.removeFeeDecisionIgnore
+import fi.espoo.evaka.invoicing.data.setFeeDecisionProcessId
 import fi.espoo.evaka.invoicing.data.setFeeDecisionSent
 import fi.espoo.evaka.invoicing.data.setFeeDecisionToIgnored
 import fi.espoo.evaka.invoicing.data.setFeeDecisionType
@@ -40,11 +41,17 @@ import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -76,6 +83,7 @@ class FeeDecisionService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
+    private val featureConfig: FeatureConfig,
 ) {
     init {
         asyncJobRunner.registerHandler(::runSendNewFeeDecisionEmail)
@@ -180,6 +188,34 @@ class FeeDecisionService(
             decisionHandlerId = decisionHandlerId,
             alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler,
         )
+
+        val processConfig = featureConfig.archiveMetadataConfigs[ArchiveProcessType.FEE_DECISION]
+        if (processConfig != null) {
+            // TODO: Could be heavy. Does this need to be moved into async jobs?
+            validDecisions.forEach { decision ->
+                tx.insertProcess(
+                        processDefinitionNumber = processConfig.processDefinitionNumber,
+                        year = today.year,
+                        organization = featureConfig.archiveMetadataOrganization,
+                        archiveDurationMonths = processConfig.archiveDurationMonths,
+                    )
+                    .also { process ->
+                        tx.insertProcessHistoryRow(
+                            processId = process.id,
+                            state = ArchivedProcessState.INITIAL,
+                            now = decision.created, // retroactive initial state
+                            userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                        )
+                        tx.insertProcessHistoryRow(
+                            processId = process.id,
+                            state = ArchivedProcessState.DECIDING,
+                            now = confirmDateTime,
+                            userId = user.evakaUserId,
+                        )
+                        tx.setFeeDecisionProcessId(decision.id, process.id)
+                    }
+            }
+        }
 
         return validDecisions.map { it.id }
     }
@@ -304,15 +340,46 @@ class FeeDecisionService(
             listOf(AsyncJob.SendNewFeeDecisionEmail(decisionId = decision.id)),
             runAt = clock.now(),
         )
-        tx.setFeeDecisionSent(clock, listOf(decision.id))
+        setSentAndUpdateProcess(
+            tx,
+            clock,
+            AuthenticatedUser.SystemInternalUser,
+            listOf(decision.id),
+        )
 
         return true
     }
 
-    fun setSent(tx: Database.Transaction, clock: EvakaClock, ids: List<FeeDecisionId>) {
+    fun setManuallySent(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        user: AuthenticatedUser,
+        ids: List<FeeDecisionId>,
+    ) {
         val decisions = tx.getDetailedFeeDecisionsByIds(ids)
         if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
+        }
+        setSentAndUpdateProcess(tx, clock, user, ids)
+    }
+
+    fun setSentAndUpdateProcess(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        user: AuthenticatedUser,
+        ids: List<FeeDecisionId>,
+    ) {
+        val now = clock.now()
+        // here the number of ids is always small so no need to optimize currently
+        ids.forEach { id ->
+            tx.getArchiveProcessByFeeDecisionId(id)?.let { process ->
+                tx.insertProcessHistoryRow(
+                    processId = process.id,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = now,
+                    userId = user.evakaUserId,
+                )
+            }
         }
         tx.setFeeDecisionSent(clock, ids)
     }
