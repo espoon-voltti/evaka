@@ -273,23 +273,31 @@ server {
     rewrite     /(.*) /index.html break;
   }
 
-  location /api/application {
+  location /api {
     access_log /var/log/nginx/access.log json_access;
 
     include     proxy_params;
     proxy_pass  $enduserUrl;
 
+    location /api/citizen/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $enduserUrl;
+    }
+
+    location /api/employee/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $internalUrl;
+    }
+
+    location /api/employee-mobile/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $internalUrl;
+    }
+
     location /api/application/citizen/attachments {
       client_max_body_size 100m;
       proxy_pass  $enduserUrl;
     }
-  }
-
-  location /api/internal {
-    access_log /var/log/nginx/access.log json_access;
-
-    include     proxy_params;
-    proxy_pass  $internalUrl;
 
     location /api/internal/employee/attachments {
       client_max_body_size 100m;
@@ -300,14 +308,6 @@ server {
       client_max_body_size 100m;
       proxy_pass  $internalUrl;
     }
-  }
-
-  # Direct all CPS reports to internal endpoint /api/csp/csp-report
-  location /api/csp {
-    access_log /var/log/nginx/access.log json_access;
-
-    include     proxy_params;
-    proxy_pass  $internalUrl/api/csp/csp-report;
   }
 
   # Fox X-Accel-Redirect to S3
