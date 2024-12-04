@@ -418,7 +418,7 @@ export class Fixture {
     initial: SemiPartial<DevBackupCare, 'childId' | 'unitId'>
   ): BackupCareBuilder {
     return new BackupCareBuilder({
-      id: uuidv4(),
+      id: randomId(),
       groupId: null,
       period: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
