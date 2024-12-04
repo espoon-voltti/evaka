@@ -75,7 +75,6 @@ object Imports {
 // For others, a strict type is generated: `type FooId = Id<'Foo'>`.
 val lenientIdTypes =
     setOf(
-        DatabaseTable.AssistanceActionOption::class,
         DatabaseTable.AssistanceFactor::class,
         DatabaseTable.AssistanceNeedDecision::class,
         DatabaseTable.AssistanceNeedDecisionGuardian::class,
