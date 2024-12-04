@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
+import expressBasicAuth from 'express-basic-auth'
 
 import { enduserGwRouter } from './enduser/app.js'
 import { internalGwRouter } from './internal/app.js'
-import { appCommit, Config } from './shared/config.js'
+import { integrationUserHeader } from './shared/auth/index.js'
+import { appCommit, Config, titaniaConfig } from './shared/config.js'
 import { cacheControl } from './shared/middleware/cache-control.js'
 import { errorHandler } from './shared/middleware/error-handler.js'
+import { createProxy } from './shared/proxy-utils.js'
 import { RedisClient } from './shared/redis-client.js'
 import { handleCspReport } from './shared/routes/csp.js'
 import { sessionSupport } from './shared/session.js'
@@ -18,6 +21,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.use((req, _, next) => {
     if (req.url === '/application/version' || req.url === '/internal/version') {
       req.url = '/version'
+    } else if (req.url.startsWith('/internal/integration/')) {
+      req.url = req.url.replace('/internal/integration/', '/integration/')
     }
     next()
   })
@@ -53,6 +58,17 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.use(
     '/internal',
     internalGwRouter(config, redisClient, { internalSessions })
+  )
+
+  const integrationUsers = {
+    ...(titaniaConfig && {
+      [titaniaConfig.username]: titaniaConfig.password
+    })
+  }
+  router.all(
+    '/integration/*',
+    expressBasicAuth({ users: integrationUsers }),
+    createProxy({ getUserHeader: (_) => integrationUserHeader })
   )
 
   // global error middleware
