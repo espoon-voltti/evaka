@@ -20,14 +20,12 @@ data class VtjPersonDTO(
     val restrictedDetailsEndDate: LocalDate?,
     val streetAddress: String,
     val postalCode: String,
-
-    // TODO: this should be postOffice
-    val city: String,
+    val postOffice: String,
     val residenceCode: String,
     val children: List<VtjPersonDTO> = listOf(),
     val guardians: List<VtjPersonDTO> = listOf(),
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
     val streetAddressSe: String,
-    val citySe: String,
+    val postOfficeSe: String,
 )
