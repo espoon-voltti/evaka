@@ -21,9 +21,9 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -183,7 +183,7 @@ export default React.memo(function ApplicationEditView({
     (
       file: File,
       onUploadProgress: (percentage: number) => void
-    ): Promise<Result<UUID>> =>
+    ): Promise<Result<AttachmentId>> =>
       saveApplicationAttachment(
         application.id,
         file,
@@ -214,7 +214,7 @@ export default React.memo(function ApplicationEditView({
         return res
       })
 
-  const onDeleteAttachment = (id: UUID) =>
+  const onDeleteAttachment = (id: AttachmentId) =>
     deleteAttachmentResult({ attachmentId: id }).then((res) => {
       if (res.isSuccess) {
         setApplication(

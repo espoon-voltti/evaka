@@ -19,6 +19,7 @@ import {
   IncomeTypeOptions,
   IncomeValue
 } from 'lib-common/generated/api-types/invoicing'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -460,7 +461,7 @@ function IncomeAttachments({
   )
 
   const handleDelete = useCallback(
-    async (id: UUID) =>
+    async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),

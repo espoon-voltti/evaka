@@ -9,6 +9,8 @@ import styled from 'styled-components'
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -39,7 +41,7 @@ const fileUploadErrorKeys = {
 type FileUploadError = keyof typeof fileUploadErrorKeys
 
 interface FileObject extends Attachment {
-  key: number
+  key: string
   file: File | undefined
   error: FileUploadError | undefined
   /**
@@ -79,8 +81,8 @@ interface FileUploadProps {
   onUpload: (
     file: File,
     onUploadProgress: (percentage: number) => void
-  ) => Promise<Result<UUID>>
-  onDelete: (id: UUID) => Promise<Result<void>>
+  ) => Promise<Result<AttachmentId>>
+  onDelete: (id: AttachmentId) => Promise<Result<void>>
   onStateChange?: (status: UploadStatus) => void
   getDownloadUrl: (id: UUID, fileName: string) => string
   disabled?: boolean
@@ -252,7 +254,7 @@ const ProgressBarError = styled.div`
 const attachmentToFile = (attachment: Attachment): FileObject => ({
   id: attachment.id,
   file: undefined,
-  key: Math.random(),
+  key: attachment.id,
   name: attachment.name,
   contentType: attachment.contentType,
   progress: 100,
@@ -395,12 +397,12 @@ export default React.memo(function FileUpload({
     onUpload: (
       file: File,
       onUploadProgress: (percentage: number) => void
-    ) => Promise<Result<UUID>>
+    ) => Promise<Result<AttachmentId>>
   ) => {
     const error = file.size > MAX_ATTACHMENT_SIZE ? 'FILE_TOO_LARGE' : undefined
-    const pseudoId = Math.random()
+    const pseudoId = randomId<AttachmentId>()
     const fileObject: FileObject = {
-      id: pseudoId.toString(),
+      id: pseudoId,
       key: pseudoId,
       file,
       name: file.name,

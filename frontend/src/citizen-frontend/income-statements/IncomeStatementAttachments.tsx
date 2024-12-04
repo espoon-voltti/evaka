@@ -6,6 +6,7 @@ import React, { useCallback } from 'react'
 
 import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -57,7 +58,7 @@ export default React.memo(function Attachments({
   )
 
   const handleDelete = useCallback(
-    async (id: UUID) =>
+    async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),

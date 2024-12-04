@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 
 export interface Attachment {
-  id: UUID
+  id: AttachmentId
   name: string
   contentType: string
 }

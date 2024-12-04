@@ -5,10 +5,13 @@
 import React from 'react'
 
 import { Result, wrapResult } from 'lib-common/api'
+import {
+  ApplicationId,
+  AttachmentId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -44,7 +47,7 @@ export default React.memo(function PreferredStartSubSection({
   verificationRequested,
   terms
 }: ServiceNeedSectionProps) {
-  const { applicationId } = useRouteParams(['applicationId'])
+  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const t = useTranslation()
   const [lang] = useLang()
   const labelId = useUniqueId()
@@ -52,7 +55,7 @@ export default React.memo(function PreferredStartSubSection({
   const uploadUrgencyAttachment = (
     file: File,
     onUploadProgress: (percentage: number) => void
-  ): Promise<Result<UUID>> =>
+  ): Promise<Result<AttachmentId>> =>
     saveApplicationAttachment(
       applicationId,
       file,
@@ -79,7 +82,7 @@ export default React.memo(function PreferredStartSubSection({
       return result
     })
 
-  const deleteUrgencyAttachment = (id: UUID) =>
+  const deleteUrgencyAttachment = (id: AttachmentId) =>
     deleteAttachmentResult({ attachmentId: id }).then((result) => {
       if (result.isSuccess) {
         updateFormData({
