@@ -1179,7 +1179,7 @@ export class Fixture {
     initial: SemiPartial<AssistanceNeedVoucherCoefficient, 'childId'>
   ): AssistanceNeedVoucherCoefficientBuilder {
     return new AssistanceNeedVoucherCoefficientBuilder({
-      id: uuidv4(),
+      id: randomId(),
       validityPeriod: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
