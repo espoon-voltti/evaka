@@ -10,7 +10,7 @@ import { JsonOf } from '../../json'
 
 export type ApplicationId = Id<'Application'>
 
-export type ApplicationNoteId = string
+export type ApplicationNoteId = Id<'ApplicationNote'>
 
 export type ArchivedProcessId = string
 
