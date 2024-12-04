@@ -15,8 +15,9 @@ import {
   AssistanceNeedPreschoolDecision,
   AssistanceNeedPreschoolDecisionResponse
 } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -246,7 +247,8 @@ const DecisionView = React.memo(function DecisionView({
 
 export default React.memo(
   function AssistanceNeedDecisionsReportPreschoolDecision() {
-    const { decisionId } = useRouteParams(['decisionId'])
+    const decisionId =
+      useIdRouteParam<AssistanceNeedPreschoolDecisionId>('decisionId')
     const decisionResult = useQueryResult(
       assistanceNeedPreschoolDecisionQuery({ id: decisionId })
     )
