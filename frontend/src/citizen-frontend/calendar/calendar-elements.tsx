@@ -50,13 +50,16 @@ export const Reservations = React.memo(function Reservations({
       reservationsAndAttendancesDiffer(reservations, attendances)
   )
 
+  const isToday = data.date.isToday()
+
   const groupedChildren = useMemo(
     () =>
       groupChildren({
         children: data.children,
-        i18n
+        i18n,
+        isToday
       }),
-    [data.children, i18n]
+    [data.children, i18n, isToday]
   )
 
   return data.children.length === 0 && data.holiday ? (
@@ -118,6 +121,7 @@ const GroupedElementText = styled.div<{
   $clamp?: boolean
 }>`
   word-break: break-word;
+  white-space: pre-wrap;
   ${(p) =>
     p.$clamp &&
     css`
@@ -175,10 +179,12 @@ const absenceElementType = (absence: AbsenceInfo) =>
 
 const groupChildren = ({
   children,
-  i18n
+  i18n,
+  isToday
 }: {
   children: ReservationResponseDayChild[]
   i18n: Translations
+  isToday: boolean
 }): GroupedDailyChildren[] =>
   Object.entries(
     groupBy(
@@ -193,11 +199,32 @@ const groupChildren = ({
           }
         }
 
+        const [withTimes, withoutTimes] = partition(
+          child.reservations,
+          reservationHasTimes
+        )
+
+        const reservationsWithTimesText = withTimes
+          .map((reservation) =>
+            formatReservation(reservation, child.reservableTimeRange, i18n)
+          )
+          .join(', ')
+
         if (child.attendances.length > 0) {
+          const attendanceText = child.attendances
+            .map((a) => a.format())
+            .join(', ')
+          const attendancesWithReservationsText =
+            attendanceText +
+            (isToday &&
+            child.usedService !== null &&
+            reservationsWithTimesText.length > 0
+              ? `\n(${reservationsWithTimesText})`
+              : '')
           return {
             childId: child.childId,
             type: 'attendance',
-            text: child.attendances.map((a) => a.format()).join(', ')
+            text: attendancesWithReservationsText
           }
         }
 
@@ -211,11 +238,6 @@ const groupChildren = ({
         }
 
         if (child.reservations.length > 0) {
-          const [withTimes, withoutTimes] = partition(
-            child.reservations,
-            reservationHasTimes
-          )
-
           if (withoutTimes.length > 0) {
             // In theory, we could have reservations with and without times, but in practice this shouldn't happen
             return {
@@ -228,11 +250,7 @@ const groupChildren = ({
           return {
             childId: child.childId,
             type: 'reservation',
-            text: withTimes
-              .map((reservation) =>
-                formatReservation(reservation, child.reservableTimeRange, i18n)
-              )
-              .join(', ')
+            text: reservationsWithTimesText
           }
         }
 
