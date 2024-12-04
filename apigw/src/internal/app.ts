@@ -14,7 +14,6 @@ import {
   enableDevApi,
   titaniaConfig
 } from '../shared/config.js'
-import { cacheControl } from '../shared/middleware/cache-control.js'
 import { csrf } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import { createProxy } from '../shared/proxy-utils.js'
@@ -49,13 +48,6 @@ export function internalGwRouter(
   // middlewares
   router.use(sessions.middleware)
   router.use(cookieParser(config.employee.cookieSecret))
-  router.use(
-    cacheControl((req) =>
-      req.path.startsWith('/employee-mobile/child-images/')
-        ? 'allow-cache'
-        : 'forbid-cache'
-    )
-  )
   router.use(checkMobileEmployeeIdToken(sessions, redisClient))
 
   router.get('/version', (_, res) => {

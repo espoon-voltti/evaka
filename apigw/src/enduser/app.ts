@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser'
 import express from 'express'
 
 import { appCommit, Config } from '../shared/config.js'
-import { cacheControl } from '../shared/middleware/cache-control.js'
 import { csrf } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import { createProxy } from '../shared/proxy-utils.js'
@@ -36,13 +35,6 @@ export function enduserGwRouter(
   // middlewares
   router.use(sessions.middleware)
   router.use(cookieParser())
-  router.use(
-    cacheControl((req) =>
-      req.path.startsWith('/citizen/child-images/')
-        ? 'allow-cache'
-        : 'forbid-cache'
-    )
-  )
 
   router.get('/version', (_, res) => {
     res.send({ commitId: appCommit })
