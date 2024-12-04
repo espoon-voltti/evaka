@@ -382,7 +382,11 @@ class AttendanceReservationController(
                                     placement.type.scheduleType(date, clubTerms, preschoolTerms),
                                 reservations = reservationTimes,
                                 absenceType =
-                                    if (isFullDayAbsent) daysAbsences.firstOrNull()?.absenceType
+                                    if (isFullDayAbsent)
+                                        (daysAbsences.firstOrNull {
+                                                it.category == AbsenceCategory.BILLABLE
+                                            } ?: absences.firstOrNull())
+                                            ?.absenceType
                                     else null,
                                 dailyServiceTimes = dailyServiceTime?.times,
                             )
