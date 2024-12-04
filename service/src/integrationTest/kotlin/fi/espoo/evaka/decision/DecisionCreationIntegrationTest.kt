@@ -399,6 +399,85 @@ WHERE id = ${bind(testDaycare.id)}
     }
 
     @Test
+    fun `other guardian in different address as guardian sees decision but can't decide`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                period = period,
+                adult = testAdult_6,
+                child = testChild_6,
+            )
+        checkDecisionDrafts(
+            applicationId,
+            adult = testAdult_6,
+            child = testChild_6,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true,
+                    )
+                ),
+            otherGuardian = testAdult_5,
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        val otherGuardian = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
+        val otherGuardianWeak = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.WEAK)
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                otherGuardian,
+                RealEvakaClock(),
+            )
+        assertEquals(0, notificationCount)
+
+        val notificationCountAsWeak =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                otherGuardianWeak,
+                RealEvakaClock(),
+            )
+        assertEquals(0, notificationCountAsWeak)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+        assertEquals(
+            citizenDecisions,
+            ApplicationDecisions(
+                decisions =
+                    listOf(
+                        DecisionSummary(
+                            id = createdDecisions[0].id,
+                            applicationId = applicationId,
+                            childId = testChild_6.id,
+                            type = DecisionType.DAYCARE,
+                            status = DecisionStatus.PENDING,
+                            sentDate = LocalDate.now(),
+                            resolved = null,
+                        )
+                    ),
+                permittedActions =
+                    mapOf(
+                        createdDecisions[0].id to
+                            setOf(
+                                Action.Citizen.Decision.READ,
+                                Action.Citizen.Decision.DOWNLOAD_PDF,
+                            )
+                    ),
+                decidableApplications = emptySet(),
+            ),
+        )
+    }
+
+    @Test
     fun `other guardian in different address as child sees decision but can't decide`() {
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
@@ -470,7 +549,7 @@ WHERE id = ${bind(testDaycare.id)}
     }
 
     @Test
-    fun `other guardian in the same address as child sees decision and can decide`() {
+    fun `other guardian in the same address sees decision and can decide`() {
         db.transaction { tx ->
             listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_1, DevPersonType.CHILD)

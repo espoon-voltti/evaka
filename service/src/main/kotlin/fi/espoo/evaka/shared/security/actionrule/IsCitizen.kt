@@ -408,14 +408,15 @@ AND (
             )
         }
 
-    fun otherGuardianOfApplicationAndLivesInTheSameAddressAsChild() =
+    fun otherGuardianOfApplicationAndLivesInTheSameAddress() =
         rule<ApplicationId> { citizenId, now ->
             sql(
                 """
 SELECT a.id
 FROM application a
 JOIN application_other_guardian aog ON a.id = aog.application_id
-JOIN person guardian ON aog.guardian_id = guardian.id
+JOIN person other_guardian ON aog.guardian_id = other_guardian.id
+JOIN person guardian ON a.guardian_id = guardian.id
 JOIN person child ON a.child_id = child.id
 WHERE aog.guardian_id = ${bind(citizenId)}
 AND allow_other_guardian_access IS TRUE
@@ -423,18 +424,30 @@ AND (
     EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
     OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
 )
+AND NOT other_guardian.restricted_details_enabled
 AND NOT guardian.restricted_details_enabled
 AND NOT child.restricted_details_enabled
 AND (
-    (trim(guardian.residence_code) != '' AND
-     trim(child.residence_code) != '' AND
-     guardian.residence_code = child.residence_code) OR
-    (trim(guardian.street_address) != '' AND
-     trim(child.street_address) != '' AND
+    (trim(other_guardian.residence_code) != '' AND
+     trim(guardian.residence_code) != '' AND
+     other_guardian.residence_code = guardian.residence_code) OR
+    (trim(other_guardian.street_address) != '' AND
+     trim(guardian.street_address) != '' AND
+     trim(other_guardian.postal_code) != '' AND
      trim(guardian.postal_code) != '' AND
+     lower(other_guardian.street_address) = lower(guardian.street_address) AND
+     other_guardian.postal_code = guardian.postal_code)
+)
+AND (
+    (trim(other_guardian.residence_code) != '' AND
+     trim(child.residence_code) != '' AND
+     other_guardian.residence_code = child.residence_code) OR
+    (trim(other_guardian.street_address) != '' AND
+     trim(child.street_address) != '' AND
+     trim(other_guardian.postal_code) != '' AND
      trim(child.postal_code) != '' AND
-     lower(guardian.street_address) = lower(child.street_address) AND
-     guardian.postal_code = child.postal_code)
+     lower(other_guardian.street_address) = lower(child.street_address) AND
+     other_guardian.postal_code = child.postal_code)
 )
 """
             )
