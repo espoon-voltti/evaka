@@ -8,26 +8,18 @@ import express from 'express'
 import helmet from 'helmet'
 import * as redis from 'redis'
 
-import { enduserGwRouter } from './enduser/app.js'
-import { internalGwRouter } from './internal/app.js'
-import {
-  appCommit,
-  configFromEnv,
-  httpPort,
-  toRedisClientOpts
-} from './shared/config.js'
+import { apiRouter } from './app.js'
+import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
 import {
   logError,
   loggingMiddleware,
   logInfo,
   logWarn
 } from './shared/logging.js'
-import { cacheControl } from './shared/middleware/cache-control.js'
 import { fallbackErrorHandler } from './shared/middleware/error-handler.js'
 import tracing from './shared/middleware/tracing.js'
 import { assertRedisConnection } from './shared/redis-client.js'
 import { trustReverseProxy } from './shared/reverse-proxy.js'
-import { handleCspReport } from './shared/routes/csp.js'
 
 const config = configFromEnv()
 
@@ -70,36 +62,7 @@ app.get('/health', (_, res) => {
 })
 app.use(tracing)
 app.use(loggingMiddleware)
-
-app.use((req, _, next) => {
-  if (
-    req.url === '/api/application/version' ||
-    req.url === '/api/internal/version'
-  ) {
-    req.url = '/api/version'
-  }
-  next()
-})
-app.use(
-  cacheControl((req) =>
-    req.path.startsWith('/api/application/citizen/child-images/') ||
-    req.path.startsWith('/api/internal/employee-mobile/child-images/')
-      ? 'allow-cache'
-      : 'forbid-cache'
-  )
-)
-
-app.post(
-  '/api/csp/report',
-  express.json({ type: 'application/csp-report' }),
-  handleCspReport
-)
-app.get('/api/version', (_, res) => {
-  res.send({ commitId: appCommit })
-})
-
-app.use('/api/application', enduserGwRouter(config, redisClient))
-app.use('/api/internal', internalGwRouter(config, redisClient))
+app.use('/api/', apiRouter(config, redisClient))
 app.use(fallbackErrorHandler)
 
 const server = app.listen(httpPort, () =>
