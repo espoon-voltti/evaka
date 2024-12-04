@@ -227,7 +227,7 @@ class FeeDecisionController(
                     Action.FeeDecision.UPDATE,
                     feeDecisionIds,
                 )
-                service.setSent(it, clock, feeDecisionIds)
+                service.setManuallySent(it, clock, user, feeDecisionIds)
                 // emails should be sent only after decisions are actually visible to citizens in
                 // eVaka
                 asyncJobRunner.plan(
