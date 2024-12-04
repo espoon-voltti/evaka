@@ -21,7 +21,7 @@ import { fallbackErrorHandler } from './shared/middleware/error-handler.js'
 import tracing from './shared/middleware/tracing.js'
 import { assertRedisConnection } from './shared/redis-client.js'
 import { trustReverseProxy } from './shared/reverse-proxy.js'
-import csp from './shared/routes/csp.js'
+import { handleCspReport } from './shared/routes/csp.js'
 
 const config = configFromEnv()
 
@@ -65,8 +65,12 @@ app.get('/health', (_, res) => {
 app.use(tracing)
 app.use(loggingMiddleware)
 
+app.post(
+  '/api/csp/report',
+  express.json({ type: 'application/csp-report' }),
+  handleCspReport
+)
 app.use('/api/application', enduserGwRouter(config, redisClient))
-app.use('/api/csp', csp)
 app.use('/api/internal', internalGwRouter(config, redisClient))
 app.use(fallbackErrorHandler)
 
