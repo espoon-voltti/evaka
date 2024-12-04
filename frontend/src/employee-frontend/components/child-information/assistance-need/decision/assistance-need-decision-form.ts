@@ -11,7 +11,7 @@ import {
 import { Result, wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import {
@@ -39,12 +39,15 @@ export type AssistanceNeedDecisionInfo = {
 }
 
 export function useAssistanceNeedDecision(
-  id: UUID
+  id: AssistanceNeedDecisionId
 ): AssistanceNeedDecisionInfo {
   const [formState, setFormState] = useState<AssistanceNeedDecisionForm>()
 
   const getSaveParameters = useCallback(
-    () => [id, formState] as [id: string, data: AssistanceNeedDecisionForm],
+    (): [AssistanceNeedDecisionId, AssistanceNeedDecisionForm] => [
+      id,
+      formState!
+    ],
     [id, formState]
   )
 
@@ -67,7 +70,10 @@ export function useAssistanceNeedDecision(
   const { status, setDirty, forceSave } = useAutosave({
     load: loadDecision,
     onLoaded: setFormState,
-    save: (id: UUID, decision: AssistanceNeedDecisionForm) =>
+    save: (
+      id: AssistanceNeedDecisionId,
+      decision: AssistanceNeedDecisionForm
+    ) =>
       updateAssistanceNeedDecisionResult({ id, body: { decision } }).then(
         (result) =>
           reloadDecisionMakerOptions()

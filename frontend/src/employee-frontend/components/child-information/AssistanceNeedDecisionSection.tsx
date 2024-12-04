@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -69,7 +70,8 @@ export default React.memo(function AssistanceNeedDecisionSection({
 
   const [isCreatingDecision, setIsCreatingDecision] = useState(false)
 
-  const [removingDecision, setRemovingDecision] = useState<UUID>()
+  const [removingDecision, setRemovingDecision] =
+    useState<AssistanceNeedDecisionId>()
 
   return (
     <div ref={refSectionTop}>
@@ -229,7 +231,7 @@ const DeleteDecisionModal = React.memo(function DeleteDecisionModal({
   onClose
 }: {
   childId: UUID
-  decisionId: UUID
+  decisionId: AssistanceNeedDecisionId
   onClose: (shouldRefresh: boolean) => void
 }) {
   const { i18n } = useTranslation()

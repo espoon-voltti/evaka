@@ -15,8 +15,8 @@ import {
   AssistanceNeedDecision,
   AssistanceNeedDecisionStatus
 } from 'lib-common/generated/api-types/assistanceneed'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -81,7 +81,7 @@ const DangerAsyncButton = styled(AsyncButton)`
 `
 
 export default React.memo(function AssistanceNeedDecisionsReportDecision() {
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<AssistanceNeedDecisionId>('id')
   const navigate = useNavigate()
 
   const [assistanceNeedDecision, reloadDecision] = useApiState(
@@ -303,7 +303,7 @@ const DecisionModal = React.memo(function DecisionModal({
   onFailed,
   decisionStatus
 }: {
-  decisionId: UUID
+  decisionId: AssistanceNeedDecisionId
   onClose: (shouldRefresh: boolean) => void
   onFailed: () => void
   decisionStatus: DecisionStatus
@@ -378,7 +378,7 @@ const AnnulModal = React.memo(function AnnulModal({
   decisionId,
   onClose
 }: {
-  decisionId: UUID
+  decisionId: AssistanceNeedDecisionId
   onClose: (shouldRefresh: boolean) => void
 }) {
   const { i18n } = useTranslation()
@@ -423,7 +423,7 @@ const MismatchDecisionMakerModal = React.memo(
     decisionId,
     onClose
   }: {
-    decisionId: UUID
+    decisionId: AssistanceNeedDecisionId
     onClose: () => void
   }) {
     const { i18n } = useTranslation()
