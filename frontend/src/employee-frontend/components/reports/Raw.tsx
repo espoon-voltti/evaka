@@ -140,7 +140,7 @@ export default React.memo(function Raw() {
                 { label: 'Ikä', key: 'age' },
                 { label: 'Kieli', key: 'language' },
                 { label: 'Postinumero', key: 'postalCode' },
-                { label: 'Kotikunta', key: 'postOffice' },
+                { label: 'Postitoimipaikka', key: 'postOffice' },
                 { label: 'Sijoitustyyppi', key: 'placementType' },
                 { label: 'Sijoitettu yksikköön', key: 'unitId' },
                 { label: 'Yksikkö', key: 'unitName' },

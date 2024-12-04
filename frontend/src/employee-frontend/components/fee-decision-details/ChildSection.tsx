@@ -54,7 +54,7 @@ const ChildSection = React.memo(function ChildSection({
             value: child.ssn
           },
           {
-            label: i18n.feeDecision.form.child.city,
+            label: i18n.feeDecision.form.child.postOffice,
             value: child.postOffice
           },
           {
