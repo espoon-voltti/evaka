@@ -111,4 +111,156 @@ describe('Assistance need and actions report', () => {
         'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5'
       )
   })
+  test('Counts actions only if child has selected assistance', async () => {
+    const validDuring = new FiniteDateRange(mockedTime, mockedTime)
+
+    await Fixture.daycareAssistance({
+      childId,
+      validDuring,
+      level: 'GENERAL_SUPPORT'
+    }).save()
+    await Fixture.preschoolAssistance({
+      childId,
+      validDuring,
+      level: 'INTENSIFIED_SUPPORT'
+    }).save()
+    await Fixture.assistanceActionOption({
+      value: 'ASSISTANCE_SERVICE_CHILD'
+    }).save()
+    await Fixture.assistanceAction({
+      childId,
+      updatedBy: admin.id,
+      startDate: validDuring.start,
+      endDate: validDuring.end,
+      actions: ['ASSISTANCE_SERVICE_CHILD']
+    }).save()
+
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-needs-and-actions`
+    )
+    const report = new AssistanceNeedsAndActionsReport(page)
+
+    await report.typeSelect.fillAndSelectFirst('esiopetuksessa')
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0')
+    await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
+      'Tehostettu tuki'
+    )
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0')
+    await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
+      'Tehostettu tuki'
+    )
+    await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
+      'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
+    )
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0')
+
+    await report.typeSelect.fillAndSelectFirst('varhaiskasvatuksessa')
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0')
+    await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
+      'Yleinen tuki, ei päätöstä'
+    )
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0')
+    await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
+      'Yleinen tuki, ei päätöstä'
+    )
+    await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
+      'Yleinen tuki, päätös tukipalveluista'
+    )
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0')
+  })
+  test('Shows actions only if child has selected assistance', async () => {
+    const validDuring = new FiniteDateRange(mockedTime, mockedTime)
+
+    await Fixture.daycareAssistance({
+      childId,
+      validDuring,
+      level: 'GENERAL_SUPPORT'
+    }).save()
+    await Fixture.preschoolAssistance({
+      childId,
+      validDuring,
+      level: 'INTENSIFIED_SUPPORT'
+    }).save()
+    await Fixture.assistanceActionOption({
+      value: 'ASSISTANCE_SERVICE_CHILD'
+    }).save()
+    await Fixture.assistanceAction({
+      childId,
+      updatedBy: admin.id,
+      startDate: validDuring.start,
+      endDate: validDuring.end,
+      actions: ['ASSISTANCE_SERVICE_CHILD']
+    }).save()
+
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-needs-and-actions`
+    )
+    const report = new AssistanceNeedsAndActionsReport(page)
+    await report.selectCareAreaFilter('Superkeskus')
+    await report.unitSelect.fillAndSelectFirst('Alkuräjähdyksen päiväkoti')
+
+    await report.typeSelect.fillAndSelectFirst('esiopetuksessa')
+    await report.childRows
+      .nth(0)
+      .assertTextEquals(
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t1'
+      )
+    await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
+      'Tehostettu tuki'
+    )
+    await report.childRows
+      .nth(0)
+      .assertTextEquals(
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t1'
+      )
+    await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
+      'Tehostettu tuki'
+    )
+    await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
+      'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
+    )
+    await report.childRows
+      .nth(0)
+      .assertTextEquals(
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t1'
+      )
+
+    await report.typeSelect.fillAndSelectFirst('varhaiskasvatuksessa')
+    await report.childRows
+      .nth(0)
+      .assertTextEquals(
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t1'
+      )
+    await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
+      'Yleinen tuki, ei päätöstä'
+    )
+    await report.childRows
+      .nth(0)
+      .assertTextEquals(
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t1'
+      )
+    await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
+      'Yleinen tuki, ei päätöstä'
+    )
+    await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
+      'Yleinen tuki, päätös tukipalveluista'
+    )
+    await report.childRows
+      .nth(0)
+      .assertTextEquals(
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t1'
+      )
+  })
 })
