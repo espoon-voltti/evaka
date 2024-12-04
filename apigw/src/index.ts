@@ -10,7 +10,12 @@ import * as redis from 'redis'
 
 import { enduserGwRouter } from './enduser/app.js'
 import { internalGwRouter } from './internal/app.js'
-import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
+import {
+  appCommit,
+  configFromEnv,
+  httpPort,
+  toRedisClientOpts
+} from './shared/config.js'
 import {
   logError,
   loggingMiddleware,
@@ -65,6 +70,16 @@ app.get('/health', (_, res) => {
 })
 app.use(tracing)
 app.use(loggingMiddleware)
+
+app.use((req, _, next) => {
+  if (
+    req.url === '/api/application/version' ||
+    req.url === '/api/internal/version'
+  ) {
+    req.url = '/api/version'
+  }
+  next()
+})
 app.use(
   cacheControl((req) =>
     req.path.startsWith('/api/application/citizen/child-images/') ||
@@ -79,6 +94,9 @@ app.post(
   express.json({ type: 'application/csp-report' }),
   handleCspReport
 )
+app.get('/api/version', (_, res) => {
+  res.send({ commitId: appCommit })
+})
 
 app.use('/api/application', enduserGwRouter(config, redisClient))
 app.use('/api/internal', internalGwRouter(config, redisClient))

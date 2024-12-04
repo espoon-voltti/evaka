@@ -8,12 +8,7 @@ import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
 import { integrationUserHeader } from '../shared/auth/index.js'
-import {
-  appCommit,
-  Config,
-  enableDevApi,
-  titaniaConfig
-} from '../shared/config.js'
+import { Config, enableDevApi, titaniaConfig } from '../shared/config.js'
 import { csrf } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import { createProxy } from '../shared/proxy-utils.js'
@@ -49,10 +44,6 @@ export function internalGwRouter(
   router.use(sessions.middleware)
   router.use(cookieParser(config.employee.cookieSecret))
   router.use(checkMobileEmployeeIdToken(sessions, redisClient))
-
-  router.get('/version', (_, res) => {
-    res.send({ commitId: appCommit })
-  })
 
   router.all('/system/*', (_, res) => res.sendStatus(404))
 
