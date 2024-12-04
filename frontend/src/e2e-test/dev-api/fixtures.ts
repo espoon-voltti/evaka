@@ -1130,7 +1130,7 @@ export class Fixture {
     initial: SemiPartial<DevAssistanceAction, 'childId' | 'updatedBy'>
   ): AssistanceActionBuilder {
     return new AssistanceActionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       actions: ['ASSISTANCE_SERVICE_CHILD'],
       endDate: LocalDate.todayInSystemTz(),
       startDate: LocalDate.todayInSystemTz(),
