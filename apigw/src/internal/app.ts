@@ -45,8 +45,6 @@ export function internalGwRouter(
   router.use(cookieParser(config.employee.cookieSecret))
   router.use(checkMobileEmployeeIdToken(sessions, redisClient))
 
-  router.all('/system/*', (_, res) => res.sendStatus(404))
-
   const integrationUsers = {
     ...(titaniaConfig && {
       [titaniaConfig.username]: titaniaConfig.password
