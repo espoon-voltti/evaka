@@ -5,10 +5,8 @@
 import { SAML } from '@node-saml/node-saml'
 import cookieParser from 'cookie-parser'
 import express from 'express'
-import expressBasicAuth from 'express-basic-auth'
 
-import { integrationUserHeader } from '../shared/auth/index.js'
-import { Config, enableDevApi, titaniaConfig } from '../shared/config.js'
+import { Config, enableDevApi } from '../shared/config.js'
 import { csrf } from '../shared/middleware/csrf.js'
 import { createProxy } from '../shared/proxy-utils.js'
 import { RedisClient } from '../shared/redis-client.js'
@@ -44,17 +42,6 @@ export function internalGwRouter(
   router.use(internalSessions.middleware)
   router.use(cookieParser(config.employee.cookieSecret))
   router.use(checkMobileEmployeeIdToken(internalSessions, redisClient))
-
-  const integrationUsers = {
-    ...(titaniaConfig && {
-      [titaniaConfig.username]: titaniaConfig.password
-    })
-  }
-  router.use('/integration', expressBasicAuth({ users: integrationUsers }))
-  router.all(
-    '/integration/*',
-    createProxy({ getUserHeader: (_) => integrationUserHeader })
-  )
 
   router.all('/auth/*', (req: express.Request, res, next) => {
     if (req.session?.idpProvider === 'evaka') {
