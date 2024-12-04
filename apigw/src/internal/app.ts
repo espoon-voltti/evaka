@@ -10,7 +10,6 @@ import expressBasicAuth from 'express-basic-auth'
 import { integrationUserHeader } from '../shared/auth/index.js'
 import { Config, enableDevApi, titaniaConfig } from '../shared/config.js'
 import { csrf } from '../shared/middleware/csrf.js'
-import { errorHandler } from '../shared/middleware/error-handler.js'
 import { createProxy } from '../shared/proxy-utils.js'
 import { RedisClient } from '../shared/redis-client.js'
 import createSamlRouter from '../shared/routes/saml.js'
@@ -140,8 +139,5 @@ export function internalGwRouter(
   )
   router.all('/employee/*', createProxy({ getUserHeader }))
   router.all('/employee-mobile/*', createProxy({ getUserHeader }))
-
-  // global error middleware
-  router.use(errorHandler(true))
   return router
 }
