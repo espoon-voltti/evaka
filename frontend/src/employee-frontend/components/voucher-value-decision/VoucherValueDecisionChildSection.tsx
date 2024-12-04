@@ -52,7 +52,7 @@ export default React.memo(function ChildSection({
             value: child.ssn
           },
           {
-            label: i18n.valueDecision.child.city,
+            label: i18n.valueDecision.child.postOffice,
             value: child.postOffice
           },
           {

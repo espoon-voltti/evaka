@@ -3124,7 +3124,7 @@ export const fi = {
         placementDate: 'Sijoitus voimassa',
         serviceNeed: 'Palveluntarve',
         name: 'Nimi',
-        city: 'Kotikunta'
+        postOffice: 'Postitoimipaikka'
       },
       summary: {
         title: 'Kooste maksupäätöksen perusteista',
@@ -3231,7 +3231,7 @@ export const fi = {
     child: {
       name: 'Nimi',
       ssn: 'Henkilötunnus',
-      city: 'Kotikunta',
+      postOffice: 'Postitoimipaikka',
       placementType: 'Toimintamuoto',
       careArea: 'Palvelualue',
       unit: 'Toimipaikka',
