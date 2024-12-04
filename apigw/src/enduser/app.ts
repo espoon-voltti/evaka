@@ -91,7 +91,7 @@ export function enduserGwRouter(
 
   // public endpoints
   router.all('/citizen/public/*', createProxy({ getUserHeader }))
-  router.use(mapRoutes)
+  router.use('/map-api', mapRoutes)
   router.get('/auth/status', authStatus(sessions))
   router.post(
     '/auth/weak-login',
