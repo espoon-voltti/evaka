@@ -1582,7 +1582,7 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
 
   withGuardian(guardianId: UUID) {
     this.data.form.guardianInfo.push({
-      id: uuidv4(),
+      id: randomId(),
       personId: guardianId,
       name: '',
       isHeard: false,

@@ -33,6 +33,7 @@ import {
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import {
+  AssistanceNeedPreschoolDecisionGuardianId,
   AssistanceNeedPreschoolDecisionId,
   OfficialLanguage
 } from 'lib-common/generated/api-types/shared'
@@ -90,7 +91,7 @@ const SectionSpacer = styled(FixedSpaceColumn).attrs({ spacing: 'L' })``
 const LabeledValue = styled(FixedSpaceColumn).attrs({ spacing: 'xs' })``
 
 const guardianForm = object({
-  id: string(),
+  id: value<AssistanceNeedPreschoolDecisionGuardianId>(),
   name: string(),
   personId: string(),
   isHeard: boolean(),
