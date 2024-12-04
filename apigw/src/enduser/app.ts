@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { SAML } from '@node-saml/node-saml'
-import cookieParser from 'cookie-parser'
 import express from 'express'
 
 import { Config } from '../shared/config.js'
@@ -33,7 +32,6 @@ export function enduserGwRouter(
 
   // middlewares
   router.use(sessions.middleware)
-  router.use(cookieParser())
 
   if (config.sfi.type === 'mock') {
     router.use('/auth/saml', createDevSfiRouter(sessions))
