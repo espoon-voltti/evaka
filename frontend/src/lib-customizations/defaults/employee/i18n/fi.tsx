@@ -4253,6 +4253,28 @@ export const fi = {
       noResponseColumn: 'Ei vastannut',
       moreText: 'lisää',
       showMoreButton: 'Näytä lisää'
+    },
+    tampereRegionalSurvey: {
+      title: 'Tampereen alueen seutuselvitys',
+      description:
+        'Raportti kerää kunnan vuosittaiseen seutuselvitykseen tarvittavat tiedot ladattaviksi CSV-tiedostoiksi',
+      monthlyReport: 'Seutuselvityksen kuukausittaiset määrät',
+      reportLabel: 'Seutuselvitys',
+      columns: {
+        month: 'Kuukausi',
+        municipalOver3FullTimeCount:
+          '3v ja yli lasten määrä kokoaikaisessa varhaiskasvatuksessa',
+        municipalOver3PartTimeCount:
+          '3v ja yli lasten määrä osa-aikaisessa varhaiskasvatuksessa',
+        municipalUnder3FullTimeCount:
+          'Alle 3v lasten määrä kokoaikaisessa varhaiskasvatuksessa',
+        municipalUnder3PartTimeCount:
+          'Alle 3v lasten määrä osa-aikaisessa varhaiskasvatuksessa',
+        familyUnder3Count: 'Alle 3v lasten määrä perhepäivähoidossa',
+        familyOver3Count: '3v ja yli lasten määrä perhepäivähoidossa',
+        municipalShiftCareCount: 'Vuorohoidossa olevien määrä',
+        municipalAssistanceCount: 'Tehostetun ja erityisen tuen lasten määrä'
+      }
     }
   },
   unitEditor: {

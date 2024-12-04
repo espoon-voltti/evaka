@@ -18,6 +18,8 @@ class EspooActionRuleMapping : ActionRuleMapping {
         when (action) {
             Action.Global.SEND_PATU_REPORT,
             Action.Global.SUBMIT_PATU_REPORT -> sequenceOf(HasGlobalRole(UserRole.ADMIN))
+            Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT ->
+                sequenceOf(HasGlobalRole(UserRole.ADMIN))
             else -> action.defaultRules.asSequence()
         }
 
