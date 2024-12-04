@@ -12,7 +12,7 @@ import { RedisClient } from '../shared/redis-client.js'
 import createSamlRouter from '../shared/routes/saml.js'
 import { createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/node-saml-cache-redis.js'
-import { sessionSupport } from '../shared/session.js'
+import { Sessions } from '../shared/session.js'
 
 import { createDevSfiRouter } from './dev-sfi-auth.js'
 import { authenticateKeycloakCitizen } from './keycloak-citizen-saml.js'
@@ -23,21 +23,26 @@ import { authenticateSuomiFi } from './suomi-fi-saml.js'
 
 export function enduserGwRouter(
   config: Config,
-  redisClient: RedisClient
+  redisClient: RedisClient,
+  { citizenSessions }: { citizenSessions: Sessions }
 ): express.Router {
   const router = express.Router()
 
-  const sessions = sessionSupport('enduser', redisClient, config.citizen)
-  const getUserHeader = (req: express.Request) => sessions.getUserHeader(req)
+  const getUserHeader = (req: express.Request) =>
+    citizenSessions.getUserHeader(req)
 
   if (config.sfi.type === 'mock') {
-    router.use('/auth/saml', sessions.middleware, createDevSfiRouter(sessions))
+    router.use(
+      '/auth/saml',
+      citizenSessions.middleware,
+      createDevSfiRouter(citizenSessions)
+    )
   } else if (config.sfi.type === 'saml') {
     router.use(
       '/auth/saml',
-      sessions.middleware,
+      citizenSessions.middleware,
       createSamlRouter({
-        sessions,
+        sessions: citizenSessions,
         strategyName: 'suomifi',
         saml: new SAML(
           createSamlConfig(
@@ -55,9 +60,9 @@ export function enduserGwRouter(
     throw new Error('Missing Keycloak SAML configuration (citizen)')
   router.use(
     '/auth/evaka-customer',
-    sessions.middleware,
+    citizenSessions.middleware,
     createSamlRouter({
-      sessions,
+      sessions: citizenSessions,
       strategyName: 'evaka-customer',
       saml: new SAML(
         createSamlConfig(
@@ -74,25 +79,30 @@ export function enduserGwRouter(
   router.all(
     '/citizen/public/*',
     csrf,
-    sessions.middleware,
+    citizenSessions.middleware,
     createProxy({ getUserHeader })
   )
-  router.use('/map-api', csrf, sessions.middleware, mapRoutes)
-  router.get('/auth/status', csrf, sessions.middleware, authStatus(sessions))
+  router.use('/map-api', csrf, citizenSessions.middleware, mapRoutes)
+  router.get(
+    '/auth/status',
+    csrf,
+    citizenSessions.middleware,
+    authStatus(citizenSessions)
+  )
   router.post(
     '/auth/weak-login',
     csrf,
-    sessions.middleware,
+    citizenSessions.middleware,
     express.json(),
-    authWeakLogin(sessions, redisClient)
+    authWeakLogin(citizenSessions, redisClient)
   )
 
   // authenticated endpoints
   router.all(
     '/citizen/*',
     csrf,
-    sessions.middleware,
-    sessions.requireAuthentication,
+    citizenSessions.middleware,
+    citizenSessions.requireAuthentication,
     createProxy({ getUserHeader })
   )
   return router

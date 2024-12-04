@@ -15,7 +15,7 @@ import { RedisClient } from '../shared/redis-client.js'
 import createSamlRouter from '../shared/routes/saml.js'
 import { createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/node-saml-cache-redis.js'
-import { sessionSupport } from '../shared/session.js'
+import { Sessions } from '../shared/session.js'
 
 import { authenticateAd } from './ad-saml.js'
 import { createDevAdRouter } from './dev-ad-auth.js'
@@ -32,17 +32,18 @@ import authStatus from './routes/auth-status.js'
 
 export function internalGwRouter(
   config: Config,
-  redisClient: RedisClient
+  redisClient: RedisClient,
+  { internalSessions }: { internalSessions: Sessions }
 ): express.Router {
   const router = express.Router()
 
-  const sessions = sessionSupport('employee', redisClient, config.employee)
-  const getUserHeader = (req: express.Request) => sessions.getUserHeader(req)
+  const getUserHeader = (req: express.Request) =>
+    internalSessions.getUserHeader(req)
 
   // middlewares
-  router.use(sessions.middleware)
+  router.use(internalSessions.middleware)
   router.use(cookieParser(config.employee.cookieSecret))
-  router.use(checkMobileEmployeeIdToken(sessions, redisClient))
+  router.use(checkMobileEmployeeIdToken(internalSessions, redisClient))
 
   const integrationUsers = {
     ...(titaniaConfig && {
@@ -63,12 +64,12 @@ export function internalGwRouter(
   })
 
   if (config.ad.type === 'mock') {
-    router.use('/auth/saml', createDevAdRouter(sessions))
+    router.use('/auth/saml', createDevAdRouter(internalSessions))
   } else if (config.ad.type === 'saml') {
     router.use(
       '/auth/saml',
       createSamlRouter({
-        sessions,
+        sessions: internalSessions,
         strategyName: 'ead',
         saml: new SAML(
           createSamlConfig(
@@ -87,7 +88,7 @@ export function internalGwRouter(
   router.use(
     '/auth/evaka',
     createSamlRouter({
-      sessions,
+      sessions: internalSessions,
       strategyName: 'evaka',
       saml: new SAML(
         createSamlConfig(
@@ -109,7 +110,7 @@ export function internalGwRouter(
       })
     )
 
-    router.get('/auth/mobile-e2e-signup', devApiE2ESignup(sessions))
+    router.get('/auth/mobile-e2e-signup', devApiE2ESignup(internalSessions))
   }
 
   // CSRF checks apply to all the API endpoints that frontend uses
@@ -120,22 +121,26 @@ export function internalGwRouter(
   router.all('/employee-mobile/public/*', createProxy({ getUserHeader }))
   router.get(
     '/auth/status',
-    refreshMobileSession(sessions),
-    authStatus(sessions)
+    refreshMobileSession(internalSessions),
+    authStatus(internalSessions)
   )
-  router.post('/auth/mobile', express.json(), mobileDeviceSession(sessions))
+  router.post(
+    '/auth/mobile',
+    express.json(),
+    mobileDeviceSession(internalSessions)
+  )
 
   // authenticated endpoints
-  router.use(sessions.requireAuthentication)
+  router.use(internalSessions.requireAuthentication)
   router.post(
     '/auth/pin-login',
     express.json(),
-    pinLoginRequestHandler(sessions, redisClient)
+    pinLoginRequestHandler(internalSessions, redisClient)
   )
   router.post(
     '/auth/pin-logout',
     express.json(),
-    pinLogoutRequestHandler(sessions, redisClient)
+    pinLogoutRequestHandler(internalSessions, redisClient)
   )
   router.all('/employee/*', createProxy({ getUserHeader }))
   router.all('/employee-mobile/*', createProxy({ getUserHeader }))
