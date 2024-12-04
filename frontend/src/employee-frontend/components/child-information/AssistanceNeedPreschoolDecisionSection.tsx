@@ -7,6 +7,7 @@ import React, { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -47,7 +48,8 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
     assistanceNeedPreschoolDecisionBasicsQuery({ childId })
   )
 
-  const [removingDecision, setRemovingDecision] = useState<UUID>()
+  const [removingDecision, setRemovingDecision] =
+    useState<AssistanceNeedPreschoolDecisionId>()
 
   return (
     <div ref={refSectionTop}>
@@ -139,7 +141,7 @@ const DeleteDecisionModal = React.memo(function DeleteDecisionModal({
   onClose
 }: {
   childId: UUID
-  decisionId: UUID
+  decisionId: AssistanceNeedPreschoolDecisionId
   onClose: () => void
 }) {
   const { i18n } = useTranslation()

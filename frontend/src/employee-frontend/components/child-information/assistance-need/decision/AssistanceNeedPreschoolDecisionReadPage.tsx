@@ -6,9 +6,9 @@ import React from 'react'
 import { useNavigate } from 'react-router'
 
 import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -34,7 +34,7 @@ import {
 const DecisionMetadataSection = React.memo(function DecisionMetadataSection({
   decisionId
 }: {
-  decisionId: UUID
+  decisionId: AssistanceNeedPreschoolDecisionId
 }) {
   const result = useQueryResult(
     assistanceNeedPreschoolDecisionMetadataQuery({ decisionId })
@@ -158,7 +158,8 @@ const DecisionReadView = React.memo(function DecisionReadView({
 })
 
 export default React.memo(function AssistanceNeedPreschoolDecisionReadPage() {
-  const { decisionId } = useRouteParams(['decisionId'])
+  const decisionId =
+    useIdRouteParam<AssistanceNeedPreschoolDecisionId>('decisionId')
   const decisionResult = useQueryResult(
     assistanceNeedPreschoolDecisionQuery({ id: decisionId })
   )
