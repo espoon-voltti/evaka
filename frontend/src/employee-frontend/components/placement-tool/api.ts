@@ -3,19 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 
 import { client } from '../../api/client'
 
 export async function uploadPlacementFile(
   file: File,
   onUploadProgress: (percentage: number) => void
-): Promise<Result<UUID>> {
+): Promise<Result<AttachmentId>> {
   const formData = new FormData()
   formData.append('file', file)
 
   try {
-    const { data } = await client.post<string>(
+    const { data } = await client.post<AttachmentId>(
       '/employee/placement-tool',
       formData,
       {
