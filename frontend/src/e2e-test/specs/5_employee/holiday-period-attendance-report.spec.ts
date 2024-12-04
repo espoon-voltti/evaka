@@ -166,7 +166,7 @@ describe('Holiday period attendance report', () => {
     const report = await navigateToReport(page, admin)
     await report.selectUnit(unit.name)
     await report.selectPeriod(period.period.format())
-    await report.sendQuery()
+    await report.sendButton.click()
 
     const childName = `${child.lastName} ${child.firstName.split(' ')[0]}`
     const childName2 = `${child2.lastName} ${child2.firstName.split(' ')[0]}`
@@ -231,8 +231,8 @@ describe('Holiday period attendance report', () => {
     const report = await navigateToReport(page, admin)
     await report.selectUnit(unit.name)
     await report.selectPeriod(period.period.format())
-    await report.selectGroup(group.name)
-    await report.sendQuery()
+    await report.groupSelector.fillAndSelectFirst(group.name)
+    await report.sendButton.click()
 
     const childName = `${child.lastName} ${child.firstName.split(' ')[0]}`
     const initialExpectation = [

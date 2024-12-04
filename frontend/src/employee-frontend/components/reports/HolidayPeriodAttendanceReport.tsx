@@ -246,7 +246,7 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
         absentCount: row.absentCount,
         noResponseChildren: orderChildren(row.noResponseChildren)
       }))
-      return orderBy(displayRows, ['date'], ['asc'])
+      return orderBy(displayRows, [(r) => r.date], ['asc'])
     }, [reportResult])
     return (
       <>

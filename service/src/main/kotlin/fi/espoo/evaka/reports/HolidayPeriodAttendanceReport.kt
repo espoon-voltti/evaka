@@ -341,24 +341,32 @@ private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForChildren(
     else
         getServiceNeedOccupancyInfoOverRange(
             range,
-            Predicate { where("pl.child_id = ANY (${bind(childIds)})") },
+            placementPred = Predicate { where("pl.child_id = ANY (${bind(childIds)})") },
+            groupsPred = Predicate.alwaysTrue(),
         )
 
 private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForGroups(
     groupIds: Set<GroupId>,
     unitId: DaycareId,
     range: FiniteDateRange,
-): List<ChildServiceNeedOccupancyInfo> {
-    val pred =
-        if (groupIds.isEmpty()) Predicate { where("pl.unit_id = ${bind(unitId)}") }
-        else Predicate { where("dgp.daycare_group_id = ANY (${bind(groupIds)})") }
-
-    return getServiceNeedOccupancyInfoOverRange(range, pred)
-}
+): List<ChildServiceNeedOccupancyInfo> =
+    if (groupIds.isEmpty())
+        getServiceNeedOccupancyInfoOverRange(
+            range,
+            placementPred = Predicate { where("pl.unit_id = ${bind(unitId)}") },
+            groupsPred = Predicate.alwaysTrue(),
+        )
+    else
+        getServiceNeedOccupancyInfoOverRange(
+            range,
+            placementPred = Predicate.alwaysTrue(),
+            groupsPred = Predicate { where("dgp.daycare_group_id = ANY(${bind(groupIds)})") },
+        )
 
 private fun Database.Read.getServiceNeedOccupancyInfoOverRange(
     period: FiniteDateRange,
-    where: Predicate,
+    placementPred: Predicate,
+    groupsPred: Predicate,
 ): List<ChildServiceNeedOccupancyInfo> =
     createQuery {
             sql(
@@ -404,7 +412,8 @@ FROM placement pl
                    ON pl.id = dgp.daycare_placement_id
                        AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(period)}
                        AND (sn.start_date IS NULL OR daterange(dgp.start_date, dgp.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]'))
-WHERE ${predicate(where.forTable(""))}
+WHERE ${predicate(placementPred.forTable("pl"))}
+  AND ${predicate(groupsPred.forTable("dgp"))}
   AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(period)}
         """
             )

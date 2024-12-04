@@ -624,7 +624,13 @@ export class PreschoolApplicationReport {
 }
 
 export class HolidayPeriodAttendanceReport {
-  constructor(private page: Page) {}
+  sendButton: Element
+  groupSelector: MultiSelect
+
+  constructor(private page: Page) {
+    this.sendButton = this.page.findByDataQa('send-button')
+    this.groupSelector = new MultiSelect(this.page.findByDataQa('group-select'))
+  }
 
   async selectUnit(unitName: string) {
     const unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
@@ -634,19 +640,6 @@ export class HolidayPeriodAttendanceReport {
   async selectPeriod(periodRange: string) {
     const unitSelector = new Combobox(this.page.findByDataQa('period-select'))
     await unitSelector.fillAndSelectFirst(periodRange)
-  }
-
-  async selectGroup(groupName: string) {
-    const groupSelector = new MultiSelect(
-      this.page.findByDataQa('group-select')
-    )
-    await groupSelector.fillAndSelectFirst(groupName)
-  }
-
-  async sendQuery() {
-    const sendButton = this.page.findByDataQa('send-button')
-    await sendButton.assertDisabled(false)
-    await sendButton.click()
   }
 
   async assertRows(
