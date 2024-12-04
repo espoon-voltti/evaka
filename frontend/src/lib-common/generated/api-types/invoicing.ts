@@ -37,7 +37,7 @@ export interface CreateRetroactiveFeeDecisionsBody {
 * Generated from fi.espoo.evaka.invoicing.domain.DecisionIncome
 */
 export interface DecisionIncome {
-  data: Record<string, number>
+  data: Partial<Record<string, number>>
   effect: IncomeEffect
   total: number
   totalExpenses: number
@@ -387,7 +387,7 @@ export interface GenerateDecisionsBody {
 export interface Income {
   applicationId: UUID | null
   attachments: IncomeAttachment[]
-  data: Record<string, IncomeValue>
+  data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
   id: UUID
   isEntrepreneur: boolean
@@ -461,7 +461,7 @@ export interface IncomeOption {
 */
 export interface IncomeRequest {
   attachments: IncomeAttachment[]
-  data: Record<string, IncomeValue>
+  data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
   isEntrepreneur: boolean
   notes: string

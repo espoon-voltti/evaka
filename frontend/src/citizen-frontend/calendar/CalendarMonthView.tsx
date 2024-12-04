@@ -93,7 +93,7 @@ export function countEventsForDay(
       daycareEvents.map(
         ({ attendingChildren }) =>
           Object.values(attendingChildren).filter((ac) =>
-            ac.some(({ periods }) => periods.some((p) => p.includes(day)))
+            ac!.some(({ periods }) => periods.some((p) => p.includes(day)))
           ).length
       )
     )
@@ -105,7 +105,7 @@ export function countEventsForDay(
             //(if a reserved time is returned, it belongs to the child)
             acc +
             Object.values(curr.timesByChild).filter((times) =>
-              times.some((t) => t.date.isEqual(day) && t.childId)
+              times!.some((t) => t.date.isEqual(day) && t.childId)
             ).length,
           0
         )

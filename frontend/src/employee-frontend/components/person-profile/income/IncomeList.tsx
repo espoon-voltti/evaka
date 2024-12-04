@@ -31,7 +31,7 @@ interface Props {
   personId: UUID
   incomes: IncomeWithPermittedActions[]
   incomeTypeOptions: IncomeTypeOptions
-  coefficientMultipliers: Record<IncomeCoefficient, number>
+  coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>
   incomeNotifications: IncomeNotification[]
   isRowOpen: (id: IncomeId) => boolean
   toggleRow: (id: IncomeId) => void

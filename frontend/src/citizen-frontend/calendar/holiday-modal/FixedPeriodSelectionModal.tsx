@@ -111,7 +111,7 @@ export default React.memo(function FixedPeriodSelectionModal({
                 <PeriodSelector
                   label={questionnaire.periodOptionLabel[lang]}
                   options={questionnaire.periodOptions}
-                  value={fixedPeriods[child.id]}
+                  value={fixedPeriods[child.id] ?? null}
                   onSelectPeriod={selectPeriod(child.id)}
                 />
               ) : questionnaire.conditions.continuousPlacement ? (

@@ -108,7 +108,7 @@ export default React.memo(function DiscussionReservationModal({
     const eventTimes =
       eventData && childData
         ? orderBy(
-            eventData.timesByChild[childData.id].filter((et) =>
+            eventData.timesByChild[childData.id]?.filter((et) =>
               showModalEventTime(et, today)
             ),
             ['date', 'startTime', 'endTime']

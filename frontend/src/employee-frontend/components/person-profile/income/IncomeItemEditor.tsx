@@ -89,10 +89,10 @@ const emptyIncome: IncomeForm = {
 const calculateAmounts = (
   amount: string,
   coefficient: IncomeCoefficient,
-  multiplier: number
+  multiplier: number | undefined
 ): IncomeValue | undefined => {
   const parsed = parseCents(amount)
-  if (parsed === undefined) return undefined
+  if (parsed === undefined || multiplier === undefined) return undefined
   return {
     amount: parsed,
     coefficient,
@@ -103,7 +103,7 @@ const calculateAmounts = (
 
 function updateIncomeData(
   data: IncomeTableData,
-  coefficientMultipliers: Record<IncomeCoefficient, number>
+  coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>
 ): [IncomeTableData, boolean] {
   let allValid = true
   const result: IncomeTableData = {}
@@ -131,7 +131,7 @@ function updateIncomeData(
 
 function formToIncomeBody(
   form: IncomeForm,
-  coefficientMultipliers: Record<IncomeCoefficient, number>,
+  coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>,
   personId: UUID
 ): IncomeRequest | undefined {
   if (form.validFrom === null) return undefined
@@ -165,7 +165,7 @@ function formToIncomeBody(
 interface CommonProps {
   personId: UUID
   incomeTypeOptions: IncomeTypeOptions
-  coefficientMultipliers: Record<IncomeCoefficient, number>
+  coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>
   cancel: () => void
   onSuccess: () => void
   onFailure: (value: Failure<unknown>) => void

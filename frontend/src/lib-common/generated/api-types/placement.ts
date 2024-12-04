@@ -235,8 +235,8 @@ export type PlacementPlanRejectReason =
 * Generated from fi.espoo.evaka.placement.PlacementResponse
 */
 export interface PlacementResponse {
-  permittedPlacementActions: Record<UUID, Action.Placement[]>
-  permittedServiceNeedActions: Record<UUID, Action.ServiceNeed[]>
+  permittedPlacementActions: Partial<Record<UUID, Action.Placement[]>>
+  permittedServiceNeedActions: Partial<Record<UUID, Action.ServiceNeed[]>>
   placements: DaycarePlacementWithDetails[]
 }
 

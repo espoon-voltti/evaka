@@ -19,7 +19,7 @@ export function showModalEventTime(
 export function showSurveyReservationToast(event: CitizenCalendarEvent) {
   return Object.values(event.timesByChild).some(
     (childTimes) =>
-      childTimes.every((t) => t.childId === null) &&
-      childTimes.some((t) => t.isEditable)
+      childTimes!.every((t) => t.childId === null) &&
+      childTimes!.some((t) => t.isEditable)
   )
 }

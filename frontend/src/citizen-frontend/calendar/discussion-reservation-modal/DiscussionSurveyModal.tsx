@@ -256,7 +256,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
         {formatFirstName(childWithSurveys)}
       </StaticChip>
       {childWithSurveys.surveys.map((s) => {
-        const reservations = s.timesByChild[childWithSurveys.childId].filter(
+        const reservations = s.timesByChild[childWithSurveys.childId]?.filter(
           (r) => r.childId === childWithSurveys.childId
         )
         const sortedReservations = orderBy(reservations, [

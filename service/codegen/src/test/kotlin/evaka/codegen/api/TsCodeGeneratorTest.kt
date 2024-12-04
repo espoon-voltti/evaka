@@ -101,32 +101,32 @@ class TsCodeGeneratorTest {
             type = typeOf<List<ObjectLiteral?>>(),
         )
 
-        assertTsCode("Record<string, number>", type = typeOf<Map<String, Int>>())
-        assertTsCode("Record<string, number | null>", type = typeOf<Map<String, Int?>>())
+        assertTsCode("Partial<Record<string, number>>", type = typeOf<Map<String, Int>>())
+        assertTsCode("Partial<Record<string, number | null>>", type = typeOf<Map<String, Int?>>())
         assertTsCode(
-            "Record<string, [string, number]>",
+            "Partial<Record<string, [string, number]>>",
             type = typeOf<Map<String, Pair<String, Int>>>(),
         )
         assertTsCode(
-            "Record<string, [string, number, boolean]>",
+            "Partial<Record<string, [string, number, boolean]>>",
             type = typeOf<Map<String, Triple<String, Int, Boolean>>>(),
         )
         assertTsCode(
-            "Record<string, LocalDate>",
+            "Partial<Record<string, LocalDate>>",
             Imports.localDate,
             type = typeOf<Map<String, LocalDate>>(),
         )
         assertTsCode(
-            "Record<string, PlainObject>",
+            "Partial<Record<string, PlainObject>>",
             PlainObject.import,
             type = typeOf<Map<String, PlainObject>>(),
         )
         assertTsCode(
-            """Record<string, {
+            """Partial<Record<string, {
   bool: boolean,
   list: string[] | null,
   str: string
-} | null>"""
+} | null>>"""
                 .trimIndent(),
             type = typeOf<Map<String, ObjectLiteral?>>(),
         )

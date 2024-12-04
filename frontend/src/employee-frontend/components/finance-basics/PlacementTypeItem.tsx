@@ -18,7 +18,9 @@ import ServiceNeedItem from './ServiceNeedItem'
 export type PlacementTypeItemProps = {
   placementType: PlacementType
   serviceNeedsList: ServiceNeedOption[]
-  voucherValuesMap: Record<string, ServiceNeedOptionVoucherValueRangeWithId[]>
+  voucherValuesMap: Partial<
+    Record<string, ServiceNeedOptionVoucherValueRangeWithId[]>
+  >
   'data-qa'?: string
 }
 

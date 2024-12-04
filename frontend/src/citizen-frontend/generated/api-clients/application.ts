@@ -131,8 +131,8 @@ export async function getChildDuplicateApplications(
   request: {
     childId: UUID
   }
-): Promise<Record<ApplicationType, boolean>> {
-  const { data: json } = await client.request<JsonOf<Record<ApplicationType, boolean>>>({
+): Promise<Partial<Record<ApplicationType, boolean>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<ApplicationType, boolean>>>>({
     url: uri`/citizen/applications/duplicates/${request.childId}`.toString(),
     method: 'GET'
   })
@@ -147,8 +147,8 @@ export async function getChildPlacementStatusByApplicationType(
   request: {
     childId: UUID
   }
-): Promise<Record<ApplicationType, boolean>> {
-  const { data: json } = await client.request<JsonOf<Record<ApplicationType, boolean>>>({
+): Promise<Partial<Record<ApplicationType, boolean>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<ApplicationType, boolean>>>>({
     url: uri`/citizen/applications/active-placements/${request.childId}`.toString(),
     method: 'GET'
   })

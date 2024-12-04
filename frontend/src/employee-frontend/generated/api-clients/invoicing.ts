@@ -378,13 +378,13 @@ export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.getVoucherValues
 */
-export async function getVoucherValues(): Promise<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>> {
-  const { data: json } = await client.request<JsonOf<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>>>({
+export async function getVoucherValues(): Promise<Partial<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>>>>({
     url: uri`/employee/finance-basics/voucher-values`.toString(),
     method: 'GET'
   })
   return Object.fromEntries(Object.entries(json).map(
-    ([k, v]) => [k, v.map(e => deserializeJsonServiceNeedOptionVoucherValueRangeWithId(e))]
+    ([k, v]) => [k, v !== undefined ? v.map(e => deserializeJsonServiceNeedOptionVoucherValueRangeWithId(e)) : v]
   ))
 }
 
@@ -473,8 +473,8 @@ export async function deleteIncome(
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getIncomeMultipliers
 */
-export async function getIncomeMultipliers(): Promise<Record<IncomeCoefficient, number>> {
-  const { data: json } = await client.request<JsonOf<Record<IncomeCoefficient, number>>>({
+export async function getIncomeMultipliers(): Promise<Partial<Record<IncomeCoefficient, number>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<IncomeCoefficient, number>>>>({
     url: uri`/employee/incomes/multipliers`.toString(),
     method: 'GET'
   })

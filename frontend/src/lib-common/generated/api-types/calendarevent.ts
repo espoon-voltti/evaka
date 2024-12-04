@@ -57,7 +57,7 @@ export interface CalendarEventForm {
   period: FiniteDateRange
   times: CalendarEventTimeForm[] | null
   title: string
-  tree: Record<UUID, UUID[] | null> | null
+  tree: Partial<Record<UUID, UUID[] | null>> | null
   unitId: UUID
 }
 
@@ -117,19 +117,19 @@ export type CalendarEventType =
 export interface CalendarEventUpdateForm {
   description: string
   title: string
-  tree: Record<UUID, UUID[] | null> | null
+  tree: Partial<Record<UUID, UUID[] | null>> | null
 }
 
 /**
 * Generated from fi.espoo.evaka.calendarevent.CitizenCalendarEvent
 */
 export interface CitizenCalendarEvent {
-  attendingChildren: Record<UUID, AttendingChild[]>
+  attendingChildren: Partial<Record<UUID, AttendingChild[]>>
   description: string
   eventType: CalendarEventType
   id: UUID
   period: FiniteDateRange
-  timesByChild: Record<UUID, CitizenCalendarEventTime[]>
+  timesByChild: Partial<Record<UUID, CitizenCalendarEventTime[]>>
   title: string
 }
 
@@ -224,11 +224,11 @@ export function deserializeJsonCitizenCalendarEvent(json: JsonOf<CitizenCalendar
   return {
     ...json,
     attendingChildren: Object.fromEntries(Object.entries(json.attendingChildren).map(
-      ([k, v]) => [k, v.map(e => deserializeJsonAttendingChild(e))]
+      ([k, v]) => [k, v !== undefined ? v.map(e => deserializeJsonAttendingChild(e)) : v]
     )),
     period: FiniteDateRange.parseJson(json.period),
     timesByChild: Object.fromEntries(Object.entries(json.timesByChild).map(
-      ([k, v]) => [k, v.map(e => deserializeJsonCitizenCalendarEventTime(e))]
+      ([k, v]) => [k, v !== undefined ? v.map(e => deserializeJsonCitizenCalendarEventTime(e)) : v]
     ))
   }
 }

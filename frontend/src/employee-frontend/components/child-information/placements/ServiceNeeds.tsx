@@ -34,7 +34,7 @@ const deleteServiceNeedResult = wrapResult(deleteServiceNeed)
 interface Props {
   placement: DaycarePlacementWithDetails
   permittedPlacementActions: Action.Placement[]
-  permittedServiceNeedActions: Record<UUID, Action.ServiceNeed[]>
+  permittedServiceNeedActions: Partial<Record<UUID, Action.ServiceNeed[]>>
   reload: () => void
   serviceNeedOptions: ServiceNeedOption[]
 }

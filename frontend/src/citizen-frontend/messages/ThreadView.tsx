@@ -212,7 +212,7 @@ const SingleMessage = React.memo(
 interface Props {
   accountId: UUID
   thread: CitizenMessageThread.Regular
-  allowedAccounts: Record<UUID, ChildMessageAccountAccess>
+  allowedAccounts: Partial<Record<UUID, ChildMessageAccountAccess>>
   closeThread: () => void
   onThreadDeleted: () => void
 }

@@ -42,7 +42,7 @@ export interface AcceptDecisionRequest {
 * Generated from fi.espoo.evaka.application.AcceptPlacementProposalRequest
 */
 export interface AcceptPlacementProposalRequest {
-  rejectReasonTranslations: Record<PlacementPlanRejectReason, string>
+  rejectReasonTranslations: Partial<Record<PlacementPlanRejectReason, string>>
 }
 
 /**
@@ -96,7 +96,7 @@ export type ApplicationDateType =
 export interface ApplicationDecisions {
   decidableApplications: UUID[]
   decisions: DecisionSummary[]
-  permittedActions: Record<UUID, Action.Citizen.Decision[]>
+  permittedActions: Partial<Record<UUID, Action.Citizen.Decision[]>>
 }
 
 /**
@@ -357,7 +357,7 @@ export interface ApplicationsOfChild {
   childName: string
   decidableApplications: UUID[]
   duplicateOf: UUID | null
-  permittedActions: Record<UUID, Action.Citizen.Application[]>
+  permittedActions: Partial<Record<UUID, Action.Citizen.Application[]>>
 }
 
 /**

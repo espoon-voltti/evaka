@@ -45,7 +45,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
     fun recordType(type: Pair<KType?, KType?>, compact: Boolean): TsCode {
         val keyTs = type.first?.let { keyType(it) } ?: TsCode("never")
         val valueTs = type.second?.let { tsType(it, compact) } ?: TsCode("never")
-        return TsCode { "Record<${inline(keyTs)}, ${inline(valueTs)}>" }
+        return TsCode { "Partial<Record<${inline(keyTs)}, ${inline(valueTs)}>>" }
     }
 
     fun tupleType(elementTypes: List<KType?>, compact: Boolean): TsCode =
@@ -347,7 +347,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                     else
                         TsCode {
                             """Object.fromEntries(Object.entries(${inline(jsonExpression)}).map(
-  ([k, v]) => [k, ${inline(valueDeser)}]
+  ([k, v]) => [k, v !== undefined ? ${inline(valueDeser)} : v]
 ))"""
                         }
                 }

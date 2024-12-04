@@ -110,7 +110,7 @@ export interface DraftContent {
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetReceiversResponse
 */
 export interface GetReceiversResponse {
-  childrenToMessageAccounts: Record<UUID, ChildMessageAccountAccess>
+  childrenToMessageAccounts: Partial<Record<UUID, ChildMessageAccountAccess>>
   messageAccounts: MessageAccount[]
 }
 

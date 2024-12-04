@@ -174,7 +174,7 @@ export interface ExpectedAbsencesOnDeparturesRequest {
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesResponse
 */
 export interface ExpectedAbsencesOnDeparturesResponse {
-  categoriesByChild: Record<UUID, AbsenceCategory[] | null>
+  categoriesByChild: Partial<Record<UUID, AbsenceCategory[] | null>>
 }
 
 /**
