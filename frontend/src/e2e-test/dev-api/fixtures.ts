@@ -562,7 +562,7 @@ export class Fixture {
     initial: SemiPartial<DevAssistanceNeedDecision, 'childId'>
   ): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       assistanceLevels: ['SPECIAL_ASSISTANCE'],
       careMotivation: null,
       decisionMade: null,
@@ -626,7 +626,7 @@ export class Fixture {
     initial: SemiPartial<DevAssistanceNeedDecision, 'childId'>
   ): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       assistanceLevels: ['ENHANCED_ASSISTANCE'],
       careMotivation: 'Care motivation text',
       decisionMade: null,

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -82,7 +84,7 @@ describe('Assistance need decisions report', () => {
 
   test('Lists correct decisions', async () => {
     await Fixture.assistanceNeedDecision({
-      id: uuidv4(),
+      id: randomId<AssistanceNeedDecisionId>(),
       childId,
       decisionMaker: {
         employeeId: decisionMaker.id,
@@ -94,7 +96,7 @@ describe('Assistance need decisions report', () => {
       selectedUnit: unitId
     }).save()
     await Fixture.assistanceNeedDecision({
-      id: uuidv4(),
+      id: randomId<AssistanceNeedDecisionId>(),
       childId,
       decisionMaker: {
         employeeId: decisionMaker.id,
@@ -117,7 +119,7 @@ describe('Assistance need decisions report', () => {
       selectedUnit: unitId
     }).save()
     await Fixture.assistanceNeedDecision({
-      id: uuidv4(),
+      id: randomId<AssistanceNeedDecisionId>(),
       childId,
       decisionMaker: {
         employeeId: decisionMaker.id,
@@ -159,7 +161,7 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Removes unopened indicator from decision after opening decision', async () => {
-    const decisionId = uuidv4()
+    const decisionId = randomId<AssistanceNeedDecisionId>()
     await Fixture.assistanceNeedDecision({
       id: decisionId,
       childId,
@@ -200,7 +202,7 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Returns decision for editing', async () => {
-    const decisionId = uuidv4()
+    const decisionId = randomId<AssistanceNeedDecisionId>()
     await Fixture.assistanceNeedDecision({
       id: decisionId,
       childId,
@@ -228,7 +230,7 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Decision can be rejected', async () => {
-    const decisionId = uuidv4()
+    const decisionId = randomId<AssistanceNeedDecisionId>()
     await Fixture.assistanceNeedDecision({
       id: decisionId,
       childId,
@@ -255,7 +257,7 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Decision can be accepted', async () => {
-    const decisionId = uuidv4()
+    const decisionId = randomId<AssistanceNeedDecisionId>()
     await Fixture.assistanceNeedDecision({
       id: decisionId,
       childId,
@@ -282,7 +284,7 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Accepted decision can be annulled', async () => {
-    const decisionId = uuidv4()
+    const decisionId = randomId<AssistanceNeedDecisionId>()
     await Fixture.assistanceNeedDecision({
       id: decisionId,
       childId,
@@ -319,7 +321,7 @@ describe('Assistance need decisions report', () => {
       .admin()
       .save()
 
-    const decisionId = uuidv4()
+    const decisionId = randomId<AssistanceNeedDecisionId>()
     await Fixture.assistanceNeedDecision({
       id: decisionId,
       childId,
@@ -358,7 +360,7 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Special education teacher on child s unit can open the decision', async () => {
-    const decisionId = uuidv4()
+    const decisionId = randomId<AssistanceNeedDecisionId>()
     await Fixture.assistanceNeedDecision({
       id: decisionId,
       childId,
@@ -389,7 +391,7 @@ describe('Assistance need decisions report', () => {
     await createDaycarePlacements({ body: [daycarePlacementFixture2] })
 
     await Fixture.assistanceNeedDecision({
-      id: uuidv4(),
+      id: randomId<AssistanceNeedDecisionId>(),
       childId: anotherChildId,
       decisionMaker: {
         employeeId: decisionMaker.id,
