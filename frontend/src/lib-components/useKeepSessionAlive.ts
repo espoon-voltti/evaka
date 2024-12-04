@@ -25,7 +25,6 @@ export function useKeepSessionAlive(
             }
           } catch (error) {
             // ignore errors that might happen e.g. because client is offline or server temporarily unreachable
-            console.error('Error occurred while keeping session alive', error)
           }
         },
         throttleTime,
