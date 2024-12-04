@@ -238,14 +238,7 @@ async function staticFiles(project, outputs) {
 function serve(projects) {
   const app = express()
   app.use(
-    '/api/internal',
-    proxy(process.env.API_PROXY_URL ?? 'http://localhost:3000', {
-      parseReqBody: false,
-      proxyReqPathResolver: ({ originalUrl }) => originalUrl
-    })
-  )
-  app.use(
-    '/api/application',
+    '/api/',
     proxy(process.env.API_PROXY_URL ?? 'http://localhost:3000', {
       parseReqBody: false,
       proxyReqPathResolver: ({ originalUrl }) => originalUrl
