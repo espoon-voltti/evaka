@@ -12,7 +12,7 @@ export type ApplicationId = Id<'Application'>
 
 export type ApplicationNoteId = Id<'ApplicationNote'>
 
-export type ArchivedProcessId = string
+export type ArchivedProcessId = Id<'ArchivedProcess'>
 
 export type AreaId = string
 
