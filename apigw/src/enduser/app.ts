@@ -30,14 +30,12 @@ export function enduserGwRouter(
   const sessions = sessionSupport('enduser', redisClient, config.citizen)
   const getUserHeader = (req: express.Request) => sessions.getUserHeader(req)
 
-  // middlewares
-  router.use(sessions.middleware)
-
   if (config.sfi.type === 'mock') {
-    router.use('/auth/saml', createDevSfiRouter(sessions))
+    router.use('/auth/saml', sessions.middleware, createDevSfiRouter(sessions))
   } else if (config.sfi.type === 'saml') {
     router.use(
       '/auth/saml',
+      sessions.middleware,
       createSamlRouter({
         sessions,
         strategyName: 'suomifi',
@@ -57,6 +55,7 @@ export function enduserGwRouter(
     throw new Error('Missing Keycloak SAML configuration (citizen)')
   router.use(
     '/auth/evaka-customer',
+    sessions.middleware,
     createSamlRouter({
       sessions,
       strategyName: 'evaka-customer',
@@ -71,21 +70,30 @@ export function enduserGwRouter(
     })
   )
 
-  // CSRF checks apply to all the API endpoints that frontend uses
-  router.use(csrf)
-
   // public endpoints
-  router.all('/citizen/public/*', createProxy({ getUserHeader }))
-  router.use('/map-api', mapRoutes)
-  router.get('/auth/status', authStatus(sessions))
+  router.all(
+    '/citizen/public/*',
+    csrf,
+    sessions.middleware,
+    createProxy({ getUserHeader })
+  )
+  router.use('/map-api', csrf, sessions.middleware, mapRoutes)
+  router.get('/auth/status', csrf, sessions.middleware, authStatus(sessions))
   router.post(
     '/auth/weak-login',
+    csrf,
+    sessions.middleware,
     express.json(),
     authWeakLogin(sessions, redisClient)
   )
 
   // authenticated endpoints
-  router.use(sessions.requireAuthentication)
-  router.all('/citizen/*', createProxy({ getUserHeader }))
+  router.all(
+    '/citizen/*',
+    csrf,
+    sessions.middleware,
+    sessions.requireAuthentication,
+    createProxy({ getUserHeader })
+  )
   return router
 }
