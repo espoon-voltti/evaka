@@ -143,7 +143,7 @@ export interface HolidayQuestionnaireAnswer {
 * Generated from fi.espoo.evaka.holidayperiod.OpenRangesBody
 */
 export interface OpenRangesBody {
-  openRanges: Record<UUID, FiniteDateRange[]>
+  openRanges: Partial<Record<UUID, FiniteDateRange[]>>
 }
 
 
@@ -306,7 +306,7 @@ export function deserializeJsonOpenRangesBody(json: JsonOf<OpenRangesBody>): Ope
   return {
     ...json,
     openRanges: Object.fromEntries(Object.entries(json.openRanges).map(
-      ([k, v]) => [k, v.map(e => FiniteDateRange.parseJson(e))]
+      ([k, v]) => [k, v !== undefined ? v.map(e => FiniteDateRange.parseJson(e)) : v]
     ))
   }
 }
