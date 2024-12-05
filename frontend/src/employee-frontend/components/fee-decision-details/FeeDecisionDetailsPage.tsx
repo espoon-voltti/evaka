@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,10 +10,13 @@ import {
   FeeDecisionDetailed,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
 import {
@@ -22,6 +25,8 @@ import {
 } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
+import MetadataSection from '../archive-metadata/MetadataSection'
+import { feeDecisionMetadataQuery } from '../fee-decisions/fee-decision-queries'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
 
 import Actions from './Actions'
@@ -31,6 +36,17 @@ import Summary from './Summary'
 
 const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
 const getFeeDecisionResult = wrapResult(getFeeDecision)
+
+const FeeDecisionMetadataSection = React.memo(
+  function FeeDecisionMetadataSection({
+    feeDecisionId
+  }: {
+    feeDecisionId: UUID
+  }) {
+    const result = useQueryResult(feeDecisionMetadataQuery({ feeDecisionId }))
+    return <MetadataSection metadataResult={result} />
+  }
+)
 
 export default React.memo(function FeeDecisionDetailsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
@@ -144,6 +160,12 @@ export default React.memo(function FeeDecisionDetailsPage() {
                 onHandlerSelectModal={() => setShowHandlerSelectModal(true)}
               />
             </ContentArea>
+            {decision.isSuccess && decision.value.status !== 'DRAFT' && (
+              <>
+                <Gap />
+                <FeeDecisionMetadataSection feeDecisionId={id} />
+              </>
+            )}
           </>
         )}
       </Container>

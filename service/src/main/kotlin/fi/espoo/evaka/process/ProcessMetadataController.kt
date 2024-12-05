@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -251,6 +252,44 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
     }
 
+    @GetMapping("/fee-decisions/{feeDecisionId}")
+    fun getFeeDecisionMetadata(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable feeDecisionId: FeeDecisionId,
+    ): ProcessMetadataResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.FeeDecision.READ_METADATA,
+                        feeDecisionId,
+                    )
+                    val process =
+                        tx.getArchiveProcessByFeeDecisionId(feeDecisionId)
+                            ?: return@read ProcessMetadataResponse(null)
+                    val decisionDocument = tx.getFeeDecisionDocumentMetadata(feeDecisionId)
+
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
+                            process = process,
+                            primaryDocument = decisionDocument,
+                            secondaryDocuments = emptyList(),
+                        )
+                    )
+                }
+            }
+            .also { response ->
+                Audit.FeeDecisionReadMetadata.log(
+                    targetId = AuditId(feeDecisionId),
+                    objectId = response.data?.process?.id?.let(AuditId::invoke),
+                )
+            }
+    }
+
     private fun Database.Read.getChildDocumentMetadata(
         documentId: ChildDocumentId
     ): DocumentMetadata =
@@ -402,6 +441,30 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             END AS download_path
         FROM decision d
         LEFT JOIN evaka_user e ON e.id = d.created_by
+        WHERE d.id = ${bind(decisionId)}
+    """
+                )
+            }
+            .exactlyOne()
+
+    private fun Database.Read.getFeeDecisionDocumentMetadata(
+        decisionId: FeeDecisionId
+    ): DocumentMetadata =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            'Maksupäätös' AS name,
+            d.created AS created_at,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            TRUE AS confidential,
+            CASE WHEN d.document_key IS NOT NULL 
+                THEN '/employee/fee-decisions/pdf/' || d.id
+            END AS download_path
+        FROM fee_decision d
+        LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
         WHERE d.id = ${bind(decisionId)}
     """
                 )
