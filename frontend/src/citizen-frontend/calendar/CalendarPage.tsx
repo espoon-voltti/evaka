@@ -70,11 +70,10 @@ function getPreviousMonthRangeBeforeDate(
 const CalendarPage = React.memo(function CalendarPage() {
   const user = useUser()
   const events = useEventsRange(defaultRange)
-  const {
-    reservations: data,
-    setDateRange: setReservationsDateRange,
-    loading: reservationsLoading
-  } = useExtendedReservationsRange(defaultRange)
+  const [reservationsDateRange, setReservationsDateRange] =
+    useState<FiniteDateRange>(defaultRange)
+  const { reservations: data, loading: reservationsLoading } =
+    useExtendedReservationsRange(reservationsDateRange)
 
   const {
     modalState,
