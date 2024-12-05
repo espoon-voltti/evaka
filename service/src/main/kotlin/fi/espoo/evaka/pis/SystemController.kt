@@ -312,7 +312,9 @@ class SystemController(
                             placementTool =
                                 permittedGlobalActions.contains(Action.Global.PLACEMENT_TOOL),
                             replacementInvoices = env.replacementInvoicesStart != null,
-                            openRangesHolidayQuestionnaire = featureConfig.holidayQuestionnaireType == QuestionnaireType.OPEN_RANGES
+                            openRangesHolidayQuestionnaire =
+                                featureConfig.holidayQuestionnaireType ==
+                                    QuestionnaireType.OPEN_RANGES,
                         )
 
                     EmployeeUserResponse(
