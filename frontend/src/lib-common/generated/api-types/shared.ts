@@ -34,7 +34,7 @@ export type AttachmentId = Id<'Attachment'>
 
 export type BackupCareId = Id<'BackupCare'>
 
-export type BackupPickupId = string
+export type BackupPickupId = Id<'BackupPickup'>
 
 export type CalendarEventAttendeeId = string
 
