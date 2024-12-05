@@ -4,10 +4,11 @@
 
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
+import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 import { Notifications } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
@@ -17,6 +18,7 @@ import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
+import { getAuthStatus } from './api/auth'
 import ApplicationPage from './components/ApplicationPage'
 import ChildInformation from './components/ChildInformation'
 import EmployeeRoute from './components/EmployeeRoute'
@@ -161,6 +163,21 @@ const Content = React.memo(function Content() {
   const { loggedIn } = useContext(UserContext)
   const { showSessionExpiredModal, setShowSessionExpiredModal } =
     useKeepSessionAlive(sessionKeepalive, loggedIn)
+
+  useEffect(() => {
+    const eventListener = ((loginStatusEvent: LoginStatusChangeEvent) => {
+      setShowSessionExpiredModal(!loginStatusEvent.loginStatus)
+    }) as EventListener
+    const eventBus = window.evaka?.loginStatusEventBus
+    if (!eventBus) {
+      return undefined
+    }
+    eventBus.addEventListener(LoginStatusChangeEvent.name, eventListener)
+    return () => {
+      eventBus.removeEventListener(LoginStatusChangeEvent.name, eventListener)
+    }
+  }, [setShowSessionExpiredModal])
+
   if (!loaded) return null
 
   return (
@@ -180,6 +197,17 @@ const Content = React.memo(function Content() {
       <PairingModal />
       {showSessionExpiredModal && (
         <SessionExpiredModal
+          onLoginClick={() => {
+            window.open('/employee/close-after-login', '_blank')
+            const authChecker = async () => {
+              const authStatus = await getAuthStatus()
+              if (authStatus.loggedIn) {
+                setShowSessionExpiredModal(false)
+                document.removeEventListener('focusin', authChecker)
+              }
+            }
+            document.addEventListener('focusin', authChecker)
+          }}
           onClose={() => setShowSessionExpiredModal(false)}
         />
       )}
@@ -1021,6 +1049,14 @@ export default createBrowserRouter(
           )
         },
         {
+          path: '/close-after-login',
+          element: (
+            <EmployeeRoute title="login" requireAuth={false}>
+              <CloseAfterLogin />
+            </EmployeeRoute>
+          )
+        },
+        {
           path: '/*',
           element: (
             <EmployeeRoute requireAuth={false}>
@@ -1041,6 +1077,14 @@ export default createBrowserRouter(
   ],
   { basename: '/employee' }
 )
+
+function CloseAfterLogin() {
+  const { loggedIn } = useContext(UserContext)
+  if (loggedIn) {
+    window.close()
+  }
+  return loggedIn ? <p>Tämän ikkunan voi nyt sulkea</p> : <LoginPage />
+}
 
 function RedirectToMainPage() {
   const { loggedIn, roles } = useContext(UserContext)

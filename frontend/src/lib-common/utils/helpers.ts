@@ -4,6 +4,8 @@
 
 import LocalDate from '../local-date'
 
+import { LoginStatusEventManager } from './login-status'
+
 export const getEnvironment = (): string => {
   if (
     window.location.host.startsWith('localhost') ||
@@ -48,6 +50,7 @@ declare global {
     automatedTest?: boolean
     mockedTime?: Date | undefined
     keepSessionAliveThrottleTime?: number
+    loginStatusEventBus?: LoginStatusEventManager
   }
 }
 
