@@ -1008,7 +1008,7 @@ export class Fixture {
     initial?: Partial<DevCalendarEvent>
   ): CalendarEventBuilder {
     return new CalendarEventBuilder({
-      id: uuidv4(),
+      id: randomId(),
       title: '',
       description: '',
       period: new FiniteDateRange(

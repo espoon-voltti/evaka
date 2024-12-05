@@ -30,7 +30,7 @@ import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-type
 import { AssistanceNeedVoucherCoefficientId } from 'lib-common/generated/api-types/shared'
 import { BackupCareId } from 'lib-common/generated/api-types/shared'
 import { BackupPickupId } from 'lib-common/generated/api-types/shared'
-import { CalendarEventAttendeeId } from 'lib-common/generated/api-types/shared'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventType } from 'lib-common/generated/api-types/calendarevent'
 import { CareType } from 'lib-common/generated/api-types/daycare'
@@ -133,7 +133,7 @@ export interface Autocomplete {
   features: Feature[]
 }
 
-export type CalendarEventId = string
+export type CalendarEventAttendeeId = string
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.Caretaker
@@ -339,7 +339,7 @@ export interface DevBackupPickup {
 export interface DevCalendarEvent {
   description: string
   eventType: CalendarEventType
-  id: CalendarEventAttendeeId
+  id: CalendarEventId
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUserId
   period: FiniteDateRange
@@ -350,10 +350,10 @@ export interface DevCalendarEvent {
 * Generated from fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 */
 export interface DevCalendarEventAttendee {
-  calendarEventId: CalendarEventAttendeeId
+  calendarEventId: CalendarEventId
   childId: PersonId | null
   groupId: GroupId | null
-  id: CalendarEventId
+  id: CalendarEventAttendeeId
   unitId: DaycareId
 }
 
@@ -361,7 +361,7 @@ export interface DevCalendarEventAttendee {
 * Generated from fi.espoo.evaka.shared.dev.DevCalendarEventTime
 */
 export interface DevCalendarEventTime {
-  calendarEventId: CalendarEventAttendeeId
+  calendarEventId: CalendarEventId
   childId: PersonId | null
   date: LocalDate
   end: LocalTime

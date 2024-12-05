@@ -4,7 +4,9 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -430,7 +432,7 @@ test('Foster parent can see calendar events for foster children', async () => {
     daycareGroupId: daycareGroup.id,
     daycarePlacementId: placement.id
   }).save()
-  const groupEventId = uuidv4()
+  const groupEventId = randomId<CalendarEventId>()
   await Fixture.calendarEvent({
     id: groupEventId,
     title: 'Group-wide event',
