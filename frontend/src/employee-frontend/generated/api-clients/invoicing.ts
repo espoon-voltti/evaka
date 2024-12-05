@@ -52,8 +52,8 @@ import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionVoucherValueId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
-import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import { VoucherValueDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { client } from '../../api/client'
@@ -73,7 +73,7 @@ import { deserializeJsonPagedInvoiceSummaryResponses } from 'lib-common/generate
 import { deserializeJsonPagedPayments } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonPagedVoucherValueDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonVoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonVoucherValueDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonVoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
 import { uri } from 'lib-common/uri'
 
@@ -950,12 +950,12 @@ export async function getVoucherValueDecision(
   request: {
     id: VoucherValueDecisionId
   }
-): Promise<VoucherValueDecisionDetailed> {
-  const { data: json } = await client.request<JsonOf<VoucherValueDecisionDetailed>>({
+): Promise<VoucherValueDecisionResponse> {
+  const { data: json } = await client.request<JsonOf<VoucherValueDecisionResponse>>({
     url: uri`/employee/value-decisions/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonVoucherValueDecisionDetailed(json)
+  return deserializeJsonVoucherValueDecisionResponse(json)
 }
 
 

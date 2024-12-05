@@ -11,6 +11,7 @@ import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
+import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonProcessMetadataResponse } from 'lib-common/generated/api-types/process'
 import { uri } from 'lib-common/uri'
@@ -90,6 +91,22 @@ export async function getFeeDecisionMetadata(
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
     url: uri`/employee/process-metadata/fee-decisions/${request.feeDecisionId}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonProcessMetadataResponse(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.getVoucherValueDecisionMetadata
+*/
+export async function getVoucherValueDecisionMetadata(
+  request: {
+    voucherValueDecisionId: VoucherValueDecisionId
+  }
+): Promise<ProcessMetadataResponse> {
+  const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
+    url: uri`/employee/process-metadata/voucher-value-decisions/${request.voucherValueDecisionId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonProcessMetadataResponse(json)

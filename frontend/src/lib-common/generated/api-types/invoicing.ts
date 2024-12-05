@@ -1089,6 +1089,14 @@ export interface VoucherValueDecisionPlacementDetailed {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.VoucherValueDecisionResponse
+*/
+export interface VoucherValueDecisionResponse {
+  data: VoucherValueDecisionDetailed
+  permittedActions: Action.VoucherValueDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 */
 export interface VoucherValueDecisionServiceNeed {
@@ -1539,6 +1547,14 @@ export function deserializeJsonVoucherValueDecisionDetailed(json: JsonOf<Voucher
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: LocalDate.parseIso(json.validTo)
+  }
+}
+
+
+export function deserializeJsonVoucherValueDecisionResponse(json: JsonOf<VoucherValueDecisionResponse>): VoucherValueDecisionResponse {
+  return {
+    ...json,
+    data: deserializeJsonVoucherValueDecisionDetailed(json.data)
   }
 }
 

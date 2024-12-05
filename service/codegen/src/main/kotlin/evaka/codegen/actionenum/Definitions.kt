@@ -49,6 +49,7 @@ val generatedFiles =
                 generateEnum<Action.ServiceApplication>(),
                 generateEnum<Action.ServiceNeed>(),
                 generateEnum<Action.Unit>(),
+                generateEnum<Action.VoucherValueDecision>(),
                 generateNamespace(
                     "Citizen",
                     generateEnum<Action.Citizen.Application>(),

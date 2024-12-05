@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -145,6 +146,18 @@ fun Database.Read.getArchiveProcessByApplicationId(applicationId: ApplicationId)
 fun Database.Read.getArchiveProcessByFeeDecisionId(feeDecisionId: FeeDecisionId): ArchivedProcess? {
     return createQuery {
             sql("SELECT process_id FROM fee_decision WHERE id = ${bind(feeDecisionId)}")
+        }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.let { processId -> getProcess(processId) }
+}
+
+fun Database.Read.getArchiveProcessByVoucherValueDecisionId(
+    voucherValueDecisionId: VoucherValueDecisionId
+): ArchivedProcess? {
+    return createQuery {
+            sql(
+                "SELECT process_id FROM voucher_value_decision WHERE id = ${bind(voucherValueDecisionId)}"
+            )
         }
         .exactlyOneOrNull<ArchivedProcessId?>()
         ?.let { processId -> getProcess(processId) }

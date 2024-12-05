@@ -541,6 +541,7 @@ enum class Audit(
     VoucherValueDecisionMarkSent,
     VoucherValueDecisionPdfRead,
     VoucherValueDecisionRead,
+    VoucherValueDecisionReadMetadata,
     VoucherValueDecisionSearch,
     VoucherValueDecisionSend,
     VoucherValueDecisionSetType,

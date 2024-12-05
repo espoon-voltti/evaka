@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -290,6 +291,45 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
     }
 
+    @GetMapping("/voucher-value-decisions/{voucherValueDecisionId}")
+    fun getVoucherValueDecisionMetadata(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable voucherValueDecisionId: VoucherValueDecisionId,
+    ): ProcessMetadataResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.VoucherValueDecision.READ_METADATA,
+                        voucherValueDecisionId,
+                    )
+                    val process =
+                        tx.getArchiveProcessByVoucherValueDecisionId(voucherValueDecisionId)
+                            ?: return@read ProcessMetadataResponse(null)
+                    val decisionDocument =
+                        tx.getVoucherValueDecisionDocumentMetadata(voucherValueDecisionId)
+
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
+                            process = process,
+                            primaryDocument = decisionDocument,
+                            secondaryDocuments = emptyList(),
+                        )
+                    )
+                }
+            }
+            .also { response ->
+                Audit.VoucherValueDecisionReadMetadata.log(
+                    targetId = AuditId(voucherValueDecisionId),
+                    objectId = response.data?.process?.id?.let(AuditId::invoke),
+                )
+            }
+    }
+
     private fun Database.Read.getChildDocumentMetadata(
         documentId: ChildDocumentId
     ): DocumentMetadata =
@@ -466,6 +506,30 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         FROM fee_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
         WHERE d.id = ${bind(decisionId)}
+    """
+                )
+            }
+            .exactlyOne()
+
+    private fun Database.Read.getVoucherValueDecisionDocumentMetadata(
+        voucherValueDecisionId: VoucherValueDecisionId
+    ): DocumentMetadata =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            'Arvopäätös' AS name,
+            d.created AS created_at,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            TRUE AS confidential,
+            CASE WHEN d.document_key IS NOT NULL 
+                THEN '/employee/value-decisions/pdf/' || d.id
+            END AS download_path
+        FROM voucher_value_decision d
+        LEFT JOIN evaka_user e ON e.employee_id = d.approved_by
+        WHERE d.id = ${bind(voucherValueDecisionId)}
     """
                 )
             }

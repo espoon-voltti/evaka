@@ -2342,6 +2342,7 @@ sealed interface Action {
         override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>
     ) : ScopedAction<VoucherValueDecisionId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_METADATA(HasGlobalRole(ADMIN)),
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         IGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         UNIGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN));

@@ -242,6 +242,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                     asyncJobRunner = asyncJobRunner,
                     user = financeUser,
                     evakaEnv = evakaEnv,
+                    featureConfig = featureConfig,
                     now = approvedAt,
                     ids = listOf(decision.id),
                     decisionHandlerId = null,
