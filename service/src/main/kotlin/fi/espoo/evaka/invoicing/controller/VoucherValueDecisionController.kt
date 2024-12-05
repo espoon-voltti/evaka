@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
+import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionProcessId
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
@@ -36,6 +37,11 @@ import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -112,28 +118,37 @@ class VoucherValueDecisionController(
             .also { Audit.VoucherValueDecisionSearch.log(meta = mapOf("total" to it.total)) }
     }
 
+    data class VoucherValueDecisionResponse(
+        val data: VoucherValueDecisionDetailed,
+        val permittedActions: Set<Action.VoucherValueDecision>,
+    )
+
     @GetMapping("/{id}")
     fun getVoucherValueDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId,
-    ): VoucherValueDecisionDetailed {
+    ): VoucherValueDecisionResponse {
         return db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.VoucherValueDecision.READ,
-                    id,
-                )
-                it.getVoucherValueDecision(id)
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.VoucherValueDecision.READ,
+                        id,
+                    )
+                    val decision =
+                        it.getVoucherValueDecision(id)
+                            ?: throw NotFound("No voucher value decision found with given ID ($id)")
+                    VoucherValueDecisionResponse(
+                        data = decision,
+                        permittedActions = accessControl.getPermittedActions(it, user, clock, id),
+                    )
+                }
             }
-        }
-            ?: throw NotFound("No voucher value decision found with given ID ($id)").also {
-                Audit.VoucherValueDecisionRead.log(targetId = AuditId(id))
-            }
+            .also { Audit.VoucherValueDecisionRead.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/head-of-family/{headOfFamilyId}")
@@ -182,6 +197,7 @@ class VoucherValueDecisionController(
                     asyncJobRunner = asyncJobRunner,
                     user = user,
                     evakaEnv = evakaEnv,
+                    featureConfig = featureConfig,
                     now = clock.now(),
                     ids = decisionIds,
                     decisionHandlerId = decisionHandlerId,
@@ -212,7 +228,21 @@ class VoucherValueDecisionController(
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
                     throw BadRequest("Voucher value decision cannot be marked sent")
                 }
-                tx.markVoucherValueDecisionsSent(ids, clock.now())
+                val now = clock.now()
+
+                tx.markVoucherValueDecisionsSent(ids, now)
+
+                ids.forEach { id ->
+                    tx.getArchiveProcessByVoucherValueDecisionId(id)?.let { process ->
+                        tx.insertProcessHistoryRow(
+                            processId = process.id,
+                            state = ArchivedProcessState.COMPLETED,
+                            now = now,
+                            userId = user.evakaUserId,
+                        )
+                    }
+                }
+
                 asyncJobRunner.plan(
                     tx,
                     ids.map { AsyncJob.SendNewVoucherValueDecisionEmail(decisionId = it) },
@@ -374,6 +404,7 @@ fun sendVoucherValueDecisions(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     user: AuthenticatedUser.Employee,
     evakaEnv: EvakaEnv,
+    featureConfig: FeatureConfig,
     now: HelsinkiDateTime,
     ids: List<VoucherValueDecisionId>,
     decisionHandlerId: EmployeeId?,
@@ -439,6 +470,36 @@ fun sendVoucherValueDecisions(
         decisionHandlerId,
         alwaysUseDaycareFinanceDecisionHandler,
     )
+
+    val processConfig =
+        featureConfig.archiveMetadataConfigs[ArchiveProcessType.VOUCHER_VALUE_DECISION]
+    if (processConfig != null) {
+        // TODO: Could be heavy. Does this need to be moved into async jobs?
+        validDecisions.forEach { decision ->
+            tx.insertProcess(
+                    processDefinitionNumber = processConfig.processDefinitionNumber,
+                    year = today.year,
+                    organization = featureConfig.archiveMetadataOrganization,
+                    archiveDurationMonths = processConfig.archiveDurationMonths,
+                )
+                .also { process ->
+                    tx.insertProcessHistoryRow(
+                        processId = process.id,
+                        state = ArchivedProcessState.INITIAL,
+                        now = decision.created, // retroactive initial state
+                        userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    )
+                    tx.insertProcessHistoryRow(
+                        processId = process.id,
+                        state = ArchivedProcessState.DECIDING,
+                        now = now,
+                        userId = user.evakaUserId,
+                    )
+                    tx.setVoucherValueDecisionProcessId(decision.id, process.id)
+                }
+        }
+    }
+
     asyncJobRunner.plan(
         tx,
         validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) },

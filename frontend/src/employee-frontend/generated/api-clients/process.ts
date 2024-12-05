@@ -90,3 +90,19 @@ export async function getFeeDecisionMetadata(
   })
   return deserializeJsonProcessMetadataResponse(json)
 }
+
+
+/**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.getVoucherValueDecisionMetadata
+*/
+export async function getVoucherValueDecisionMetadata(
+  request: {
+    voucherValueDecisionId: UUID
+  }
+): Promise<ProcessMetadataResponse> {
+  const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
+    url: uri`/employee/process-metadata/voucher-value-decisions/${request.voucherValueDecisionId}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonProcessMetadataResponse(json)
+}
