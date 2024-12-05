@@ -9,6 +9,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { ApplicationId } from './shared'
+import { BackupCareId } from './shared'
 import { DaycareId } from './shared'
 import { EvakaUser } from './user'
 import { GroupId } from './shared'
@@ -123,20 +124,32 @@ export interface GroupTransferRequestBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.MissingGroupPlacement
+* Generated from fi.espoo.evaka.placement.MissingBackupGroupPlacement
 */
-export interface MissingGroupPlacement {
-  backup: boolean
+export interface MissingBackupGroupPlacement {
+  backupCareId: BackupCareId
   childId: PersonId
   dateOfBirth: LocalDate
-  defaultServiceNeedOptionNameFi: string | null
   firstName: string
   fromUnits: string[]
   gap: FiniteDateRange
   lastName: string
+  placementPeriod: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.MissingGroupPlacement
+*/
+export interface MissingGroupPlacement {
+  childId: PersonId
+  dateOfBirth: LocalDate
+  defaultServiceNeedOptionNameFi: string | null
+  firstName: string
+  gap: FiniteDateRange
+  lastName: string
   placementId: PlacementId
   placementPeriod: FiniteDateRange
-  placementType: PlacementType | null
+  placementType: PlacementType
   serviceNeeds: MissingGroupPlacementServiceNeed[]
 }
 
@@ -414,6 +427,16 @@ export function deserializeJsonGroupTransferRequestBody(json: JsonOf<GroupTransf
   return {
     ...json,
     startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonMissingBackupGroupPlacement(json: JsonOf<MissingBackupGroupPlacement>): MissingBackupGroupPlacement {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    gap: FiniteDateRange.parseJson(json.gap),
+    placementPeriod: FiniteDateRange.parseJson(json.placementPeriod)
   }
 }
 

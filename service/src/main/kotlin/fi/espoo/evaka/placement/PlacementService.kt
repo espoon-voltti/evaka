@@ -17,6 +17,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.serviceneed.insertServiceNeed
+import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -599,7 +600,7 @@ fun getMissingGroupPlacements(
     tx: Database.Read,
     unitId: DaycareId,
     placementUntil: LocalDate? = null,
-): List<MissingGroupPlacement> {
+): Pair<List<MissingGroupPlacement>, List<MissingBackupGroupPlacement>> {
     val evakaLaunch = LocalDate.of(2020, 3, 1)
 
     val missingGroupPlacements =
@@ -619,7 +620,6 @@ WITH missing_group_placement AS (
     AND NOT isempty(multirange(daterange(greatest(p.start_date, ${bind(evakaLaunch)}), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange))
 )
 SELECT
-    FALSE AS backup,
     p.id AS placement_id,
     p.type AS placement_type,
     p.placement_period,
@@ -628,7 +628,6 @@ SELECT
     c.first_name,
     c.last_name,
     c.date_of_birth,
-    '[]' AS from_units,
     sn.service_needs,
     default_sno.name_fi AS default_service_need_option_name_fi
 FROM missing_group_placement p
@@ -654,12 +653,8 @@ LEFT JOIN service_need_option default_sno ON default_sno.default_option AND defa
                 sql(
                     """
 SELECT
-    TRUE AS backup,
-    bc.id AS placement_id,
-    NULL AS placement_type,
+    bc.id AS backupCareId,
     daterange(bc.start_date, bc.end_date, '[]') AS placement_period,
-    '[]' AS service_needs,
-    '' AS default_service_need_option_name_fi,
     daterange(bc.start_date, bc.end_date, '[]') AS gap,
     bc.child_id,
     c.first_name,
@@ -680,9 +675,9 @@ WHERE bc.unit_id = ${bind(unitId)} AND bc.group_id IS NULL
 """
                 )
             }
-            .toList<MissingGroupPlacement>()
+            .toList<MissingBackupGroupPlacement>()
 
-    return missingGroupPlacements + missingBackupCareGroups
+    return Pair(missingGroupPlacements, missingBackupCareGroups)
 }
 
 data class DaycarePlacement(
@@ -748,16 +743,25 @@ data class DaycareGroupPlacement(
 
 data class MissingGroupPlacement(
     val placementId: PlacementId,
-    val placementType: PlacementType?, // null for backup care
-    val backup: Boolean,
+    val placementType: PlacementType,
     val placementPeriod: FiniteDateRange,
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
-    @Json val fromUnits: List<String>, // for backup care
     @Json val serviceNeeds: List<MissingGroupPlacementServiceNeed>,
     val defaultServiceNeedOptionNameFi: String?,
+    val gap: FiniteDateRange,
+)
+
+data class MissingBackupGroupPlacement(
+    val backupCareId: BackupCareId,
+    val placementPeriod: FiniteDateRange,
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+    @Json val fromUnits: List<String>,
     val gap: FiniteDateRange,
 )
 
