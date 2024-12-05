@@ -4,10 +4,11 @@
 
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
+import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 import { Notifications } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
@@ -161,6 +162,21 @@ const Content = React.memo(function Content() {
   const { loggedIn } = useContext(UserContext)
   const { showSessionExpiredModal, setShowSessionExpiredModal } =
     useKeepSessionAlive(sessionKeepalive, loggedIn)
+
+  useEffect(() => {
+    const eventListener = ((loginStatusEvent: LoginStatusChangeEvent) => {
+      setShowSessionExpiredModal(!loginStatusEvent.loginStatus)
+    }) as EventListener
+    const eventBus = window.evaka?.loginStatusEventBus
+    if (!eventBus) {
+      return undefined
+    }
+    eventBus.addEventListener(LoginStatusChangeEvent.name, eventListener)
+    return () => {
+      eventBus.removeEventListener(LoginStatusChangeEvent.name, eventListener)
+    }
+  }, [setShowSessionExpiredModal])
+
   if (!loaded) return null
 
   return (
