@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -32,6 +32,8 @@ export interface Props {
   dayIsHolidayPeriod: (date: LocalDate) => boolean
   events: CitizenCalendarEvent[]
   showDiscussionAction: boolean
+  fetchPrevious: (beforeDate: LocalDate) => void
+  loading: boolean
 }
 
 export default React.memo(function CalendarListView({
@@ -42,18 +44,27 @@ export default React.memo(function CalendarListView({
   selectDate,
   dayIsReservable,
   events,
-  showDiscussionAction
+  showDiscussionAction,
+  fetchPrevious,
+  loading
 }: Props) {
   const i18n = useTranslation()
   const months = useMemo(() => groupByMonth(calendarDays), [calendarDays])
   const childImages = useMemo(() => getChildImages(childData), [childData])
+  const scrollToDate = useRef<LocalDate>(LocalDate.todayInHelsinkiTz())
+
+  const fetchPreviousMonths = () => {
+    const beforeDate = months[0].calendarDays[0].date
+    scrollToDate.current = beforeDate
+    fetchPrevious(beforeDate)
+  }
 
   return (
     <>
       <FixedSpaceColumn spacing="zero">
         {months.map((m, index) => (
           <MonthElem
-            key={`month-${index}`}
+            key={`month-${m.year}-${m.monthNumber}`}
             calendarMonth={m}
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
@@ -65,6 +76,10 @@ export default React.memo(function CalendarListView({
               m.year,
               m.monthNumber
             )}
+            monthIndex={index}
+            fetchPrevious={fetchPreviousMonths}
+            scrollToDate={scrollToDate.current}
+            loading={loading}
           />
         ))}
       </FixedSpaceColumn>

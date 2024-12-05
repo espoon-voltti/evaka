@@ -17,6 +17,7 @@ export { faArrowDown as faArrowDownToLine } from '@fortawesome/free-solid-svg-ic
 export { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft'
 export { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
 export { faArrowRotateLeft } from '@fortawesome/free-solid-svg-icons/faArrowRotateLeft'
+export { faArrowsRotate } from '@fortawesome/free-solid-svg-icons/faArrowsRotate'
 export { faArrowUp } from '@fortawesome/free-solid-svg-icons/faArrowUp'
 export { faArrowUp as fasArrowUp } from '@fortawesome/free-solid-svg-icons/faArrowUp'
 export { faBabyCarriage } from '@fortawesome/free-solid-svg-icons/faBabyCarriage'

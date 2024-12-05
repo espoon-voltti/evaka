@@ -87,6 +87,7 @@ const en: Translations = {
     errors: {
       genericGetError: 'Error in fetching the requested information'
     },
+    today: 'Today',
     datetime: {
       dayShort: 'd',
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -489,6 +490,7 @@ const en: Translations = {
     nextDay: 'Next day',
     previousMonth: 'Previous month',
     nextMonth: 'Next month',
+    fetchPrevious: 'Fetch previous',
     dailyServiceTimeModifiedModal: {
       text: 'The agreement on your child’s hours of early childhood education has been changed; please check that the attendance bookings correspond to the new agreed hours.',
       title: 'Check the attendance bookings',
