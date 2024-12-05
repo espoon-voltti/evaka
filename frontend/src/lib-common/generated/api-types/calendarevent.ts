@@ -9,7 +9,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import TimeRange from '../../time-range'
-import { CalendarEventAttendeeId } from './shared'
+import { CalendarEventId } from './shared'
 import { CalendarEventTimeId } from './shared'
 import { DaycareId } from './shared'
 import { EvakaUser } from './user'
@@ -44,7 +44,7 @@ export interface CalendarEvent {
   description: string
   eventType: CalendarEventType
   groups: GroupInfo[]
-  id: CalendarEventAttendeeId
+  id: CalendarEventId
   individualChildren: IndividualChild[]
   period: FiniteDateRange
   times: CalendarEventTime[]
@@ -88,7 +88,7 @@ export interface CalendarEventTimeCitizenReservationForm {
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeClearingForm
 */
 export interface CalendarEventTimeClearingForm {
-  calendarEventId: CalendarEventAttendeeId
+  calendarEventId: CalendarEventId
   childId: PersonId
 }
 
@@ -131,7 +131,7 @@ export interface CitizenCalendarEvent {
   attendingChildren: Partial<Record<PersonId, AttendingChild[]>>
   description: string
   eventType: CalendarEventType
-  id: CalendarEventAttendeeId
+  id: CalendarEventId
   period: FiniteDateRange
   timesByChild: Partial<Record<PersonId, CitizenCalendarEventTime[]>>
   title: string

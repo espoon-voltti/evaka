@@ -11,8 +11,8 @@ import { AbsenceId } from './api-types'
 import { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { Autocomplete } from './api-types'
-import { CalendarEventAttendeeId } from 'lib-common/generated/api-types/shared'
-import { CalendarEventId } from './api-types'
+import { CalendarEventAttendeeId } from './api-types'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import { Caretaker } from './api-types'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
@@ -186,9 +186,9 @@ export async function addCalendarEvent(
     body: DevCalendarEvent
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<CalendarEventAttendeeId> {
+): Promise<CalendarEventId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<CalendarEventAttendeeId>>({
+    const { data: json } = await devClient.request<JsonOf<CalendarEventId>>({
       url: uri`/calendar-event`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -209,9 +209,9 @@ export async function addCalendarEventAttendee(
     body: DevCalendarEventAttendee
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<CalendarEventId> {
+): Promise<CalendarEventAttendeeId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<CalendarEventId>>({
+    const { data: json } = await devClient.request<JsonOf<CalendarEventAttendeeId>>({
       url: uri`/calendar-event-attendee`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },

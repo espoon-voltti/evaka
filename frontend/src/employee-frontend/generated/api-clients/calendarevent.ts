@@ -6,8 +6,8 @@
 
 import LocalDate from 'lib-common/local-date'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import { CalendarEventAttendeeId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventForm } from 'lib-common/generated/api-types/calendarevent'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventTimeClearingForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeEmployeeReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeForm } from 'lib-common/generated/api-types/calendarevent'
@@ -30,7 +30,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function addCalendarEventTime(
   request: {
-    id: CalendarEventAttendeeId,
+    id: CalendarEventId,
     body: CalendarEventTimeForm
   }
 ): Promise<CalendarEventTimeId> {
@@ -67,8 +67,8 @@ export async function createCalendarEvent(
   request: {
     body: CalendarEventForm
   }
-): Promise<CalendarEventAttendeeId> {
-  const { data: json } = await client.request<JsonOf<CalendarEventAttendeeId>>({
+): Promise<CalendarEventId> {
+  const { data: json } = await client.request<JsonOf<CalendarEventId>>({
     url: uri`/employee/calendar-event`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CalendarEventForm>
@@ -82,7 +82,7 @@ export async function createCalendarEvent(
 */
 export async function deleteCalendarEvent(
   request: {
-    id: CalendarEventAttendeeId
+    id: CalendarEventId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -114,7 +114,7 @@ export async function deleteCalendarEventTime(
 */
 export async function getCalendarEvent(
   request: {
-    id: CalendarEventAttendeeId
+    id: CalendarEventId
   }
 ): Promise<CalendarEvent> {
   const { data: json } = await client.request<JsonOf<CalendarEvent>>({
@@ -194,7 +194,7 @@ export async function getUnitCalendarEvents(
 */
 export async function modifyCalendarEvent(
   request: {
-    id: CalendarEventAttendeeId,
+    id: CalendarEventId,
     body: CalendarEventUpdateForm
   }
 ): Promise<void> {
@@ -229,7 +229,7 @@ export async function setCalendarEventTimeReservation(
 */
 export async function updateCalendarEvent(
   request: {
-    id: CalendarEventAttendeeId,
+    id: CalendarEventId,
     body: CalendarEventUpdateForm
   }
 ): Promise<void> {
