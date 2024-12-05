@@ -34,7 +34,7 @@ function daysToMillis(days: number): number {
 }
 
 async function mobileLogin(
-  sessions: Sessions,
+  sessions: Sessions<'employee-mobile'>,
   req: express.Request,
   res: express.Response,
   device: MobileDeviceIdentity
@@ -52,7 +52,7 @@ async function mobileLogin(
   })
 }
 
-export const refreshMobileSession = (sessions: Sessions) =>
+export const refreshMobileSession = (sessions: Sessions<'employee-mobile'>) =>
   toMiddleware(async (req, res) => {
     const user = sessions.getUser(req)
     if (!user) {
@@ -71,7 +71,7 @@ export const refreshMobileSession = (sessions: Sessions) =>
     }
   })
 
-export const mobileDeviceSession = (sessions: Sessions) =>
+export const finishPairing = (sessions: Sessions<'employee-mobile'>) =>
   toRequestHandler(async (req, res) => {
     const id = assertStringProp(req.body, 'id')
     const challengeKey = assertStringProp(req.body, 'challengeKey')
@@ -84,7 +84,7 @@ export const mobileDeviceSession = (sessions: Sessions) =>
     res.sendStatus(204)
   })
 
-export const devApiE2ESignup = (sessions: Sessions) =>
+export const devApiE2ESignup = (sessions: Sessions<'employee-mobile'>) =>
   toRequestHandler(async (req, res) => {
     const token = assertStringProp(req.query, 'token')
     const deviceIdentity = await identifyMobileDevice(req, token)
@@ -99,7 +99,7 @@ export const devApiE2ESignup = (sessions: Sessions) =>
 const toMobileEmployeeIdKey = (token: string) => `mobile-employee-id:${token}`
 
 export const pinLoginRequestHandler = (
-  sessions: Sessions,
+  sessions: Sessions<'employee-mobile'>,
   redisClient: RedisClient
 ) =>
   toRequestHandler(async (req, res) => {
@@ -121,7 +121,7 @@ export const pinLoginRequestHandler = (
   })
 
 export const pinLogoutRequestHandler = (
-  sessions: Sessions,
+  sessions: Sessions<'employee-mobile'>,
   redisClient: RedisClient
 ) =>
   toRequestHandler(async (req, res) => {
@@ -137,7 +137,7 @@ export const pinLogoutRequestHandler = (
   })
 
 export const checkMobileEmployeeIdToken = (
-  sessions: Sessions,
+  sessions: Sessions<'employee-mobile'>,
   redisClient: RedisClient
 ) =>
   toMiddleware(async (req) => {
