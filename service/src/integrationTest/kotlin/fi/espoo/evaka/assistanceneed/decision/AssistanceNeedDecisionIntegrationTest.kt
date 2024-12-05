@@ -514,6 +514,46 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
+    fun `Decision making calculates end date correctly when it is set and no other decision is in future`() {
+        val testValidityPeriod =
+            DateRange(
+                testDecision.validityPeriod.start,
+                testDecision.validityPeriod.start.plusMonths(6),
+            )
+        MockSfiMessagesClient.clearMessages()
+
+        val assistanceNeedDecision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    decision = testDecision.copy(validityPeriod = testValidityPeriod)
+                )
+            )
+
+        sendAssistanceNeedDecision(assistanceNeedDecision.id)
+
+        decideAssistanceNeedDecision(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+        val decision = getAssistanceNeedDecision(assistanceNeedDecision.id)
+        assertEquals(clock.today(), decision.decisionMade)
+        assertEquals(testValidityPeriod, decision.validityPeriod)
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val messages = MockSfiMessagesClient.getMessages()
+        assertEquals(1, messages.size)
+        assertContains(messages[0].messageContent, "päätös tuesta")
+        assertEquals(
+            "assistance-need-decisions/assistance_need_decision_${assistanceNeedDecision.id}.pdf",
+            messages[0].documentKey,
+        )
+    }
+
+    @Test
     fun `Metadata is collected`() {
         val assistanceNeedDecision =
             createAssistanceNeedDecision(AssistanceNeedDecisionRequest(decision = testDecision))
