@@ -1472,26 +1472,25 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 placement
             }
 
-        val result = db.read { tx -> getMissingGroupPlacements(tx, daycare1.id) }
+        val (group, backup) = db.read { tx -> getMissingGroupPlacements(tx, daycare1.id) }
         assertEquals(
             listOf(
                 MissingGroupPlacement(
                     placement.id,
                     placement.type,
-                    false,
                     FiniteDateRange(placement.startDate, placement.endDate),
                     testChild_1.id,
                     testChild_1.firstName,
                     testChild_1.lastName,
                     testChild_1.dateOfBirth,
                     listOf(),
-                    listOf(),
                     "Kokopäiväinen",
                     FiniteDateRange(evakaLaunch.plusMonths(6).plusDays(1), evakaLaunch.plusYears(1)),
                 )
             ),
-            result,
+            group,
         )
+        assertEquals(emptyList(), backup)
     }
 
     @Test
@@ -1535,25 +1534,22 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             }
 
-        val result = db.read { tx -> getMissingGroupPlacements(tx, daycare2.id) }
+        val (group, backup) = db.read { tx -> getMissingGroupPlacements(tx, daycare2.id) }
+        assertEquals(emptyList(), group)
         assertEquals(
             listOf(
-                MissingGroupPlacement(
-                    PlacementId(backupCareId.raw),
-                    null,
-                    true,
+                MissingBackupGroupPlacement(
+                    backupCareId,
                     FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1)),
                     testChild_1.id,
                     testChild_1.firstName,
                     testChild_1.lastName,
                     testChild_1.dateOfBirth,
                     listOf(daycare1.name),
-                    listOf(),
-                    "",
                     FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1)),
                 )
             ),
-            result,
+            backup,
         )
     }
 }
