@@ -14,12 +14,14 @@ import { createServiceRequestHeaders } from './service-client.js'
 interface ProxyOptions {
   path?: string | ((req: express.Request) => string)
   url?: string
+  getUserHeader: (req: express.Request) => string | undefined
 }
 
 export function createProxy({
   path,
-  url = evakaServiceUrl
-}: ProxyOptions = {}) {
+  url = evakaServiceUrl,
+  getUserHeader
+}: ProxyOptions) {
   return expressHttpProxy(url, {
     parseReqBody: false,
     proxyReqPathResolver: typeof path === 'string' ? () => path : path,
@@ -31,7 +33,7 @@ export function createProxy({
       delete originalHeaders['x-user']
 
       const serviceHeaders = lowercaseHeaderNames(
-        createServiceRequestHeaders(srcReq)
+        createServiceRequestHeaders(srcReq, getUserHeader(srcReq))
       )
       proxyReqOpts.headers = {
         ...originalHeaders,

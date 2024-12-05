@@ -30,7 +30,7 @@ const Profile = z
   .passthrough()
 
 export const authenticateAd = (config: Config['ad']): AuthenticateProfile =>
-  authenticateProfile(Profile, async (profile) => {
+  authenticateProfile(Profile, async (samlSession, profile) => {
     const aad = profile[config.userIdKey]
     if (!aad || typeof aad !== 'string') throw Error('No user ID in SAML data')
     const person = await employeeLogin({
@@ -42,8 +42,10 @@ export const authenticateAd = (config: Config['ad']): AuthenticateProfile =>
     })
     return {
       id: person.id,
+      authType: 'ad',
       userType: 'EMPLOYEE',
       globalRoles: person.globalRoles,
-      allScopedRoles: person.allScopedRoles
+      allScopedRoles: person.allScopedRoles,
+      samlSession
     }
   })

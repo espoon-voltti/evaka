@@ -62,12 +62,16 @@ export type AuthenticateProfile = (
 
 export function authenticateProfile<T>(
   schema: z.ZodType<T>,
-  authenticate: (profile: T) => Promise<EvakaSessionUser>
+  authenticate: (
+    samlSession: SamlSession,
+    profile: T
+  ) => Promise<EvakaSessionUser>
 ): AuthenticateProfile {
   return async (profile) => {
+    const samlSession = SamlSessionSchema.parse(profile)
     const parseResult = schema.safeParse(profile)
     if (parseResult.success) {
-      return await authenticate(parseResult.data)
+      return await authenticate(samlSession, parseResult.data)
     } else {
       throw new Error(
         `SAML ${profile.issuer} profile parsing failed: ${parseResult.error.message}`
@@ -81,9 +85,10 @@ export const SamlProfileIdSchema = z.object({
   nameIDFormat: z.string()
 })
 
-// A subset of SAML Profile fields that are expected to be present in Profile
-// *and* req.user in valid SAML sessions
-export const SamlProfileSchema = z.object({
+export type SamlSession = z.infer<typeof SamlSessionSchema>
+
+// A subset of SAML Profile fields that are expected to be present in valid SAML sessions
+export const SamlSessionSchema = z.object({
   issuer: z.string(),
   nameID: z.string(),
   nameIDFormat: z.string(),

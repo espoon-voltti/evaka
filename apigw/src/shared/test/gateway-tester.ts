@@ -11,7 +11,6 @@ import axios, {
 } from 'axios'
 import express from 'express'
 import nock from 'nock'
-import passport from 'passport'
 import { Cookie, CookieJar } from 'tough-cookie'
 
 import { enduserGwRouter } from '../../enduser/app.js'
@@ -150,8 +149,6 @@ export class GatewayTester {
     const redisClient = new MockRedisClient()
     app.use('/api/application', enduserGwRouter(config, redisClient))
     app.use('/api/internal', internalGwRouter(config, redisClient))
-    passport.serializeUser<Express.User>((user, done) => done(null, user))
-    passport.deserializeUser<Express.User>((user, done) => done(null, user))
     return new Promise((resolve) => {
       const server = app.listen(() => {
         resolve(new GatewayTester(server, sessionType))

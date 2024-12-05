@@ -16,7 +16,7 @@ const Profile = z.object({
 
 export const authenticateKeycloakEmployee = authenticateProfile(
   Profile,
-  async (profile) => {
+  async (samlSession, profile) => {
     const id = profile.id
     if (!id) throw Error('No user ID in evaka IDP SAML data')
     const person = await employeeLogin({
@@ -27,9 +27,11 @@ export const authenticateKeycloakEmployee = authenticateProfile(
     })
     return {
       id: person.id,
+      authType: 'keycloak-employee',
       userType: 'EMPLOYEE',
       globalRoles: person.globalRoles,
-      allScopedRoles: person.allScopedRoles
+      allScopedRoles: person.allScopedRoles,
+      samlSession
     }
   }
 )

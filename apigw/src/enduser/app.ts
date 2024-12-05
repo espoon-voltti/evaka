@@ -5,9 +5,7 @@
 import { SAML } from '@node-saml/node-saml'
 import cookieParser from 'cookie-parser'
 import express from 'express'
-import passport from 'passport'
 
-import { requireAuthentication } from '../shared/auth/index.js'
 import { appCommit, Config } from '../shared/config.js'
 import { cacheControl } from '../shared/middleware/cache-control.js'
 import { csrf } from '../shared/middleware/csrf.js'
@@ -22,7 +20,7 @@ import { sessionSupport } from '../shared/session.js'
 import { createDevSfiRouter } from './dev-sfi-auth.js'
 import { authenticateKeycloakCitizen } from './keycloak-citizen-saml.js'
 import mapRoutes from './mapRoutes.js'
-import authStatus from './routes/auth-status.js'
+import { authStatus } from './routes/auth-status.js'
 import { authWeakLogin } from './routes/auth-weak-login.js'
 import { authenticateSuomiFi } from './suomi-fi-saml.js'
 
@@ -33,11 +31,11 @@ export function enduserGwRouter(
   const router = express.Router()
 
   const sessions = sessionSupport('enduser', redisClient, config.citizen)
+  const getUserHeader = (req: express.Request) => sessions.getUserHeader(req)
 
+  // middlewares
   router.use(sessions.middleware)
-  router.use(passport.session())
   router.use(cookieParser())
-
   router.use(
     cacheControl((req) =>
       req.path.startsWith('/citizen/child-images/')
@@ -49,8 +47,6 @@ export function enduserGwRouter(
   router.get('/version', (_, res) => {
     res.send({ commitId: appCommit })
   })
-  router.all('/citizen/public/*', createProxy())
-  router.use(mapRoutes)
 
   if (config.sfi.type === 'mock') {
     router.use('/auth/saml', createDevSfiRouter(sessions))
@@ -89,11 +85,25 @@ export function enduserGwRouter(
       defaultPageUrl: '/'
     })
   )
-  router.get('/auth/status', authStatus)
-  router.post('/auth/weak-login', express.json(), authWeakLogin(redisClient))
-  router.use(requireAuthentication)
+
+  // CSRF checks apply to all the API endpoints that frontend uses
   router.use(csrf)
-  router.all('/citizen/*', createProxy())
+
+  // public endpoints
+  router.all('/citizen/public/*', createProxy({ getUserHeader }))
+  router.use(mapRoutes)
+  router.get('/auth/status', authStatus(sessions))
+  router.post(
+    '/auth/weak-login',
+    express.json(),
+    authWeakLogin(sessions, redisClient)
+  )
+
+  // authenticated endpoints
+  router.use(sessions.requireAuthentication)
+  router.all('/citizen/*', createProxy({ getUserHeader }))
+
+  // global error middleware
   router.use(errorHandler(false))
   return router
 }

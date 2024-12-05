@@ -16,7 +16,7 @@ const Profile = z.object({
 
 export const authenticateKeycloakCitizen = authenticateProfile(
   Profile,
-  async (profile) => {
+  async (samlSession, profile) => {
     const socialSecurityNumber = profile.socialSecurityNumber
     if (!socialSecurityNumber)
       throw Error('No socialSecurityNumber in evaka IDP SAML data')
@@ -30,9 +30,9 @@ export const authenticateKeycloakCitizen = authenticateProfile(
 
     return {
       id: person.id,
+      authType: 'keycloak-citizen',
       userType: 'CITIZEN_WEAK',
-      globalRoles: [],
-      allScopedRoles: []
+      samlSession
     }
   }
 )

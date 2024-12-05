@@ -64,9 +64,8 @@ export function createDevSfiRouter(sessions: Sessions): Router {
       })
       return {
         id: person.id,
-        userType: 'CITIZEN_STRONG',
-        globalRoles: [],
-        allScopedRoles: []
+        authType: 'dev',
+        userType: 'CITIZEN_STRONG'
       }
     }
   })

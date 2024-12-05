@@ -9,6 +9,7 @@ import {
   CitizenUserResponse,
   getCitizenDetails
 } from '../../shared/service-client.js'
+import { Sessions } from '../../shared/session.js'
 
 export interface AuthStatus {
   loggedIn: boolean
@@ -28,18 +29,20 @@ const getAuthLevel = (user: EvakaSessionUser): 'STRONG' | 'WEAK' => {
   }
 }
 
-export default toRequestHandler(async (req, res) => {
-  let status: AuthStatus
-  if (req.user && req.user.id) {
-    const data = await getCitizenDetails(req, req.user.id)
-    status = {
-      loggedIn: true,
-      user: data,
-      apiVersion: appCommit,
-      authLevel: getAuthLevel(req.user)
+export const authStatus = (sessions: Sessions) =>
+  toRequestHandler(async (req, res) => {
+    const user = sessions.getUser(req)
+    let status: AuthStatus
+    if (user && user.id) {
+      const data = await getCitizenDetails(req, user.id)
+      status = {
+        loggedIn: true,
+        user: data,
+        apiVersion: appCommit,
+        authLevel: getAuthLevel(user)
+      }
+    } else {
+      status = { loggedIn: false, apiVersion: appCommit }
     }
-  } else {
-    status = { loggedIn: false, apiVersion: appCommit }
-  }
-  res.status(200).send(status)
-})
+    res.status(200).send(status)
+  })
