@@ -50,16 +50,13 @@ export const Reservations = React.memo(function Reservations({
       reservationsAndAttendancesDiffer(reservations, attendances)
   )
 
-  const isToday = data.date.isToday()
-
   const groupedChildren = useMemo(
     () =>
       groupChildren({
         children: data.children,
-        i18n,
-        isToday
+        i18n
       }),
-    [data.children, i18n, isToday]
+    [data.children, i18n]
   )
 
   return data.children.length === 0 && data.holiday ? (
@@ -179,12 +176,10 @@ const absenceElementType = (absence: AbsenceInfo) =>
 
 const groupChildren = ({
   children,
-  i18n,
-  isToday
+  i18n
 }: {
   children: ReservationResponseDayChild[]
   i18n: Translations
-  isToday: boolean
 }): GroupedDailyChildren[] =>
   Object.entries(
     groupBy(
@@ -216,9 +211,7 @@ const groupChildren = ({
             .join(', ')
           const attendancesWithReservationsText =
             attendanceText +
-            (isToday &&
-            child.usedService !== null &&
-            reservationsWithTimesText.length > 0
+            (reservationsWithTimesText.length > 0
               ? `\n(${reservationsWithTimesText})`
               : '')
           return {
