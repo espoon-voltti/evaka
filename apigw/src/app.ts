@@ -127,6 +127,10 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   const internalProxy = createProxy({
     getUserHeader: (req) => internalSessions.getUserHeader(req)
   })
+  const employeeSessions = internalSessions
+  const employeeProxy = internalProxy
+  const employeeMobileSessions = internalSessions
+  const employeeMobileProxy = internalProxy
 
   if (config.sfi.type === 'mock') {
     router.use(
@@ -183,15 +187,15 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   if (config.ad.type === 'mock') {
     router.use(
       '/auth/entraid',
-      internalSessions.middleware,
-      createDevAdRouter(internalSessions)
+      employeeSessions.middleware,
+      createDevAdRouter(employeeSessions)
     )
   } else if (config.ad.type === 'saml') {
     router.use(
       '/auth/entraid',
-      internalSessions.middleware,
+      employeeSessions.middleware,
       createSamlRouter({
-        sessions: internalSessions,
+        sessions: employeeSessions,
         strategyName: 'ead',
         saml: new SAML(
           createSamlConfig(
@@ -209,9 +213,9 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     throw new Error('Missing Keycloak SAML configuration (employee)')
   router.use(
     '/auth/keycloak-employee',
-    internalSessions.middleware,
+    employeeSessions.middleware,
     createSamlRouter({
-      sessions: internalSessions,
+      sessions: employeeSessions,
       strategyName: 'evaka',
       saml: new SAML(
         createSamlConfig(
@@ -227,9 +231,9 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   if (enableDevApi) {
     router.get(
       '/dev-api/auth/mobile-e2e-signup',
-      internalSessions.middleware,
+      employeeMobileSessions.middleware,
       cookieParser(config.employee.cookieSecret),
-      devApiE2ESignup(internalSessions)
+      devApiE2ESignup(employeeMobileSessions)
     )
     router.use(
       '/dev-api',
@@ -239,121 +243,74 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     )
   }
 
-  router.use(
-    '/citizen/public/map-api',
-    csrf,
-    citizenSessions.middleware,
-    mapRoutes
-  )
-  router.all(
-    '/citizen/public/*',
-    csrf,
-    citizenSessions.middleware,
-    citizenProxy
-  )
-  router.get(
-    '/citizen/auth/status',
-    csrf,
-    citizenSessions.middleware,
-    citizenAuthStatus(citizenSessions)
-  )
+  // CSRF checks apply to all the API endpoints that frontend uses
+  router.use(csrf)
+
+  router.use('/citizen', citizenSessions.middleware)
+  router.use('/citizen/public/map-api', mapRoutes)
+  router.all('/citizen/public/*', citizenProxy)
+  router.get('/citizen/auth/status', citizenAuthStatus(citizenSessions))
   router.post(
     '/citizen/auth/weak-login',
-    csrf,
-    citizenSessions.middleware,
     express.json(),
     authWeakLogin(citizenSessions, redisClient)
   )
-  router.all(
-    '/citizen/*',
-    csrf,
-    citizenSessions.middleware,
-    citizenSessions.requireAuthentication,
-    citizenProxy
-  )
+  router.all('/citizen/*', citizenSessions.requireAuthentication, citizenProxy)
 
   router.get(
     '/internal/auth/status',
-    csrf,
     internalSessions.middleware,
     cookieParser(config.employee.cookieSecret),
     checkMobileEmployeeIdToken(internalSessions, redisClient),
     refreshMobileSession(internalSessions),
     internalAuthStatus(internalSessions)
   )
+
+  router.use('/employee', employeeSessions.middleware)
   router.get(
     '/employee/auth/status',
-    csrf,
-    internalSessions.middleware,
     cookieParser(config.employee.cookieSecret),
-    internalAuthStatus(internalSessions)
+    internalAuthStatus(employeeSessions)
   )
-  router.all(
-    '/employee/public/*',
-    csrf,
-    internalSessions.middleware,
-    internalProxy
-  )
+  router.all('/employee/public/*', employeeProxy)
   router.all(
     '/employee/*',
-    csrf,
-    internalSessions.middleware,
-    internalSessions.requireAuthentication,
-    internalProxy
+    employeeSessions.requireAuthentication,
+    employeeProxy
   )
 
+  router.use(
+    '/employee-mobile',
+    employeeMobileSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(employeeMobileSessions, redisClient)
+  )
   router.get(
     '/employee-mobile/auth/status',
-    csrf,
-    internalSessions.middleware,
-    cookieParser(config.employee.cookieSecret),
-    internalAuthStatus(internalSessions)
+    internalAuthStatus(employeeMobileSessions)
   )
   router.post(
     '/employee-mobile/auth/finish-pairing',
-    csrf,
-    internalSessions.middleware,
-    cookieParser(config.employee.cookieSecret),
-    checkMobileEmployeeIdToken(internalSessions, redisClient),
     express.json(),
-    mobileDeviceSession(internalSessions)
+    mobileDeviceSession(employeeMobileSessions)
   )
   router.post(
     '/employee-mobile/auth/pin-login',
-    csrf,
-    internalSessions.middleware,
-    cookieParser(config.employee.cookieSecret),
-    checkMobileEmployeeIdToken(internalSessions, redisClient),
-    internalSessions.requireAuthentication,
+    employeeMobileSessions.requireAuthentication,
     express.json(),
-    pinLoginRequestHandler(internalSessions, redisClient)
+    pinLoginRequestHandler(employeeMobileSessions, redisClient)
   )
   router.post(
     '/employee-mobile/auth/pin-logout',
-    csrf,
-    internalSessions.middleware,
-    cookieParser(config.employee.cookieSecret),
-    checkMobileEmployeeIdToken(internalSessions, redisClient),
-    internalSessions.requireAuthentication,
+    employeeMobileSessions.requireAuthentication,
     express.json(),
-    pinLogoutRequestHandler(internalSessions, redisClient)
+    pinLogoutRequestHandler(employeeMobileSessions, redisClient)
   )
-  router.all(
-    '/employee-mobile/public/*',
-    csrf,
-    internalSessions.middleware,
-    cookieParser(config.employee.cookieSecret),
-    checkMobileEmployeeIdToken(internalSessions, redisClient),
-    internalProxy
-  )
+  router.all('/employee-mobile/public/*', employeeMobileProxy)
   router.all(
     '/employee-mobile/*',
-    csrf,
-    internalSessions.middleware,
-    cookieParser(config.employee.cookieSecret),
-    checkMobileEmployeeIdToken(internalSessions, redisClient),
-    internalSessions.requireAuthentication,
-    internalProxy
+    employeeMobileSessions.requireAuthentication,
+    employeeMobileProxy
   )
 
   // global error middleware
