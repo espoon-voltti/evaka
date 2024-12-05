@@ -8,23 +8,23 @@ import express from 'express'
 
 import { AsyncRequestHandler, toRequestHandler } from '../express.js'
 import { validateRelayStateUrl } from '../saml/index.js'
-import { Sessions } from '../session.js'
+import { Sessions, SessionType } from '../session.js'
 
 import { EvakaSessionUser } from './index.js'
 
-export interface DevAuthRouterOptions {
-  sessions: Sessions
+export interface DevAuthRouterOptions<T extends SessionType> {
+  sessions: Sessions<T>
   root: string
   verifyUser: (req: Request) => Promise<EvakaSessionUser>
   loginFormHandler: AsyncRequestHandler
 }
 
-export function createDevAuthRouter({
+export function createDevAuthRouter<T extends SessionType>({
   sessions,
   root,
   verifyUser,
   loginFormHandler
-}: DevAuthRouterOptions): express.Router {
+}: DevAuthRouterOptions<T>): express.Router {
   const router = express.Router()
 
   router.get('/login', toRequestHandler(loginFormHandler))
