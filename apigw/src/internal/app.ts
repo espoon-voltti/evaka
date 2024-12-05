@@ -38,11 +38,6 @@ export function internalGwRouter(
   const getUserHeader = (req: express.Request) =>
     internalSessions.getUserHeader(req)
 
-  // middlewares
-  router.use(internalSessions.middleware)
-  router.use(cookieParser(config.employee.cookieSecret))
-  router.use(checkMobileEmployeeIdToken(internalSessions, redisClient))
-
   router.all('/auth/*', (req: express.Request, res, next) => {
     if (req.session?.idpProvider === 'evaka') {
       req.url = req.url.replace('saml', 'evaka')
@@ -51,10 +46,15 @@ export function internalGwRouter(
   })
 
   if (config.ad.type === 'mock') {
-    router.use('/auth/saml', createDevAdRouter(internalSessions))
+    router.use(
+      '/auth/saml',
+      internalSessions.middleware,
+      createDevAdRouter(internalSessions)
+    )
   } else if (config.ad.type === 'saml') {
     router.use(
       '/auth/saml',
+      internalSessions.middleware,
       createSamlRouter({
         sessions: internalSessions,
         strategyName: 'ead',
@@ -74,6 +74,7 @@ export function internalGwRouter(
     throw new Error('Missing Keycloak SAML configuration (employee)')
   router.use(
     '/auth/evaka',
+    internalSessions.middleware,
     createSamlRouter({
       sessions: internalSessions,
       strategyName: 'evaka',
@@ -97,39 +98,84 @@ export function internalGwRouter(
       })
     )
 
-    router.get('/auth/mobile-e2e-signup', devApiE2ESignup(internalSessions))
+    router.get(
+      '/auth/mobile-e2e-signup',
+      internalSessions.middleware,
+      cookieParser(config.employee.cookieSecret),
+      devApiE2ESignup(internalSessions)
+    )
   }
 
-  // CSRF checks apply to all the API endpoints that frontend uses
-  router.use(csrf)
-
   // public endpoints
-  router.all('/employee/public/*', createProxy({ getUserHeader }))
-  router.all('/employee-mobile/public/*', createProxy({ getUserHeader }))
+  router.all(
+    '/employee/public/*',
+    csrf,
+    internalSessions.middleware,
+    createProxy({ getUserHeader })
+  )
+  router.all(
+    '/employee-mobile/public/*',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    createProxy({ getUserHeader })
+  )
   router.get(
     '/auth/status',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
     refreshMobileSession(internalSessions),
     authStatus(internalSessions)
   )
   router.post(
     '/auth/mobile',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
     express.json(),
     mobileDeviceSession(internalSessions)
   )
 
   // authenticated endpoints
-  router.use(internalSessions.requireAuthentication)
   router.post(
     '/auth/pin-login',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    internalSessions.requireAuthentication,
     express.json(),
     pinLoginRequestHandler(internalSessions, redisClient)
   )
   router.post(
     '/auth/pin-logout',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    internalSessions.requireAuthentication,
     express.json(),
     pinLogoutRequestHandler(internalSessions, redisClient)
   )
-  router.all('/employee/*', createProxy({ getUserHeader }))
-  router.all('/employee-mobile/*', createProxy({ getUserHeader }))
+  router.all(
+    '/employee/*',
+    csrf,
+    internalSessions.middleware,
+    internalSessions.requireAuthentication,
+    createProxy({ getUserHeader })
+  )
+  router.all(
+    '/employee-mobile/*',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    internalSessions.requireAuthentication,
+    createProxy({ getUserHeader })
+  )
   return router
 }
