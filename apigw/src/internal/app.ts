@@ -6,7 +6,7 @@ import { SAML } from '@node-saml/node-saml'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 
-import { Config, enableDevApi } from '../shared/config.js'
+import { Config } from '../shared/config.js'
 import { csrf } from '../shared/middleware/csrf.js'
 import { createProxy } from '../shared/proxy-utils.js'
 import { RedisClient } from '../shared/redis-client.js'
@@ -20,7 +20,6 @@ import { createDevAdRouter } from './dev-ad-auth.js'
 import { authenticateKeycloakEmployee } from './keycloak-employee-saml.js'
 import {
   checkMobileEmployeeIdToken,
-  devApiE2ESignup,
   mobileDeviceSession,
   pinLoginRequestHandler,
   pinLogoutRequestHandler,
@@ -88,23 +87,6 @@ export function internalGwRouter(
       defaultPageUrl: '/employee'
     })
   )
-
-  if (enableDevApi) {
-    router.use(
-      '/dev-api',
-      createProxy({
-        getUserHeader: () => undefined,
-        path: ({ url }) => `/dev-api${url}`
-      })
-    )
-
-    router.get(
-      '/auth/mobile-e2e-signup',
-      internalSessions.middleware,
-      cookieParser(config.employee.cookieSecret),
-      devApiE2ESignup(internalSessions)
-    )
-  }
 
   // public endpoints
   router.all(

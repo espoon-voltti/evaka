@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { SAML } from '@node-saml/node-saml'
+import cookieParser from 'cookie-parser'
 import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
@@ -13,8 +14,14 @@ import { authStatus } from './enduser/routes/auth-status.js'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.js'
 import { authenticateSuomiFi } from './enduser/suomi-fi-saml.js'
 import { internalGwRouter } from './internal/app.js'
+import { devApiE2ESignup } from './internal/mobile-device-session.js'
 import { integrationUserHeader } from './shared/auth/index.js'
-import { appCommit, Config, titaniaConfig } from './shared/config.js'
+import {
+  appCommit,
+  Config,
+  enableDevApi,
+  titaniaConfig
+} from './shared/config.js'
 import { cacheControl } from './shared/middleware/cache-control.js'
 import { csrf } from './shared/middleware/csrf.js'
 import { errorHandler } from './shared/middleware/error-handler.js'
@@ -123,6 +130,21 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       defaultPageUrl: '/'
     })
   )
+
+  if (enableDevApi) {
+    router.get(
+      '/dev-api/auth/mobile-e2e-signup',
+      internalSessions.middleware,
+      cookieParser(config.employee.cookieSecret),
+      devApiE2ESignup(internalSessions)
+    )
+    router.use(
+      '/dev-api',
+      createProxy({
+        getUserHeader: () => undefined
+      })
+    )
+  }
 
   router.use(
     '/citizen/public/map-api',
