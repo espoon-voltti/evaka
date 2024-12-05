@@ -94,6 +94,16 @@ import java.time.format.FormatStyle
 import java.util.Locale
 import org.springframework.stereotype.Service
 
+enum class SimpleApplicationAction {
+    MOVE_TO_WAITING_PLACEMENT,
+    RETURN_TO_SENT,
+    CANCEL_PLACEMENT_PLAN,
+    SEND_DECISIONS_WITHOUT_PROPOSAL,
+    SEND_PLACEMENT_PROPOSAL,
+    WITHDRAW_PLACEMENT_PROPOSAL,
+    CONFIRM_DECISION_MAILED,
+}
+
 @Service
 class ApplicationStateService(
     private val accessControl: AccessControl,
@@ -105,6 +115,38 @@ class ApplicationStateService(
     private val messageProvider: IMessageProvider,
     private val messageService: MessageService,
 ) {
+    fun doSimpleAction(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        action: SimpleApplicationAction,
+        applicationId: ApplicationId,
+    ) {
+        when (action) {
+            SimpleApplicationAction.MOVE_TO_WAITING_PLACEMENT ->
+                moveToWaitingPlacement(tx, user, clock, applicationId)
+            SimpleApplicationAction.RETURN_TO_SENT -> returnToSent(tx, user, clock, applicationId)
+            SimpleApplicationAction.CANCEL_PLACEMENT_PLAN ->
+                cancelPlacementPlan(tx, user, clock, applicationId)
+            SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL ->
+                sendDecisionsWithoutProposal(tx, user, clock, applicationId)
+            SimpleApplicationAction.SEND_PLACEMENT_PROPOSAL ->
+                sendPlacementProposal(tx, user, clock, applicationId)
+            SimpleApplicationAction.WITHDRAW_PLACEMENT_PROPOSAL ->
+                withdrawPlacementProposal(tx, user, clock, applicationId)
+            SimpleApplicationAction.CONFIRM_DECISION_MAILED ->
+                confirmDecisionMailed(tx, user, clock, applicationId)
+        }
+    }
+
+    fun doSimpleAction(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        action: SimpleApplicationAction,
+        applicationIds: Set<ApplicationId>,
+    ) = applicationIds.forEach { doSimpleAction(tx, user, clock, action, it) }
+
     fun createApplication(
         tx: Database.Transaction,
         user: AuthenticatedUser,
@@ -233,6 +275,8 @@ class ApplicationStateService(
 
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags)
+
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, application.form)
 
         val sentDate = application.sentDate ?: currentDate
         val dueDate =
@@ -377,6 +421,8 @@ class ApplicationStateService(
             )
         }
 
+        tx.resetCheckedByAdminAndConfidentiality(application.id, application.form)
+
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
     }
 
@@ -408,7 +454,7 @@ class ApplicationStateService(
             )
         )
 
-        tx.setCheckedByAdminToDefault(applicationId, application.form)
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, application.form)
 
         asyncJobRunner.plan(
             tx,
@@ -449,6 +495,8 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_PLACEMENT, CANCELLED))
 
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, application.form)
+
         if (application.status == CANCELLED) {
             tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
                 if (process.history.any { it.state == ArchivedProcessState.COMPLETED }) {
@@ -467,6 +515,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         applicationId: ApplicationId,
+        confidential: Boolean?,
     ) {
         accessControl.requirePermissionFor(
             tx,
@@ -478,6 +527,17 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
+
+        if (application.confidential == null) {
+            when {
+                user is AuthenticatedUser.Citizen ->
+                    tx.setApplicationConfidentiality(applicationId, true)
+                confidential != null ->
+                    tx.setApplicationConfidentiality(applicationId, confidential)
+                else -> throw BadRequest("Confidentiality must be set")
+            }
+        } else if (confidential != null) throw BadRequest("Confidentiality is already set")
+
         tx.updateApplicationStatus(application.id, CANCELLED, user.evakaUserId, clock.now())
 
         tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
@@ -499,6 +559,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         applicationId: ApplicationId,
+        confidential: Boolean?,
     ) {
         accessControl.requirePermissionFor(
             tx,
@@ -510,27 +571,14 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
+
+        if (application.confidential == null) {
+            if (confidential != null) {
+                tx.setApplicationConfidentiality(applicationId, confidential)
+            } else throw BadRequest("Confidentiality must be set")
+        } else if (confidential != null) throw BadRequest("Confidentiality is already set")
+
         tx.setApplicationVerified(applicationId, true)
-        Audit.ApplicationAdminDetailsUpdate.log(targetId = AuditId(applicationId))
-    }
-
-    fun setUnverified(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        applicationId: ApplicationId,
-    ) {
-        accessControl.requirePermissionFor(
-            tx,
-            user,
-            clock,
-            Action.Application.VERIFY,
-            applicationId,
-        )
-
-        val application = getApplication(tx, applicationId)
-        verifyStatus(application, WAITING_PLACEMENT)
-        tx.setApplicationVerified(applicationId, false)
         Audit.ApplicationAdminDetailsUpdate.log(targetId = AuditId(applicationId))
     }
 
@@ -543,6 +591,9 @@ class ApplicationStateService(
     ): PlacementPlanId {
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
+
+        if (!application.checkedByAdmin || application.confidential == null)
+            throw BadRequest("Application has not been verified or confidentiality is not set")
 
         val placementPlanId =
             placementPlanService.createPlacementPlan(tx, application, placementPlan)
@@ -1126,7 +1177,7 @@ class ApplicationStateService(
             original.guardianRestricted,
             now,
         )
-        setCheckedByAdminToDefault(original.id, updatedForm)
+        resetCheckedByAdminAndConfidentiality(original.id, updatedForm)
         when (manuallySetDueDate) {
             null ->
                 // We don't want to calculate the due date for applications in the CREATED state.

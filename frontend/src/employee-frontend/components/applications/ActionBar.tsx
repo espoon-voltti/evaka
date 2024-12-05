@@ -79,7 +79,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       onClick: () =>
         handlePromise(
           simpleBatchAction({
-            action: 'move-to-waiting-placement',
+            action: 'MOVE_TO_WAITING_PLACEMENT',
             body: { applicationIds: checkedIds }
           })
         )
@@ -93,7 +93,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       onClick: () =>
         handlePromise(
           simpleBatchAction({
-            action: 'return-to-sent',
+            action: 'RETURN_TO_SENT',
             body: { applicationIds: checkedIds }
           })
         )
@@ -107,7 +107,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       onClick: () =>
         handlePromise(
           simpleBatchAction({
-            action: 'cancel-placement-plan',
+            action: 'CANCEL_PLACEMENT_PLAN',
             body: { applicationIds: checkedIds }
           })
         )
@@ -121,7 +121,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       onClick: () =>
         handlePromise(
           simpleBatchAction({
-            action: 'send-decisions-without-proposal',
+            action: 'SEND_DECISIONS_WITHOUT_PROPOSAL',
             body: { applicationIds: checkedIds }
           })
         )
@@ -135,7 +135,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       onClick: () =>
         handlePromise(
           simpleBatchAction({
-            action: 'send-placement-proposal',
+            action: 'SEND_PLACEMENT_PROPOSAL',
             body: { applicationIds: checkedIds }
           })
         )
@@ -149,7 +149,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       onClick: () =>
         handlePromise(
           simpleBatchAction({
-            action: 'withdraw-placement-proposal',
+            action: 'WITHDRAW_PLACEMENT_PROPOSAL',
             body: { applicationIds: checkedIds }
           })
         )

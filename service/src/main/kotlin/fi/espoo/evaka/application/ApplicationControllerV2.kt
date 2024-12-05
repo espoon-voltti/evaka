@@ -51,6 +51,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 enum class ApplicationTypeToggle {
@@ -383,6 +384,21 @@ class ApplicationControllerV2(
         }
     }
 
+    @PostMapping("/{applicationId}/actions/set-verified")
+    fun setApplicationVerified(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId,
+        @RequestParam confidential: Boolean?,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.setVerified(it, user, clock, applicationId, confidential)
+            }
+        }
+    }
+
     @GetMapping("/{applicationId}/placement-draft")
     fun getPlacementPlanDraft(
         db: Database,
@@ -543,36 +559,6 @@ class ApplicationControllerV2(
         }
     }
 
-    @PostMapping("/batch/actions/{action}")
-    fun simpleBatchAction(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable action: String,
-        @RequestBody body: SimpleBatchRequest,
-    ) {
-        val simpleBatchActions =
-            mapOf(
-                "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
-                "return-to-sent" to applicationStateService::returnToSent,
-                "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
-                "send-decisions-without-proposal" to
-                    applicationStateService::sendDecisionsWithoutProposal,
-                "send-placement-proposal" to applicationStateService::sendPlacementProposal,
-                "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,
-                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed,
-            )
-
-        val actionFn = simpleBatchActions[action] ?: throw NotFound("Batch action not recognized")
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                body.applicationIds.forEach { applicationId ->
-                    actionFn.invoke(tx, user, clock, applicationId)
-                }
-            }
-        }
-    }
-
     @PostMapping("/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
         db: Database,
@@ -672,31 +658,55 @@ class ApplicationControllerV2(
         }
     }
 
+    @PostMapping("/{applicationId}/actions/cancel-application")
+    fun cancelApplication(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId,
+        @RequestParam confidential: Boolean?,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                applicationStateService.cancelApplication(
+                    tx,
+                    user,
+                    clock,
+                    applicationId,
+                    confidential,
+                )
+            }
+        }
+    }
+
     @PostMapping("/{applicationId}/actions/{action}")
     fun simpleApplicationAction(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @PathVariable action: String,
+        @PathVariable action: SimpleApplicationAction,
     ) {
-        val simpleActions =
-            mapOf(
-                "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
-                "return-to-sent" to applicationStateService::returnToSent,
-                "cancel-application" to applicationStateService::cancelApplication,
-                "set-verified" to applicationStateService::setVerified,
-                "set-unverified" to applicationStateService::setUnverified,
-                "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
-                "send-decisions-without-proposal" to
-                    applicationStateService::sendDecisionsWithoutProposal,
-                "send-placement-proposal" to applicationStateService::sendPlacementProposal,
-                "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,
-                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed,
-            )
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                applicationStateService.doSimpleAction(tx, user, clock, action, applicationId)
+            }
+        }
+    }
 
-        val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
-        db.connect { dbc -> dbc.transaction { actionFn.invoke(it, user, clock, applicationId) } }
+    @PostMapping("/batch/actions/{action}")
+    fun simpleBatchAction(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable action: SimpleApplicationAction,
+        @RequestBody body: SimpleBatchRequest,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                applicationStateService.doSimpleAction(tx, user, clock, action, body.applicationIds)
+            }
+        }
     }
 
     @GetMapping("/units/{unitId}")

@@ -157,7 +157,7 @@ describe('Application details', () => {
 
     await execSimpleApplicationAction(
       restrictedDetailsGuardianApplication.id,
-      'move-to-waiting-placement',
+      'MOVE_TO_WAITING_PLACEMENT',
       HelsinkiDateTime.now() // TODO: use mock clock
     )
     const preferredStartDate =
@@ -173,7 +173,7 @@ describe('Application details', () => {
     })
     await execSimpleApplicationAction(
       restrictedDetailsGuardianApplication.id,
-      'send-decisions-without-proposal',
+      'SEND_DECISIONS_WITHOUT_PROPOSAL',
       HelsinkiDateTime.now() // TODO: use mock clock
     )
 
@@ -202,7 +202,7 @@ describe('Application details', () => {
 
     await execSimpleApplicationAction(
       singleParentApplication.id,
-      'move-to-waiting-placement',
+      'MOVE_TO_WAITING_PLACEMENT',
       HelsinkiDateTime.now() // TODO: use mock clock
     )
     const preferredStartDate =
@@ -218,7 +218,7 @@ describe('Application details', () => {
     })
     await execSimpleApplicationAction(
       singleParentApplication.id,
-      'send-decisions-without-proposal',
+      'SEND_DECISIONS_WITHOUT_PROPOSAL',
       HelsinkiDateTime.now() // TODO: use mock clock
     )
 

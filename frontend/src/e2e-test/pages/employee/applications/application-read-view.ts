@@ -30,6 +30,9 @@ export default class ApplicationReadView {
   #sendMessageButton: Element
   notesList: Element
   #title: Element
+  confidentialRadioYes: Radio
+  confidentialRadioNo: Radio
+  setVerifiedButton: Element
   private notes: ElementCollection
   constructor(private page: Page) {
     this.#editButton = page.findByDataQa('edit-application')
@@ -43,6 +46,13 @@ export default class ApplicationReadView {
     this.notesList = page.findByDataQa('application-notes-list')
     this.#title = this.page.findByDataQa('application-title').find('h1')
     this.notes = this.notesList.findAllByDataQa('note-container')
+    this.confidentialRadioYes = new Radio(
+      this.page.findByDataQa('confidential-yes')
+    )
+    this.confidentialRadioNo = new Radio(
+      this.page.findByDataQa('confidential-no')
+    )
+    this.setVerifiedButton = this.page.findByDataQa('set-verified-btn')
   }
 
   async waitUntilLoaded() {

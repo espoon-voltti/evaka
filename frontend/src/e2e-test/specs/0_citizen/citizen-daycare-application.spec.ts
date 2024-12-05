@@ -163,7 +163,7 @@ describe('Citizen daycare applications', () => {
     await createApplications({ body: [application] })
     await execSimpleApplicationActions(
       application.id,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       mockedNow
     )
 

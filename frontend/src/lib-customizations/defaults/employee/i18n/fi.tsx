@@ -341,9 +341,9 @@ export const fi = {
       cancelApplication: 'Poista käsittelystä',
       cancelApplicationConfirm:
         'Haluatko varmasti poistaa hakemuksen käsittelystä?',
+      cancelApplicationConfidentiality: 'Onko hakemus salassapidettävä?',
       check: 'Tarkista',
       setVerified: 'Merkitse tarkistetuksi',
-      setUnverified: 'Merkitse tarkistamattomaksi',
       createPlacementPlan: 'Sijoita',
       cancelPlacementPlan: 'Palauta sijoitettaviin',
       editDecisions: 'Päätökset',
@@ -410,6 +410,7 @@ export const fi = {
       CANCELLED: 'Poistettu käsittelystä',
       ALL: 'Kaikki'
     },
+    selectConfidentialityLabel: 'Onko hakemus salassapidettävä?',
     selectAll: 'Valitse kaikki',
     unselectAll: 'Poista valinnat',
     transfer: 'Siirtohakemus',

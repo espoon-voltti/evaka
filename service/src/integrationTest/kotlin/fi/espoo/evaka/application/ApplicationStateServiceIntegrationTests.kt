@@ -529,7 +529,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             // given
             tx.insertApplication(
-                hasAdditionalInfo = false,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
@@ -552,7 +551,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             // given
             tx.insertApplication(
-                hasAdditionalInfo = true,
+                otherInfo = "something",
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
@@ -623,7 +622,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // given
             tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
-                hasAdditionalInfo = true,
+                diet = "vegaani",
+                allergies = "pähkinät",
                 applicationId = applicationId,
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
@@ -635,17 +635,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.read { tx ->
             // then
             val childDetails = tx.getChild(testChild_6.id)!!.additionalInformation
-            assertEquals("diet", childDetails.diet)
-            assertEquals("allergies", childDetails.allergies)
+            assertEquals("vegaani", childDetails.diet)
+            assertEquals("pähkinät", childDetails.allergies)
         }
     }
 
     @Test
-    fun `setVerified and setUnverified - changes checkedByAdmin`() {
+    fun `setVerified - changes checkedByAdmin`() {
         db.transaction { tx ->
             // given
             tx.insertApplication(
-                hasAdditionalInfo = true,
+                diet = "vegaani",
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
@@ -654,23 +654,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.setVerified(tx, serviceWorker, clock, applicationId)
+            service.setVerified(tx, serviceWorker, clock, applicationId, confidential = null)
         }
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(true, application.checkedByAdmin)
-        }
-        db.transaction { tx ->
-            // when
-            service.setUnverified(tx, serviceWorker, clock, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = tx.fetchApplicationDetails(applicationId)!!
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(false, application.checkedByAdmin)
         }
     }
 
@@ -686,7 +676,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.cancelApplication(tx, serviceWorker, clock, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId, null)
         }
         db.read { tx ->
             // then
@@ -708,7 +698,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.cancelApplication(tx, serviceWorker, clock, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId, null)
         }
         db.read { tx ->
             // then
@@ -748,7 +738,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
-            service.cancelApplication(tx, serviceWorker, clock, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId, null)
 
             val process = tx.getArchiveProcessByApplicationId(applicationId)
             assertNotNull(process)

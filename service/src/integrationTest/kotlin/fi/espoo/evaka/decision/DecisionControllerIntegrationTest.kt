@@ -229,6 +229,13 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         preferredStartDate = clock.today().plusMonths(5),
                     ),
             )
+        applicationStateService.setVerified(
+            tx = tx,
+            user = AuthenticatedUser.Employee(serviceWorker, setOf(UserRole.SERVICE_WORKER)),
+            clock = clock,
+            applicationId = applicationId,
+            confidential = false,
+        )
         applicationStateService.createPlacementPlan(
             tx = tx,
             user = AuthenticatedUser.Employee(serviceWorker, setOf(UserRole.SERVICE_WORKER)),

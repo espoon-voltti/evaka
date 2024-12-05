@@ -24,10 +24,12 @@ import { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-ty
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { RejectDecisionRequest } from 'lib-common/generated/api-types/application'
 import { SearchApplicationRequest } from 'lib-common/generated/api-types/application'
+import { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
 import { SimpleBatchRequest } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import { UnitApplications } from 'lib-common/generated/api-types/application'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonApplicationNote } from 'lib-common/generated/api-types/application'
 import { deserializeJsonApplicationNoteResponse } from 'lib-common/generated/api-types/application'
 import { deserializeJsonApplicationResponse } from 'lib-common/generated/api-types/application'
@@ -71,6 +73,27 @@ export async function acceptPlacementProposal(
     url: uri`/employee/applications/placement-proposals/${request.unitId}/accept`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AcceptPlacementProposalRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationControllerV2.cancelApplication
+*/
+export async function cancelApplication(
+  request: {
+    applicationId: UUID,
+    confidential?: boolean | null
+  }
+): Promise<void> {
+  const params = createUrlSearchParams(
+    ['confidential', request.confidential?.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/applications/${request.applicationId}/actions/cancel-application`.toString(),
+    method: 'POST',
+    params
   })
   return json
 }
@@ -277,12 +300,33 @@ export async function sendApplication(
 
 
 /**
+* Generated from fi.espoo.evaka.application.ApplicationControllerV2.setApplicationVerified
+*/
+export async function setApplicationVerified(
+  request: {
+    applicationId: UUID,
+    confidential?: boolean | null
+  }
+): Promise<void> {
+  const params = createUrlSearchParams(
+    ['confidential', request.confidential?.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/applications/${request.applicationId}/actions/set-verified`.toString(),
+    method: 'POST',
+    params
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.application.ApplicationControllerV2.simpleApplicationAction
 */
 export async function simpleApplicationAction(
   request: {
     applicationId: UUID,
-    action: string
+    action: SimpleApplicationAction
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -298,7 +342,7 @@ export async function simpleApplicationAction(
 */
 export async function simpleBatchAction(
   request: {
-    action: string,
+    action: SimpleApplicationAction,
     body: SimpleBatchRequest
   }
 ): Promise<void> {

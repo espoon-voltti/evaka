@@ -406,6 +406,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         db.transaction { tx ->
             stateService.sendApplication(tx, serviceWorker, clock, applicationId)
             stateService.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
+            stateService.setVerified(tx, serviceWorker, clock, applicationId, null)
             stateService.createPlacementPlan(
                 tx,
                 serviceWorker,

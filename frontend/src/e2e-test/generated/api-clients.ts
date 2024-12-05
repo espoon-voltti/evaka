@@ -92,6 +92,7 @@ import { PostPairingResponseReq } from 'lib-common/generated/api-types/pairing'
 import { ReservationInsert } from './api-types'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { SfiMessage } from './api-types'
+import { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
 import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
@@ -2370,7 +2371,7 @@ export async function setTestMode(
 export async function simpleAction(
   request: {
     applicationId: UUID,
-    action: string
+    action: SimpleApplicationAction
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {

@@ -7,11 +7,20 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import Radio from 'lib-components/atoms/form/Radio'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { Label } from 'lib-components/typography'
 
 import ActionCheckbox from '../../components/applications/ActionCheckbox'
 import PrimaryAction from '../../components/applications/PrimaryAction'
-import { simpleApplicationAction } from '../../generated/api-clients/application'
+import {
+  cancelApplication,
+  simpleApplicationAction
+} from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import EllipsisMenu, { MenuItem } from '../common/EllipsisMenu'
@@ -70,7 +79,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'move-to-waiting-placement'
+              action: 'MOVE_TO_WAITING_PLACEMENT'
             })
           )
         }
@@ -87,7 +96,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'return-to-sent'
+              action: 'RETURN_TO_SENT'
             })
           )
         }
@@ -104,49 +113,19 @@ export default React.memo(function ApplicationActions({
         }
       },
       {
-        id: 'set-verified',
-        label: i18n.applications.actions.setVerified,
-        enabled:
-          application.status === 'WAITING_PLACEMENT' &&
-          !application.checkedByAdmin,
+        id: application.checkedByAdmin ? 'create-placement-plan' : 'check',
+        label: application.checkedByAdmin
+          ? i18n.applications.actions.createPlacementPlan
+          : i18n.applications.actions.check,
+        enabled: application.status === 'WAITING_PLACEMENT',
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'set-verified'
-            })
-          )
-        }
-      },
-      {
-        id: 'set-unverified',
-        label: i18n.applications.actions.setUnverified,
-        enabled:
-          application.status === 'WAITING_PLACEMENT' &&
-          application.checkedByAdmin,
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'set-unverified'
-            })
-          )
-        }
-      },
-      {
-        id: 'create-placement-plan',
-        label: i18n.applications.actions.createPlacementPlan,
-        enabled:
-          application.checkedByAdmin &&
-          application.status === 'WAITING_PLACEMENT',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          void navigate(`/applications/${application.id}/placement`)
+          if (application.checkedByAdmin) {
+            void navigate(`/applications/${application.id}/placement`)
+          } else {
+            void navigate(`/applications/${application.id}`)
+          }
         },
         primaryStatus: 'WAITING_PLACEMENT'
       },
@@ -160,7 +139,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'cancel-placement-plan'
+              action: 'CANCEL_PLACEMENT_PLAN'
             })
           )
         }
@@ -186,7 +165,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'send-decisions-without-proposal'
+              action: 'SEND_DECISIONS_WITHOUT_PROPOSAL'
             })
           )
         }
@@ -201,7 +180,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'send-placement-proposal'
+              action: 'SEND_PLACEMENT_PROPOSAL'
             })
           )
         }
@@ -216,7 +195,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'withdraw-placement-proposal'
+              action: 'WITHDRAW_PLACEMENT_PROPOSAL'
             })
           )
         }
@@ -231,7 +210,7 @@ export default React.memo(function ApplicationActions({
           handlePromise(
             simpleApplicationAction({
               applicationId: application.id,
-              action: 'confirm-decision-mailed'
+              action: 'CONFIRM_DECISION_MAILED'
             })
           )
         }
@@ -257,30 +236,78 @@ export default React.memo(function ApplicationActions({
         <ActionCheckbox applicationId={application.id} />
       </ActionsContainer>
       {confirmingApplicationCancel && (
-        <InfoModal
-          type="warning"
-          title={i18n.applications.actions.cancelApplicationConfirm}
-          resolve={{
-            action: () => {
-              setActionInFlight(true)
-              handlePromise(
-                simpleApplicationAction({
-                  applicationId: application.id,
-                  action: 'cancel-application'
-                })
-              )
-            },
-            label: i18n.common.confirm
-          }}
-          reject={{
-            action: () => setConfirmingApplicationCancel(false),
-            label: i18n.common.cancel
-          }}
+        <ConfirmCancelApplicationModal
+          application={application}
+          onSubmit={() => setActionInFlight(true)}
+          handlePromise={handlePromise}
+          onClose={() => setConfirmingApplicationCancel(false)}
         />
       )}
     </>
   )
 })
+
+const ConfirmCancelApplicationModal = React.memo(
+  function ConfirmCancelApplicationModal({
+    application,
+    onSubmit,
+    handlePromise,
+    onClose
+  }: {
+    application: ApplicationSummary
+    onSubmit: () => void
+    handlePromise: (promise: Promise<void>) => void
+    onClose: () => void
+  }) {
+    const { i18n } = useTranslation()
+    const [confidential, setConfidential] = useState<boolean | null>(null)
+    return (
+      <InfoModal
+        type="warning"
+        title={i18n.applications.actions.cancelApplicationConfirm}
+        resolve={{
+          action: () => {
+            onSubmit()
+            handlePromise(
+              cancelApplication({
+                applicationId: application.id,
+                confidential
+              })
+            )
+          },
+          label: i18n.common.confirm,
+          disabled: application.confidential === null && confidential === null
+        }}
+        reject={{
+          action: onClose,
+          label: i18n.common.cancel
+        }}
+      >
+        {application.confidential === null && (
+          <FixedSpaceColumn>
+            <Label>
+              {i18n.applications.actions.cancelApplicationConfidentiality}
+            </Label>
+            <FixedSpaceRow spacing="XL">
+              <Radio
+                checked={confidential === true}
+                label={i18n.common.yes}
+                onChange={() => setConfidential(true)}
+                data-qa="confidential-yes"
+              />
+              <Radio
+                checked={confidential === false}
+                label={i18n.common.no}
+                onChange={() => setConfidential(false)}
+                data-qa="confidential-no"
+              />
+            </FixedSpaceRow>
+          </FixedSpaceColumn>
+        )}
+      </InfoModal>
+    )
+  }
+)
 
 const ActionsContainer = styled.div`
   display: flex;

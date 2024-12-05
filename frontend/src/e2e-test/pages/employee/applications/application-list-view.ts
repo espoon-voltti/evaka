@@ -10,7 +10,8 @@ import {
   MultiSelect,
   Page,
   Element,
-  ElementCollection
+  ElementCollection,
+  Radio
 } from '../../../utils/page'
 
 export default class ApplicationListView {
@@ -20,11 +21,15 @@ export default class ApplicationListView {
   #unitFilter: MultiSelect
   #applications: ElementCollection
   actionsMenuItems: {
-    verify: Element
-    setVerified: Element
     createPlacement: Element
     createDecision: Element
-    acceptPlacementWihtoutDecision: Element
+    acceptPlacementWithoutDecision: Element
+    cancelApplication: Element
+  }
+  cancelConfirmation: {
+    confidentialRadioYes: Radio
+    confidentialRadioNo: Radio
+    submitButton: Element
   }
   specialFilterItems: {
     duplicate: Element
@@ -44,13 +49,17 @@ export default class ApplicationListView {
       .find('[data-qa="table-of-applications"]')
       .findAll('[data-qa="table-application-row"]')
     this.actionsMenuItems = {
-      verify: this.#actionsMenuItemSelector('verify'),
-      setVerified: this.#actionsMenuItemSelector('set-verified'),
       createPlacement: this.#actionsMenuItemSelector('placement-draft'),
       createDecision: this.#actionsMenuItemSelector('decision'),
-      acceptPlacementWihtoutDecision: this.#actionsMenuItemSelector(
+      acceptPlacementWithoutDecision: this.#actionsMenuItemSelector(
         'placement-without-decision'
-      )
+      ),
+      cancelApplication: this.#actionsMenuItemSelector('cancel-application')
+    }
+    this.cancelConfirmation = {
+      confidentialRadioYes: new Radio(page.findByDataQa('confidential-yes')),
+      confidentialRadioNo: new Radio(page.findByDataQa('confidential-no')),
+      submitButton: page.findByDataQa('modal-okBtn')
     }
     this.specialFilterItems = {
       duplicate: page.findByDataQa('application-basis-DUPLICATE_APPLICATION')
@@ -71,7 +80,7 @@ export default class ApplicationListView {
       .find('[data-qa="application-actions-menu"]')
 
   #actionsMenuItemSelector = (id: string) =>
-    this.page.findByDataQa(`action-item-${id}`)
+    this.page.findByDataQa(`menu-item-${id}`)
 
   async toggleArea(areaName: string) {
     await this.#areaFilter.fillAndSelectFirst(areaName)

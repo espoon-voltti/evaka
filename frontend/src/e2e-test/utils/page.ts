@@ -43,6 +43,10 @@ export class Page {
     return this.page.reload()
   }
 
+  async goBack() {
+    return this.page.goBack()
+  }
+
   async close() {
     return this.page.close()
   }

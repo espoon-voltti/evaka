@@ -81,8 +81,8 @@ fun Database.Transaction.insertApplication(
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified, status_modified_at, status_modified_by)
-VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)}, ${bind(now)}, ${bind(createdBy)})
+INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified, status_modified_at, status_modified_by, confidential)
+VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)}, ${bind(now)}, ${bind(createdBy)}, NULL)
 RETURNING id
 """
             )
@@ -436,6 +436,7 @@ fun Database.Read.fetchApplicationSummaries(
             a.transferapplication,
             a.additionaldaycareapplication,
             a.checkedbyadmin,
+            a.confidential,
             a.service_worker_note,
             (
                 COALESCE((a.document -> 'additionalDetails' ->> 'dietType'), '') != '' OR
@@ -544,6 +545,7 @@ fun Database.Read.fetchApplicationSummaries(
                         },
                     origin = column("origin"),
                     checkedByAdmin = column("checkedbyadmin"),
+                    confidential = column("confidential"),
                     status = status,
                     additionalInfo = column("additionalInfo"),
                     serviceWorkerNote =
@@ -779,6 +781,7 @@ fun Database.Read.fetchApplicationDetails(
                         a.duedate,
                         a.duedate_set_manually_at,
                         a.checkedbyadmin,
+                        a.confidential,
                         a.allow_other_guardian_access,
                         EXISTS (SELECT FROM application_other_guardian WHERE application_id = a.id) AS has_other_guardian,
                         coalesce(att.json, '[]'::jsonb) attachments
@@ -838,6 +841,7 @@ fun Database.Read.fetchApplicationDetails(
                     dueDate = column("duedate"),
                     dueDateSetManuallyAt = column("duedate_set_manually_at"),
                     checkedByAdmin = column("checkedbyadmin"),
+                    confidential = column("confidential"),
                     hideFromGuardian = column("hidefromguardian"),
                     allowOtherGuardianAccess = column("allow_other_guardian_access"),
                     attachments = jsonColumn("attachments"),
@@ -1006,15 +1010,36 @@ fun Database.Transaction.updateForm(
     }
 }
 
-fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: ApplicationForm) {
-    val default =
-        !form.child.assistanceNeeded &&
-            form.child.allergies.isBlank() &&
-            form.child.diet.isBlank() &&
-            form.otherInfo.isBlank()
+fun Database.Transaction.resetCheckedByAdminAndConfidentiality(
+    id: ApplicationId,
+    form: ApplicationForm,
+) {
+    val confidential =
+        when {
+            form.child.assistanceNeeded ||
+                form.child.allergies.isNotBlank() ||
+                form.child.diet.isNotBlank() ->
+                true // If any of these fields are filled, the application is always confidential
+            form.otherInfo.isNotBlank() ->
+                null // else if other info is filled, the confidentiality is not known
+            else -> false // else the application is not confidential
+        }
+
+    val requiresManualChecking =
+        confidential == null ||
+            form.child.assistanceNeeded ||
+            form.child.allergies.isNotBlank() ||
+            form.child.diet.isNotBlank() ||
+            form.otherInfo.isNotBlank()
 
     execute {
-        sql("UPDATE application SET checkedbyadmin = ${bind(default)} WHERE id = ${bind(id)}")
+        sql(
+            """
+            UPDATE application 
+            SET checkedbyadmin = ${bind(!requiresManualChecking)}, confidential = ${bind(confidential)}
+            WHERE id = ${bind(id)}
+        """
+        )
     }
 }
 
@@ -1117,6 +1142,12 @@ AND other_citizen.id != application.guardian_id
 fun Database.Transaction.setApplicationVerified(id: ApplicationId, verified: Boolean) {
     execute {
         sql("UPDATE application SET checkedByAdmin = ${bind(verified)} WHERE id = ${bind(id)}")
+    }
+}
+
+fun Database.Transaction.setApplicationConfidentiality(id: ApplicationId, confidential: Boolean?) {
+    execute {
+        sql("UPDATE application SET confidential = ${bind(confidential)} WHERE id = ${bind(id)}")
     }
 }
 

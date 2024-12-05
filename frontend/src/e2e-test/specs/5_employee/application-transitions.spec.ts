@@ -87,9 +87,9 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-decisions-without-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
@@ -113,9 +113,9 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-decisions-without-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
@@ -142,7 +142,7 @@ describe('Application transitions', () => {
     await createApplications({ body: [fixture] })
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement', 'create-default-placement-plan'],
+      ['MOVE_TO_WAITING_PLACEMENT', 'CREATE_DEFAULT_PLACEMENT_PLAN'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -170,7 +170,7 @@ describe('Application transitions', () => {
     await createApplications({ body: [fixture] })
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement', 'create-default-placement-plan'],
+      ['MOVE_TO_WAITING_PLACEMENT', 'CREATE_DEFAULT_PLACEMENT_PLAN'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -184,6 +184,171 @@ describe('Application transitions', () => {
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
     await applicationReadView.assertApplicationStatus('Odottaa postitusta')
+  })
+
+  test('Application with e.g. diet must be checked before placing', async () => {
+    const preferredStartDate = mockedTime
+    const fixture: DevApplicationWithForm = {
+      ...applicationFixture(
+        testChild2,
+        familyWithTwoGuardians.guardian,
+        undefined,
+        'DAYCARE',
+        null,
+        [testDaycare.id],
+        true,
+        'SENT',
+        preferredStartDate
+      )
+    }
+    fixture.form.child.diet = 'Vegaani'
+
+    const applicationId = fixture.id
+
+    await createApplications({ body: [fixture] })
+
+    await execSimpleApplicationActions(
+      applicationId,
+      ['MOVE_TO_WAITING_PLACEMENT'],
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    )
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    await applicationWorkbench.waitUntilLoaded()
+    await applicationWorkbench.openPlacementQueue()
+
+    await applicationWorkbench
+      .getPrimaryActionCheck(applicationId)
+      .waitUntilVisible()
+    await applicationWorkbench
+      .getPrimaryActionCreatePlacementPlan(applicationId)
+      .waitUntilHidden()
+
+    await applicationWorkbench.getPrimaryActionCheck(applicationId).click()
+
+    const applicationReadView = new ApplicationReadView(page)
+    await applicationReadView.setVerifiedButton.waitUntilVisible()
+    // confidentiality has been set automatically
+    await applicationReadView.confidentialRadioYes.waitUntilHidden()
+    await applicationReadView.confidentialRadioNo.waitUntilHidden()
+
+    await applicationReadView.setVerifiedButton.click()
+    await page.goBack()
+
+    await applicationWorkbench
+      .getPrimaryActionCreatePlacementPlan(applicationId)
+      .waitUntilVisible()
+    await applicationWorkbench
+      .getPrimaryActionCheck(applicationId)
+      .waitUntilHidden()
+
+    const placementDraftPage =
+      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await placementDraftPage.waitUntilLoaded()
+  })
+
+  test('Confidentiality must be set on an application before placing if other info is the only potential source of confidentiality', async () => {
+    const preferredStartDate = mockedTime
+    const fixture: DevApplicationWithForm = {
+      ...applicationFixture(
+        testChild2,
+        familyWithTwoGuardians.guardian,
+        undefined,
+        'DAYCARE',
+        null,
+        [testDaycare.id],
+        true,
+        'SENT',
+        preferredStartDate
+      )
+    }
+    fixture.form.otherInfo = 'Eipä ihmeempiä'
+
+    const applicationId = fixture.id
+
+    await createApplications({ body: [fixture] })
+
+    await execSimpleApplicationActions(
+      applicationId,
+      ['MOVE_TO_WAITING_PLACEMENT'],
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    )
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    await applicationWorkbench.waitUntilLoaded()
+    await applicationWorkbench.openPlacementQueue()
+
+    await applicationWorkbench
+      .getPrimaryActionCheck(applicationId)
+      .waitUntilVisible()
+    await applicationWorkbench
+      .getPrimaryActionCreatePlacementPlan(applicationId)
+      .waitUntilHidden()
+
+    await applicationWorkbench.getPrimaryActionCheck(applicationId).click()
+
+    const applicationReadView = new ApplicationReadView(page)
+    await applicationReadView.setVerifiedButton.waitUntilVisible()
+    await applicationReadView.setVerifiedButton.assertDisabled(true)
+
+    await applicationReadView.confidentialRadioYes.check()
+    await applicationReadView.confidentialRadioNo.check()
+
+    await applicationReadView.setVerifiedButton.assertDisabled(false)
+    await applicationReadView.setVerifiedButton.click()
+    await page.goBack()
+
+    await applicationWorkbench
+      .getPrimaryActionCreatePlacementPlan(applicationId)
+      .waitUntilVisible()
+    await applicationWorkbench
+      .getPrimaryActionCheck(applicationId)
+      .waitUntilHidden()
+
+    const placementDraftPage =
+      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await placementDraftPage.waitUntilLoaded()
+  })
+
+  test('Confidentiality must be set on an application before cancelling if other info is the only potential source of confidentiality', async () => {
+    const preferredStartDate = mockedTime
+    const fixture: DevApplicationWithForm = {
+      ...applicationFixture(
+        testChild2,
+        familyWithTwoGuardians.guardian,
+        undefined,
+        'DAYCARE',
+        null,
+        [testDaycare.id],
+        true,
+        'SENT',
+        preferredStartDate
+      )
+    }
+    fixture.form.otherInfo = 'Eipä ihmeempiä'
+
+    const applicationId = fixture.id
+
+    await createApplications({ body: [fixture] })
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    await applicationWorkbench.waitUntilLoaded()
+
+    const applicationList = new ApplicationListView(page)
+    await applicationList.actionsMenu(applicationId).click()
+    await applicationList.actionsMenuItems.cancelApplication.click()
+
+    await applicationList.cancelConfirmation.submitButton.assertDisabled(true)
+    await applicationList.cancelConfirmation.confidentialRadioYes.check()
+    await applicationList.cancelConfirmation.submitButton.click()
+
+    await applicationWorkbench.applicationsAll.click()
+    await applicationWorkbench
+      .getApplicationListItem(applicationId)
+      .assertText((text) => text.includes('Poistettu käsittelystä'))
   })
 
   test('Placement dialog works', async () => {
@@ -239,7 +404,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -295,7 +460,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -331,7 +496,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 40))
     )
 
@@ -358,7 +523,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['send-decisions-without-proposal'],
+      ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
     )
 
@@ -393,7 +558,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['move-to-waiting-placement'],
+      ['MOVE_TO_WAITING_PLACEMENT'],
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 40))
     )
 
@@ -421,7 +586,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['send-decisions-without-proposal'],
+      ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
     )
 
@@ -454,18 +619,18 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
     await execSimpleApplicationActions(
       applicationId2,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
@@ -512,7 +677,7 @@ describe('Application transitions', () => {
 
     await execSimpleApplicationActions(
       applicationId,
-      ['confirm-decision-mailed'],
+      ['CONFIRM_DECISION_MAILED'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
@@ -535,9 +700,9 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       now
     )
@@ -583,9 +748,9 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-placement-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_PLACEMENT_PROPOSAL'
       ],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )

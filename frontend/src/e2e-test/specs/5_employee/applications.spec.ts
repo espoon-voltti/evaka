@@ -52,9 +52,9 @@ describe('Applications', () => {
     await execSimpleApplicationActions(
       application.id,
       [
-        'move-to-waiting-placement',
-        'create-default-placement-plan',
-        'send-decisions-without-proposal'
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
       ],
       HelsinkiDateTime.now() // TODO: use mock clock
     )

@@ -109,6 +109,7 @@ export interface ApplicationDetails {
   checkedByAdmin: boolean
   childId: UUID
   childRestricted: boolean
+  confidential: boolean | null
   createdDate: HelsinkiDateTime | null
   dueDate: LocalDate | null
   dueDateSetManuallyAt: HelsinkiDateTime | null
@@ -277,6 +278,7 @@ export interface ApplicationSummary {
   assistanceNeed: boolean
   attachmentCount: number
   checkedByAdmin: boolean
+  confidential: boolean | null
   currentPlacementUnit: PreferredUnit | null
   dateOfBirth: LocalDate | null
   dueDate: LocalDate | null
@@ -742,6 +744,18 @@ export interface SiblingBasis {
   siblingSsn: string
   siblingUnit: string
 }
+
+/**
+* Generated from fi.espoo.evaka.application.SimpleApplicationAction
+*/
+export type SimpleApplicationAction =
+  | 'MOVE_TO_WAITING_PLACEMENT'
+  | 'RETURN_TO_SENT'
+  | 'CANCEL_PLACEMENT_PLAN'
+  | 'SEND_DECISIONS_WITHOUT_PROPOSAL'
+  | 'SEND_PLACEMENT_PROPOSAL'
+  | 'WITHDRAW_PLACEMENT_PROPOSAL'
+  | 'CONFIRM_DECISION_MAILED'
 
 /**
 * Generated from fi.espoo.evaka.application.SimpleBatchRequest
