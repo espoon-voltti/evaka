@@ -27,4 +27,5 @@ data class EmployeeFeatures(
     val submitPatuReport: Boolean,
     val placementTool: Boolean,
     val replacementInvoices: Boolean,
+    val openRangesHolidayQuestionnaire: Boolean,
 )
