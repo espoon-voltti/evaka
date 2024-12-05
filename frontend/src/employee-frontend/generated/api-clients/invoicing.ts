@@ -10,7 +10,7 @@ import { Employee } from 'lib-common/generated/api-types/pis'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import { FeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
@@ -50,7 +50,7 @@ import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeDecision } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonFeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonFeeDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
@@ -185,12 +185,12 @@ export async function getFeeDecision(
   request: {
     id: UUID
   }
-): Promise<FeeDecisionDetailed> {
-  const { data: json } = await client.request<JsonOf<FeeDecisionDetailed>>({
+): Promise<FeeDecisionResponse> {
+  const { data: json } = await client.request<JsonOf<FeeDecisionResponse>>({
     url: uri`/employee/fee-decisions/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonFeeDecisionDetailed(json)
+  return deserializeJsonFeeDecisionResponse(json)
 }
 
 
