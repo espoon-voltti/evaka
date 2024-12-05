@@ -267,11 +267,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   )
 
   router.use('/employee', employeeSessions.middleware)
-  router.get(
-    '/employee/auth/status',
-    cookieParser(config.employee.cookieSecret),
-    internalAuthStatus(employeeSessions)
-  )
+  router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
   router.all('/employee/public/*', employeeProxy)
   router.all(
     '/employee/*',
