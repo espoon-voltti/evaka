@@ -86,6 +86,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       req.url = '/employee-mobile/auth/pin-login'
     } else if (req.url === '/internal/auth/pin-logout') {
       req.url = '/employee-mobile/auth/pin-logout'
+    } else if (req.url === '/internal/dev-api') {
+      req.url = '/dev-api/'
     }
     next()
   })
@@ -245,8 +247,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       cookieParser(config.employee.cookieSecret),
       devApiE2ESignup(employeeMobileSessions)
     )
-    router.use(
-      '/dev-api',
+    router.all(
+      '/dev-api/*',
       createProxy({
         getUserHeader: () => undefined
       })
