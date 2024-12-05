@@ -26,6 +26,7 @@ export type QueryKeyPrefix =
   | 'invoices'
   | 'placementTool'
   | 'feeDecisions'
+  | 'voucherValueDecisions'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

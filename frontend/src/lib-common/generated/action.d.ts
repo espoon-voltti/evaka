@@ -492,6 +492,13 @@ export type Unit =
   | 'UPDATE_TEMPORARY_EMPLOYEE'
   | 'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
 
+export type VoucherValueDecision =
+  | 'IGNORE'
+  | 'READ'
+  | 'READ_METADATA'
+  | 'UNIGNORE'
+  | 'UPDATE'
+
 export namespace Citizen {
 
 export type Application =
