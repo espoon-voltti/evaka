@@ -23,6 +23,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toEvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -49,8 +51,10 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
         guardianRestricted = false,
         guardianDateOfDeath = null,
         checkedByAdmin = true,
-        createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
-        modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        createdAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        createdBy = testDecisionMaker_1.toEvakaUser(),
+        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        modifiedBy = testDecisionMaker_1.toEvakaUser(),
         sentDate = LocalDate.of(2021, 1, 15),
         dueDate = null,
         dueDateSetManuallyAt = null,
@@ -142,8 +146,10 @@ val validPreschoolApplication =
         guardianRestricted = false,
         guardianDateOfDeath = null,
         checkedByAdmin = true,
-        createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
-        modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        createdAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        createdBy = testDecisionMaker_1.toEvakaUser(),
+        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        modifiedBy = testDecisionMaker_1.toEvakaUser(),
         sentDate = LocalDate.of(2021, 1, 15),
         dueDate = null,
         dueDateSetManuallyAt = null,
@@ -236,8 +242,10 @@ fun validClubApplication(preferredUnit: DevDaycare, preferredStartDate: LocalDat
         guardianRestricted = false,
         guardianDateOfDeath = null,
         checkedByAdmin = true,
-        createdDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
-        modifiedDate = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        createdAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        createdBy = testDecisionMaker_1.toEvakaUser(),
+        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        modifiedBy = testDecisionMaker_1.toEvakaUser(),
         sentDate = LocalDate.of(2021, 1, 15),
         dueDate = null,
         dueDateSetManuallyAt = null,

@@ -2137,7 +2137,7 @@ data class DevApplicationWithForm(
     val allowOtherGuardianAccess: Boolean = true,
     val otherGuardians: List<PersonId>,
     val form: ApplicationForm,
-    val formModified: HelsinkiDateTime,
+    val modifiedAt: HelsinkiDateTime,
 )
 
 data class DevDaycareGroupAcl(

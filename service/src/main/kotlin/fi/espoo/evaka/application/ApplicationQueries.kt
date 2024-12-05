@@ -81,8 +81,8 @@ fun Database.Transaction.insertApplication(
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified, status_modified_at, status_modified_by)
-VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)}, ${bind(now)}, ${bind(createdBy)})
+INSERT INTO application (type, status, guardian_id, child_id, origin, created_at, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, modified_at, modified_by, status_modified_at, status_modified_by)
+VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(now)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)}, ${bind(createdBy)}, ${bind(now)}, ${bind(createdBy)})
 RETURNING id
 """
             )
@@ -705,8 +705,8 @@ SELECT
     ) AS start_date,
     a.sentDate,
     a.status AS application_status,
-    a.created AS created_date,
-    a.form_modified AS modified_date,
+    a.created_at AS created_date,
+    a.modified_at AS modified_date,
     a.transferapplication
 FROM application a
 WHERE (a.guardian_id = ${bind(citizenId)} OR EXISTS (
@@ -773,8 +773,14 @@ fun Database.Read.fetchApplicationDetails(
                         a.transferapplication,
                         a.additionaldaycareapplication,
                         a.hidefromguardian,
-                        a.created,
-                        a.form_modified,
+                        a.created_at,
+                        e_created.id AS created_by_id,
+                        e_created.name AS created_by_name,
+                        e_created.type AS created_by_type,
+                        a.modified_at,
+                        e_modified.id AS modified_by_id,
+                        e_modified.name AS modified_by_name,
+                        e_modified.type AS modified_by_type,
                         a.sentdate,
                         a.duedate,
                         a.duedate_set_manually_at,
@@ -785,6 +791,8 @@ fun Database.Read.fetchApplicationDetails(
                     FROM application a
                     LEFT JOIN person c ON c.id = a.child_id
                     LEFT JOIN person g1 ON g1.id = a.guardian_id
+                    LEFT JOIN evaka_user e_created ON a.created_by = e_created.id
+                    LEFT JOIN evaka_user e_modified ON a.modified_by = e_modified.id
                     LEFT JOIN (
                         SELECT application_id, jsonb_agg(jsonb_build_object(
                             'id', attachment.id,
@@ -832,8 +840,20 @@ fun Database.Read.fetchApplicationDetails(
                     guardianDateOfDeath = column("guardian_date_of_death"),
                     transferApplication = column("transferapplication"),
                     additionalDaycareApplication = column("additionaldaycareapplication"),
-                    createdDate = column("created"),
-                    modifiedDate = column("form_modified"),
+                    createdAt = column("created_at"),
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    modifiedAt = column("modified_at"),
+                    modifiedBy =
+                        EvakaUser(
+                            id = column("modified_by_id"),
+                            name = column("modified_by_name"),
+                            type = column("modified_by_type"),
+                        ),
                     sentDate = column("sentdate"),
                     dueDate = column("duedate"),
                     dueDateSetManuallyAt = column("duedate_set_manually_at"),
@@ -990,6 +1010,7 @@ fun Database.Transaction.updateForm(
     childRestricted: Boolean,
     guardianRestricted: Boolean,
     now: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ) {
     check(getApplicationType(id) == formType) { "Invalid form type for the application" }
     val transformedForm =
@@ -1001,12 +1022,17 @@ fun Database.Transaction.updateForm(
 
     execute {
         sql(
-            "UPDATE application SET document = ${bindJson(transformedForm)}, form_modified = ${bind(now)} WHERE id = ${bind(id)}"
+            "UPDATE application SET document = ${bindJson(transformedForm)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
         )
     }
 }
 
-fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: ApplicationForm) {
+fun Database.Transaction.setCheckedByAdminToDefault(
+    id: ApplicationId,
+    form: ApplicationForm,
+    now: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+) {
     val default =
         !form.child.assistanceNeeded &&
             form.child.allergies.isBlank() &&
@@ -1014,7 +1040,9 @@ fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: App
             form.otherInfo.isBlank()
 
     execute {
-        sql("UPDATE application SET checkedbyadmin = ${bind(default)} WHERE id = ${bind(id)}")
+        sql(
+            "UPDATE application SET checkedbyadmin = ${bind(default)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+        )
     }
 }
 
@@ -1039,10 +1067,12 @@ fun Database.Transaction.updateApplicationDates(
     id: ApplicationId,
     sentDate: LocalDate,
     dueDate: LocalDate?,
+    now: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ) {
     execute {
         sql(
-            "UPDATE application SET sentdate = ${bind(sentDate)}, duedate = ${bind(dueDate)} WHERE id = ${bind(id)}"
+            "UPDATE application SET sentdate = ${bind(sentDate)}, duedate = ${bind(dueDate)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
         )
     }
 }
@@ -1050,13 +1080,17 @@ fun Database.Transaction.updateApplicationDates(
 fun Database.Transaction.updateApplicationFlags(
     id: ApplicationId,
     applicationFlags: ApplicationFlags,
+    now: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ) = execute {
     sql(
         """
         UPDATE application
         SET
             transferapplication = ${bind(applicationFlags.isTransferApplication)},
-            additionaldaycareapplication = ${bind(applicationFlags.isAdditionalDaycareApplication)}
+            additionaldaycareapplication = ${bind(applicationFlags.isAdditionalDaycareApplication)},
+            modified_at = ${bind(now)},
+            modified_by = ${bind(modifiedBy)}
         WHERE id = ${bind(id)}
         """
     )
@@ -1065,11 +1099,15 @@ fun Database.Transaction.updateApplicationFlags(
 fun Database.Transaction.updateApplicationAllowOtherGuardianAccess(
     id: ApplicationId,
     allowOtherGuardianAccess: Boolean,
+    now: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ) = execute {
     sql(
         """
-        UPDATE application
-        SET allow_other_guardian_access = ${bind(allowOtherGuardianAccess)}
+        UPDATE application SET
+            allow_other_guardian_access = ${bind(allowOtherGuardianAccess)},
+            modified_at = ${bind(now)},
+            modified_by = ${bind(modifiedBy)}
         WHERE id = ${bind(id)}
         """
     )
@@ -1114,14 +1152,30 @@ AND other_citizen.id != application.guardian_id
     }
 }
 
-fun Database.Transaction.setApplicationVerified(id: ApplicationId, verified: Boolean) {
+fun Database.Transaction.setApplicationVerified(
+    id: ApplicationId,
+    verified: Boolean,
+    now: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+) {
     execute {
-        sql("UPDATE application SET checkedByAdmin = ${bind(verified)} WHERE id = ${bind(id)}")
+        sql(
+            "UPDATE application SET checkedByAdmin = ${bind(verified)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+        )
     }
 }
 
-fun Database.Transaction.setApplicationProcessId(id: ApplicationId, processId: ArchivedProcessId) {
-    execute { sql("UPDATE application SET process_id = ${bind(processId)} WHERE id = ${bind(id)}") }
+fun Database.Transaction.setApplicationProcessId(
+    id: ApplicationId,
+    processId: ArchivedProcessId,
+    now: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+) {
+    execute {
+        sql(
+            "UPDATE application SET process_id = ${bind(processId)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+        )
+    }
 }
 
 fun Database.Transaction.deleteApplication(id: ApplicationId) = execute {
@@ -1135,7 +1189,7 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
     val applicationIds =
         createQuery {
                 sql(
-                    "SELECT id FROM application WHERE status = 'CREATED' AND created < ${bind(clock.today())} - ${bind(thresholdDays)}"
+                    "SELECT id FROM application WHERE status = 'CREATED' AND created_at < ${bind(clock.today())} - ${bind(thresholdDays)}"
                 )
             }
             .toList<ApplicationId>()

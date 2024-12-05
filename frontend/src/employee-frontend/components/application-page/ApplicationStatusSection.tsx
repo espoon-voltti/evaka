@@ -48,7 +48,12 @@ export default React.memo(function ApplicationStatusSection({
 
         <Label>{i18n.application.state.modified}</Label>
         <span data-qa="application-modified-date">
-          {application.modifiedDate?.format() ?? ''}
+          {application.modifiedAt?.format() ?? ''}
+        </span>
+
+        <Label>{i18n.application.state.modifiedBy}</Label>
+        <span data-qa="application-modified-by-name">
+          {application.modifiedBy?.name ?? ''}
         </span>
 
         <Label inputRow={!!dueDateEditor}>{i18n.application.state.due}</Label>

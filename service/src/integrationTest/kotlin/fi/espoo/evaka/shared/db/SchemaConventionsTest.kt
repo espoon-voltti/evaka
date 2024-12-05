@@ -29,7 +29,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be called 'created_at' instead of 'created'`() {
         val permittedViolations =
             setOf(
-                "application",
                 "application_form",
                 "application_note",
                 "application_other_guardian",
@@ -125,7 +124,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be called 'updated_at' instead of 'updated'`() {
         val permittedViolations =
             setOf(
-                "application",
                 "application_form",
                 "application_note",
                 "application_other_guardian",
@@ -395,7 +393,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'created_by' column should be 'uuid' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                Column(ColumnRef("application", "created_by"), "uuid", nullable = true),
                 Column(
                     ColumnRef("assistance_need_decision", "created_by"),
                     "uuid",
