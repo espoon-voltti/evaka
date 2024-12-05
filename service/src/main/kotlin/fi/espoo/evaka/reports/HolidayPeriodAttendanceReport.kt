@@ -341,7 +341,7 @@ private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForChildren(
     else
         getServiceNeedOccupancyInfoOverRange(
             range,
-            placementPred = Predicate { where("pl.child_id = ANY (${bind(childIds)})") },
+            placementPred = Predicate { where("$it.child_id = ANY (${bind(childIds)})") },
             groupsPred = Predicate.alwaysTrue(),
         )
 
@@ -353,14 +353,14 @@ private fun Database.Read.getServiceNeedOccupancyInfoOverRangeForGroups(
     if (groupIds.isEmpty())
         getServiceNeedOccupancyInfoOverRange(
             range,
-            placementPred = Predicate { where("pl.unit_id = ${bind(unitId)}") },
+            placementPred = Predicate { where("$it.unit_id = ${bind(unitId)}") },
             groupsPred = Predicate.alwaysTrue(),
         )
     else
         getServiceNeedOccupancyInfoOverRange(
             range,
             placementPred = Predicate.alwaysTrue(),
-            groupsPred = Predicate { where("dgp.daycare_group_id = ANY(${bind(groupIds)})") },
+            groupsPred = Predicate { where("$it.daycare_group_id = ANY(${bind(groupIds)})") },
         )
 
 private fun Database.Read.getServiceNeedOccupancyInfoOverRange(
@@ -458,7 +458,7 @@ private fun Database.Read.getIncomingBackupCaresOverPeriodForGroupsInUnit(
 ): List<BackupPlacementRange> {
     val where =
         if (groupIds.isEmpty()) Predicate.alwaysTrue()
-        else Predicate { where("bc.group_id = ANY(${bind(groupIds)})") }
+        else Predicate { where("$it.group_id = ANY(${bind(groupIds)})") }
 
     return createQuery {
             sql(
@@ -467,7 +467,7 @@ SELECT bc.child_id,
        daterange(bc.start_date, bc.end_date, '[]') * ${bind(period)} as valid_during,
        bc.group_id
 FROM backup_care bc
-WHERE ${predicate(where.forTable(""))}
+WHERE ${predicate(where.forTable("bc"))}
 AND bc.unit_id = ${bind(unitId)}
 AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)}
 """
