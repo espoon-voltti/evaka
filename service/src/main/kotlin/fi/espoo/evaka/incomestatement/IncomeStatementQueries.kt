@@ -39,7 +39,7 @@ enum class IncomeStatementType : DatabaseEnum {
     override val sqlType: String = "income_statement_type"
 }
 
-private fun selectQuery(single: Boolean, excludeEmployeeAttachments: Boolean): String {
+private fun selectQuery(single: Boolean, isCitizen: Boolean): String {
     // language=SQL
     return """
 SELECT
@@ -89,18 +89,19 @@ SELECT
         FROM attachment a
         JOIN evaka_user eu ON a.uploaded_by = eu.id
         WHERE a.income_statement_id = ist.id 
-        ${if (excludeEmployeeAttachments) "AND eu.type != 'EMPLOYEE'" else ""}
+        ${if (isCitizen) "AND eu.type != 'EMPLOYEE'" else ""}
         ORDER BY a.created
     ) s) AS attachments,
    COUNT(*) OVER () AS count
 FROM income_statement ist 
     JOIN person p ON p.id = ist.person_id
 WHERE person_id = :personId
+${if (!isCitizen) "AND ist.status != 'DRAFT'" else ""}
 ${if (single) "AND ist.id = :id" else "ORDER BY start_date DESC LIMIT :limit OFFSET :offset"}
         """
 }
 
-private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeStatement {
+private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
     val id = column<IncomeStatementId>("id")
     val personId = column<PersonId>("person_id")
     val firstName = column<String>("first_name")
@@ -112,7 +113,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
     val sentAt = column<HelsinkiDateTime?>("sent_at")
     val handledAt = column<HelsinkiDateTime?>("handled_at")
     val status = column<IncomeStatementStatus>("status")
-    val handlerNote = if (includeEmployeeContent) column("handler_note") else ""
+    val handlerNote = if (isCitizen) "" else column("handler_note")
     return when (column<IncomeStatementType>("type")) {
         IncomeStatementType.HIGHEST_FEE ->
             IncomeStatement.HighestFee(
@@ -248,30 +249,32 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
 data class PagedIncomeStatements(val data: List<IncomeStatement>, val total: Int, val pages: Int)
 
 fun Database.Read.readIncomeStatementsForPerson(
+    user: AuthenticatedUser,
     personId: PersonId,
-    includeEmployeeContent: Boolean,
     page: Int,
     pageSize: Int,
-): PagedIncomeStatements =
+): PagedIncomeStatements {
+    val isCitizen = user is AuthenticatedUser.Citizen
     @Suppress("DEPRECATION")
-    createQuery(selectQuery(single = false, excludeEmployeeAttachments = !includeEmployeeContent))
+    return createQuery(selectQuery(single = false, isCitizen = isCitizen))
         .bind("personId", personId)
         .bind("offset", (page - 1) * pageSize)
         .bind("limit", pageSize)
-        .mapToPaged(::PagedIncomeStatements, pageSize) {
-            mapIncomeStatement(includeEmployeeContent)
-        }
+        .mapToPaged(::PagedIncomeStatements, pageSize) { mapIncomeStatement(isCitizen = isCitizen) }
+}
 
 fun Database.Read.readIncomeStatementForPerson(
+    user: AuthenticatedUser,
     personId: PersonId,
     incomeStatementId: IncomeStatementId,
-    includeEmployeeContent: Boolean,
-): IncomeStatement? =
+): IncomeStatement? {
+    val isCitizen = user is AuthenticatedUser.Citizen
     @Suppress("DEPRECATION")
-    createQuery(selectQuery(single = true, excludeEmployeeAttachments = !includeEmployeeContent))
+    return createQuery(selectQuery(single = true, isCitizen = isCitizen))
         .bind("personId", personId)
         .bind("id", incomeStatementId)
-        .exactlyOneOrNull { mapIncomeStatement(includeEmployeeContent) }
+        .exactlyOneOrNull { mapIncomeStatement(isCitizen = isCitizen) }
+}
 
 private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStatementBody) {
     this.bind("startDate", body.startDate)
@@ -714,13 +717,18 @@ fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalD
         .bind("personId", personId)
         .toList<LocalDate>()
 
-fun Database.Read.incomeStatementExistsForStartDate(
+fun Database.Read.unhandledIncomeStatementExistsForStartDate(
     personId: PersonId,
     startDate: LocalDate,
 ): Boolean =
     @Suppress("DEPRECATION")
     createQuery(
-            "SELECT EXISTS (SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate)"
+            """
+                SELECT EXISTS (
+                    SELECT FROM income_statement 
+                    WHERE person_id = :personId AND start_date = :startDate AND status != 'HANDLED'
+                )
+            """
         )
         .bind("personId", personId)
         .bind("startDate", startDate)

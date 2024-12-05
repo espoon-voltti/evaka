@@ -13,7 +13,6 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -34,6 +33,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -51,6 +51,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockMultipartFile
 
@@ -65,9 +66,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
     private val daycare2 = DevDaycare(areaId = area2.id)
 
-    private val employeeId = EmployeeId(UUID.randomUUID())
     private val citizenId = testAdult_1.id
-    private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
+    private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
 
     private val today = LocalDate.of(2024, 8, 30)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
@@ -85,7 +85,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }
-            tx.insert(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
+            tx.insert(employee)
         }
     }
 
@@ -96,7 +96,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         val incomeStatement =
             DevIncomeStatement(
-                personId = testAdult_1.id,
+                personId = citizenId,
                 data = IncomeStatementBody.HighestFee(startDate, endDate),
                 status = IncomeStatementStatus.SENT,
                 createdAt = now.minusHours(10),
@@ -110,7 +110,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
-                personId = testAdult_1.id,
+                personId = citizenId,
                 firstName = testAdult_1.firstName,
                 lastName = testAdult_1.lastName,
                 startDate = startDate,
@@ -134,7 +134,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
-                personId = testAdult_1.id,
+                personId = citizenId,
                 firstName = testAdult_1.firstName,
                 lastName = testAdult_1.lastName,
                 startDate = startDate,
@@ -180,12 +180,41 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
+    fun `cannot read draft statements`() {
+        val sentIncomeStatement =
+            DevIncomeStatement(
+                personId = citizenId,
+                data = IncomeStatementBody.HighestFee(today, today.plusDays(9)),
+                status = IncomeStatementStatus.SENT,
+                sentAt = now,
+            )
+        val draftIncomeStatement =
+            DevIncomeStatement(
+                personId = citizenId,
+                data = IncomeStatementBody.HighestFee(today.plusDays(10), today.plusDays(20)),
+                status = IncomeStatementStatus.DRAFT,
+                sentAt = null,
+            )
+        db.transaction {
+            it.insert(sentIncomeStatement)
+            it.insert(draftIncomeStatement)
+        }
+
+        assertEquals(
+            listOf(sentIncomeStatement.id),
+            getIncomeStatements(citizenId).data.map { it.id },
+        )
+        assertEquals(today, getIncomeStatement(sentIncomeStatement.id).startDate)
+        assertThrows<NotFound> { getIncomeStatement(draftIncomeStatement.id) }
+    }
+
+    @Test
     fun `add an attachment`() {
         val devIncomeStatement =
             DevIncomeStatement(
                 personId = testAdult_1.id,
-                status = IncomeStatementStatus.DRAFT,
-                sentAt = null,
+                status = IncomeStatementStatus.SENT,
+                sentAt = now,
                 data =
                     IncomeStatementBody.Income(
                         startDate = today,
@@ -240,8 +269,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     ),
                 createdAt = incomeStatement.createdAt,
                 modifiedAt = incomeStatement.modifiedAt,
-                sentAt = null,
-                status = IncomeStatementStatus.DRAFT,
+                sentAt = now,
+                status = IncomeStatementStatus.SENT,
                 handledAt = null,
                 handlerNote = "",
             ),
@@ -265,7 +294,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         return db.transaction { tx ->
             tx.insert(incomeStatement)
-            tx.readIncomeStatementForPerson(personId, incomeStatement.id, true)!!
+            tx.readIncomeStatementForPerson(employee.user, personId, incomeStatement.id)!!
         }
     }
 
@@ -290,7 +319,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         return db.transaction { tx ->
             tx.insert(incomeStatement)
-            tx.readIncomeStatementForPerson(personId, incomeStatement.id, true)!!
+            tx.readIncomeStatementForPerson(employee.user, personId, incomeStatement.id)!!
         }
     }
 
@@ -1573,7 +1602,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement {
         return incomeStatementController.getIncomeStatement(
             dbInstance(),
-            employee,
+            employee.user,
             MockEvakaClock(now),
             citizenId,
             id,
@@ -1583,7 +1612,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private fun getIncomeStatements(personId: PersonId): PagedIncomeStatements {
         return incomeStatementController.getIncomeStatements(
             dbInstance(),
-            employee,
+            employee.user,
             MockEvakaClock(now),
             personId,
             page = 1,
@@ -1596,7 +1625,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     ) {
         incomeStatementController.setIncomeStatementHandled(
             dbInstance(),
-            employee,
+            employee.user,
             MockEvakaClock(now),
             id,
             body,
@@ -1619,7 +1648,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     ): PagedIncomeStatementsAwaitingHandler {
         return incomeStatementController.getIncomeStatementsAwaitingHandler(
             dbInstance(),
-            employee,
+            employee.user,
             clock,
             body,
         )
@@ -1628,7 +1657,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private fun uploadAttachment(id: IncomeStatementId): AttachmentId {
         return attachmentsController.uploadIncomeStatementAttachmentEmployee(
             dbInstance(),
-            employee,
+            employee.user,
             MockEvakaClock(now),
             id,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),

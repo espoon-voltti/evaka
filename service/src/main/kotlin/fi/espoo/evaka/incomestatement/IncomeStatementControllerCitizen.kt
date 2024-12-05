@@ -51,8 +51,8 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user.id,
                     )
                     tx.readIncomeStatementsForPerson(
-                        user.id,
-                        includeEmployeeContent = false,
+                        user = user,
+                        personId = user.id,
                         page = page,
                         pageSize = 10,
                     )
@@ -84,8 +84,8 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         childId,
                     )
                     tx.readIncomeStatementsForPerson(
-                        childId,
-                        includeEmployeeContent = false,
+                        user = user,
+                        personId = childId,
                         page = page,
                         pageSize = 10,
                     )
@@ -169,9 +169,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         incomeStatementId,
                     )
                     tx.readIncomeStatementForPerson(
-                        user.id,
-                        incomeStatementId,
-                        includeEmployeeContent = false,
+                        user = user,
+                        personId = user.id,
+                        incomeStatementId = incomeStatementId,
                     ) ?: throw NotFound("No such income statement")
                 }
             }
@@ -196,9 +196,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         incomeStatementId,
                     )
                     tx.readIncomeStatementForPerson(
-                        PersonId(childId.raw),
-                        incomeStatementId,
-                        includeEmployeeContent = false,
+                        user = user,
+                        personId = childId,
+                        incomeStatementId = incomeStatementId,
                     ) ?: throw NotFound("No such child income statement")
                 }
             }
@@ -289,7 +289,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.UPDATE,
                     incomeStatementId,
                 )
-                verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
+                verifyIncomeStatementModificationsAllowed(tx, user, user.id, incomeStatementId)
 
                 tx.updateIncomeStatement(
                     user.evakaUserId,
@@ -333,7 +333,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.UPDATE,
                     incomeStatementId,
                 )
-                verifyIncomeStatementModificationsAllowed(tx, childId, incomeStatementId)
+                verifyIncomeStatementModificationsAllowed(tx, user, childId, incomeStatementId)
 
                 tx.updateIncomeStatement(
                     user.evakaUserId,
@@ -371,7 +371,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.DELETE,
                     id,
                 )
-                verifyIncomeStatementModificationsAllowed(tx, user.id, id)
+                verifyIncomeStatementModificationsAllowed(tx, user, user.id, id)
                 tx.removeIncomeStatement(id)
             }
         }
@@ -395,7 +395,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.DELETE,
                     id,
                 )
-                verifyIncomeStatementModificationsAllowed(tx, childId, id)
+                verifyIncomeStatementModificationsAllowed(tx, user, childId, id)
                 tx.removeIncomeStatement(id)
             }
         }
@@ -431,11 +431,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
 
     private fun verifyIncomeStatementModificationsAllowed(
         tx: Database.Transaction,
+        user: AuthenticatedUser.Citizen,
         personId: PersonId,
         id: IncomeStatementId,
     ) {
         val incomeStatement =
-            tx.readIncomeStatementForPerson(personId, id, includeEmployeeContent = false)
+            tx.readIncomeStatementForPerson(user, personId, id)
                 ?: throw NotFound("Income statement not found")
         if (incomeStatement.status == IncomeStatementStatus.HANDLED) {
             throw Forbidden("Handled income statement cannot be modified or removed")

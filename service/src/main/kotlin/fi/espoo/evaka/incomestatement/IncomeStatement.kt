@@ -159,7 +159,7 @@ fun createValidatedIncomeStatement(
 ): IncomeStatementId {
     if (!draft && !validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
 
-    if (tx.incomeStatementExistsForStartDate(user.id, body.startDate)) {
+    if (tx.unhandledIncomeStatementExistsForStartDate(personId, body.startDate)) {
         throw BadRequest("An income statement for this start date already exists")
     }
 

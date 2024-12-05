@@ -47,8 +47,8 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         personId,
                     )
                     it.readIncomeStatementsForPerson(
+                        user = user,
                         personId = personId,
-                        includeEmployeeContent = true,
                         page = page,
                         pageSize = 10,
                     )
@@ -71,18 +71,18 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Person.READ_INCOME_STATEMENTS,
                         personId,
                     )
-                    it.readIncomeStatementForPerson(
-                        personId,
-                        incomeStatementId,
-                        includeEmployeeContent = true,
+                    tx.readIncomeStatementForPerson(
+                        user = user,
+                        personId = personId,
+                        incomeStatementId = incomeStatementId,
                     )
                 } ?: throw NotFound("No such income statement")
             }
