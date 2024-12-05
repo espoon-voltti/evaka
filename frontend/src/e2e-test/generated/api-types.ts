@@ -762,6 +762,7 @@ export interface DevPerson {
   invoicingStreetAddress: string
   language: string | null
   lastName: string
+  municipalityOfResidence: string
   nationalities: string[]
   ophPersonOid: string | null
   phone: string
@@ -979,6 +980,7 @@ export interface MockVtjPerson {
   dateOfDeath: LocalDate | null
   firstNames: string
   lastName: string
+  municipalityOfResidence: string | null
   nationalities: Nationality[]
   nativeLanguage: NativeLanguage | null
   residenceCode: string | null

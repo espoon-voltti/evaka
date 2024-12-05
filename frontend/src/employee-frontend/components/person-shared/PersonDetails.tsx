@@ -90,6 +90,7 @@ interface Form {
   streetAddress: string
   postalCode: string
   postOffice: string
+  municipalityOfResidence: string
   invoiceRecipientName: string
   invoicingStreetAddress: string
   invoicingPostalCode: string
@@ -128,6 +129,7 @@ export default React.memo(function PersonDetails({
     streetAddress: '',
     postalCode: '',
     postOffice: '',
+    municipalityOfResidence: '',
     invoiceRecipientName: '',
     invoicingStreetAddress: '',
     invoicingPostalCode: '',
@@ -178,6 +180,7 @@ export default React.memo(function PersonDetails({
         streetAddress: person.streetAddress || '',
         postalCode: person.postalCode || '',
         postOffice: person.postOffice || '',
+        municipalityOfResidence: person.municipalityOfResidence || '',
         invoiceRecipientName: person.invoiceRecipientName ?? '',
         invoicingStreetAddress: person.invoicingStreetAddress ?? '',
         invoicingPostalCode: person.invoicingPostalCode ?? '',
@@ -502,6 +505,30 @@ export default React.memo(function PersonDetails({
                     : `${person.streetAddress ?? ''}, ${
                         person.postalCode ?? ''
                       } ${person.postOffice ?? ''}`}
+                </span>
+              )
+          },
+          {
+            label: i18n.common.form.municipalityOfResidence,
+            dataQa: 'municipality-of-residence',
+            valueWidth: '100%',
+            value:
+              powerEditing && canEditPersonalDetails ? (
+                <InputField
+                  width="L"
+                  value={form.municipalityOfResidence}
+                  placeholder={i18n.common.form.municipalityOfResidence}
+                  onChange={(value) =>
+                    updateForm({
+                      municipalityOfResidence: value
+                    })
+                  }
+                />
+              ) : (
+                <span data-qa="person-details-municipality-of-residence">
+                  {person.restrictedDetailsEnabled
+                    ? i18n.common.form.addressRestricted
+                    : person.municipalityOfResidence}
                 </span>
               )
           },

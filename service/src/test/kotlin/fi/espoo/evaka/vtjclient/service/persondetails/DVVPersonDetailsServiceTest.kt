@@ -144,6 +144,10 @@ class DVVPersonDetailsServiceTest {
             postalCode = "",
             postOffice = "",
             residenceCode = "",
+            municipalityOfResidence =
+                municipalityOfResidenceSe.takeIf {
+                    it?.isNotEmpty() == true && nativeLanguage?.code == "sv"
+                } ?: municipalityOfResidence ?: "",
         )
 
     private val validPerson =

@@ -20,6 +20,8 @@ data class VtjPerson(
     var restrictedDetails: RestrictedDetails?,
     var dateOfDeath: LocalDate? = null,
     var residenceCode: String? = null,
+    val municipalityOfResidence: String? = null,
+    val municipalityOfResidenceSe: String? = null,
 ) {
 
     fun mapToDto(): VtjPersonDTO =
@@ -42,6 +44,8 @@ data class VtjPerson(
             restrictedDetailsEnabled = restrictedDetails?.enabled ?: false,
             dateOfBirth = getDobFromSsn(socialSecurityNumber),
             dateOfDeath = dateOfDeath,
+            municipalityOfResidence = municipalityOfResidence ?: "",
+            municipalityOfResidenceSe = municipalityOfResidenceSe ?: "",
         )
 
     companion object {

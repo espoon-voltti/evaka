@@ -307,6 +307,7 @@ export class Fixture {
       postalCode: '02230',
       postOffice: 'Espoo',
       residenceCode: `residenceCode_${id}`,
+      municipalityOfResidence: `municipalityOfResidence_${id}`,
       restrictedDetailsEnabled: false,
       restrictedDetailsEndDate: null,
       streetAddress: `streetAddress_${id}`,
@@ -1311,6 +1312,7 @@ export class PersonBuilder extends FixtureBuilder<DevPerson> {
               `${person.streetAddress ?? ''}${person.postalCode ?? ''}${
                 person.postOffice ?? ''
               }`.replace(' ', ''),
+            municipalityOfResidence: person.municipalityOfResidence,
             restrictedDetails: {
               enabled: person.restrictedDetailsEnabled || false,
               endDate: person.restrictedDetailsEndDate || null
