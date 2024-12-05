@@ -75,7 +75,6 @@ object Imports {
 // For others, a strict type is generated: `type FooId = Id<'Foo'>`.
 val lenientIdTypes =
     setOf(
-        DatabaseTable.CalendarEventAttendee::class,
         DatabaseTable.CalendarEventTime::class,
         DatabaseTable.ChildAttendance::class,
         DatabaseTable.ChildDailyNote::class,

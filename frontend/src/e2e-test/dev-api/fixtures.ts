@@ -1026,7 +1026,7 @@ export class Fixture {
     initial: SemiPartial<DevCalendarEventAttendee, 'calendarEventId' | 'unitId'>
   ): CalendarEventAttendeeBuilder {
     return new CalendarEventAttendeeBuilder({
-      id: uuidv4(),
+      id: randomId(),
       groupId: null,
       childId: null,
       ...initial
