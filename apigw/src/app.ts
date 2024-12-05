@@ -19,7 +19,7 @@ import { authenticateKeycloakEmployee } from './internal/keycloak-employee-saml.
 import {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
-  mobileDeviceSession,
+  finishPairing,
   pinLoginRequestHandler,
   pinLogoutRequestHandler,
   refreshMobileSession
@@ -297,7 +297,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.post(
     '/employee-mobile/auth/finish-pairing',
     express.json(),
-    mobileDeviceSession(employeeMobileSessions)
+    finishPairing(employeeMobileSessions)
   )
   router.post(
     '/employee-mobile/auth/pin-login',
