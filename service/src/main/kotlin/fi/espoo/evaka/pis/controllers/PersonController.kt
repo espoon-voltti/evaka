@@ -356,6 +356,7 @@ class PersonController(
                                         streetAddress = null,
                                         postalCode = null,
                                         postOffice = null,
+                                        municipalityOfResidence = null,
                                     )
                                 }
                             }

@@ -234,6 +234,9 @@ class DvvModificationsService(
                         postOffice =
                             if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
                             else it.postOffice,
+                        municipalityOfResidence =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
+                            else it.municipalityOfResidence,
                     )
                 )
             }
