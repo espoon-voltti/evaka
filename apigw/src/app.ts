@@ -10,11 +10,21 @@ import expressBasicAuth from 'express-basic-auth'
 import { createDevSfiRouter } from './enduser/dev-sfi-auth.js'
 import { authenticateKeycloakCitizen } from './enduser/keycloak-citizen-saml.js'
 import mapRoutes from './enduser/mapRoutes.js'
-import { authStatus } from './enduser/routes/auth-status.js'
+import { citizenAuthStatus } from './enduser/routes/auth-status.js'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.js'
 import { authenticateSuomiFi } from './enduser/suomi-fi-saml.js'
-import { internalGwRouter } from './internal/app.js'
-import { devApiE2ESignup } from './internal/mobile-device-session.js'
+import { authenticateAd } from './internal/ad-saml.js'
+import { createDevAdRouter } from './internal/dev-ad-auth.js'
+import { authenticateKeycloakEmployee } from './internal/keycloak-employee-saml.js'
+import {
+  checkMobileEmployeeIdToken,
+  devApiE2ESignup,
+  mobileDeviceSession,
+  pinLoginRequestHandler,
+  pinLogoutRequestHandler,
+  refreshMobileSession
+} from './internal/mobile-device-session.js'
+import { internalAuthStatus } from './internal/routes/auth-status.js'
 import { integrationUserHeader } from './shared/auth/index.js'
 import {
   appCommit,
@@ -56,6 +66,26 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       )
     } else if (req.url.startsWith('/application/auth/')) {
       req.url = req.url.replace('/application/auth/', '/citizen/auth/')
+    } else if (req.url.startsWith('/internal/employee/')) {
+      req.url = req.url.replace('/internal/employee/', '/employee/')
+    } else if (req.url.startsWith('/internal/employee-mobile/')) {
+      req.url = req.url.replace(
+        '/internal/employee-mobile/',
+        '/employee-mobile/'
+      )
+    } else if (req.url.startsWith('/internal/auth/saml/')) {
+      req.url = req.url.replace('/internal/auth/saml/', '/employee/auth/ad/')
+    } else if (req.url.startsWith('/internal/auth/evaka/')) {
+      req.url = req.url.replace(
+        '/internal/auth/evaka/',
+        '/auth/keycloak-employee/'
+      )
+    } else if (req.url === '/internal/auth/mobile') {
+      req.url = '/employee-mobile/auth/finish-pairing'
+    } else if (req.url === '/internal/auth/pin-login') {
+      req.url = '/employee-mobile/auth/pin-login'
+    } else if (req.url === '/internal/auth/pin-logout') {
+      req.url = '/employee-mobile/auth/pin-logout'
     }
     next()
   })
@@ -77,6 +107,17 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     res.send({ commitId: appCommit })
   })
 
+  const integrationUsers = {
+    ...(titaniaConfig && {
+      [titaniaConfig.username]: titaniaConfig.password
+    })
+  }
+  router.all(
+    '/integration/*',
+    expressBasicAuth({ users: integrationUsers }),
+    createProxy({ getUserHeader: (_) => integrationUserHeader })
+  )
+
   const citizenSessions = sessionSupport('enduser', redisClient, config.citizen)
   const citizenProxy = createProxy({
     getUserHeader: (req) => citizenSessions.getUserHeader(req)
@@ -86,6 +127,9 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     redisClient,
     config.employee
   )
+  const internalProxy = createProxy({
+    getUserHeader: (req) => internalSessions.getUserHeader(req)
+  })
 
   if (config.sfi.type === 'mock') {
     router.use(
@@ -131,6 +175,61 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     })
   )
 
+  router.all('/employee/auth/ad/*', (req: express.Request, _, next) => {
+    // horrible hack to fix logout URL
+    if (req.session?.idpProvider === 'evaka') {
+      req.url = req.url.replace(
+        '/employee/auth/ad/',
+        '/employee/auth/keycloak/'
+      )
+    }
+    next()
+  })
+
+  if (config.ad.type === 'mock') {
+    router.use(
+      '/auth/entraid',
+      internalSessions.middleware,
+      createDevAdRouter(internalSessions)
+    )
+  } else if (config.ad.type === 'saml') {
+    router.use(
+      '/auth/entraid',
+      internalSessions.middleware,
+      createSamlRouter({
+        sessions: internalSessions,
+        strategyName: 'ead',
+        saml: new SAML(
+          createSamlConfig(
+            config.ad.saml,
+            redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+          )
+        ),
+        authenticate: authenticateAd(config.ad),
+        defaultPageUrl: '/employee'
+      })
+    )
+  }
+
+  if (!config.keycloakEmployee)
+    throw new Error('Missing Keycloak SAML configuration (employee)')
+  router.use(
+    '/auth/keycloak-employee',
+    internalSessions.middleware,
+    createSamlRouter({
+      sessions: internalSessions,
+      strategyName: 'evaka',
+      saml: new SAML(
+        createSamlConfig(
+          config.keycloakEmployee,
+          redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
+        )
+      ),
+      authenticate: authenticateKeycloakEmployee,
+      defaultPageUrl: '/employee'
+    })
+  )
+
   if (enableDevApi) {
     router.get(
       '/dev-api/auth/mobile-e2e-signup',
@@ -162,7 +261,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     '/citizen/auth/status',
     csrf,
     citizenSessions.middleware,
-    authStatus(citizenSessions)
+    citizenAuthStatus(citizenSessions)
   )
   router.post(
     '/citizen/auth/weak-login',
@@ -178,20 +277,89 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     citizenSessions.requireAuthentication,
     citizenProxy
   )
-  router.use(
-    '/internal',
-    internalGwRouter(config, redisClient, { internalSessions })
+
+  router.get(
+    '/internal/auth/status',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    refreshMobileSession(internalSessions),
+    internalAuthStatus(internalSessions)
+  )
+  router.get(
+    '/employee/auth/status',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    internalAuthStatus(internalSessions)
+  )
+  router.all(
+    '/employee/public/*',
+    csrf,
+    internalSessions.middleware,
+    internalProxy
+  )
+  router.all(
+    '/employee/*',
+    csrf,
+    internalSessions.middleware,
+    internalSessions.requireAuthentication,
+    internalProxy
   )
 
-  const integrationUsers = {
-    ...(titaniaConfig && {
-      [titaniaConfig.username]: titaniaConfig.password
-    })
-  }
+  router.get(
+    '/employee-mobile/auth/status',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    internalAuthStatus(internalSessions)
+  )
+  router.post(
+    '/employee-mobile/auth/finish-pairing',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    express.json(),
+    mobileDeviceSession(internalSessions)
+  )
+  router.post(
+    '/employee-mobile/auth/pin-login',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    internalSessions.requireAuthentication,
+    express.json(),
+    pinLoginRequestHandler(internalSessions, redisClient)
+  )
+  router.post(
+    '/employee-mobile/auth/pin-logout',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    internalSessions.requireAuthentication,
+    express.json(),
+    pinLogoutRequestHandler(internalSessions, redisClient)
+  )
   router.all(
-    '/integration/*',
-    expressBasicAuth({ users: integrationUsers }),
-    createProxy({ getUserHeader: (_) => integrationUserHeader })
+    '/employee-mobile/public/*',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    internalProxy
+  )
+  router.all(
+    '/employee-mobile/*',
+    csrf,
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    internalSessions.requireAuthentication,
+    internalProxy
   )
 
   // global error middleware
