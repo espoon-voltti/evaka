@@ -8,6 +8,7 @@ import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
 import { client } from '../../api/client'
@@ -84,7 +85,7 @@ export async function getChildDocumentMetadata(
 */
 export async function getFeeDecisionMetadata(
   request: {
-    feeDecisionId: UUID
+    feeDecisionId: FeeDecisionId
   }
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({

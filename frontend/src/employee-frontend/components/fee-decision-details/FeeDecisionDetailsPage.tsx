@@ -7,7 +7,7 @@ import { Navigate, useNavigate } from 'react-router'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
-  FeeDecisionDetailed,
+  FeeDecisionResponse,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
 import { useQueryResult } from 'lib-common/query'
@@ -26,6 +26,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import MetadataSection from '../archive-metadata/MetadataSection'
+import { renderResult } from '../async-rendering'
 import { feeDecisionMetadataQuery } from '../fee-decisions/fee-decision-queries'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
 
@@ -54,36 +55,37 @@ export default React.memo(function FeeDecisionDetailsPage() {
   const { id } = useRouteParams(['id'])
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
-  const [decision, setDecision] = useState<Result<FeeDecisionDetailed>>(
-    Loading.of()
-  )
+  const [decisionResponse, setDecisionResponse] = useState<
+    Result<FeeDecisionResponse>
+  >(Loading.of())
   const [modified, setModified] = useState<boolean>(false)
   const [newDecisionType, setNewDecisionType] =
     useState<FeeDecisionType>('NORMAL')
   const [confirmingBack, setConfirmingBack] = useState<boolean>(false)
 
   const loadDecision = useCallback(
-    () => getFeeDecisionResult({ id }).then(setDecision),
+    () => getFeeDecisionResult({ id }).then(setDecisionResponse),
     [id]
   )
   useEffect(() => void loadDecision(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (decision.isSuccess) {
+    if (decisionResponse.isSuccess) {
+      const decision = decisionResponse.value.data
       const name = formatTitleName(
-        decision.value.headOfFamily.firstName,
-        decision.value.headOfFamily.lastName
+        decision.headOfFamily.firstName,
+        decision.headOfFamily.lastName
       )
-      if (decision.value.status === 'DRAFT') {
+      if (decision.status === 'DRAFT') {
         setTitle(`${name} | ${i18n.titles.feeDecisionDraft}`)
       } else {
         setTitle(`${name} | ${i18n.titles.feeDecision}`)
       }
-      setNewDecisionType(decision.value.decisionType)
+      setNewDecisionType(decision.decisionType)
     }
-  }, [decision]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [decisionResponse]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const decisionType = decision.map(({ decisionType }) => decisionType)
+  const decisionType = decisionResponse.map(({ data }) => data.decisionType)
   const changeDecisionType = useCallback(
     (type: FeeDecisionType) => {
       if (decisionType.isSuccess) {
@@ -97,7 +99,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
 
   const goBack = useCallback(() => navigate(-1), [navigate])
 
-  if (decision.isFailure) {
+  if (decisionResponse.isFailure) {
     return <Navigate replace to="/finance/fee-decisions" />
   }
 
@@ -108,65 +110,69 @@ export default React.memo(function FeeDecisionDetailsPage() {
         data-qa="fee-decision-details-page"
       >
         <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
-        {decision.isSuccess && (
-          <>
-            {showHandlerSelectModal && (
-              <FinanceDecisionHandlerSelectModal
-                onResolve={async (decisionHandlerId) => {
-                  const result = await confirmFeeDecisionDraftsResult({
-                    decisionHandlerId,
-                    body: [decision.value.id]
-                  })
-                  if (result.isSuccess) {
-                    await loadDecision()
-                    setShowHandlerSelectModal(false)
-                  }
-                  return result
-                }}
-                onReject={() => setShowHandlerSelectModal(false)}
-                checkedIds={[decision.value.id]}
-              />
-            )}
-            <ContentArea opaque>
-              <Heading
-                {...decision.value}
-                changeDecisionType={changeDecisionType}
-                newDecisionType={newDecisionType}
-              />
-              {decision.value.children.map(
-                ({
-                  child,
-                  placementType,
-                  placementUnit,
-                  serviceNeedDescriptionFi
-                }) => (
-                  <ChildSection
-                    key={child.id}
-                    child={child}
-                    placementType={placementType}
-                    placementUnit={placementUnit}
-                    serviceNeedDescription={serviceNeedDescriptionFi}
-                  />
-                )
+        {renderResult(
+          decisionResponse,
+          ({ data: decision, permittedActions }) => (
+            <>
+              {showHandlerSelectModal && (
+                <FinanceDecisionHandlerSelectModal
+                  onResolve={async (decisionHandlerId) => {
+                    const result = await confirmFeeDecisionDraftsResult({
+                      decisionHandlerId,
+                      body: [decision.id]
+                    })
+                    if (result.isSuccess) {
+                      await loadDecision()
+                      setShowHandlerSelectModal(false)
+                    }
+                    return result
+                  }}
+                  onReject={() => setShowHandlerSelectModal(false)}
+                  checkedIds={[decision.id]}
+                />
               )}
-              <Summary decision={decision.value} />
-              <Actions
-                decision={decision.value}
-                goToDecisions={goBack}
-                loadDecision={loadDecision}
-                modified={modified}
-                setModified={setModified}
-                newDecisionType={newDecisionType}
-                onHandlerSelectModal={() => setShowHandlerSelectModal(true)}
-              />
-            </ContentArea>
-            {decision.isSuccess && decision.value.status !== 'DRAFT' && (
-              <>
-                <Gap />
-                <FeeDecisionMetadataSection feeDecisionId={id} />
-              </>
-            )}
-          </>
+              <ContentArea opaque>
+                <Heading
+                  {...decision}
+                  changeDecisionType={changeDecisionType}
+                  newDecisionType={newDecisionType}
+                />
+                {decision.children.map(
+                  ({
+                    child,
+                    placementType,
+                    placementUnit,
+                    serviceNeedDescriptionFi
+                  }) => (
+                    <ChildSection
+                      key={child.id}
+                      child={child}
+                      placementType={placementType}
+                      placementUnit={placementUnit}
+                      serviceNeedDescription={serviceNeedDescriptionFi}
+                    />
+                  )
+                )}
+                <Summary decision={decision} />
+                <Actions
+                  decision={decision}
+                  goToDecisions={goBack}
+                  loadDecision={loadDecision}
+                  modified={modified}
+                  setModified={setModified}
+                  newDecisionType={newDecisionType}
+                  onHandlerSelectModal={() => setShowHandlerSelectModal(true)}
+                />
+              </ContentArea>
+              {decision.status !== 'DRAFT' &&
+                permittedActions.includes('READ_METADATA') && (
+                  <>
+                    <Gap />
+                    <FeeDecisionMetadataSection feeDecisionId={id} />
+                  </>
+                )}
+            </>
+          )
         )}
       </Container>
       {confirmingBack && (

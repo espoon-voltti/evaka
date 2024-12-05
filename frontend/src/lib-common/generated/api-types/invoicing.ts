@@ -262,6 +262,14 @@ export interface FeeDecisionPlacement {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.FeeDecisionResponse
+*/
+export interface FeeDecisionResponse {
+  data: FeeDecisionDetailed
+  permittedActions: Action.FeeDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 */
 export interface FeeDecisionServiceNeed {
@@ -1229,6 +1237,14 @@ export function deserializeJsonFeeDecisionDetailed(json: JsonOf<FeeDecisionDetai
     partner: (json.partner != null) ? deserializeJsonPersonDetailed(json.partner) : null,
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonFeeDecisionResponse(json: JsonOf<FeeDecisionResponse>): FeeDecisionResponse {
+  return {
+    ...json,
+    data: deserializeJsonFeeDecisionDetailed(json.data)
   }
 }
 

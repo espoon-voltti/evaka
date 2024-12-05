@@ -2461,7 +2461,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     private fun getDecision(id: FeeDecisionId): FeeDecisionDetailed {
-        return feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id)
+        return feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id).data
     }
 
     private fun getHeadOfFamilyDecisions(id: PersonId): List<FeeDecision> {

@@ -278,6 +278,13 @@ export type FeeAlteration =
   | 'UPDATE'
   | 'UPLOAD_ATTACHMENT'
 
+export type FeeDecision =
+  | 'IGNORE'
+  | 'READ'
+  | 'READ_METADATA'
+  | 'UNIGNORE'
+  | 'UPDATE'
+
 export type Group =
   | 'CREATE_ABSENCES'
   | 'CREATE_CALENDAR_EVENT'
