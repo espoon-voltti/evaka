@@ -1455,6 +1455,7 @@ sealed interface Action {
     enum class FeeDecision(override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>) :
         ScopedAction<FeeDecisionId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
+        READ_METADATA(HasGlobalRole(ADMIN)),
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         IGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         UNIGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN));

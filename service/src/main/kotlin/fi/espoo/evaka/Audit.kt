@@ -280,6 +280,7 @@ enum class Audit(
     FeeDecisionMarkSent,
     FeeDecisionPdfRead,
     FeeDecisionRead,
+    FeeDecisionReadMetadata,
     FeeDecisionSearch,
     FeeDecisionSetType,
     FeeDecisionUnignore,
