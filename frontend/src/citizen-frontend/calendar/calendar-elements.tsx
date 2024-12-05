@@ -118,6 +118,7 @@ const GroupedElementText = styled.div<{
   $clamp?: boolean
 }>`
   word-break: break-word;
+  white-space: pre-wrap;
   ${(p) =>
     p.$clamp &&
     css`
@@ -193,11 +194,30 @@ const groupChildren = ({
           }
         }
 
+        const [withTimes, withoutTimes] = partition(
+          child.reservations,
+          reservationHasTimes
+        )
+
+        const reservationsWithTimesText = withTimes
+          .map((reservation) =>
+            formatReservation(reservation, child.reservableTimeRange, i18n)
+          )
+          .join(', ')
+
         if (child.attendances.length > 0) {
+          const attendanceText = child.attendances
+            .map((a) => a.format())
+            .join(', ')
+          const attendancesWithReservationsText =
+            attendanceText +
+            (reservationsWithTimesText.length > 0
+              ? `\n(${reservationsWithTimesText})`
+              : '')
           return {
             childId: child.childId,
             type: 'attendance',
-            text: child.attendances.map((a) => a.format()).join(', ')
+            text: attendancesWithReservationsText
           }
         }
 
@@ -211,11 +231,6 @@ const groupChildren = ({
         }
 
         if (child.reservations.length > 0) {
-          const [withTimes, withoutTimes] = partition(
-            child.reservations,
-            reservationHasTimes
-          )
-
           if (withoutTimes.length > 0) {
             // In theory, we could have reservations with and without times, but in practice this shouldn't happen
             return {
@@ -228,11 +243,7 @@ const groupChildren = ({
           return {
             childId: child.childId,
             type: 'reservation',
-            text: withTimes
-              .map((reservation) =>
-                formatReservation(reservation, child.reservableTimeRange, i18n)
-              )
-              .join(', ')
+            text: reservationsWithTimesText
           }
         }
 
