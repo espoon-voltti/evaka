@@ -500,11 +500,13 @@ export async function getFuturePreschoolersUnitsReport(): Promise<PreschoolUnits
 */
 export async function getHolidayPeriodAttendanceReport(
   request: {
+    groupIds?: UUID[] | null,
     unitId: UUID,
     periodId: UUID
   }
 ): Promise<HolidayPeriodAttendanceReportRow[]> {
   const params = createUrlSearchParams(
+    ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? []),
     ['unitId', request.unitId],
     ['periodId', request.periodId]
   )

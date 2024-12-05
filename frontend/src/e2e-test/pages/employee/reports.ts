@@ -624,7 +624,13 @@ export class PreschoolApplicationReport {
 }
 
 export class HolidayPeriodAttendanceReport {
-  constructor(private page: Page) {}
+  sendButton: Element
+  groupSelector: MultiSelect
+
+  constructor(private page: Page) {
+    this.sendButton = this.page.findByDataQa('send-button')
+    this.groupSelector = new MultiSelect(this.page.findByDataQa('group-select'))
+  }
 
   async selectUnit(unitName: string) {
     const unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
