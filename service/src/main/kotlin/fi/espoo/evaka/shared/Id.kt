@@ -214,9 +214,9 @@ typealias BackupCareId = Id<DatabaseTable.BackupCare>
 
 typealias BackupPickupId = Id<DatabaseTable.BackupPickup>
 
-typealias CalendarEventAttendeeId = Id<DatabaseTable.CalendarEvent>
+typealias CalendarEventAttendeeId = Id<DatabaseTable.CalendarEventAttendee>
 
-typealias CalendarEventId = Id<DatabaseTable.CalendarEventAttendee>
+typealias CalendarEventId = Id<DatabaseTable.CalendarEvent>
 
 typealias CalendarEventTimeId = Id<DatabaseTable.CalendarEventTime>
 
