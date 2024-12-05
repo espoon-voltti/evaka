@@ -7,6 +7,8 @@ import { Arg0, UUID } from 'lib-common/types'
 
 import { sendJamixOrders } from '../../generated/api-clients/jamix'
 import {
+  getAssistanceNeedsAndActionsReport,
+  getAssistanceNeedsAndActionsReportByChild,
   getAttendanceReservationReportByChild,
   getChildAttendanceReport,
   getCustomerFeesReport,
@@ -41,6 +43,12 @@ import { OccupancyReportFilters } from './Occupancies'
 
 const queryKeys = createQueryKeys('reports', {
   permittedReports: () => ['permittedReports'],
+  assistanceNeedsAndActions: (
+    filters: Arg0<typeof getAssistanceNeedsAndActionsReport>
+  ) => ['assistanceNeedsAndActions', filters],
+  assistanceNeedsAndActionsByChild: (
+    filters: Arg0<typeof getAssistanceNeedsAndActionsReportByChild>
+  ) => ['assistanceNeedsAndActionsByChild', filters],
   attendanceReservationByChild: (
     filters: Arg0<typeof getAttendanceReservationReportByChild>
   ) => ['attendanceReservationByUnitAndChild', filters],
@@ -101,6 +109,16 @@ const queryKeys = createQueryKeys('reports', {
 export const permittedReportsQuery = query({
   api: getPermittedReports,
   queryKey: queryKeys.permittedReports
+})
+
+export const assistanceNeedsAndActionsReportQuery = query({
+  api: getAssistanceNeedsAndActionsReport,
+  queryKey: queryKeys.assistanceNeedsAndActions
+})
+
+export const assistanceNeedsAndActionsReportByChildQuery = query({
+  api: getAssistanceNeedsAndActionsReportByChild,
+  queryKey: queryKeys.assistanceNeedsAndActionsByChild
 })
 
 export const attendanceReservationReportByChildQuery = query({

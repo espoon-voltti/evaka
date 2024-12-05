@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -205,7 +204,15 @@ class AssistanceNeedsAndActionsReportControllerTest :
             }
 
         val groupReport =
-            controller.getAssistanceNeedsAndActionsReport(dbInstance(), admin, clock, date)
+            controller.getAssistanceNeedsAndActionsReport(
+                dbInstance(),
+                admin,
+                clock,
+                date,
+                DaycareAssistanceLevel.entries,
+                emptyList(),
+                emptyList(),
+            )
         assertEquals(
             listOf(
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -254,15 +261,74 @@ class AssistanceNeedsAndActionsReportControllerTest :
             groupReport.rows,
         )
 
+        val emptyGroupReport =
+            controller.getAssistanceNeedsAndActionsReport(
+                dbInstance(),
+                admin,
+                clock,
+                date,
+                emptyList(),
+                emptyList(),
+                emptyList(),
+            )
+        assertEquals(
+            listOf(
+                AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
+                    careAreaName = "Test Care Area",
+                    unitId = unitId,
+                    unitName = "Test Daycare",
+                    groupId = group1Id,
+                    groupName = "Group 1",
+                    actionCounts = emptyMap(),
+                    otherActionCount = 0,
+                    noActionCount = 0,
+                    daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 2),
+                    preschoolAssistanceCounts = emptyMap(),
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficientCount = 1,
+                ),
+                AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
+                    careAreaName = "Test Care Area",
+                    unitId = unitId,
+                    unitName = "Test Daycare",
+                    groupId = group2Id,
+                    groupName = "Group 2",
+                    actionCounts = emptyMap(),
+                    otherActionCount = 0,
+                    noActionCount = 0,
+                    daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
+                    preschoolAssistanceCounts = emptyMap(),
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficientCount = 0,
+                ),
+                AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
+                    careAreaName = "Test Care Area",
+                    unitId = unitId,
+                    unitName = "Test Daycare",
+                    groupId = group3Id,
+                    groupName = "Group 3",
+                    actionCounts = emptyMap(),
+                    otherActionCount = 0,
+                    noActionCount = 0,
+                    daycareAssistanceCounts = emptyMap(),
+                    preschoolAssistanceCounts = emptyMap(),
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficientCount = 0,
+                ),
+            ),
+            emptyGroupReport.rows,
+        )
+
         val childReport =
-            db.transaction { tx ->
-                controller.getAssistanceNeedsAndActionsReportByChild(
-                    tx,
-                    date,
-                    AccessControlFilter.PermitAll,
-                    true,
-                )
-            }
+            controller.getAssistanceNeedsAndActionsReportByChild(
+                dbInstance(),
+                admin,
+                clock,
+                date,
+                DaycareAssistanceLevel.entries,
+                emptyList(),
+                emptyList(),
+            )
         assertEquals(
             listOf(
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
@@ -318,6 +384,73 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 ),
             ),
             childReport.rows,
+        )
+
+        val emptyChildReport =
+            controller.getAssistanceNeedsAndActionsReportByChild(
+                dbInstance(),
+                admin,
+                clock,
+                date,
+                emptyList(),
+                emptyList(),
+                emptyList(),
+            )
+        assertEquals(
+            listOf(
+                AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
+                    careAreaName = "Test Care Area",
+                    unitId = unitId,
+                    unitName = "Test Daycare",
+                    groupId = group1Id,
+                    groupName = "Group 1",
+                    childId = child1Id,
+                    childLastName = "Person",
+                    childFirstName = "Test 1",
+                    childAge = 3,
+                    actions = emptySet(),
+                    otherAction = "",
+                    daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
+                    preschoolAssistanceCounts = emptyMap(),
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.50"),
+                ),
+                AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
+                    careAreaName = "Test Care Area",
+                    unitId = unitId,
+                    unitName = "Test Daycare",
+                    groupId = group1Id,
+                    groupName = "Group 1",
+                    childId = child2Id,
+                    childLastName = "Person",
+                    childFirstName = "Test 2",
+                    childAge = 3,
+                    actions = emptySet(),
+                    otherAction = "",
+                    daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
+                    preschoolAssistanceCounts = emptyMap(),
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
+                ),
+                AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
+                    careAreaName = "Test Care Area",
+                    unitId = unitId,
+                    unitName = "Test Daycare",
+                    groupId = group2Id,
+                    groupName = "Group 2",
+                    childId = child3Id,
+                    childLastName = "Person",
+                    childFirstName = "Test 3",
+                    childAge = 3,
+                    actions = emptySet(),
+                    otherAction = "",
+                    daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
+                    preschoolAssistanceCounts = emptyMap(),
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
+                ),
+            ),
+            emptyChildReport.rows,
         )
     }
 }
