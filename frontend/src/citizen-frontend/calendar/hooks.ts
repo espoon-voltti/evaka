@@ -97,8 +97,7 @@ function useReservationsRange(
   )
 }
 
-export function useExtendedReservationsRange(initialRange: FiniteDateRange) {
-  const [dateRange, setDateRange] = useState<FiniteDateRange>(initialRange)
+export function useExtendedReservationsRange(dateRange: FiniteDateRange) {
   const fetchedReservations = useReservationsRange(
     dateRange.start,
     dateRange.end
@@ -113,7 +112,6 @@ export function useExtendedReservationsRange(initialRange: FiniteDateRange) {
       setReservations((prevReservations) => {
         if (prevReservations.isSuccess) {
           const extendedReservations = {
-            ...prevReservations,
             value: {
               ...prevReservations.value,
               days: [
@@ -139,5 +137,5 @@ export function useExtendedReservationsRange(initialRange: FiniteDateRange) {
     }
   }, [fetchedReservations])
 
-  return { reservations, setDateRange, loading: fetchedReservations.isLoading }
+  return { reservations, loading: fetchedReservations.isLoading }
 }

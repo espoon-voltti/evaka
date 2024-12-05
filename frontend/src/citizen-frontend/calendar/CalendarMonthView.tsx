@@ -164,7 +164,7 @@ export default React.memo(function CalendarMonthView({
       (m) =>
         m.year === currentMonthYear.year && m.month === currentMonthYear.month
     )
-    return setSelectedMonthIndex(currentIndex)
+    setSelectedMonthIndex(currentIndex)
   }, [calendarMonths, setSelectedMonthIndex])
 
   const isDateInCurrentMonth = useCallback(() => {
