@@ -296,6 +296,7 @@ class VtjClientServiceTest {
         streetAddress: String = "Jokukatu 8",
         postalOffice: String = "Jokukaupunki",
         postalCode: String = "00100",
+        municipalityOfResidence: String = "Jokutoinenkaupunki",
         dateOfBirth: LocalDate = LocalDate.of(1972, 3, 27),
     ) =
         PersonDTO(
@@ -315,6 +316,7 @@ class VtjClientServiceTest {
             postOffice = postalOffice,
             postalCode = postalCode,
             residenceCode = "",
+            municipalityOfResidence = municipalityOfResidence,
             restrictedDetailsEnabled = false,
             restrictedDetailsEndDate = null,
         )

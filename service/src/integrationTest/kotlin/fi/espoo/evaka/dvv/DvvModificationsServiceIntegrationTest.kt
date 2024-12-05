@@ -85,6 +85,7 @@ class DvvModificationsServiceIntegrationTest :
                 streetAddress = "",
                 postalCode = "",
                 postOffice = "",
+                municipalityOfResidence = "",
                 restrictedDetailsEnabled = true,
                 restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
             )
@@ -95,6 +96,7 @@ class DvvModificationsServiceIntegrationTest :
         assertEquals("", modifiedPerson.streetAddress)
         assertEquals("", modifiedPerson.postalCode)
         assertEquals("", modifiedPerson.postOffice)
+        assertEquals("", modifiedPerson.municipalityOfResidence)
     }
 
     @Test
@@ -106,6 +108,7 @@ class DvvModificationsServiceIntegrationTest :
                 streetAddress = "",
                 postalCode = "",
                 postOffice = "",
+                municipalityOfResidence = "",
             )
         )
         MockPersonDetailsService.addPersons(
@@ -114,6 +117,7 @@ class DvvModificationsServiceIntegrationTest :
                 streetAddress = "Uusitie 17 A 2",
                 postalCode = "02940",
                 postOffice = "ESPOO",
+                municipalityOfResidence = "Espoo",
                 restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
             )
         )
@@ -124,6 +128,7 @@ class DvvModificationsServiceIntegrationTest :
         assertEquals("Uusitie 17 A 2", modifiedPerson.streetAddress)
         assertEquals("02940", modifiedPerson.postalCode)
         assertEquals("ESPOO", modifiedPerson.postOffice)
+        assertEquals("Espoo", modifiedPerson.municipalityOfResidence)
     }
 
     @Test
@@ -136,6 +141,7 @@ class DvvModificationsServiceIntegrationTest :
                 postalCode = "02940",
                 postOffice = "ESPOO",
                 residenceCode = "abc123",
+                municipalityOfResidence = "Helsinki",
             )
         )
         updatePeopleFromDvv(listOf("040180-9998"))
@@ -144,6 +150,7 @@ class DvvModificationsServiceIntegrationTest :
         assertEquals("02940", modifiedPerson.postalCode)
         assertEquals("ESPOO", modifiedPerson.postOffice)
         assertEquals("abc123", modifiedPerson.residenceCode)
+        assertEquals("Helsinki", modifiedPerson.municipalityOfResidence)
     }
 
     @Test

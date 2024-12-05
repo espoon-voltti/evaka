@@ -128,6 +128,8 @@ fun Henkilo.mapToVtjPerson(): VtjPerson {
         nativeLanguage = mapNativeLanguage(),
         restrictedDetails = turvakielto.mapToRestrictedDetails(),
         dateOfDeath = parseLocalDateFromString(kuolintiedot.kuolinpvm),
+        municipalityOfResidence = kotikunta?.kuntaS,
+        municipalityOfResidenceSe = kotikunta?.kuntaR,
     )
 }
 
