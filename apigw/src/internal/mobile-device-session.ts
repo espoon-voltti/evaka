@@ -71,7 +71,7 @@ export const refreshMobileSession = (sessions: Sessions<'employee-mobile'>) =>
     }
   })
 
-export const mobileDeviceSession = (sessions: Sessions<'employee-mobile'>) =>
+export const finishPairing = (sessions: Sessions<'employee-mobile'>) =>
   toRequestHandler(async (req, res) => {
     const id = assertStringProp(req.body, 'id')
     const challengeKey = assertStringProp(req.body, 'challengeKey')
