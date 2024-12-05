@@ -264,6 +264,20 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `parse csv with BOM`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "${child.id}";"${unit.id}"
+        """
+                .trimIndent()
+
+        val data = parsePlacementToolCsv("\ufeff$csv".byteInputStream())
+        assertEquals(1, data.size)
+        assertEquals(unit.id, data[child.id.raw.toString()])
+    }
+
+    @Test
     fun `parse csv with ssn`() {
         val csv =
             """

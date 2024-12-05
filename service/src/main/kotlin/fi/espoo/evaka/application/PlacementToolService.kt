@@ -39,6 +39,7 @@ import java.io.InputStream
 import java.time.LocalDate
 import java.util.UUID
 import org.apache.commons.csv.CSVFormat
+import org.apache.commons.io.input.BOMInputStream
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -368,13 +369,14 @@ class PlacementToolService(
         tx.getPreschoolTerms().firstOrNull { it.finnishPreschool.start > date }
 }
 
-fun parsePlacementToolCsv(inputStream: InputStream): Map<String, DaycareId> =
-    CSVFormat.Builder.create(CSVFormat.DEFAULT)
+fun parsePlacementToolCsv(inputStream: InputStream): Map<String, DaycareId> {
+    val bomStream = BOMInputStream.builder().setInputStream(inputStream).get()
+    return CSVFormat.Builder.create(CSVFormat.DEFAULT)
         .setHeader()
         .apply { setIgnoreSurroundingSpaces(true) }
         .apply { setDelimiter(';') }
         .build()
-        .parse(inputStream.reader())
+        .parse(bomStream.reader())
         .filter { row ->
             row.get(PlacementToolCsvField.CHILD_ID.fieldName).isNotBlank() &&
                 row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName).isNotBlank()
@@ -385,5 +387,6 @@ fun parsePlacementToolCsv(inputStream: InputStream): Map<String, DaycareId> =
                     UUID.fromString(row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName))
                 )
         }
+}
 
 data class PlacementToolData(val childId: ChildId, val preschoolId: DaycareId)
