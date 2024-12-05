@@ -1037,7 +1037,7 @@ export class Fixture {
     initial: SemiPartial<DevCalendarEventTime, 'calendarEventId'>
   ): CalendarEventTimeBuilder {
     return new CalendarEventTimeBuilder({
-      id: uuidv4(),
+      id: randomId(),
       date: LocalDate.of(2020, 1, 1),
       childId: null,
       modifiedBy: systemInternalUser.id,

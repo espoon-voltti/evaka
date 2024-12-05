@@ -39,6 +39,7 @@ import {
   ReservationsResponse,
   UsedServiceResult
 } from 'lib-common/generated/api-types/reservations'
+import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
@@ -374,7 +375,7 @@ const DayModal = React.memo(function DayModal({
       eventTimeId: null
     })
   const onCancelClick = useCallback(
-    (childId: UUID, eventTimeId: UUID) => {
+    (childId: UUID, eventTimeId: CalendarEventTimeId) => {
       setConfirmationModalState({ visible: true, childId, eventTimeId })
     },
     [setConfirmationModalState]
