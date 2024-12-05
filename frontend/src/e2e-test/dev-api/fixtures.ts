@@ -37,8 +37,10 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -260,7 +262,7 @@ export class Fixture {
   static careArea(initial?: Partial<DevCareArea>): CareAreaBuilder {
     const id = uniqueLabel()
     return new CareAreaBuilder({
-      id: uuidv4(),
+      id: randomId(),
       name: `Care Area ${id}`,
       shortName: `careArea_${id}`,
       areaCode: 2230,
@@ -416,7 +418,7 @@ export class Fixture {
     initial: SemiPartial<DevBackupCare, 'childId' | 'unitId'>
   ): BackupCareBuilder {
     return new BackupCareBuilder({
-      id: uuidv4(),
+      id: randomId(),
       groupId: null,
       period: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
@@ -449,7 +451,7 @@ export class Fixture {
     const id = uniqueLabel()
 
     return new ServiceNeedOptionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       daycareHoursPerWeek: 0,
       contractDaysPerMonth: null,
       daycareHoursPerMonth: null,
@@ -496,7 +498,7 @@ export class Fixture {
     initial: SemiPartial<AssistanceFactor, 'childId'>
   ): AssistanceFactorBuilder {
     return new AssistanceFactorBuilder({
-      id: uuidv4(),
+      id: randomId(),
       capacityFactor: 1.0,
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
@@ -560,7 +562,7 @@ export class Fixture {
     initial: SemiPartial<DevAssistanceNeedDecision, 'childId'>
   ): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       assistanceLevels: ['SPECIAL_ASSISTANCE'],
       careMotivation: null,
       decisionMade: null,
@@ -624,7 +626,7 @@ export class Fixture {
     initial: SemiPartial<DevAssistanceNeedDecision, 'childId'>
   ): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       assistanceLevels: ['ENHANCED_ASSISTANCE'],
       careMotivation: 'Care motivation text',
       decisionMade: null,
@@ -688,7 +690,7 @@ export class Fixture {
     initial: SemiPartial<DevAssistanceNeedPreschoolDecision, 'childId'>
   ): AssistanceNeedPreschoolDecisionBuilder {
     return new AssistanceNeedPreschoolDecisionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       decisionNumber: 1000,
       status: 'DRAFT',
       annulmentReason: '',
@@ -847,7 +849,9 @@ export class Fixture {
   }
 
   static placementPlan(
-    initial: SemiPartial<PlacementPlan, 'unitId'> & { applicationId: UUID }
+    initial: SemiPartial<PlacementPlan, 'unitId'> & {
+      applicationId: ApplicationId
+    }
   ): PlacementPlanBuilder {
     return new PlacementPlanBuilder({
       periodStart: LocalDate.todayInSystemTz(),
@@ -1004,7 +1008,7 @@ export class Fixture {
     initial?: Partial<DevCalendarEvent>
   ): CalendarEventBuilder {
     return new CalendarEventBuilder({
-      id: uuidv4(),
+      id: randomId(),
       title: '',
       description: '',
       period: new FiniteDateRange(
@@ -1022,7 +1026,7 @@ export class Fixture {
     initial: SemiPartial<DevCalendarEventAttendee, 'calendarEventId' | 'unitId'>
   ): CalendarEventAttendeeBuilder {
     return new CalendarEventAttendeeBuilder({
-      id: uuidv4(),
+      id: randomId(),
       groupId: null,
       childId: null,
       ...initial
@@ -1033,7 +1037,7 @@ export class Fixture {
     initial: SemiPartial<DevCalendarEventTime, 'calendarEventId'>
   ): CalendarEventTimeBuilder {
     return new CalendarEventTimeBuilder({
-      id: uuidv4(),
+      id: randomId(),
       date: LocalDate.of(2020, 1, 1),
       childId: null,
       modifiedBy: systemInternalUser.id,
@@ -1058,7 +1062,7 @@ export class Fixture {
 
   static absence(initial: SemiPartial<DevAbsence, 'childId'>): AbsenceBuilder {
     return new AbsenceBuilder({
-      id: uuidv4(),
+      id: randomId(),
       date: LocalDate.todayInHelsinkiTz(),
       absenceType: 'OTHER_ABSENCE',
       modifiedAt: HelsinkiDateTime.now(),
@@ -1126,7 +1130,7 @@ export class Fixture {
     initial: SemiPartial<DevAssistanceAction, 'childId' | 'updatedBy'>
   ): AssistanceActionBuilder {
     return new AssistanceActionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       actions: ['ASSISTANCE_SERVICE_CHILD'],
       endDate: LocalDate.todayInSystemTz(),
       startDate: LocalDate.todayInSystemTz(),
@@ -1139,7 +1143,7 @@ export class Fixture {
     initial?: Partial<DevAssistanceActionOption>
   ): AssistanceActionOptionBuilder {
     return new AssistanceActionOptionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       descriptionFi: 'a description',
       nameFi: 'a test assistance action option',
       value: 'TEST_ASSISTANCE_ACTION_OPTION',
@@ -1175,7 +1179,7 @@ export class Fixture {
     initial: SemiPartial<AssistanceNeedVoucherCoefficient, 'childId'>
   ): AssistanceNeedVoucherCoefficientBuilder {
     return new AssistanceNeedVoucherCoefficientBuilder({
-      id: uuidv4(),
+      id: randomId(),
       validityPeriod: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
@@ -1578,7 +1582,7 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
 
   withGuardian(guardianId: UUID) {
     this.data.form.guardianInfo.push({
-      id: uuidv4(),
+      id: randomId(),
       personId: guardianId,
       name: '',
       isHeard: false,
@@ -1667,7 +1671,7 @@ export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
 }
 
 export class PlacementPlanBuilder extends FixtureBuilder<
-  PlacementPlan & { applicationId: UUID }
+  PlacementPlan & { applicationId: ApplicationId }
 > {
   async save() {
     const { applicationId, ...body } = this.data
@@ -2042,7 +2046,7 @@ export const clubTerms = [
 ]
 
 export const testCareArea: DevCareArea = {
-  id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
+  id: fromUuid('674dfb66-8849-489e-b094-e6a0ebfb3c71'),
   name: 'Superkeskus',
   shortName: 'super-keskus',
   areaCode: 299,
@@ -2050,7 +2054,7 @@ export const testCareArea: DevCareArea = {
 }
 
 export const testCareArea2: DevCareArea = {
-  id: '7a5b42db-451b-4394-b6a6-86993ea0ed45',
+  id: fromUuid('7a5b42db-451b-4394-b6a6-86993ea0ed45'),
   name: 'Hyperkeskus',
   shortName: 'hyper-keskus',
   areaCode: 298,
@@ -2900,7 +2904,9 @@ const applicationForm = (
   }
 }
 
-export const applicationFixtureId = '9dd0e1ba-9b3b-11ea-bb37-0242ac130002'
+export const applicationFixtureId = fromUuid<ApplicationId>(
+  '9dd0e1ba-9b3b-11ea-bb37-0242ac130002'
+)
 export const applicationFixture = (
   child: DevPerson,
   guardian: DevPerson,
@@ -2953,7 +2959,7 @@ const feeThresholds = {
 }
 
 export const decisionFixture = (
-  applicationId: string,
+  applicationId: ApplicationId,
   startDate: LocalDate,
   endDate: LocalDate
 ): DecisionRequest => ({

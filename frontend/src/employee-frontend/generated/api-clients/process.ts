@@ -4,9 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
+import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { deserializeJsonProcessMetadataResponse } from 'lib-common/generated/api-types/process'
 import { uri } from 'lib-common/uri'
@@ -17,7 +20,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getApplicationMetadata(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
@@ -33,7 +36,7 @@ export async function getApplicationMetadata(
 */
 export async function getAssistanceNeedDecisionMetadata(
   request: {
-    decisionId: UUID
+    decisionId: AssistanceNeedDecisionId
   }
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
@@ -49,7 +52,7 @@ export async function getAssistanceNeedDecisionMetadata(
 */
 export async function getAssistanceNeedPreschoolDecisionMetadata(
   request: {
-    decisionId: UUID
+    decisionId: AssistanceNeedPreschoolDecisionId
   }
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
@@ -65,7 +68,7 @@ export async function getAssistanceNeedPreschoolDecisionMetadata(
 */
 export async function getChildDocumentMetadata(
   request: {
-    childDocumentId: UUID
+    childDocumentId: ChildDocumentId
   }
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({

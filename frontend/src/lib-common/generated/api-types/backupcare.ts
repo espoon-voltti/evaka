@@ -7,9 +7,12 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { BackupCareId } from './shared'
+import { DaycareId } from './shared'
+import { GroupId } from './shared'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 import { ServiceNeed } from './serviceneed'
-import { UUID } from '../../types'
 import { deserializeJsonServiceNeed } from './serviceneed'
 
 /**
@@ -18,7 +21,7 @@ import { deserializeJsonServiceNeed } from './serviceneed'
 export interface BackupCareChild {
   birthDate: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
 }
 
@@ -26,14 +29,14 @@ export interface BackupCareChild {
 * Generated from fi.espoo.evaka.backupcare.BackupCareCreateResponse
 */
 export interface BackupCareCreateResponse {
-  id: UUID
+  id: BackupCareId
 }
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareGroup
 */
 export interface BackupCareGroup {
-  id: UUID
+  id: GroupId
   name: string
 }
 
@@ -41,7 +44,7 @@ export interface BackupCareGroup {
 * Generated from fi.espoo.evaka.backupcare.BackupCareUnit
 */
 export interface BackupCareUnit {
-  id: UUID
+  id: DaycareId
   name: string
 }
 
@@ -49,7 +52,7 @@ export interface BackupCareUnit {
 * Generated from fi.espoo.evaka.backupcare.BackupCareUpdateRequest
 */
 export interface BackupCareUpdateRequest {
-  groupId: UUID | null
+  groupId: GroupId | null
   period: FiniteDateRange
 }
 
@@ -58,7 +61,7 @@ export interface BackupCareUpdateRequest {
 */
 export interface ChildBackupCare {
   group: BackupCareGroup | null
-  id: UUID
+  id: BackupCareId
   period: FiniteDateRange
   unit: BackupCareUnit
 }
@@ -82,9 +85,9 @@ export interface ChildBackupCaresResponse {
 * Generated from fi.espoo.evaka.backupcare.NewBackupCare
 */
 export interface NewBackupCare {
-  groupId: UUID | null
+  groupId: GroupId | null
   period: FiniteDateRange
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -94,7 +97,7 @@ export interface UnitBackupCare {
   child: BackupCareChild
   fromUnits: string[]
   group: BackupCareGroup | null
-  id: UUID
+  id: BackupCareId
   missingServiceNeedDays: number
   period: FiniteDateRange
   serviceNeeds: ServiceNeed[]

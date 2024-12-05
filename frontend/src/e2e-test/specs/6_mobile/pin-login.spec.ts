@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 
 import { mobileViewport } from '../../browser'
 import {
@@ -149,7 +150,7 @@ describe('Mobile PIN login', () => {
 
     await createBackupPickup({
       body: backupPickups.map(({ name, phone }) => ({
-        id: uuidv4(),
+        id: randomId(),
         childId: child.id,
         name,
         phone

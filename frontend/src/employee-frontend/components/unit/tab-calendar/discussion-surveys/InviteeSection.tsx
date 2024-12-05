@@ -15,7 +15,7 @@ import {
   CalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   FixedSpaceColumn,
@@ -40,7 +40,7 @@ const ChildNameList = React.memo(function ChildNameList({
   childList,
   'data-qa': dataQa
 }: {
-  eventId: UUID
+  eventId: CalendarEventId
   childList: InviteeInfo[]
   'data-qa'?: string
 }) {

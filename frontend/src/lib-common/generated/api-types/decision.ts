@@ -5,23 +5,26 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from '../../local-date'
+import { ApplicationId } from './shared'
+import { DaycareId } from './shared'
+import { DecisionId } from './shared'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 import { ProviderType } from './daycare'
-import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.decision.Decision
 */
 export interface Decision {
-  applicationId: UUID
-  childId: UUID
+  applicationId: ApplicationId
+  childId: PersonId
   childName: string
   createdBy: string
   decisionNumber: number
   documentContainsContactInfo: boolean
   documentKey: string | null
   endDate: LocalDate
-  id: UUID
+  id: DecisionId
   requestedStartDate: LocalDate | null
   resolved: LocalDate | null
   resolvedByName: string | null
@@ -37,11 +40,11 @@ export interface Decision {
 */
 export interface DecisionDraft {
   endDate: LocalDate
-  id: UUID
+  id: DecisionId
   planned: boolean
   startDate: LocalDate
   type: DecisionType
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -49,10 +52,10 @@ export interface DecisionDraft {
 */
 export interface DecisionDraftUpdate {
   endDate: LocalDate
-  id: UUID
+  id: DecisionId
   planned: boolean
   startDate: LocalDate
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -89,7 +92,7 @@ export interface DecisionUnit {
   daycareDecisionName: string
   decisionHandler: string
   decisionHandlerAddress: string
-  id: UUID
+  id: DaycareId
   manager: string | null
   name: string
   phone: string | null

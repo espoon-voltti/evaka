@@ -7,8 +7,8 @@
 import LocalDate from '../../local-date'
 import { ContactInfo } from './attendance'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 import { PlacementType } from './placement'
-import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.sensitive.ChildBasicInformation
@@ -18,7 +18,7 @@ export interface ChildBasicInformation {
   contacts: ContactInfo[]
   dateOfBirth: LocalDate
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   placementType: PlacementType | null
   preferredName: string
@@ -32,7 +32,7 @@ export interface ChildSensitiveInformation {
   allergies: string
   childAddress: string
   diet: string
-  id: UUID
+  id: PersonId
   medication: string
   ssn: string
 }

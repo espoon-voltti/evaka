@@ -7,8 +7,9 @@ import React, { useEffect } from 'react'
 import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useTranslation } from 'citizen-frontend/localization'
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -27,7 +28,7 @@ import {
 } from './queries-preschool'
 
 export default React.memo(function AssistanceNeedPreschoolDecisionPage() {
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<AssistanceNeedPreschoolDecisionId>('id')
 
   const decision = useQueryResult(assistanceNeedPreschoolDecisionQuery({ id }))
   const i18n = useTranslation()

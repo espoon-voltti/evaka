@@ -8,9 +8,16 @@ import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { DaycareId } from './shared'
+import { EmployeeId } from './shared'
+import { EvakaUserId } from './shared'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
+import { PlacementId } from './shared'
 import { PlacementType } from './placement'
-import { UUID } from '../../types'
+import { ServiceApplicationId } from './shared'
+import { ServiceNeedId } from './shared'
+import { ServiceNeedOptionId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.AcceptServiceApplicationBody
@@ -41,12 +48,12 @@ export interface EmployeeServiceApplication {
 */
 export interface ServiceApplication {
   additionalInfo: string
-  childId: UUID
+  childId: PersonId
   childName: string
   currentPlacement: ServiceApplicationPlacement | null
   decision: ServiceApplicationDecision | null
-  id: UUID
-  personId: UUID
+  id: ServiceApplicationId
+  personId: PersonId
   personName: string
   sentAt: HelsinkiDateTime
   serviceNeedOption: ServiceNeedOptionBasics
@@ -58,8 +65,8 @@ export interface ServiceApplication {
 */
 export interface ServiceApplicationCreateRequest {
   additionalInfo: string
-  childId: UUID
-  serviceNeedOptionId: UUID
+  childId: PersonId
+  serviceNeedOptionId: ServiceNeedOptionId
   startDate: LocalDate
 }
 
@@ -68,7 +75,7 @@ export interface ServiceApplicationCreateRequest {
 */
 export interface ServiceApplicationDecision {
   decidedAt: HelsinkiDateTime
-  decidedBy: UUID
+  decidedBy: EmployeeId
   decidedByName: string
   rejectedReason: string | null
   status: ServiceApplicationDecisionStatus
@@ -86,9 +93,9 @@ export type ServiceApplicationDecisionStatus =
 */
 export interface ServiceApplicationPlacement {
   endDate: LocalDate
-  id: UUID
+  id: PlacementId
   type: PlacementType
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -104,10 +111,10 @@ export interface ServiceApplicationRejection {
 export interface ServiceNeed {
   confirmed: ServiceNeedConfirmation | null
   endDate: LocalDate
-  id: UUID
+  id: ServiceNeedId
   option: ServiceNeedOptionSummary
   partWeek: boolean
-  placementId: UUID
+  placementId: PlacementId
   shiftCare: ShiftCareType
   startDate: LocalDate
   updated: HelsinkiDateTime
@@ -119,7 +126,7 @@ export interface ServiceNeed {
 export interface ServiceNeedConfirmation {
   at: HelsinkiDateTime | null
   name: string
-  userId: UUID
+  userId: EvakaUserId
 }
 
 /**
@@ -127,9 +134,9 @@ export interface ServiceNeedConfirmation {
 */
 export interface ServiceNeedCreateRequest {
   endDate: LocalDate
-  optionId: UUID
+  optionId: ServiceNeedOptionId
   partWeek: boolean
-  placementId: UUID
+  placementId: PlacementId
   shiftCare: ShiftCareType
   startDate: LocalDate
 }
@@ -145,7 +152,7 @@ export interface ServiceNeedOption {
   feeCoefficient: number
   feeDescriptionFi: string
   feeDescriptionSv: string
-  id: UUID
+  id: ServiceNeedOptionId
   nameEn: string
   nameFi: string
   nameSv: string
@@ -167,7 +174,7 @@ export interface ServiceNeedOption {
 * Generated from fi.espoo.evaka.serviceneed.application.ServiceNeedOptionBasics
 */
 export interface ServiceNeedOptionBasics {
-  id: UUID
+  id: ServiceNeedOptionId
   nameEn: string
   nameFi: string
   nameSv: string
@@ -180,7 +187,7 @@ export interface ServiceNeedOptionBasics {
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 */
 export interface ServiceNeedOptionPublicInfo {
-  id: UUID
+  id: ServiceNeedOptionId
   nameEn: string
   nameFi: string
   nameSv: string
@@ -193,7 +200,7 @@ export interface ServiceNeedOptionPublicInfo {
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedOptionSummary
 */
 export interface ServiceNeedOptionSummary {
-  id: UUID
+  id: ServiceNeedOptionId
   nameEn: string
   nameFi: string
   nameSv: string
@@ -216,7 +223,7 @@ export interface ServiceNeedSummary {
 */
 export interface ServiceNeedUpdateRequest {
   endDate: LocalDate
-  optionId: UUID
+  optionId: ServiceNeedOptionId
   partWeek: boolean
   shiftCare: ShiftCareType
   startDate: LocalDate
@@ -237,10 +244,10 @@ export type ShiftCareType = typeof shiftCareType[number]
 * Generated from fi.espoo.evaka.serviceneed.application.UndecidedServiceApplicationSummary
 */
 export interface UndecidedServiceApplicationSummary {
-  childId: UUID
+  childId: PersonId
   childName: string
   currentNeed: string | null
-  id: UUID
+  id: ServiceApplicationId
   newNeed: string
   placementEndDate: LocalDate
   sentAt: HelsinkiDateTime

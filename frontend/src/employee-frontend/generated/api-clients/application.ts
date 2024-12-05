@@ -6,10 +6,13 @@
 
 import { AcceptDecisionRequest } from 'lib-common/generated/api-types/application'
 import { AcceptPlacementProposalRequest } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
+import { ApplicationNoteId } from 'lib-common/generated/api-types/shared'
 import { ApplicationNoteResponse } from 'lib-common/generated/api-types/application'
 import { ApplicationResponse } from 'lib-common/generated/api-types/application'
 import { ApplicationUpdate } from 'lib-common/generated/api-types/application'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
 import { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
 import { DecisionDraftUpdate } from 'lib-common/generated/api-types/decision'
@@ -19,13 +22,13 @@ import { NoteRequest } from 'lib-common/generated/api-types/application'
 import { PagedApplicationSummaries } from 'lib-common/generated/api-types/application'
 import { PaperApplicationCreateRequest } from 'lib-common/generated/api-types/application'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-types/application'
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { RejectDecisionRequest } from 'lib-common/generated/api-types/application'
 import { SearchApplicationRequest } from 'lib-common/generated/api-types/application'
 import { SimpleBatchRequest } from 'lib-common/generated/api-types/application'
-import { UUID } from 'lib-common/types'
 import { UnitApplications } from 'lib-common/generated/api-types/application'
 import { client } from '../../api/client'
 import { deserializeJsonApplicationNote } from 'lib-common/generated/api-types/application'
@@ -45,7 +48,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function acceptDecision(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: AcceptDecisionRequest
   }
 ): Promise<void> {
@@ -63,7 +66,7 @@ export async function acceptDecision(
 */
 export async function acceptPlacementProposal(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     body: AcceptPlacementProposalRequest
   }
 ): Promise<void> {
@@ -83,8 +86,8 @@ export async function createPaperApplication(
   request: {
     body: PaperApplicationCreateRequest
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<ApplicationId> {
+  const { data: json } = await client.request<JsonOf<ApplicationId>>({
     url: uri`/employee/applications`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PaperApplicationCreateRequest>
@@ -98,7 +101,7 @@ export async function createPaperApplication(
 */
 export async function createPlacementPlan(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: DaycarePlacementPlan
   }
 ): Promise<void> {
@@ -116,7 +119,7 @@ export async function createPlacementPlan(
 */
 export async function getApplicationDetails(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<ApplicationResponse> {
   const { data: json } = await client.request<JsonOf<ApplicationResponse>>({
@@ -149,7 +152,7 @@ export async function getApplicationSummaries(
 */
 export async function getChildApplicationSummaries(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<PersonApplicationSummary[]> {
   const { data: json } = await client.request<JsonOf<PersonApplicationSummary[]>>({
@@ -165,7 +168,7 @@ export async function getChildApplicationSummaries(
 */
 export async function getDecisionDrafts(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<DecisionDraftGroup> {
   const { data: json } = await client.request<JsonOf<DecisionDraftGroup>>({
@@ -181,7 +184,7 @@ export async function getDecisionDrafts(
 */
 export async function getGuardianApplicationSummaries(
   request: {
-    guardianId: UUID
+    guardianId: PersonId
   }
 ): Promise<PersonApplicationSummary[]> {
   const { data: json } = await client.request<JsonOf<PersonApplicationSummary[]>>({
@@ -197,7 +200,7 @@ export async function getGuardianApplicationSummaries(
 */
 export async function getPlacementPlanDraft(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<PlacementPlanDraft> {
   const { data: json } = await client.request<JsonOf<PlacementPlanDraft>>({
@@ -213,7 +216,7 @@ export async function getPlacementPlanDraft(
 */
 export async function getUnitApplications(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<UnitApplications> {
   const { data: json } = await client.request<JsonOf<UnitApplications>>({
@@ -229,7 +232,7 @@ export async function getUnitApplications(
 */
 export async function rejectDecision(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: RejectDecisionRequest
   }
 ): Promise<void> {
@@ -247,7 +250,7 @@ export async function rejectDecision(
 */
 export async function respondToPlacementProposal(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: PlacementProposalConfirmationUpdate
   }
 ): Promise<void> {
@@ -265,7 +268,7 @@ export async function respondToPlacementProposal(
 */
 export async function sendApplication(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -281,7 +284,7 @@ export async function sendApplication(
 */
 export async function simpleApplicationAction(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     action: string
   }
 ): Promise<void> {
@@ -316,7 +319,7 @@ export async function simpleBatchAction(
 */
 export async function updateApplication(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: ApplicationUpdate
   }
 ): Promise<void> {
@@ -334,7 +337,7 @@ export async function updateApplication(
 */
 export async function updateDecisionDrafts(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: DecisionDraftUpdate[]
   }
 ): Promise<void> {
@@ -364,7 +367,7 @@ export async function getNextPreschoolTerm(): Promise<PreschoolTerm[]> {
 */
 export async function createNote(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: NoteRequest
   }
 ): Promise<ApplicationNote> {
@@ -382,7 +385,7 @@ export async function createNote(
 */
 export async function deleteNote(
   request: {
-    noteId: UUID
+    noteId: ApplicationNoteId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -398,7 +401,7 @@ export async function deleteNote(
 */
 export async function getNotes(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<ApplicationNoteResponse[]> {
   const { data: json } = await client.request<JsonOf<ApplicationNoteResponse[]>>({
@@ -414,7 +417,7 @@ export async function getNotes(
 */
 export async function updateNote(
   request: {
-    noteId: UUID,
+    noteId: ApplicationNoteId,
     body: NoteRequest
   }
 ): Promise<void> {
@@ -432,7 +435,7 @@ export async function updateNote(
 */
 export async function updateServiceWorkerNote(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: NoteRequest
   }
 ): Promise<void> {

@@ -32,12 +32,16 @@ import {
 } from 'lib-common/generated/api-types/assistanceneed'
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
-import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
+import {
+  AssistanceNeedPreschoolDecisionGuardianId,
+  AssistanceNeedPreschoolDecisionId,
+  OfficialLanguage
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -87,7 +91,7 @@ const SectionSpacer = styled(FixedSpaceColumn).attrs({ spacing: 'L' })``
 const LabeledValue = styled(FixedSpaceColumn).attrs({ spacing: 'xs' })``
 
 const guardianForm = object({
-  id: string(),
+  id: value<AssistanceNeedPreschoolDecisionGuardianId>(),
   name: string(),
   personId: string(),
   isHeard: boolean(),
@@ -997,7 +1001,9 @@ const DecisionEditor = React.memo(function DecisionEditor({
 })
 
 export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
-  const { childId, decisionId } = useRouteParams(['childId', 'decisionId'])
+  const { childId } = useRouteParams(['childId'])
+  const decisionId =
+    useIdRouteParam<AssistanceNeedPreschoolDecisionId>('decisionId')
   const decisionResult = useQueryResult(
     assistanceNeedPreschoolDecisionQuery({ id: decisionId })
   )

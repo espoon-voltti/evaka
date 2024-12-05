@@ -17,6 +17,7 @@ import {
   IncomeStatement,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -463,7 +464,7 @@ function EmployeeAttachments({
   )
 
   const handleDelete = useCallback(
-    async (id: UUID) =>
+    async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
