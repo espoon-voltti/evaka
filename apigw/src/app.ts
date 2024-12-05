@@ -118,22 +118,26 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     createProxy({ getUserHeader: (_) => integrationUserHeader })
   )
 
-  const citizenSessions = sessionSupport('enduser', redisClient, config.citizen)
+  const citizenSessions = sessionSupport('citizen', redisClient, config.citizen)
   const citizenProxy = createProxy({
     getUserHeader: (req) => citizenSessions.getUserHeader(req)
   })
-  const internalSessions = sessionSupport(
+  const employeeSessions = sessionSupport(
     'employee',
     redisClient,
     config.employee
   )
-  const internalProxy = createProxy({
-    getUserHeader: (req) => internalSessions.getUserHeader(req)
+  const employeeProxy = createProxy({
+    getUserHeader: (req) => employeeSessions.getUserHeader(req)
   })
-  const employeeSessions = internalSessions
-  const employeeProxy = internalProxy
-  const employeeMobileSessions = internalSessions
-  const employeeMobileProxy = internalProxy
+  const employeeMobileSessions = sessionSupport(
+    'employee-mobile',
+    redisClient,
+    config.employee
+  )
+  const employeeMobileProxy = createProxy({
+    getUserHeader: (req) => employeeMobileSessions.getUserHeader(req)
+  })
 
   if (config.sfi.type === 'mock') {
     router.use(
@@ -263,6 +267,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   )
   router.all('/citizen/*', citizenSessions.requireAuthentication, citizenProxy)
 
+  const internalSessions = sessionSupport<'employee-mobile'>(
+    'employee-mobile',
+    redisClient,
+    config.employee
+  )
   router.get(
     '/internal/auth/status',
     internalSessions.middleware,

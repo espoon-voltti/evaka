@@ -23,7 +23,7 @@ const mockUser: CitizenUser = {
 describe('CSRF middleware and cookie handling in enduser-gw', () => {
   let tester: GatewayTester
   beforeAll(async () => {
-    tester = await GatewayTester.start(configFromEnv(), 'enduser')
+    tester = await GatewayTester.start(configFromEnv(), 'citizen')
   })
   beforeEach(async () => tester.login(mockUser))
   afterEach(async () => tester.afterEach())

@@ -18,10 +18,17 @@ import { logAuditEvent, logDebug } from './logging.js'
 import { fromCallback } from './promise-utils.js'
 import { RedisClient } from './redis-client.js'
 
-export type SessionType = 'enduser' | 'employee'
+export type SessionType = 'citizen' | 'employee' | 'employee-mobile'
 
 function cookiePrefix(sessionType: SessionType) {
-  return sessionType === 'enduser' ? 'evaka.eugw' : 'evaka.employee'
+  switch (sessionType) {
+    case 'citizen':
+      return 'evaka.eugw'
+    case 'employee':
+      return 'evaka.employee'
+    case 'employee-mobile':
+      return 'evaka.employee'
+  }
 }
 
 function sessionKey(id: string) {
@@ -36,7 +43,8 @@ export function sessionCookie(sessionType: SessionType) {
   return `${cookiePrefix(sessionType)}.session`
 }
 
-export interface Sessions {
+export interface Sessions<T extends SessionType> {
+  sessionType: T
   cookieName: string
   middleware: express.RequestHandler
   requireAuthentication: express.RequestHandler
@@ -58,11 +66,11 @@ export interface Sessions {
   isAuthenticated(req: express.Request): boolean
 }
 
-export function sessionSupport(
-  sessionType: SessionType,
+export function sessionSupport<T extends SessionType>(
+  sessionType: T,
   redisClient: RedisClient,
   config: SessionConfig
-): Sessions {
+): Sessions<T> {
   const cookieName = sessionCookie(sessionType)
 
   // Base session support middleware from express-session
@@ -253,6 +261,7 @@ export function sessionSupport(
   }
 
   return {
+    sessionType,
     cookieName,
     middleware,
     requireAuthentication,
