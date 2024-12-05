@@ -22,6 +22,7 @@ import { GroupId } from './shared'
 import { GroupPlacementId } from './shared'
 import { JsonOf } from '../../json'
 import { MealTexture } from './specialdiet'
+import { MissingBackupGroupPlacement } from './placement'
 import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
@@ -34,6 +35,7 @@ import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
 import { UserRole } from './shared'
 import { deserializeJsonDaycarePlacementWithDetails } from './placement'
+import { deserializeJsonMissingBackupGroupPlacement } from './placement'
 import { deserializeJsonMissingGroupPlacement } from './placement'
 import { deserializeJsonOccupancyResponse } from './occupancy'
 import { deserializeJsonPersonJSON } from './pis'
@@ -497,6 +499,7 @@ export interface UnitGroupDetails {
   caretakers: Partial<Record<GroupId, Caretakers>>
   groupOccupancies: GroupOccupancies | null
   groups: DaycareGroup[]
+  missingBackupGroupPlacements: MissingBackupGroupPlacement[]
   missingGroupPlacements: MissingGroupPlacement[]
   permittedBackupCareActions: Partial<Record<BackupCareId, Action.BackupCare[]>>
   permittedGroupPlacementActions: Partial<Record<GroupPlacementId, Action.GroupPlacement[]>>
@@ -797,6 +800,7 @@ export function deserializeJsonUnitGroupDetails(json: JsonOf<UnitGroupDetails>):
     backupCares: json.backupCares.map(e => deserializeJsonUnitBackupCare(e)),
     groupOccupancies: (json.groupOccupancies != null) ? deserializeJsonGroupOccupancies(json.groupOccupancies) : null,
     groups: json.groups.map(e => deserializeJsonDaycareGroup(e)),
+    missingBackupGroupPlacements: json.missingBackupGroupPlacements.map(e => deserializeJsonMissingBackupGroupPlacement(e)),
     missingGroupPlacements: json.missingGroupPlacements.map(e => deserializeJsonMissingGroupPlacement(e)),
     placements: json.placements.map(e => deserializeJsonDaycarePlacementWithDetails(e)),
     recentlyTerminatedPlacements: json.recentlyTerminatedPlacements.map(e => deserializeJsonTerminatedPlacement(e))
