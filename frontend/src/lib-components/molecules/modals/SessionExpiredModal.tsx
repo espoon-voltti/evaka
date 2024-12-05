@@ -14,9 +14,13 @@ import BaseModal from './BaseModal'
 
 interface Props {
   onClose: () => void
+  onLoginClick?: () => void
 }
 
-const SessionExpiredModal: React.FC<Props> = ({ onClose }) => {
+const SessionExpiredModal: React.FC<Props> = ({
+  onLoginClick = () => window.location.reload(),
+  onClose
+}) => {
   const i18n = useTranslations()
 
   return (
@@ -31,7 +35,7 @@ const SessionExpiredModal: React.FC<Props> = ({ onClose }) => {
       <ButtonFooter>
         <Button
           primary
-          onClick={() => window.location.reload()}
+          onClick={onLoginClick}
           text={i18n.sessionTimeout.goToLoginPage}
         />
         <Button onClick={onClose} text={i18n.sessionTimeout.cancel} />
