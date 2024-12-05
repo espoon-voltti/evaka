@@ -133,7 +133,7 @@ export interface Autocomplete {
   features: Feature[]
 }
 
-export type CalendarEventAttendeeId = string
+export type CalendarEventAttendeeId = Id<'CalendarEventAttendee'>
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.Caretaker
