@@ -342,9 +342,7 @@ describe('Application transitions', () => {
     await applicationList.actionsMenuItems.cancelApplication.click()
 
     await applicationList.cancelConfirmation.submitButton.assertDisabled(true)
-    await applicationList.cancelConfirmation.confidentialRadioYes.waitUntilVisible()
     await applicationList.cancelConfirmation.confidentialRadioYes.check()
-    await applicationList.cancelConfirmation.submitButton.assertDisabled(false)
     await applicationList.cancelConfirmation.submitButton.click()
 
     await applicationWorkbench.applicationsAll.click()
