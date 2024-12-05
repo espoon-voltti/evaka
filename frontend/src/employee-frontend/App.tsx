@@ -18,6 +18,7 @@ import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
+import { getAuthStatus } from './api/auth'
 import ApplicationPage from './components/ApplicationPage'
 import ChildInformation from './components/ChildInformation'
 import EmployeeRoute from './components/EmployeeRoute'
@@ -196,6 +197,17 @@ const Content = React.memo(function Content() {
       <PairingModal />
       {showSessionExpiredModal && (
         <SessionExpiredModal
+          onLoginClick={() => {
+            window.open('/employee/close-after-login', '_blank')
+            const authChecker = async () => {
+              const authStatus = await getAuthStatus()
+              if (authStatus.loggedIn) {
+                setShowSessionExpiredModal(false)
+                document.removeEventListener('focusin', authChecker)
+              }
+            }
+            document.addEventListener('focusin', authChecker)
+          }}
           onClose={() => setShowSessionExpiredModal(false)}
         />
       )}
@@ -1037,6 +1049,14 @@ export default createBrowserRouter(
           )
         },
         {
+          path: '/close-after-login',
+          element: (
+            <EmployeeRoute title="login" requireAuth={false}>
+              <CloseAfterLogin />
+            </EmployeeRoute>
+          )
+        },
+        {
           path: '/*',
           element: (
             <EmployeeRoute requireAuth={false}>
@@ -1057,6 +1077,14 @@ export default createBrowserRouter(
   ],
   { basename: '/employee' }
 )
+
+function CloseAfterLogin() {
+  const { loggedIn } = useContext(UserContext)
+  if (loggedIn) {
+    window.close()
+  }
+  return loggedIn ? <p>Tämän ikkunan voi nyt sulkea</p> : <LoginPage />
+}
 
 function RedirectToMainPage() {
   const { loggedIn, roles } = useContext(UserContext)
