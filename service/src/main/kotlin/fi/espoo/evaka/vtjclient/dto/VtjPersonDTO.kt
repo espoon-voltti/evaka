@@ -28,4 +28,6 @@ data class VtjPersonDTO(
     val dateOfDeath: LocalDate? = null,
     val streetAddressSe: String,
     val postOfficeSe: String,
+    val municipalityOfResidence: String,
+    val municipalityOfResidenceSe: String,
 )

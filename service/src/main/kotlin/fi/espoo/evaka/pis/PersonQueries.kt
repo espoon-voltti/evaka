@@ -42,6 +42,7 @@ val personDTOColumns =
         "postal_code",
         "post_office",
         "residence_code",
+        "municipality_of_residence",
         "updated_from_vtj",
         "vtj_guardians_queried",
         "vtj_dependants_queried",
@@ -271,6 +272,7 @@ INSERT INTO person (
     postal_code,
     post_office,
     residence_code,
+    municipality_of_residence,
     restricted_details_enabled,
     restricted_details_end_date,
     updated_from_vtj
@@ -287,6 +289,7 @@ VALUES (
     ${bind(p.postalCode)},
     ${bind(p.postOffice)},
     ${bind(p.residenceCode)},
+    ${bind(p.municipalityOfResidence)},
     ${bind(p.restrictedDetailsEnabled)},
     ${bind(p.restrictedDetailsEndDate)},
     ${bind(p.updatedFromVtj)}
@@ -380,6 +383,7 @@ UPDATE person SET
     postal_code = ${bind(p.postalCode)},
     post_office = ${bind(p.postOffice)},
     residence_code = ${bind(p.residenceCode)},
+    municipality_of_residence = ${bind(p.municipalityOfResidence)},
     restricted_details_enabled = ${bind(p.restrictedDetailsEnabled)},
     restricted_details_end_date = ${bind(p.restrictedDetailsEndDate)},
     updated_from_vtj = ${bind(p.updatedFromVtj)}
@@ -447,6 +451,7 @@ UPDATE person SET
     street_address = coalesce(${bind(patch.streetAddress)}, street_address),
     postal_code = coalesce(${bind(patch.postalCode)}, postal_code),
     post_office = coalesce(${bind(patch.postOffice)}, post_office),
+    municipality_of_residence = coalesce(${bind(patch.municipalityOfResidence)}, municipality_of_residence),
     invoice_recipient_name = coalesce(${bind(patch.invoiceRecipientName)}, invoice_recipient_name),
     invoicing_street_address = coalesce(${bind(patch.invoicingStreetAddress)}, invoicing_street_address),
     invoicing_postal_code = coalesce(${bind(patch.invoicingPostalCode)}, invoicing_postal_code),
@@ -493,6 +498,7 @@ private val toPersonDTO: Row.() -> PersonDTO = {
         postalCode = column("postal_code"),
         postOffice = column("post_office"),
         residenceCode = column("residence_code"),
+        municipalityOfResidence = column("municipality_of_residence"),
         updatedFromVtj = column("updated_from_vtj"),
         vtjGuardiansQueried = column("vtj_guardians_queried"),
         vtjDependantsQueried = column("vtj_dependants_queried"),

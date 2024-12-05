@@ -59,6 +59,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(inputPerson.streetAddress, created.streetAddress)
         assertEquals(inputPerson.postalCode, created.postalCode)
         assertEquals(inputPerson.postOffice, created.postOffice)
+        assertEquals(inputPerson.municipalityOfResidence, created.municipalityOfResidence)
 
         assertEquals(inputPerson.restrictedDetailsEndDate, created.restrictedDetailsEndDate)
     }
@@ -80,6 +81,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 streetAddress = "Muutie 8",
                 postalCode = "00001",
                 postOffice = "Muula",
+                municipalityOfResidence = "Muukunta",
                 restrictedDetailsEnabled = false,
                 restrictedDetailsEndDate = null,
             )
@@ -101,6 +103,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(updated.streetAddress, actual.streetAddress)
         assertEquals(updated.postalCode, actual.postalCode)
         assertEquals(updated.postOffice, actual.postOffice)
+        assertEquals(updated.municipalityOfResidence, actual.municipalityOfResidence)
 
         assertEquals(updated.restrictedDetailsEndDate, actual.restrictedDetailsEndDate)
     }
@@ -316,6 +319,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             postalCode = "00000",
             postOffice = "Jokula",
             residenceCode = "",
+            municipalityOfResidence = "Jokunta",
             restrictedDetailsEnabled = true,
             restrictedDetailsEndDate = LocalDate.now().plusYears(1),
         )

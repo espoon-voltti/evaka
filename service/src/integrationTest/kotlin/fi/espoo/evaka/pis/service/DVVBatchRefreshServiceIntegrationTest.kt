@@ -78,6 +78,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     residenceCode = "1",
                 ),
             residenceCode = person.residenceCode,
+            municipalityOfResidence = person.municipalityOfResidence,
             phone = "",
             backupPhone = "",
             email = null,

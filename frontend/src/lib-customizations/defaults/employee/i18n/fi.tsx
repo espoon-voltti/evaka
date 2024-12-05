@@ -150,6 +150,7 @@ export const fi = {
       phone: 'Puhelinnumero',
       postOffice: 'Postitoimipaikka',
       postalCode: 'Postinumero',
+      municipalityOfResidence: 'Kotikunta',
       range: 'Ajalle',
       socialSecurityNumber: 'Hetu',
       startDate: 'Alkaen',
