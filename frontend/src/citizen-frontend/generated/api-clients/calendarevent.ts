@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
-import { CalendarEventAttendeeId } from 'lib-common/generated/api-types/shared'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeCitizenReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
@@ -86,7 +86,7 @@ export async function getCitizenCalendarEvents(
 */
 export async function getReservableCalendarEventTimes(
   request: {
-    eventId: CalendarEventAttendeeId,
+    eventId: CalendarEventId,
     childId: PersonId
   }
 ): Promise<CalendarEventTime[]> {

@@ -36,7 +36,7 @@ export type BackupCareId = Id<'BackupCare'>
 
 export type BackupPickupId = Id<'BackupPickup'>
 
-export type CalendarEventAttendeeId = string
+export type CalendarEventId = Id<'CalendarEvent'>
 
 export type CalendarEventTimeId = string
 
