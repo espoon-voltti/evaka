@@ -5,6 +5,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import { ChildStickyNote } from 'lib-common/generated/api-types/note'
+import { ChildStickyNoteId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import {
@@ -59,14 +60,14 @@ export const ChildStickyNotesTab = React.memo(function ChildStickyNotesTab({
     deleteChildStickyNoteMutation
   )
   const onSave = useCallback(
-    ({ id, ...body }: EditedNote) =>
+    ({ id, ...body }: EditedNote<ChildStickyNoteId>) =>
       id
         ? updateChildStickyNote({ unitId, noteId: id, body })
         : createChildStickyNote({ unitId, childId, body }),
     [updateChildStickyNote, createChildStickyNote, unitId, childId]
   )
   const onRemove = useCallback(
-    (noteId: UUID) => deleteChildStickyNote({ unitId, noteId }),
+    (noteId: ChildStickyNoteId) => deleteChildStickyNote({ unitId, noteId }),
     [deleteChildStickyNote, unitId]
   )
   const labels = useMemo<StickyNoteTabLabels>(

@@ -46,7 +46,7 @@ export type ChildDocumentId = Id<'ChildDocument'>
 
 export type ChildImageId = Id<'ChildImage'>
 
-export type ChildStickyNoteId = string
+export type ChildStickyNoteId = Id<'ChildStickyNote'>
 
 /**
 * Generated from fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -153,7 +153,7 @@ export type FosterParentId = string
 
 export type GroupId = string
 
-export type GroupNoteId = string
+export type GroupNoteId = Id<'GroupNote'>
 
 export type GroupPlacementId = string
 

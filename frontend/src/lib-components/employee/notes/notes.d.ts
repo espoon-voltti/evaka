@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 
 export type StickyNoteBody = { note: string; expires: LocalDate }
-export type Note = StickyNoteBody & { id: UUID }
-export type EditedNote = StickyNoteBody & { id?: UUID }
+export type Note<IdType extends Id<string>> = StickyNoteBody & { id: IdType }
+export type EditedNote<IdType extends Id<string>> = StickyNoteBody & {
+  id?: IdType
+}

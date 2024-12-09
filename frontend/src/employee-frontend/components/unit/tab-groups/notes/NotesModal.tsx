@@ -7,6 +7,10 @@ import styled from 'styled-components'
 
 import { Result, wrapResult } from 'lib-common/api'
 import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
+import {
+  ChildStickyNoteId,
+  GroupNoteId
+} from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -162,7 +166,7 @@ export default React.memo(function NotesModal({
     [reload]
   )
   const saveGroupNote = useCallback(
-    ({ id, ...body }: EditedNote) =>
+    ({ id, ...body }: EditedNote<GroupNoteId>) =>
       (id
         ? updateGroupNoteResult({ noteId: id, body })
         : createGroupNoteResult({ groupId: group.id, body })
@@ -170,11 +174,12 @@ export default React.memo(function NotesModal({
     [group.id, reloadOnSuccess]
   )
   const removeGroupNote = useCallback(
-    (id: string) => deleteGroupNoteResult({ noteId: id }).then(reloadOnSuccess),
+    (id: GroupNoteId) =>
+      deleteGroupNoteResult({ noteId: id }).then(reloadOnSuccess),
     [reloadOnSuccess]
   )
   const saveStickyNote = useCallback(
-    ({ id, ...body }: EditedNote) => {
+    ({ id, ...body }: EditedNote<ChildStickyNoteId>) => {
       if (!child?.id) {
         return Promise.reject('invalid usage: childId was not provided')
       }
@@ -186,7 +191,7 @@ export default React.memo(function NotesModal({
     [child, reloadOnSuccess]
   )
   const removeStickyNote = useCallback(
-    (id: string) =>
+    (id: ChildStickyNoteId) =>
       deleteChildStickyNoteResult({ noteId: id }).then(reloadOnSuccess),
     [reloadOnSuccess]
   )
