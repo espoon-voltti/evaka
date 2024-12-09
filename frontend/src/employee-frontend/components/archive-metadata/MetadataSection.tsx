@@ -71,9 +71,12 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
           },
           {
             label: i18n.metadata.confidentiality,
-            value: document.confidential
-              ? i18n.metadata.confidential
-              : i18n.metadata.public
+            value:
+              document.confidential === true
+                ? i18n.metadata.confidential
+                : document.confidential === false
+                  ? i18n.metadata.public
+                  : i18n.metadata.notSet
           }
         ]}
       />

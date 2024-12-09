@@ -37,7 +37,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val name: String,
         val createdAt: HelsinkiDateTime?,
         @Nested("created_by") val createdBy: EvakaUser?,
-        val confidential: Boolean,
+        val confidential: Boolean?,
         val downloadPath: String?,
     )
 
@@ -344,7 +344,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            TRUE AS confidential,
+            a.confidential AS confidential,
             NULL AS download_path
         FROM application a
         LEFT JOIN evaka_user e ON e.id = a.created_by
