@@ -458,16 +458,14 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
 export interface Config {
   citizen: SessionConfig
   employee: SessionConfig
-  ad: {
-    externalIdPrefix: string
-    userIdKey: string
-  } & (
+  ad:
     | { type: 'mock' | 'disabled' }
     | {
         type: 'saml'
+        externalIdPrefix: string
+        userIdKey: string
         saml: EvakaSamlConfig
       }
-  )
   sfi: { type: 'mock' | 'disabled' } | { type: 'saml'; saml: EvakaSamlConfig }
   keycloakEmployee: EvakaSamlConfig | undefined
   keycloakCitizen: EvakaSamlConfig | undefined
@@ -626,12 +624,12 @@ export function configFromEnv(): Config {
     optional('DEV_LOGIN', parseBoolean) ?? required('AD_MOCK', parseBoolean)
   const adType = adMock ? 'mock' : 'saml'
   const ad: Config['ad'] = {
-    externalIdPrefix: required('AD_SAML_EXTERNAL_ID_PREFIX', unchanged),
-    userIdKey: required('AD_USER_ID_KEY', unchanged),
     ...(adType !== 'saml'
       ? { type: adType }
       : {
           type: adType,
+          externalIdPrefix: required('AD_SAML_EXTERNAL_ID_PREFIX', unchanged),
+          userIdKey: required('AD_USER_ID_KEY', unchanged),
           saml: {
             callbackUrl: required('AD_SAML_CALLBACK_URL', unchanged),
             entryPoint: required('AD_SAML_ENTRYPOINT_URL', unchanged),
