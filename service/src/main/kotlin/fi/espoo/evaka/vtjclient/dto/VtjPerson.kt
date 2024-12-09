@@ -20,6 +20,8 @@ data class VtjPerson(
     var restrictedDetails: RestrictedDetails?,
     var dateOfDeath: LocalDate? = null,
     var residenceCode: String? = null,
+    val municipalityOfResidence: String? = null,
+    val municipalityOfResidenceSe: String? = null,
 ) {
 
     fun mapToDto(): VtjPersonDTO =
@@ -32,16 +34,18 @@ data class VtjPerson(
             guardians = guardians.map { it.mapToDto() } as MutableList<VtjPersonDTO>,
             streetAddress = address?.streetAddress ?: "",
             postalCode = address?.postalCode ?: "",
-            city = address?.postOffice ?: "",
+            postOffice = address?.postOffice ?: "",
             streetAddressSe = address?.streetAddressSe ?: "",
             residenceCode = residenceCode ?: "",
-            citySe = address?.postOfficeSe ?: "",
+            postOfficeSe = address?.postOfficeSe ?: "",
             nationalities = nationalities,
             nativeLanguage = nativeLanguage,
             restrictedDetailsEndDate = restrictedDetails?.endDate,
             restrictedDetailsEnabled = restrictedDetails?.enabled ?: false,
             dateOfBirth = getDobFromSsn(socialSecurityNumber),
             dateOfDeath = dateOfDeath,
+            municipalityOfResidence = municipalityOfResidence ?: "",
+            municipalityOfResidenceSe = municipalityOfResidenceSe ?: "",
         )
 
     companion object {
