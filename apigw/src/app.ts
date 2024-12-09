@@ -32,6 +32,7 @@ import {
   enableDevApi,
   titaniaConfig
 } from './shared/config.js'
+import { toMiddleware } from './shared/express.js'
 import { cacheControl } from './shared/middleware/cache-control.js'
 import { csrf } from './shared/middleware/csrf.js'
 import { errorHandler } from './shared/middleware/error-handler.js'
@@ -140,6 +141,52 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   const employeeMobileProxy = createProxy({
     getUserHeader: (req) => employeeMobileSessions.getUserHeader(req)
   })
+
+  router.use('/citizen/auth/logout', citizenSessions.middleware)
+  router.use('/employee/auth/logout', employeeSessions.middleware)
+  router.use(
+    toMiddleware(async (req, res) => {
+      if (req.path === '/citizen/auth/logout') {
+        const user = citizenSessions.getUser(req)
+        switch (user?.authType) {
+          case 'sfi':
+            req.url = req.url.replace(
+              '/citizen/auth/logout',
+              '/citizen/auth/sfi/logout'
+            )
+            break
+          case 'keycloak-citizen':
+            req.url = req.url.replace(
+              '/citizen/auth/logout',
+              '/citizen/auth/keycloak/logout'
+            )
+            break
+          default:
+            await citizenSessions.destroy(req, res)
+            res.redirect('/citizen')
+        }
+      } else if (req.path === '/employee/auth/logout') {
+        const user = employeeSessions.getUser(req)
+        switch (user?.authType) {
+          case 'ad':
+            req.url = req.url.replace(
+              '/employee/auth/logout',
+              '/employee/auth/ad/logout'
+            )
+            break
+          case 'keycloak-employee':
+            req.url = req.url.replace(
+              '/employee/auth/logout',
+              '/employee/auth/keycloak/logout'
+            )
+            break
+          default:
+            await employeeSessions.destroy(req, res)
+            res.redirect('/employee')
+        }
+      }
+    })
+  )
 
   if (config.sfi.type === 'mock') {
     router.use(
