@@ -160,7 +160,7 @@
     "@react-leaflet/core@npm:^2.1.0": "patch:@react-leaflet/core@npm%3A2.1.0#~/.yarn/patches/@react-leaflet-core-npm-2.1.0-de483ca53f.patch"
   },
   "engines": {
-    "node": ">= 20.9.0"
+    "node": ">= 22.12.0"
   },
   "browserslist": [
     "Firefox ESR",
