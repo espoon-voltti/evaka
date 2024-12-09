@@ -620,7 +620,7 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Person.READ_APPLICATION_NOTIFICATIONS,
                         user.id,
                     )
-                    tx.fetchApplicationNotificationCountForCitizen(user.id)
+                    tx.fetchApplicationNotificationCountForCitizen(user.id, clock.today())
                 }
             }
             .also { Audit.ApplicationReadNotifications.log(targetId = AuditId(user.id)) }
