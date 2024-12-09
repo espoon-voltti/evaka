@@ -46,7 +46,7 @@ export type ArchivedProcessState =
 * Generated from fi.espoo.evaka.process.ProcessMetadataController.DocumentMetadata
 */
 export interface DocumentMetadata {
-  confidential: boolean
+  confidential: boolean | null
   createdAt: HelsinkiDateTime | null
   createdBy: EvakaUser | null
   downloadPath: string | null

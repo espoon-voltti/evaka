@@ -4936,6 +4936,7 @@ export const fi = {
     confidentiality: 'Julkisuus',
     confidential: 'Salassapidettävä',
     public: 'Julkinen',
+    notSet: 'Asettamatta',
     history: 'Prosessin historia',
     downloadPdf: 'Lataa PDF',
     states: {
