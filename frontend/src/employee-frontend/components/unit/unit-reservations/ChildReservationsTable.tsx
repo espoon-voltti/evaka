@@ -65,7 +65,8 @@ const childVisibleFilter = (
 const childPresentFilter = (
   child: ChildRecordOfDay,
   day: OperationalDay,
-  selectedGroup: AttendanceGroupFilter
+  selectedGroup: AttendanceGroupFilter,
+  shiftCareAllowedForChild: boolean
 ): boolean => {
   if (child.inOtherUnit) return false
 
@@ -85,7 +86,10 @@ const childPresentFilter = (
   if (child.scheduleType === 'TERM_BREAK') return false
 
   if (day.dateInfo.isHoliday) {
-    return child.reservations.length > 0 && !isFullyAbsent(child)
+    if (isFullyAbsent(child)) return false
+    if (child.reservations.length > 0) return true
+
+    return day.dateInfo.shiftCareOpenOnHoliday && shiftCareAllowedForChild
   }
 
   return !isFullyAbsent(child)
@@ -131,11 +135,24 @@ export default React.memo(function ChildReservationsTable({
     () =>
       days.map(
         (day) =>
-          day.children.filter((child) =>
-            childPresentFilter(child, day, selectedGroup)
-          ).length
+          day.children.filter((child) => {
+            const shiftCare = childBasics
+              .find((c) => c.id === child.childId)
+              ?.serviceNeeds?.find((sn) =>
+                sn.validDuring.includes(day.date)
+              )?.shiftCare
+            const shiftCareAllowedForChild =
+              shiftCare === 'FULL' || shiftCare === 'INTERMITTENT'
+
+            return childPresentFilter(
+              child,
+              day,
+              selectedGroup,
+              shiftCareAllowedForChild
+            )
+          }).length
       ),
-    [days, selectedGroup]
+    [days, selectedGroup, childBasics]
   )
 
   return (
