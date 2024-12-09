@@ -7,6 +7,7 @@ package fi.espoo.evaka.absence
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.allWeekOpTimes
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+import fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
@@ -96,7 +97,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             missingHolidayReservation = false,
             absences = listOf(),
             reservations = listOf(),
-            dailyServiceTimes = null,
+            dailyServiceTimes = ServiceTimesPresenceStatus.Unknown,
         )
 
     @BeforeEach
@@ -887,7 +888,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     .copy(
                                         childId = testChild_1.id,
                                         dailyServiceTimes =
-                                            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                                            ServiceTimesPresenceStatus.Present(
+                                                TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                                            ),
                                     )
                                     .takeIf { !date.isWeekend() }
                             ),
@@ -904,7 +907,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         .copy(
                                             childId = testChild_1.id,
                                             dailyServiceTimes =
-                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0)),
+                                                ServiceTimesPresenceStatus.Present(
+                                                    TimeRange(
+                                                        LocalTime.of(9, 0),
+                                                        LocalTime.of(15, 0),
+                                                    )
+                                                ),
                                         )
                                         .takeIf { !date.isWeekend() }
                                 ),
