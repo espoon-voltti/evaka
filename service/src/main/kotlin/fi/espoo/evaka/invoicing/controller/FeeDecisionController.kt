@@ -227,7 +227,7 @@ class FeeDecisionController(
                     Action.FeeDecision.UPDATE,
                     feeDecisionIds,
                 )
-                service.setSent(it, clock, feeDecisionIds)
+                service.setManuallySent(it, clock, user, feeDecisionIds)
                 // emails should be sent only after decisions are actually visible to citizens in
                 // eVaka
                 asyncJobRunner.plan(
@@ -282,22 +282,31 @@ class FeeDecisionController(
             .also { Audit.FeeDecisionPdfRead.log(targetId = AuditId(decisionId)) }
     }
 
+    data class FeeDecisionResponse(
+        val data: FeeDecisionDetailed,
+        val permittedActions: Set<Action.FeeDecision>,
+    )
+
     @GetMapping("/{id}")
     fun getFeeDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: FeeDecisionId,
-    ): FeeDecisionDetailed {
+    ): FeeDecisionResponse {
         return db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(it, user, clock, Action.FeeDecision.READ, id)
-                it.getFeeDecision(id)
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(tx, user, clock, Action.FeeDecision.READ, id)
+                    val decision =
+                        tx.getFeeDecision(id)
+                            ?: throw NotFound("No fee decision found with given ID ($id)")
+                    FeeDecisionResponse(
+                        data = decision,
+                        permittedActions = accessControl.getPermittedActions(tx, user, clock, id),
+                    )
+                }
             }
-        }
-            ?: throw NotFound("No fee decision found with given ID ($id)").also {
-                Audit.FeeDecisionRead.log(targetId = AuditId(id))
-            }
+            .also { Audit.FeeDecisionRead.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/head-of-family/{id}")
