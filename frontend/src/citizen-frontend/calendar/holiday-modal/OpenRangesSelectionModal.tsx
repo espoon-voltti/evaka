@@ -114,7 +114,7 @@ export default React.memo(function OpenRangesSelectionModal({
               {eligibleChildren.includes(child.id) ? (
                 <RangeSelector
                   period={questionnaire.period}
-                  value={openRanges[child.id] ? openRanges[child.id] : []}
+                  value={openRanges[child.id] ?? []}
                   onSelectRanges={selectRanges(child.id)}
                 />
               ) : questionnaire.conditions.continuousPlacement ? (
