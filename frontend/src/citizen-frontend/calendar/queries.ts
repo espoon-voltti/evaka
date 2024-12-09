@@ -15,6 +15,7 @@ import {
 import { getDailyServiceTimeNotifications } from '../generated/api-clients/dailyservicetimes'
 import {
   answerFixedPeriodQuestionnaire,
+  answerOpenRangeQuestionnaire,
   getActiveQuestionnaires,
   getHolidayPeriods
 } from '../generated/api-clients/holidayperiod'
@@ -95,6 +96,14 @@ export const activeQuestionnaireQuery = query({
 
 export const answerFixedPeriodQuestionnaireMutation = mutation({
   api: answerFixedPeriodQuestionnaire,
+  invalidateQueryKeys: () => [
+    activeQuestionnaireQuery().queryKey,
+    queryKeys.allReservations()
+  ]
+})
+
+export const answerOpenRangesQuestionnaireMutation = mutation({
+  api: answerOpenRangeQuestionnaire,
   invalidateQueryKeys: () => [
     activeQuestionnaireQuery().queryKey,
     queryKeys.allReservations()

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -29,7 +29,7 @@ import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { H1, InformationText, Label } from 'lib-components/typography'
+import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
@@ -41,7 +41,7 @@ import {
 } from './queries'
 
 interface FormState {
-  type: 'FIXED_PERIOD'
+  type: 'OPEN_RANGES'
   requiresStrongAuth: boolean
   absenceType: 'FREE_ABSENCE'
   titleFi: string
@@ -55,41 +55,23 @@ interface FormState {
   descriptionLinkEn: string
   start: LocalDate | null
   end: LocalDate | null
-  periodOptions: string
-  periodOptionLabelFi: string
-  periodOptionLabelSv: string
-  periodOptionLabelEn: string
+  periodStart: LocalDate | null
+  periodEnd: LocalDate | null
+  absenceTypeThreshold: number
   conditionContinuousPlacementStart: LocalDate | null
   conditionContinuousPlacementEnd: LocalDate | null
 }
 
-const parseFiniteDateRange = (range: string): FiniteDateRange | null => {
-  const [start, end] = range
-    .split('-')
-    .map((s) => s.trim())
-    .map((s) => LocalDate.parseFiOrNull(s))
-  if (!(start && end && start.isEqualOrBefore(end))) return null
-  return new FiniteDateRange(start, end)
-}
-
-const parseDateRanges = (s: string) =>
-  s
-    .split(/[,\n]/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map(parseFiniteDateRange)
-    .filter(Boolean) as FiniteDateRange[]
-
 const formToQuestionnaireBody = (
   s: FormState
-): QuestionnaireBody.FixedPeriodQuestionnaireBody | undefined => {
-  if (!s.start || !s.end) {
+): QuestionnaireBody.OpenRangesQuestionnaireBody | undefined => {
+  if (!s.start || !s.end || !s.periodStart || !s.periodEnd) {
     return undefined
   }
 
   return {
     ...s,
-    type: 'FIXED_PERIOD',
+    type: 'OPEN_RANGES',
     title: {
       fi: s.titleFi,
       sv: s.titleSv,
@@ -106,12 +88,8 @@ const formToQuestionnaireBody = (
       en: s.descriptionLinkEn
     },
     active: new FiniteDateRange(s.start, s.end),
-    periodOptionLabel: {
-      fi: s.periodOptionLabelFi,
-      sv: s.periodOptionLabelSv,
-      en: s.periodOptionLabelEn
-    },
-    periodOptions: parseDateRanges(s.periodOptions),
+    period: new FiniteDateRange(s.periodStart, s.periodEnd),
+    absenceTypeThreshold: s.absenceTypeThreshold,
     conditions: {
       continuousPlacement:
         s.conditionContinuousPlacementStart && s.conditionContinuousPlacementEnd
@@ -125,7 +103,7 @@ const formToQuestionnaireBody = (
 }
 
 const emptyFormState: FormState = {
-  type: 'FIXED_PERIOD',
+  type: 'OPEN_RANGES',
   absenceType: 'FREE_ABSENCE',
   requiresStrongAuth: false,
   titleFi: '',
@@ -139,20 +117,19 @@ const emptyFormState: FormState = {
   descriptionLinkEn: '',
   start: null,
   end: null,
-  periodOptions: '',
-  periodOptionLabelFi: '',
-  periodOptionLabelSv: '',
-  periodOptionLabelEn: '',
+  periodStart: null,
+  periodEnd: null,
+  absenceTypeThreshold: 0,
   conditionContinuousPlacementStart: null,
   conditionContinuousPlacementEnd: null
 }
 
 const toFormState = (
-  p: HolidayQuestionnaire.FixedPeriodQuestionnaire | undefined
+  p: HolidayQuestionnaire.OpenRangesQuestionnaire | undefined
 ): FormState =>
   p
     ? {
-        type: 'FIXED_PERIOD',
+        type: 'OPEN_RANGES',
         absenceType: 'FREE_ABSENCE',
         requiresStrongAuth: p.requiresStrongAuth,
         titleFi: p.title.fi,
@@ -166,14 +143,11 @@ const toFormState = (
         descriptionLinkEn: p.descriptionLink.en,
         start: p.active.start,
         end: p.active.end,
-        periodOptions: p.periodOptions.map((r) => r.format()).join(', '),
-        periodOptionLabelFi: p.periodOptionLabel.fi,
-        periodOptionLabelSv: p.periodOptionLabel.sv,
-        periodOptionLabelEn: p.periodOptionLabel.en,
-
+        periodStart: p.period.start,
+        periodEnd: p.period.end,
+        absenceTypeThreshold: p.absenceTypeThreshold,
         conditionContinuousPlacementStart:
           p.conditions.continuousPlacement?.start ?? null,
-
         conditionContinuousPlacementEnd:
           p.conditions.continuousPlacement?.end ?? null
       }
@@ -182,10 +156,10 @@ const toFormState = (
 interface Props {
   onSuccess: () => void
   onCancel: () => void
-  questionnaire?: HolidayQuestionnaire.FixedPeriodQuestionnaire
+  questionnaire?: HolidayQuestionnaire.OpenRangesQuestionnaire
 }
 
-export default React.memo(function FixedPeriodQuestionnaireForm({
+export default React.memo(function OpenRangesQuestionnaireForm({
   onCancel,
   onSuccess,
   questionnaire
@@ -203,11 +177,15 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
     isValid,
     parsedStart,
     parsedEnd,
+    parsedPeriodStart,
+    parsedPeriodEnd,
     parsedConditionContinuousPlacementStart,
     parsedConditionContinuousPlacementEnd
   ] = useMemo(() => {
     const parsedStart = form.start
     const parsedEnd = form.end
+    const parsedPeriodStart = form.periodStart
+    const parsedPeriodEnd = form.periodEnd
     const parsedConditionContinuousPlacementStart =
       form.conditionContinuousPlacementStart
     const parsedConditionContinuousPlacementEnd =
@@ -240,13 +218,17 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
         : parsedStart && parsedEnd.isBefore(parsedStart)
           ? 'dateTooEarly'
           : undefined,
-      periodOptionLabelFi: validate(form.periodOptionLabelFi, required),
-      periodOptionLabelSv: undefined,
-      periodOptionLabelEn: undefined,
-      periodOptions:
-        parseDateRanges(form.periodOptions).length === 0
-          ? 'required'
+      periodStart: !parsedPeriodStart
+        ? 'validDate'
+        : parsedPeriodEnd && parsedPeriodStart.isAfter(parsedPeriodEnd)
+          ? 'dateTooLate'
           : undefined,
+      periodEnd: !parsedPeriodEnd
+        ? 'validDate'
+        : parsedPeriodStart && parsedPeriodEnd.isBefore(parsedPeriodStart)
+          ? 'dateTooEarly'
+          : undefined,
+      absenceTypeThreshold: validate(form.absenceTypeThreshold, required),
       conditionContinuousPlacementStart:
         !form.conditionContinuousPlacementStart &&
         !form.conditionContinuousPlacementEnd
@@ -278,15 +260,18 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
       isValid,
       parsedStart,
       parsedEnd,
+      parsedPeriodStart,
+      parsedPeriodEnd,
       parsedConditionContinuousPlacementStart,
       parsedConditionContinuousPlacementEnd
     ]
   }, [form])
 
-  const { mutateAsync: createFixedPeriodQuestionnaire } = useMutationResult(
+  const { mutateAsync: createOpenRangesQuestionnaire } = useMutationResult(
     createQuestionnaireMutation
   )
-  const { mutateAsync: updateFixedPeriodQuestionnaire } = useMutationResult(
+
+  const { mutateAsync: updateOpenRangesQuestionnaire } = useMutationResult(
     updateQuestionnaireMutation
   )
 
@@ -294,11 +279,11 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
     const body = isValid && formToQuestionnaireBody(form)
     if (!body) return
     return questionnaire
-      ? updateFixedPeriodQuestionnaire({ id: questionnaire.id, body })
-      : createFixedPeriodQuestionnaire({ body })
+      ? updateOpenRangesQuestionnaire({ id: questionnaire.id, body })
+      : createOpenRangesQuestionnaire({ body })
   }, [
-    createFixedPeriodQuestionnaire,
-    updateFixedPeriodQuestionnaire,
+    createOpenRangesQuestionnaire,
+    updateOpenRangesQuestionnaire,
     form,
     questionnaire,
     isValid
@@ -310,7 +295,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
     <>
       <H1>
         {i18n.holidayQuestionnaires.questionnaires}:{' '}
-        {i18n.holidayQuestionnaires.types.FIXED_PERIOD}
+        {i18n.holidayQuestionnaires.types.OPEN_RANGES}
       </H1>
       <ListGrid>
         <Label inputRow>{i18n.holidayQuestionnaires.absenceType} *</Label>
@@ -485,79 +470,64 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>
-          {i18n.holidayQuestionnaires.fixedPeriodOptions} *
-        </Label>
-        <TextArea
-          required
-          value={form.periodOptions}
-          onChange={(fixedPeriodOptions) =>
-            update({ periodOptions: fixedPeriodOptions })
-          }
-          placeholder={i18n.holidayQuestionnaires.fixedPeriodOptionsPlaceholder}
-          data-qa="input-fixed-period-options"
-          info={errorToInputInfo(errors.periodOptions, i18n.validationErrors)}
-          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-        />
-
-        <Gap horizontal />
-        <InformationText>
-          {parseDateRanges(form.periodOptions)
-            .map((r) => r.formatCompact())
-            .join(', ')}
-        </InformationText>
-
-        <Label inputRow>
-          {i18n.holidayQuestionnaires.fixedPeriodOptionLabel} *
-        </Label>
-        <TextArea
-          required
-          value={form.periodOptionLabelFi}
-          onChange={(fixedPeriodOptionLabelFi) =>
-            update({ periodOptionLabelFi: fixedPeriodOptionLabelFi })
-          }
-          placeholder={
-            i18n.holidayQuestionnaires.fixedPeriodOptionLabelPlaceholder
-          }
-          data-qa="input-fixed-period-option-label-fi"
-          info={errorToInputInfo(
-            errors.periodOptionLabelFi,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-        />
+        <Label inputRow>{i18n.holidayQuestionnaires.period} *</Label>
+        <FixedSpaceRow alignItems="center">
+          <DatePicker
+            info={useMemo(
+              () => errorToInputInfo(errors.periodStart, i18n.validationErrors),
+              [errors.periodStart, i18n.validationErrors]
+            )}
+            date={form.periodStart}
+            locale={lang}
+            required
+            maxDate={parsedPeriodEnd ?? undefined}
+            onChange={(periodStart) => update({ periodStart })}
+            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            data-qa="period-start"
+          />
+          <span>-</span>
+          <DatePicker
+            info={useMemo(
+              () => errorToInputInfo(errors.periodEnd, i18n.validationErrors),
+              [errors.periodEnd, i18n.validationErrors]
+            )}
+            date={form.periodEnd}
+            locale={lang}
+            required
+            minDate={parsedPeriodStart ?? undefined}
+            onChange={(periodEnd) => update({ periodEnd })}
+            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            data-qa="period-end"
+          />
+        </FixedSpaceRow>
 
         <Label inputRow>
-          {i18n.holidayQuestionnaires.fixedPeriodOptionLabel} SV
+          {i18n.holidayQuestionnaires.absenceTypeThreshold} *
         </Label>
-        <TextArea
-          value={form.periodOptionLabelSv}
-          onChange={(fixedPeriodOptionLabelSv) =>
-            update({ periodOptionLabelSv: fixedPeriodOptionLabelSv })
-          }
-          data-qa="input-fixed-period-option-label-sv"
-          info={errorToInputInfo(
-            errors.periodOptionLabelSv,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-        />
-
-        <Label inputRow>
-          {i18n.holidayQuestionnaires.fixedPeriodOptionLabel} EN
-        </Label>
-        <TextArea
-          value={form.periodOptionLabelEn}
-          onChange={(fixedPeriodOptionLabelEn) =>
-            update({ periodOptionLabelEn: fixedPeriodOptionLabelEn })
-          }
-          data-qa="input-fixed-period-option-label-en"
-          info={errorToInputInfo(
-            errors.periodOptionLabelEn,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-        />
+        <FixedSpaceRow alignItems="center">
+          <InputField
+            width="s"
+            placeholder="0"
+            type="number"
+            value={form.absenceTypeThreshold.toString()}
+            onChange={(absenceTypeThreshold) =>
+              update({
+                absenceTypeThreshold: parseInt(absenceTypeThreshold, 10)
+              })
+            }
+            data-qa="input-absence-type-threshold"
+            info={useMemo(
+              () =>
+                errorToInputInfo(
+                  errors.absenceTypeThreshold,
+                  i18n.validationErrors
+                ),
+              [errors.absenceTypeThreshold, i18n]
+            )}
+            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+          />
+          <span>{i18n.holidayQuestionnaires.days}</span>
+        </FixedSpaceRow>
 
         <Label inputRow>
           {i18n.holidayQuestionnaires.conditionContinuousPlacement}
