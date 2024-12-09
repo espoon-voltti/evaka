@@ -5,6 +5,7 @@
 import React, { useCallback, useState } from 'react'
 
 import { Result } from 'lib-common/api'
+import { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -17,8 +18,7 @@ import { StaticLabels, StaticStickyNote } from './StaticStickyNote'
 import { EditorLabels, StickyNoteEditor } from './StickyNoteEditor'
 import { EditedNote, Note } from './notes'
 
-const newNote = () => ({
-  id: '',
+const newNote = (): EditedNote<never> => ({
   expires: LocalDate.todayInSystemTz().addDays(7),
   note: ''
 })
@@ -30,23 +30,23 @@ export interface StickyNoteTabLabels {
   static: StaticLabels
 }
 
-interface StickyNoteTabProps {
+interface StickyNoteTabProps<IdType extends Id<string>> {
   labels: StickyNoteTabLabels
-  notes: Note[]
-  onSave: (note: EditedNote) => Promise<Result<unknown>>
-  onRemove: (id: UUID) => Promise<Result<unknown>>
+  notes: Note<IdType>[]
+  onSave: (note: EditedNote<IdType>) => Promise<Result<unknown>>
+  onRemove: (id: IdType) => Promise<Result<unknown>>
   smallerHeading?: boolean
   subHeading?: string
 }
 
-export const StickyNoteTab = React.memo(function StickyNoteTab({
+export function StickyNoteTab<IdType extends Id<string>>({
   labels,
   notes,
   onSave,
   onRemove,
   smallerHeading = false,
   subHeading
-}: StickyNoteTabProps) {
+}: StickyNoteTabProps<IdType>) {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   const [editing, setEditing] = useState<UUID | 'new' | null>(
     notes.length === 0 ? 'new' : null
@@ -117,4 +117,4 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
       )}
     </>
   )
-})
+}

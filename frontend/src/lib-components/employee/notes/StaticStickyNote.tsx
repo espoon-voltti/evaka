@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 
 import { Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import { Id } from 'lib-common/id-type'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -21,21 +21,21 @@ export interface StaticLabels {
   validTo: (date: string) => string
 }
 
-interface Props {
-  note: Note
-  onRemove: (id: UUID) => Promise<Result<unknown>>
+interface Props<IdType extends Id<string>> {
+  note: Note<IdType>
+  onRemove: (id: IdType) => Promise<Result<unknown>>
   editable: boolean
   onEdit: () => void
   labels: StaticLabels
 }
 
-export const StaticStickyNote = React.memo(function StaticStickyNote({
+export function StaticStickyNote<IdType extends Id<string>>({
   note,
   editable,
   onEdit,
   onRemove,
   labels
-}: Props) {
+}: Props<IdType>) {
   const removeNote = useCallback(() => onRemove(note.id), [note.id, onRemove])
   return (
     <ContentArea opaque paddingHorizontal="s" data-qa="sticky-note">
@@ -64,4 +64,4 @@ export const StaticStickyNote = React.memo(function StaticStickyNote({
       </FixedSpaceRow>
     </ContentArea>
   )
-})
+}
