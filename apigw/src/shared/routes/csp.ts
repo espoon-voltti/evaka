@@ -6,18 +6,10 @@ import express from 'express'
 
 import { logWarn } from '../logging.js'
 
-const router = express.Router()
-
-router.post(
-  '/csp-report',
-  express.json({ type: 'application/csp-report' }),
-  (req, res) => {
-    logWarn('CSP report received', req, {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      report: req.body
-    })
-    res.sendStatus(200)
-  }
-)
-
-export default router
+export const handleCspReport: express.RequestHandler = (req, res) => {
+  logWarn('CSP report received', req, {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    report: req.body
+  })
+  res.sendStatus(200)
+}

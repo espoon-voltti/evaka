@@ -29,7 +29,7 @@ const getAuthLevel = (user: EvakaSessionUser): 'STRONG' | 'WEAK' => {
   }
 }
 
-export const authStatus = (sessions: Sessions) =>
+export const citizenAuthStatus = (sessions: Sessions<'citizen'>) =>
   toRequestHandler(async (req, res) => {
     const user = sessions.getUser(req)
     let status: AuthStatus
