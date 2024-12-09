@@ -262,6 +262,16 @@ val testFeatureConfig =
                         processDefinitionNumber = "123.456.b",
                         archiveDurationMonths = 120 * 12,
                     ),
+                ArchiveProcessType.FEE_DECISION to
+                    ArchiveProcessConfig(
+                        processDefinitionNumber = "123.789.a",
+                        archiveDurationMonths = 10 * 12,
+                    ),
+                ArchiveProcessType.VOUCHER_VALUE_DECISION to
+                    ArchiveProcessConfig(
+                        processDefinitionNumber = "123.789.b",
+                        archiveDurationMonths = 10 * 12,
+                    ),
             ),
     )
 

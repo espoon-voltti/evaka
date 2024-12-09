@@ -31,6 +31,8 @@ import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -986,7 +988,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `confirmDrafts updates status, decision number, approver on draft`() {
+    fun `confirmDrafts updates status, decision number, approver and process id on draft`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
 
@@ -1005,6 +1007,26 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result = getDecision(draft.id)
         assertEqualEnough(toDetailed(activated), result)
+
+        val process = db.read { tx -> tx.getArchiveProcessByFeeDecisionId(draft.id) }
+        assertNotNull(process)
+        assertEquals("1/123.789.a/${LocalDate.now().year}", process.processNumber)
+        assertEquals(
+            listOf(
+                ArchivedProcessState.INITIAL,
+                ArchivedProcessState.DECIDING,
+                ArchivedProcessState.COMPLETED,
+            ),
+            process.history.map { it.state },
+        )
+        assertEquals(
+            listOf(
+                AuthenticatedUser.SystemInternalUser.evakaUserId,
+                user.evakaUserId,
+                AuthenticatedUser.SystemInternalUser.evakaUserId,
+            ),
+            process.history.map { it.enteredBy.id },
+        )
     }
 
     @Test
