@@ -276,7 +276,12 @@ class ApplicationStateService(
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags, clock.now(), user.evakaUserId)
 
-        tx.resetCheckedByAdminAndConfidentiality(applicationId, application.form)
+        tx.resetCheckedByAdminAndConfidentiality(
+            applicationId,
+            application.form,
+            clock.now(),
+            user.evakaUserId,
+        )
 
         val sentDate = application.sentDate ?: currentDate
         val dueDate =
@@ -421,7 +426,12 @@ class ApplicationStateService(
             )
         }
 
-        tx.resetCheckedByAdminAndConfidentiality(application.id, application.form)
+        tx.resetCheckedByAdminAndConfidentiality(
+            application.id,
+            application.form,
+            clock.now(),
+            user.evakaUserId,
+        )
 
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
     }
@@ -500,7 +510,12 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_PLACEMENT, CANCELLED))
 
-        tx.resetCheckedByAdminAndConfidentiality(applicationId, application.form)
+        tx.resetCheckedByAdminAndConfidentiality(
+            applicationId,
+            application.form,
+            clock.now(),
+            user.evakaUserId,
+        )
 
         if (application.status == CANCELLED) {
             tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
@@ -536,9 +551,19 @@ class ApplicationStateService(
         if (application.confidential == null) {
             when {
                 user is AuthenticatedUser.Citizen ->
-                    tx.setApplicationConfidentiality(applicationId, true)
+                    tx.setApplicationConfidentiality(
+                        applicationId,
+                        true,
+                        clock.now(),
+                        user.evakaUserId,
+                    )
                 confidential != null ->
-                    tx.setApplicationConfidentiality(applicationId, confidential)
+                    tx.setApplicationConfidentiality(
+                        applicationId,
+                        confidential,
+                        clock.now(),
+                        user.evakaUserId,
+                    )
                 else -> throw BadRequest("Confidentiality must be set")
             }
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
@@ -579,11 +604,16 @@ class ApplicationStateService(
 
         if (application.confidential == null) {
             if (confidential != null) {
-                tx.setApplicationConfidentiality(applicationId, confidential)
+                tx.setApplicationConfidentiality(
+                    applicationId,
+                    confidential,
+                    clock.now(),
+                    user.evakaUserId,
+                )
             } else throw BadRequest("Confidentiality must be set")
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
-        tx.setApplicationVerified(applicationId, true)
+        tx.setApplicationVerified(applicationId, true, clock.now(), user.evakaUserId)
         Audit.ApplicationAdminDetailsUpdate.log(targetId = AuditId(applicationId))
     }
 
