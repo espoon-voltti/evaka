@@ -1195,7 +1195,9 @@ fun Database.Transaction.setApplicationConfidentiality(
     modifiedBy: EvakaUserId,
 ) {
     execute {
-        sql("UPDATE application SET confidential = ${bind(confidential)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}")
+        sql(
+            "UPDATE application SET confidential = ${bind(confidential)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+        )
     }
 }
 
