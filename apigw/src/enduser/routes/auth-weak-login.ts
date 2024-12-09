@@ -25,7 +25,10 @@ const eventCode = (name: string) => `evaka.citizen_weak.${name}`
 
 const loginAttemptsPerHour = 20
 
-export const authWeakLogin = (sessions: Sessions, redis: RedisClient) =>
+export const authWeakLogin = (
+  sessions: Sessions<'citizen'>,
+  redis: RedisClient
+) =>
   toRequestHandler(async (req, res) => {
     logAuditEvent(eventCode('sign_in_requested'), req, 'Login endpoint called')
     try {

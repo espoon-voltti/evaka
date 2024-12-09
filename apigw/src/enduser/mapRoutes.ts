@@ -76,7 +76,7 @@ function createDigitransitProxy(path: string) {
 }
 
 router.get(
-  '/map-api/autocomplete',
+  '/autocomplete',
   digitransitApiEnabled
     ? createDigitransitProxy('/geocoding/v1/autocomplete')
     : enableDevApi
@@ -88,7 +88,7 @@ router.get(
 )
 
 router.post(
-  '/map-api/query',
+  '/query',
   digitransitApiEnabled
     ? createDigitransitProxy('/routing/v1/routers/finland/index/graphql')
     : enableDevApi
