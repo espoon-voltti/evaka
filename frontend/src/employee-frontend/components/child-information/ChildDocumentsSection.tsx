@@ -27,12 +27,17 @@ export default React.memo(function ChildDocumentsSection({
 
   const [open, setOpen] = useState(startOpen)
 
-  const hasChildDocumentsPermission = useMemo(
+  const hasChildDocumentsReadPermission = useMemo(
     () => permittedActions.has('READ_CHILD_DOCUMENT'),
     [permittedActions]
   )
 
-  if (!hasChildDocumentsPermission) {
+  const hasChildDocumentsCreatePermission = useMemo(
+    () => permittedActions.has('CREATE_CHILD_DOCUMENT'),
+    [permittedActions]
+  )
+
+  if (!hasChildDocumentsReadPermission) {
     return null
   }
 
@@ -48,7 +53,12 @@ export default React.memo(function ChildDocumentsSection({
         paddingVertical="L"
         data-qa="child-documents-collapsible"
       >
-        {hasChildDocumentsPermission && <ChildDocuments childId={childId} />}
+        {hasChildDocumentsReadPermission && (
+          <ChildDocuments
+            hasCreatePermission={hasChildDocumentsCreatePermission}
+            childId={childId}
+          />
+        )}
       </CollapsibleContentArea>
     </div>
   )

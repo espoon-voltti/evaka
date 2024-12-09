@@ -14,7 +14,11 @@ import {
   ChildDocumentSummaryWithPermittedActions,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import {
+  constantQuery,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -156,14 +160,18 @@ const CreationModal = React.memo(function CreationModal({
 })
 
 export default React.memo(function ChildDocumentsList({
-  childId
+  childId,
+  hasCreatePermission
 }: {
   childId: UUID
+  hasCreatePermission: boolean
 }) {
   const { i18n } = useTranslation()
   const documentsResult = useQueryResult(childDocumentsQuery({ childId }))
   const documentTemplatesResult = useQueryResult(
-    activeDocumentTemplateSummariesQuery({ childId })
+    hasCreatePermission
+      ? activeDocumentTemplateSummariesQuery({ childId })
+      : constantQuery([])
   )
   const [creationModalOpen, setCreationModalOpen] = useState(false)
 
@@ -180,19 +188,23 @@ export default React.memo(function ChildDocumentsList({
 
       return (
         <FixedSpaceColumn>
-          <AddButtonRow
-            text={i18n.childInformation.childDocuments.addNew}
-            onClick={() => setCreationModalOpen(true)}
-            disabled={validTemplates.length < 1}
-            data-qa="create-document"
-          />
+          {hasCreatePermission && (
+            <>
+              <AddButtonRow
+                text={i18n.childInformation.childDocuments.addNew}
+                onClick={() => setCreationModalOpen(true)}
+                disabled={validTemplates.length < 1}
+                data-qa="create-document"
+              />
 
-          {creationModalOpen && (
-            <CreationModal
-              childId={childId}
-              templates={validTemplates}
-              onClose={() => setCreationModalOpen(false)}
-            />
+              {creationModalOpen && (
+                <CreationModal
+                  childId={childId}
+                  templates={validTemplates}
+                  onClose={() => setCreationModalOpen(false)}
+                />
+              )}
+            </>
           )}
 
           <ChildDocuments childId={childId} documents={documents} />
