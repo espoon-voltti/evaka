@@ -29,11 +29,11 @@ if (isAutomatedTest) {
 
 client.interceptors.response.use(undefined, async (err: AxiosError) => {
   if (err.response && err.response.status == 401) {
-    if (window.evaka?.loginStatusEventBus) {
-      window.evaka.loginStatusEventBus.dispatchEvent(
-        new LoginStatusChangeEvent(false)
-      )
-    } else {
+    const event = new LoginStatusChangeEvent(false)
+    window.dispatchEvent(event)
+
+    // Check if the event was handled by a listener
+    if (!event.defaultPrevented) {
       window.location.replace('/employee/login')
     }
   }

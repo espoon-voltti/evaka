@@ -166,15 +166,13 @@ const Content = React.memo(function Content() {
 
   useEffect(() => {
     const eventListener = ((loginStatusEvent: LoginStatusChangeEvent) => {
+      loginStatusEvent.preventDefault()
+
       setShowSessionExpiredModal(!loginStatusEvent.loginStatus)
     }) as EventListener
-    const eventBus = window.evaka?.loginStatusEventBus
-    if (!eventBus) {
-      return undefined
-    }
-    eventBus.addEventListener(LoginStatusChangeEvent.name, eventListener)
+    window.addEventListener(LoginStatusChangeEvent.name, eventListener)
     return () => {
-      eventBus.removeEventListener(LoginStatusChangeEvent.name, eventListener)
+      window.removeEventListener(LoginStatusChangeEvent.name, eventListener)
     }
   }, [setShowSessionExpiredModal])
 
