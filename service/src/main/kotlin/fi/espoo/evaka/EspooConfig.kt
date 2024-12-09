@@ -221,16 +221,6 @@ class EspooConfig {
                             processDefinitionNumber = "12.06.04",
                             archiveDurationMonths = 120 * 12,
                         ),
-                    ArchiveProcessType.FEE_DECISION to
-                        ArchiveProcessConfig(
-                            processDefinitionNumber = "123.todo.9000",
-                            archiveDurationMonths = 10 * 12,
-                        ),
-                    ArchiveProcessType.VOUCHER_VALUE_DECISION to
-                        ArchiveProcessConfig(
-                            processDefinitionNumber = "123.todo.9000",
-                            archiveDurationMonths = 10 * 12,
-                        ),
                 ),
         )
 
