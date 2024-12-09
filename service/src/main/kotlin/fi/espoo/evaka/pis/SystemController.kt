@@ -195,6 +195,48 @@ class SystemController(
             }
     }
 
+    @PostMapping("/system/employee-sfi-login")
+    fun employeeSuomiFiLogin(
+        db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
+        @RequestBody request: EmployeeSuomiFiLoginRequest,
+    ): EmployeeUser {
+        Audit.EmployeeSfiLoginAttempt.log(
+            targetId = AuditId(request.ssn.value),
+            meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName),
+        )
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val employee = tx.loginEmployeeWithSuomiFi(clock.now(), request)
+                    val roles = tx.getEmployeeRoles(employee.id)
+                    val employeeUser =
+                        EmployeeUser(
+                            id = employee.id,
+                            firstName = employee.preferredFirstName ?: employee.firstName,
+                            lastName = employee.lastName,
+                            globalRoles = roles.globalRoles,
+                            allScopedRoles = roles.allScopedRoles,
+                            active = employee.active,
+                        )
+                    tx.upsertEmployeeUser(employee.id)
+                    employeeUser
+                }
+            }
+            .also {
+                Audit.EmployeeSfiLogin.log(
+                    targetId = AuditId(request.ssn.value),
+                    objectId = AuditId(it.id),
+                    meta =
+                        mapOf(
+                            "lastName" to request.lastName,
+                            "firstName" to request.firstName,
+                            "globalRoles" to it.globalRoles,
+                        ),
+                )
+            }
+    }
+
     @GetMapping("/system/employee/{id}")
     fun employeeUser(
         db: Database,
