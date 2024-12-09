@@ -75,6 +75,8 @@ export default class CitizenCalendarPage {
   navigatePreviousMonthButton = () =>
     this.page.findByDataQa('previous-month-button')
   monthTitle = () => this.page.findByDataQa('calendar-month-title')
+  mobileLoadPreviousDataButton = () =>
+    this.page.findByDataQa('fetch-previous-button')
 
   async waitUntilLoaded() {
     await this.page
@@ -180,6 +182,19 @@ export default class CitizenCalendarPage {
     }
   }
 
+  async navigateToPreviousMonth() {
+    if (this.type === 'mobile') {
+      return await this.mobileLoadPreviousDataButton().click()
+    }
+    return await this.navigatePreviousMonthButton().click()
+  }
+
+  async navigateToPreviousMonths(n: number) {
+    for (let i = 0; i < n; i++) {
+      await this.navigateToPreviousMonth()
+    }
+  }
+
   async assertMonthTitle(title: string) {
     await this.monthTitle().assertTextEquals(title)
   }
@@ -260,6 +275,13 @@ export default class CitizenCalendarPage {
         return normalizedText === group.text
       })
     }
+  }
+
+  async assertHasNoDate(date: LocalDate) {
+    const day = this.page.findByDataQa(
+      `${this.type}-calendar-day-${date.formatIso()}`
+    )
+    await day.waitUntilHidden()
   }
 
   async assertTwoPartReservationFromDayCellGroup(

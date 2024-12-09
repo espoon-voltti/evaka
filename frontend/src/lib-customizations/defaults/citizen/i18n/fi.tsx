@@ -84,6 +84,7 @@ export default {
     errors: {
       genericGetError: 'Tietojen hakeminen ei onnistunut'
     },
+    today: 'Tänään',
     datetime: {
       dayShort: 'pv',
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
@@ -491,6 +492,7 @@ export default {
     nextDay: 'Seuraava päivä',
     previousMonth: 'Edellinen kuukausi',
     nextMonth: 'Seuraava kuukausi',
+    fetchPrevious: 'Hae aiempia',
     dailyServiceTimeModifiedModal: {
       text: 'Varhaiskasvatusaikasopimusta on muutettu, tarkistathan että varaukset vastaavat uutta sopimusaikaa.',
       title: 'Tarkista läsnäoloilmoitukset',
