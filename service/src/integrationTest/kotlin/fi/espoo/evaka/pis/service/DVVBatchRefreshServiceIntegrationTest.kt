@@ -92,6 +92,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         val dto = getDto(testAdult_1).copy(children = listOf(getDto(testChild_1)))
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any()))
             .thenReturn(dto)
+        whenever(personService.personsLiveInTheSameAddress(any(), any())).thenReturn(true)
 
         service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
         verify(parentshipService)
@@ -161,6 +162,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
             .thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any()))
             .thenReturn(dto2)
+        whenever(personService.personsLiveInTheSameAddress(any(), any())).thenReturn(true)
 
         service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
         verify(parentshipService)

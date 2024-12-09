@@ -87,6 +87,8 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             person2 != null &&
             !person1.restrictedDetailsEnabled &&
             !person2.restrictedDetailsEnabled &&
+            !person1.streetAddress.lowercase().contains("poste restante") &&
+            !person2.streetAddress.lowercase().contains("poste restante") &&
             person1.residenceCode.isNotBlank() &&
             person2.residenceCode.isNotBlank() &&
             person1.residenceCode == person2.residenceCode
@@ -99,10 +101,15 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             !person2.restrictedDetailsEnabled &&
             person1.streetAddress.isNotBlank() &&
             person2.streetAddress.isNotBlank() &&
+            !person1.streetAddress.lowercase().contains("poste restante") &&
+            !person2.streetAddress.lowercase().contains("poste restante") &&
             person1.postalCode.isNotBlank() &&
             person2.postalCode.isNotBlank() &&
+            person1.postOffice.isNotBlank() &&
+            person2.postOffice.isNotBlank() &&
             person1.streetAddress.lowercase() == person2.streetAddress.lowercase() &&
-            person1.postalCode == person2.postalCode
+            person1.postalCode == person2.postalCode &&
+            person1.postOffice == person2.postOffice
     }
 
     // Does a request to VTJ if SSN is present and the person hasn't had their dependants

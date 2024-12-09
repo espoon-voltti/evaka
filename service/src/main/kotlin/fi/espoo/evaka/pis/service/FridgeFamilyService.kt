@@ -101,7 +101,12 @@ class FridgeFamilyService(
                             )
                         }
                     }
-                    ?.takeIf { livesInSameAddress(it.address, targetPerson.address) }
+                    ?.takeIf {
+                        personService.personsLiveInTheSameAddress(
+                            it.toPersonDTO(),
+                            targetPerson.toPersonDTO(),
+                        )
+                    }
 
             val head =
                 if (
@@ -131,7 +136,12 @@ class FridgeFamilyService(
                     .distinct()
                     .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
                     .filter { child -> child.dateOfBirth.isAfter(clock.today().minusYears(18)) }
-                    .filter { livesInSameAddress(it.address, head.address) }
+                    .filter {
+                        personService.personsLiveInTheSameAddress(
+                            it.toPersonDTO(),
+                            head.toPersonDTO(),
+                        )
+                    }
                     .filter { !currentFridgeChildren.contains(it.id) }
                     .toList()
 
@@ -195,15 +205,6 @@ WHERE head_of_child = ${bind(personId)} AND daterange(start_date, end_date, '[]'
                 )
             }
             .toSet<ChildId>()
-    }
-
-    private fun livesInSameAddress(
-        address1: PersonAddressDTO,
-        address2: PersonAddressDTO,
-    ): Boolean {
-        val sameResidencyCode = address1.residenceCode == address2.residenceCode
-        val sameStreetAddress = address1.streetAddress == address2.streetAddress
-        return sameResidencyCode || sameStreetAddress
     }
 
     // 3 months is arbitrary
