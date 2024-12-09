@@ -20,23 +20,23 @@ import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
   faLockAlt,
-  faSignIn,
   farBars,
   farSignOut,
   farXmark,
   fasChevronDown,
-  fasChevronUp
+  fasChevronUp,
+  faSignIn
 } from 'lib-icons'
 
 import { AuthContext, User } from '../auth/state'
 import { useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
-import { getLogoutUri } from './const'
+import { logoutUrl } from './const'
 import {
   CircledChar,
   DropDown,
@@ -417,10 +417,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
               </CircledChar>
             )}
           </DropDownLink>
-          <DropDownLocalLink
-            data-qa="sub-nav-menu-logout"
-            href={getLogoutUri(user)}
-          >
+          <DropDownLocalLink data-qa="sub-nav-menu-logout" href={logoutUrl}>
             {t.header.logout}
             <FontAwesomeIcon icon={farSignOut} />
           </DropDownLocalLink>
