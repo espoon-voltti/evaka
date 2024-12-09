@@ -125,6 +125,7 @@ export default React.memo(function MonthElem({
                 text={i18n.calendar.fetchPrevious}
                 onClick={fetchPrevious}
                 disabled={loading}
+                data-qa="fetch-previous-button"
               />
             </MonthFetchPrevious>
           )}
