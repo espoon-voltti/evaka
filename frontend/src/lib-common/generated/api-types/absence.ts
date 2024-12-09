@@ -14,8 +14,10 @@ import { JsonOf } from '../../json'
 import { PersonId } from './shared'
 import { Reservation } from './reservations'
 import { ScheduleType } from './placement'
+import { ServiceTimesPresenceStatus } from './dailyservicetimes'
 import { ShiftCareType } from './serviceneed'
 import { deserializeJsonReservation } from './reservations'
+import { deserializeJsonServiceTimesPresenceStatus } from './dailyservicetimes'
 
 /**
 * Generated from fi.espoo.evaka.absence.Absence
@@ -136,7 +138,7 @@ export interface GroupMonthCalendarDayChild {
   absences: AbsenceWithModifierInfo[]
   backupCare: boolean
   childId: PersonId
-  dailyServiceTimes: TimeRange | null
+  dailyServiceTimes: ServiceTimesPresenceStatus
   missingHolidayReservation: boolean
   reservations: ChildReservation[]
   scheduleType: ScheduleType
@@ -245,7 +247,7 @@ export function deserializeJsonGroupMonthCalendarDayChild(json: JsonOf<GroupMont
   return {
     ...json,
     absences: json.absences.map(e => deserializeJsonAbsenceWithModifierInfo(e)),
-    dailyServiceTimes: (json.dailyServiceTimes != null) ? TimeRange.parseJson(json.dailyServiceTimes) : null,
+    dailyServiceTimes: deserializeJsonServiceTimesPresenceStatus(json.dailyServiceTimes),
     reservations: json.reservations.map(e => deserializeJsonChildReservation(e))
   }
 }
