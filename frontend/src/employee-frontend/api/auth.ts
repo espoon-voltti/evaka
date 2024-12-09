@@ -13,7 +13,7 @@ import { JsonOf } from 'lib-common/json'
 
 import { client } from './client'
 
-export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`
+export const logoutUrl = `/api/employee/auth/logout?RelayState=/employee/login`
 
 const redirectUri = (() => {
   if (window.location.pathname === '/employee/login') {

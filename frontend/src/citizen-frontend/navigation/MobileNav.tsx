@@ -38,11 +38,7 @@ import { langs, useLang, useTranslation } from '../localization'
 import { unreadMessagesCountQuery } from '../messages/queries'
 
 import AttentionIndicator from './AttentionIndicator'
-import {
-  getLogoutUri,
-  headerHeightMobile,
-  mobileBottomNavHeight
-} from './const'
+import { headerHeightMobile, logoutUrl, mobileBottomNavHeight } from './const'
 import {
   CircledChar,
   DropDownInfo,
@@ -411,7 +407,7 @@ const Menu = React.memo(function Menu({
             </CircledChar>
           )}
         </DropDownLink>
-        <DropDownLocalLink key="sub-nav-menu-logout" href={getLogoutUri(user)}>
+        <DropDownLocalLink key="sub-nav-menu-logout" href={logoutUrl}>
           {t.header.logout}
           <FontAwesomeIcon icon={farSignOut} />
         </DropDownLocalLink>
