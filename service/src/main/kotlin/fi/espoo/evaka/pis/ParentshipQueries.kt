@@ -56,7 +56,7 @@ SELECT
     created_by_user.name AS created_by_user_name,
     modified_by_user.name AS modified_by_user_name,
     created_by_application.type AS created_by_application_type,
-    created_by_application.created AS created_by_application_created
+    created_by_application.created_at AS created_by_application_created
 FROM fridge_child fc
 JOIN person child ON fc.child_id = child.id
 JOIN person head ON fc.head_of_child = head.id
