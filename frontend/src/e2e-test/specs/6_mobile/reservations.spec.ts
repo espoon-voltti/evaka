@@ -230,7 +230,11 @@ describe('when child is in preschool only', () => {
   })
 
   test('absence can be removed from fixed schedule day', async () => {
-    await Fixture.absence({ childId: child.id, date: mockedTomorrow }).save()
+    await Fixture.absence({
+      childId: child.id,
+      date: mockedTomorrow,
+      absenceCategory: 'NONBILLABLE'
+    }).save()
 
     const page = await loginToMobile(mockedToday, unit.id)
     const reservationsPage = await navigateToReservations(page, child.id)

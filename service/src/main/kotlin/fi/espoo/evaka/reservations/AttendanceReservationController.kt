@@ -367,17 +367,27 @@ class AttendanceReservationController(
                                     FiniteDateRange(it.startDate, it.endDate).includes(date)
                                 } ?: return@mapNotNull null
                             val reservationTimes = reservations[date] ?: emptyList()
-                            val absence = absences.firstOrNull { it.date == date }
+                            val daysAbsences = absences.filter { it.date == date }
                             val dailyServiceTime =
                                 dailyServiceTimes.firstOrNull {
                                     it.times.validityPeriod.includes(date)
                                 }
+                            val absenceCategories = placement.type.absenceCategories()
+                            val isFullDayAbsent =
+                                daysAbsences.map { it.category }.toSet() == absenceCategories
+
                             ConfirmedRangeDate(
                                 date = date,
                                 scheduleType =
                                     placement.type.scheduleType(date, clubTerms, preschoolTerms),
                                 reservations = reservationTimes,
-                                absenceType = absence?.absenceType,
+                                absenceType =
+                                    if (isFullDayAbsent)
+                                        (daysAbsences.firstOrNull {
+                                                it.category == AbsenceCategory.BILLABLE
+                                            } ?: absences.firstOrNull())
+                                            ?.absenceType
+                                    else null,
                                 dailyServiceTimes = dailyServiceTime?.times,
                             )
                         }

@@ -862,6 +862,23 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = testDaycare.id,
                         startDate = mon,
                         endDate = fri,
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = tue,
+                        startTime = LocalTime.of(9, 0),
+                        endTime = LocalTime.of(11, 0),
+                        createdBy = EvakaUserId(employeeId.raw),
+                    )
+                )
+                tx.insert(
+                    DevAbsence(
+                        childId = testChild_1.id,
+                        date = tue,
+                        absenceCategory = AbsenceCategory.BILLABLE,
                     )
                 )
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
@@ -878,7 +895,13 @@ class AttendanceReservationsControllerIntegrationTest :
                 ConfirmedRangeDate(
                     date = tue,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                    reservations = emptyList(),
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                                true,
+                            )
+                        ),
                     absenceType = null,
                     dailyServiceTimes = null,
                 ),
