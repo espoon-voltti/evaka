@@ -40,7 +40,7 @@ export type CalendarEventId = Id<'CalendarEvent'>
 
 export type CalendarEventTimeId = Id<'CalendarEventTime'>
 
-export type ChildDailyNoteId = string
+export type ChildDailyNoteId = Id<'ChildDailyNote'>
 
 export type ChildDocumentId = string
 
