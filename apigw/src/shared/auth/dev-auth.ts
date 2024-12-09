@@ -27,6 +27,7 @@ export function createDevAuthRouter<T extends SessionType>({
 }: DevAuthRouterOptions<T>): express.Router {
   const router = express.Router()
 
+  router.use(sessions.middleware)
   router.get('/login', toRequestHandler(loginFormHandler))
   router.post(
     `/login/callback`,
