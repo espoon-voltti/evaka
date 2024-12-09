@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pairing.MobileDevice
 import fi.espoo.evaka.pairing.deleteDevice
@@ -122,6 +123,28 @@ RETURNING id, preferred_first_name, first_name, last_name, email, external_id, c
         .executeAndReturnGeneratedKeys()
         .exactlyOne<Employee>()
 }
+
+data class EmployeeSuomiFiLoginRequest(
+    val firstName: String,
+    val lastName: String,
+    val ssn: Sensitive<String>,
+)
+
+fun Database.Transaction.loginEmployeeWithSuomiFi(
+    now: HelsinkiDateTime,
+    request: EmployeeSuomiFiLoginRequest,
+): Employee =
+    createUpdate {
+            sql(
+                """
+UPDATE employee
+SET last_login = ${bind(now)}, first_name = ${bind(request.firstName)}, last_name = ${bind(request.lastName)}, active = TRUE
+WHERE social_security_number = ${bind(request.ssn.value)}
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<Employee>()
 
 fun Database.Read.getEmployeeRoles(id: EmployeeId): EmployeeRoles =
     createQuery {

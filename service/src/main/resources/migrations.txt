@@ -467,3 +467,4 @@ V468__citizen_user.sql
 V469__income_statement_status.sql
 V470__cascade_citizen_user_delete.sql
 V471__application_confidentiality.sql
+V472__employee_ssn.sql
