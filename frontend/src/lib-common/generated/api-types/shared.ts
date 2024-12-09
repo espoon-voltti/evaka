@@ -44,7 +44,7 @@ export type ChildDailyNoteId = Id<'ChildDailyNote'>
 
 export type ChildDocumentId = Id<'ChildDocument'>
 
-export type ChildImageId = string
+export type ChildImageId = Id<'ChildImage'>
 
 export type ChildStickyNoteId = string
 
