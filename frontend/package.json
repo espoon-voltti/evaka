@@ -131,7 +131,7 @@
     "ts-jest": "^29.2.2",
     "ts-loader": "^9.5.0",
     "ts-node": "^10.9.1",
-    "tsconfig-paths-webpack-plugin": "^4.1.0",
+    "tsconfig-paths-webpack-plugin": "^4.2.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.17.0",
     "webpack": "5.96.1",
