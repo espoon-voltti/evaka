@@ -42,7 +42,7 @@ export type CalendarEventTimeId = Id<'CalendarEventTime'>
 
 export type ChildDailyNoteId = Id<'ChildDailyNote'>
 
-export type ChildDocumentId = string
+export type ChildDocumentId = Id<'ChildDocument'>
 
 export type ChildImageId = string
 

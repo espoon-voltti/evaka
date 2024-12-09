@@ -1155,7 +1155,7 @@ export class Fixture {
     initial: SemiPartial<DevChildDocument, 'childId' | 'templateId'>
   ): ChildDocumentBuilder {
     return new ChildDocumentBuilder({
-      id: uuidv4(),
+      id: randomId(),
       status: 'DRAFT',
       modifiedAt: HelsinkiDateTime.now(),
       contentModifiedAt: HelsinkiDateTime.now(),

@@ -23,10 +23,11 @@ import {
   DocumentContent,
   DocumentWriteLock
 } from 'lib-common/generated/api-types/document'
+import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -328,7 +329,7 @@ const ChildDocumentEditViewInner = React.memo(
 
 export const ChildDocumentEditView = React.memo(
   function ChildDocumentEditView() {
-    const { documentId } = useRouteParams(['documentId'])
+    const documentId = useIdRouteParam<ChildDocumentId>('documentId')
     const [searchParams] = useSearchParams()
     const childIdFromUrl = searchParams.get('childId') // duplicate child workaround
 
@@ -365,7 +366,11 @@ export const ChildDocumentEditView = React.memo(
 )
 
 const ChildDocumentMetadataSection = React.memo(
-  function ChildDocumentMetadataSection({ documentId }: { documentId: UUID }) {
+  function ChildDocumentMetadataSection({
+    documentId
+  }: {
+    documentId: ChildDocumentId
+  }) {
     const result = useQueryResult(
       childDocumentMetadataQuery({ childDocumentId: documentId })
     )
@@ -596,7 +601,7 @@ const ChildDocumentReadViewInner = React.memo(
 
 export const ChildDocumentReadView = React.memo(
   function ChildDocumentReadView() {
-    const { documentId } = useRouteParams(['documentId'])
+    const documentId = useIdRouteParam<ChildDocumentId>('documentId')
     const [searchParams] = useSearchParams()
     const childIdFromUrl = searchParams.get('childId') // duplicate child workaround
 
