@@ -66,7 +66,6 @@ class AssistanceNeedDecisionController(
                         body.decision.copy(
                             status = AssistanceNeedDecisionStatus.DRAFT,
                             sentForDecision = null,
-                            validityPeriod = body.decision.validityPeriod.copy(end = null),
                         )
                     if (decision.guardianInfo.isEmpty()) {
                         val guardianIds = tx.getChildGuardians(childId)
@@ -442,18 +441,22 @@ class AssistanceNeedDecisionController(
                     }
 
                     val validTo =
-                        if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
+                        (if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
                             tx.endActiveAssistanceNeedDecisions(
                                 decision.id,
                                 decision.validityPeriod.start.minusDays(1),
                                 decision.child.id,
                             )
+
                             tx.getNextAssistanceNeedDecisionValidFrom(
                                     decision.child.id,
                                     decision.validityPeriod.start,
                                 )
                                 ?.minusDays(1)
-                        } else null
+                        } else null)
+                            ?: decision.validityPeriod
+                                .end // if here is no calculated end date and end date is set
+                    // use it
 
                     tx.decideAssistanceNeedDecision(
                         id = id,
