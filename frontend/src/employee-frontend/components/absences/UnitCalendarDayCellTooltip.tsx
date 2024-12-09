@@ -8,15 +8,15 @@ import {
   AbsenceWithModifierInfo,
   ChildReservation
 } from 'lib-common/generated/api-types/absence'
+import { ServiceTimesPresenceStatus } from 'lib-common/generated/api-types/dailyservicetimes'
 import LocalDate from 'lib-common/local-date'
-import TimeRange from 'lib-common/time-range'
 
 import { useTranslation } from '../../state/i18n'
 
 interface UnitCalendarMonthlyDayCellTooltipProps {
   date: LocalDate
   absences: AbsenceWithModifierInfo[]
-  dailyServiceTimes: TimeRange | null
+  dailyServiceTimes: ServiceTimesPresenceStatus
   reservations: ChildReservation[]
   backupCare: boolean
   isMissingHolidayReservation: boolean
@@ -36,9 +36,9 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
 
   const dailyServiceTimeTooltip = useMemo(
     () =>
-      dailyServiceTimes !== null ? (
+      dailyServiceTimes.type === 'PRESENT' ? (
         <div>
-          {`${i18n.absences.dailyServiceTime} ${dailyServiceTimes.format()}`}
+          {`${i18n.absences.dailyServiceTime} ${dailyServiceTimes.times.format()}`}
         </div>
       ) : undefined,
     [i18n, dailyServiceTimes]
