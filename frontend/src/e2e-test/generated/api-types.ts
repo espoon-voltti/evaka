@@ -147,14 +147,15 @@ export interface DevApplicationWithForm {
   checkedByAdmin: boolean
   childId: UUID
   confidential: boolean | null
-  createdDate: HelsinkiDateTime | null
+  createdAt: HelsinkiDateTime
+  createdBy: UUID
   dueDate: LocalDate | null
   form: ApplicationForm
-  formModified: HelsinkiDateTime
   guardianId: UUID
   hideFromGuardian: boolean
   id: UUID
-  modifiedDate: HelsinkiDateTime | null
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
   origin: ApplicationOrigin
   otherGuardians: UUID[]
   sentDate: LocalDate | null
@@ -1124,11 +1125,10 @@ export function deserializeJsonDevAbsence(json: JsonOf<DevAbsence>): DevAbsence 
 export function deserializeJsonDevApplicationWithForm(json: JsonOf<DevApplicationWithForm>): DevApplicationWithForm {
   return {
     ...json,
-    createdDate: (json.createdDate != null) ? HelsinkiDateTime.parseIso(json.createdDate) : null,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
     form: deserializeJsonApplicationForm(json.form),
-    formModified: HelsinkiDateTime.parseIso(json.formModified),
-    modifiedDate: (json.modifiedDate != null) ? HelsinkiDateTime.parseIso(json.modifiedDate) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
   }
 }
