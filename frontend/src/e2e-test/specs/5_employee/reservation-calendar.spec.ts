@@ -17,7 +17,8 @@ import {
   Fixture,
   uuidv4,
   familyWithTwoGuardians,
-  testCareArea
+  testCareArea,
+  fullDayTimeRange
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -607,5 +608,70 @@ describe('Unit group calendar for shift care unit', () => {
       () => childReservations.getAttendance(startDate.addDays(1), 1),
       ['-', '-']
     )
+  })
+
+  test('Child with unknown presence on a holiday is counted into total if they have shift care', async () => {
+    const serviceNeedOption = await Fixture.serviceNeedOption().save()
+    const area = await Fixture.careArea().save()
+    const daycare1 = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS'],
+      shiftCareOperationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange
+      ],
+      shiftCareOpenOnHolidays: true
+    }).save()
+    const group1 = await Fixture.daycareGroup({ daycareId: daycare1.id }).save()
+    const employee = await Fixture.employee().unitSupervisor(daycare1.id).save()
+
+    // mon-sun, fri is holiday
+    const range = new FiniteDateRange(
+      LocalDate.of(2024, 12, 2),
+      LocalDate.of(2024, 12, 8)
+    )
+
+    // child1 in shift care, child2 not
+    const child1 = await Fixture.person().saveChild()
+    const child2 = await Fixture.person({ ssn: null }).saveChild()
+    for (const child of [child1, child2]) {
+      const placement = await Fixture.placement({
+        childId: child.id,
+        unitId: daycare1.id,
+        startDate: range.start,
+        endDate: range.end
+      }).save()
+      await Fixture.groupPlacement({
+        daycareGroupId: group1.id,
+        daycarePlacementId: placement.id,
+        startDate: range.start,
+        endDate: range.end
+      }).save()
+      await Fixture.serviceNeed({
+        placementId: placement.id,
+        startDate: range.start,
+        endDate: range.end,
+        optionId: serviceNeedOption.id,
+        confirmedBy: employee.id,
+        shiftCare: child.id === child1.id ? 'FULL' : 'NONE'
+      }).save()
+    }
+
+    page = await Page.open({
+      mockedTime: range.start.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await employeeLogin(page, employee)
+    const unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(daycare1.id)
+    await unitPage.openCalendarPage()
+    const weekCalendar = await unitPage.openWeekCalendar(group1.id)
+    await weekCalendar.childReservations
+      .getTotalCounts()
+      .assertTextsEqual(['2', '2', '2', '2', '1', '1', '1'])
   })
 })

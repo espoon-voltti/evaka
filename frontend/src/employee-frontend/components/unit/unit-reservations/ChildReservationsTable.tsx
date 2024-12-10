@@ -180,7 +180,7 @@ export default React.memo(function ChildReservationsTable({
             />
           )
         })}
-        <SumRow>
+        <SumRow data-qa="totals-row">
           <Td>{i18n.unit.attendanceReservations.childCount}</Td>
           {childrenCounts.map((day, i) => (
             <Td key={i}>{day}</Td>
