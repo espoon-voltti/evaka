@@ -11,7 +11,10 @@ import { createKeycloakCitizenIntegration } from './enduser/keycloak-citizen-sam
 import mapRoutes from './enduser/mapRoutes.js'
 import { citizenAuthStatus } from './enduser/routes/auth-status.js'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.js'
-import { createSuomiFiIntegration } from './enduser/suomi-fi-saml.js'
+import {
+  createCitizenSuomiFiIntegration,
+  createEmployeeSuomiFiIntegration
+} from './enduser/suomi-fi-saml.js'
 import { createSamlAdIntegration } from './internal/ad-saml.js'
 import { createDevAdRouter } from './internal/dev-ad-auth.js'
 import { createKeycloakEmployeeIntegration } from './internal/keycloak-employee-saml.js'
@@ -39,6 +42,7 @@ import { createProxy } from './shared/proxy-utils.js'
 import { RedisClient } from './shared/redis-client.js'
 import { handleCspReport } from './shared/routes/csp.js'
 import { SamlIntegration } from './shared/routes/saml.js'
+import { validateRelayStateUrl } from './shared/saml/index.js'
 import { sessionSupport } from './shared/session.js'
 
 export function apiRouter(config: Config, redisClient: RedisClient) {
@@ -55,15 +59,13 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
         '/application/map-api/',
         '/citizen/public/map-api/'
       )
-    } else if (req.url.startsWith('/application/auth/saml/')) {
-      req.url = req.url.replace('/application/auth/saml/', '/citizen/auth/sfi/')
     } else if (req.url.startsWith('/application/auth/evaka-customer/')) {
       req.url = req.url.replace(
         '/application/auth/evaka-customer/',
         '/citizen/auth/keycloak/'
       )
-    } else if (req.url.startsWith('/application/auth/')) {
-      req.url = req.url.replace('/application/auth/', '/citizen/auth/')
+    } else if (req.url === '/application/auth/status') {
+      req.url = '/citizen/auth/status'
     } else if (req.url.startsWith('/internal/employee/')) {
       req.url = req.url.replace('/internal/employee/', '/employee/')
     } else if (req.url.startsWith('/internal/employee-mobile/')) {
@@ -139,16 +141,16 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     getUserHeader: (req) => employeeMobileSessions.getUserHeader(req)
   })
 
-  let sfiIntegration: SamlIntegration | undefined
+  let citizenSfiIntegration: SamlIntegration | undefined
   if (config.sfi.type === 'mock') {
     router.use('/citizen/auth/sfi', createDevSfiRouter(citizenSessions))
   } else if (config.sfi.type === 'saml') {
-    sfiIntegration = createSuomiFiIntegration(
+    citizenSfiIntegration = createCitizenSuomiFiIntegration(
       citizenSessions,
       config.sfi.saml,
       redisClient
     )
-    router.use('/citizen/auth/sfi', sfiIntegration.router)
+    router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
   }
 
   if (!config.keycloakCitizen)
@@ -187,6 +189,18 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     router.use('/employee/auth/ad', adIntegration.router)
   }
 
+  let employeeSfiIntegration: SamlIntegration | undefined
+  if (config.sfi.type === 'mock') {
+    // TODO
+  } else if (config.sfi.type === 'saml') {
+    employeeSfiIntegration = createEmployeeSuomiFiIntegration(
+      employeeSessions,
+      config.sfi.saml,
+      redisClient
+    )
+    router.use('/employee/auth/sfi', employeeSfiIntegration.router)
+  }
+
   if (!config.keycloakEmployee)
     throw new Error('Missing Keycloak SAML configuration (employee)')
   const keycloakEmployeeIntegration = createKeycloakEmployeeIntegration(
@@ -195,6 +209,26 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     redisClient
   )
   router.use('/employee/auth/keycloak', keycloakEmployeeIntegration.router)
+
+  router.use(
+    '/application/auth/saml',
+    express.urlencoded({ extended: false }),
+    (req, res, next) => {
+      const relayStateUrl = validateRelayStateUrl(req)
+      const hasEmployeeRelayStateUrl =
+        relayStateUrl?.pathname === '/employee' ||
+        relayStateUrl?.pathname.startsWith('/employee/')
+
+      if (hasEmployeeRelayStateUrl) {
+        if (employeeSfiIntegration)
+          return employeeSfiIntegration.router(req, res, next)
+      } else {
+        if (citizenSfiIntegration)
+          return citizenSfiIntegration?.router(req, res, next)
+      }
+      res.sendStatus(404)
+    }
+  )
 
   if (enableDevApi) {
     router.get(
@@ -218,10 +252,21 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       const user = citizenSessions.getUser(req)
       switch (user?.authType) {
         case 'sfi':
-          if (sfiIntegration) return await sfiIntegration.logout(req, res)
+          if (citizenSfiIntegration)
+            return citizenSfiIntegration.logout(req, res)
           break
         case 'keycloak-citizen':
           return keycloakCitizenIntegration.logout(req, res)
+        case 'citizen-weak':
+        case 'dev':
+        case undefined:
+          // no need for special handling
+          break
+        case 'ad':
+        case 'keycloak-employee':
+        case 'employee-mobile':
+          // should not happen, but we'll still destroy the session normally
+          break
       }
       await citizenSessions.destroy(req, res)
       res.redirect('/')
@@ -236,8 +281,20 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
         case 'ad':
           if (adIntegration) return adIntegration.logout(req, res)
           break
+        case 'sfi':
+          if (employeeSfiIntegration)
+            return employeeSfiIntegration.logout(req, res)
+          break
         case 'keycloak-employee':
           return keycloakEmployeeIntegration.logout(req, res)
+        case 'dev':
+          // no need for special handling
+          break
+        case 'citizen-weak':
+        case 'employee-mobile':
+        case 'keycloak-citizen':
+          // should not happen, but we'll still destroy the session normally
+          break
       }
       await employeeSessions.destroy(req, res)
       res.redirect('/employee')

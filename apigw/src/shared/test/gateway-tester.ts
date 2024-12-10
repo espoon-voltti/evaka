@@ -128,7 +128,7 @@ export class GatewayTester {
       postData = postData !== undefined ? postData : { preset: 'dummy' }
       this.nockScope.post('/system/citizen-login').reply(200, user)
       await this.client.post(
-        '/api/application/auth/saml/login/callback',
+        '/api/citizen/auth/sfi/login/callback',
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         new URLSearchParams(postData),
         {

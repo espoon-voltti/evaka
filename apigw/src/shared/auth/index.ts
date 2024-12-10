@@ -25,7 +25,7 @@ export type CitizenSessionUser =
 export type EmployeeSessionUser =
   | {
       id: string
-      authType: 'ad' | 'keycloak-employee'
+      authType: 'ad' | 'keycloak-employee' | 'sfi'
       userType: 'EMPLOYEE'
       samlSession: SamlSession
       globalRoles: string[]
