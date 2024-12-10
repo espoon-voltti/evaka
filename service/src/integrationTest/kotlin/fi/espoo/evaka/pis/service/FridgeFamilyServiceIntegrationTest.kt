@@ -197,6 +197,9 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         lastName = "Meikäläinen",
                         email = "",
                         language = "fi",
+                        streetAddress = "Katu 1",
+                        postalCode = "20100",
+                        postOffice = "Espoo",
                     ),
                     DevPersonType.RAW_ROW,
                 )
