@@ -112,7 +112,7 @@ const Content = React.memo(function Content() {
   const { modalOpen } = useContext(OverlayContext)
 
   const { user } = useContext(AuthContext)
-  const { showSessionExpiredModal, setShowSessionExpiredModal } =
+  const { sessionExpirationDetected, dismissSessionExpiredDetection } =
     useKeepSessionAlive(
       sessionKeepalive,
       user.map((usr) => !!usr).getOrElse(false)
@@ -126,10 +126,8 @@ const Content = React.memo(function Content() {
         <Outlet />
       </MainContainer>
       <MobileNav />
-      {showSessionExpiredModal && (
-        <SessionExpiredModal
-          onClose={() => setShowSessionExpiredModal(false)}
-        />
+      {sessionExpirationDetected && (
+        <SessionExpiredModal onClose={() => dismissSessionExpiredDetection()} />
       )}
       {!!featureFlags.environmentLabel && (
         <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>

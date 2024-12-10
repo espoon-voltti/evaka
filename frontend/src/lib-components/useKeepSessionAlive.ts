@@ -9,7 +9,8 @@ export function useKeepSessionAlive(
   sessionKeepAlive: () => Promise<boolean>,
   enabled: boolean
 ) {
-  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
+  const [sessionExpirationDetected, setSessionExpirationDetected] =
+    useState(false)
   // Default to 2 minutes and allow overriding this in automated tests
   const throttleTime =
     window.evaka?.keepSessionAliveThrottleTime ?? 2 * 60 * 1000
@@ -21,7 +22,7 @@ export function useKeepSessionAlive(
           try {
             const sessionAlive = await sessionKeepAlive()
             if (!sessionAlive) {
-              setShowSessionExpiredModal(true)
+              setSessionExpirationDetected(true)
             }
           } catch (error) {
             // ignore errors that might happen e.g. because client is offline or server temporarily unreachable
@@ -59,7 +60,7 @@ export function useKeepSessionAlive(
   }, [throttledKeepAlive, enabled])
 
   return {
-    showSessionExpiredModal,
-    setShowSessionExpiredModal
+    sessionExpirationDetected,
+    dismissSessionExpiredDetection: () => setSessionExpirationDetected(false)
   }
 }

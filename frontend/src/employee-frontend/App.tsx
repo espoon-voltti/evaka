@@ -161,7 +161,7 @@ const Content = React.memo(function Content() {
 
   const { loggedIn, logoutDetected, dismissLogoutDetection } =
     useContext(UserContext)
-  const { showSessionExpiredModal, setShowSessionExpiredModal } =
+  const { sessionExpirationDetected, dismissSessionExpiredDetection } =
     useKeepSessionAlive(sessionKeepalive, loggedIn)
 
   if (!loaded) return null
@@ -181,15 +181,16 @@ const Content = React.memo(function Content() {
       <ErrorMessage />
       <LoginErrorModal />
       <PairingModal />
-      {(logoutDetected || showSessionExpiredModal) && (
+      {(logoutDetected || sessionExpirationDetected) && (
         <SessionExpiredModal
           onLoginClick={() => {
             window.open('/employee/close-after-login', '_blank')
+            // TODO replace with userContext refreshAuthStatus?
             const authChecker = async () => {
               const authStatus = await getAuthStatus()
               if (authStatus.loggedIn) {
                 dismissLogoutDetection()
-                setShowSessionExpiredModal(false)
+                dismissSessionExpiredDetection()
                 document.removeEventListener('focusin', authChecker)
               }
             }
@@ -197,7 +198,7 @@ const Content = React.memo(function Content() {
           }}
           onClose={() => {
             dismissLogoutDetection()
-            setShowSessionExpiredModal(false)
+            dismissSessionExpiredDetection()
           }}
         />
       )}
