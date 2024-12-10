@@ -60,8 +60,6 @@ export class DecisionEditorPage {
 }
 
 export class ApplicationWorkbenchPage {
-  #applicationPlacementProposalStatusIndicator: Element
-  #applicationPlacementProposalStatusTooltip: Element
   applicationsSent: Element
   #applicationsWaitingPlacement: Element
   #applicationsWaitingDecision: Element
@@ -74,12 +72,6 @@ export class ApplicationWorkbenchPage {
   #otherGuardianEmail: Element
   #withdrawPlacementProposalsButton: Element
   constructor(private page: Page) {
-    this.#applicationPlacementProposalStatusIndicator = page.findByDataQa(
-      'placement-proposal-status'
-    )
-    this.#applicationPlacementProposalStatusTooltip = page.findByDataQa(
-      'placement-proposal-status-tooltip'
-    )
     this.applicationsSent = page.findByDataQa('application-status-filter-SENT')
     this.#applicationsWaitingPlacement = page.findByDataQa(
       'application-status-filter-WAITING_PLACEMENT'
@@ -196,12 +188,10 @@ export class ApplicationWorkbenchPage {
     await row.findByDataQa('start-date').assertTextEquals(date.format())
   }
 
-  async assertApplicationStatusTextMatches(
-    _index: number,
-    matchingText: string
-  ) {
-    await this.#applicationPlacementProposalStatusIndicator.hover()
-    const tooltip = await this.#applicationPlacementProposalStatusTooltip.text
+  async assertServiceWorkerNoteMatches(index: number, matchingText: string) {
+    const note = this.page.findAllByDataQa('service-worker-note').nth(index)
+    await note.hover()
+    const tooltip = await note.text
     const match = tooltip.match(matchingText)
     return match ? match.length > 0 : false
   }
