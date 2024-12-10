@@ -839,7 +839,12 @@ const ReportByGroupTable = ({
             )}
             <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
             {report.showAssistanceNeedVoucherCoefficient && (
-              <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
+              <Th>
+                {
+                  i18n.reports.assistanceNeedsAndActions
+                    .assistanceNeedVoucherCoefficient
+                }
+              </Th>
             )}
           </Tr>
         </Thead>
