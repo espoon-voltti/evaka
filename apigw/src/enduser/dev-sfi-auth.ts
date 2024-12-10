@@ -11,7 +11,7 @@ import { assertStringProp } from '../shared/express.js'
 import { citizenLogin } from '../shared/service-client.js'
 import { Sessions } from '../shared/session.js'
 
-export function createDevSfiRouter(sessions: Sessions): Router {
+export function createDevSfiRouter(sessions: Sessions<'citizen'>): Router {
   return createDevAuthRouter({
     sessions,
     root: '/',

@@ -82,7 +82,7 @@ describe('SAML Single Logout', () => {
         }
       }
     }
-    tester = await GatewayTester.start(config, 'enduser')
+    tester = await GatewayTester.start(config, 'citizen')
   })
   afterEach(async () => {
     await tester?.afterEach()
@@ -180,7 +180,7 @@ describe('SAML Single Logout', () => {
     //
     // This situation is simulated by temporarily clearing the session cookies.
     // Store current cookies so that they can be restored after SLO.
-    const cookie = await tester.getCookie(sessionCookie('enduser'))
+    const cookie = await tester.getCookie(sessionCookie('citizen'))
     expect(cookie).toBeTruthy()
     await tester.expireSession()
 

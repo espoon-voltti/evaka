@@ -2,10 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { SAML } from '@node-saml/node-saml'
 import { z } from 'zod'
 
-import { authenticateProfile } from '../shared/saml/index.js'
+import { EvakaSamlConfig } from '../shared/config.js'
+import { RedisClient } from '../shared/redis-client.js'
+import { createSamlIntegration } from '../shared/routes/saml.js'
+import { authenticateProfile, createSamlConfig } from '../shared/saml/index.js'
+import redisCacheProvider from '../shared/saml/node-saml-cache-redis.js'
 import { employeeLogin } from '../shared/service-client.js'
+import { Sessions } from '../shared/session.js'
 
 const Profile = z.object({
   id: z.string(),
@@ -14,7 +20,7 @@ const Profile = z.object({
   lastName: z.string()
 })
 
-export const authenticateKeycloakEmployee = authenticateProfile(
+const authenticate = authenticateProfile(
   Profile,
   async (samlSession, profile) => {
     const id = profile.id
@@ -35,3 +41,22 @@ export const authenticateKeycloakEmployee = authenticateProfile(
     }
   }
 )
+
+export function createKeycloakEmployeeIntegration(
+  sessions: Sessions<'employee'>,
+  config: EvakaSamlConfig,
+  redisClient: RedisClient
+) {
+  return createSamlIntegration({
+    sessions,
+    strategyName: 'evaka',
+    saml: new SAML(
+      createSamlConfig(
+        config,
+        redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
+      )
+    ),
+    authenticate,
+    defaultPageUrl: '/employee'
+  })
+}

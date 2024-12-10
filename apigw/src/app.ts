@@ -1,0 +1,314 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import cookieParser from 'cookie-parser'
+import express from 'express'
+import expressBasicAuth from 'express-basic-auth'
+
+import { createDevSfiRouter } from './enduser/dev-sfi-auth.js'
+import { createKeycloakCitizenIntegration } from './enduser/keycloak-citizen-saml.js'
+import mapRoutes from './enduser/mapRoutes.js'
+import { citizenAuthStatus } from './enduser/routes/auth-status.js'
+import { authWeakLogin } from './enduser/routes/auth-weak-login.js'
+import { createSuomiFiIntegration } from './enduser/suomi-fi-saml.js'
+import { createSamlAdIntegration } from './internal/ad-saml.js'
+import { createDevAdRouter } from './internal/dev-ad-auth.js'
+import { createKeycloakEmployeeIntegration } from './internal/keycloak-employee-saml.js'
+import {
+  checkMobileEmployeeIdToken,
+  devApiE2ESignup,
+  finishPairing,
+  pinLoginRequestHandler,
+  pinLogoutRequestHandler,
+  refreshMobileSession
+} from './internal/mobile-device-session.js'
+import { internalAuthStatus } from './internal/routes/auth-status.js'
+import { integrationUserHeader } from './shared/auth/index.js'
+import {
+  appCommit,
+  Config,
+  enableDevApi,
+  titaniaConfig
+} from './shared/config.js'
+import { toRequestHandler } from './shared/express.js'
+import { cacheControl } from './shared/middleware/cache-control.js'
+import { csrf } from './shared/middleware/csrf.js'
+import { errorHandler } from './shared/middleware/error-handler.js'
+import { createProxy } from './shared/proxy-utils.js'
+import { RedisClient } from './shared/redis-client.js'
+import { handleCspReport } from './shared/routes/csp.js'
+import { SamlIntegration } from './shared/routes/saml.js'
+import { sessionSupport } from './shared/session.js'
+
+export function apiRouter(config: Config, redisClient: RedisClient) {
+  const router = express.Router()
+  router.use((req, _, next) => {
+    if (req.url === '/application/version' || req.url === '/internal/version') {
+      req.url = '/version'
+    } else if (req.url.startsWith('/internal/integration/')) {
+      req.url = req.url.replace('/internal/integration/', '/integration/')
+    } else if (req.url.startsWith('/application/citizen/')) {
+      req.url = req.url.replace('/application/citizen/', '/citizen/')
+    } else if (req.url.startsWith('/application/map-api/')) {
+      req.url = req.url.replace(
+        '/application/map-api/',
+        '/citizen/public/map-api/'
+      )
+    } else if (req.url.startsWith('/application/auth/saml/')) {
+      req.url = req.url.replace('/application/auth/saml/', '/auth/sfi/')
+    } else if (req.url.startsWith('/application/auth/evaka-customer/')) {
+      req.url = req.url.replace(
+        '/application/auth/evaka-customer/',
+        '/auth/keycloak-citizen/'
+      )
+    } else if (req.url.startsWith('/application/auth/')) {
+      req.url = req.url.replace('/application/auth/', '/citizen/auth/')
+    } else if (req.url.startsWith('/internal/employee/')) {
+      req.url = req.url.replace('/internal/employee/', '/employee/')
+    } else if (req.url.startsWith('/internal/employee-mobile/')) {
+      req.url = req.url.replace(
+        '/internal/employee-mobile/',
+        '/employee-mobile/'
+      )
+    } else if (req.url.startsWith('/internal/auth/saml/')) {
+      req.url = req.url.replace('/internal/auth/saml/', '/auth/ad/')
+    } else if (req.url.startsWith('/internal/auth/evaka/')) {
+      req.url = req.url.replace(
+        '/internal/auth/evaka/',
+        '/auth/keycloak-employee/'
+      )
+    } else if (req.url === '/internal/auth/mobile') {
+      req.url = '/employee-mobile/auth/finish-pairing'
+    } else if (req.url === '/internal/auth/pin-login') {
+      req.url = '/employee-mobile/auth/pin-login'
+    } else if (req.url === '/internal/auth/pin-logout') {
+      req.url = '/employee-mobile/auth/pin-logout'
+    } else if (req.url === '/internal/dev-api') {
+      req.url = '/dev-api/'
+    }
+    next()
+  })
+  router.use(
+    cacheControl((req) =>
+      req.path.startsWith('/application/citizen/child-images/') ||
+      req.path.startsWith('/internal/employee-mobile/child-images/')
+        ? 'allow-cache'
+        : 'forbid-cache'
+    )
+  )
+
+  router.post(
+    '/csp/report',
+    express.json({ type: 'application/csp-report' }),
+    handleCspReport
+  )
+  router.get('/version', (_, res) => {
+    res.send({ commitId: appCommit })
+  })
+
+  const integrationUsers = {
+    ...(titaniaConfig && {
+      [titaniaConfig.username]: titaniaConfig.password
+    })
+  }
+  router.all(
+    '/integration/*',
+    expressBasicAuth({ users: integrationUsers }),
+    createProxy({ getUserHeader: (_) => integrationUserHeader })
+  )
+
+  const citizenSessions = sessionSupport('citizen', redisClient, config.citizen)
+  const citizenProxy = createProxy({
+    getUserHeader: (req) => citizenSessions.getUserHeader(req)
+  })
+  const employeeSessions = sessionSupport(
+    'employee',
+    redisClient,
+    config.employee
+  )
+  const employeeProxy = createProxy({
+    getUserHeader: (req) => employeeSessions.getUserHeader(req)
+  })
+  const employeeMobileSessions = sessionSupport(
+    'employee-mobile',
+    redisClient,
+    config.employee
+  )
+  const employeeMobileProxy = createProxy({
+    getUserHeader: (req) => employeeMobileSessions.getUserHeader(req)
+  })
+
+  let sfiIntegration: SamlIntegration | undefined
+  if (config.sfi.type === 'mock') {
+    router.use('/auth/sfi', createDevSfiRouter(citizenSessions))
+  } else if (config.sfi.type === 'saml') {
+    sfiIntegration = createSuomiFiIntegration(
+      citizenSessions,
+      config.sfi.saml,
+      redisClient
+    )
+    router.use('/auth/sfi', sfiIntegration.router)
+  }
+
+  if (!config.keycloakCitizen)
+    throw new Error('Missing Keycloak SAML configuration (citizen)')
+  const keycloakCitizenIntegration = createKeycloakCitizenIntegration(
+    citizenSessions,
+    config.keycloakCitizen,
+    redisClient
+  )
+  router.use('/auth/keycloak-citizen', keycloakCitizenIntegration.router)
+
+  router.all('/auth/ad/*', (req: express.Request, _, next) => {
+    // horrible hack to fix logout URL
+    if (req.session?.idpProvider === 'evaka') {
+      req.url = req.url.replace('/auth/ad/', '/auth/keycloak-employee/')
+    }
+    next()
+  })
+
+  let adIntegration: SamlIntegration | undefined
+  if (config.ad.type === 'mock') {
+    router.use('/auth/ad', createDevAdRouter(employeeSessions))
+  } else if (config.ad.type === 'saml') {
+    adIntegration = createSamlAdIntegration(
+      employeeSessions,
+      config.ad,
+      redisClient
+    )
+    router.use('/auth/ad', adIntegration.router)
+  }
+
+  if (!config.keycloakEmployee)
+    throw new Error('Missing Keycloak SAML configuration (employee)')
+  const keycloakEmployeeIntegration = createKeycloakEmployeeIntegration(
+    employeeSessions,
+    config.keycloakEmployee,
+    redisClient
+  )
+  router.use('/auth/keycloak-employee', keycloakEmployeeIntegration.router)
+
+  if (enableDevApi) {
+    router.get(
+      '/dev-api/auth/mobile-e2e-signup',
+      employeeMobileSessions.middleware,
+      cookieParser(config.employee.cookieSecret),
+      devApiE2ESignup(employeeMobileSessions)
+    )
+    router.all(
+      '/dev-api/*',
+      createProxy({
+        getUserHeader: () => undefined
+      })
+    )
+  }
+
+  router.get(
+    '/citizen/auth/logout',
+    citizenSessions.middleware,
+    toRequestHandler(async (req, res) => {
+      const user = citizenSessions.getUser(req)
+      switch (user?.authType) {
+        case 'sfi':
+          if (sfiIntegration) return await sfiIntegration.logout(req, res)
+          break
+        case 'keycloak-citizen':
+          return keycloakCitizenIntegration.logout(req, res)
+      }
+      await citizenSessions.destroy(req, res)
+      res.redirect('/')
+    })
+  )
+  router.get(
+    '/employee/auth/logout',
+    employeeSessions.middleware,
+    toRequestHandler(async (req, res) => {
+      const user = employeeSessions.getUser(req)
+      switch (user?.authType) {
+        case 'ad':
+          if (adIntegration) return await adIntegration.logout(req, res)
+          break
+        case 'keycloak-employee':
+          return keycloakEmployeeIntegration.logout(req, res)
+      }
+      await employeeSessions.destroy(req, res)
+      res.redirect('/employee')
+    })
+  )
+
+  // CSRF checks apply to all the API endpoints that frontend uses
+  router.use(csrf)
+
+  router.use('/citizen', citizenSessions.middleware)
+  router.get('/citizen/auth/status', citizenAuthStatus(citizenSessions))
+  router.post(
+    '/citizen/auth/weak-login',
+    express.json(),
+    authWeakLogin(citizenSessions, redisClient)
+  )
+  router.use('/citizen/public/map-api', mapRoutes)
+  router.all('/citizen/public/*', citizenProxy)
+  router.all('/citizen/*', citizenSessions.requireAuthentication, citizenProxy)
+
+  const internalSessions = sessionSupport<'employee-mobile'>(
+    'employee-mobile',
+    redisClient,
+    config.employee
+  )
+  router.get(
+    '/internal/auth/status',
+    internalSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(internalSessions, redisClient),
+    refreshMobileSession(internalSessions),
+    internalAuthStatus(internalSessions)
+  )
+
+  router.use('/employee', employeeSessions.middleware)
+  router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
+  router.all('/employee/public/*', employeeProxy)
+  router.all(
+    '/employee/*',
+    employeeSessions.requireAuthentication,
+    employeeProxy
+  )
+
+  router.use(
+    '/employee-mobile',
+    employeeMobileSessions.middleware,
+    cookieParser(config.employee.cookieSecret),
+    checkMobileEmployeeIdToken(employeeMobileSessions, redisClient)
+  )
+  router.get(
+    '/employee-mobile/auth/status',
+    internalAuthStatus(employeeMobileSessions)
+  )
+  router.post(
+    '/employee-mobile/auth/finish-pairing',
+    express.json(),
+    finishPairing(employeeMobileSessions)
+  )
+  router.post(
+    '/employee-mobile/auth/pin-login',
+    employeeMobileSessions.requireAuthentication,
+    express.json(),
+    pinLoginRequestHandler(employeeMobileSessions, redisClient)
+  )
+  router.post(
+    '/employee-mobile/auth/pin-logout',
+    employeeMobileSessions.requireAuthentication,
+    express.json(),
+    pinLogoutRequestHandler(employeeMobileSessions, redisClient)
+  )
+  router.all('/employee-mobile/public/*', employeeMobileProxy)
+  router.all(
+    '/employee-mobile/*',
+    employeeMobileSessions.requireAuthentication,
+    employeeMobileProxy
+  )
+
+  // global error middleware
+  router.use(errorHandler(false))
+  return router
+}

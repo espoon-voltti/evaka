@@ -110,13 +110,11 @@ export function getRawUnvalidatedRelayState(
 // redirected to after the SAML transaction is complete. Since the RelayState
 // is not signed or encrypted, we must make sure the URL points to our application
 // and not to some 3rd party domain
-export function validateRelayStateUrl(
-  req: express.Request
-): string | undefined {
+export function validateRelayStateUrl(req: express.Request): URL | undefined {
   const relayState = getRawUnvalidatedRelayState(req)
   if (relayState) {
     const url = parseUrlWithOrigin(evakaBaseUrl, relayState)
-    if (url) return url.toString()
+    if (url) return url
     logError('Invalid RelayState in request', req)
   }
   return undefined
