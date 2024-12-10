@@ -42,9 +42,12 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowsByApplication
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -67,6 +70,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val citizen = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
+    private val citizenWeak = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.WEAK)
 
     @Autowired private lateinit var applicationController: ApplicationControllerV2
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
@@ -357,6 +361,14 @@ WHERE id = ${bind(testDaycare.id)}
             )
         assertEquals(1, notificationCount)
 
+        val notificationCountAsWeak =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                citizenWeak,
+                RealEvakaClock(),
+            )
+        assertEquals(1, notificationCountAsWeak)
+
         val citizenDecisions =
             applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
         assertEquals(
@@ -368,6 +380,240 @@ WHERE id = ${bind(testDaycare.id)}
                             id = createdDecisions[0].id,
                             applicationId = applicationId,
                             childId = testChild_6.id,
+                            type = DecisionType.DAYCARE,
+                            status = DecisionStatus.PENDING,
+                            sentDate = LocalDate.now(),
+                            resolved = null,
+                        )
+                    ),
+                permittedActions =
+                    mapOf(
+                        createdDecisions[0].id to
+                            setOf(
+                                Action.Citizen.Decision.READ,
+                                Action.Citizen.Decision.DOWNLOAD_PDF,
+                            )
+                    ),
+                decidableApplications = setOf(applicationId),
+            ),
+        )
+    }
+
+    @Test
+    fun `other guardian in different address as guardian sees decision but can't decide`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                period = period,
+                adult = testAdult_6,
+                child = testChild_6,
+            )
+        checkDecisionDrafts(
+            applicationId,
+            adult = testAdult_6,
+            child = testChild_6,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true,
+                    )
+                ),
+            otherGuardian = testAdult_5,
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        val otherGuardian = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
+        val otherGuardianWeak = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.WEAK)
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                otherGuardian,
+                RealEvakaClock(),
+            )
+        assertEquals(0, notificationCount)
+
+        val notificationCountAsWeak =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                otherGuardianWeak,
+                RealEvakaClock(),
+            )
+        assertEquals(0, notificationCountAsWeak)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+        assertEquals(
+            citizenDecisions,
+            ApplicationDecisions(
+                decisions =
+                    listOf(
+                        DecisionSummary(
+                            id = createdDecisions[0].id,
+                            applicationId = applicationId,
+                            childId = testChild_6.id,
+                            type = DecisionType.DAYCARE,
+                            status = DecisionStatus.PENDING,
+                            sentDate = LocalDate.now(),
+                            resolved = null,
+                        )
+                    ),
+                permittedActions =
+                    mapOf(
+                        createdDecisions[0].id to
+                            setOf(
+                                Action.Citizen.Decision.READ,
+                                Action.Citizen.Decision.DOWNLOAD_PDF,
+                            )
+                    ),
+                decidableApplications = emptySet(),
+            ),
+        )
+    }
+
+    @Test
+    fun `other guardian in different address as child sees decision but can't decide`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        checkDecisionDrafts(
+            applicationId,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true,
+                    )
+                ),
+            otherGuardian = testAdult_6,
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        val otherGuardian = AuthenticatedUser.Citizen(testAdult_6.id, CitizenAuthLevel.STRONG)
+        val otherGuardianWeak = AuthenticatedUser.Citizen(testAdult_6.id, CitizenAuthLevel.WEAK)
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                otherGuardian,
+                RealEvakaClock(),
+            )
+        assertEquals(0, notificationCount)
+
+        val notificationCountAsWeak =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                otherGuardianWeak,
+                RealEvakaClock(),
+            )
+        assertEquals(0, notificationCountAsWeak)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+        assertEquals(
+            citizenDecisions,
+            ApplicationDecisions(
+                decisions =
+                    listOf(
+                        DecisionSummary(
+                            id = createdDecisions[0].id,
+                            applicationId = applicationId,
+                            childId = testChild_6.id,
+                            type = DecisionType.DAYCARE,
+                            status = DecisionStatus.PENDING,
+                            sentDate = LocalDate.now(),
+                            resolved = null,
+                        )
+                    ),
+                permittedActions =
+                    mapOf(
+                        createdDecisions[0].id to
+                            setOf(
+                                Action.Citizen.Decision.READ,
+                                Action.Citizen.Decision.DOWNLOAD_PDF,
+                            )
+                    ),
+                decidableApplications = emptySet(),
+            ),
+        )
+    }
+
+    @Test
+    fun `other guardian in the same address sees decision and can decide`() {
+        db.transaction { tx ->
+            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
+
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                period = period,
+                adult = testAdult_1,
+                child = testChild_1,
+            )
+        checkDecisionDrafts(
+            applicationId,
+            adult = testAdult_1,
+            child = testChild_1,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true,
+                    )
+                ),
+            otherGuardian = testAdult_2,
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        val otherGuardian = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
+        val otherGuardianWeak = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.WEAK)
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                otherGuardian,
+                RealEvakaClock(),
+            )
+        assertEquals(1, notificationCount)
+
+        val notificationCountAsWeak =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                otherGuardianWeak,
+                RealEvakaClock(),
+            )
+        assertEquals(1, notificationCountAsWeak)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+        assertEquals(
+            citizenDecisions,
+            ApplicationDecisions(
+                decisions =
+                    listOf(
+                        DecisionSummary(
+                            id = createdDecisions[0].id,
+                            applicationId = applicationId,
+                            childId = testChild_1.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
                             sentDate = LocalDate.now(),

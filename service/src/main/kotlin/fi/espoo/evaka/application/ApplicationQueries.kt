@@ -1301,13 +1301,57 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .toList<ApplicationId>()
 
-fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int =
+fun Database.Read.fetchApplicationNotificationCountForCitizen(
+    citizenId: PersonId,
+    today: LocalDate,
+): Int =
     createQuery {
             sql(
                 """
 SELECT COUNT(*)
 FROM application a
-WHERE guardian_id = ${bind(citizenId)}
+JOIN person guardian ON a.guardian_id = guardian.id
+JOIN person child ON a.child_id = child.id
+WHERE (a.guardian_id = ${bind(citizenId)} OR (
+    a.allow_other_guardian_access IS TRUE
+    AND EXISTS (
+        SELECT FROM application_other_guardian aog
+        JOIN person other_guardian ON aog.guardian_id = other_guardian.id
+        WHERE aog.application_id = a.id AND aog.guardian_id = ${bind(citizenId)}
+        AND (
+            EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+            OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(today)})
+        )
+        AND NOT other_guardian.restricted_details_enabled
+        AND NOT guardian.restricted_details_enabled
+        AND NOT child.restricted_details_enabled
+        AND other_guardian.street_address NOT ILIKE '%poste restante%'
+        AND guardian.street_address NOT ILIKE '%poste restante%'
+        AND child.street_address NOT ILIKE '%poste restante%'
+        AND (
+            (trim(other_guardian.residence_code) != '' AND
+             trim(guardian.residence_code) != '' AND
+             other_guardian.residence_code = guardian.residence_code) OR
+            (trim(other_guardian.street_address) != '' AND
+             trim(guardian.street_address) != '' AND
+             trim(other_guardian.postal_code) != '' AND
+             trim(guardian.postal_code) != '' AND
+             lower(other_guardian.street_address) = lower(guardian.street_address) AND
+             other_guardian.postal_code = guardian.postal_code)
+        )
+        AND (
+            (trim(other_guardian.residence_code) != '' AND
+             trim(child.residence_code) != '' AND
+             other_guardian.residence_code = child.residence_code) OR
+            (trim(other_guardian.street_address) != '' AND
+             trim(child.street_address) != '' AND
+             trim(other_guardian.postal_code) != '' AND
+             trim(child.postal_code) != '' AND
+             lower(other_guardian.street_address) = lower(child.street_address) AND
+             other_guardian.postal_code = child.postal_code)
+        )
+    )
+))
 AND NOT EXISTS (
     SELECT 1 FROM guardian_blocklist bl
     WHERE bl.child_id = a.child_id
