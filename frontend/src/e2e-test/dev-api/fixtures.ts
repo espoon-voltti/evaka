@@ -930,7 +930,7 @@ export class Fixture {
     initial: SemiPartial<DevDailyServiceTimes, 'childId'>
   ): DailyServiceTimeBuilder {
     return new DailyServiceTimeBuilder({
-      id: uuidv4(),
+      id: randomId(),
       validityPeriod: new DateRange(LocalDate.of(2020, 1, 1), null),
       type: 'REGULAR',
       regularTimes: new TimeRange(LocalTime.of(1, 0), LocalTime.of(15, 0)),

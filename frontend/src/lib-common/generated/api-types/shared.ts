@@ -75,7 +75,7 @@ export interface Coordinate {
   lon: number
 }
 
-export type DailyServiceTimeId = string
+export type DailyServiceTimeId = Id<'DailyServiceTime'>
 
 export type DailyServiceTimeNotificationId = string
 
