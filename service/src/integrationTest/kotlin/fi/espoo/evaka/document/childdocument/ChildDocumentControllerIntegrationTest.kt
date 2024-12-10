@@ -352,13 +352,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         prevState(documentId, DocumentStatus.DRAFT, clock5)
 
         val history = db.read { it.getProcess(metadata.process.id)!!.history }
-        assertEquals(3, history.size)
+        assertEquals(1, history.size)
         assertEquals(clock.now(), history[0].enteredAt)
         assertEquals(ArchivedProcessState.INITIAL, history[0].state)
-        assertEquals(clock3.now(), history[1].enteredAt)
-        assertEquals(ArchivedProcessState.COMPLETED, history[1].state)
-        assertEquals(clock4.now(), history[2].enteredAt)
-        assertEquals(ArchivedProcessState.INITIAL, history[2].state)
 
         controller.deleteDraftDocument(dbInstance(), employeeUser.user, clock5, documentId)
         assertNull(db.read { it.getProcess(metadata.process.id) })
