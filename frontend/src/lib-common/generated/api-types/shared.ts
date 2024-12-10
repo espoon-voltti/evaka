@@ -77,7 +77,7 @@ export interface Coordinate {
 
 export type DailyServiceTimeId = Id<'DailyServiceTime'>
 
-export type DailyServiceTimeNotificationId = string
+export type DailyServiceTimeNotificationId = Id<'DailyServiceTimeNotification'>
 
 /**
 * Generated from fi.espoo.evaka.shared.auth.DaycareAclRow

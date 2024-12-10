@@ -5,8 +5,8 @@
 import React, { useEffect, useState } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
+import { DailyServiceTimeNotificationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faExclamation } from 'lib-icons'
 
@@ -23,7 +23,9 @@ export default React.memo(function DailyServiceTimeNotification() {
 
   const notifications = dailyServiceTimeNotifications.getOrElse([])
 
-  const [notificationIds, setNotificationIds] = useState<UUID[]>([])
+  const [notificationIds, setNotificationIds] = useState<
+    DailyServiceTimeNotificationId[]
+  >([])
 
   useEffect(() => {
     if (notifications.length === 0) return

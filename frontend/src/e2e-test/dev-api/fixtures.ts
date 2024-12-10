@@ -949,7 +949,7 @@ export class Fixture {
     initial: SemiPartial<DevDailyServiceTimeNotification, 'guardianId'>
   ): DailyServiceTimeNotificationBuilder {
     return new DailyServiceTimeNotificationBuilder({
-      id: uuidv4(),
+      id: randomId(),
       ...initial
     })
   }
