@@ -13,13 +13,18 @@ import { AbsenceType } from './absence'
 import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
 import { DailyServiceTimesValue } from './dailyservicetimes'
+import { DaycareId } from './shared'
+import { EmployeeId } from './shared'
+import { GroupId } from './shared'
 import { HelsinkiDateTimeRange } from './shared'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
 import { ReservationResponse } from './reservations'
 import { ScheduleType } from './placement'
-import { UUID } from '../../types'
+import { StaffAttendanceExternalId } from './shared'
+import { StaffAttendanceRealtimeId } from './shared'
 import { deserializeJsonChildDailyNote } from './note'
 import { deserializeJsonChildStickyNote } from './note'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
@@ -39,7 +44,7 @@ export interface AbsenceRangeRequest {
 */
 export interface ArrivalsRequest {
   arrived: LocalTime
-  children: UUID[]
+  children: PersonId[]
 }
 
 /**
@@ -49,8 +54,8 @@ export interface Attendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   departedAutomatically: boolean
-  groupId: UUID | null
-  id: UUID
+  groupId: GroupId | null
+  id: StaffAttendanceRealtimeId
   occupancyCoefficient: number
   type: StaffAttendanceType
 }
@@ -64,8 +69,8 @@ export interface AttendanceChild {
   dailyServiceTimes: DailyServiceTimesValue | null
   dateOfBirth: LocalDate
   firstName: string
-  groupId: UUID | null
-  id: UUID
+  groupId: GroupId | null
+  id: PersonId
   imageUrl: string | null
   lastName: string
   operationalDates: LocalDate[]
@@ -116,7 +121,7 @@ export interface ChildAttendanceStatusResponse {
 export interface ChildDeparture {
   absenceTypeBillable: AbsenceType | null
   absenceTypeNonbillable: AbsenceType | null
-  childId: UUID
+  childId: PersonId
 }
 
 /**
@@ -155,9 +160,9 @@ export interface EmployeeAttendance {
   allowedToEdit: boolean
   attendances: Attendance[]
   currentOccupancyCoefficient: number
-  employeeId: UUID
+  employeeId: EmployeeId
   firstName: string
-  groups: UUID[]
+  groups: GroupId[]
   lastName: string
   plannedAttendances: PlannedStaffAttendance[]
 }
@@ -166,7 +171,7 @@ export interface EmployeeAttendance {
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesRequest
 */
 export interface ExpectedAbsencesOnDeparturesRequest {
-  childIds: UUID[]
+  childIds: PersonId[]
   departed: LocalTime
 }
 
@@ -174,7 +179,7 @@ export interface ExpectedAbsencesOnDeparturesRequest {
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesResponse
 */
 export interface ExpectedAbsencesOnDeparturesResponse {
-  categoriesByChild: Partial<Record<UUID, AbsenceCategory[] | null>>
+  categoriesByChild: Partial<Record<PersonId, AbsenceCategory[] | null>>
 }
 
 /**
@@ -184,8 +189,8 @@ export interface ExternalAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   departedAutomatically: boolean
-  groupId: UUID
-  id: UUID
+  groupId: GroupId
+  id: StaffAttendanceExternalId
   name: string
   occupancyCoefficient: number
   type: StaffAttendanceType
@@ -198,7 +203,7 @@ export interface ExternalAttendanceBody {
   date: LocalDate
   entries: ExternalAttendanceUpsert[]
   name: string
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -207,9 +212,9 @@ export interface ExternalAttendanceBody {
 export interface ExternalAttendanceUpsert {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
-  groupId: UUID
+  groupId: GroupId
   hasStaffOccupancyEffect: boolean
-  id: UUID | null
+  id: StaffAttendanceExternalId | null
 }
 
 /**
@@ -217,7 +222,7 @@ export interface ExternalAttendanceUpsert {
 */
 export interface ExternalStaffArrivalRequest {
   arrived: LocalTime
-  groupId: UUID
+  groupId: GroupId
   hasStaffOccupancyEffect: boolean
   name: string
 }
@@ -226,7 +231,7 @@ export interface ExternalStaffArrivalRequest {
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffDepartureRequest
 */
 export interface ExternalStaffDepartureRequest {
-  attendanceId: UUID
+  attendanceId: StaffAttendanceExternalId
   time: LocalTime
 }
 
@@ -235,8 +240,8 @@ export interface ExternalStaffDepartureRequest {
 */
 export interface ExternalStaffMember {
   arrived: HelsinkiDateTime
-  groupId: UUID
-  id: UUID
+  groupId: GroupId
+  id: StaffAttendanceExternalId
   name: string
   occupancyEffect: boolean
 }
@@ -252,7 +257,7 @@ export interface FullDayAbsenceRequest {
 * Generated from fi.espoo.evaka.attendance.GroupInfo
 */
 export interface GroupInfo {
-  id: UUID
+  id: GroupId
   name: string
   utilization: number
 }
@@ -262,8 +267,8 @@ export interface GroupInfo {
 */
 export interface OpenGroupAttendance {
   date: LocalDate
-  groupId: UUID
-  unitId: UUID
+  groupId: GroupId
+  unitId: DaycareId
   unitName: string
 }
 
@@ -288,8 +293,8 @@ export interface PlannedStaffAttendance {
 */
 export interface Staff {
   firstName: string
-  groups: UUID[]
-  id: UUID
+  groups: GroupId[]
+  id: EmployeeId
   lastName: string
   pinLocked: boolean
   pinSet: boolean
@@ -299,8 +304,8 @@ export interface Staff {
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffArrivalRequest
 */
 export interface StaffArrivalRequest {
-  employeeId: UUID
-  groupId: UUID
+  employeeId: EmployeeId
+  groupId: GroupId
   hasStaffOccupancyEffect: boolean | null
   pinCode: string
   time: LocalTime
@@ -312,9 +317,9 @@ export interface StaffArrivalRequest {
 */
 export interface StaffAttendanceBody {
   date: LocalDate
-  employeeId: UUID
+  employeeId: EmployeeId
   entries: StaffAttendanceUpsert[]
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -343,7 +348,7 @@ export type StaffAttendanceType = typeof staffAttendanceTypes[number]
 */
 export interface StaffAttendanceUpdateRequest {
   date: LocalDate
-  employeeId: UUID
+  employeeId: EmployeeId
   pinCode: string
   rows: StaffAttendanceUpsert[]
 }
@@ -352,8 +357,8 @@ export interface StaffAttendanceUpdateRequest {
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateResponse
 */
 export interface StaffAttendanceUpdateResponse {
-  deleted: UUID[]
-  inserted: UUID[]
+  deleted: StaffAttendanceRealtimeId[]
+  inserted: StaffAttendanceRealtimeId[]
 }
 
 /**
@@ -362,9 +367,9 @@ export interface StaffAttendanceUpdateResponse {
 export interface StaffAttendanceUpsert {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
-  groupId: UUID | null
+  groupId: GroupId | null
   hasStaffOccupancyEffect: boolean
-  id: UUID | null
+  id: StaffAttendanceRealtimeId | null
   type: StaffAttendanceType
 }
 
@@ -372,8 +377,8 @@ export interface StaffAttendanceUpsert {
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffDepartureRequest
 */
 export interface StaffDepartureRequest {
-  employeeId: UUID
-  groupId: UUID
+  employeeId: EmployeeId
+  groupId: GroupId
   pinCode: string
   time: LocalTime
   type: StaffAttendanceType | null
@@ -384,15 +389,15 @@ export interface StaffDepartureRequest {
 */
 export interface StaffMember {
   attendances: StaffMemberAttendance[]
-  employeeId: UUID
+  employeeId: EmployeeId
   firstName: string
-  groupIds: UUID[]
+  groupIds: GroupId[]
   hasFutureAttendances: boolean
   lastName: string
   latestCurrentDayAttendance: StaffMemberAttendance | null
   occupancyEffect: boolean
   plannedAttendances: PlannedStaffAttendance[]
-  present: UUID | null
+  present: GroupId | null
   spanningPlan: HelsinkiDateTimeRange | null
 }
 
@@ -403,9 +408,9 @@ export interface StaffMemberAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   departedAutomatically: boolean
-  employeeId: UUID
-  groupId: UUID | null
-  id: UUID
+  employeeId: EmployeeId
+  groupId: GroupId | null
+  id: StaffAttendanceRealtimeId
   occupancyCoefficient: number
   type: StaffAttendanceType
 }
@@ -416,7 +421,7 @@ export interface StaffMemberAttendance {
 export interface UnitInfo {
   features: PilotFeature[]
   groups: GroupInfo[]
-  id: UUID
+  id: DaycareId
   isOperationalDate: boolean
   name: string
   staff: Staff[]
@@ -427,7 +432,7 @@ export interface UnitInfo {
 * Generated from fi.espoo.evaka.attendance.UnitStats
 */
 export interface UnitStats {
-  id: UUID
+  id: DaycareId
   name: string
   presentChildren: number
   presentStaff: number

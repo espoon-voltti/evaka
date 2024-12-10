@@ -14,6 +14,7 @@ import {
   DailyServiceTimesType,
   DailyServiceTimesValue
 } from 'lib-common/generated/api-types/dailyservicetimes'
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -315,7 +316,7 @@ export const DailyServiceTimesCreationForm = React.memo(
 export interface EditProps {
   onClose: (shouldRefresh: boolean) => void
   childId: UUID
-  id: UUID
+  id: DailyServiceTimeId
   initialData: DailyServiceTimesValue
 }
 

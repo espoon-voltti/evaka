@@ -9,31 +9,38 @@ import { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
+import { AreaId } from 'lib-common/generated/api-types/shared'
 import { AreaJSON } from 'lib-common/generated/api-types/daycare'
 import { CaretakerRequest } from 'lib-common/generated/api-types/daycare'
 import { CaretakersResponse } from 'lib-common/generated/api-types/daycare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 import { ClubTerm } from 'lib-common/generated/api-types/daycare'
+import { ClubTermId } from 'lib-common/generated/api-types/shared'
 import { ClubTermRequest } from 'lib-common/generated/api-types/daycare'
 import { CreateDaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { CreateGroupRequest } from 'lib-common/generated/api-types/daycare'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
+import { DaycareCaretakerId } from 'lib-common/generated/api-types/shared'
 import { DaycareFields } from 'lib-common/generated/api-types/daycare'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { FullAclInfo } from 'lib-common/generated/api-types/daycare'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { GroupUpdateRequest } from 'lib-common/generated/api-types/daycare'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
+import { PreschoolTermId } from 'lib-common/generated/api-types/shared'
 import { PreschoolTermRequest } from 'lib-common/generated/api-types/daycare'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import { TemporaryEmployee } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
 import { UnitFeatures } from 'lib-common/generated/api-types/daycare'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { UnitNotifications } from 'lib-common/generated/api-types/daycare'
@@ -61,7 +68,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getAdditionalInfo(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<AdditionalInformation> {
   const { data: json } = await client.request<JsonOf<AdditionalInformation>>({
@@ -77,7 +84,7 @@ export async function getAdditionalInfo(
 */
 export async function getChild(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ChildResponse> {
   const { data: json } = await client.request<JsonOf<ChildResponse>>({
@@ -93,7 +100,7 @@ export async function getChild(
 */
 export async function updateAdditionalInfo(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: AdditionalInformation
   }
 ): Promise<void> {
@@ -111,8 +118,8 @@ export async function updateAdditionalInfo(
 */
 export async function createCaretakers(
   request: {
-    daycareId: UUID,
-    groupId: UUID,
+    daycareId: DaycareId,
+    groupId: GroupId,
     body: CaretakerRequest
   }
 ): Promise<void> {
@@ -147,7 +154,7 @@ export async function createDaycare(
 */
 export async function createGroup(
   request: {
-    daycareId: UUID,
+    daycareId: DaycareId,
     body: CreateGroupRequest
   }
 ): Promise<DaycareGroup> {
@@ -165,8 +172,8 @@ export async function createGroup(
 */
 export async function deleteGroup(
   request: {
-    daycareId: UUID,
-    groupId: UUID
+    daycareId: DaycareId,
+    groupId: GroupId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -182,8 +189,8 @@ export async function deleteGroup(
 */
 export async function getCaretakers(
   request: {
-    daycareId: UUID,
-    groupId: UUID
+    daycareId: DaycareId,
+    groupId: GroupId
   }
 ): Promise<CaretakersResponse> {
   const { data: json } = await client.request<JsonOf<CaretakersResponse>>({
@@ -199,7 +206,7 @@ export async function getCaretakers(
 */
 export async function getDaycare(
   request: {
-    daycareId: UUID
+    daycareId: DaycareId
   }
 ): Promise<DaycareResponse> {
   const { data: json } = await client.request<JsonOf<DaycareResponse>>({
@@ -235,7 +242,7 @@ export async function getDaycares(
 */
 export async function getGroups(
   request: {
-    daycareId: UUID,
+    daycareId: DaycareId,
     from?: LocalDate | null,
     to?: LocalDate | null
   }
@@ -270,7 +277,7 @@ export async function getUnitFeatures(): Promise<UnitFeatures[]> {
 */
 export async function getUnitGroupDetails(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     from: LocalDate,
     to: LocalDate
   }
@@ -293,7 +300,7 @@ export async function getUnitGroupDetails(
 */
 export async function getUnitNotifications(
   request: {
-    daycareId: UUID
+    daycareId: DaycareId
   }
 ): Promise<UnitNotifications> {
   const { data: json } = await client.request<JsonOf<UnitNotifications>>({
@@ -309,9 +316,9 @@ export async function getUnitNotifications(
 */
 export async function removeCaretakers(
   request: {
-    daycareId: UUID,
-    groupId: UUID,
-    id: UUID
+    daycareId: DaycareId,
+    groupId: GroupId,
+    id: DaycareCaretakerId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -327,9 +334,9 @@ export async function removeCaretakers(
 */
 export async function updateCaretakers(
   request: {
-    daycareId: UUID,
-    groupId: UUID,
-    id: UUID,
+    daycareId: DaycareId,
+    groupId: GroupId,
+    id: DaycareCaretakerId,
     body: CaretakerRequest
   }
 ): Promise<void> {
@@ -347,7 +354,7 @@ export async function updateCaretakers(
 */
 export async function updateDaycare(
   request: {
-    daycareId: UUID,
+    daycareId: DaycareId,
     body: DaycareFields
   }
 ): Promise<void> {
@@ -365,8 +372,8 @@ export async function updateDaycare(
 */
 export async function updateGroup(
   request: {
-    daycareId: UUID,
-    groupId: UUID,
+    daycareId: DaycareId,
+    groupId: GroupId,
     body: GroupUpdateRequest
   }
 ): Promise<void> {
@@ -454,7 +461,7 @@ export async function getAreas(): Promise<AreaJSON[]> {
 export async function getUnits(
   request: {
     type: UnitTypeFilter,
-    areaIds?: UUID[] | null,
+    areaIds?: AreaId[] | null,
     from?: LocalDate | null
   }
 ): Promise<UnitStub[]> {
@@ -477,7 +484,7 @@ export async function getUnits(
 */
 export async function getStaffAttendancesByGroup(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     year: number,
     month: number
   }
@@ -500,7 +507,7 @@ export async function getStaffAttendancesByGroup(
 */
 export async function upsertStaffAttendance(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     body: StaffAttendanceUpdate
   }
 ): Promise<void> {
@@ -552,7 +559,7 @@ export async function createPreschoolTerm(
 */
 export async function deleteClubTerm(
   request: {
-    id: UUID
+    id: ClubTermId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -568,7 +575,7 @@ export async function deleteClubTerm(
 */
 export async function deletePreschoolTerm(
   request: {
-    id: UUID
+    id: PreschoolTermId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -608,7 +615,7 @@ export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
 */
 export async function updateClubTerm(
   request: {
-    id: UUID,
+    id: ClubTermId,
     body: ClubTermRequest
   }
 ): Promise<void> {
@@ -626,7 +633,7 @@ export async function updateClubTerm(
 */
 export async function updatePreschoolTerm(
   request: {
-    id: UUID,
+    id: PreschoolTermId,
     body: PreschoolTermRequest
   }
 ): Promise<void> {
@@ -644,8 +651,8 @@ export async function updatePreschoolTerm(
 */
 export async function addFullAclForRole(
   request: {
-    daycareId: UUID,
-    employeeId: UUID,
+    daycareId: DaycareId,
+    employeeId: EmployeeId,
     body: FullAclInfo
   }
 ): Promise<void> {
@@ -663,11 +670,11 @@ export async function addFullAclForRole(
 */
 export async function createTemporaryEmployee(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     body: TemporaryEmployee
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<EmployeeId> {
+  const { data: json } = await client.request<JsonOf<EmployeeId>>({
     url: uri`/employee/daycares/${request.unitId}/temporary`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<TemporaryEmployee>
@@ -681,8 +688,8 @@ export async function createTemporaryEmployee(
 */
 export async function deleteEarlyChildhoodEducationSecretary(
   request: {
-    daycareId: UUID,
-    employeeId: UUID
+    daycareId: DaycareId,
+    employeeId: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -698,8 +705,8 @@ export async function deleteEarlyChildhoodEducationSecretary(
 */
 export async function deleteSpecialEducationTeacher(
   request: {
-    daycareId: UUID,
-    employeeId: UUID
+    daycareId: DaycareId,
+    employeeId: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -715,8 +722,8 @@ export async function deleteSpecialEducationTeacher(
 */
 export async function deleteStaff(
   request: {
-    daycareId: UUID,
-    employeeId: UUID
+    daycareId: DaycareId,
+    employeeId: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -732,8 +739,8 @@ export async function deleteStaff(
 */
 export async function deleteTemporaryEmployee(
   request: {
-    unitId: UUID,
-    employeeId: UUID
+    unitId: DaycareId,
+    employeeId: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -749,8 +756,8 @@ export async function deleteTemporaryEmployee(
 */
 export async function deleteTemporaryEmployeeAcl(
   request: {
-    unitId: UUID,
-    employeeId: UUID
+    unitId: DaycareId,
+    employeeId: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -766,8 +773,8 @@ export async function deleteTemporaryEmployeeAcl(
 */
 export async function deleteUnitSupervisor(
   request: {
-    daycareId: UUID,
-    employeeId: UUID
+    daycareId: DaycareId,
+    employeeId: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -783,7 +790,7 @@ export async function deleteUnitSupervisor(
 */
 export async function getDaycareAcl(
   request: {
-    daycareId: UUID
+    daycareId: DaycareId
   }
 ): Promise<DaycareAclRow[]> {
   const { data: json } = await client.request<JsonOf<DaycareAclRow[]>>({
@@ -799,8 +806,8 @@ export async function getDaycareAcl(
 */
 export async function getTemporaryEmployee(
   request: {
-    unitId: UUID,
-    employeeId: UUID
+    unitId: DaycareId,
+    employeeId: EmployeeId
   }
 ): Promise<TemporaryEmployee> {
   const { data: json } = await client.request<JsonOf<TemporaryEmployee>>({
@@ -816,7 +823,7 @@ export async function getTemporaryEmployee(
 */
 export async function getTemporaryEmployees(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
@@ -832,8 +839,8 @@ export async function getTemporaryEmployees(
 */
 export async function updateGroupAclWithOccupancyCoefficient(
   request: {
-    daycareId: UUID,
-    employeeId: UUID,
+    daycareId: DaycareId,
+    employeeId: EmployeeId,
     body: AclUpdate
   }
 ): Promise<void> {
@@ -851,8 +858,8 @@ export async function updateGroupAclWithOccupancyCoefficient(
 */
 export async function updateTemporaryEmployee(
   request: {
-    unitId: UUID,
-    employeeId: UUID,
+    unitId: DaycareId,
+    employeeId: EmployeeId,
     body: TemporaryEmployee
   }
 ): Promise<void> {

@@ -7,9 +7,12 @@ import styled from 'styled-components'
 
 import { Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import {
+  ApplicationId,
+  AttachmentId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -54,7 +57,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 }: ServiceTimeSubSectionProps) {
   const [lang] = useLang()
   const t = useTranslation()
-  const { applicationId } = useRouteParams(['applicationId'])
+  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
 
   const preferredStartDate = formData.preferredStartDate
   const optionsValidAtTime = useMemo(
@@ -119,7 +122,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   const uploadExtendedCareAttachment = (
     file: File,
     onUploadProgress: (percentage: number) => void
-  ): Promise<Result<UUID>> =>
+  ): Promise<Result<AttachmentId>> =>
     saveApplicationAttachment(
       applicationId,
       file,
@@ -146,7 +149,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
       return result
     })
 
-  const deleteExtendedCareAttachment = (id: UUID) =>
+  const deleteExtendedCareAttachment = (id: AttachmentId) =>
     deleteAttachmentResult({ attachmentId: id }).then((result) => {
       if (result.isSuccess) {
         updateFormData({

@@ -5,12 +5,13 @@
 // GENERATED FILE: no manual modifications
 
 import { BackupCareCreateResponse } from 'lib-common/generated/api-types/backupcare'
+import { BackupCareId } from 'lib-common/generated/api-types/shared'
 import { BackupCareUpdateRequest } from 'lib-common/generated/api-types/backupcare'
 import { ChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { NewBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
 import { uri } from 'lib-common/uri'
@@ -21,7 +22,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function createBackupCare(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: NewBackupCare
   }
 ): Promise<BackupCareCreateResponse> {
@@ -39,7 +40,7 @@ export async function createBackupCare(
 */
 export async function deleteBackupCare(
   request: {
-    id: UUID
+    id: BackupCareId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -55,7 +56,7 @@ export async function deleteBackupCare(
 */
 export async function getChildBackupCares(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ChildBackupCaresResponse> {
   const { data: json } = await client.request<JsonOf<ChildBackupCaresResponse>>({
@@ -71,7 +72,7 @@ export async function getChildBackupCares(
 */
 export async function updateBackupCare(
   request: {
-    id: UUID,
+    id: BackupCareId,
     body: BackupCareUpdateRequest
   }
 ): Promise<void> {

@@ -10,7 +10,9 @@ import { ArrivalsRequest } from 'lib-common/generated/api-types/attendance'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { ChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { CurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DeparturesRequest } from 'lib-common/generated/api-types/attendance'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { ExpectedAbsencesOnDeparturesRequest } from 'lib-common/generated/api-types/attendance'
 import { ExpectedAbsencesOnDeparturesResponse } from 'lib-common/generated/api-types/attendance'
 import { ExternalStaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
@@ -19,12 +21,13 @@ import { FullDayAbsenceRequest } from 'lib-common/generated/api-types/attendance
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { OpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { StaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
+import { StaffAttendanceExternalId } from 'lib-common/generated/api-types/shared'
 import { StaffAttendanceUpdateRequest } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdateResponse } from 'lib-common/generated/api-types/attendance'
 import { StaffDepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { StaffMember } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
 import { UnitInfo } from 'lib-common/generated/api-types/attendance'
 import { UnitStats } from 'lib-common/generated/api-types/attendance'
 import { client } from '../../client'
@@ -42,8 +45,8 @@ import { uri } from 'lib-common/uri'
 */
 export async function cancelFullDayAbsence(
   request: {
-    unitId: UUID,
-    childId: UUID
+    unitId: DaycareId,
+    childId: PersonId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -59,8 +62,8 @@ export async function cancelFullDayAbsence(
 */
 export async function deleteAbsenceRange(
   request: {
-    unitId: UUID,
-    childId: UUID,
+    unitId: DaycareId,
+    childId: PersonId,
     from: LocalDate,
     to: LocalDate
   }
@@ -83,10 +86,10 @@ export async function deleteAbsenceRange(
 */
 export async function getAttendanceStatuses(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
-): Promise<Partial<Record<UUID, ChildAttendanceStatusResponse>>> {
-  const { data: json } = await client.request<JsonOf<Partial<Record<UUID, ChildAttendanceStatusResponse>>>>({
+): Promise<Partial<Record<PersonId, ChildAttendanceStatusResponse>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<PersonId, ChildAttendanceStatusResponse>>>>({
     url: uri`/employee-mobile/attendances/units/${request.unitId}/attendances`.toString(),
     method: 'GET'
   })
@@ -101,7 +104,7 @@ export async function getAttendanceStatuses(
 */
 export async function getChildren(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<AttendanceChild[]> {
   const { data: json } = await client.request<JsonOf<AttendanceChild[]>>({
@@ -117,7 +120,7 @@ export async function getChildren(
 */
 export async function getExpectedAbsencesOnDepartures(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     body: ExpectedAbsencesOnDeparturesRequest
   }
 ): Promise<ExpectedAbsencesOnDeparturesResponse> {
@@ -135,8 +138,8 @@ export async function getExpectedAbsencesOnDepartures(
 */
 export async function postAbsenceRange(
   request: {
-    unitId: UUID,
-    childId: UUID,
+    unitId: DaycareId,
+    childId: PersonId,
     body: AbsenceRangeRequest
   }
 ): Promise<void> {
@@ -154,7 +157,7 @@ export async function postAbsenceRange(
 */
 export async function postArrivals(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     body: ArrivalsRequest
   }
 ): Promise<void> {
@@ -172,7 +175,7 @@ export async function postArrivals(
 */
 export async function postDepartures(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     body: DeparturesRequest
   }
 ): Promise<void> {
@@ -190,8 +193,8 @@ export async function postDepartures(
 */
 export async function postFullDayAbsence(
   request: {
-    unitId: UUID,
-    childId: UUID,
+    unitId: DaycareId,
+    childId: PersonId,
     body: FullDayAbsenceRequest
   }
 ): Promise<void> {
@@ -209,8 +212,8 @@ export async function postFullDayAbsence(
 */
 export async function returnToComing(
   request: {
-    unitId: UUID,
-    childId: UUID
+    unitId: DaycareId,
+    childId: PersonId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -226,8 +229,8 @@ export async function returnToComing(
 */
 export async function returnToPresent(
   request: {
-    unitId: UUID,
-    childId: UUID
+    unitId: DaycareId,
+    childId: PersonId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -243,7 +246,7 @@ export async function returnToPresent(
 */
 export async function getAttendancesByUnit(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     date?: LocalDate | null
   }
 ): Promise<CurrentDayStaffAttendanceResponse> {
@@ -265,8 +268,8 @@ export async function getAttendancesByUnit(
 */
 export async function getEmployeeAttendances(
   request: {
-    unitId: UUID,
-    employeeId: UUID,
+    unitId: DaycareId,
+    employeeId: EmployeeId,
     from: LocalDate,
     to: LocalDate
   }
@@ -291,7 +294,7 @@ export async function getEmployeeAttendances(
 */
 export async function getOpenGroupAttendance(
   request: {
-    userId: UUID
+    userId: EmployeeId
   }
 ): Promise<OpenGroupAttendanceResponse> {
   const params = createUrlSearchParams(
@@ -347,8 +350,8 @@ export async function markExternalArrival(
   request: {
     body: ExternalStaffArrivalRequest
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<StaffAttendanceExternalId> {
+  const { data: json } = await client.request<JsonOf<StaffAttendanceExternalId>>({
     url: uri`/employee-mobile/realtime-staff-attendances/arrival-external`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExternalStaffArrivalRequest>
@@ -379,7 +382,7 @@ export async function markExternalDeparture(
 */
 export async function setAttendances(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     body: StaffAttendanceUpdateRequest
   }
 ): Promise<StaffAttendanceUpdateResponse> {
@@ -401,7 +404,7 @@ export async function setAttendances(
 */
 export async function getUnitInfo(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<UnitInfo> {
   const { data: json } = await client.request<JsonOf<UnitInfo>>({
@@ -417,7 +420,7 @@ export async function getUnitInfo(
 */
 export async function getUnitStats(
   request: {
-    unitIds?: UUID[] | null
+    unitIds?: DaycareId[] | null
   }
 ): Promise<UnitStats[]> {
   const params = createUrlSearchParams(

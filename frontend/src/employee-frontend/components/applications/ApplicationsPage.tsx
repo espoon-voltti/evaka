@@ -68,9 +68,8 @@ export default React.memo(function ApplicationsPage() {
       page,
       sortBy,
       sortDir: sortDirection,
-      areas: debouncedApplicationSearchFilters.area.includes('All')
-        ? null
-        : debouncedApplicationSearchFilters.area.length > 0
+      areas:
+        debouncedApplicationSearchFilters.area.length > 0
           ? debouncedApplicationSearchFilters.area
           : null,
       units:

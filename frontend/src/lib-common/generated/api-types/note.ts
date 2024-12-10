@@ -6,16 +6,20 @@
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { ChildDailyNoteId } from './shared'
+import { ChildStickyNoteId } from './shared'
+import { GroupId } from './shared'
+import { GroupNoteId } from './shared'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.note.child.daily.ChildDailyNote
 */
 export interface ChildDailyNote {
-  childId: UUID
+  childId: PersonId
   feedingNote: ChildDailyNoteLevel | null
-  id: UUID
+  id: ChildDailyNoteId
   modifiedAt: HelsinkiDateTime
   note: string
   reminderNote: string
@@ -62,9 +66,9 @@ export type ChildDailyNoteReminder = typeof childDailyNoteReminderValues[number]
 * Generated from fi.espoo.evaka.note.child.sticky.ChildStickyNote
 */
 export interface ChildStickyNote {
-  childId: UUID
+  childId: PersonId
   expires: LocalDate
-  id: UUID
+  id: ChildStickyNoteId
   modifiedAt: HelsinkiDateTime
   note: string
 }
@@ -82,8 +86,8 @@ export interface ChildStickyNoteBody {
 */
 export interface GroupNote {
   expires: LocalDate
-  groupId: UUID
-  id: UUID
+  groupId: GroupId
+  id: GroupNoteId
   modifiedAt: HelsinkiDateTime
   note: string
 }

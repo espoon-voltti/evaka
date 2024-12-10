@@ -5,8 +5,8 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { GroupId } from './shared'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.webpush.PushNotificationCategory
@@ -24,7 +24,7 @@ export type PushNotificationCategory = typeof pushNotificationCategories[number]
 */
 export interface PushSettings {
   categories: PushNotificationCategory[]
-  groups: UUID[]
+  groups: GroupId[]
 }
 
 /**

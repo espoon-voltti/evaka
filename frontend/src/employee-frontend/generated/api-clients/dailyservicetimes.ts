@@ -4,12 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
 import { DailyServiceTimesEndDate } from 'lib-common/generated/api-types/dailyservicetimes'
 import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonDailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { uri } from 'lib-common/uri'
@@ -20,7 +21,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function deleteDailyServiceTimes(
   request: {
-    id: UUID
+    id: DailyServiceTimeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -36,7 +37,7 @@ export async function deleteDailyServiceTimes(
 */
 export async function getDailyServiceTimes(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<DailyServiceTimesResponse[]> {
   const { data: json } = await client.request<JsonOf<DailyServiceTimesResponse[]>>({
@@ -52,7 +53,7 @@ export async function getDailyServiceTimes(
 */
 export async function postDailyServiceTimes(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: DailyServiceTimesValue
   }
 ): Promise<void> {
@@ -70,7 +71,7 @@ export async function postDailyServiceTimes(
 */
 export async function putDailyServiceTimes(
   request: {
-    id: UUID,
+    id: DailyServiceTimeId,
     body: DailyServiceTimesValue
   }
 ): Promise<void> {
@@ -88,7 +89,7 @@ export async function putDailyServiceTimes(
 */
 export async function putDailyServiceTimesEnd(
   request: {
-    id: UUID,
+    id: DailyServiceTimeId,
     body: DailyServiceTimesEndDate
   }
 ): Promise<void> {

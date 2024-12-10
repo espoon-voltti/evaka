@@ -18,8 +18,8 @@ import {
   ShiftCareType,
   shiftCareType
 } from 'lib-common/generated/api-types/serviceneed'
+import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -50,7 +50,7 @@ const putServiceNeedResult = wrapResult(putServiceNeed)
 
 const serviceNeedForm = object({
   range: required(localDateRange()),
-  option: required(oneOf<UUID>()),
+  option: required(oneOf<ServiceNeedOptionId>()),
   shiftCare: required(oneOf<ShiftCareType>()),
   partWeek: required(boolean())
 })

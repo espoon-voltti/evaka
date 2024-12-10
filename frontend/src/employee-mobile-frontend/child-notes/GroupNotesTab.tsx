@@ -5,6 +5,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import { GroupNote } from 'lib-common/generated/api-types/note'
+import { GroupNoteId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import {
@@ -57,14 +58,14 @@ export const GroupNotesTab = React.memo(function GroupNotesTab({
   )
 
   const onSave = useCallback(
-    ({ id, ...body }: EditedNote) =>
+    ({ id, ...body }: EditedNote<GroupNoteId>) =>
       id
         ? updateGroupNote({ groupId, noteId: id, body })
         : createGroupNote({ groupId, body }),
     [createGroupNote, updateGroupNote, groupId]
   )
   const onRemove = useCallback(
-    (noteId: UUID) => deleteGroupNote({ groupId, noteId }),
+    (noteId: GroupNoteId) => deleteGroupNote({ groupId, noteId }),
     [deleteGroupNote, groupId]
   )
   const labels = useMemo<StickyNoteTabLabels>(

@@ -80,6 +80,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is TsStringEnum -> TsCode(typeRef(tsRepr))
             is TsExternalTypeRef -> tsRepr.keyRepresentation
             is GenericWrapper -> keyType(tsRepr.getTypeArgs(tsType.typeArguments))
+            is TsIdType -> TsCode(typeRef(tsRepr))
             is Excluded,
             is TsArray,
             is TsRecord,
@@ -99,6 +100,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is TsRecord -> recordType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
             is TsTuple -> tupleType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
             is GenericWrapper -> tsType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
+            is TsIdType -> TsCode(typeRef(tsRepr))
             is TsPlainObject -> {
                 val typeArguments =
                     tsRepr.getTypeArgs(tsType.typeArguments).map { typeArg ->
@@ -194,11 +196,19 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
         }
     }
 
+    fun tsIdType(namedType: TsIdType): TsCode =
+        if (namedType.strict) {
+            TsCode("export type ${namedType.name} = Id<'${namedType.tableName}'>", Imports.id)
+        } else {
+            TsCode("export type ${namedType.name} = string")
+        }
+
     fun namedType(namedType: TsNamedType<*>): TsCode =
         when (namedType) {
             is TsStringEnum -> stringEnum(namedType)
             is TsPlainObject -> tsPlainObject(namedType)
             is TsSealedClass -> sealedClass(namedType)
+            is TsIdType -> tsIdType(namedType)
         }
 
     private fun needsJsonDeserializer(type: KType): Boolean {
@@ -227,6 +237,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                         tsRepr.obj.applyTypeArguments(type.arguments).values.any { check(it) }
                     is TsExternalTypeRef -> tsRepr.deserializeJson != null
                     is Excluded,
+                    is TsIdType,
                     is TsStringEnum,
                     is TsPlain -> false
                     null ->
@@ -299,6 +310,7 @@ ${cases.prependIndent("    ")}
                     namedType.properties,
                 )
             }
+            is TsIdType -> null
         }
 
     private fun jsonObjectDeserializer(
@@ -390,6 +402,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                 is TsExternalTypeRef -> tsRepr.deserializeJson?.invoke(jsonExpression)
                 is Excluded,
                 is TsPlain,
+                is TsIdType,
                 is TsStringEnum -> null
                 null ->
                     when (val clazz = type.classifier) {
@@ -411,6 +424,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
             is TsExternalTypeRef -> tsRepr.serializePathVariable?.invoke(valueExpression)
             is GenericWrapper ->
                 serializePathVariable(tsRepr.getTypeArgs(type.arguments), valueExpression)
+            is TsIdType -> valueExpression
             is TsPlainObject,
             is TsSealedClass,
             is TsObjectLiteral,
@@ -442,6 +456,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
             is TsStringEnum ->
                 if (type.isMarkedNullable) valueExpression + "?.toString()"
                 else valueExpression + ".toString()"
+            is TsIdType -> valueExpression
             is TsExternalTypeRef ->
                 tsRepr.serializeRequestParam?.invoke(valueExpression, type.isMarkedNullable)
                     ?: if (type.isMarkedNullable) valueExpression + "?.toString()"

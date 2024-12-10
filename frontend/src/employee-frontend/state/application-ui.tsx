@@ -23,9 +23,9 @@ import {
   DaycareCareArea,
   UnitStub
 } from 'lib-common/generated/api-types/daycare'
+import { ApplicationId, AreaId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
 import {
@@ -51,13 +51,13 @@ interface UIState {
   ) => void
   debouncedApplicationSearchFilters: ApplicationSearchFilters
   clearSearchFilters: () => void
-  checkedIds: string[]
-  setCheckedIds: (applicationIds: UUID[]) => void
+  checkedIds: ApplicationId[]
+  setCheckedIds: (applicationIds: ApplicationId[]) => void
   showCheckboxes: boolean
 }
 
 interface ApplicationSearchFilters {
-  area: string[]
+  area: AreaId[]
   units: string[]
   basis: ApplicationBasis[]
   status: ApplicationSummaryStatusOptions
@@ -139,7 +139,7 @@ export const ApplicationUIContextProvider = React.memo(
       500
     )
 
-    const [checkedIds, setCheckedIds] = useState<string[]>(
+    const [checkedIds, setCheckedIds] = useState<ApplicationId[]>(
       defaultState.checkedIds
     )
     const showCheckboxes = [

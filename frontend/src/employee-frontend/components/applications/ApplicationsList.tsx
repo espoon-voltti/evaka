@@ -12,7 +12,7 @@ import {
   ApplicationSummary,
   PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
-import { UUID } from 'lib-common/types'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import Pagination from 'lib-components/Pagination'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -195,7 +195,7 @@ const ApplicationsList = React.memo(function Applications({
     hasRole(roles, 'FINANCE_ADMIN') ||
     hasRole(roles, 'ADMIN')
 
-  const [editedNote, setEditedNote] = useState<UUID | null>(null)
+  const [editedNote, setEditedNote] = useState<ApplicationId | null>(null)
   const [editedNoteText, setEditedNoteText] = useState<string>('')
 
   const isSorted = (column: ApplicationSortColumn) =>

@@ -4,6 +4,10 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { AttachmentType } from 'lib-common/generated/api-types/attachment'
+import {
+  ApplicationId,
+  AttachmentId
+} from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 
 import { API_URL, client } from './api-client'
@@ -12,12 +16,12 @@ async function doSaveAttachment(
   url: string,
   file: File,
   onUploadProgress: (percentage: number) => void
-): Promise<Result<UUID>> {
+): Promise<Result<AttachmentId>> {
   const formData = new FormData()
   formData.append('file', file)
 
   try {
-    const { data } = await client.post<string>(url, formData, {
+    const { data } = await client.post<AttachmentId>(url, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: ({ loaded, total }) =>
         onUploadProgress(
@@ -36,7 +40,7 @@ export async function saveIncomeStatementAttachment(
   incomeStatementId: UUID | undefined,
   file: File,
   onUploadProgress: (percentage: number) => void
-): Promise<Result<UUID>> {
+): Promise<Result<AttachmentId>> {
   return doSaveAttachment(
     incomeStatementId
       ? `/citizen/attachments/income-statements/${incomeStatementId}`
@@ -49,7 +53,7 @@ export async function saveIncomeStatementAttachment(
 export async function saveMessageAttachment(
   file: File,
   onUploadProgress: (percentage: number) => void
-): Promise<Result<UUID>> {
+): Promise<Result<AttachmentId>> {
   return doSaveAttachment(
     '/citizen/attachments/messages',
     file,
@@ -58,11 +62,11 @@ export async function saveMessageAttachment(
 }
 
 export async function saveApplicationAttachment(
-  applicationId: UUID,
+  applicationId: ApplicationId,
   file: File,
   attachmentType: AttachmentType,
   onUploadProgress: (percentage: number) => void
-): Promise<Result<UUID>> {
+): Promise<Result<AttachmentId>> {
   return doSaveAttachment(
     `/citizen/attachments/applications/${applicationId}?type=${attachmentType}`,
     file,

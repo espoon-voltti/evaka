@@ -4,7 +4,12 @@
 
 import { DevCalendarEventTime, DevPerson } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  CalendarEventId,
+  CalendarEventTimeId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -39,14 +44,14 @@ let children: DevPerson[]
 const today = LocalDate.of(2022, 1, 10)
 
 const groupId = uuidv4()
-const groupEventId = uuidv4()
-const unitEventId = uuidv4()
-const individualEventId = uuidv4()
-const reservationId = uuidv4()
-const groupReservationId = uuidv4()
-const restrictedEventId = uuidv4()
-const restrictedEventTimeId = uuidv4()
-const noncancellableEventTimeId = uuidv4()
+const groupEventId = randomId<CalendarEventId>()
+const unitEventId = randomId<CalendarEventId>()
+const individualEventId = randomId<CalendarEventId>()
+const reservationId = randomId<CalendarEventTimeId>()
+const groupReservationId = randomId<CalendarEventTimeId>()
+const restrictedEventId = randomId<CalendarEventId>()
+const restrictedEventTimeId = randomId<CalendarEventTimeId>()
+const noncancellableEventTimeId = randomId<CalendarEventTimeId>()
 
 let reservationData: DevCalendarEventTime
 
@@ -395,10 +400,10 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
   })
 })
 
-const visibleEventTimeId = uuidv4()
-const unavailableEventTimeId = uuidv4()
-const visibleLaterEventTimeId = uuidv4()
-const multiPlacementEventId = uuidv4()
+const visibleEventTimeId = randomId<CalendarEventTimeId>()
+const unavailableEventTimeId = randomId<CalendarEventTimeId>()
+const visibleLaterEventTimeId = randomId<CalendarEventTimeId>()
+const multiPlacementEventId = randomId<CalendarEventId>()
 
 describe.each(e)('Citizen calendar event time visibility (%s)', (env) => {
   beforeEach(async () => {

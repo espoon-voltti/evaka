@@ -7,6 +7,7 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -33,7 +34,7 @@ class PlacementToolController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestPart("file") file: MultipartFile,
-    ): UUID {
+    ): AttachmentId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -45,7 +46,7 @@ class PlacementToolController(
                     placementToolService.createPlacementToolApplications(tx, user, clock, file)
 
                     // this is needed for fileUpload component
-                    UUID.randomUUID()
+                    AttachmentId(UUID.randomUUID())
                 }
             }
             .also { Audit.PlacementTool.log() }

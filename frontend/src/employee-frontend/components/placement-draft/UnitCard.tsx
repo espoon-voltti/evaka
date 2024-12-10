@@ -11,6 +11,7 @@ import { isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -108,7 +109,7 @@ const OccupancyContainer = styled.div`
 `
 
 function useSpeculatedOccupancies(
-  applicationId: UUID,
+  applicationId: ApplicationId,
   unitId: UUID,
   period: FiniteDateRange,
   preschoolDaycarePeriod: FiniteDateRange | undefined
@@ -134,7 +135,7 @@ function useSpeculatedOccupancies(
 }
 
 interface Props {
-  applicationId: UUID
+  applicationId: ApplicationId
   unitId: string
   unitName: string
   period: FiniteDateRange

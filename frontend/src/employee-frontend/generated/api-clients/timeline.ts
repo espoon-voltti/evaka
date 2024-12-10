@@ -6,8 +6,8 @@
 
 import LocalDate from 'lib-common/local-date'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { Timeline } from 'lib-common/generated/api-types/timeline'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonTimeline } from 'lib-common/generated/api-types/timeline'
@@ -19,7 +19,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getTimeline(
   request: {
-    personId: UUID,
+    personId: PersonId,
     from: LocalDate,
     to: LocalDate
   }

@@ -5,6 +5,7 @@
 import React, { useCallback, useState } from 'react'
 
 import { Result } from 'lib-common/api'
+import { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -13,7 +14,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 
 import { InlineAsyncButton } from './InlineAsyncButton'
-import { EditedNote, Note } from './notes'
+import { EditedNote } from './notes'
 
 export interface EditorLabels {
   cancel: string
@@ -21,19 +22,19 @@ export interface EditorLabels {
   placeholder: string
 }
 
-interface Props {
-  note: Note
-  onSave: (note: EditedNote) => Promise<Result<unknown>>
+interface Props<IdType extends Id<string>> {
+  note: EditedNote<IdType>
+  onSave: (note: EditedNote<IdType>) => Promise<Result<unknown>>
   onCancelEdit: () => void
   labels: EditorLabels
 }
 
-export const StickyNoteEditor = React.memo(function StickyNoteEditor({
+export function StickyNoteEditor<IdType extends Id<string>>({
   note,
   onCancelEdit,
   onSave,
   labels
-}: Props) {
+}: Props<IdType>) {
   const [text, setText] = useState(note.note)
 
   const saveNote = useCallback(
@@ -72,4 +73,4 @@ export const StickyNoteEditor = React.memo(function StickyNoteEditor({
       </FixedSpaceRow>
     </ContentArea>
   )
-})
+}

@@ -10,6 +10,7 @@ import {
   Attachment,
   PedagogicalDocument
 } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
@@ -124,7 +125,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   )
 
   const handleAttachmentDelete = useCallback(
-    async (id: UUID) =>
+    async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() =>
         setPedagogicalDocument(({ ...rest }) => ({
           ...rest,

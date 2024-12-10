@@ -6,6 +6,7 @@ package evaka.codegen.api
 
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
@@ -47,9 +48,11 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
         }
         if (clazz.hasAnnotation<ExcludeCodeGen>()) return Excluded
 
+        val isDatabaseTableType = clazz.allSuperclasses.any { it == DatabaseTable::class }
         val parentSealedClass =
             clazz.allSuperclasses.firstNotNullOfOrNull { tsReprMap[it] as? TsSealedClass }
         return when {
+            isDatabaseTableType -> TsIdType(clazz)
             parentSealedClass != null -> TsSealedVariant(parentSealedClass, TsPlainObject(clazz))
             clazz.java.isEnum -> TsStringEnum(clazz)
             clazz.isSealed -> {
@@ -85,6 +88,7 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
                 is TsStringEnum,
                 is Excluded,
                 is TsPlain,
+                is TsIdType,
                 is TsExternalTypeRef -> {}
             }
 

@@ -7,14 +7,17 @@
 import LocalDate from 'lib-common/local-date'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventForm } from 'lib-common/generated/api-types/calendarevent'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventTimeClearingForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeEmployeeReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeForm } from 'lib-common/generated/api-types/calendarevent'
+import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventUpdateForm } from 'lib-common/generated/api-types/calendarevent'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DiscussionReservationDay } from 'lib-common/generated/api-types/calendarevent'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -27,11 +30,11 @@ import { uri } from 'lib-common/uri'
 */
 export async function addCalendarEventTime(
   request: {
-    id: UUID,
+    id: CalendarEventId,
     body: CalendarEventTimeForm
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<CalendarEventTimeId> {
+  const { data: json } = await client.request<JsonOf<CalendarEventTimeId>>({
     url: uri`/employee/calendar-event/${request.id}/time`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CalendarEventTimeForm>
@@ -64,8 +67,8 @@ export async function createCalendarEvent(
   request: {
     body: CalendarEventForm
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<CalendarEventId> {
+  const { data: json } = await client.request<JsonOf<CalendarEventId>>({
     url: uri`/employee/calendar-event`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CalendarEventForm>
@@ -79,7 +82,7 @@ export async function createCalendarEvent(
 */
 export async function deleteCalendarEvent(
   request: {
-    id: UUID
+    id: CalendarEventId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -95,7 +98,7 @@ export async function deleteCalendarEvent(
 */
 export async function deleteCalendarEventTime(
   request: {
-    id: UUID
+    id: CalendarEventTimeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -111,7 +114,7 @@ export async function deleteCalendarEventTime(
 */
 export async function getCalendarEvent(
   request: {
-    id: UUID
+    id: CalendarEventId
   }
 ): Promise<CalendarEvent> {
   const { data: json } = await client.request<JsonOf<CalendarEvent>>({
@@ -127,8 +130,8 @@ export async function getCalendarEvent(
 */
 export async function getGroupDiscussionReservationDays(
   request: {
-    unitId: UUID,
-    groupId: UUID,
+    unitId: DaycareId,
+    groupId: GroupId,
     start: LocalDate,
     end: LocalDate
   }
@@ -151,8 +154,8 @@ export async function getGroupDiscussionReservationDays(
 */
 export async function getGroupDiscussionSurveys(
   request: {
-    unitId: UUID,
-    groupId: UUID
+    unitId: DaycareId,
+    groupId: GroupId
   }
 ): Promise<CalendarEvent[]> {
   const { data: json } = await client.request<JsonOf<CalendarEvent[]>>({
@@ -168,7 +171,7 @@ export async function getGroupDiscussionSurveys(
 */
 export async function getUnitCalendarEvents(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     start: LocalDate,
     end: LocalDate
   }
@@ -191,7 +194,7 @@ export async function getUnitCalendarEvents(
 */
 export async function modifyCalendarEvent(
   request: {
-    id: UUID,
+    id: CalendarEventId,
     body: CalendarEventUpdateForm
   }
 ): Promise<void> {
@@ -226,7 +229,7 @@ export async function setCalendarEventTimeReservation(
 */
 export async function updateCalendarEvent(
   request: {
-    id: UUID,
+    id: CalendarEventId,
     body: CalendarEventUpdateForm
   }
 ): Promise<void> {

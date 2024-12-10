@@ -7,7 +7,7 @@
 import { ChildBasicInformation } from 'lib-common/generated/api-types/sensitive'
 import { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { deserializeJsonChildBasicInformation } from 'lib-common/generated/api-types/sensitive'
 import { uri } from 'lib-common/uri'
@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getBasicInfo(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ChildBasicInformation> {
   const { data: json } = await client.request<JsonOf<ChildBasicInformation>>({
@@ -34,7 +34,7 @@ export async function getBasicInfo(
 */
 export async function getSensitiveInfo(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ChildSensitiveInformation> {
   const { data: json } = await client.request<JsonOf<ChildSensitiveInformation>>({

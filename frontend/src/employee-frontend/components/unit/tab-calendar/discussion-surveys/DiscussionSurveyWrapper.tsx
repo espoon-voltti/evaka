@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import React from 'react'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
-import { useQueryResult } from 'lib-common/query'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 
 import { discussionSurveyQuery } from '../queries'
@@ -20,47 +22,43 @@ export default React.memo(function DiscussionReservationSurveyWrapper({
 }: {
   mode: DiscussionReservationSurveyViewMode
 }) {
-  const { groupId, unitId, eventId } = useRouteParams([
-    'groupId',
-    'unitId',
-    'eventId'
-  ])
+  const {
+    groupId,
+    unitId,
+    eventId: eventIdOrNew
+  } = useRouteParams(['groupId', 'unitId', 'eventId'])
+  const eventId =
+    eventIdOrNew && eventIdOrNew !== 'new'
+      ? fromUuid<CalendarEventId>(eventIdOrNew)
+      : null
 
-  const hasExistingEvent = useMemo(
-    () => !!eventId && eventId !== 'new',
-    [eventId]
+  const eventData = useQueryResult(
+    eventId !== null
+      ? discussionSurveyQuery({ id: eventId })
+      : constantQuery(null)
   )
-  const eventData = useQueryResult(discussionSurveyQuery({ id: eventId }), {
-    enabled: hasExistingEvent
-  })
 
-  if (hasExistingEvent) {
-    if (mode === 'EDIT') {
-      return renderResult(eventData, (data) => (
+  return renderResult(eventData, (data) =>
+    data != null ? (
+      mode === 'EDIT' ? (
         <DiscussionSurveyEditor
           unitId={unitId}
           groupId={groupId}
           eventData={data}
         />
-      ))
-    } else if (mode === 'VIEW') {
-      return renderResult(eventData, (data) => (
+      ) : mode === 'VIEW' ? (
         <DiscussionSurveyView
           unitId={unitId}
           groupId={groupId}
           eventData={data}
         />
-      ))
-    } else {
-      return null
-    }
-  } else {
-    return (
+      ) : null
+    ) : (
       <DiscussionSurveyEditor
         unitId={unitId}
         groupId={groupId}
         eventData={null}
       />
     )
-  }
+  )
 })

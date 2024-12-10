@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Action } from 'lib-common/generated/action'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -36,7 +37,7 @@ export default React.memo(function DailyServiceTimesRow({
   onDelete: () => void
   onEdit: (open: boolean) => void
   isEditing: boolean
-  id: UUID
+  id: DailyServiceTimeId
 }) {
   const { i18n } = useTranslation()
 
