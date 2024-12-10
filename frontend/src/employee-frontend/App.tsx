@@ -158,9 +158,24 @@ function App() {
 const Content = React.memo(function Content() {
   const { apiVersion, loaded } = useContext(UserContext)
 
-  const { loggedIn } = useContext(UserContext)
-  const { showSessionExpiredModal, setShowSessionExpiredModal } =
+  const {
+    loggedIn,
+    unauthorizedApiCallDetected,
+    dismissUnauthorizedApiCallDetection,
+    refreshAuthStatus
+  } = useContext(UserContext)
+  const { sessionExpirationDetected, dismissSessionExpiredDetection } =
     useKeepSessionAlive(sessionKeepalive, loggedIn)
+
+  const handleLoginClick = () => {
+    window.open('/employee/close-after-login', '_blank')
+    const authChecker = () => {
+      refreshAuthStatus()
+      document.removeEventListener('focusin', authChecker)
+    }
+    document.addEventListener('focusin', authChecker)
+  }
+
   if (!loaded) return null
 
   return (
@@ -178,9 +193,13 @@ const Content = React.memo(function Content() {
       <ErrorMessage />
       <LoginErrorModal />
       <PairingModal />
-      {showSessionExpiredModal && (
+      {(unauthorizedApiCallDetected || sessionExpirationDetected) && (
         <SessionExpiredModal
-          onClose={() => setShowSessionExpiredModal(false)}
+          onLoginClick={handleLoginClick}
+          onClose={() => {
+            dismissUnauthorizedApiCallDetection()
+            dismissSessionExpiredDetection()
+          }}
         />
       )}
     </>
@@ -1021,6 +1040,14 @@ export default createBrowserRouter(
           )
         },
         {
+          path: '/close-after-login',
+          element: (
+            <EmployeeRoute title="login" requireAuth={false}>
+              <CloseAfterLogin />
+            </EmployeeRoute>
+          )
+        },
+        {
           path: '/*',
           element: (
             <EmployeeRoute requireAuth={false}>
@@ -1041,6 +1068,14 @@ export default createBrowserRouter(
   ],
   { basename: '/employee' }
 )
+
+function CloseAfterLogin() {
+  const { loggedIn } = useContext(UserContext)
+  if (loggedIn) {
+    window.close()
+  }
+  return loggedIn ? <RedirectToMainPage /> : <LoginPage />
+}
 
 function RedirectToMainPage() {
   const { loggedIn, roles } = useContext(UserContext)
