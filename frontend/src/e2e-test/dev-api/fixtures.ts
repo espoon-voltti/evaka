@@ -282,7 +282,7 @@ export class Fixture {
     >
   ): PreschoolTermBuilder {
     return new PreschoolTermBuilder({
-      id: uuidv4(),
+      id: randomId(),
       ...initial
     })
   }
@@ -1888,7 +1888,7 @@ export const nonFullDayTimeRange: TimeRange = new TimeRange(
 )
 
 export const preschoolTerm2020: DevPreschoolTerm = {
-  id: uuidv4(),
+  id: randomId(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
     LocalDate.of(2021, 6, 4)
@@ -1909,7 +1909,7 @@ export const preschoolTerm2020: DevPreschoolTerm = {
 }
 
 export const preschoolTerm2021: DevPreschoolTerm = {
-  id: uuidv4(),
+  id: randomId(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
     LocalDate.of(2022, 6, 3)
@@ -1930,7 +1930,7 @@ export const preschoolTerm2021: DevPreschoolTerm = {
 }
 
 export const preschoolTerm2022: DevPreschoolTerm = {
-  id: uuidv4(),
+  id: randomId(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2022, 8, 11),
     LocalDate.of(2023, 6, 2)
@@ -1951,7 +1951,7 @@ export const preschoolTerm2022: DevPreschoolTerm = {
 }
 
 export const preschoolTerm2023: DevPreschoolTerm = {
-  id: uuidv4(),
+  id: randomId(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2023, 8, 11),
     LocalDate.of(2024, 6, 3)
@@ -1983,7 +1983,7 @@ export const preschoolTerms = [
 ]
 
 export const clubTerm2020: ClubTerm = {
-  id: uuidv4(),
+  id: randomId(),
   term: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
     LocalDate.of(2021, 6, 4)
@@ -1996,7 +1996,7 @@ export const clubTerm2020: ClubTerm = {
 }
 
 export const clubTerm2021: ClubTerm = {
-  id: uuidv4(),
+  id: randomId(),
   term: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
     LocalDate.of(2022, 6, 3)
@@ -2009,7 +2009,7 @@ export const clubTerm2021: ClubTerm = {
 }
 
 export const clubTerm2022: ClubTerm = {
-  id: uuidv4(),
+  id: randomId(),
   term: new FiniteDateRange(
     LocalDate.of(2022, 8, 10),
     LocalDate.of(2023, 6, 3)
@@ -2022,7 +2022,7 @@ export const clubTerm2022: ClubTerm = {
 }
 
 export const clubTerm2023: ClubTerm = {
-  id: uuidv4(),
+  id: randomId(),
   term: new FiniteDateRange(
     LocalDate.of(2023, 8, 10),
     LocalDate.of(2024, 6, 3)

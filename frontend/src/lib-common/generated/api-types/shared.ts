@@ -65,7 +65,7 @@ export interface CitizenFeatures {
   reservations: boolean
 }
 
-export type ClubTermId = string
+export type ClubTermId = Id<'ClubTerm'>
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.Coordinate
@@ -238,7 +238,7 @@ export type PlacementPlanId = string
 
 export type PreschoolAssistanceId = string
 
-export type PreschoolTermId = string
+export type PreschoolTermId = Id<'PreschoolTerm'>
 
 export type ServiceApplicationId = string
 
