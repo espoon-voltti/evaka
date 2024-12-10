@@ -32,6 +32,16 @@ data class DailyServiceTimes(
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class ServiceTimesPresenceStatus {
+    @JsonTypeName("PRESENT")
+    data class Present(val times: TimeRange) : ServiceTimesPresenceStatus()
+
+    @JsonTypeName("ABSENT") data object Absent : ServiceTimesPresenceStatus()
+
+    @JsonTypeName("UNKNOWN") data object Unknown : ServiceTimesPresenceStatus()
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class DailyServiceTimesValue(
     open val validityPeriod: DateRange,
     val type: DailyServiceTimesType,
@@ -40,7 +50,7 @@ sealed class DailyServiceTimesValue(
 
     abstract fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean
 
-    abstract fun getTimesOnDate(date: LocalDate): TimeRange?
+    abstract fun getTimesOnDate(date: LocalDate): ServiceTimesPresenceStatus
 
     @JsonTypeName("REGULAR")
     data class RegularTimes(override val validityPeriod: DateRange, val regularTimes: TimeRange) :
@@ -62,10 +72,10 @@ sealed class DailyServiceTimesValue(
         override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
             other is RegularTimes && regularTimes == other.regularTimes
 
-        override fun getTimesOnDate(date: LocalDate): TimeRange? {
-            if (!validityPeriod.includes(date)) return null
+        override fun getTimesOnDate(date: LocalDate): ServiceTimesPresenceStatus {
+            if (!validityPeriod.includes(date)) return ServiceTimesPresenceStatus.Unknown
 
-            return regularTimes
+            return ServiceTimesPresenceStatus.Present(regularTimes)
         }
     }
 
@@ -124,10 +134,12 @@ sealed class DailyServiceTimesValue(
                 saturday == null &&
                 sunday == null
 
-        override fun getTimesOnDate(date: LocalDate): TimeRange? {
-            if (!validityPeriod.includes(date)) return null
+        override fun getTimesOnDate(date: LocalDate): ServiceTimesPresenceStatus {
+            if (!validityPeriod.includes(date)) return ServiceTimesPresenceStatus.Unknown
 
-            return timesForDayOfWeek(date.dayOfWeek)
+            return ServiceTimesPresenceStatus.Present(
+                timesForDayOfWeek(date.dayOfWeek) ?: return ServiceTimesPresenceStatus.Absent
+            )
         }
     }
 
@@ -151,8 +163,8 @@ sealed class DailyServiceTimesValue(
         override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
             other is VariableTimes
 
-        override fun getTimesOnDate(date: LocalDate): TimeRange? {
-            return null
+        override fun getTimesOnDate(date: LocalDate): ServiceTimesPresenceStatus {
+            return ServiceTimesPresenceStatus.Unknown
         }
     }
 
