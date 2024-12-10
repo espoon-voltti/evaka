@@ -8,7 +8,7 @@ import DateRange from '../../date-range'
 import LocalDate from '../../local-date'
 import TimeRange from '../../time-range'
 import { Action } from '../action'
-import { DailyServicesTimeId } from './shared'
+import { DailyServiceTimeId } from './shared'
 import { JsonOf } from '../../json'
 import { PersonId } from './shared'
 
@@ -17,7 +17,7 @@ import { PersonId } from './shared'
 */
 export interface DailyServiceTimes {
   childId: PersonId
-  id: DailyServicesTimeId
+  id: DailyServiceTimeId
   times: DailyServiceTimesValue
 }
 

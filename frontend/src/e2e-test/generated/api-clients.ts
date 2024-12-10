@@ -22,7 +22,7 @@ import { ChildStickyNoteBody } from 'lib-common/generated/api-types/note'
 import { ChildStickyNoteId } from 'lib-common/generated/api-types/shared'
 import { Citizen } from './api-types'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import { DailyServicesTimeId } from 'lib-common/generated/api-types/shared'
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
 import { DaycareAclInsert } from './api-types'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
@@ -255,9 +255,9 @@ export async function addDailyServiceTime(
     body: DevDailyServiceTimes
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<DailyServicesTimeId> {
+): Promise<DailyServiceTimeId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<DailyServicesTimeId>>({
+    const { data: json } = await devClient.request<JsonOf<DailyServiceTimeId>>({
       url: uri`/daily-service-time`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },

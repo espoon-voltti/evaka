@@ -38,9 +38,9 @@ import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { ChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
 import { ClubTermId } from 'lib-common/generated/api-types/shared'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
+import { DailyServiceTimeNotificationId } from 'lib-common/generated/api-types/shared'
 import { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
-import { DailyServicesTimeId } from 'lib-common/generated/api-types/shared'
-import { DailyServicesTimeNotificationId } from 'lib-common/generated/api-types/shared'
 import { DaycareAssistanceId } from 'lib-common/generated/api-types/shared'
 import { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import { DaycareDecisionCustomization } from 'lib-common/generated/api-types/daycare'
@@ -439,7 +439,7 @@ export interface DevClubTerm {
 */
 export interface DevDailyServiceTimeNotification {
   guardianId: PersonId
-  id: DailyServicesTimeNotificationId
+  id: DailyServiceTimeNotificationId
 }
 
 /**
@@ -448,7 +448,7 @@ export interface DevDailyServiceTimeNotification {
 export interface DevDailyServiceTimes {
   childId: PersonId
   fridayTimes: TimeRange | null
-  id: DailyServicesTimeId
+  id: DailyServiceTimeId
   mondayTimes: TimeRange | null
   regularTimes: TimeRange | null
   saturdayTimes: TimeRange | null

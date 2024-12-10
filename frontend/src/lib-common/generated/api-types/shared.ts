@@ -75,9 +75,9 @@ export interface Coordinate {
   lon: number
 }
 
-export type DailyServicesTimeId = string
+export type DailyServiceTimeId = string
 
-export type DailyServicesTimeNotificationId = string
+export type DailyServiceTimeNotificationId = string
 
 /**
 * Generated from fi.espoo.evaka.shared.auth.DaycareAclRow
