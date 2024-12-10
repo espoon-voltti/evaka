@@ -948,7 +948,10 @@ INSERT INTO application(
     transferapplication,
     allow_other_guardian_access,
     document,
-    modified_at
+    created_at,
+    created_by,
+    modified_at,
+    modified_by
 )
 VALUES (
     ${bind(application.id)},
@@ -965,7 +968,10 @@ VALUES (
     ${bind(application.transferApplication)},
     ${bind(application.allowOtherGuardianAccess)},
     ${bindJson(document)},
-    ${bind(application.modifiedAt)}
+    ${bind(application.createdAt)},
+    ${bind(application.createdBy)},
+    ${bind(application.modifiedAt)},
+    ${bind(application.modifiedBy)}
 )
 """
                     )
