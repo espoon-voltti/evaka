@@ -98,6 +98,6 @@ export default React.memo(function PersonDependants({
 
 function printableAddresses(address: PersonWithChildrenDTO['address']) {
   return address.streetAddress
-    ? `${address.streetAddress}, ${address.postalCode}, ${address.city}`
+    ? `${address.streetAddress}, ${address.postalCode}, ${address.postOffice}`
     : ''
 }

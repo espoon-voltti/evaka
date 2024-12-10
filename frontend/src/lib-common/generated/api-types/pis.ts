@@ -473,8 +473,8 @@ export interface PartnershipWithPermittedActions {
 * Generated from fi.espoo.evaka.pis.service.PersonAddressDTO
 */
 export interface PersonAddressDTO {
-  city: string
   origin: Origin
+  postOffice: string
   postalCode: string
   residenceCode: string
   streetAddress: string

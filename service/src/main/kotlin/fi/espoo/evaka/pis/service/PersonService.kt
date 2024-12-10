@@ -324,7 +324,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                         origin = PersonAddressDTO.Origin.VTJ,
                         streetAddress = person.streetAddress,
                         postalCode = person.postalCode,
-                        city = person.postOffice,
+                        postOffice = person.postOffice,
                         residenceCode = person.residenceCode,
                     )
                 } else {
@@ -332,7 +332,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                         origin = PersonAddressDTO.Origin.VTJ,
                         streetAddress = "",
                         postalCode = "",
-                        city = "",
+                        postOffice = "",
                         residenceCode = "",
                     )
                 },
@@ -362,7 +362,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                     origin = PersonAddressDTO.Origin.EVAKA,
                     streetAddress = person.streetAddress,
                     postalCode = person.postalCode,
-                    city = person.postOffice,
+                    postOffice = person.postOffice,
                     residenceCode = person.residenceCode,
                 ),
             residenceCode = person.residenceCode,
@@ -571,7 +571,7 @@ data class PersonWithChildrenDTO(
             residenceCode = residenceCode,
             streetAddress = address.streetAddress,
             postalCode = address.postalCode,
-            postOffice = address.city,
+            postOffice = address.postOffice,
             municipalityOfResidence = municipalityOfResidence,
             restrictedDetailsEnabled = restrictedDetails.enabled,
             restrictedDetailsEndDate = restrictedDetails.endDate,
@@ -586,7 +586,7 @@ data class PersonAddressDTO(
     val origin: Origin,
     val streetAddress: String,
     val postalCode: String,
-    val city: String,
+    val postOffice: String,
     val residenceCode: String,
 ) {
     enum class Origin {
