@@ -19,6 +19,7 @@ import { ChildAttendanceReportRow } from 'lib-common/generated/api-types/reports
 import { ChildPreschoolAbsenceRow } from 'lib-common/generated/api-types/reports'
 import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import { CustomerFeesReportRow } from 'lib-common/generated/api-types/reports'
+import { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
@@ -43,12 +44,14 @@ import { NonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'
 import { OccupancyGroupReportResultRow } from 'lib-common/generated/api-types/reports'
 import { OccupancyType } from 'lib-common/generated/api-types/occupancy'
 import { OccupancyUnitReportResultRow } from 'lib-common/generated/api-types/reports'
+import { OtherAssistanceMeasureType } from 'lib-common/generated/api-types/assistance'
 import { PartnersInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import { PlacementCountReportResult } from 'lib-common/generated/api-types/reports'
 import { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { PreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
+import { PreschoolAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import { PreschoolUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
@@ -145,11 +148,17 @@ export async function getAssistanceNeedDecisionsReportUnreadCount(): Promise<num
 */
 export async function getAssistanceNeedsAndActionsReport(
   request: {
-    date: LocalDate
+    date: LocalDate,
+    daycareAssistanceLevels?: DaycareAssistanceLevel[] | null,
+    preschoolAssistanceLevels?: PreschoolAssistanceLevel[] | null,
+    otherAssistanceMeasureTypes?: OtherAssistanceMeasureType[] | null
   }
 ): Promise<AssistanceNeedsAndActionsReport> {
   const params = createUrlSearchParams(
-    ['date', request.date.formatIso()]
+    ['date', request.date.formatIso()],
+    ...(request.daycareAssistanceLevels?.map((e): [string, string | null | undefined] => ['daycareAssistanceLevels', e.toString()]) ?? []),
+    ...(request.preschoolAssistanceLevels?.map((e): [string, string | null | undefined] => ['preschoolAssistanceLevels', e.toString()]) ?? []),
+    ...(request.otherAssistanceMeasureTypes?.map((e): [string, string | null | undefined] => ['otherAssistanceMeasureTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReport>>({
     url: uri`/employee/reports/assistance-needs-and-actions`.toString(),
@@ -165,11 +174,17 @@ export async function getAssistanceNeedsAndActionsReport(
 */
 export async function getAssistanceNeedsAndActionsReportByChild(
   request: {
-    date: LocalDate
+    date: LocalDate,
+    daycareAssistanceLevels?: DaycareAssistanceLevel[] | null,
+    preschoolAssistanceLevels?: PreschoolAssistanceLevel[] | null,
+    otherAssistanceMeasureTypes?: OtherAssistanceMeasureType[] | null
   }
 ): Promise<AssistanceNeedsAndActionsReportByChild> {
   const params = createUrlSearchParams(
-    ['date', request.date.formatIso()]
+    ['date', request.date.formatIso()],
+    ...(request.daycareAssistanceLevels?.map((e): [string, string | null | undefined] => ['daycareAssistanceLevels', e.toString()]) ?? []),
+    ...(request.preschoolAssistanceLevels?.map((e): [string, string | null | undefined] => ['preschoolAssistanceLevels', e.toString()]) ?? []),
+    ...(request.otherAssistanceMeasureTypes?.map((e): [string, string | null | undefined] => ['otherAssistanceMeasureTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReportByChild>>({
     url: uri`/employee/reports/assistance-needs-and-actions/by-child`.toString(),

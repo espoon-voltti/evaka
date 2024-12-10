@@ -40,6 +40,9 @@ class AssistanceNeedsAndActionsReportController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam daycareAssistanceLevels: List<DaycareAssistanceLevel> = emptyList(),
+        @RequestParam preschoolAssistanceLevels: List<PreschoolAssistanceLevel> = emptyList(),
+        @RequestParam otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType> = emptyList(),
     ): AssistanceNeedsAndActionsReport {
         return db.connect { dbc ->
                 dbc.read {
@@ -53,7 +56,14 @@ class AssistanceNeedsAndActionsReportController(
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     AssistanceNeedsAndActionsReport(
                         actions = it.getAssistanceActionOptions(),
-                        rows = it.getReportRows(date, filter),
+                        rows =
+                            it.getReportRows(
+                                date,
+                                filter,
+                                daycareAssistanceLevels,
+                                preschoolAssistanceLevels,
+                                otherAssistanceMeasureTypes,
+                            ),
                         showAssistanceNeedVoucherCoefficient =
                             !featureConfig.valueDecisionCapacityFactorEnabled,
                     )
@@ -93,6 +103,9 @@ class AssistanceNeedsAndActionsReportController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam daycareAssistanceLevels: List<DaycareAssistanceLevel> = emptyList(),
+        @RequestParam preschoolAssistanceLevels: List<PreschoolAssistanceLevel> = emptyList(),
+        @RequestParam otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType> = emptyList(),
     ): AssistanceNeedsAndActionsReportByChild {
         return db.connect { dbc ->
                 dbc.read {
@@ -103,11 +116,19 @@ class AssistanceNeedsAndActionsReportController(
                             clock,
                             Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD,
                         )
-                    getAssistanceNeedsAndActionsReportByChild(
-                        it,
-                        date,
-                        filter,
-                        !featureConfig.valueDecisionCapacityFactorEnabled,
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    AssistanceNeedsAndActionsReportByChild(
+                        actions = it.getAssistanceActionOptions(),
+                        rows =
+                            it.getReportRowsByChild(
+                                date,
+                                filter,
+                                daycareAssistanceLevels,
+                                preschoolAssistanceLevels,
+                                otherAssistanceMeasureTypes,
+                            ),
+                        showAssistanceNeedVoucherCoefficient =
+                            !featureConfig.valueDecisionCapacityFactorEnabled,
                     )
                 }
             }
@@ -116,20 +137,6 @@ class AssistanceNeedsAndActionsReportController(
                     meta = mapOf("date" to date, "count" to it.rows.size)
                 )
             }
-    }
-
-    fun getAssistanceNeedsAndActionsReportByChild(
-        tx: Database.Read,
-        date: LocalDate,
-        filter: AccessControlFilter<DaycareId>,
-        showAssistanceNeedVoucherCoefficient: Boolean,
-    ): AssistanceNeedsAndActionsReportByChild {
-        tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-        return AssistanceNeedsAndActionsReportByChild(
-            actions = tx.getAssistanceActionOptions(),
-            rows = tx.getReportRowsByChild(date, filter),
-            showAssistanceNeedVoucherCoefficient = showAssistanceNeedVoucherCoefficient,
-        )
     }
 
     data class AssistanceNeedsAndActionsReportByChild(
@@ -162,6 +169,9 @@ private typealias AssistanceActionOptionValue = String
 private fun Database.Read.getReportRows(
     date: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>,
+    daycareAssistanceLevels: List<DaycareAssistanceLevel>,
+    preschoolAssistanceLevels: List<PreschoolAssistanceLevel>,
+    otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType>,
 ) =
     createQuery {
             sql(
@@ -187,6 +197,11 @@ WITH action_counts AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND daterange(aa.start_date, aa.end_date, '[]') @> ${bind(date)}
+        AND (
+            EXISTS (SELECT FROM daycare_assistance WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND level = ANY(${bind(daycareAssistanceLevels)})) OR
+            EXISTS (SELECT FROM preschool_assistance WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND level = ANY(${bind(preschoolAssistanceLevels)})) OR
+            EXISTS (SELECT FROM other_assistance_measure WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND type = ANY(${bind(otherAssistanceMeasureTypes)}))
+        )
         GROUP BY GROUPING SETS ((1, 2), (1, 3), (1, 4))
     ) action_stats
     GROUP BY daycare_group_id
@@ -288,6 +303,9 @@ ORDER BY ca.name, u.name, g.name
 private fun Database.Read.getReportRowsByChild(
     date: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>,
+    daycareAssistanceLevels: List<DaycareAssistanceLevel>,
+    preschoolAssistanceLevels: List<PreschoolAssistanceLevel>,
+    otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType>,
 ) =
     createQuery {
             sql(
@@ -306,6 +324,11 @@ WITH actions AS (
     WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
     AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
     AND daterange(aa.start_date, aa.end_date, '[]') @> ${bind(date)}
+    AND (
+        EXISTS (SELECT FROM daycare_assistance WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND level = ANY(${bind(daycareAssistanceLevels)})) OR
+        EXISTS (SELECT FROM preschool_assistance WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND level = ANY(${bind(preschoolAssistanceLevels)})) OR
+        EXISTS (SELECT FROM other_assistance_measure WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND type = ANY(${bind(otherAssistanceMeasureTypes)}))
+    )
     GROUP BY gpl.id, aa.child_id, aa.other_action
 ), daycare_assistance_counts AS (
     SELECT
