@@ -74,7 +74,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     origin = PersonAddressDTO.Origin.VTJ,
                     streetAddress = person.streetAddress,
                     postalCode = person.postalCode,
-                    city = person.postOffice,
+                    postOffice = person.postOffice,
                     residenceCode = "1",
                 ),
             residenceCode = person.residenceCode,
@@ -119,7 +119,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                             origin = PersonAddressDTO.Origin.VTJ,
                             streetAddress = "different",
                             postalCode = "02770",
-                            city = "Espoo",
+                            postOffice = "Espoo",
                             residenceCode = "2",
                         ),
                 )
