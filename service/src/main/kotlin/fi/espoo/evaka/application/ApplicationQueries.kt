@@ -1294,6 +1294,9 @@ WHERE (a.guardian_id = ${bind(citizenId)} OR (
         AND NOT other_guardian.restricted_details_enabled
         AND NOT guardian.restricted_details_enabled
         AND NOT child.restricted_details_enabled
+        AND other_guardian.street_address NOT ILIKE '%poste restante%'
+        AND guardian.street_address NOT ILIKE '%poste restante%'
+        AND child.street_address NOT ILIKE '%poste restante%'
         AND (
             (trim(other_guardian.residence_code) != '' AND
              trim(guardian.residence_code) != '' AND
