@@ -23,8 +23,8 @@ export interface UserState {
   user: User | undefined
   roles: AdRole[]
   refreshAuthStatus: () => void
-  logoutDetected: boolean
-  dismissLogoutDetection: () => void
+  unauthorizedApiCallDetected: boolean
+  dismissUnauthorizedApiCallDetection: () => void
 }
 
 export const UserContext = createContext<UserState>({
@@ -34,8 +34,8 @@ export const UserContext = createContext<UserState>({
   user: undefined,
   roles: [],
   refreshAuthStatus: () => undefined,
-  logoutDetected: false,
-  dismissLogoutDetection: () => undefined
+  unauthorizedApiCallDetected: false,
+  dismissUnauthorizedApiCallDetection: () => undefined
 })
 
 const authStatusQuery = query({
@@ -48,20 +48,29 @@ export const UserContextProvider = React.memo(function UserContextProvider({
 }: {
   children: React.JSX.Element
 }) {
-  const [logoutDetected, setLogoutDetected] = useState(false)
+  const [unauthorizedApiCallDetected, setUnauthorizedApiCallDetected] =
+    useState(false)
   const { data: authStatus, refetch } = useQuery(authStatusQuery())
-  const refreshAuthStatus = useCallback(() => void refetch(), [refetch])
+
+  const refreshAuthStatus = useCallback(async () => {
+    const result = await refetch()
+    // Reset logout detection if user is logged in again
+    if (result.data?.loggedIn) {
+      setUnauthorizedApiCallDetected(false)
+    }
+    return result
+  }, [refetch])
 
   useEffect(() => {
     const eventListener = ((loginStatusEvent: LoginStatusChangeEvent) => {
       loginStatusEvent.preventDefault()
-      setLogoutDetected(!loginStatusEvent.loginStatus)
+      setUnauthorizedApiCallDetected(!loginStatusEvent.loginStatus)
     }) as EventListener
     window.addEventListener(LoginStatusChangeEvent.name, eventListener)
     return () => {
       window.removeEventListener(LoginStatusChangeEvent.name, eventListener)
     }
-  }, [setLogoutDetected])
+  }, [setUnauthorizedApiCallDetected])
 
   const value = useMemo(
     () => ({
@@ -71,10 +80,11 @@ export const UserContextProvider = React.memo(function UserContextProvider({
       user: authStatus?.user,
       roles: authStatus?.roles ?? [],
       refreshAuthStatus,
-      logoutDetected,
-      dismissLogoutDetection: () => setLogoutDetected(false)
+      unauthorizedApiCallDetected,
+      dismissUnauthorizedApiCallDetection: () =>
+        setUnauthorizedApiCallDetected(false)
     }),
-    [authStatus, refreshAuthStatus, logoutDetected]
+    [authStatus, refreshAuthStatus, unauthorizedApiCallDetected]
   )
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 })
