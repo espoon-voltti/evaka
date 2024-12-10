@@ -4,10 +4,10 @@
 
 // GENERATED FILE: no manual modifications
 
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
 import { DailyServiceTimesEndDate } from 'lib-common/generated/api-types/dailyservicetimes'
 import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import { DailyServicesTimeId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
@@ -21,7 +21,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function deleteDailyServiceTimes(
   request: {
-    id: DailyServicesTimeId
+    id: DailyServiceTimeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -71,7 +71,7 @@ export async function postDailyServiceTimes(
 */
 export async function putDailyServiceTimes(
   request: {
-    id: DailyServicesTimeId,
+    id: DailyServiceTimeId,
     body: DailyServiceTimesValue
   }
 ): Promise<void> {
@@ -89,7 +89,7 @@ export async function putDailyServiceTimes(
 */
 export async function putDailyServiceTimesEnd(
   request: {
-    id: DailyServicesTimeId,
+    id: DailyServiceTimeId,
     body: DailyServiceTimesEndDate
   }
 ): Promise<void> {
