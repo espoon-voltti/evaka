@@ -1553,7 +1553,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
-            assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
+            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
+            assertNull(tx.getPlacementPlan(applicationId))
 
             val dateTimeString =
                 clock
@@ -1570,11 +1571,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             val decisionsByApplication =
                 tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
-            assertEquals(2, decisionsByApplication.size)
-            decisionsByApplication.forEach { decision ->
-                assertNull(decision.sentDate)
-                assertNull(decision.documentKey)
-            }
+            assertEquals(0, decisionsByApplication.size)
             val messages = MockSfiMessagesClient.getMessages()
             assertEquals(0, messages.size)
         }
@@ -1632,7 +1629,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
-            assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
+            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
+            assertNull(tx.getPlacementPlan(applicationId))
 
             val dateTimeString =
                 clock
@@ -1650,11 +1648,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             val decisionsByApplication =
                 tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
-            assertEquals(2, decisionsByApplication.size)
-            decisionsByApplication.forEach { decision ->
-                assertNull(decision.sentDate)
-                assertNull(decision.documentKey)
-            }
+            assertEquals(0, decisionsByApplication.size)
             val messages = MockSfiMessagesClient.getMessages()
             assertEquals(0, messages.size)
         }

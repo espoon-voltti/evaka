@@ -729,12 +729,9 @@ describe('Application transitions', () => {
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
     await applicationWorkbench.waitUntilLoaded()
-    await applicationWorkbench.openPlacementProposalQueue()
+    await applicationWorkbench.openPlacementQueue()
 
-    await applicationWorkbench.assertApplicationStatusTextMatches(
-      0,
-      'TILARAJOITE'
-    )
+    await applicationWorkbench.assertServiceWorkerNoteMatches(0, 'TILARAJOITE')
   })
 
   test('Decision cannot be accepted on behalf of guardian if application is in placement proposal state', async () => {

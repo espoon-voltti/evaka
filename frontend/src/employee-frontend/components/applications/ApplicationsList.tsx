@@ -519,6 +519,7 @@ const ApplicationsList = React.memo(function Applications({
                     ? i18n.common.edit
                     : i18n.applications.list.addNote
                 }
+                data-qa="service-worker-note"
               />
             </Tooltip>
           </Td>
