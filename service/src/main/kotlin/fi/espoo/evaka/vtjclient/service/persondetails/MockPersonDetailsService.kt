@@ -32,6 +32,7 @@ data class MockVtjPerson(
     val nationalities: List<Nationality> = emptyList(),
     val dateOfDeath: LocalDate? = null,
     val residenceCode: String? = null,
+    val municipalityOfResidence: String? = null,
 ) {
     fun toVtjPerson(): VtjPerson =
         VtjPerson(
@@ -44,6 +45,7 @@ data class MockVtjPerson(
             nationalities = nationalities,
             dateOfDeath = dateOfDeath,
             residenceCode = residenceCode,
+            municipalityOfResidence = municipalityOfResidence,
             dependants = emptyList(),
             guardians = emptyList(),
         )
@@ -72,6 +74,7 @@ data class MockVtjPerson(
                         )
                     },
                 residenceCode = person.residenceCode,
+                municipalityOfResidence = person.municipalityOfResidence,
                 nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
             )
 
@@ -94,6 +97,7 @@ data class MockVtjPerson(
                 nationalities = dto.nationalities.map { Nationality(it, it) },
                 dateOfDeath = dto.dateOfDeath,
                 residenceCode = dto.residenceCode,
+                municipalityOfResidence = dto.municipalityOfResidence,
             )
     }
 }

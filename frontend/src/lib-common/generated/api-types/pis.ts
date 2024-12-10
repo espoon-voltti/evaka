@@ -473,8 +473,8 @@ export interface PartnershipWithPermittedActions {
 * Generated from fi.espoo.evaka.pis.service.PersonAddressDTO
 */
 export interface PersonAddressDTO {
-  city: string
   origin: Origin
+  postOffice: string
   postalCode: string
   residenceCode: string
   streetAddress: string
@@ -506,6 +506,7 @@ export interface PersonJSON {
   invoicingStreetAddress: string
   language: string | null
   lastName: string
+  municipalityOfResidence: string
   ophPersonOid: string | null
   phone: string
   postOffice: string
@@ -532,6 +533,7 @@ export interface PersonPatch {
   invoicingPostalCode: string | null
   invoicingStreetAddress: string | null
   lastName: string | null
+  municipalityOfResidence: string | null
   ophPersonOid: string | null
   phone: string | null
   postOffice: string | null
@@ -575,6 +577,7 @@ export interface PersonWithChildrenDTO {
   firstName: string
   id: UUID
   lastName: string
+  municipalityOfResidence: string
   nationalities: Nationality[]
   nativeLanguage: NativeLanguage | null
   phone: string

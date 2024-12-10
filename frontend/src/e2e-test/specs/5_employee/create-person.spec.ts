@@ -83,6 +83,7 @@ describe('Create person', () => {
             nationalities: [],
             nativeLanguage: null,
             residenceCode: null,
+            municipalityOfResidence: null,
             restrictedDetails: null
           }
         ],

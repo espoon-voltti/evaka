@@ -46,6 +46,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         postalCode = "",
                         postOffice = "",
                         residenceCode = "",
+                        municipalityOfResidence = "",
                     ),
                 )
             }
