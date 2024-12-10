@@ -486,7 +486,9 @@ export default {
       addTimePeriod: 'Lisää ajankohta',
       emptySelection: 'Ei maksutonta poissaoloa',
       notEligible: (period: FiniteDateRange) =>
-        `Kysely ei koske lasta, koska hän ei ole ollut varhaiskasvatuksessa yhtäjaksoisesti ${period.format()}.`
+        `Kysely ei koske lasta, koska hän ei ole ollut varhaiskasvatuksessa yhtäjaksoisesti ${period.format()}.`,
+      rangesOverlap:
+        'Tälle ajanjaksolle on jo päällekkäinen merkintä. Muokkaa tarvittaessa edellistä ajanjaksoa.'
     },
     previousDay: 'Edellinen päivä',
     nextDay: 'Seuraava päivä',
