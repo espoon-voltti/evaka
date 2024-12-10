@@ -2,10 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useCallback, useMemo } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 
 import { AdRole, User } from 'lib-common/api-types/employee-auth'
 import { query, useQuery } from 'lib-common/query'
+import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 
 import { getAuthStatus } from '../api/auth'
 
@@ -16,6 +23,8 @@ export interface UserState {
   user: User | undefined
   roles: AdRole[]
   refreshAuthStatus: () => void
+  logoutDetected: boolean
+  dismissLogoutDetection: () => void
 }
 
 export const UserContext = createContext<UserState>({
@@ -24,7 +33,9 @@ export const UserContext = createContext<UserState>({
   loggedIn: false,
   user: undefined,
   roles: [],
-  refreshAuthStatus: () => undefined
+  refreshAuthStatus: () => undefined,
+  logoutDetected: false,
+  dismissLogoutDetection: () => undefined
 })
 
 const authStatusQuery = query({
@@ -37,8 +48,20 @@ export const UserContextProvider = React.memo(function UserContextProvider({
 }: {
   children: React.JSX.Element
 }) {
+  const [logoutDetected, setLogoutDetected] = useState(false)
   const { data: authStatus, refetch } = useQuery(authStatusQuery())
   const refreshAuthStatus = useCallback(() => void refetch(), [refetch])
+
+  useEffect(() => {
+    const eventListener = ((loginStatusEvent: LoginStatusChangeEvent) => {
+      loginStatusEvent.preventDefault()
+      setLogoutDetected(!loginStatusEvent.loginStatus)
+    }) as EventListener
+    window.addEventListener(LoginStatusChangeEvent.name, eventListener)
+    return () => {
+      window.removeEventListener(LoginStatusChangeEvent.name, eventListener)
+    }
+  }, [setLogoutDetected])
 
   const value = useMemo(
     () => ({
@@ -47,9 +70,11 @@ export const UserContextProvider = React.memo(function UserContextProvider({
       loggedIn: authStatus?.loggedIn ?? false,
       user: authStatus?.user,
       roles: authStatus?.roles ?? [],
-      refreshAuthStatus
+      refreshAuthStatus,
+      logoutDetected,
+      dismissLogoutDetection: () => setLogoutDetected(false)
     }),
-    [authStatus, refreshAuthStatus]
+    [authStatus, refreshAuthStatus, logoutDetected]
   )
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 })

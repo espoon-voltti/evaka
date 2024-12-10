@@ -4,11 +4,10 @@
 
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
-import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 import { Notifications } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
@@ -160,21 +159,10 @@ function App() {
 const Content = React.memo(function Content() {
   const { apiVersion, loaded } = useContext(UserContext)
 
-  const { loggedIn } = useContext(UserContext)
+  const { loggedIn, logoutDetected, dismissLogoutDetection } =
+    useContext(UserContext)
   const { showSessionExpiredModal, setShowSessionExpiredModal } =
     useKeepSessionAlive(sessionKeepalive, loggedIn)
-
-  useEffect(() => {
-    const eventListener = ((loginStatusEvent: LoginStatusChangeEvent) => {
-      loginStatusEvent.preventDefault()
-
-      setShowSessionExpiredModal(!loginStatusEvent.loginStatus)
-    }) as EventListener
-    window.addEventListener(LoginStatusChangeEvent.name, eventListener)
-    return () => {
-      window.removeEventListener(LoginStatusChangeEvent.name, eventListener)
-    }
-  }, [setShowSessionExpiredModal])
 
   if (!loaded) return null
 
@@ -193,20 +181,24 @@ const Content = React.memo(function Content() {
       <ErrorMessage />
       <LoginErrorModal />
       <PairingModal />
-      {showSessionExpiredModal && (
+      {(logoutDetected || showSessionExpiredModal) && (
         <SessionExpiredModal
           onLoginClick={() => {
             window.open('/employee/close-after-login', '_blank')
             const authChecker = async () => {
               const authStatus = await getAuthStatus()
               if (authStatus.loggedIn) {
+                dismissLogoutDetection()
                 setShowSessionExpiredModal(false)
                 document.removeEventListener('focusin', authChecker)
               }
             }
             document.addEventListener('focusin', authChecker)
           }}
-          onClose={() => setShowSessionExpiredModal(false)}
+          onClose={() => {
+            dismissLogoutDetection()
+            setShowSessionExpiredModal(false)
+          }}
         />
       )}
     </>
@@ -1081,7 +1073,7 @@ function CloseAfterLogin() {
   if (loggedIn) {
     window.close()
   }
-  return loggedIn ? <p>Tämän ikkunan voi nyt sulkea</p> : <LoginPage />
+  return loggedIn ? <RedirectToMainPage /> : <LoginPage />
 }
 
 function RedirectToMainPage() {

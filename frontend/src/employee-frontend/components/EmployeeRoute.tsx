@@ -40,6 +40,10 @@ const RequireAuth = React.memo(function EnsureAuthenticated({
 }: {
   element: React.ReactNode
 }) {
-  const { loggedIn } = useContext(UserContext)
-  return loggedIn ? <>{element}</> : <Navigate replace to="/" />
+  const { loggedIn, logoutDetected } = useContext(UserContext)
+  return loggedIn || logoutDetected ? (
+    <>{element}</>
+  ) : (
+    <Navigate replace to="/" />
+  )
 })
