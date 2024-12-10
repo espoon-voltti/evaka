@@ -85,14 +85,16 @@ const getMessageSubject = (
     `${applicationData.application.form.child.person.firstName} ${applicationData.application.form.child.person.lastName}`
   )
 
-const ApplicationMetadataSection = React.memo(function DecisionMetadataSection({
-  applicationId
-}: {
-  applicationId: UUID
-}) {
-  const result = useQueryResult(applicationMetadataQuery({ applicationId }))
-  return <MetadataSection metadataResult={result} />
-})
+const ApplicationMetadataSection = React.memo(
+  function ApplicationMetadataSection({
+    applicationId
+  }: {
+    applicationId: UUID
+  }) {
+    const result = useQueryResult(applicationMetadataQuery({ applicationId }))
+    return <MetadataSection metadataResult={result} />
+  }
+)
 
 export default React.memo(function ApplicationPage() {
   const { id: applicationId } = useRouteParams(['id'])
