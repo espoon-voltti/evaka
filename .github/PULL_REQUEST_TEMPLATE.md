@@ -10,6 +10,8 @@ Ohjeet PR:n tekijälle:
   kehitystiimiä. Voit esim. lisätä selventävän ruutukaappauksen. Rikkovien
   muutosten tapauksessa lisää päivitysohjeet.
 
+- Lisää linkki dokumentaation relevanttiin kohtaan.
+
 - PR:t ryhmitellään muutoslokille labelien mukaisesti. Lisää PR:lle yksi label seuraavista:
   - breaking: Rikkova muutos, joka vaatii toimia päivitettäessä
   - enhancement: Uusi toiminnallisuus tai parannus
