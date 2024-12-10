@@ -5,7 +5,14 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { Element, Modal, Page, Select, TextInput } from '../../../utils/page'
+import {
+  Element,
+  ElementCollection,
+  Modal,
+  Page,
+  Select,
+  TextInput
+} from '../../../utils/page'
 
 import { UnitCalendarPageBase } from './unit-calendar-page-base'
 import { UnitMonthCalendarPage } from './unit-month-calendar-page'
@@ -107,6 +114,12 @@ export class UnitChildReservationsTable extends Element {
   getBackupCareRequiredWarning(date: LocalDate, row: number): Promise<string> {
     const cell = this.#attendanceCell(date, row)
     return cell.findByDataQa('backup-care-required-warning').text
+  }
+
+  getTotalCounts(): ElementCollection {
+    return this.findByDataQa('totals-row').findAll(
+      'td:not(:first-child):not(:last-child)'
+    )
   }
 
   async openReservationModal(childId: UUID): Promise<ReservationModal> {
