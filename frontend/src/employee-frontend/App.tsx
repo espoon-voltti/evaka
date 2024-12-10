@@ -17,7 +17,6 @@ import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
-import { getAuthStatus } from './api/auth'
 import ApplicationPage from './components/ApplicationPage'
 import ChildInformation from './components/ChildInformation'
 import EmployeeRoute from './components/EmployeeRoute'
@@ -159,10 +158,23 @@ function App() {
 const Content = React.memo(function Content() {
   const { apiVersion, loaded } = useContext(UserContext)
 
-  const { loggedIn, logoutDetected, dismissLogoutDetection } =
-    useContext(UserContext)
+  const {
+    loggedIn,
+    unauthorizedApiCallDetected,
+    dismissUnauthorizedApiCallDetection,
+    refreshAuthStatus
+  } = useContext(UserContext)
   const { sessionExpirationDetected, dismissSessionExpiredDetection } =
     useKeepSessionAlive(sessionKeepalive, loggedIn)
+
+  const handleLoginClick = () => {
+    window.open('/employee/close-after-login', '_blank')
+    const authChecker = () => {
+      refreshAuthStatus()
+      document.removeEventListener('focusin', authChecker)
+    }
+    document.addEventListener('focusin', authChecker)
+  }
 
   if (!loaded) return null
 
@@ -181,23 +193,11 @@ const Content = React.memo(function Content() {
       <ErrorMessage />
       <LoginErrorModal />
       <PairingModal />
-      {(logoutDetected || sessionExpirationDetected) && (
+      {(unauthorizedApiCallDetected || sessionExpirationDetected) && (
         <SessionExpiredModal
-          onLoginClick={() => {
-            window.open('/employee/close-after-login', '_blank')
-            // TODO replace with userContext refreshAuthStatus?
-            const authChecker = async () => {
-              const authStatus = await getAuthStatus()
-              if (authStatus.loggedIn) {
-                dismissLogoutDetection()
-                dismissSessionExpiredDetection()
-                document.removeEventListener('focusin', authChecker)
-              }
-            }
-            document.addEventListener('focusin', authChecker)
-          }}
+          onLoginClick={handleLoginClick}
           onClose={() => {
-            dismissLogoutDetection()
+            dismissUnauthorizedApiCallDetection()
             dismissSessionExpiredDetection()
           }}
         />
