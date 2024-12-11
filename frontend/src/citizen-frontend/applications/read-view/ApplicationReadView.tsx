@@ -6,8 +6,9 @@ import React from 'react'
 
 import { combine } from 'lib-common/api'
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Container from 'lib-components/layout/Container'
 
 import Footer from '../../Footer'
@@ -18,7 +19,7 @@ import useTitle from '../../useTitle'
 import { applicationChildrenQuery, applicationQuery } from '../queries'
 
 export default React.memo(function ApplicationReadView() {
-  const { applicationId } = useRouteParams(['applicationId'])
+  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const t = useTranslation()
   const application = useQueryResult(applicationQuery({ applicationId }))
   const children = useQueryResult(applicationChildrenQuery())

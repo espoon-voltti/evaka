@@ -8,9 +8,13 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { Action } from '../action'
 import { AssistanceActionResponse } from './assistanceaction'
+import { AssistanceFactorId } from './shared'
+import { DaycareAssistanceId } from './shared'
 import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+import { OtherAssistanceMeasureId } from './shared'
+import { PersonId } from './shared'
+import { PreschoolAssistanceId } from './shared'
 import { deserializeJsonAssistanceActionResponse } from './assistanceaction'
 
 /**
@@ -18,8 +22,8 @@ import { deserializeJsonAssistanceActionResponse } from './assistanceaction'
 */
 export interface AssistanceFactor {
   capacityFactor: number
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: AssistanceFactorId
   modified: HelsinkiDateTime
   modifiedBy: EvakaUser
   validDuring: FiniteDateRange
@@ -56,8 +60,8 @@ export interface AssistanceResponse {
 * Generated from fi.espoo.evaka.assistance.DaycareAssistance
 */
 export interface DaycareAssistance {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: DaycareAssistanceId
   level: DaycareAssistanceLevel
   modified: HelsinkiDateTime
   modifiedBy: EvakaUser
@@ -96,8 +100,8 @@ export interface DaycareAssistanceUpdate {
 * Generated from fi.espoo.evaka.assistance.OtherAssistanceMeasure
 */
 export interface OtherAssistanceMeasure {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: OtherAssistanceMeasureId
   modified: HelsinkiDateTime
   modifiedBy: EvakaUser
   type: OtherAssistanceMeasureType
@@ -138,8 +142,8 @@ export interface OtherAssistanceMeasureUpdate {
 * Generated from fi.espoo.evaka.assistance.PreschoolAssistance
 */
 export interface PreschoolAssistance {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: PreschoolAssistanceId
   level: PreschoolAssistanceLevel
   modified: HelsinkiDateTime
   modifiedBy: EvakaUser

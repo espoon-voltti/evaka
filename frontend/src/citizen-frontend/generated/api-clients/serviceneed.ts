@@ -8,11 +8,12 @@ import LocalDate from 'lib-common/local-date'
 import { CitizenServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceApplicationCreateRequest } from 'lib-common/generated/api-types/serviceneed'
+import { ServiceApplicationId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionBasics } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCitizenServiceApplication } from 'lib-common/generated/api-types/serviceneed'
@@ -63,7 +64,7 @@ export async function createServiceApplication(
 */
 export async function deleteServiceApplication(
   request: {
-    id: UUID
+    id: ServiceApplicationId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -79,7 +80,7 @@ export async function deleteServiceApplication(
 */
 export async function getChildServiceApplications(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<CitizenServiceApplication[]> {
   const params = createUrlSearchParams(
@@ -99,7 +100,7 @@ export async function getChildServiceApplications(
 */
 export async function getChildServiceNeedOptions(
   request: {
-    childId: UUID,
+    childId: PersonId,
     date: LocalDate
   }
 ): Promise<ServiceNeedOptionBasics[]> {

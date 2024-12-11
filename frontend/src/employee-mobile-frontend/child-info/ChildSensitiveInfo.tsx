@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { Result, Success } from 'lib-common/api'
 import { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { Arg0 } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -62,7 +63,7 @@ const renderKeyValue = (
 
 interface Props {
   childId: string
-  unitId: string
+  unitId: DaycareId
 }
 
 export default React.memo(function ChildSensitiveInfo({

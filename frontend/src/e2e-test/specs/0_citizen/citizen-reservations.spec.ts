@@ -6,6 +6,7 @@ import zip from 'lodash/zip'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -1436,7 +1437,7 @@ describe('Citizen calendar visibility', () => {
   let page: Page
   const today = LocalDate.todayInSystemTz()
   let child: DevPerson
-  let daycareId: string
+  let daycareId: DaycareId
 
   beforeEach(async () => {
     await resetServiceState()

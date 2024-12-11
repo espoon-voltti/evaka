@@ -10,9 +10,9 @@ import { renderResult } from 'employee-frontend/components/async-rendering'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -52,7 +52,7 @@ const canBeEdited = (decision: AssistanceNeedDecision) =>
 const DecisionMetadataSection = React.memo(function DecisionMetadataSection({
   decisionId
 }: {
-  decisionId: UUID
+  decisionId: AssistanceNeedDecisionId
 }) {
   const result = useQueryResult(
     assistanceNeedDecisionMetadataQuery({ decisionId })
@@ -61,7 +61,8 @@ const DecisionMetadataSection = React.memo(function DecisionMetadataSection({
 })
 
 export default React.memo(function AssistanceNeedDecisionPage() {
-  const { childId, id } = useRouteParams(['childId', 'id'])
+  const { childId } = useRouteParams(['childId'])
+  const id = useIdRouteParam<AssistanceNeedDecisionId>('id')
   const navigate = useNavigate()
 
   const [assistanceNeedDecision, reloadDecision] = useApiState(

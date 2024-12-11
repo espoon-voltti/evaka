@@ -4,15 +4,17 @@
 
 // GENERATED FILE: no manual modifications
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
+import { PairingId } from 'lib-common/generated/api-types/shared'
 import { PairingStatusRes } from 'lib-common/generated/api-types/pairing'
 import { PostPairingReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingResponseReq } from 'lib-common/generated/api-types/pairing'
 import { RenameRequest } from 'lib-common/generated/api-types/pairing'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonPairing } from 'lib-common/generated/api-types/pairing'
@@ -24,7 +26,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function deleteMobileDevice(
   request: {
-    id: UUID
+    id: MobileDeviceId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -40,7 +42,7 @@ export async function deleteMobileDevice(
 */
 export async function getMobileDevices(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<MobileDevice[]> {
   const params = createUrlSearchParams(
@@ -72,7 +74,7 @@ export async function getPersonalMobileDevices(): Promise<MobileDevice[]> {
 */
 export async function putMobileDeviceName(
   request: {
-    id: UUID,
+    id: MobileDeviceId,
     body: RenameRequest
   }
 ): Promise<void> {
@@ -90,7 +92,7 @@ export async function putMobileDeviceName(
 */
 export async function getPairingStatus(
   request: {
-    id: UUID
+    id: PairingId
   }
 ): Promise<PairingStatusRes> {
   const { data: json } = await client.request<JsonOf<PairingStatusRes>>({
@@ -123,7 +125,7 @@ export async function postPairing(
 */
 export async function postPairingResponse(
   request: {
-    id: UUID,
+    id: PairingId,
     body: PostPairingResponseReq
   }
 ): Promise<Pairing> {

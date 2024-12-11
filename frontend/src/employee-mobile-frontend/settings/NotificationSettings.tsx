@@ -23,6 +23,7 @@ import {
   useFormField
 } from 'lib-common/form/hooks'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import {
   pushNotificationCategories,
   PushNotificationCategory,
@@ -63,7 +64,7 @@ const EditButton = styled(Button)`
 export const NotificationSettings = React.memo(function NotificationSettings({
   unitId
 }: {
-  unitId: UUID
+  unitId: DaycareId
 }) {
   const { i18n } = useTranslation()
   const t = i18n.settings.notifications

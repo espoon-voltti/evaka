@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  CalendarEventId,
+  CalendarEventTimeId
+} from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -41,9 +46,9 @@ const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
 const groupId: UUID = uuidv4()
 const groupId2 = uuidv4()
-const testSurveyId = uuidv4()
-const eventTimeId = uuidv4()
-const eventTimeId2 = uuidv4()
+const testSurveyId = randomId<CalendarEventId>()
+const eventTimeId = randomId<CalendarEventTimeId>()
+const eventTimeId2 = randomId<CalendarEventTimeId>()
 const child1DaycarePlacementId = uuidv4()
 const child1DaycarePlacementId2 = uuidv4()
 

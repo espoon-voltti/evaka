@@ -6,17 +6,18 @@
 
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { AssistanceActionId } from './shared'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceAction
 */
 export interface AssistanceAction {
   actions: string[]
-  childId: UUID
+  childId: PersonId
   endDate: LocalDate
-  id: UUID
+  id: AssistanceActionId
   otherAction: string
   startDate: LocalDate
 }

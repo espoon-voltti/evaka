@@ -6,8 +6,8 @@ import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 
@@ -26,7 +26,7 @@ import { NotificationSettings } from './NotificationSettings'
 export const SettingsPage = React.memo(function SettingsPage({
   unitId
 }: {
-  unitId: UUID
+  unitId: DaycareId
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()

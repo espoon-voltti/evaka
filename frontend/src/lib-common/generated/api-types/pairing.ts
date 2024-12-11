@@ -5,14 +5,17 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { DaycareId } from './shared'
+import { EmployeeId } from './shared'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+import { MobileDeviceId } from './shared'
+import { PairingId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.pairing.MobileDevice
 */
 export interface MobileDevice {
-  id: UUID
+  id: MobileDeviceId
   name: string
 }
 
@@ -20,12 +23,12 @@ export interface MobileDevice {
 * Generated from fi.espoo.evaka.pairing.MobileDeviceDetails
 */
 export interface MobileDeviceDetails {
-  employeeId: UUID | null
-  id: UUID
+  employeeId: EmployeeId | null
+  id: MobileDeviceId
   name: string
   personalDevice: boolean
   pushApplicationServerKey: string | null
-  unitIds: UUID[]
+  unitIds: DaycareId[]
 }
 
 /**
@@ -33,13 +36,13 @@ export interface MobileDeviceDetails {
 */
 export interface Pairing {
   challengeKey: string
-  employeeId: UUID | null
+  employeeId: EmployeeId | null
   expires: HelsinkiDateTime
-  id: UUID
-  mobileDeviceId: UUID | null
+  id: PairingId
+  mobileDeviceId: MobileDeviceId | null
   responseKey: string | null
   status: PairingStatus
-  unitId: UUID | null
+  unitId: DaycareId | null
 }
 
 /**
@@ -71,14 +74,14 @@ export namespace PostPairingReq {
   * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq.Employee
   */
   export interface Employee {
-    employeeId: UUID
+    employeeId: EmployeeId
   }
 
   /**
   * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq.Unit
   */
   export interface Unit {
-    unitId: UUID
+    unitId: DaycareId
   }
 }
 

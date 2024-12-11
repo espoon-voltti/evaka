@@ -7,8 +7,8 @@ import { Link } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faPen } from 'lib-icons'
@@ -19,7 +19,7 @@ import { useTranslation } from '../common/i18n'
 import { unitInfoQuery } from '../units/queries'
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   groupHasNotes: boolean
   child: AttendanceChild
 }

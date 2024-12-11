@@ -9,8 +9,9 @@ import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -37,7 +38,8 @@ const ClickableSurvey = styled.div`
 
 export default React.memo(function DiscussionReservationSurveysPage() {
   const { i18n } = useTranslation()
-  const { groupId, unitId } = useRouteParams(['groupId', 'unitId'])
+  const { groupId } = useRouteParams(['groupId'])
+  const unitId = useIdRouteParam<DaycareId>('unitId')
   const unitInformation = useQueryResult(unitQuery({ daycareId: unitId }))
 
   const discussionSurveys = useQueryResult(

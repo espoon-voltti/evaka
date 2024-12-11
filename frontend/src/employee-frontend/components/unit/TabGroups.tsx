@@ -66,12 +66,17 @@ export default React.memo(function TabGroups({
           </ContentArea>
         )}
 
-        {groupData.missingGroupPlacements.length > 0 && (
+        {groupData.missingGroupPlacements.length +
+          groupData.missingBackupGroupPlacements.length >
+          0 && (
           <ContentArea opaque data-qa="missing-placements-section">
             <MissingGroupPlacements
               unitId={unitId}
               groups={groupData.groups}
               missingGroupPlacements={groupData.missingGroupPlacements}
+              missingBackupGroupPlacements={
+                groupData.missingBackupGroupPlacements
+              }
               backupCares={groupData.backupCares}
               permittedPlacementActions={groupData.permittedPlacementActions}
               permittedBackupCareActions={groupData.permittedBackupCareActions}

@@ -15,6 +15,7 @@ import {
   DiscussionReservationDay
 } from 'lib-common/generated/api-types/calendarevent'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -71,7 +72,7 @@ export default React.memo(function DiscussionTimesForm({
 }: {
   eventData: CalendarEvent | null
   groupId: UUID
-  unitId: UUID
+  unitId: DaycareId
   groupData: UnitGroupDetails
   horizonRef: MutableRefObject<HTMLDivElement | null>
   calendarRange: FiniteDateRange

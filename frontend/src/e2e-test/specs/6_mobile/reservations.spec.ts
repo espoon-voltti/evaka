@@ -4,6 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -361,7 +362,7 @@ describe('when unit is open every day for shift care child', () => {
   })
 })
 
-const loginToMobile = async (today: LocalDate, unitId: UUID) => {
+const loginToMobile = async (today: LocalDate, unitId: DaycareId) => {
   const page = await Page.open({
     mockedTime: HelsinkiDateTime.fromLocal(today, LocalTime.of(14, 50))
   })

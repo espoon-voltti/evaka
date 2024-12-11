@@ -12,6 +12,7 @@ import React, {
 import styled from 'styled-components'
 
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import TreeDropdown, {
@@ -39,7 +40,7 @@ const Container = styled.div`
 `
 
 type Props = {
-  unitId: UUID
+  unitId: DaycareId
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
   realtimeStaffAttendanceEnabled: boolean

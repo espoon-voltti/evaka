@@ -9,6 +9,7 @@ import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
 import { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../config'
@@ -56,7 +57,7 @@ type DevApplicationAction =
   | 'CREATE_DEFAULT_PLACEMENT_PLAN'
 
 export async function execSimpleApplicationAction(
-  applicationId: string,
+  applicationId: ApplicationId,
   action: DevApplicationAction,
   mockedTime: HelsinkiDateTime
 ): Promise<void> {
@@ -72,7 +73,7 @@ export async function execSimpleApplicationAction(
 }
 
 export async function execSimpleApplicationActions(
-  applicationId: string,
+  applicationId: ApplicationId,
   actions: DevApplicationAction[],
   mockedTime: HelsinkiDateTime
 ): Promise<void> {

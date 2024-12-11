@@ -6,12 +6,13 @@
 
 import { Absence } from 'lib-common/generated/api-types/absence'
 import { AbsenceUpsert } from 'lib-common/generated/api-types/absence'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { GroupMonthCalendar } from 'lib-common/generated/api-types/absence'
 import { HolidayReservationsDelete } from 'lib-common/generated/api-types/absence'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { Presence } from 'lib-common/generated/api-types/absence'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
@@ -24,7 +25,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function addPresences(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     body: Presence[]
   }
 ): Promise<void> {
@@ -42,7 +43,7 @@ export async function addPresences(
 */
 export async function deleteHolidayReservations(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     body: HolidayReservationsDelete[]
   }
 ): Promise<void> {
@@ -60,7 +61,7 @@ export async function deleteHolidayReservations(
 */
 export async function getAbsencesOfChild(
   request: {
-    childId: UUID,
+    childId: PersonId,
     year: number,
     month: number
   }
@@ -83,7 +84,7 @@ export async function getAbsencesOfChild(
 */
 export async function groupMonthCalendar(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     year: number,
     month: number
   }
@@ -106,7 +107,7 @@ export async function groupMonthCalendar(
 */
 export async function upsertAbsences(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     body: AbsenceUpsert[]
   }
 ): Promise<void> {

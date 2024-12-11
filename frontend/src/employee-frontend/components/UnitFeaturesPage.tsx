@@ -15,10 +15,10 @@ import {
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
 import {
+  DaycareId,
   PilotFeature,
   pilotFeatures
 } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -59,11 +59,11 @@ export default React.memo(function UnitFeaturesPage() {
   const [submitting, setSubmitting] = useState(false)
 
   const [undoAction, setUndoAction] =
-    useState<[UUID[], PilotFeature[], boolean]>()
+    useState<[DaycareId[], PilotFeature[], boolean]>()
 
   const updateFeatures = useCallback(
     async (
-      unitIds: UUID[],
+      unitIds: DaycareId[],
       features: PilotFeature[],
       enable: boolean,
       isUndoAction = false

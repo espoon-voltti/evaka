@@ -19,6 +19,7 @@ import {
   CitizenCalendarEvent
 } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { capitalizeFirstLetter } from 'lib-common/string'
@@ -64,11 +65,11 @@ import { showModalEventTime } from './discussion-survey'
 const discussionTimeReservationForm = mapped(
   object({
     selectedChild: required(value<UUID | undefined>()),
-    eventTimeId: required(value<UUID | null>())
+    eventTimeId: required(value<CalendarEventTimeId | undefined>())
   }),
   (output): CalendarEventTimeCitizenReservationForm => ({
     childId: output.selectedChild,
-    calendarEventTimeId: output.eventTimeId ?? ''
+    calendarEventTimeId: output.eventTimeId
   })
 )
 
@@ -77,7 +78,7 @@ function initialFormState(
 ): StateOf<typeof discussionTimeReservationForm> {
   return {
     selectedChild: selectedChild?.id,
-    eventTimeId: null
+    eventTimeId: undefined
   }
 }
 
@@ -268,7 +269,7 @@ export default React.memo(function DiscussionReservationModal({
               <MutateButton
                 primary
                 text={i18n.common.confirm}
-                disabled={eventTimeId.state === null}
+                disabled={eventTimeId.state === undefined}
                 mutation={addCalendarEventTimeReservationMutation}
                 onClick={() => {
                   if (!form.isValid()) {
@@ -282,7 +283,7 @@ export default React.memo(function DiscussionReservationModal({
                   setTimeAlreadyReserved(
                     failure.errorCode === 'TIME_ALREADY_RESERVED'
                   )
-                  eventTimeId.set(null)
+                  eventTimeId.set(undefined)
                   invalidateEvents()
                 }}
               />
@@ -301,7 +302,7 @@ export default React.memo(function DiscussionReservationModal({
 
 interface ReservationGridItemProps {
   itemData: CalendarEventTime
-  bind: BoundFormState<string>
+  bind: BoundFormState<CalendarEventTimeId>
   showDate: boolean
 }
 

@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
+import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import {
   createApplications,
   resetServiceState
@@ -81,7 +83,7 @@ xdescribe('Preschool application report', () => {
         'WAITING_UNIT_CONFIRMATION',
         nextTermStart
       ),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
 
     const child2 = await Fixture.person({
@@ -103,7 +105,7 @@ xdescribe('Preschool application report', () => {
         'WAITING_UNIT_CONFIRMATION',
         nextTermStart
       ),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
 
     await createApplications({ body: [application1, application2] })

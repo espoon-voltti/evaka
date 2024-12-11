@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -34,7 +35,7 @@ beforeEach(async (): Promise<void> => resetServiceState())
 const setupPlacement = async (
   placementId: string,
   childId: UUID,
-  unitId: UUID,
+  unitId: DaycareId,
   childPlacementType: PlacementType
 ) => {
   await createDaycarePlacements({
@@ -61,7 +62,7 @@ async function openChildPlacements(page: Page, childId: UUID) {
 describe('Child Information placement info', () => {
   let page: Page
   let childId: UUID
-  let unitId: UUID
+  let unitId: DaycareId
 
   beforeEach(async () => {
     await Fixture.careArea(testCareArea).save()

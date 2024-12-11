@@ -11,20 +11,28 @@ import LocalTime from '../../local-time'
 import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
 import { AbsenceType } from './absence'
+import { ApplicationId } from './shared'
 import { ApplicationStatus } from './application'
+import { AreaId } from './shared'
 import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { DaycareAssistanceLevel } from './assistance'
+import { DaycareId } from './shared'
 import { DecisionType } from './decision'
+import { GroupId } from './shared'
 import { JsonOf } from '../../json'
 import { MealType } from './mealintegration'
 import { OccupancyValues } from './occupancy'
 import { OtherAssistanceMeasureType } from './assistance'
+import { PersonId } from './shared'
+import { PlacementId } from './shared'
 import { PlacementType } from './placement'
 import { PreschoolAssistanceLevel } from './assistance'
 import { ProviderType } from './daycare'
+import { ServiceNeedId } from './shared'
 import { ServiceNeedOption } from './application'
 import { UUID } from '../../types'
+import { VoucherValueDecisionId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.reports.ApplicationsReportRow
@@ -36,7 +44,7 @@ export interface ApplicationsReportRow {
   preschool: number
   total: number
   under3Years: number
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
   unitProviderType: ProviderType
 }
@@ -83,13 +91,13 @@ export interface AssistanceNeedsAndActionsReportRow {
   assistanceNeedVoucherCoefficientCount: number
   careAreaName: string
   daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
-  groupId: UUID
+  groupId: GroupId
   groupName: string
   noActionCount: number
   otherActionCount: number
   otherAssistanceMeasureCounts: Partial<Record<OtherAssistanceMeasureType, number>>
   preschoolAssistanceCounts: Partial<Record<PreschoolAssistanceLevel, number>>
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -102,15 +110,15 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
   careAreaName: string
   childAge: number
   childFirstName: string
-  childId: UUID
+  childId: PersonId
   childLastName: string
   daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
-  groupId: UUID
+  groupId: GroupId
   groupName: string
   otherAction: string
   otherAssistanceMeasureCounts: Partial<Record<OtherAssistanceMeasureType, number>>
   preschoolAssistanceCounts: Partial<Record<PreschoolAssistanceLevel, number>>
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -118,16 +126,16 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
 * Generated from fi.espoo.evaka.reports.AttendanceReservationReportController.AttendanceReservationReportByChildBody
 */
 export interface AttendanceReservationReportByChildBody {
-  groupIds: UUID[]
+  groupIds: GroupId[]
   range: FiniteDateRange
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.AttendanceReservationReportByChildGroup
 */
 export interface AttendanceReservationReportByChildGroup {
-  groupId: UUID | null
+  groupId: GroupId | null
   groupName: string | null
   items: AttendanceReservationReportByChildItem[]
 }
@@ -139,7 +147,7 @@ export interface AttendanceReservationReportByChildItem {
   backupCare: boolean
   childDateOfBirth: LocalDate
   childFirstName: string
-  childId: UUID
+  childId: PersonId
   childLastName: string
   date: LocalDate
   fullDayAbsence: boolean
@@ -155,7 +163,7 @@ export interface AttendanceReservationReportRow {
   childCountOver3: number
   childCountUnder3: number
   dateTime: HelsinkiDateTime
-  groupId: UUID | null
+  groupId: GroupId | null
   groupName: string | null
   staffCountRequired: number
 }
@@ -189,7 +197,7 @@ export interface ChildAgeLanguageReportRow {
   sv_5y: number
   sv_6y: number
   sv_7y: number
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
   unitProviderType: ProviderType
   unitType: UnitType
@@ -210,7 +218,7 @@ export interface ChildAttendanceReportRow {
 * Generated from fi.espoo.evaka.reports.ChildPreschoolAbsenceRow
 */
 export interface ChildPreschoolAbsenceRow {
-  childId: UUID
+  childId: PersonId
   firstName: string
   hourlyTypeResults: Partial<Record<AbsenceType, number>>
   lastName: string
@@ -221,7 +229,7 @@ export interface ChildPreschoolAbsenceRow {
 */
 export interface ChildWithName {
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
 }
 
@@ -232,13 +240,13 @@ export interface ChildrenInDifferentAddressReportRow {
   addressChild: string
   addressParent: string
   careAreaName: string
-  childId: UUID
+  childId: PersonId
   firstNameChild: string | null
   firstNameParent: string | null
   lastNameChild: string | null
   lastNameParent: string | null
-  parentId: UUID
-  unitId: UUID
+  parentId: PersonId
+  unitId: DaycareId
   unitName: string
 }
 
@@ -248,7 +256,7 @@ export interface ChildrenInDifferentAddressReportRow {
 export interface Contact {
   email: string | null
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
   phone: string
 }
@@ -280,7 +288,7 @@ export interface DecisionsReportRow {
   preschoolDaycare: number
   providerType: ProviderType
   total: number
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -292,7 +300,7 @@ export interface DuplicatePeopleReportRow {
   duplicateNumber: number
   firstName: string | null
   groupIndex: number
-  id: UUID
+  id: PersonId
   lastName: string | null
   referenceCounts: ReferenceCount[]
   socialSecurityNumber: string | null
@@ -304,7 +312,7 @@ export interface DuplicatePeopleReportRow {
 */
 export interface EndedPlacementsReportRow {
   areaName: string
-  childId: UUID
+  childId: PersonId
   firstName: string | null
   lastName: string | null
   nextPlacementStart: LocalDate | null
@@ -317,13 +325,13 @@ export interface EndedPlacementsReportRow {
 */
 export interface ExceededServiceNeedReportRow {
   childFirstName: string
-  childId: UUID
+  childId: PersonId
   childLastName: string
   excessHours: number
-  groupId: UUID | null
+  groupId: GroupId | null
   groupName: string | null
   serviceNeedHoursPerMonth: number
-  unitId: UUID
+  unitId: DaycareId
   usedServiceHours: number
 }
 
@@ -331,7 +339,7 @@ export interface ExceededServiceNeedReportRow {
 * Generated from fi.espoo.evaka.reports.ExceededServiceNeedReportUnit
 */
 export interface ExceededServiceNeedReportUnit {
-  id: UUID
+  id: DaycareId
   name: string
 }
 
@@ -342,11 +350,11 @@ export interface FamilyConflictReportRow {
   careAreaName: string
   childConflictCount: number
   firstName: string | null
-  id: UUID
+  id: PersonId
   lastName: string | null
   partnerConflictCount: number
   socialSecurityNumber: string | null
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -359,7 +367,7 @@ export interface FamilyContactReportRow {
   guardian1: Contact | null
   guardian2: Contact | null
   headOfChild: Contact | null
-  id: UUID
+  id: PersonId
   lastName: string
   postOffice: string
   postalCode: string
@@ -371,7 +379,7 @@ export interface FamilyContactReportRow {
 * Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealAreaResult
 */
 export interface FamilyDaycareMealAreaResult {
-  areaId: UUID
+  areaId: AreaId
   areaName: string
   breakfastCount: number
   daycareResults: FamilyDaycareMealDaycareResult[]
@@ -384,7 +392,7 @@ export interface FamilyDaycareMealAreaResult {
 */
 export interface FamilyDaycareMealChildResult {
   breakfastCount: number
-  childId: UUID
+  childId: PersonId
   firstName: string
   lastName: string
   lunchCount: number
@@ -397,7 +405,7 @@ export interface FamilyDaycareMealChildResult {
 export interface FamilyDaycareMealDaycareResult {
   breakfastCount: number
   childResults: FamilyDaycareMealChildResult[]
-  daycareId: UUID
+  daycareId: DaycareId
   daycareName: string
   lunchCount: number
   snackCount: number
@@ -424,9 +432,9 @@ export interface FuturePreschoolersReportRow {
   childLastName: string
   childPostOffice: string
   childPostalCode: string
-  id: UUID
+  id: PersonId
   options: string[]
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -451,7 +459,7 @@ export interface IncompleteIncomeDbRow {
   daycareName: string
   firstName: string
   lastName: string
-  personId: UUID
+  personId: PersonId
   validFrom: LocalDate
 }
 
@@ -483,18 +491,18 @@ export interface InvoiceReportRow {
 * Generated from fi.espoo.evaka.reports.ManualDuplicationReportController.ManualDuplicationReportRow
 */
 export interface ManualDuplicationReportRow {
-  applicationId: UUID
+  applicationId: ApplicationId
   childFirstName: string
-  childId: UUID
+  childId: PersonId
   childLastName: string
-  connectedDaycareId: UUID
+  connectedDaycareId: DaycareId
   connectedDaycareName: string
   connectedDecisionType: DecisionType
   connectedEndDate: LocalDate
   connectedSnoName: string | null
   connectedStartDate: LocalDate
   dateOfBirth: LocalDate
-  preschoolDaycareId: UUID
+  preschoolDaycareId: DaycareId
   preschoolDaycareName: string
   preschoolDecisionType: DecisionType
   preschoolEndDate: LocalDate
@@ -535,7 +543,7 @@ export interface MealReportRow {
 * Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
 */
 export interface MissingHeadOfFamilyReportRow {
-  childId: UUID
+  childId: PersonId
   firstName: string
   lastName: string
   rangesWithoutHead: FiniteDateRange[]
@@ -546,11 +554,11 @@ export interface MissingHeadOfFamilyReportRow {
 */
 export interface MissingServiceNeedReportRow {
   careAreaName: string
-  childId: UUID
+  childId: PersonId
   daysWithoutServiceNeed: number
   firstName: string | null
   lastName: string | null
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -558,7 +566,7 @@ export interface MissingServiceNeedReportRow {
 * Generated from fi.espoo.evaka.reports.NonSsnChildrenReportRow
 */
 export interface NonSsnChildrenReportRow {
-  childId: UUID
+  childId: PersonId
   dateOfBirth: LocalDate
   firstName: string
   lastName: string
@@ -570,12 +578,12 @@ export interface NonSsnChildrenReportRow {
 * Generated from fi.espoo.evaka.reports.OccupancyGroupReportResultRow
 */
 export interface OccupancyGroupReportResultRow {
-  areaId: UUID
+  areaId: AreaId
   areaName: string
-  groupId: UUID
+  groupId: GroupId
   groupName: string
   occupancies: Partial<Record<string, OccupancyValues>>
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -583,10 +591,10 @@ export interface OccupancyGroupReportResultRow {
 * Generated from fi.espoo.evaka.reports.OccupancyUnitReportResultRow
 */
 export interface OccupancyUnitReportResultRow {
-  areaId: UUID
+  areaId: AreaId
   areaName: string
   occupancies: Partial<Record<string, OccupancyValues>>
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -601,9 +609,9 @@ export interface PartnersInDifferentAddressReportRow {
   firstName2: string | null
   lastName1: string | null
   lastName2: string | null
-  personId1: UUID
-  personId2: UUID
-  unitId: UUID
+  personId1: PersonId
+  personId2: PersonId
+  unitId: DaycareId
   unitName: string
 }
 
@@ -611,7 +619,7 @@ export interface PartnersInDifferentAddressReportRow {
 * Generated from fi.espoo.evaka.reports.PlacementCountReportController.PlacementCountAreaResult
 */
 export interface PlacementCountAreaResult {
-  areaId: UUID
+  areaId: AreaId
   areaName: string
   calculatedPlacements: number
   daycareResults: PlacementCountDaycareResult[]
@@ -625,7 +633,7 @@ export interface PlacementCountAreaResult {
 */
 export interface PlacementCountDaycareResult {
   calculatedPlacements: number
-  daycareId: UUID
+  daycareId: DaycareId
   daycareName: string
   placementCount: number
   placementCount3vAndOver: number
@@ -647,14 +655,14 @@ export interface PlacementCountReportResult {
 * Generated from fi.espoo.evaka.reports.PlacementGuaranteeReportRow
 */
 export interface PlacementGuaranteeReportRow {
-  areaId: UUID
+  areaId: AreaId
   areaName: string
   childFirstName: string
-  childId: UUID
+  childId: PersonId
   childLastName: string
   placementEndDate: LocalDate
   placementStartDate: LocalDate
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -663,7 +671,7 @@ export interface PlacementGuaranteeReportRow {
 */
 export interface PlacementSketchingReportRow {
   additionalInfo: string
-  applicationId: UUID
+  applicationId: ApplicationId
   applicationStatus: ApplicationStatus
   areaName: string
   assistanceNeeded: boolean | null
@@ -672,20 +680,20 @@ export interface PlacementSketchingReportRow {
   childCorrectedStreetAddress: string
   childDob: LocalDate
   childFirstName: string
-  childId: UUID
+  childId: PersonId
   childLastName: string
   childMovingDate: LocalDate | null
   childPostalCode: string | null
   childStreetAddr: string | null
   connectedDaycare: boolean | null
-  currentUnitId: UUID | null
+  currentUnitId: DaycareId | null
   currentUnitName: string | null
   guardianEmail: string | null
   guardianPhoneNumber: string | null
   otherPreferredUnits: string[]
   preferredStartDate: LocalDate
   preparatoryEducation: boolean | null
-  requestedUnitId: UUID
+  requestedUnitId: DaycareId
   requestedUnitName: string
   sentDate: LocalDate
   serviceNeedOption: ServiceNeedOption | null
@@ -696,16 +704,16 @@ export interface PlacementSketchingReportRow {
 * Generated from fi.espoo.evaka.reports.PreschoolApplicationReportRow
 */
 export interface PreschoolApplicationReportRow {
-  applicationId: UUID
-  applicationUnitId: UUID
+  applicationId: ApplicationId
+  applicationUnitId: DaycareId
   applicationUnitName: string
   childDateOfBirth: LocalDate
   childFirstName: string
-  childId: UUID
+  childId: PersonId
   childLastName: string
   childPostalCode: string
   childStreetAddress: string
-  currentUnitId: UUID | null
+  currentUnitId: DaycareId | null
   currentUnitName: string | null
   isDaycareAssistanceNeed: boolean
 }
@@ -715,7 +723,7 @@ export interface PreschoolApplicationReportRow {
 */
 export interface PreschoolUnitsReportRow {
   address: string
-  id: UUID
+  id: DaycareId
   options: string[]
   postOffice: string
   postalCode: string
@@ -729,7 +737,7 @@ export interface PreschoolUnitsReportRow {
 export interface PresenceReportRow {
   date: LocalDate
   daycareGroupName: string | null
-  daycareId: UUID | null
+  daycareId: DaycareId | null
   present: boolean | null
   socialSecurityNumber: string | null
 }
@@ -742,18 +750,18 @@ export interface RawReportRow {
   absencePaid: AbsenceType | null
   age: number
   assistanceNeedVoucherCoefficient: number | null
-  backupGroupId: UUID | null
-  backupUnitId: UUID | null
+  backupGroupId: GroupId | null
+  backupUnitId: DaycareId | null
   capacity: number
   capacityFactor: number
   careArea: string
   caretakersPlanned: number | null
   caretakersRealized: number | null
-  childId: UUID
+  childId: PersonId
   costCenter: string | null
   dateOfBirth: LocalDate
   day: LocalDate
-  daycareGroupId: UUID | null
+  daycareGroupId: GroupId | null
   firstName: string
   groupName: string | null
   hasAssistanceNeed: boolean
@@ -773,7 +781,7 @@ export interface RawReportRow {
   serviceNeed: string | null
   shiftCare: boolean
   staffDimensioning: number
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
   unitProviderType: ProviderType
   unitType: UnitType | null
@@ -872,13 +880,13 @@ export interface ServiceVoucherUnitReport {
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueRow
 */
 export interface ServiceVoucherValueRow {
-  areaId: UUID
+  areaId: AreaId
   areaName: string
   assistanceNeedCoefficient: number
   childDateOfBirth: LocalDate
   childFirstName: string
   childGroupName: string | null
-  childId: UUID
+  childId: PersonId
   childLastName: string
   isNew: boolean
   numberOfDays: number
@@ -886,11 +894,11 @@ export interface ServiceVoucherValueRow {
   realizedPeriod: FiniteDateRange
   serviceNeedDescription: string
   serviceVoucherCoPayment: number
-  serviceVoucherDecisionId: UUID
+  serviceVoucherDecisionId: VoucherValueDecisionId
   serviceVoucherFinalCoPayment: number
   serviceVoucherValue: number
   type: VoucherReportRowType
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -909,7 +917,7 @@ export interface ServiceVoucherValueUnitAggregate {
 export interface SextetReportRow {
   attendanceDays: number
   placementType: PlacementType
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -918,7 +926,7 @@ export interface SextetReportRow {
 */
 export interface SourceUnitsReportRow {
   address: string
-  id: UUID
+  id: DaycareId
   postOffice: string
   postalCode: string
   unitName: string
@@ -929,11 +937,11 @@ export interface SourceUnitsReportRow {
 */
 export interface StartingPlacementsRow {
   careAreaName: string
-  childId: UUID
+  childId: PersonId
   dateOfBirth: LocalDate
   firstName: string
   lastName: string
-  placementId: UUID
+  placementId: PlacementId
   placementStart: LocalDate
   unitName: string
 }
@@ -978,9 +986,9 @@ export interface TitaniaErrorUnit {
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueUnitAggregate.UnitData
 */
 export interface UnitData {
-  areaId: UUID
+  areaId: AreaId
   areaName: string
-  id: UUID
+  id: DaycareId
   name: string
 }
 
@@ -1008,7 +1016,7 @@ export interface UnitsReportRow {
   clubApply: boolean
   costCenter: string
   daycareApply: boolean
-  id: UUID
+  id: DaycareId
   invoicedByMunicipality: boolean
   name: string
   ophOrganizerOid: string | null
@@ -1026,11 +1034,11 @@ export interface UnitsReportRow {
 * Generated from fi.espoo.evaka.reports.VardaChildErrorReportRow
 */
 export interface VardaChildErrorReportRow {
-  childId: UUID
+  childId: PersonId
   created: HelsinkiDateTime
   errors: string[]
   resetTimeStamp: HelsinkiDateTime | null
-  serviceNeedId: UUID | null
+  serviceNeedId: ServiceNeedId | null
   serviceNeedOptionName: string | null
   serviceNeedValidity: FiniteDateRange | null
   updated: HelsinkiDateTime
@@ -1043,7 +1051,7 @@ export interface VardaUnitErrorReportRow {
   createdAt: HelsinkiDateTime
   error: string
   erroredAt: HelsinkiDateTime
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 

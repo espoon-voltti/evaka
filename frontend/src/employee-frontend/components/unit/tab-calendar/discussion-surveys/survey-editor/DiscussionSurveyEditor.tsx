@@ -11,6 +11,7 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -40,7 +41,7 @@ export default React.memo(function DiscussionSurveyEditor({
   groupId,
   eventData
 }: {
-  unitId: UUID
+  unitId: DaycareId
   groupId: UUID
   eventData: CalendarEvent | null
 }) {

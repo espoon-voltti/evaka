@@ -15,8 +15,8 @@ import {
   DaycareGroupResponse
 } from 'lib-common/generated/api-types/daycare'
 import { Employee, TemporaryEmployee } from 'lib-common/generated/api-types/pis'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -62,7 +62,7 @@ type DaycareAclAdditionModalProps = {
   onClose: () => void
   onSuccess: () => void
   role?: DaycareAclRole
-  unitId: UUID
+  unitId: DaycareId
   groups: Record<string, DaycareGroupResponse>
   employees: Employee[]
   permittedActions: Action.Unit[]

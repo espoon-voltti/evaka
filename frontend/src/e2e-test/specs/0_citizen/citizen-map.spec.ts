@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { fromUuid } from 'lib-common/id-type'
+
 import config from '../../config'
 import {
   testCareArea,
@@ -25,7 +27,7 @@ import { Page } from '../../utils/page'
 const swedishDaycare: DevDaycare = {
   ...testDaycare2,
   name: 'Svart hål svenska daghem',
-  id: '9db9e8f7-2091-4be1-b091-fe107906e1b9',
+  id: fromUuid('9db9e8f7-2091-4be1-b091-fe107906e1b9'),
   language: 'sv',
   location: {
     lat: 60.200745762705296,
@@ -48,7 +50,7 @@ const testStreet: DigitransitFeature = {
 const privateDaycareWithoutPeriods: DevDaycare = {
   ...testDaycare2,
   name: 'Private daycare',
-  id: '9db9e8f7-2091-4be1-b091-fe10790e107a',
+  id: fromUuid('9db9e8f7-2091-4be1-b091-fe10790e107a'),
   location: { lat: 60.1601417, lon: 24.7830233 },
   daycareApplyPeriod: null,
   preschoolApplyPeriod: null,

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
+import { fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -13,8 +15,7 @@ import {
   testCareArea,
   testChild,
   testChild2,
-  testDaycare,
-  uuidv4
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -51,12 +52,12 @@ describe('Employee searches applications', () => {
 
     const duplicateFixture = {
       ...applicationFixture(testChild, testAdult),
-      id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130222'
+      id: fromUuid<ApplicationId>('9dd0e1ba-9b3b-11ea-bb37-0242ac130222')
     }
 
     const nonDuplicateFixture = {
       ...applicationFixture(testChild2, testAdult),
-      id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130224'
+      id: fromUuid<ApplicationId>('9dd0e1ba-9b3b-11ea-bb37-0242ac130224')
     }
 
     await createApplications({
@@ -78,11 +79,11 @@ describe('Employee searches applications', () => {
     const careArea3 = await Fixture.careArea().save()
     const daycare3 = await Fixture.daycare({ areaId: careArea3.id }).save()
 
-    const createApplicationForUnit = (unitId: string) => ({
+    const createApplicationForUnit = (unitId: DaycareId) => ({
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
         unitId
       ]),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     })
 
     const app1 = createApplicationForUnit(daycare1.id)
@@ -109,11 +110,11 @@ describe('Employee searches applications', () => {
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
 
-    const createApplicationForUnit = (unitId: string) => ({
+    const createApplicationForUnit = (unitId: DaycareId) => ({
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
         unitId
       ]),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     })
 
     const app1 = createApplicationForUnit(daycare1.id)
@@ -139,7 +140,7 @@ describe('Employee searches applications', () => {
       .save()
 
     const createApplicationForUnit = (
-      unitId: string,
+      unitId: DaycareId,
       assistanceNeeded: boolean
     ) => ({
       ...applicationFixture(
@@ -155,7 +156,7 @@ describe('Employee searches applications', () => {
         false,
         assistanceNeeded
       ),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     })
 
     const appWithAssistanceNeeded = createApplicationForUnit(daycare1.id, true)
@@ -194,20 +195,20 @@ describe('Employee searches applications', () => {
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
         voucherUnit.id
       ]),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
     const applicationWithVoucherUnitSecond = {
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
         municipalUnit.id,
         voucherUnit.id
       ]),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
     const applicationWithNoVoucherUnit = {
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
         municipalUnit.id
       ]),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
 
     await createApplications({
@@ -261,13 +262,13 @@ describe('Employee searches applications', () => {
       ...applicationFixture(testChild, testAdult, undefined, 'CLUB', null, [
         club.id
       ]),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
     const daycareApplication = {
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
         daycare.id
       ]),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
     const preschoolApplication = {
       ...applicationFixture(
@@ -278,7 +279,7 @@ describe('Employee searches applications', () => {
         null,
         [preschool.id]
       ),
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
     await createApplications({
       body: [clubApplication, daycareApplication, preschoolApplication]

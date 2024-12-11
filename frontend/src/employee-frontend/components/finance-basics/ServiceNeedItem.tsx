@@ -11,8 +11,8 @@ import {
   ServiceNeedOptionVoucherValueRange,
   ServiceNeedOptionVoucherValueRangeWithId
 } from 'lib-common/generated/api-types/invoicing'
+import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -32,7 +32,7 @@ import VoucherValueEditor from './VoucherValueEditor'
 import { deleteVoucherValueMutation } from './queries'
 
 export type ServiceNeedItemProps = {
-  serviceNeedId: UUID
+  serviceNeedId: ServiceNeedOptionId
   serviceNeedName: string
   serviceNeedValidityStart: LocalDate
   serviceNeedValidityEnd: LocalDate | null
@@ -271,14 +271,18 @@ type EditorState =
     }
 
 export type FormState = {
-  [k in keyof Omit<ServiceNeedOptionVoucherValueRange, 'range'>]: string
+  [k in keyof Omit<
+    ServiceNeedOptionVoucherValueRange,
+    'range' | 'serviceNeedOptionId'
+  >]: string
 } & {
+  serviceNeedOptionId: ServiceNeedOptionId
   validFrom: LocalDate | null
   validTo: LocalDate | null
 }
 
 const emptyForm = (
-  serviceNeedOptionId: UUID,
+  serviceNeedOptionId: ServiceNeedOptionId,
   validFrom: LocalDate | null,
   coefficient: number,
   coefficientUnder3y: number

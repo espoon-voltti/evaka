@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
@@ -14,7 +14,7 @@ import PlacementProposals from '../../components/unit/tab-placement-proposals/Pl
 import { NotificationCounter } from '../UnitPage'
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   placementProposals: PlacementPlanDetails[]
 }
 

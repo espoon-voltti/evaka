@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router'
 import { UserContext } from 'employee-mobile-frontend/auth/state'
 import { combine } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Gap } from 'lib-components/white-space'
@@ -19,7 +20,7 @@ import { GroupSelectorBar } from './GroupSelectorBar'
 import TopBar from './TopBar'
 
 export type TopBarWithGroupSelectorProps = {
-  unitId: UUID
+  unitId: DaycareId
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   includeSelectAll?: boolean

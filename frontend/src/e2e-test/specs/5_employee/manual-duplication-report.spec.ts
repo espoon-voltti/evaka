@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
+import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import {
   createApplications,
   resetServiceState
@@ -40,7 +42,7 @@ describe('Manual duplication report', () => {
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
 
-    const application1Id = uuidv4()
+    const application1Id = randomId<ApplicationId>()
     await createApplications({
       body: [
         {
@@ -78,7 +80,7 @@ describe('Manual duplication report', () => {
       status: 'ACCEPTED'
     }).save()
 
-    const application2Id = uuidv4()
+    const application2Id = randomId<ApplicationId>()
     await createApplications({
       body: [
         {

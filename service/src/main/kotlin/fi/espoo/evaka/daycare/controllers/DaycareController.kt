@@ -40,6 +40,7 @@ import fi.espoo.evaka.occupancy.OccupancyResponse
 import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriodsGroupLevel
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
+import fi.espoo.evaka.placement.MissingBackupGroupPlacement
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.TerminatedPlacement
 import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
@@ -494,7 +495,7 @@ class DaycareController(
                     val groups = tx.getDaycareGroups(unitId, from, to)
                     val placements = tx.getDetailedDaycarePlacements(unitId, null, period).toList()
                     val backupCares = tx.getBackupCaresForDaycare(unitId, period)
-                    val missingGroupPlacements =
+                    val (missingGroupPlacements, missingBackupPlacements) =
                         if (
                             accessControl.hasPermissionFor(
                                 tx,
@@ -506,7 +507,7 @@ class DaycareController(
                         ) {
                             getMissingGroupPlacements(tx, unitId, clock.today().plusMonths(6))
                         } else {
-                            emptyList()
+                            Pair(emptyList(), emptyList())
                         }
                     val recentlyTerminatedPlacements =
                         if (
@@ -530,26 +531,10 @@ class DaycareController(
                     val caretakers = tx.getGroupStats(unitId, FiniteDateRange(from, to))
                     val backupCareIds =
                         backupCares.map { it.id }.toSet() +
-                            missingGroupPlacements
-                                .mapNotNull {
-                                    if (it.backup) {
-                                        BackupCareId(it.placementId.raw)
-                                    } else {
-                                        null
-                                    }
-                                }
-                                .toSet()
+                            missingBackupPlacements.map { it.backupCareId }.toSet()
                     val placementIds =
                         placements.map { it.id }.toSet() +
-                            missingGroupPlacements
-                                .mapNotNull {
-                                    if (!it.backup) {
-                                        it.placementId
-                                    } else {
-                                        null
-                                    }
-                                }
-                                .toSet()
+                            missingGroupPlacements.map { it.placementId }.toSet()
 
                     val childIds =
                         placements.map { it.child.id }.toSet() +
@@ -594,6 +579,7 @@ class DaycareController(
                         placements = placements,
                         backupCares = backupCares,
                         missingGroupPlacements = missingGroupPlacements,
+                        missingBackupGroupPlacements = missingBackupPlacements,
                         recentlyTerminatedPlacements = recentlyTerminatedPlacements,
                         caretakers = caretakers,
                         unitChildrenCapacityFactors = capacities,
@@ -665,14 +651,17 @@ class DaycareController(
                                     Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
                                     daycareId,
                                 )
-                            )
-                                getMissingGroupPlacements(
+                            ) {
+                                val (group, backup) =
+                                    getMissingGroupPlacements(
                                         tx,
                                         daycareId,
                                         clock.today().plusMonths(6),
                                     )
-                                    .size
-                            else 0,
+                                group.size + backup.size
+                            } else {
+                                0
+                            },
                     )
                 }
             }
@@ -727,6 +716,7 @@ data class UnitGroupDetails(
     val placements: List<DaycarePlacementWithDetails>,
     val backupCares: List<UnitBackupCare>,
     val missingGroupPlacements: List<MissingGroupPlacement>,
+    val missingBackupGroupPlacements: List<MissingBackupGroupPlacement>,
     val recentlyTerminatedPlacements: List<TerminatedPlacement>,
     val caretakers: Map<GroupId, Caretakers>,
     val unitChildrenCapacityFactors: List<UnitChildrenCapacityFactors>,

@@ -4,6 +4,7 @@
 
 import React, { useMemo, useState, createContext, useCallback } from 'react'
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 
 export type ErrorMessageType = 'warning' | 'error'
@@ -95,6 +96,6 @@ export const UIContextProvider = React.memo(function UIContextProvider({
 })
 
 interface PairingState {
-  id: { unitId: UUID } | { employeeId: UUID }
+  id: { unitId: DaycareId } | { employeeId: UUID }
   onClose?: () => void
 }

@@ -9,8 +9,8 @@ import { AttendanceSummary } from 'lib-common/generated/api-types/children'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { DailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonOf } from 'lib-common/json'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
 import { deserializeJsonDailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
 import { deserializeJsonServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
@@ -22,7 +22,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getChildAttendanceSummary(
   request: {
-    childId: UUID,
+    childId: PersonId,
     yearMonth: YearMonth
   }
 ): Promise<AttendanceSummary> {
@@ -39,7 +39,7 @@ export async function getChildAttendanceSummary(
 */
 export async function getChildDailyServiceTimes(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<DailyServiceTimes[]> {
   const { data: json } = await client.request<JsonOf<DailyServiceTimes[]>>({
@@ -55,7 +55,7 @@ export async function getChildDailyServiceTimes(
 */
 export async function getChildServiceNeeds(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<ServiceNeedSummary[]> {
   const { data: json } = await client.request<JsonOf<ServiceNeedSummary[]>>({

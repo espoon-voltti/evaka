@@ -5,6 +5,8 @@
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import { BackupCareId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -98,7 +100,7 @@ const insertTestDataAndLogin = async ({
     shiftCare: childShiftCare
   }).save()
   await Fixture.backupCare({
-    id: uuidv4(),
+    id: randomId<BackupCareId>(),
     childId: child1Fixture.id,
     unitId: testDaycare.id,
     groupId: groupId2,
@@ -145,7 +147,7 @@ describe('Unit group calendar', () => {
       name: 'Varasijoitusryhmä samassa'
     }).save()
     await Fixture.backupCare({
-      id: uuidv4(),
+      id: randomId<BackupCareId>(),
       childId: child1Fixture.id,
       unitId: daycare.id,
       groupId: groupId3,
@@ -175,7 +177,7 @@ describe('Unit group calendar', () => {
       name: 'Varasijoitusryhmä samassa'
     }).save()
     await Fixture.backupCare({
-      id: uuidv4(),
+      id: randomId<BackupCareId>(),
       childId: child1Fixture.id,
       unitId: daycare.id,
       groupId: groupId3,

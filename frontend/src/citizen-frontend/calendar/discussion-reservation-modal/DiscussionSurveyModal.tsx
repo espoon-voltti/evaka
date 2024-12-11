@@ -11,6 +11,7 @@ import {
   CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
@@ -71,7 +72,7 @@ export const DiscussionHeader = styled.div`
 export interface ConfirmModalState {
   visible: boolean
   childId: UUID | null
-  eventTimeId: UUID | null
+  eventTimeId: CalendarEventTimeId | null
 }
 export default React.memo(function DiscussionSurveyModal({
   close,
@@ -115,7 +116,7 @@ export default React.memo(function DiscussionSurveyModal({
       eventTimeId: null
     })
   const onCancelClick = useCallback(
-    (childId: UUID, eventTimeId: UUID) => {
+    (childId: UUID, eventTimeId: CalendarEventTimeId) => {
       setConfirmationModalState({ visible: true, childId, eventTimeId })
     },
     [setConfirmationModalState]
@@ -238,7 +239,7 @@ export default React.memo(function DiscussionSurveyModal({
 
 interface DiscussionChildElementProps {
   childWithSurveys: ChildWithSurveys
-  onCancelClick: (childId: UUID, eventTimeId: UUID) => void
+  onCancelClick: (childId: UUID, eventTimeId: CalendarEventTimeId) => void
   openDiscussionReservations: (
     selectedChildId: UUID,
     selectedEventId: UUID
@@ -286,7 +287,7 @@ interface ChildSurveyElementProps {
   reservations: CitizenCalendarEventTime[]
   childId: UUID
   openDiscussionReservations: () => void
-  onCancelClick: (childId: UUID, eventTimeId: UUID) => void
+  onCancelClick: (childId: UUID, eventTimeId: CalendarEventTimeId) => void
 }
 const ChildSurveyElement = React.memo(function ChildSurveyElement({
   survey,

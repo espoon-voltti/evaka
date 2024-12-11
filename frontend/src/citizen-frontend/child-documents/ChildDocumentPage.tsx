@@ -13,8 +13,9 @@ import {
   ChildDocumentCitizenDetails,
   ChildDocumentDetails
 } from 'lib-common/generated/api-types/document'
+import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -51,7 +52,7 @@ const TopButtonRow = styled(FixedSpaceRow)`
 `
 
 export default React.memo(function ChildDocumentPage() {
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<ChildDocumentId>('id')
 
   const childDocument = useQueryResult(
     childDocumentDetailsQuery({ documentId: id })

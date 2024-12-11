@@ -7,12 +7,21 @@
 import DateRange from '../../date-range'
 import LocalDate from '../../local-date'
 import { CreationModificationMetadata } from './pis'
+import { DaycareId } from './shared'
+import { FeeAlterationId } from './shared'
 import { FeeAlterationType } from './invoicing'
+import { FeeDecisionId } from './shared'
 import { FeeDecisionStatus } from './invoicing'
 import { IncomeEffect } from './invoicing'
+import { IncomeId } from './shared'
 import { JsonOf } from '../../json'
+import { ParentshipId } from './shared'
+import { PartnershipId } from './shared'
+import { PersonId } from './shared'
+import { PlacementId } from './shared'
 import { PlacementType } from './placement'
-import { UUID } from '../../types'
+import { ServiceNeedId } from './shared'
+import { VoucherValueDecisionId } from './shared'
 import { VoucherValueDecisionStatus } from './invoicing'
 import { deserializeJsonCreationModificationMetadata } from './pis'
 
@@ -26,7 +35,7 @@ export interface Timeline {
   incomes: TimelineIncome[]
   lastName: string
   partners: TimelinePartnerDetailed[]
-  personId: UUID
+  personId: PersonId
   valueDecisions: TimelineValueDecision[]
 }
 
@@ -34,12 +43,12 @@ export interface Timeline {
 * Generated from fi.espoo.evaka.timeline.TimelineChildDetailed
 */
 export interface TimelineChildDetailed {
-  childId: UUID
+  childId: PersonId
   creationModificationMetadata: CreationModificationMetadata
   dateOfBirth: LocalDate
   feeAlterations: TimelineFeeAlteration[]
   firstName: string
-  id: UUID
+  id: ParentshipId
   incomes: TimelineIncome[]
   lastName: string
   originApplicationAccessible: boolean
@@ -54,7 +63,7 @@ export interface TimelineChildDetailed {
 export interface TimelineFeeAlteration {
   absolute: boolean
   amount: number
-  id: UUID
+  id: FeeAlterationId
   notes: string
   range: DateRange
   type: FeeAlterationType
@@ -64,7 +73,7 @@ export interface TimelineFeeAlteration {
 * Generated from fi.espoo.evaka.timeline.TimelineFeeDecision
 */
 export interface TimelineFeeDecision {
-  id: UUID
+  id: FeeDecisionId
   range: DateRange
   status: FeeDecisionStatus
   totalFee: number
@@ -75,7 +84,7 @@ export interface TimelineFeeDecision {
 */
 export interface TimelineIncome {
   effect: IncomeEffect
-  id: UUID
+  id: IncomeId
   range: DateRange
 }
 
@@ -87,11 +96,11 @@ export interface TimelinePartnerDetailed {
   creationModificationMetadata: CreationModificationMetadata
   feeDecisions: TimelineFeeDecision[]
   firstName: string
-  id: UUID
+  id: PartnershipId
   incomes: TimelineIncome[]
   lastName: string
   originApplicationAccessible: boolean
-  partnerId: UUID
+  partnerId: PersonId
   range: DateRange
   valueDecisions: TimelineValueDecision[]
 }
@@ -100,7 +109,7 @@ export interface TimelinePartnerDetailed {
 * Generated from fi.espoo.evaka.timeline.TimelinePlacement
 */
 export interface TimelinePlacement {
-  id: UUID
+  id: PlacementId
   range: DateRange
   type: PlacementType
   unit: TimelinePlacementUnit
@@ -110,7 +119,7 @@ export interface TimelinePlacement {
 * Generated from fi.espoo.evaka.timeline.TimelinePlacementUnit
 */
 export interface TimelinePlacementUnit {
-  id: UUID
+  id: DaycareId
   name: string
 }
 
@@ -118,7 +127,7 @@ export interface TimelinePlacementUnit {
 * Generated from fi.espoo.evaka.timeline.TimelineServiceNeed
 */
 export interface TimelineServiceNeed {
-  id: UUID
+  id: ServiceNeedId
   name: string
   range: DateRange
 }
@@ -127,7 +136,7 @@ export interface TimelineServiceNeed {
 * Generated from fi.espoo.evaka.timeline.TimelineValueDecision
 */
 export interface TimelineValueDecision {
-  id: UUID
+  id: VoucherValueDecisionId
   range: DateRange
   status: VoucherValueDecisionStatus
 }

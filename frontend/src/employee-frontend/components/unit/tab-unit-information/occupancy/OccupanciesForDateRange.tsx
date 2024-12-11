@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { Caretakers } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -74,7 +75,7 @@ export default React.memo(function OccupanciesForDateRange({
   from,
   to
 }: {
-  unitId: UUID
+  unitId: DaycareId
   groupId: UUID | null
   from: LocalDate
   to: LocalDate

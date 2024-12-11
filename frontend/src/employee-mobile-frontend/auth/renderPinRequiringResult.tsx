@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 
 import { renderResult, RenderResultFn } from '../async-rendering'
 
@@ -18,7 +18,7 @@ function isResultT<T>(res: Result<T | PinLoginRequired>): res is Result<T> {
 
 export function renderPinRequiringResult<T>(
   result: Result<T | PinLoginRequired>,
-  unitId: UUID,
+  unitId: DaycareId,
   renderer: RenderResultFn<T>
 ) {
   return isResultT(result) ? (

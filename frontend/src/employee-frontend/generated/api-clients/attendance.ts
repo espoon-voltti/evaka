@@ -5,13 +5,14 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { OpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonOpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
@@ -24,7 +25,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getOpenGroupAttendance(
   request: {
-    userId: UUID
+    userId: EmployeeId
   }
 ): Promise<OpenGroupAttendanceResponse> {
   const params = createUrlSearchParams(
@@ -44,7 +45,7 @@ export async function getOpenGroupAttendance(
 */
 export async function getRealtimeStaffAttendances(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     start: LocalDate,
     end: LocalDate
   }

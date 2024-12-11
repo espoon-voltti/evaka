@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -11,7 +13,6 @@ import {
   createDaycarePlacementFixture,
   testDaycare,
   Fixture,
-  uuidv4,
   testAdult,
   testChild,
   testChild2,
@@ -66,7 +67,7 @@ describe('Placement sketching report', () => {
 
     const preferredStartDate = LocalDate.of(2021, 8, 13)
     const sentDate = preferredStartDate.subMonths(4)
-    const applicationId = uuidv4()
+    const applicationId = randomId<ApplicationId>()
 
     const createdApplication: DevApplicationWithForm = {
       ...fixture,
@@ -105,7 +106,7 @@ describe('Placement sketching report', () => {
 
     const preferredStartDate = LocalDate.of(2021, 8, 13)
     const sentDate = preferredStartDate.subMonths(4)
-    const applicationId = uuidv4()
+    const applicationId = randomId<ApplicationId>()
 
     const createdApplication: DevApplicationWithForm = {
       ...fixture,
@@ -128,7 +129,7 @@ describe('Placement sketching report', () => {
     const currentUnit = preferredUnit
 
     const daycarePlacementFixture = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId<ApplicationId>(),
       createdApplication.childId,
       preferredUnit.id,
       placementStartDate
@@ -166,7 +167,7 @@ describe('Placement sketching report', () => {
       },
       sentDate: sentDate,
       status: 'SENT',
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
 
     const fixtureForStatusWaitingPlacement = applicationFixture(
@@ -187,7 +188,7 @@ describe('Placement sketching report', () => {
       },
       sentDate: sentDate,
       status: 'WAITING_PLACEMENT',
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
 
     const fixtureForStatusActive = applicationFixture(
@@ -208,7 +209,7 @@ describe('Placement sketching report', () => {
       },
       sentDate: sentDate,
       status: 'ACTIVE',
-      id: uuidv4()
+      id: randomId<ApplicationId>()
     }
 
     await createApplications({

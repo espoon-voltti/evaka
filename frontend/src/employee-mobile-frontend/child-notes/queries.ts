@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
@@ -50,37 +51,37 @@ export const deleteGroupNoteMutation = mutation({
 })
 
 export const createChildDailyNoteMutation = mutation({
-  api: (arg: Arg0<typeof createChildDailyNote> & { unitId: UUID }) =>
+  api: (arg: Arg0<typeof createChildDailyNote> & { unitId: DaycareId }) =>
     createChildDailyNote(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const updateChildDailyNoteMutation = mutation({
-  api: (arg: Arg0<typeof updateChildDailyNote> & { unitId: UUID }) =>
+  api: (arg: Arg0<typeof updateChildDailyNote> & { unitId: DaycareId }) =>
     updateChildDailyNote(arg).then(() => undefined),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const deleteChildDailyNoteMutation = mutation({
-  api: (arg: Arg0<typeof deleteChildDailyNote> & { unitId: UUID }) =>
+  api: (arg: Arg0<typeof deleteChildDailyNote> & { unitId: DaycareId }) =>
     deleteChildDailyNote(arg).then(() => undefined),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const createChildStickyNoteMutation = mutation({
-  api: (arg: Arg0<typeof createChildStickyNote> & { unitId: UUID }) =>
+  api: (arg: Arg0<typeof createChildStickyNote> & { unitId: DaycareId }) =>
     createChildStickyNote(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const updateChildStickyNoteMutation = mutation({
-  api: (arg: Arg0<typeof updateChildStickyNote> & { unitId: UUID }) =>
+  api: (arg: Arg0<typeof updateChildStickyNote> & { unitId: DaycareId }) =>
     updateChildStickyNote(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const deleteChildStickyNoteMutation = mutation({
-  api: (arg: Arg0<typeof deleteChildStickyNote> & { unitId: UUID }) =>
+  api: (arg: Arg0<typeof deleteChildStickyNote> & { unitId: DaycareId }) =>
     deleteChildStickyNote(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })

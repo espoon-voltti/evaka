@@ -7,6 +7,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -20,7 +21,7 @@ import { unitInfoQuery } from '../units/queries'
 import { useTranslation } from './i18n'
 
 interface GroupSelectorProps {
-  unitId: UUID
+  unitId: DaycareId
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   countInfo?: CountInfo

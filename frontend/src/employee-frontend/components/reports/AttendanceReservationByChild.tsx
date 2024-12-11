@@ -15,6 +15,7 @@ import {
   AttendanceReservationReportByChildGroup,
   AttendanceReservationReportByChildItem
 } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -61,7 +62,7 @@ export default React.memo(function AttendanceReservationByChild() {
   const { lang, i18n } = useTranslation()
   const { roles } = useContext(UserContext)
 
-  const [unitId, setUnitId] = useState<UUID | null>(null)
+  const [unitId, setUnitId] = useState<DaycareId | null>(null)
   const [range, setRange] = useState(() => {
     const defaultDate = LocalDate.todayInSystemTz().addWeeks(1)
     return new FiniteDateRange(

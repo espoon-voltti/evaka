@@ -4,13 +4,18 @@
 
 // GENERATED FILE: no manual modifications
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import { CreateMessageResponse } from 'lib-common/generated/api-types/messaging'
 import { DraftContent } from 'lib-common/generated/api-types/messaging'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import { MessageDraftId } from 'lib-common/generated/api-types/shared'
+import { MessageId } from 'lib-common/generated/api-types/shared'
 import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { PagedMessageCopies } from 'lib-common/generated/api-types/messaging'
 import { PagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { PagedSentMessages } from 'lib-common/generated/api-types/messaging'
@@ -20,7 +25,6 @@ import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/mes
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
 import { UnreadCountByAccount } from 'lib-common/generated/api-types/messaging'
 import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../api/client'
@@ -40,8 +44,8 @@ import { uri } from 'lib-common/uri'
 */
 export async function archiveThread(
   request: {
-    accountId: UUID,
-    threadId: UUID
+    accountId: MessageAccountId,
+    threadId: MessageThreadId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -57,7 +61,7 @@ export async function archiveThread(
 */
 export async function createMessage(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     body: PostMessageBody
   }
 ): Promise<CreateMessageResponse> {
@@ -75,7 +79,7 @@ export async function createMessage(
 */
 export async function createMessagePreflightCheck(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     body: PostMessagePreflightBody
   }
 ): Promise<PostMessagePreflightResponse> {
@@ -93,8 +97,8 @@ export async function createMessagePreflightCheck(
 */
 export async function deleteDraftMessage(
   request: {
-    accountId: UUID,
-    draftId: UUID
+    accountId: MessageAccountId,
+    draftId: MessageDraftId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -122,7 +126,7 @@ export async function getAccountsByUser(): Promise<AuthorizedMessageAccount[]> {
 */
 export async function getArchivedMessages(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     page: number
   }
 ): Promise<PagedMessageThreads> {
@@ -143,7 +147,7 @@ export async function getArchivedMessages(
 */
 export async function getDraftMessages(
   request: {
-    accountId: UUID
+    accountId: MessageAccountId
   }
 ): Promise<DraftContent[]> {
   const { data: json } = await client.request<JsonOf<DraftContent[]>>({
@@ -159,7 +163,7 @@ export async function getDraftMessages(
 */
 export async function getMessageCopies(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     page: number
   }
 ): Promise<PagedMessageCopies> {
@@ -180,7 +184,7 @@ export async function getMessageCopies(
 */
 export async function getReceivedMessages(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     page: number
   }
 ): Promise<PagedMessageThreads> {
@@ -213,7 +217,7 @@ export async function getReceiversForNewMessage(): Promise<MessageReceiversRespo
 */
 export async function getSentMessages(
   request: {
-    accountId: UUID,
+    accountId: MessageAccountId,
     page: number
   }
 ): Promise<PagedSentMessages> {
@@ -234,8 +238,8 @@ export async function getSentMessages(
 */
 export async function getThread(
   request: {
-    accountId: UUID,
-    threadId: UUID
+    accountId: MessageAccountId,
+    threadId: MessageThreadId
   }
 ): Promise<MessageThread> {
   const { data: json } = await client.request<JsonOf<MessageThread>>({
@@ -251,7 +255,7 @@ export async function getThread(
 */
 export async function getThreadByApplicationId(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   }
 ): Promise<ThreadByApplicationResponse> {
   const { data: json } = await client.request<JsonOf<ThreadByApplicationResponse>>({
@@ -279,10 +283,10 @@ export async function getUnreadMessages(): Promise<UnreadCountByAccount[]> {
 */
 export async function initDraftMessage(
   request: {
-    accountId: UUID
+    accountId: MessageAccountId
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<MessageDraftId> {
+  const { data: json } = await client.request<JsonOf<MessageDraftId>>({
     url: uri`/employee/messages/${request.accountId}/drafts`.toString(),
     method: 'POST'
   })
@@ -295,8 +299,8 @@ export async function initDraftMessage(
 */
 export async function markThreadRead(
   request: {
-    accountId: UUID,
-    threadId: UUID
+    accountId: MessageAccountId,
+    threadId: MessageThreadId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -312,8 +316,8 @@ export async function markThreadRead(
 */
 export async function replyToThread(
   request: {
-    accountId: UUID,
-    messageId: UUID,
+    accountId: MessageAccountId,
+    messageId: MessageId,
     body: ReplyToMessageBody
   }
 ): Promise<ThreadReply> {
@@ -331,8 +335,8 @@ export async function replyToThread(
 */
 export async function updateDraftMessage(
   request: {
-    accountId: UUID,
-    draftId: UUID,
+    accountId: MessageAccountId,
+    draftId: MessageDraftId,
     body: UpdatableDraftContent
   }
 ): Promise<void> {

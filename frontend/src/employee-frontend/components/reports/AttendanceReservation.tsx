@@ -15,6 +15,7 @@ import styled from 'styled-components'
 import { Failure, Loading, Result, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -65,7 +66,7 @@ interface AttendanceReservationReportUiRow {
 export default React.memo(function AttendanceReservation() {
   const { lang, i18n } = useTranslation()
 
-  const [unitId, setUnitId] = useState<UUID | null>(null)
+  const [unitId, setUnitId] = useState<DaycareId | null>(null)
   const [filters, setFilters] = useState<AttendanceReservationReportFilters>(
     () => {
       const defaultDate = LocalDate.todayInSystemTz().addWeeks(1)

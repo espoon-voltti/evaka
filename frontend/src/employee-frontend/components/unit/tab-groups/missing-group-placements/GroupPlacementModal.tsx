@@ -8,7 +8,6 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -28,6 +27,7 @@ import {
   createGroupPlacementMutation,
   updateBackupCareMutation
 } from '../../queries'
+import { MissingPlacement } from '../types'
 
 const FieldWrapper = styled.section`
   display: flex;
@@ -37,7 +37,7 @@ const FieldWrapper = styled.section`
 interface Props {
   unitId: UUID
   groups: DaycareGroup[]
-  missingPlacement: MissingGroupPlacement
+  missingPlacement: MissingPlacement
 }
 
 interface GroupPlacementForm {
@@ -53,11 +53,10 @@ export default React.memo(function GroupPlacementModal({
   missingPlacement
 }: Props) {
   const {
-    placementId,
     firstName,
     lastName,
     gap: { start: minDate, end: maxDate }
-  } = missingPlacement
+  } = missingPlacement.data
 
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
@@ -109,24 +108,25 @@ export default React.memo(function GroupPlacementModal({
     })
   }
 
-  const disableDateEditIfBackupPlacement = missingPlacement.backup
-    ? {
-        disabled: true,
-        onFocus: (e: React.FocusEvent<HTMLInputElement>): void =>
-          e.target.blur()
-      }
-    : {}
+  const disableDateEditIfBackupPlacement =
+    missingPlacement.type === 'backup'
+      ? {
+          disabled: true,
+          onFocus: (e: React.FocusEvent<HTMLInputElement>): void =>
+            e.target.blur()
+        }
+      : {}
 
   const [createGroupPlacementOrBackupCare, onClick] = useSelectMutation(
     () =>
       form.groupId === null
         ? cancelMutation
-        : !missingPlacement.backup
-          ? first(form.groupId)
-          : second(form.groupId),
+        : missingPlacement.type === 'group'
+          ? first([missingPlacement.data.placementId, form.groupId] as const)
+          : second([missingPlacement.data.backupCareId, form.groupId] as const),
     [
       createGroupPlacementMutation,
-      (groupId) => ({
+      ([placementId, groupId]) => ({
         unitId,
         placementId,
         body: {
@@ -138,8 +138,8 @@ export default React.memo(function GroupPlacementModal({
     ],
     [
       updateBackupCareMutation,
-      (groupId) => ({
-        id: placementId,
+      ([backupCareId, groupId]) => ({
+        id: backupCareId,
         unitId,
         body: {
           period: new FiniteDateRange(form.startDate, form.endDate),

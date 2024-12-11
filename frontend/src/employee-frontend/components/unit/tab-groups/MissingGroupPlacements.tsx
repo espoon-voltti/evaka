@@ -3,14 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
+import {
+  MissingBackupGroupPlacement,
+  MissingGroupPlacement
+} from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
@@ -32,21 +35,24 @@ import { isPartDayPlacement } from '../../../utils/placements'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
+import { MissingPlacement, toMissingPlacements } from './types'
+
 function renderMissingGroupPlacementRow(
-  missingPlacement: MissingGroupPlacement,
+  missingPlacement: MissingPlacement,
   onAddToGroup: () => void,
   i18n: Translations,
   canCreateGroupPlacement: boolean
 ) {
-  const {
-    childId,
-    firstName,
-    lastName,
-    dateOfBirth,
-    placementPeriod,
-    gap,
-    placementType
-  } = missingPlacement
+  const { childId, firstName, lastName, dateOfBirth, placementPeriod, gap } =
+    missingPlacement.data
+
+  const careType =
+    missingPlacement.type === 'group'
+      ? missingPlacement.data.placementType
+      : 'backup-care'
+
+  const fromUnits =
+    missingPlacement.type === 'backup' ? missingPlacement.data.fromUnits : []
 
   return (
     <Tr
@@ -68,17 +74,23 @@ function renderMissingGroupPlacementRow(
       </Td>
       <Td data-qa="placement-type">
         <FixedSpaceColumn spacing="xs" alignItems="flex-start">
-          <CareTypeChip type={placementType ?? 'backup-care'} />
-          {missingPlacement.fromUnits.map((unit) => (
+          <CareTypeChip type={careType} />
+          {fromUnits.map((unit) => (
             <Light key={unit}>{unit}</Light>
           ))}
         </FixedSpaceColumn>
       </Td>
       <Td data-qa="placement-subtype">
-        {placementType && (
+        {missingPlacement.type === 'group' && (
           <PlacementCircle
-            type={isPartDayPlacement(placementType) ? 'half' : 'full'}
-            label={<ServiceNeedTooltipLabel placement={missingPlacement} />}
+            type={
+              isPartDayPlacement(missingPlacement.data.placementType)
+                ? 'half'
+                : 'full'
+            }
+            label={
+              <ServiceNeedTooltipLabel placement={missingPlacement.data} />
+            }
           />
         )}
       </Td>
@@ -145,6 +157,7 @@ type Props = {
   unitId: UUID
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
+  missingBackupGroupPlacements: MissingBackupGroupPlacement[]
   backupCares: UnitBackupCare[]
   permittedPlacementActions: Partial<Record<UUID, Action.Placement[]>>
   permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
@@ -154,29 +167,40 @@ export default React.memo(function MissingGroupPlacements({
   unitId,
   groups,
   missingGroupPlacements,
+  missingBackupGroupPlacements,
   permittedPlacementActions,
   permittedBackupCareActions
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const [activeMissingPlacement, setActiveMissingPlacement] =
-    useState<MissingGroupPlacement | null>(null)
+    useState<MissingPlacement | null>(null)
 
-  const addPlacementToGroup = (missingPlacement: MissingGroupPlacement) => {
+  const addPlacementToGroup = (missingPlacement: MissingPlacement) => {
     setActiveMissingPlacement(missingPlacement)
-    if (missingPlacement.backup) {
+    if (missingPlacement.type == 'backup') {
       toggleUiMode('backup-care-group')
     } else {
       toggleUiMode('group-placement')
     }
   }
 
-  const sortedRows = sortBy(missingGroupPlacements, [
-    (p: MissingGroupPlacement) => p.lastName,
-    (p: MissingGroupPlacement) => p.firstName,
-    (p: MissingGroupPlacement) => p.placementPeriod.start,
-    (p: MissingGroupPlacement) => p.gap.start
-  ])
+  const sortedRows = useMemo(
+    () =>
+      sortBy(
+        toMissingPlacements(
+          missingGroupPlacements,
+          missingBackupGroupPlacements
+        ),
+        [
+          (p: MissingPlacement) => p.data.lastName,
+          (p: MissingPlacement) => p.data.firstName,
+          (p: MissingPlacement) => p.data.placementPeriod.start,
+          (p: MissingPlacement) => p.data.gap.start
+        ]
+      ),
+    [missingGroupPlacements, missingBackupGroupPlacements]
+  )
 
   return (
     <>
@@ -199,11 +223,11 @@ export default React.memo(function MissingGroupPlacements({
               row,
               () => addPlacementToGroup(row),
               i18n,
-              (row.backup
-                ? permittedBackupCareActions[row.placementId]?.includes(
+              (row.type === 'backup'
+                ? permittedBackupCareActions[row.data.backupCareId]?.includes(
                     'UPDATE'
                   )
-                : permittedPlacementActions[row.placementId]?.includes(
+                : permittedPlacementActions[row.data.placementId]?.includes(
                     'CREATE_GROUP_PLACEMENT'
                   )) ?? false
             )

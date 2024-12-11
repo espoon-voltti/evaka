@@ -13,53 +13,98 @@ import TimeRange from 'lib-common/time-range'
 import { AbsenceCategory } from 'lib-common/generated/api-types/absence'
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import { ApplicationForm } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { ApplicationOrigin } from 'lib-common/generated/api-types/application'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { AreaId } from 'lib-common/generated/api-types/shared'
+import { AssistanceActionId } from 'lib-common/generated/api-types/shared'
+import { AssistanceFactorId } from 'lib-common/generated/api-types/shared'
 import { AssistanceLevel } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionEmployee } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionGuardian } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
+import { AssistanceNeedVoucherCoefficientId } from 'lib-common/generated/api-types/shared'
+import { BackupCareId } from 'lib-common/generated/api-types/shared'
+import { BackupPickupId } from 'lib-common/generated/api-types/shared'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
+import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventType } from 'lib-common/generated/api-types/calendarevent'
 import { CareType } from 'lib-common/generated/api-types/daycare'
+import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { ChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
+import { ClubTermId } from 'lib-common/generated/api-types/shared'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
+import { DailyServiceTimeNotificationId } from 'lib-common/generated/api-types/shared'
 import { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
+import { DaycareAssistanceId } from 'lib-common/generated/api-types/shared'
 import { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import { DaycareDecisionCustomization } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DecisionId } from 'lib-common/generated/api-types/shared'
 import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import { DecisionStatus } from 'lib-common/generated/api-types/decision'
 import { DecisionType } from 'lib-common/generated/api-types/decision'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
 import { DocumentStatus } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
+import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { DocumentType } from 'lib-common/generated/api-types/document'
 import { EmailMessageType } from 'lib-common/generated/api-types/pis'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
+import { EvakaUserId } from 'lib-common/generated/api-types/shared'
 import { FeeAlterationWithEffect } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionThresholds } from 'lib-common/generated/api-types/invoicing'
+import { FosterParentId } from 'lib-common/generated/api-types/shared'
+import { GroupId } from 'lib-common/generated/api-types/shared'
+import { GroupPlacementId } from 'lib-common/generated/api-types/shared'
+import { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
+import { Id } from 'lib-common/id-type'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
+import { IncomeId } from 'lib-common/generated/api-types/shared'
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
+import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeValue } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceCorrectionId } from 'lib-common/generated/api-types/shared'
+import { InvoiceId } from 'lib-common/generated/api-types/shared'
+import { InvoiceRowId } from 'lib-common/generated/api-types/shared'
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { JsonOf } from 'lib-common/json'
 import { Language } from 'lib-common/generated/api-types/daycare'
 import { MailingAddress } from 'lib-common/generated/api-types/daycare'
+import { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import { Nationality } from 'lib-common/generated/api-types/vtjclient'
 import { NativeLanguage } from 'lib-common/generated/api-types/vtjclient'
 import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
+import { OtherAssistanceMeasureId } from 'lib-common/generated/api-types/shared'
 import { OtherAssistanceMeasureType } from 'lib-common/generated/api-types/assistance'
+import { ParentshipId } from 'lib-common/generated/api-types/shared'
+import { PartnershipId } from 'lib-common/generated/api-types/shared'
+import { PaymentId } from 'lib-common/generated/api-types/shared'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import { PedagogicalDocumentId } from 'lib-common/generated/api-types/shared'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import { PlacementId } from 'lib-common/generated/api-types/shared'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { PreschoolAssistanceId } from 'lib-common/generated/api-types/shared'
 import { PreschoolAssistanceLevel } from 'lib-common/generated/api-types/assistance'
+import { PreschoolTermId } from 'lib-common/generated/api-types/shared'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PushNotificationCategory } from 'lib-common/generated/api-types/webpush'
 import { ServiceApplicationDecisionStatus } from 'lib-common/generated/api-types/serviceneed'
+import { ServiceApplicationId } from 'lib-common/generated/api-types/shared'
+import { ServiceNeedId } from 'lib-common/generated/api-types/shared'
+import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import { ServiceOptions } from 'lib-common/generated/api-types/assistanceneed'
 import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { StructuralMotivationOptions } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
@@ -67,6 +112,7 @@ import { UnitManager } from 'lib-common/generated/api-types/daycare'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { VisitingAddress } from 'lib-common/generated/api-types/daycare'
 import { VoucherValueDecisionDifference } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { VoucherValueDecisionServiceNeed } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
@@ -76,6 +122,10 @@ import { deserializeJsonChildWithDateOfBirth } from 'lib-common/generated/api-ty
 import { deserializeJsonDocumentContent } from 'lib-common/generated/api-types/document'
 import { deserializeJsonIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 
+export type AbsenceId = Id<'Absence'>
+
+export type AssistanceActionOptionId = Id<'AssistanceActionOption'>
+
 /**
 * Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Autocomplete
 */
@@ -83,13 +133,15 @@ export interface Autocomplete {
   features: Feature[]
 }
 
+export type CalendarEventAttendeeId = Id<'CalendarEventAttendee'>
+
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.Caretaker
 */
 export interface Caretaker {
   amount: number
   endDate: LocalDate | null
-  groupId: UUID
+  groupId: GroupId
   startDate: LocalDate
 }
 
@@ -115,14 +167,14 @@ export interface DaycareAclInsert {
 * Generated from fi.espoo.evaka.shared.dev.DevApi.DecisionRequest
 */
 export interface DecisionRequest {
-  applicationId: UUID
-  employeeId: UUID
+  applicationId: ApplicationId
+  employeeId: EmployeeId
   endDate: LocalDate
-  id: UUID
+  id: DecisionId
   startDate: LocalDate
   status: DecisionStatus
   type: DecisionType
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
@@ -131,12 +183,12 @@ export interface DecisionRequest {
 export interface DevAbsence {
   absenceCategory: AbsenceCategory
   absenceType: AbsenceType
-  childId: UUID
+  childId: PersonId
   date: LocalDate
-  id: UUID
+  id: AbsenceId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: UUID
-  questionnaireId: UUID | null
+  modifiedBy: EvakaUserId
+  questionnaireId: HolidayQuestionnaireId | null
 }
 
 /**
@@ -145,18 +197,18 @@ export interface DevAbsence {
 export interface DevApplicationWithForm {
   allowOtherGuardianAccess: boolean
   checkedByAdmin: boolean
-  childId: UUID
+  childId: PersonId
   confidential: boolean | null
   createdDate: HelsinkiDateTime | null
   dueDate: LocalDate | null
   form: ApplicationForm
   formModified: HelsinkiDateTime
-  guardianId: UUID
+  guardianId: PersonId
   hideFromGuardian: boolean
-  id: UUID
+  id: ApplicationId
   modifiedDate: HelsinkiDateTime | null
   origin: ApplicationOrigin
-  otherGuardians: UUID[]
+  otherGuardians: PersonId[]
   sentDate: LocalDate | null
   status: ApplicationStatus
   transferApplication: boolean
@@ -168,12 +220,12 @@ export interface DevApplicationWithForm {
 */
 export interface DevAssistanceAction {
   actions: string[]
-  childId: UUID
+  childId: PersonId
   endDate: LocalDate
-  id: UUID
+  id: AssistanceActionId
   otherAction: string
   startDate: LocalDate
-  updatedBy: UUID
+  updatedBy: EvakaUserId
 }
 
 /**
@@ -181,7 +233,7 @@ export interface DevAssistanceAction {
 */
 export interface DevAssistanceActionOption {
   descriptionFi: string | null
-  id: UUID
+  id: AssistanceActionOptionId
   nameFi: string
   value: string
 }
@@ -191,8 +243,8 @@ export interface DevAssistanceActionOption {
 */
 export interface DevAssistanceFactor {
   capacityFactor: number
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: AssistanceFactorId
   modified: HelsinkiDateTime
   modifiedBy: EvakaUser
   validDuring: FiniteDateRange
@@ -205,7 +257,7 @@ export interface DevAssistanceNeedDecision {
   annulmentReason: string
   assistanceLevels: AssistanceLevel[]
   careMotivation: string | null
-  childId: UUID
+  childId: PersonId
   decisionMade: LocalDate | null
   decisionMaker: AssistanceNeedDecisionEmployee | null
   decisionNumber: number | null
@@ -213,7 +265,7 @@ export interface DevAssistanceNeedDecision {
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
-  id: UUID
+  id: AssistanceNeedDecisionId
   language: OfficialLanguage
   motivationForDecision: string | null
   otherRepresentativeDetails: string | null
@@ -221,14 +273,14 @@ export interface DevAssistanceNeedDecision {
   pedagogicalMotivation: string | null
   preparedBy1: AssistanceNeedDecisionEmployee | null
   preparedBy2: AssistanceNeedDecisionEmployee | null
-  selectedUnit: UUID | null
+  selectedUnit: DaycareId | null
   sentForDecision: LocalDate | null
   serviceOptions: ServiceOptions
   servicesMotivation: string | null
   status: AssistanceNeedDecisionStatus
   structuralMotivationDescription: string | null
   structuralMotivationOptions: StructuralMotivationOptions
-  unreadGuardianIds: UUID[] | null
+  unreadGuardianIds: PersonId[] | null
   validityPeriod: DateRange
   viewOfGuardians: string | null
 }
@@ -238,23 +290,23 @@ export interface DevAssistanceNeedDecision {
 */
 export interface DevAssistanceNeedPreschoolDecision {
   annulmentReason: string
-  childId: UUID
+  childId: PersonId
   decisionMade: LocalDate | null
   decisionNumber: number
   form: AssistanceNeedPreschoolDecisionForm
-  id: UUID
+  id: AssistanceNeedPreschoolDecisionId
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
-  unreadGuardianIds: UUID[] | null
+  unreadGuardianIds: PersonId[] | null
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevAssistanceNeedVoucherCoefficient
 */
 export interface DevAssistanceNeedVoucherCoefficient {
-  childId: UUID
+  childId: PersonId
   coefficient: number
-  id: UUID
+  id: AssistanceNeedVoucherCoefficientId
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser | null
   validityPeriod: FiniteDateRange
@@ -264,19 +316,19 @@ export interface DevAssistanceNeedVoucherCoefficient {
 * Generated from fi.espoo.evaka.shared.dev.DevBackupCare
 */
 export interface DevBackupCare {
-  childId: UUID
-  groupId: UUID | null
-  id: UUID
+  childId: PersonId
+  groupId: GroupId | null
+  id: BackupCareId
   period: FiniteDateRange
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevBackupPickup
 */
 export interface DevBackupPickup {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: BackupPickupId
   name: string
   phone: string
 }
@@ -287,9 +339,9 @@ export interface DevBackupPickup {
 export interface DevCalendarEvent {
   description: string
   eventType: CalendarEventType
-  id: UUID
+  id: CalendarEventId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: UUID
+  modifiedBy: EvakaUserId
   period: FiniteDateRange
   title: string
 }
@@ -298,24 +350,24 @@ export interface DevCalendarEvent {
 * Generated from fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 */
 export interface DevCalendarEventAttendee {
-  calendarEventId: UUID
-  childId: UUID | null
-  groupId: UUID | null
-  id: UUID
-  unitId: UUID
+  calendarEventId: CalendarEventId
+  childId: PersonId | null
+  groupId: GroupId | null
+  id: CalendarEventAttendeeId
+  unitId: DaycareId
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevCalendarEventTime
 */
 export interface DevCalendarEventTime {
-  calendarEventId: UUID
-  childId: UUID | null
+  calendarEventId: CalendarEventId
+  childId: PersonId | null
   date: LocalDate
   end: LocalTime
-  id: UUID
+  id: CalendarEventTimeId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: UUID
+  modifiedBy: EvakaUserId
   start: LocalTime
 }
 
@@ -324,7 +376,7 @@ export interface DevCalendarEventTime {
 */
 export interface DevCareArea {
   areaCode: number | null
-  id: UUID
+  id: AreaId
   name: string
   shortName: string
   subCostCenter: string | null
@@ -338,7 +390,7 @@ export interface DevChild {
   allergies: string
   diet: string
   dietId: number | null
-  id: UUID
+  id: PersonId
   languageAtHome: string
   languageAtHomeDetails: string
   mealTextureId: number | null
@@ -350,26 +402,26 @@ export interface DevChild {
 */
 export interface DevChildAttendance {
   arrived: LocalTime
-  childId: UUID
+  childId: PersonId
   date: LocalDate
   departed: LocalTime | null
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevChildDocument
 */
 export interface DevChildDocument {
-  childId: UUID
+  childId: PersonId
   content: DocumentContent
   contentModifiedAt: HelsinkiDateTime
-  contentModifiedBy: UUID | null
-  id: UUID
+  contentModifiedBy: EmployeeId | null
+  id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
   publishedContent: DocumentContent | null
   status: DocumentStatus
-  templateId: UUID
+  templateId: DocumentTemplateId
 }
 
 /**
@@ -377,7 +429,7 @@ export interface DevChildDocument {
 */
 export interface DevClubTerm {
   applicationPeriod: FiniteDateRange
-  id: UUID
+  id: ClubTermId
   term: FiniteDateRange
   termBreaks: FiniteDateRange[]
 }
@@ -386,17 +438,17 @@ export interface DevClubTerm {
 * Generated from fi.espoo.evaka.shared.dev.DevDailyServiceTimeNotification
 */
 export interface DevDailyServiceTimeNotification {
-  guardianId: UUID
-  id: UUID
+  guardianId: PersonId
+  id: DailyServiceTimeNotificationId
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 */
 export interface DevDailyServiceTimes {
-  childId: UUID
+  childId: PersonId
   fridayTimes: TimeRange | null
-  id: UUID
+  id: DailyServiceTimeId
   mondayTimes: TimeRange | null
   regularTimes: TimeRange | null
   saturdayTimes: TimeRange | null
@@ -413,7 +465,7 @@ export interface DevDailyServiceTimes {
 */
 export interface DevDaycare {
   additionalInfo: string | null
-  areaId: UUID
+  areaId: AreaId
   businessId: string
   capacity: number
   closingDate: LocalDate | null
@@ -426,10 +478,10 @@ export interface DevDaycare {
   dwCostCenter: string | null
   email: string | null
   enabledPilotFeatures: PilotFeature[]
-  financeDecisionHandler: UUID | null
+  financeDecisionHandler: EmployeeId | null
   ghostUnit: boolean
   iban: string
-  id: UUID
+  id: DaycareId
   invoicedByMunicipality: boolean
   language: Language
   location: Coordinate | null
@@ -463,8 +515,8 @@ export interface DevDaycare {
 * Generated from fi.espoo.evaka.shared.dev.DevDaycareAssistance
 */
 export interface DevDaycareAssistance {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: DaycareAssistanceId
   level: DaycareAssistanceLevel
   modified: HelsinkiDateTime
   modifiedBy: EvakaUser
@@ -475,9 +527,9 @@ export interface DevDaycareAssistance {
 * Generated from fi.espoo.evaka.shared.dev.DevDaycareGroup
 */
 export interface DevDaycareGroup {
-  daycareId: UUID
+  daycareId: DaycareId
   endDate: LocalDate | null
-  id: UUID
+  id: GroupId
   jamixCustomerNumber: number | null
   name: string
   startDate: LocalDate
@@ -488,8 +540,8 @@ export interface DevDaycareGroup {
 */
 export interface DevDaycareGroupAcl {
   created: HelsinkiDateTime
-  employeeId: UUID
-  groupId: UUID
+  employeeId: EmployeeId
+  groupId: GroupId
   updated: HelsinkiDateTime
 }
 
@@ -497,10 +549,10 @@ export interface DevDaycareGroupAcl {
 * Generated from fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 */
 export interface DevDaycareGroupPlacement {
-  daycareGroupId: UUID
-  daycarePlacementId: UUID
+  daycareGroupId: GroupId
+  daycarePlacementId: PlacementId
   endDate: LocalDate
-  id: UUID
+  id: GroupPlacementId
   startDate: LocalDate
 }
 
@@ -511,7 +563,7 @@ export interface DevDocumentTemplate {
   archiveDurationMonths: number | null
   confidential: boolean
   content: DocumentTemplateContent
-  id: UUID
+  id: DocumentTemplateId
   language: OfficialLanguage
   legalBasis: string
   name: string
@@ -531,7 +583,7 @@ export interface DevEmployee {
   employeeNumber: string | null
   externalId: string | null
   firstName: string
-  id: UUID
+  id: EmployeeId
   lastLogin: HelsinkiDateTime
   lastName: string
   preferredFirstName: string | null
@@ -546,15 +598,15 @@ export interface DevEmployeePin {
   id: UUID
   locked: boolean
   pin: string
-  userId: UUID | null
+  userId: EmployeeId | null
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevFamilyContact
 */
 export interface DevFamilyContact {
-  childId: UUID
-  contactPersonId: UUID
+  childId: PersonId
+  contactPersonId: PersonId
   id: UUID
   priority: number
 }
@@ -563,11 +615,11 @@ export interface DevFamilyContact {
 * Generated from fi.espoo.evaka.shared.dev.DevFosterParent
 */
 export interface DevFosterParent {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: FosterParentId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: UUID
-  parentId: UUID
+  modifiedBy: EvakaUserId
+  parentId: PersonId
   validDuring: DateRange
 }
 
@@ -575,11 +627,11 @@ export interface DevFosterParent {
 * Generated from fi.espoo.evaka.shared.dev.DevFridgeChild
 */
 export interface DevFridgeChild {
-  childId: UUID
+  childId: PersonId
   conflict: boolean
   endDate: LocalDate
-  headOfChild: UUID
-  id: UUID
+  headOfChild: PersonId
+  id: ParentshipId
   startDate: LocalDate
 }
 
@@ -592,8 +644,8 @@ export interface DevFridgePartner {
   endDate: LocalDate | null
   indx: number
   otherIndx: number
-  partnershipId: UUID
-  personId: UUID
+  partnershipId: PartnershipId
+  personId: PersonId
   startDate: LocalDate
 }
 
@@ -601,8 +653,8 @@ export interface DevFridgePartner {
 * Generated from fi.espoo.evaka.shared.dev.DevGuardian
 */
 export interface DevGuardian {
-  childId: UUID
-  guardianId: UUID
+  childId: PersonId
+  guardianId: PersonId
 }
 
 /**
@@ -611,11 +663,11 @@ export interface DevGuardian {
 export interface DevIncome {
   data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
-  id: UUID
+  id: IncomeId
   isEntrepreneur: boolean
   modifiedAt: HelsinkiDateTime
-  modifiedBy: UUID
-  personId: UUID
+  modifiedBy: EvakaUserId
+  personId: PersonId
   validFrom: LocalDate
   validTo: LocalDate | null
   worksAtEcha: boolean
@@ -626,14 +678,14 @@ export interface DevIncome {
 */
 export interface DevIncomeStatement {
   createdAt: HelsinkiDateTime
-  createdBy: UUID
+  createdBy: EvakaUserId
   data: IncomeStatementBody
   handledAt: HelsinkiDateTime | null
-  handlerId: UUID | null
-  id: UUID
+  handlerId: EmployeeId | null
+  id: IncomeStatementId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: UUID
-  personId: UUID
+  modifiedBy: EvakaUserId
+  personId: PersonId
   sentAt: HelsinkiDateTime | null
   status: IncomeStatementStatus
 }
@@ -642,21 +694,21 @@ export interface DevIncomeStatement {
 * Generated from fi.espoo.evaka.shared.dev.DevInvoice
 */
 export interface DevInvoice {
-  areaId: UUID
-  codebtor: UUID | null
+  areaId: AreaId
+  codebtor: PersonId | null
   createdAt: HelsinkiDateTime | null
   dueDate: LocalDate
-  headOfFamilyId: UUID
-  id: UUID
+  headOfFamilyId: PersonId
+  id: InvoiceId
   invoiceDate: LocalDate
   number: number | null
   periodEnd: LocalDate
   periodStart: LocalDate
-  replacedInvoiceId: UUID | null
+  replacedInvoiceId: InvoiceId | null
   revisionNumber: number
   rows: DevInvoiceRow[]
   sentAt: HelsinkiDateTime | null
-  sentBy: UUID | null
+  sentBy: EvakaUserId | null
   status: InvoiceStatus
 }
 
@@ -665,15 +717,15 @@ export interface DevInvoice {
 */
 export interface DevInvoiceRow {
   amount: number
-  childId: UUID
-  correctionId: UUID | null
+  childId: PersonId
+  correctionId: InvoiceCorrectionId | null
   description: string
-  id: UUID
+  id: InvoiceRowId
   idx: number | null
   periodEnd: LocalDate
   periodStart: LocalDate
   product: string
-  unitId: UUID
+  unitId: DaycareId
   unitPrice: number
 }
 
@@ -681,19 +733,19 @@ export interface DevInvoiceRow {
 * Generated from fi.espoo.evaka.shared.dev.DevMobileDevice
 */
 export interface DevMobileDevice {
-  id: UUID
+  id: MobileDeviceId
   longTermToken: UUID | null
   name: string
   pushNotificationCategories: PushNotificationCategory[]
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevOtherAssistanceMeasure
 */
 export interface DevOtherAssistanceMeasure {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: OtherAssistanceMeasureId
   modified: HelsinkiDateTime
   modifiedBy: EvakaUser
   type: OtherAssistanceMeasureType
@@ -704,11 +756,11 @@ export interface DevOtherAssistanceMeasure {
 * Generated from fi.espoo.evaka.shared.dev.DevParentship
 */
 export interface DevParentship {
-  childId: UUID
+  childId: PersonId
   createdAt: HelsinkiDateTime
   endDate: LocalDate
-  headOfChildId: UUID
-  id: UUID
+  headOfChildId: PersonId
+  id: ParentshipId
   startDate: LocalDate
 }
 
@@ -718,16 +770,16 @@ export interface DevParentship {
 export interface DevPayment {
   amount: number
   dueDate: LocalDate | null
-  id: UUID
+  id: PaymentId
   number: number
   paymentDate: LocalDate | null
   period: FiniteDateRange
   sentAt: HelsinkiDateTime | null
-  sentBy: UUID | null
+  sentBy: EmployeeId | null
   status: PaymentStatus
   unitBusinessId: string | null
   unitIban: string | null
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
   unitProviderId: string | null
 }
@@ -736,12 +788,12 @@ export interface DevPayment {
 * Generated from fi.espoo.evaka.shared.dev.DevPedagogicalDocument
 */
 export interface DevPedagogicalDocument {
-  childId: UUID
-  createdBy: UUID
+  childId: PersonId
+  createdBy: EvakaUserId
   description: string
-  id: UUID
+  id: PedagogicalDocumentId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: UUID
+  modifiedBy: EvakaUserId
 }
 
 /**
@@ -752,11 +804,11 @@ export interface DevPerson {
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
   disabledEmailTypes: EmailMessageType[]
-  duplicateOf: UUID | null
+  duplicateOf: PersonId | null
   email: string | null
   firstName: string
   forceManualFeeDecisions: boolean
-  id: UUID
+  id: PersonId
   invoiceRecipientName: string
   invoicingPostOffice: string
   invoicingPostalCode: string
@@ -783,7 +835,7 @@ export interface DevPerson {
 */
 export interface DevPersonEmail {
   email: string | null
-  personId: UUID
+  personId: PersonId
 }
 
 /**
@@ -798,8 +850,8 @@ export type DevPersonType =
 * Generated from fi.espoo.evaka.shared.dev.DevPersonalMobileDevice
 */
 export interface DevPersonalMobileDevice {
-  employeeId: UUID
-  id: UUID
+  employeeId: EmployeeId
+  id: MobileDeviceId
   longTermToken: UUID | null
   name: string
 }
@@ -808,23 +860,23 @@ export interface DevPersonalMobileDevice {
 * Generated from fi.espoo.evaka.shared.dev.DevPlacement
 */
 export interface DevPlacement {
-  childId: UUID
+  childId: PersonId
   endDate: LocalDate
-  id: UUID
+  id: PlacementId
   placeGuarantee: boolean
   startDate: LocalDate
-  terminatedBy: UUID | null
+  terminatedBy: EvakaUserId | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 */
 export interface DevPreschoolAssistance {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: PreschoolAssistanceId
   level: PreschoolAssistanceLevel
   modified: HelsinkiDateTime
   modifiedBy: EvakaUser
@@ -838,7 +890,7 @@ export interface DevPreschoolTerm {
   applicationPeriod: FiniteDateRange
   extendedTerm: FiniteDateRange
   finnishPreschool: FiniteDateRange
-  id: UUID
+  id: PreschoolTermId
   swedishPreschool: FiniteDateRange
   termBreaks: FiniteDateRange[]
 }
@@ -848,15 +900,15 @@ export interface DevPreschoolTerm {
 */
 export interface DevServiceApplication {
   additionalInfo: string
-  childId: UUID
+  childId: PersonId
   decidedAt: HelsinkiDateTime | null
-  decidedBy: UUID | null
+  decidedBy: EmployeeId | null
   decisionStatus: ServiceApplicationDecisionStatus | null
-  id: UUID
-  personId: UUID
+  id: ServiceApplicationId
+  personId: PersonId
   rejectedReason: string | null
   sentAt: HelsinkiDateTime
-  serviceNeedOptionId: UUID
+  serviceNeedOptionId: ServiceNeedOptionId
   startDate: LocalDate
 }
 
@@ -865,12 +917,12 @@ export interface DevServiceApplication {
 */
 export interface DevServiceNeed {
   confirmedAt: HelsinkiDateTime | null
-  confirmedBy: UUID
+  confirmedBy: EvakaUserId
   endDate: LocalDate
-  id: UUID
-  optionId: UUID
+  id: ServiceNeedId
+  optionId: ServiceNeedOptionId
   partWeek: boolean
-  placementId: UUID
+  placementId: PlacementId
   shiftCare: ShiftCareType
   startDate: LocalDate
 }
@@ -882,9 +934,9 @@ export interface DevStaffAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   departedAutomatically: boolean
-  employeeId: UUID
-  groupId: UUID | null
-  id: UUID
+  employeeId: EmployeeId
+  groupId: GroupId | null
+  id: StaffAttendanceRealtimeId
   occupancyCoefficient: number
   type: StaffAttendanceType
 }
@@ -894,9 +946,9 @@ export interface DevStaffAttendance {
 */
 export interface DevStaffAttendancePlan {
   description: string | null
-  employeeId: UUID
+  employeeId: EmployeeId
   endTime: HelsinkiDateTime
-  id: UUID
+  id: StaffAttendancePlanId
   startTime: HelsinkiDateTime
   type: StaffAttendanceType
 }
@@ -906,8 +958,8 @@ export interface DevStaffAttendancePlan {
 */
 export interface DevTerminatePlacementRequest {
   endDate: LocalDate
-  placementId: UUID
-  terminatedBy: UUID | null
+  placementId: PlacementId
+  terminatedBy: EvakaUserId | null
   terminationRequestedDate: LocalDate | null
 }
 
@@ -916,8 +968,8 @@ export interface DevTerminatePlacementRequest {
 */
 export interface DevUpsertStaffOccupancyCoefficient {
   coefficient: number
-  employeeId: UUID
-  unitId: UUID
+  employeeId: EmployeeId
+  unitId: DaycareId
 }
 
 /**
@@ -1006,14 +1058,14 @@ export interface PlacementPlan {
   periodStart: LocalDate
   preschoolDaycarePeriodEnd: LocalDate | null
   preschoolDaycarePeriodStart: LocalDate | null
-  unitId: UUID
+  unitId: DaycareId
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.ReservationInsert
 */
 export interface ReservationInsert {
-  childId: UUID
+  childId: PersonId
   date: LocalDate
   range: TimeRange | null
 }
@@ -1048,12 +1100,14 @@ export interface SfiMessage {
   streetAddress: string
 }
 
+export type StaffAttendancePlanId = string
+
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 */
 export interface VoucherValueDecision {
   approvedAt: HelsinkiDateTime | null
-  approvedById: UUID | null
+  approvedById: EmployeeId | null
   assistanceNeedCoefficient: number
   baseCoPayment: number
   baseValue: number
@@ -1070,10 +1124,10 @@ export interface VoucherValueDecision {
   feeAlterations: FeeAlterationWithEffect[]
   feeThresholds: FeeDecisionThresholds
   finalCoPayment: number
-  headOfFamilyId: UUID
+  headOfFamilyId: PersonId
   headOfFamilyIncome: DecisionIncome | null
-  id: UUID
-  partnerId: UUID | null
+  id: VoucherValueDecisionId
+  partnerId: PersonId | null
   partnerIncome: DecisionIncome | null
   placement: VoucherValueDecisionPlacement | null
   sentAt: HelsinkiDateTime | null
@@ -1090,7 +1144,7 @@ export interface VoucherValueDecision {
 */
 export interface VoucherValueDecisionPlacement {
   type: PlacementType
-  unitId: UUID
+  unitId: DaycareId
 }
 
 

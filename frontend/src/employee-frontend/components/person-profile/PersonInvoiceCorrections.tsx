@@ -28,6 +28,7 @@ import {
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { formatCents, parseCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -381,7 +382,7 @@ const correctionForm = object({
   targetMonth: localDate(),
   product: required(oneOf<string>()),
   description: required(value<string>()),
-  unit: required(oneOf<string>()),
+  unit: required(oneOf<DaycareId>()),
   period: required(localDateRange()),
   amount: transformed(value<string>(), (value) => {
     if (value.trim() === '') return ValidationError.of('required')
@@ -415,7 +416,7 @@ const InvoiceCorrectionEditModal = React.memo(
     personId: UUID
     childId: UUID
     row: InvoiceCorrection | null
-    units: Record<string, InvoiceDaycare | undefined>
+    units: Record<DaycareId, InvoiceDaycare | undefined>
     products: ProductWithName[]
     onEditorClose: () => void
   }) {
@@ -440,11 +441,13 @@ const InvoiceCorrectionEditModal = React.memo(
         description: row?.description ?? '',
         unit: {
           domValue: row?.unitId ?? '',
-          options: Object.entries(units).map(([id, unit]) => ({
-            value: id,
-            domValue: id,
-            label: unit?.name ?? ''
-          }))
+          options: Object.values(units)
+            .filter((unit) => !!unit)
+            .map((unit) => ({
+              value: unit.id,
+              domValue: unit.id,
+              label: unit.name
+            }))
         },
         period: row
           ? localDateRange.fromRange(row.period)

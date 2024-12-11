@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -27,7 +27,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let child: DevPerson
-let unitId: UUID
+let unitId: DaycareId
 let admin: DevEmployee
 
 const mockedTime = LocalDate.of(2024, 2, 19)

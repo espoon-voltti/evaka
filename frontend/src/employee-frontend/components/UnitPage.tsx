@@ -19,10 +19,10 @@ import {
 import styled from 'styled-components'
 
 import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
@@ -46,7 +46,7 @@ const defaultTab = (unit: DaycareResponse) => {
   return 'unit-info'
 }
 
-const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
+const UnitPage = React.memo(function UnitPage({ id }: { id: DaycareId }) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const { unitInformation, filters, setFilters } = useContext(UnitContext)
@@ -239,7 +239,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
 })
 
 export default React.memo(function UnitPageWrapper() {
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<DaycareId>('id')
   return (
     <UnitContextProvider id={id}>
       <UnitPage id={id} />

@@ -6,10 +6,13 @@
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { AttachmentId } from './shared'
+import { DaycareId } from './shared'
+import { IncomeStatementId } from './shared'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 import { ProviderType } from './daycare'
 import { SortDirection } from './invoicing'
-import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.Accountant
@@ -26,7 +29,7 @@ export interface Accountant {
 */
 export interface Attachment {
   contentType: string
-  id: UUID
+  id: AttachmentId
   name: string
   uploadedByEmployee: boolean
 }
@@ -36,7 +39,7 @@ export interface Attachment {
 */
 export interface ChildBasicInfo {
   firstName: string
-  id: UUID
+  id: PersonId
   lastName: string
 }
 
@@ -95,11 +98,11 @@ export namespace IncomeStatement {
     firstName: string
     handledAt: HelsinkiDateTime | null
     handlerNote: string
-    id: UUID
+    id: IncomeStatementId
     lastName: string
     modifiedAt: HelsinkiDateTime
     otherInfo: string
-    personId: UUID
+    personId: PersonId
     sentAt: HelsinkiDateTime | null
     startDate: LocalDate
     status: IncomeStatementStatus
@@ -115,10 +118,10 @@ export namespace IncomeStatement {
     firstName: string
     handledAt: HelsinkiDateTime | null
     handlerNote: string
-    id: UUID
+    id: IncomeStatementId
     lastName: string
     modifiedAt: HelsinkiDateTime
-    personId: UUID
+    personId: PersonId
     sentAt: HelsinkiDateTime | null
     startDate: LocalDate
     status: IncomeStatementStatus
@@ -138,11 +141,11 @@ export namespace IncomeStatement {
     gross: Gross | null
     handledAt: HelsinkiDateTime | null
     handlerNote: string
-    id: UUID
+    id: IncomeStatementId
     lastName: string
     modifiedAt: HelsinkiDateTime
     otherInfo: string
-    personId: UUID
+    personId: PersonId
     sentAt: HelsinkiDateTime | null
     startDate: LocalDate
     status: IncomeStatementStatus
@@ -161,10 +164,10 @@ export type IncomeStatement = IncomeStatement.ChildIncome | IncomeStatement.High
 */
 export interface IncomeStatementAwaitingHandler {
   handlerNote: string
-  id: UUID
+  id: IncomeStatementId
   incomeEndDate: LocalDate | null
   personFirstName: string
-  personId: UUID
+  personId: PersonId
   personLastName: string
   personName: string
   primaryCareArea: string | null
@@ -180,7 +183,7 @@ export namespace IncomeStatementBody {
   */
   export interface ChildIncome {
     type: 'CHILD_INCOME'
-    attachmentIds: UUID[]
+    attachmentIds: AttachmentId[]
     endDate: LocalDate | null
     otherInfo: string
     startDate: LocalDate
@@ -201,7 +204,7 @@ export namespace IncomeStatementBody {
   export interface Income {
     type: 'INCOME'
     alimonyPayer: boolean
-    attachmentIds: UUID[]
+    attachmentIds: AttachmentId[]
     endDate: LocalDate | null
     entrepreneur: Entrepreneur | null
     gross: Gross | null
@@ -313,7 +316,7 @@ export interface SearchIncomeStatementsRequest {
   sentStartDate: LocalDate | null
   sortBy: IncomeStatementSortParam | null
   sortDirection: SortDirection | null
-  unit: UUID | null
+  unit: DaycareId | null
 }
 
 /**

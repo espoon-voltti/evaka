@@ -31,6 +31,7 @@ import {
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -300,9 +301,9 @@ export function AreaFilter({
 }
 
 interface UnitFilterProps {
-  units: { id: string; name: string }[]
-  selected?: { id: string; name: string }
-  select: (unit?: string) => void
+  units: { id: DaycareId; name: string }[]
+  selected?: { id: DaycareId; name: string }
+  select: (unit?: DaycareId) => void
 }
 
 export const UnitFilter = React.memo(function UnitFilter({
@@ -1225,7 +1226,7 @@ export function ApplicationBasisFilter({
 }
 
 interface Option {
-  id: string
+  id: DaycareId
   name: string
 }
 
@@ -1239,8 +1240,8 @@ function getOptionLabel(option: Option) {
 
 interface MultiUnitsProps {
   units: Option[]
-  selectedUnits: string[]
-  onChange: (v: string[]) => void
+  selectedUnits: DaycareId[]
+  onChange: (v: DaycareId[]) => void
   'data-qa': string
 }
 

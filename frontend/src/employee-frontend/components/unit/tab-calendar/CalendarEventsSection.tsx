@@ -28,6 +28,7 @@ import {
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -201,7 +202,7 @@ export default React.memo(function CalendarEventsSection({
   operationalDays,
   groupId
 }: {
-  unitId: UUID
+  unitId: DaycareId
   selectedDate: LocalDate
   dateRange: FiniteDateRange
   operationalDays: DayOfWeek[]
@@ -496,7 +497,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
   onClose,
   groupId
 }: {
-  unitId: UUID
+  unitId: DaycareId
   onClose: (shouldRefresh: boolean) => void
   groupId: UUID | null
 }) {

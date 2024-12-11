@@ -7,9 +7,9 @@
 import { ActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { FixedPeriodsBody } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
 import { deserializeJsonActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { deserializeJsonHolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
@@ -21,7 +21,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function answerFixedPeriodQuestionnaire(
   request: {
-    id: UUID,
+    id: HolidayQuestionnaireId,
     body: FixedPeriodsBody
   }
 ): Promise<void> {

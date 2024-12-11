@@ -22,6 +22,7 @@ import {
   MessageThread,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { formatAccountNames } from 'lib-common/messaging'
 import { constantQuery, useChainedQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -99,7 +100,7 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
 })
 
 interface ReceivedThreadProps {
-  unitId: UUID
+  unitId: DaycareId
   accountId: UUID
   thread: MessageThread
   onBack: () => void
@@ -259,7 +260,7 @@ const SingleMessage = React.memo(
 )
 
 interface SentMessageViewProps {
-  unitId: UUID
+  unitId: DaycareId
   account: MessageAccount
   message: SentMessage
   onBack: () => void

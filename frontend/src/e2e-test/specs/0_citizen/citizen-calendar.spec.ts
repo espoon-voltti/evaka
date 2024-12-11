@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -37,9 +39,9 @@ let calendarPage: CitizenCalendarPage
 let children: DevPerson[]
 const today = LocalDate.of(2022, 1, 12)
 
-const groupEventId = uuidv4()
-const unitEventId = uuidv4()
-const individualEventId = uuidv4()
+const groupEventId = randomId<CalendarEventId>()
+const unitEventId = randomId<CalendarEventId>()
+const individualEventId = randomId<CalendarEventId>()
 
 let jariId: UUID
 

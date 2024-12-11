@@ -18,6 +18,7 @@ import {
   PlacementPlanDetails,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
+import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import {
@@ -53,7 +54,7 @@ interface DynamicState {
 }
 
 type Props = {
-  unitId: UUID
+  unitId: DaycareId
   placementPlans: PlacementPlanDetails[]
 }
 
@@ -67,9 +68,8 @@ export default React.memo(function PlacementProposals({
   const [modalOpen, setModalOpen] = useState(false)
   const [reason, setReason] = useState<PlacementPlanRejectReason | null>(null)
   const [otherReason, setOtherReason] = useState<string>('')
-  const [currentApplicationId, setCurrentApplicationId] = useState<
-    string | null
-  >(null)
+  const [currentApplicationId, setCurrentApplicationId] =
+    useState<ApplicationId | null>(null)
 
   const isMounted = useRef(true)
   useEffect(
@@ -103,7 +103,7 @@ export default React.memo(function PlacementProposals({
   )
 
   const sendConfirmation = async (
-    applicationId: UUID,
+    applicationId: ApplicationId,
     status: PlacementPlanConfirmationStatus
   ) => {
     setConfirmationStates((state) => ({

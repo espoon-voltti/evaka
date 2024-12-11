@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import { useNavigate } from 'react-router'
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -38,7 +39,7 @@ interface EmployeeOption {
 const PinLoginForm = React.memo(function PinLoginForm({
   unitId
 }: {
-  unitId: UUID
+  unitId: DaycareId
 }) {
   const { i18n } = useTranslation()
   const { user, refreshAuthStatus } = useContext(UserContext)
@@ -157,7 +158,7 @@ export const PinLogin = React.memo(function PinLogin({
   unitId,
   childId
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childId?: UUID
 }) {
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))

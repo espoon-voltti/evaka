@@ -14,6 +14,7 @@ import {
   DaycareGroupResponse
 } from 'lib-common/generated/api-types/daycare'
 import { TemporaryEmployee } from 'lib-common/generated/api-types/pis'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -53,12 +54,12 @@ interface Props {
   onClose: () => void
   onSuccess: () => void
   updatesGroupAcl: (arg: {
-    daycareId: UUID
+    daycareId: DaycareId
     employeeId: UUID
     body: AclUpdate
   }) => Promise<Result<unknown>>
   permittedActions: Action.Unit[]
-  unitId: UUID
+  unitId: DaycareId
   groups: Record<string, DaycareGroupResponse>
   employeeRow: FormattedRow
 }

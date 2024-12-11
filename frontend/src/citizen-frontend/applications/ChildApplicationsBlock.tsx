@@ -12,6 +12,7 @@ import {
   ApplicationsOfChild,
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -104,7 +105,7 @@ export default React.memo(function ChildApplicationsBlock({
   )
 
   const onDeleteApplication = (
-    applicationId: string,
+    applicationId: ApplicationId,
     applicationStatus: ApplicationStatus
   ) => {
     setInfoMessage({

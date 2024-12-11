@@ -12,10 +12,10 @@ import React, {
 
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
+import { DaycareAclRow, DaycareId } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { unitQuery } from '../components/unit/queries'
@@ -25,7 +25,7 @@ import { UnitFilters } from '../utils/UnitFilters'
 const getDaycareAclResult = wrapResult(getDaycareAcl)
 
 export interface UnitState {
-  unitId: UUID
+  unitId: DaycareId
   unitInformation: Result<DaycareResponse>
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
@@ -34,7 +34,7 @@ export interface UnitState {
 }
 
 const defaultState: UnitState = {
-  unitId: '',
+  unitId: fromUuid('00000000-0000-0000-0000-000000000000'),
   unitInformation: Loading.of(),
   filters: new UnitFilters(LocalDate.todayInSystemTz(), '1 day'),
   setFilters: () => undefined,
@@ -48,7 +48,7 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   id,
   children
 }: {
-  id: UUID
+  id: DaycareId
   children: React.JSX.Element
 }) {
   const [filters, setFilters] = useState(defaultState.filters)

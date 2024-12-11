@@ -15,10 +15,11 @@ import {
   ServiceVoucherUnitReport,
   ServiceVoucherValueRow
 } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
 import { Arg0 } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { formatDecimal } from 'lib-common/utils/number'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -127,7 +128,7 @@ const yearOptions = range(maxYear, minYear - 1, -1)
 export default React.memo(function VoucherServiceProviderUnit() {
   const location = useLocation()
   const { i18n } = useTranslation()
-  const { unitId } = useRouteParams(['unitId'])
+  const unitId = useIdRouteParam<DaycareId>('unitId')
   const [report, setReport] = useState<Result<ServiceVoucherUnitReport>>(
     Loading.of()
   )

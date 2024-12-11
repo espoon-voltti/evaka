@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -48,7 +49,7 @@ export default React.memo(function DailyServiceTimesSection({
 
   const [uiMode, setUIMode] = useState<{
     type: 'delete' | 'modify'
-    id: UUID
+    id: DailyServiceTimeId
   }>()
 
   return (
@@ -148,7 +149,7 @@ const DeleteDailyServiceTimesModal = React.memo(
     onClose
   }: {
     childId: UUID
-    dailyServiceTimesId: UUID
+    dailyServiceTimesId: DailyServiceTimeId
     onClose: () => void
   }) {
     const { i18n } = useTranslation()

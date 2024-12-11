@@ -12,6 +12,7 @@ import ReactCrop, {
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -27,7 +28,7 @@ import { useTranslation } from '../common/i18n'
 import 'react-image-crop/dist/ReactCrop.css'
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   childId: UUID
   image: string
   onReturn: () => void

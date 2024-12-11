@@ -5,8 +5,48 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { Id } from '../../id-type'
 import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+
+export type ApplicationId = Id<'Application'>
+
+export type ApplicationNoteId = Id<'ApplicationNote'>
+
+export type ArchivedProcessId = Id<'ArchivedProcess'>
+
+export type AreaId = Id<'Area'>
+
+export type AssistanceActionId = Id<'AssistanceAction'>
+
+export type AssistanceFactorId = Id<'AssistanceFactor'>
+
+export type AssistanceNeedDecisionGuardianId = Id<'AssistanceNeedDecisionGuardian'>
+
+export type AssistanceNeedDecisionId = Id<'AssistanceNeedDecision'>
+
+export type AssistanceNeedPreschoolDecisionGuardianId = Id<'AssistanceNeedPreschoolDecisionGuardian'>
+
+export type AssistanceNeedPreschoolDecisionId = Id<'AssistanceNeedPreschoolDecision'>
+
+export type AssistanceNeedVoucherCoefficientId = Id<'AssistanceNeedVoucherCoefficient'>
+
+export type AttachmentId = Id<'Attachment'>
+
+export type BackupCareId = Id<'BackupCare'>
+
+export type BackupPickupId = Id<'BackupPickup'>
+
+export type CalendarEventId = Id<'CalendarEvent'>
+
+export type CalendarEventTimeId = Id<'CalendarEventTime'>
+
+export type ChildDailyNoteId = Id<'ChildDailyNote'>
+
+export type ChildDocumentId = Id<'ChildDocument'>
+
+export type ChildImageId = Id<'ChildImage'>
+
+export type ChildStickyNoteId = Id<'ChildStickyNote'>
 
 /**
 * Generated from fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -25,6 +65,8 @@ export interface CitizenFeatures {
   reservations: boolean
 }
 
+export type ClubTermId = Id<'ClubTerm'>
+
 /**
 * Generated from fi.espoo.evaka.shared.domain.Coordinate
 */
@@ -33,12 +75,16 @@ export interface Coordinate {
   lon: number
 }
 
+export type DailyServiceTimeId = Id<'DailyServiceTime'>
+
+export type DailyServiceTimeNotificationId = Id<'DailyServiceTimeNotification'>
+
 /**
 * Generated from fi.espoo.evaka.shared.auth.DaycareAclRow
 */
 export interface DaycareAclRow {
   employee: DaycareAclRowEmployee
-  groupIds: UUID[]
+  groupIds: GroupId[]
   role: UserRole
 }
 
@@ -50,10 +96,20 @@ export interface DaycareAclRowEmployee {
   email: string | null
   firstName: string
   hasStaffOccupancyEffect: boolean | null
-  id: UUID
+  id: EmployeeId
   lastName: string
   temporary: boolean
 }
+
+export type DaycareAssistanceId = string
+
+export type DaycareCaretakerId = string
+
+export type DaycareId = Id<'Daycare'>
+
+export type DecisionId = string
+
+export type DocumentTemplateId = string
 
 /**
 * Generated from fi.espoo.evaka.shared.security.EmployeeFeatures
@@ -83,6 +139,24 @@ export interface EmployeeFeatures {
   units: boolean
 }
 
+export type EmployeeId = string
+
+export type EvakaUserId = string
+
+export type FeeAlterationId = string
+
+export type FeeDecisionId = string
+
+export type FeeThresholdsId = string
+
+export type FosterParentId = string
+
+export type GroupId = string
+
+export type GroupNoteId = Id<'GroupNote'>
+
+export type GroupPlacementId = string
+
 /**
 * Generated from fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 */
@@ -90,6 +164,32 @@ export interface HelsinkiDateTimeRange {
   end: HelsinkiDateTime
   start: HelsinkiDateTime
 }
+
+export type HolidayPeriodId = string
+
+export type HolidayQuestionnaireId = string
+
+export type IncomeId = string
+
+export type IncomeStatementId = string
+
+export type InvoiceCorrectionId = string
+
+export type InvoiceId = string
+
+export type InvoiceRowId = string
+
+export type MessageAccountId = string
+
+export type MessageContentId = string
+
+export type MessageDraftId = string
+
+export type MessageId = string
+
+export type MessageThreadId = string
+
+export type MobileDeviceId = string
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.OfficialLanguage
@@ -100,6 +200,20 @@ export const officialLanguages = [
 ] as const
 
 export type OfficialLanguage = typeof officialLanguages[number]
+
+export type OtherAssistanceMeasureId = string
+
+export type PairingId = string
+
+export type ParentshipId = string
+
+export type PartnershipId = string
+
+export type PaymentId = string
+
+export type PedagogicalDocumentId = string
+
+export type PersonId = string
 
 /**
 * Generated from fi.espoo.evaka.shared.security.PilotFeature
@@ -117,6 +231,26 @@ export const pilotFeatures = [
 ] as const
 
 export type PilotFeature = typeof pilotFeatures[number]
+
+export type PlacementId = string
+
+export type PlacementPlanId = string
+
+export type PreschoolAssistanceId = string
+
+export type PreschoolTermId = Id<'PreschoolTerm'>
+
+export type ServiceApplicationId = string
+
+export type ServiceNeedId = string
+
+export type ServiceNeedOptionId = Id<'ServiceNeedOption'>
+
+export type ServiceNeedOptionVoucherValueId = string
+
+export type StaffAttendanceExternalId = string
+
+export type StaffAttendanceRealtimeId = string
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.Translatable
@@ -146,6 +280,8 @@ export type UserRole =
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
   | 'MOBILE'
   | 'GROUP_STAFF'
+
+export type VoucherValueDecisionId = string
 
 
 export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {

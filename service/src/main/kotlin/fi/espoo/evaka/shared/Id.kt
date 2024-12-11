@@ -66,9 +66,9 @@ sealed interface DatabaseTable {
 
     sealed class GroupNote : DatabaseTable
 
-    sealed class DailyServicesTime : DatabaseTable
+    sealed class DailyServiceTime : DatabaseTable
 
-    sealed class DailyServicesTimeNotification : DatabaseTable
+    sealed class DailyServiceTimeNotification : DatabaseTable
 
     sealed class Daycare : DatabaseTable
 
@@ -214,9 +214,9 @@ typealias BackupCareId = Id<DatabaseTable.BackupCare>
 
 typealias BackupPickupId = Id<DatabaseTable.BackupPickup>
 
-typealias CalendarEventAttendeeId = Id<DatabaseTable.CalendarEvent>
+typealias CalendarEventAttendeeId = Id<DatabaseTable.CalendarEventAttendee>
 
-typealias CalendarEventId = Id<DatabaseTable.CalendarEventAttendee>
+typealias CalendarEventId = Id<DatabaseTable.CalendarEvent>
 
 typealias CalendarEventTimeId = Id<DatabaseTable.CalendarEventTime>
 
@@ -234,9 +234,9 @@ typealias ChildStickyNoteId = Id<DatabaseTable.ChildStickyNote>
 
 typealias ClubTermId = Id<DatabaseTable.ClubTerm>
 
-typealias DailyServiceTimeNotificationId = Id<DatabaseTable.DailyServicesTimeNotification>
+typealias DailyServiceTimeNotificationId = Id<DatabaseTable.DailyServiceTimeNotification>
 
-typealias DailyServiceTimesId = Id<DatabaseTable.DailyServicesTime>
+typealias DailyServiceTimesId = Id<DatabaseTable.DailyServiceTime>
 
 typealias DaycareAssistanceId = Id<DatabaseTable.DaycareAssistance>
 

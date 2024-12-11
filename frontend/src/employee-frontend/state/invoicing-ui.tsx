@@ -31,6 +31,7 @@ import {
   FeeDecisionDifference
 } from 'lib-common/generated/api-types/invoicing'
 import { Employee } from 'lib-common/generated/api-types/pis'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -44,7 +45,7 @@ export type Checked = Record<string, boolean>
 
 interface FeeDecisionSearchFilters {
   area: string[]
-  unit?: UUID
+  unit?: DaycareId
   statuses: FeeDecisionStatus[]
   distinctiveDetails: DistinctiveParams[]
   startDate: LocalDate | undefined
@@ -65,7 +66,7 @@ interface FeeDecisionSearchFilterState {
 
 interface ValueDecisionSearchFilters {
   area: string[]
-  unit?: UUID
+  unit?: DaycareId
   statuses: VoucherValueDecisionStatus[]
   distinctiveDetails: VoucherValueDecisionDistinctiveParams[]
   financeDecisionHandlerId?: UUID
@@ -86,7 +87,7 @@ interface ValueDecisionSearchFilterState {
 
 export interface InvoiceSearchFilters {
   area: string[]
-  unit?: string
+  unit?: DaycareId
   status: InvoiceStatus
   distinctiveDetails: InvoiceDistinctiveParams[]
   startDate: LocalDate | undefined
@@ -105,7 +106,7 @@ interface InvoiceSearchFilterState {
 
 export interface PaymentSearchFilters {
   area: string[]
-  unit: string | null
+  unit: DaycareId | null
   distinctions: PaymentDistinctiveParams[]
   status: PaymentStatus
   paymentDateStart: LocalDate | null
@@ -123,7 +124,7 @@ interface PaymentSearchFilterState {
 
 export interface IncomeStatementSearchFilters {
   area: string[]
-  unit: string | undefined
+  unit: DaycareId | undefined
   providerTypes: ProviderType[]
   sentStartDate: LocalDate | undefined
   sentEndDate: LocalDate | undefined

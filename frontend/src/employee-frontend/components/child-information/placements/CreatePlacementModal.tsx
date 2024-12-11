@@ -9,6 +9,7 @@ import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -44,7 +45,7 @@ interface Form {
   type: PlacementType
   startDate: LocalDate
   endDate: LocalDate | null
-  unit: { id: string; name: string; ghostUnit: boolean } | null
+  unit: { id: DaycareId; name: string; ghostUnit: boolean } | null
   placeGuarantee: boolean
 }
 

@@ -7,6 +7,7 @@ import {
   getOccupancyPeriodsOnGroups
 } from 'employee-mobile-frontend/generated/api-clients/occupancy'
 import { Result, wrapResult } from 'lib-common/api'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 
 const getOccupancyPeriodsResult = wrapResult(getOccupancyPeriods)
@@ -14,7 +15,7 @@ const getOccupancyPeriodsOnGroupsResult = wrapResult(
   getOccupancyPeriodsOnGroups
 )
 export async function getRealizedOccupancyToday(
-  unitId: string,
+  unitId: DaycareId,
   groupId: string | undefined
 ): Promise<Result<number>> {
   const today = LocalDate.todayInSystemTz()

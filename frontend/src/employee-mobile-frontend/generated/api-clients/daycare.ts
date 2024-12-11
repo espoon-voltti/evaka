@@ -4,10 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
-import { UUID } from 'lib-common/types'
 import { UnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
 import { client } from '../../client'
 import { deserializeJsonUnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
@@ -19,7 +20,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getAttendancesByUnit(
   request: {
-    unitId: UUID
+    unitId: DaycareId
   }
 ): Promise<UnitStaffAttendance> {
   const { data: json } = await client.request<JsonOf<UnitStaffAttendance>>({
@@ -35,7 +36,7 @@ export async function getAttendancesByUnit(
 */
 export async function upsertStaffAttendance(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     body: StaffAttendanceUpdate
   }
 ): Promise<void> {

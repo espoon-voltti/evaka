@@ -13,8 +13,8 @@ import {
   updateApplicationNote
 } from 'employee-frontend/components/application-page/applications-queries'
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -82,7 +82,7 @@ interface EditProps extends InputProps {
 }
 
 interface CreateProps extends InputProps {
-  applicationId: UUID
+  applicationId: ApplicationId
   onSave: () => void
   onCancel: () => void
 }

@@ -12,13 +12,18 @@ import {
   oneOf,
   recursive,
   required,
-  transformed
+  transformed,
+  value
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { Form, ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
-import { UserRole } from 'lib-common/generated/api-types/shared'
+import {
+  AreaId,
+  DaycareId,
+  UserRole
+} from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import TreeDropdown, {
@@ -33,10 +38,15 @@ import { useTranslation } from '../../state/i18n'
 
 import { upsertEmployeeDaycareRolesMutation } from './queries'
 
-const treeNode = (): Form<TreeNode, never, TreeNode, unknown> =>
+interface DaycareTreeNode extends TreeNode {
+  key: AreaId | DaycareId
+  children: DaycareTreeNode[]
+}
+
+const treeNode = (): Form<DaycareTreeNode, never, DaycareTreeNode, unknown> =>
   object({
     text: string(),
-    key: string(),
+    key: value<AreaId | DaycareId>(),
     checked: boolean(),
     children: array(recursive(treeNode))
   })
@@ -50,7 +60,7 @@ const form = transformed(
     const daycareIds = res.daycareTree
       .flatMap((careArea) => careArea.children)
       .filter((u) => u.checked)
-      .map((u) => u.key)
+      .map((u) => u.key as DaycareId)
 
     if (daycareIds.length === 0) return ValidationError.of('required')
 
@@ -75,8 +85,8 @@ export default React.memo(function DaycareRolesModal({
     form,
     () => ({
       daycareTree: sortTreeByText(
-        units.reduce<TreeNode[]>((acc, unit) => {
-          const unitNode: TreeNode = {
+        units.reduce<DaycareTreeNode[]>((acc, unit) => {
+          const unitNode: DaycareTreeNode = {
             key: unit.id,
             text: unit.name,
             checked: false,

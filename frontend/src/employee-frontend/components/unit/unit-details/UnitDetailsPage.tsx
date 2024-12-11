@@ -6,8 +6,9 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import { combine, Loading, Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
   MutateButton,
@@ -25,7 +26,7 @@ import { renderResult } from '../../async-rendering'
 import { areaQuery, unitQuery, updateUnitMutation } from '../queries'
 
 export default React.memo(function UnitDetailsPage() {
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<DaycareId>('id')
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const unit = useQueryResult(unitQuery({ daycareId: id }))

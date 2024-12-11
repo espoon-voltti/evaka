@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -55,7 +57,7 @@ let unitSupervisor: DevEmployee
 let account: CitizenWeakAccount
 let careArea: DevCareArea
 let daycarePlacementFixture: DevPlacement
-let backupDaycareId: UUID
+let backupDaycareId: DaycareId
 let backupGroupFixtureId: UUID
 
 const mockedDate = LocalDate.of(2022, 5, 21)
@@ -221,7 +223,7 @@ describe('Sending and receiving messages', () => {
         await createBackupCares({
           body: [
             {
-              id: uuidv4(),
+              id: randomId(),
               childId: testChild2.id,
               unitId: testDaycare.id,
               groupId: testDaycareGroup.id,
@@ -276,7 +278,7 @@ describe('Sending and receiving messages', () => {
         await createBackupCares({
           body: [
             {
-              id: uuidv4(),
+              id: randomId(),
               childId,
               unitId: backupDaycareId,
               groupId: backupGroupFixtureId,

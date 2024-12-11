@@ -10,6 +10,7 @@ import {
   PaymentDistinctiveParams,
   PaymentStatus
 } from 'lib-common/generated/api-types/invoicing'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -77,7 +78,7 @@ export default React.memo(function PaymentFilters() {
   )
 
   const selectUnit = useCallback(
-    (unit: string | undefined) =>
+    (unit: DaycareId | undefined) =>
       setSearchFilters((old) => ({ ...old, unit: unit ?? null })),
     [setSearchFilters]
   )

@@ -4,14 +4,15 @@
 
 // GENERATED FILE: no manual modifications
 
-import { UUID } from '../../types'
+import { BackupPickupId } from './shared'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.backuppickup.ChildBackupPickup
 */
 export interface ChildBackupPickup {
-  childId: UUID
-  id: UUID
+  childId: PersonId
+  id: BackupPickupId
   name: string
   phone: string
 }
@@ -28,5 +29,5 @@ export interface ChildBackupPickupContent {
 * Generated from fi.espoo.evaka.backuppickup.ChildBackupPickupCreateResponse
 */
 export interface ChildBackupPickupCreateResponse {
-  id: UUID
+  id: BackupPickupId
 }

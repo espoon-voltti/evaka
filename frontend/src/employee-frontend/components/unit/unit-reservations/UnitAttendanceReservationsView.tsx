@@ -9,6 +9,7 @@ import { combine, isLoading, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { Child } from 'lib-common/generated/api-types/reservations'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -55,7 +56,7 @@ const AttendanceTime = styled(Time)`
 `
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   selectedGroup: AttendanceGroupFilter
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void

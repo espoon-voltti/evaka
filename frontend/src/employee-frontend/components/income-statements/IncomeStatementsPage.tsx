@@ -14,6 +14,7 @@ import {
   IncomeStatementSortParam
 } from 'lib-common/generated/api-types/incomestatement'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
@@ -168,7 +169,7 @@ export default React.memo(function IncomeStatementsPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
   const [searchParams, setSearchParams] = useState<{
     areas: string[] | null
-    unit: string | null
+    unit: DaycareId | null
     providerTypes: ProviderType[] | null
     sentStartDate: LocalDate | null
     sentEndDate: LocalDate | null

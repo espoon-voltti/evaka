@@ -154,7 +154,7 @@ export interface TreeNode {
   children: TreeNode[]
 }
 
-export const sortTreeByText = (tree: TreeNode[]): TreeNode[] =>
+export const sortTreeByText = <N extends TreeNode>(tree: N[]): N[] =>
   sortBy(
     tree.map((node) => ({
       ...node,

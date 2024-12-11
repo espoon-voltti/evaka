@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
@@ -13,7 +14,7 @@ import { useTranslation } from '../../common/i18n'
 
 interface Props {
   childId: UUID
-  unitId: UUID
+  unitId: DaycareId
 }
 
 export default React.memo(function AttendanceChildAbsent({

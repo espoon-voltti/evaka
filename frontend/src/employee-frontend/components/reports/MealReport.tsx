@@ -7,6 +7,7 @@ import React, { useContext, useState } from 'react'
 import { Action } from 'lib-common/generated/action'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { MealReportData } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -109,7 +110,7 @@ const MealReportData = ({
   permittedGlobalActions
 }: {
   date: LocalDate
-  unitId: string
+  unitId: DaycareId
   permittedGlobalActions: Action.Global[]
 }) => {
   const { i18n } = useTranslation()
