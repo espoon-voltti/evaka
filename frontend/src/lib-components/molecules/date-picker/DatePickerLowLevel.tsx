@@ -8,6 +8,9 @@ import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { useTranslations } from 'lib-components/i18n'
+import { faCalendarAlt } from 'lib-icons'
 
 import { InputInfo } from '../../atoms/form/InputField'
 import { fontWeights } from '../../typography'
@@ -18,11 +21,12 @@ import DatePickerInput from './DatePickerInput'
 import { nativeDatePickerEnabled } from './helpers'
 
 const inputWidth = 120
+const iconWidth = 36
 
 const DatePickerWrapper = styled.div`
   position: relative;
-  display: inline-block;
-  width: ${inputWidth}px;
+  display: flex;
+  width: ${inputWidth + iconWidth}px;
 `
 const minMargin = 16
 const overflow = 100
@@ -123,6 +127,7 @@ export interface DatePickerLowLevelProps {
   minDate?: LocalDate
   maxDate?: LocalDate
   useBrowserPicker?: boolean
+  openOnFocus?: boolean
 }
 
 export default React.memo(function DatePickerLowLevel({
@@ -141,7 +146,8 @@ export default React.memo(function DatePickerLowLevel({
   minDate,
   maxDate,
   useBrowserPicker = nativeDatePickerEnabled,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  openOnFocus = false
 }: DatePickerLowLevelProps) {
   const [showDatePicker, useShowDatePicker] = useBoolean(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -149,6 +155,8 @@ export default React.memo(function DatePickerLowLevel({
 
   const showDatePickerOn = useShowDatePicker.on
   const showDatePickerOff = useShowDatePicker.off
+
+  const i18n = useTranslations()
 
   const handleUserKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
@@ -159,8 +167,11 @@ export default React.memo(function DatePickerLowLevel({
         }
         showDatePickerOff()
       }
+      if (!showDatePicker && e.key === 'ArrowDown') {
+        showDatePickerOn()
+      }
     },
-    [showDatePickerOff]
+    [showDatePicker, showDatePickerOff, showDatePickerOn]
   )
 
   const handleDayClick = useCallback(
@@ -176,10 +187,12 @@ export default React.memo(function DatePickerLowLevel({
 
   const handleFocus = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
-      showDatePickerOn()
+      if (openOnFocus) {
+        showDatePickerOn()
+      }
       onFocus?.(e)
     },
-    [onFocus, showDatePickerOn]
+    [onFocus, openOnFocus, showDatePickerOn]
   )
 
   const handleBlur = useCallback(
@@ -251,6 +264,14 @@ export default React.memo(function DatePickerLowLevel({
     return () => undefined
   }, [showDatePickerOff, showDatePicker])
 
+  const toggleDatePicker = useCallback(() => {
+    if (showDatePicker) {
+      showDatePickerOff()
+    } else {
+      showDatePickerOn()
+    }
+  }, [showDatePicker, showDatePickerOff, showDatePickerOn])
+
   return (
     <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
       <DatePickerInput
@@ -269,6 +290,16 @@ export default React.memo(function DatePickerLowLevel({
         minDate={minDate}
         maxDate={maxDate}
       />
+      <StyledIconButton
+        icon={faCalendarAlt}
+        onClick={toggleDatePicker}
+        aria-controls="dialog"
+        aria-haspopup="dialog"
+        aria-expanded={showDatePicker}
+        aria-label={
+          showDatePicker ? i18n.datePicker.close : i18n.datePicker.open
+        }
+      />
       {!nativeDatePickerEnabled && showDatePicker ? (
         <DayPickerPositioner ref={pickerRef} openAbove={openAbove}>
           <DayPickerDiv>
@@ -286,3 +317,8 @@ export default React.memo(function DatePickerLowLevel({
     </DatePickerWrapper>
   )
 })
+
+const StyledIconButton = styled(IconOnlyButton)`
+  width: 100%;
+  margin: 0 0 0 4px;
+`
