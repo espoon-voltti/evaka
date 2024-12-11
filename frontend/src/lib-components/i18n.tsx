@@ -37,6 +37,8 @@ export interface Translations {
       dateTooEarly: string
       dateTooLate: string
     }
+    open: string
+    close: string
   }
   documentTemplates: {
     templateQuestions: {

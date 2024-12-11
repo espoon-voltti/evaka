@@ -28,12 +28,14 @@ const components: Translations = {
   datePicker: {
     placeholder: 'dd.mm.yyyy',
     description:
-      'Type the date in dd.mm.yyyy format. You can get to month picker with the tab key.',
+      'Type the date in dd.mm.yyyy format. You can get to month picker with the Down Arrow key.',
     validationErrors: {
       validDate: 'Valid date format is dd.mm.yyyy',
       dateTooEarly: 'Pick a later date',
       dateTooLate: 'Pick an earlier date'
-    }
+    },
+    open: 'Open date picker',
+    close: 'Close date picker'
   },
   documentTemplates: {
     // only on employee frontend
