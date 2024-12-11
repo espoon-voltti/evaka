@@ -893,6 +893,7 @@ export interface ServiceVoucherValueRow {
   isNew: boolean
   numberOfDays: number
   realizedAmount: number
+  realizedAmountBeforeAssistanceNeed: number
   realizedPeriod: FiniteDateRange
   serviceNeedDescription: string
   serviceVoucherCoPayment: number
@@ -910,6 +911,7 @@ export interface ServiceVoucherValueRow {
 export interface ServiceVoucherValueUnitAggregate {
   childCount: number
   monthlyPaymentSum: number
+  monthlyPaymentSumBeforeAssistanceNeed: number
   unit: UnitData
 }
 

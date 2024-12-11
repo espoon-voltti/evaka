@@ -3992,10 +3992,13 @@ export const fi = {
       filters: {
         areaPlaceholder: 'Valitse palvelualue',
         allAreas: 'Kaikki alueet',
-        unitPlaceholder: 'Hae yksikön nimellä'
+        unitPlaceholder: 'Hae yksikön nimellä',
+        separate: 'Perus- ja korotusosat erikseen'
       },
       locked: 'Raportti lukittu',
       childCount: 'PS-lasten lkm',
+      sumBeforeAssistanceNeed: 'Perusosan summa / kk',
+      assistanceNeedSum: 'Korotusosan summa / kk',
       unitVoucherSum: 'PS summa / kk',
       average: 'Keskiarvo',
       breakdown: 'Erittely'
@@ -4013,6 +4016,8 @@ export const fi = {
       start: 'Alkaen',
       end: 'Päättyen',
       serviceVoucherValue: 'Ps korkein arvo',
+      serviceVoucherRealizedValueBeforeAssistanceNeed: 'Perusosa / kk',
+      serviceVoucherRealizedAssistanceNeedValue: 'Korotusosa / kk',
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherFinalCoPayment: 'Omavastuu',
       serviceNeed: 'Palveluntarve',

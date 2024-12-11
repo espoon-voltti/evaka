@@ -19,6 +19,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reports.VoucherReportRowType.CORRECTION
 import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -30,6 +31,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
+import fi.espoo.evaka.snDefaultPartDayDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -37,6 +39,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toValueDecisionServiceNeed
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -1104,6 +1107,90 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `realized base amount is calculated correctly`() {
+        // Base value 87000
+        createVoucherDecision(
+            janFirst,
+            unitId = testDaycare.id,
+            serviceNeedOption = snDefaultPartDayDaycare, // voucher value coefficient 0.60
+            assistanceNeedCoefficient = BigDecimal("1.50"),
+            value = 78300, // 87000 * 0.60 * 1.50 = 78300
+            coPayment = 10000,
+        )
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+
+        assertEquals(1, janReport.size)
+        val row =
+            janReport.assertContainsRow(
+                ORIGINAL,
+                janFirst,
+                janFirst.toEndOfMonth(),
+                78300,
+                10000,
+                68300,
+            )
+        assertEquals(
+            45533, // 87000 * 0.60 * (68300/78300) = 45533.333...
+            row.realizedAmountBeforeAssistanceNeed,
+        )
+    }
+
+    @Test
+    fun `realized base amount is calculated correctly when co-payment is zero`() {
+        // Base value 87000
+        createVoucherDecision(
+            janFirst,
+            unitId = testDaycare.id,
+            serviceNeedOption = snDefaultPartDayDaycare, // voucher value coefficient 0.60
+            assistanceNeedCoefficient = BigDecimal("1.50"),
+            value = 78300, // 87000 * 0.60 * 1.50 = 78300
+            coPayment = 0,
+        )
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+
+        assertEquals(1, janReport.size)
+        val row =
+            janReport.assertContainsRow(
+                ORIGINAL,
+                janFirst,
+                janFirst.toEndOfMonth(),
+                78300,
+                0,
+                78300,
+            )
+        assertEquals(
+            52200, // 87000 * 0.60 = 52200
+            row.realizedAmountBeforeAssistanceNeed,
+        )
+    }
+
+    @Test
+    fun `realized base amount equals realized amount when assistance need coefficient is 1`() {
+        // Base value 87000
+        createVoucherDecision(
+            janFirst,
+            unitId = testDaycare.id,
+            serviceNeedOption = snDefaultPartDayDaycare, // voucher value coefficient 0.60
+            assistanceNeedCoefficient = BigDecimal("1.00"),
+            value = 52200, // 87000 * 0.60 = 52200
+            coPayment = 10000,
+        )
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+
+        assertEquals(1, janReport.size)
+        val row =
+            janReport.assertContainsRow(
+                ORIGINAL,
+                janFirst,
+                janFirst.toEndOfMonth(),
+                52200,
+                10000,
+                42200,
+            )
+        assertEquals(42200, row.realizedAmountBeforeAssistanceNeed)
+    }
+
+    @Test
     fun `production scenario 1`() {
         val range = FiniteDateRange(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
 
@@ -1308,7 +1395,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         value: Int,
         finalCoPayment: Int,
         realizedValue: Int,
-    ) {
+    ): ServiceVoucherValueRow {
         val row =
             this.find {
                 it.type == type &&
@@ -1319,6 +1406,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(value, row.serviceVoucherValue)
         assertEquals(finalCoPayment, row.serviceVoucherFinalCoPayment)
         assertEquals(realizedValue, row.realizedAmount)
+        return row
     }
 
     private fun LocalDate.toEndOfMonth() = this.plusMonths(1).withDayOfMonth(1).minusDays(1)
@@ -1357,6 +1445,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         alwaysUseDaycareFinanceDecisionHandler: Boolean = false,
         feeAlterations: List<FeeAlterationWithEffect> = listOf(),
         validTo: LocalDate = validFrom.plusYears(1),
+        serviceNeedOption: ServiceNeedOption = snDefaultDaycare,
+        assistanceNeedCoefficient: BigDecimal = BigDecimal("1.00"),
     ): VoucherValueDecision {
         val id =
             db.transaction {
@@ -1372,7 +1462,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                         value = value,
                         coPayment = coPayment,
                         placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+                        assistanceNeedCoefficient = assistanceNeedCoefficient,
+                        serviceNeed = serviceNeedOption.toValueDecisionServiceNeed(),
                         feeAlterations = feeAlterations,
                     )
                 it.upsertValueDecisions(listOf(decision))
