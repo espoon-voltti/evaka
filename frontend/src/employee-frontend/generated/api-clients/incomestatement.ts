@@ -6,13 +6,14 @@
 
 import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
+import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PagedIncomeStatements } from 'lib-common/generated/api-types/incomestatement'
 import { PagedIncomeStatementsAwaitingHandler } from 'lib-common/generated/api-types/incomestatement'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { SearchIncomeStatementsRequest } from 'lib-common/generated/api-types/incomestatement'
 import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonIncomeStatement } from 'lib-common/generated/api-types/incomestatement'
@@ -26,8 +27,8 @@ import { uri } from 'lib-common/uri'
 */
 export async function getIncomeStatement(
   request: {
-    personId: UUID,
-    incomeStatementId: UUID
+    personId: PersonId,
+    incomeStatementId: IncomeStatementId
   }
 ): Promise<IncomeStatement> {
   const { data: json } = await client.request<JsonOf<IncomeStatement>>({
@@ -43,7 +44,7 @@ export async function getIncomeStatement(
 */
 export async function getIncomeStatementChildren(
   request: {
-    guardianId: UUID
+    guardianId: PersonId
   }
 ): Promise<ChildBasicInfo[]> {
   const { data: json } = await client.request<JsonOf<ChildBasicInfo[]>>({
@@ -59,7 +60,7 @@ export async function getIncomeStatementChildren(
 */
 export async function getIncomeStatements(
   request: {
-    personId: UUID,
+    personId: PersonId,
     page: number
   }
 ): Promise<PagedIncomeStatements> {
@@ -97,7 +98,7 @@ export async function getIncomeStatementsAwaitingHandler(
 */
 export async function setIncomeStatementHandled(
   request: {
-    incomeStatementId: UUID,
+    incomeStatementId: IncomeStatementId,
     body: SetIncomeStatementHandledBody
   }
 ): Promise<void> {

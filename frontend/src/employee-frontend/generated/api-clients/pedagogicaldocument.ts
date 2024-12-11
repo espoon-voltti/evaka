@@ -7,8 +7,9 @@
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { PedagogicalDocumentId } from 'lib-common/generated/api-types/shared'
 import { PedagogicalDocumentPostBody } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonPedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { uri } from 'lib-common/uri'
@@ -36,7 +37,7 @@ export async function createPedagogicalDocument(
 */
 export async function deletePedagogicalDocument(
   request: {
-    documentId: UUID
+    documentId: PedagogicalDocumentId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -52,7 +53,7 @@ export async function deletePedagogicalDocument(
 */
 export async function getChildPedagogicalDocuments(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<PedagogicalDocument[]> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocument[]>>({
@@ -68,7 +69,7 @@ export async function getChildPedagogicalDocuments(
 */
 export async function updatePedagogicalDocument(
   request: {
-    documentId: UUID,
+    documentId: PedagogicalDocumentId,
     body: PedagogicalDocumentPostBody
   }
 ): Promise<PedagogicalDocument> {

@@ -11,6 +11,7 @@ import {
 import { Result, Success, wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -218,7 +219,7 @@ function FeeAlterationAttachments({
   )
 
   const handleDelete = useCallback(
-    async (id: UUID) =>
+    async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),

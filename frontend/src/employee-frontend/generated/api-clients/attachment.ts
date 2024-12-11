@@ -4,8 +4,8 @@
 
 // GENERATED FILE: no manual modifications
 
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 
@@ -15,7 +15,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function deleteAttachment(
   request: {
-    attachmentId: UUID
+    attachmentId: AttachmentId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({

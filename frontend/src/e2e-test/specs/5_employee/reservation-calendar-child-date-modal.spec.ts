@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -25,7 +26,7 @@ let groupId: UUID
 let childId: UUID
 let placementId: UUID
 let unitSupervisor: DevEmployee
-let daycareServiceNeedOptionId: UUID
+let daycareServiceNeedOptionId: ServiceNeedOptionId
 
 let page: Page
 

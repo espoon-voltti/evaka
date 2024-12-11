@@ -8,8 +8,10 @@ import DateRange from 'lib-common/date-range'
 import { AddSsnRequest } from 'lib-common/generated/api-types/pis'
 import { CreateFosterParentRelationshipBody } from 'lib-common/generated/api-types/pis'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DisableSsnRequest } from 'lib-common/generated/api-types/pis'
 import { Employee } from 'lib-common/generated/api-types/pis'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { EmployeePreferredFirstName } from 'lib-common/generated/api-types/pis'
 import { EmployeeSetPreferredFirstNameUpdateRequest } from 'lib-common/generated/api-types/pis'
 import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
@@ -18,6 +20,7 @@ import { FamilyContact } from 'lib-common/generated/api-types/pis'
 import { FamilyContactPriorityUpdate } from 'lib-common/generated/api-types/pis'
 import { FamilyContactUpdate } from 'lib-common/generated/api-types/pis'
 import { FamilyOverview } from 'lib-common/generated/api-types/pis'
+import { FosterParentId } from 'lib-common/generated/api-types/shared'
 import { FosterParentRelationship } from 'lib-common/generated/api-types/pis'
 import { GetOrCreatePersonBySsnRequest } from 'lib-common/generated/api-types/pis'
 import { GuardiansResponse } from 'lib-common/generated/api-types/pis'
@@ -27,13 +30,16 @@ import { MergeRequest } from 'lib-common/generated/api-types/pis'
 import { NewEmployee } from 'lib-common/generated/api-types/pis'
 import { PagedEmployeesWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { Parentship } from 'lib-common/generated/api-types/pis'
+import { ParentshipId } from 'lib-common/generated/api-types/shared'
 import { ParentshipRequest } from 'lib-common/generated/api-types/pis'
 import { ParentshipUpdateRequest } from 'lib-common/generated/api-types/pis'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { Partnership } from 'lib-common/generated/api-types/pis'
+import { PartnershipId } from 'lib-common/generated/api-types/shared'
 import { PartnershipRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipUpdateRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PersonIdentityResponseJSON } from 'lib-common/generated/api-types/pis'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PersonPatch } from 'lib-common/generated/api-types/pis'
@@ -43,7 +49,6 @@ import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import { PinCode } from 'lib-common/generated/api-types/pis'
 import { SearchEmployeeRequest } from 'lib-common/generated/api-types/pis'
 import { SearchPersonBody } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
 import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
@@ -70,7 +75,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function activateEmployee(
   request: {
-    id: UUID
+    id: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -103,7 +108,7 @@ export async function createEmployee(
 */
 export async function deactivateEmployee(
   request: {
-    id: UUID
+    id: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -119,7 +124,7 @@ export async function deactivateEmployee(
 */
 export async function deleteEmployee(
   request: {
-    id: UUID
+    id: EmployeeId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -135,8 +140,8 @@ export async function deleteEmployee(
 */
 export async function deleteEmployeeDaycareRoles(
   request: {
-    id: UUID,
-    daycareId?: UUID | null
+    id: EmployeeId,
+    daycareId?: DaycareId | null
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
@@ -156,7 +161,7 @@ export async function deleteEmployeeDaycareRoles(
 */
 export async function getEmployee(
   request: {
-    id: UUID
+    id: EmployeeId
   }
 ): Promise<Employee> {
   const { data: json } = await client.request<JsonOf<Employee>>({
@@ -172,7 +177,7 @@ export async function getEmployee(
 */
 export async function getEmployeeDetails(
   request: {
-    id: UUID
+    id: EmployeeId
   }
 ): Promise<EmployeeWithDaycareRoles> {
   const { data: json } = await client.request<JsonOf<EmployeeWithDaycareRoles>>({
@@ -270,7 +275,7 @@ export async function setEmployeePreferredFirstName(
 */
 export async function updateEmployeeGlobalRoles(
   request: {
-    id: UUID,
+    id: EmployeeId,
     body: UserRole[]
   }
 ): Promise<void> {
@@ -288,7 +293,7 @@ export async function updateEmployeeGlobalRoles(
 */
 export async function upsertEmployeeDaycareRoles(
   request: {
-    id: UUID,
+    id: EmployeeId,
     body: UpsertEmployeeDaycareRolesRequest
   }
 ): Promise<void> {
@@ -323,7 +328,7 @@ export async function upsertPinCode(
 */
 export async function getFamilyByPerson(
   request: {
-    id: UUID
+    id: PersonId
   }
 ): Promise<FamilyOverview> {
   const { data: json } = await client.request<JsonOf<FamilyOverview>>({
@@ -339,7 +344,7 @@ export async function getFamilyByPerson(
 */
 export async function getFamilyContactSummary(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<FamilyContact[]> {
   const params = createUrlSearchParams(
@@ -410,7 +415,7 @@ export async function createFosterParentRelationship(
 */
 export async function deleteFosterParentRelationship(
   request: {
-    id: UUID
+    id: FosterParentId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -426,7 +431,7 @@ export async function deleteFosterParentRelationship(
 */
 export async function getFosterChildren(
   request: {
-    parentId: UUID
+    parentId: PersonId
   }
 ): Promise<FosterParentRelationship[]> {
   const { data: json } = await client.request<JsonOf<FosterParentRelationship[]>>({
@@ -442,7 +447,7 @@ export async function getFosterChildren(
 */
 export async function getFosterParents(
   request: {
-    childId: UUID
+    childId: PersonId
   }
 ): Promise<FosterParentRelationship[]> {
   const { data: json } = await client.request<JsonOf<FosterParentRelationship[]>>({
@@ -458,7 +463,7 @@ export async function getFosterParents(
 */
 export async function updateFosterParentRelationshipValidity(
   request: {
-    id: UUID,
+    id: FosterParentId,
     body: DateRange
   }
 ): Promise<void> {
@@ -493,7 +498,7 @@ export async function createParentship(
 */
 export async function deleteParentship(
   request: {
-    id: UUID
+    id: ParentshipId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -509,7 +514,7 @@ export async function deleteParentship(
 */
 export async function getParentship(
   request: {
-    id: UUID
+    id: ParentshipId
   }
 ): Promise<Parentship> {
   const { data: json } = await client.request<JsonOf<Parentship>>({
@@ -525,8 +530,8 @@ export async function getParentship(
 */
 export async function getParentships(
   request: {
-    headOfChildId?: UUID | null,
-    childId?: UUID | null
+    headOfChildId?: PersonId | null,
+    childId?: PersonId | null
   }
 ): Promise<ParentshipWithPermittedActions[]> {
   const params = createUrlSearchParams(
@@ -547,7 +552,7 @@ export async function getParentships(
 */
 export async function retryParentship(
   request: {
-    id: UUID
+    id: ParentshipId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -563,7 +568,7 @@ export async function retryParentship(
 */
 export async function updateParentship(
   request: {
-    id: UUID,
+    id: ParentshipId,
     body: ParentshipUpdateRequest
   }
 ): Promise<void> {
@@ -598,7 +603,7 @@ export async function createPartnership(
 */
 export async function deletePartnership(
   request: {
-    partnershipId: UUID
+    partnershipId: PartnershipId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -614,7 +619,7 @@ export async function deletePartnership(
 */
 export async function getPartnership(
   request: {
-    partnershipId: UUID
+    partnershipId: PartnershipId
   }
 ): Promise<Partnership> {
   const { data: json } = await client.request<JsonOf<Partnership>>({
@@ -630,7 +635,7 @@ export async function getPartnership(
 */
 export async function getPartnerships(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<PartnershipWithPermittedActions[]> {
   const params = createUrlSearchParams(
@@ -650,7 +655,7 @@ export async function getPartnerships(
 */
 export async function retryPartnership(
   request: {
-    partnershipId: UUID
+    partnershipId: PartnershipId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -666,7 +671,7 @@ export async function retryPartnership(
 */
 export async function updatePartnership(
   request: {
-    partnershipId: UUID,
+    partnershipId: PartnershipId,
     body: PartnershipUpdateRequest
   }
 ): Promise<void> {
@@ -684,7 +689,7 @@ export async function updatePartnership(
 */
 export async function addSsn(
   request: {
-    personId: UUID,
+    personId: PersonId,
     body: AddSsnRequest
   }
 ): Promise<PersonJSON> {
@@ -716,8 +721,8 @@ export async function createPerson(
   request: {
     body: CreatePersonBody
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<PersonId> {
+  const { data: json } = await client.request<JsonOf<PersonId>>({
     url: uri`/employee/person/create`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreatePersonBody>
@@ -731,7 +736,7 @@ export async function createPerson(
 */
 export async function disableSsn(
   request: {
-    personId: UUID,
+    personId: PersonId,
     body: DisableSsnRequest
   }
 ): Promise<void> {
@@ -749,10 +754,10 @@ export async function disableSsn(
 */
 export async function duplicatePerson(
   request: {
-    personId: UUID
+    personId: PersonId
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<PersonId> {
+  const { data: json } = await client.request<JsonOf<PersonId>>({
     url: uri`/employee/person/${request.personId}/duplicate`.toString(),
     method: 'POST'
   })
@@ -782,7 +787,7 @@ export async function getOrCreatePersonBySsn(
 */
 export async function getPerson(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<PersonResponse> {
   const { data: json } = await client.request<JsonOf<PersonResponse>>({
@@ -798,7 +803,7 @@ export async function getPerson(
 */
 export async function getPersonDependants(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<PersonWithChildrenDTO[]> {
   const { data: json } = await client.request<JsonOf<PersonWithChildrenDTO[]>>({
@@ -814,7 +819,7 @@ export async function getPersonDependants(
 */
 export async function getPersonGuardians(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<GuardiansResponse> {
   const { data: json } = await client.request<JsonOf<GuardiansResponse>>({
@@ -830,7 +835,7 @@ export async function getPersonGuardians(
 */
 export async function getPersonIdentity(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
@@ -863,7 +868,7 @@ export async function mergePeople(
 */
 export async function safeDeletePerson(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -896,7 +901,7 @@ export async function searchPerson(
 */
 export async function updateGuardianEvakaRights(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: EvakaRightsRequest
   }
 ): Promise<void> {
@@ -914,7 +919,7 @@ export async function updateGuardianEvakaRights(
 */
 export async function updatePersonAndFamilyFromVtj(
   request: {
-    personId: UUID
+    personId: PersonId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -930,7 +935,7 @@ export async function updatePersonAndFamilyFromVtj(
 */
 export async function updatePersonDetails(
   request: {
-    personId: UUID,
+    personId: PersonId,
     body: PersonPatch
   }
 ): Promise<PersonJSON> {

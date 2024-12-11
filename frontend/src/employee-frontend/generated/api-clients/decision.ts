@@ -7,7 +7,7 @@
 import { DecisionListResponse } from 'lib-common/generated/api-types/decision'
 import { DecisionUnit } from 'lib-common/generated/api-types/decision'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDecisionListResponse } from 'lib-common/generated/api-types/decision'
@@ -31,7 +31,7 @@ export async function getDecisionUnits(): Promise<DecisionUnit[]> {
 */
 export async function getDecisionsByGuardian(
   request: {
-    id: UUID
+    id: PersonId
   }
 ): Promise<DecisionListResponse> {
   const params = createUrlSearchParams(

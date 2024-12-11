@@ -4,9 +4,9 @@
 
 // GENERATED FILE: no manual modifications
 
+import { DailyServiceTimeNotificationId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
 import { uri } from 'lib-common/uri'
 
@@ -16,13 +16,13 @@ import { uri } from 'lib-common/uri'
 */
 export async function dismissDailyServiceTimeNotification(
   request: {
-    body: UUID[]
+    body: DailyServiceTimeNotificationId[]
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/daily-service-time-notifications/dismiss`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<UUID[]>
+    data: request.body satisfies JsonCompatible<DailyServiceTimeNotificationId[]>
   })
   return json
 }
@@ -31,8 +31,8 @@ export async function dismissDailyServiceTimeNotification(
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesCitizenController.getDailyServiceTimeNotifications
 */
-export async function getDailyServiceTimeNotifications(): Promise<UUID[]> {
-  const { data: json } = await client.request<JsonOf<UUID[]>>({
+export async function getDailyServiceTimeNotifications(): Promise<DailyServiceTimeNotificationId[]> {
+  const { data: json } = await client.request<JsonOf<DailyServiceTimeNotificationId[]>>({
     url: uri`/citizen/daily-service-time-notifications`.toString(),
     method: 'GET'
   })

@@ -7,16 +7,27 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { Absence } from 'lib-common/generated/api-types/absence'
+import { AbsenceId } from './api-types'
 import { ApplicationDetails } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { Autocomplete } from './api-types'
+import { CalendarEventAttendeeId } from './api-types'
+import { CalendarEventId } from 'lib-common/generated/api-types/shared'
+import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import { Caretaker } from './api-types'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import { ChildDailyNoteId } from 'lib-common/generated/api-types/shared'
+import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { ChildStickyNoteBody } from 'lib-common/generated/api-types/note'
+import { ChildStickyNoteId } from 'lib-common/generated/api-types/shared'
 import { Citizen } from './api-types'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
 import { DaycareAclInsert } from './api-types'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
 import { Decision } from 'lib-common/generated/api-types/decision'
+import { DecisionId } from 'lib-common/generated/api-types/shared'
 import { DecisionRequest } from './api-types'
 import { DevAbsence } from './api-types'
 import { DevApiError } from '../dev-api'
@@ -73,18 +84,29 @@ import { DevStaffAttendance } from './api-types'
 import { DevStaffAttendancePlan } from './api-types'
 import { DevTerminatePlacementRequest } from './api-types'
 import { DevUpsertStaffOccupancyCoefficient } from './api-types'
+import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { Email } from './api-types'
 import { Employee } from 'lib-common/generated/api-types/pis'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
 import { FixedPeriodQuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { GroupNoteBody } from 'lib-common/generated/api-types/note'
+import { GroupNoteId } from 'lib-common/generated/api-types/shared'
 import { HolidayPeriodCreate } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayPeriodId } from 'lib-common/generated/api-types/shared'
+import { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
 import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MockVtjDataset } from './api-types'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
+import { PairingId } from 'lib-common/generated/api-types/shared'
+import { PaymentId } from 'lib-common/generated/api-types/shared'
+import { PersonId } from 'lib-common/generated/api-types/shared'
+import { PlacementId } from 'lib-common/generated/api-types/shared'
 import { PlacementPlan } from './api-types'
 import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingReq } from 'lib-common/generated/api-types/pairing'
@@ -94,8 +116,9 @@ import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { SfiMessage } from './api-types'
 import { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
 import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
+import { StaffAttendancePlanId } from './api-types'
+import { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
 import { VoucherValueDecision } from './api-types'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
@@ -116,9 +139,9 @@ export async function addAbsence(
     body: DevAbsence
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<AbsenceId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<AbsenceId>>({
       url: uri`/absence`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -136,7 +159,7 @@ export async function addAbsence(
 */
 export async function addAclRoleForDaycare(
   request: {
-    daycareId: UUID,
+    daycareId: DaycareId,
     body: DaycareAclInsert
   },
   options?: { mockedTime?: HelsinkiDateTime }
@@ -163,9 +186,9 @@ export async function addCalendarEvent(
     body: DevCalendarEvent
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<CalendarEventId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<CalendarEventId>>({
       url: uri`/calendar-event`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -186,9 +209,9 @@ export async function addCalendarEventAttendee(
     body: DevCalendarEventAttendee
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<CalendarEventAttendeeId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<CalendarEventAttendeeId>>({
       url: uri`/calendar-event-attendee`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -209,9 +232,9 @@ export async function addCalendarEventTime(
     body: DevCalendarEventTime
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<CalendarEventTimeId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<CalendarEventTimeId>>({
       url: uri`/calendar-event-time`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -232,9 +255,9 @@ export async function addDailyServiceTime(
     body: DevDailyServiceTimes
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<DailyServiceTimeId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<DailyServiceTimeId>>({
       url: uri`/daily-service-time`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -278,9 +301,9 @@ export async function addPayment(
     body: DevPayment
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<PaymentId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<PaymentId>>({
       url: uri`/payments`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -301,9 +324,9 @@ export async function addStaffAttendance(
     body: DevStaffAttendance
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<StaffAttendanceRealtimeId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<StaffAttendanceRealtimeId>>({
       url: uri`/realtime-staff-attendance`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -324,9 +347,9 @@ export async function addStaffAttendancePlan(
     body: DevStaffAttendancePlan
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<StaffAttendancePlanId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<StaffAttendancePlanId>>({
       url: uri`/staff-attendance-plan`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -363,7 +386,7 @@ export async function cleanUpMessages(
 */
 export async function createApplicationPlacementPlan(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: DaycarePlacementPlan
   },
   options?: { mockedTime?: HelsinkiDateTime }
@@ -390,9 +413,9 @@ export async function createApplications(
     body: DevApplicationWithForm[]
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID[]> {
+): Promise<ApplicationId[]> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID[]>>({
+    const { data: json } = await devClient.request<JsonOf<ApplicationId[]>>({
       url: uri`/applications`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -620,9 +643,9 @@ export async function createChildDocument(
     body: DevChildDocument
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<ChildDocumentId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<ChildDocumentId>>({
       url: uri`/child-documents`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -847,7 +870,7 @@ export async function createDaycares(
 */
 export async function createDecisionPdf(
   request: {
-    id: UUID
+    id: DecisionId
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
@@ -892,7 +915,7 @@ export async function createDecisions(
 */
 export async function createDefaultPlacementPlan(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
@@ -936,9 +959,9 @@ export async function createDocumentTemplate(
     body: DevDocumentTemplate
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<DocumentTemplateId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<DocumentTemplateId>>({
       url: uri`/document-templates`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -959,9 +982,9 @@ export async function createEmployee(
     body: DevEmployee
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<EmployeeId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<EmployeeId>>({
       url: uri`/employee`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -1051,9 +1074,9 @@ export async function createFeeThresholds(
     body: FeeThresholds
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<FeeThresholdsId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<FeeThresholdsId>>({
       url: uri`/fee-thresholds`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -1140,7 +1163,7 @@ export async function createFridgePartner(
 */
 export async function createHolidayPeriod(
   request: {
-    id: UUID,
+    id: HolidayPeriodId,
     body: HolidayPeriodCreate
   },
   options?: { mockedTime?: HelsinkiDateTime }
@@ -1164,7 +1187,7 @@ export async function createHolidayPeriod(
 */
 export async function createHolidayQuestionnaire(
   request: {
-    id: UUID,
+    id: HolidayQuestionnaireId,
     body: FixedPeriodQuestionnaireBody
   },
   options?: { mockedTime?: HelsinkiDateTime }
@@ -1372,12 +1395,12 @@ export async function createPerson(
     body: DevPerson
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<PersonId> {
   try {
     const params = createUrlSearchParams(
       ['type', request.type.toString()]
     )
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<PersonId>>({
       url: uri`/person/create`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -1396,7 +1419,7 @@ export async function createPerson(
 */
 export async function createPlacementPlan(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     body: PlacementPlan
   },
   options?: { mockedTime?: HelsinkiDateTime }
@@ -1577,7 +1600,7 @@ export async function createVoucherValues(
 */
 export async function deleteDaycareCostCenter(
   request: {
-    daycareId: UUID
+    daycareId: DaycareId
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
@@ -1599,7 +1622,7 @@ export async function deleteDaycareCostCenter(
 */
 export async function deletePlacement(
   request: {
-    placementId: UUID
+    placementId: PlacementId
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
@@ -1640,7 +1663,7 @@ export async function digitransitAutocomplete(
 */
 export async function forceFullVtjRefresh(
   request: {
-    person: UUID
+    person: PersonId
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
@@ -1681,7 +1704,7 @@ export async function generateReplacementDraftInvoices(
 */
 export async function getAbsences(
   request: {
-    childId: UUID,
+    childId: PersonId,
     date: LocalDate
   },
   options?: { mockedTime?: HelsinkiDateTime }
@@ -1709,7 +1732,7 @@ export async function getAbsences(
 */
 export async function getApplication(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<ApplicationDetails> {
@@ -1731,7 +1754,7 @@ export async function getApplication(
 */
 export async function getApplicationDecisions(
   request: {
-    applicationId: UUID
+    applicationId: ApplicationId
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<Decision[]> {
@@ -1892,9 +1915,9 @@ export async function insertChild(
     body: DevPerson
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<PersonId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<PersonId>>({
       url: uri`/child`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -1958,13 +1981,13 @@ export async function postAttendances(
 */
 export async function postChildDailyNote(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: ChildDailyNoteBody
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<ChildDailyNoteId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<ChildDailyNoteId>>({
       url: uri`/children/${request.childId}/child-daily-notes`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -1982,13 +2005,13 @@ export async function postChildDailyNote(
 */
 export async function postChildStickyNote(
   request: {
-    childId: UUID,
+    childId: PersonId,
     body: ChildStickyNoteBody
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<ChildStickyNoteId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<ChildStickyNoteId>>({
       url: uri`/children/${request.childId}/child-sticky-notes`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -2029,13 +2052,13 @@ export async function postDigitransitQuery(
 */
 export async function postGroupNote(
   request: {
-    groupId: UUID,
+    groupId: GroupId,
     body: GroupNoteBody
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<GroupNoteId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<GroupNoteId>>({
       url: uri`/daycare-groups/${request.groupId}/group-notes`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
@@ -2122,7 +2145,7 @@ export async function postPairingChallenge(
 */
 export async function postPairingResponse(
   request: {
-    id: UUID,
+    id: PairingId,
     body: PostPairingResponseReq
   },
   options?: { mockedTime?: HelsinkiDateTime }
@@ -2261,7 +2284,7 @@ export async function putDigitransitAutocomplete(
 */
 export async function rejectDecisionByCitizen(
   request: {
-    id: UUID
+    id: DecisionId
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
@@ -2370,7 +2393,7 @@ export async function setTestMode(
 */
 export async function simpleAction(
   request: {
-    applicationId: UUID,
+    applicationId: ApplicationId,
     action: SimpleApplicationAction
   },
   options?: { mockedTime?: HelsinkiDateTime }
@@ -2419,9 +2442,9 @@ export async function upsertPerson(
     body: DevPerson
   },
   options?: { mockedTime?: HelsinkiDateTime }
-): Promise<UUID> {
+): Promise<PersonId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<UUID>>({
+    const { data: json } = await devClient.request<JsonOf<PersonId>>({
       url: uri`/person`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },

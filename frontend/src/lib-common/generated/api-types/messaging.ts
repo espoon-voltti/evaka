@@ -5,10 +5,19 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { ApplicationId } from './shared'
+import { AttachmentId } from './shared'
+import { DaycareId } from './shared'
+import { GroupId } from './shared'
 import { JsonOf } from '../../json'
+import { MessageAccountId } from './shared'
 import { MessageAttachment } from './attachment'
+import { MessageContentId } from './shared'
+import { MessageDraftId } from './shared'
+import { MessageId } from './shared'
 import { MessageReceiver } from '../../api-types/messaging'
-import { UUID } from '../../types'
+import { MessageThreadId } from './shared'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AccountType
@@ -32,18 +41,18 @@ export interface AuthorizedMessageAccount {
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.ChildMessageAccountAccess
 */
 export interface ChildMessageAccountAccess {
-  newMessage: UUID[]
-  reply: UUID[]
+  newMessage: MessageAccountId[]
+  reply: MessageAccountId[]
 }
 
 /**
 * Generated from fi.espoo.evaka.messaging.CitizenMessageBody
 */
 export interface CitizenMessageBody {
-  attachmentIds: UUID[]
-  children: UUID[]
+  attachmentIds: AttachmentId[]
+  children: PersonId[]
   content: string
-  recipients: UUID[]
+  recipients: MessageAccountId[]
   title: string
 }
 
@@ -55,7 +64,7 @@ export namespace CitizenMessageThread {
   export interface Redacted {
     type: 'Redacted'
     hasUnreadMessages: boolean
-    id: UUID
+    id: MessageThreadId
     lastMessageSentAt: HelsinkiDateTime | null
     sender: MessageAccount | null
     urgent: boolean
@@ -67,7 +76,7 @@ export namespace CitizenMessageThread {
   export interface Regular {
     type: 'Regular'
     children: MessageChild[]
-    id: UUID
+    id: MessageThreadId
     isCopy: boolean
     messageType: MessageType
     messages: Message[]
@@ -87,7 +96,7 @@ export type CitizenMessageThread = CitizenMessageThread.Redacted | CitizenMessag
 * Generated from fi.espoo.evaka.messaging.MessageController.CreateMessageResponse
 */
 export interface CreateMessageResponse {
-  createdId: UUID | null
+  createdId: MessageContentId | null
 }
 
 /**
@@ -97,8 +106,8 @@ export interface DraftContent {
   attachments: MessageAttachment[]
   content: string
   createdAt: HelsinkiDateTime
-  id: UUID
-  recipientIds: UUID[]
+  id: MessageDraftId
+  recipientIds: string[]
   recipientNames: string[]
   sensitive: boolean
   title: string
@@ -110,7 +119,7 @@ export interface DraftContent {
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetReceiversResponse
 */
 export interface GetReceiversResponse {
-  childrenToMessageAccounts: Partial<Record<UUID, ChildMessageAccountAccess>>
+  childrenToMessageAccounts: Partial<Record<PersonId, ChildMessageAccountAccess>>
   messageAccounts: MessageAccount[]
 }
 
@@ -118,9 +127,9 @@ export interface GetReceiversResponse {
 * Generated from fi.espoo.evaka.messaging.Group
 */
 export interface Group {
-  id: UUID
+  id: GroupId
   name: string
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
 }
 
@@ -130,20 +139,20 @@ export interface Group {
 export interface Message {
   attachments: MessageAttachment[]
   content: string
-  id: UUID
+  id: MessageId
   readAt: HelsinkiDateTime | null
   recipientNames: string[] | null
   recipients: MessageAccount[]
   sender: MessageAccount
   sentAt: HelsinkiDateTime
-  threadId: UUID
+  threadId: MessageThreadId
 }
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageAccount
 */
 export interface MessageAccount {
-  id: UUID
+  id: MessageAccountId
   name: string
   type: AccountType
 }
@@ -152,7 +161,7 @@ export interface MessageAccount {
 * Generated from fi.espoo.evaka.messaging.MessageChild
 */
 export interface MessageChild {
-  childId: UUID
+  childId: PersonId
   firstName: string
   lastName: string
   preferredName: string
@@ -164,18 +173,18 @@ export interface MessageChild {
 export interface MessageCopy {
   attachments: MessageAttachment[]
   content: string
-  messageId: UUID
+  messageId: MessageId
   readAt: HelsinkiDateTime | null
   recipientAccountType: AccountType
-  recipientId: UUID
+  recipientId: MessageAccountId
   recipientName: string
   recipientNames: string[]
   senderAccountType: AccountType
-  senderId: UUID
+  senderId: MessageAccountId
   senderName: string
   sensitive: boolean
   sentAt: HelsinkiDateTime
-  threadId: UUID
+  threadId: MessageThreadId
   title: string
   type: MessageType
   urgent: boolean
@@ -185,7 +194,7 @@ export interface MessageCopy {
 * Generated from fi.espoo.evaka.messaging.MessageReceiversResponse
 */
 export interface MessageReceiversResponse {
-  accountId: UUID
+  accountId: MessageAccountId
   receivers: MessageReceiver[]
 }
 
@@ -193,7 +202,7 @@ export interface MessageReceiversResponse {
 * Generated from fi.espoo.evaka.messaging.MessageRecipient
 */
 export interface MessageRecipient {
-  id: UUID
+  id: string
   type: MessageRecipientType
 }
 
@@ -212,7 +221,7 @@ export type MessageRecipientType =
 */
 export interface MessageThread {
   children: MessageChild[]
-  id: UUID
+  id: MessageThreadId
   isCopy: boolean
   messages: Message[]
   sensitive: boolean
@@ -232,7 +241,7 @@ export type MessageType =
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.MyAccountResponse
 */
 export interface MyAccountResponse {
-  accountId: UUID
+  accountId: MessageAccountId
   messageAttachmentsAllowed: boolean
 }
 
@@ -276,13 +285,13 @@ export interface PagedSentMessages {
 * Generated from fi.espoo.evaka.messaging.MessageController.PostMessageBody
 */
 export interface PostMessageBody {
-  attachmentIds: UUID[]
+  attachmentIds: AttachmentId[]
   content: string
-  draftId: UUID | null
+  draftId: MessageDraftId | null
   filters: PostMessageFilters | null
   recipientNames: string[]
   recipients: MessageRecipient[]
-  relatedApplicationId: UUID | null
+  relatedApplicationId: ApplicationId | null
   sensitive: boolean
   title: string
   type: MessageType
@@ -319,7 +328,7 @@ export interface PostMessagePreflightResponse {
 */
 export interface ReplyToMessageBody {
   content: string
-  recipientAccountIds: UUID[]
+  recipientAccountIds: MessageAccountId[]
 }
 
 /**
@@ -328,7 +337,7 @@ export interface ReplyToMessageBody {
 export interface SentMessage {
   attachments: MessageAttachment[]
   content: string
-  contentId: UUID
+  contentId: MessageContentId
   recipientNames: string[]
   sensitive: boolean
   sentAt: HelsinkiDateTime
@@ -349,14 +358,14 @@ export interface ThreadByApplicationResponse {
 */
 export interface ThreadReply {
   message: Message
-  threadId: UUID
+  threadId: MessageThreadId
 }
 
 /**
 * Generated from fi.espoo.evaka.messaging.UnreadCountByAccount
 */
 export interface UnreadCountByAccount {
-  accountId: UUID
+  accountId: MessageAccountId
   unreadCopyCount: number
   unreadCount: number
 }
@@ -365,8 +374,8 @@ export interface UnreadCountByAccount {
 * Generated from fi.espoo.evaka.messaging.UnreadCountByAccountAndGroup
 */
 export interface UnreadCountByAccountAndGroup {
-  accountId: UUID
-  groupId: UUID
+  accountId: MessageAccountId
+  groupId: GroupId
   unreadCopyCount: number
   unreadCount: number
 }
@@ -376,7 +385,7 @@ export interface UnreadCountByAccountAndGroup {
 */
 export interface UpdatableDraftContent {
   content: string
-  recipientIds: UUID[]
+  recipientIds: string[]
   recipientNames: string[]
   sensitive: boolean
   title: string

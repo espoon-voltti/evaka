@@ -5,6 +5,8 @@
 import * as Sentry from '@sentry/browser'
 import { useParams } from 'react-router'
 
+import { fromUuid, Id } from './id-type'
+
 export default function useRouteParams<
   const Required extends string[],
   const Optional extends string[]
@@ -34,3 +36,8 @@ export default function useRouteParams<
 
 type RequiredObject<T extends string[]> = Record<T[number], string>
 type OptionalObject<T extends string[]> = Partial<Record<T[number], string>>
+
+export function useIdRouteParam<T extends Id<string>>(paramName: string): T {
+  const params = useRouteParams([paramName])
+  return fromUuid<T>(params[paramName])
+}

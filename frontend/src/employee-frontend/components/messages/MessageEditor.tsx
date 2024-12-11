@@ -19,6 +19,7 @@ import {
   PostMessageFilters,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -174,7 +175,9 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption
-  deleteAttachment: (arg: { attachmentId: UUID }) => Promise<Result<void>>
+  deleteAttachment: (arg: {
+    attachmentId: AttachmentId
+  }) => Promise<Result<void>>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
   initDraftRaw: (accountId: string) => Promise<Result<string>>
@@ -187,7 +190,7 @@ interface Props {
     draftId: UUID,
     file: File,
     onUploadProgress: (percentage: number) => void
-  ) => Promise<Result<UUID>>
+  ) => Promise<Result<AttachmentId>>
   sending: boolean
   defaultTitle?: string
 }
@@ -419,12 +422,12 @@ export default React.memo(function MessageEditor({
               return id
             }
           )
-        : Failure.of<UUID>({ message: 'Should not happen' }),
+        : Failure.of<AttachmentId>({ message: 'Should not happen' }),
     [draftId, message.attachments, saveMessageAttachment, updateMessage]
   )
 
   const handleAttachmentDelete = useCallback(
-    async (id: UUID) =>
+    async (id: AttachmentId) =>
       (await deleteAttachment({ attachmentId: id })).map(() =>
         setMessage(({ attachments, ...rest }) => ({
           ...rest,

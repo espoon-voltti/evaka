@@ -8,10 +8,11 @@ import { FixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holiday
 import { FixedPeriodQuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayPeriodCreate } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayPeriodId } from 'lib-common/generated/api-types/shared'
 import { HolidayPeriodUpdate } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { deserializeJsonFixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { deserializeJsonHolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
@@ -40,7 +41,7 @@ export async function createHolidayPeriod(
 */
 export async function deleteHolidayPeriod(
   request: {
-    id: UUID
+    id: HolidayPeriodId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -56,7 +57,7 @@ export async function deleteHolidayPeriod(
 */
 export async function getHolidayPeriod(
   request: {
-    id: UUID
+    id: HolidayPeriodId
   }
 ): Promise<HolidayPeriod> {
   const { data: json } = await client.request<JsonOf<HolidayPeriod>>({
@@ -84,7 +85,7 @@ export async function getHolidayPeriods(): Promise<HolidayPeriod[]> {
 */
 export async function updateHolidayPeriod(
   request: {
-    id: UUID,
+    id: HolidayPeriodId,
     body: HolidayPeriodUpdate
   }
 ): Promise<void> {
@@ -119,7 +120,7 @@ export async function createHolidayQuestionnaire(
 */
 export async function deleteHolidayQuestionnaire(
   request: {
-    id: UUID
+    id: HolidayQuestionnaireId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -135,7 +136,7 @@ export async function deleteHolidayQuestionnaire(
 */
 export async function getQuestionnaire(
   request: {
-    id: UUID
+    id: HolidayQuestionnaireId
   }
 ): Promise<FixedPeriodQuestionnaire> {
   const { data: json } = await client.request<JsonOf<FixedPeriodQuestionnaire>>({
@@ -163,7 +164,7 @@ export async function getQuestionnaires(): Promise<FixedPeriodQuestionnaire[]> {
 */
 export async function updateHolidayQuestionnaire(
   request: {
-    id: UUID,
+    id: HolidayQuestionnaireId,
     body: FixedPeriodQuestionnaireBody
   }
 ): Promise<void> {

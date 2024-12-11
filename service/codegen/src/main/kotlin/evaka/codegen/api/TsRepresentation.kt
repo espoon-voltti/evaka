@@ -15,6 +15,7 @@ import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.jvmName
 
@@ -42,11 +43,14 @@ data object Excluded : TsRepresentation<Nothing>
  * In Kotlin code, the type must have the form SomeType<T>. In generated TS code, the wrapper
  * doesn't exist and the underlying type T is used directly. The Kotlin type must serialize to /
  * deserialize from a single value of type T.
+ *
+ * If the default type is given, uses that for star projections like `MyType<*>`. If the default is
+ * not given, the type must always be used with an explicit type argument.
  */
-data object GenericWrapper : TsRepresentation<KType> {
+data class GenericWrapper(val default: KClass<*>? = null) : TsRepresentation<KType> {
     override fun getTypeArgs(typeArgs: List<KTypeProjection>): KType {
         require(typeArgs.size == 1) { "Expected 1 type argument, got $typeArgs" }
-        return requireNotNull(typeArgs.single().type)
+        return requireNotNull(typeArgs.singleOrNull()?.type ?: default?.starProjectedType)
     }
 }
 
@@ -98,6 +102,17 @@ data object TsRecord : TsRepresentation<Pair<KType?, KType?>> {
         require(typeArgs.size == 2) { "Expected 2 type arguments, got $typeArgs" }
         return Pair(typeArgs[0].type, typeArgs[1].type)
     }
+}
+
+data class TsIdType(override val clazz: KClass<*>) : TsNamedType<Nothing> {
+    val tableName: String
+        get() = clazz.simpleName ?: error("no class name: $clazz")
+
+    override val name: String
+        get() = tableName + "Id"
+
+    val strict: Boolean
+        get() = !lenientIdTypes.contains(clazz)
 }
 
 data class TsPlainObject(

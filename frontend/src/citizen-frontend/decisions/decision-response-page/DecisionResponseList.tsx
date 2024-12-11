@@ -7,8 +7,9 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -28,7 +29,7 @@ import { decisionsOfApplicationQuery } from '../queries'
 import DecisionResponse from './DecisionResponse'
 
 export default React.memo(function DecisionResponseList() {
-  const { applicationId } = useRouteParams(['applicationId'])
+  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const t = useTranslation()
   const navigate = useNavigate()
 

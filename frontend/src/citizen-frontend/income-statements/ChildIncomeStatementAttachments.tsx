@@ -6,6 +6,7 @@ import React, { useCallback } from 'react'
 
 import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
@@ -46,7 +47,7 @@ export default React.memo(function Attachments({
   )
 
   const handleDelete = useCallback(
-    async (id: UUID) =>
+    async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),

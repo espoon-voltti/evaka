@@ -5,11 +5,11 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { OccupancyResponseGroupLevel } from 'lib-common/generated/api-types/occupancy'
 import { OccupancyType } from 'lib-common/generated/api-types/occupancy'
-import { UUID } from 'lib-common/types'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonOccupancyResponse } from 'lib-common/generated/api-types/occupancy'
@@ -22,7 +22,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getOccupancyPeriods(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     from: LocalDate,
     to: LocalDate,
     type: OccupancyType
@@ -47,7 +47,7 @@ export async function getOccupancyPeriods(
 */
 export async function getOccupancyPeriodsOnGroups(
   request: {
-    unitId: UUID,
+    unitId: DaycareId,
     from: LocalDate,
     to: LocalDate,
     type: OccupancyType
