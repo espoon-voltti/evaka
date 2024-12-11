@@ -470,3 +470,4 @@ V471__application_confidentiality.sql
 V472__employee_ssn.sql
 V473__person_municipality_of_residence.sql
 V474__holiday_questionnaire_open_ranges.sql
+V475__application_modified_metadata.sql

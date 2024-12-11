@@ -2119,8 +2119,10 @@ data class PlacementPlan(
 data class DevApplicationWithForm(
     val id: ApplicationId,
     val type: ApplicationType,
-    val createdDate: HelsinkiDateTime?,
-    val modifiedDate: HelsinkiDateTime?,
+    val createdAt: HelsinkiDateTime,
+    val createdBy: EvakaUserId,
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUserId,
     var sentDate: LocalDate?,
     var dueDate: LocalDate?,
     val status: ApplicationStatus,
@@ -2134,7 +2136,6 @@ data class DevApplicationWithForm(
     val allowOtherGuardianAccess: Boolean = true,
     val otherGuardians: List<PersonId>,
     val form: ApplicationForm,
-    val formModified: HelsinkiDateTime,
 )
 
 data class DevDaycareGroupAcl(

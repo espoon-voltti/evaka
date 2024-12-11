@@ -24,8 +24,8 @@ export default React.memo(function BasicsSection({
 }: BasicsSectionProps) {
   const t = useTranslation()
 
-  const created = application.createdDate?.toLocalDate()
-  const modified = application.modifiedDate?.toLocalDate()
+  const created = application.createdAt?.toLocalDate()
+  const modified = application.modifiedAt?.toLocalDate()
 
   return (
     <div>

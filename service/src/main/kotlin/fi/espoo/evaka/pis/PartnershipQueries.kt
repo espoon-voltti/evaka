@@ -37,7 +37,7 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
             (SELECT name FROM evaka_user WHERE id = fp1.modified_by) AS modified_by_name,
             fp1.created_from_application,
             a.type AS created_from_application_type,
-            a.created AS created_from_application_created
+            a.created_at AS created_from_application_created
         FROM fridge_partner fp1
         JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
@@ -74,7 +74,7 @@ SELECT
     (SELECT name FROM evaka_user WHERE id = fp1.modified_by) AS modified_by_name,
     fp1.created_from_application,
     a.type AS created_from_application_type,
-    a.created AS created_from_application_created
+    a.created_at AS created_from_application_created
 FROM fridge_partner fp1
 JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
 JOIN person p1 ON fp1.person_id = p1.id
@@ -102,7 +102,7 @@ SELECT
     (SELECT name FROM evaka_user WHERE id = fp.created_by) AS created_by_name,
     (SELECT name FROM evaka_user WHERE id = fp.modified_by) AS modified_by_name,
     a.type AS created_from_application_type,
-    a.created AS created_from_application_created
+    a.created_at AS created_from_application_created
 FROM fridge_partner fp
 JOIN fridge_partner partner ON fp.partnership_id = partner.partnership_id AND fp.indx != partner.indx
 JOIN person p ON partner.person_id = p.id
@@ -161,7 +161,7 @@ fun Database.Transaction.createPartnership(
             (SELECT name FROM evaka_user WHERE id = fp1.modified_by) AS modified_by_name,
             fp1.created_from_application,
             a.type AS created_from_application_type,
-            a.created AS created_from_application_created
+            a.created_at AS created_from_application_created
         FROM new_fridge_partner fp1
         JOIN new_fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id

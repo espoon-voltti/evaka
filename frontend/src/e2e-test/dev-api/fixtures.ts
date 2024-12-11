@@ -2950,11 +2950,12 @@ export const applicationFixture = (
   status,
   transferApplication,
   allowOtherGuardianAccess: true,
-  createdDate: null,
+  createdAt: HelsinkiDateTime.now(),
+  createdBy: systemInternalUser.id,
+  modifiedAt: HelsinkiDateTime.now(),
+  modifiedBy: systemInternalUser.id,
   dueDate: null,
-  modifiedDate: null,
-  sentDate: null,
-  formModified: HelsinkiDateTime.now()
+  sentDate: null
 })
 
 const feeThresholds = {
