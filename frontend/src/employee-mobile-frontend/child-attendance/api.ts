@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 
 import { client } from '../client'
 import { getChildren } from '../generated/api-clients/attendance'
 
 export async function getUnitChildren(
-  unitId: string
+  unitId: DaycareId
 ): Promise<AttendanceChild[]> {
   return getChildren({ unitId }).then((data) =>
     data.sort((a, b) => compareByProperty(a, b, 'firstName'))

@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -29,7 +30,7 @@ const postPairingResult = wrapResult(postPairing)
 const postPairingResponseResult = wrapResult(postPairingResponse)
 const putMobileDeviceNameResult = wrapResult(putMobileDeviceName)
 
-type IdProps = { unitId: UUID } | { employeeId: UUID }
+type IdProps = { unitId: DaycareId } | { employeeId: UUID }
 
 type Props = IdProps & { closeModal: () => void }
 

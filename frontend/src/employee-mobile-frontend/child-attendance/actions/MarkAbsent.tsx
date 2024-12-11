@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -32,7 +33,7 @@ export default React.memo(function MarkAbsent({
   unitId,
   childId
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childId: UUID
 }) {
   const navigate = useNavigate()

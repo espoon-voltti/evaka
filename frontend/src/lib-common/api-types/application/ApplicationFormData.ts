@@ -15,6 +15,8 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 
+import { DaycareId } from '../../generated/api-types/shared'
+
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
   urgent: boolean
@@ -41,7 +43,7 @@ export type UnitPreferenceFormData = {
   siblingName: string
   siblingSsn: string
   siblingUnit: string
-  preferredUnits: { id: string; name: string }[]
+  preferredUnits: { id: DaycareId; name: string }[]
 }
 
 export type ContactInfoFormData = {

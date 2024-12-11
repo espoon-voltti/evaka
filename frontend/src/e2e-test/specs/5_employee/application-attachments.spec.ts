@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 
@@ -15,7 +15,6 @@ import {
   testChild2,
   testAdult,
   Fixture,
-  uuidv4,
   testChild,
   testCareArea
 } from '../../dev-api/fixtures'
@@ -122,7 +121,7 @@ describe('Employee application attachments', () => {
   })
 
   test('Extended care attachment is not visible to non-around-the-clock unit supervisor', async () => {
-    const daycareId = uuidv4()
+    const daycareId = randomId<DaycareId>()
     await Fixture.daycare({
       ...testDaycare,
       shiftCareOperationTimes: null,

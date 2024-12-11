@@ -35,6 +35,7 @@ import { Employee } from 'lib-common/generated/api-types/pis'
 import {
   AssistanceNeedPreschoolDecisionGuardianId,
   AssistanceNeedPreschoolDecisionId,
+  DaycareId,
   OfficialLanguage
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -114,7 +115,7 @@ const form = mapped(
     grantedAssistiveDevices: boolean(),
     grantedServicesBasis: string(),
 
-    selectedUnit: value<UUID | null>(),
+    selectedUnit: value<DaycareId | null>(),
     primaryGroup: string(),
     decisionBasis: string(),
 

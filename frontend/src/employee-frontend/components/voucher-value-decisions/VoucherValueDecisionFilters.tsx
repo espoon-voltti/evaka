@@ -11,6 +11,7 @@ import {
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
@@ -100,7 +101,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
   )
 
   const selectUnit = useCallback(
-    (unit?: string) => setSearchFilters((filters) => ({ ...filters, unit })),
+    (unit?: DaycareId) => setSearchFilters((filters) => ({ ...filters, unit })),
     [setSearchFilters]
   )
 

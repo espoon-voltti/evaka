@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { mutation, pagedInfiniteQuery, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
@@ -50,7 +51,7 @@ const queryKeys = createQueryKeys('messages', {
 export const messagingAccountsQuery = query({
   // employeeId is not sent to api but is used to invalidate the query when it changes, so that there's no risk of
   // leaking account information from the previous logged-in employee
-  api: ({ unitId }: { unitId: string; employeeId: string | undefined }) =>
+  api: ({ unitId }: { unitId: DaycareId; employeeId: string | undefined }) =>
     getAccountsByDevice({ unitId }),
   queryKey: queryKeys.accounts
 })

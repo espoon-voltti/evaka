@@ -8,9 +8,10 @@ import { Link } from 'react-router'
 import { localDate } from 'lib-common/form/fields'
 import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -30,7 +31,7 @@ const filterForm = object({
 })
 
 export default React.memo(function FamilyContacts() {
-  const { unitId } = useRouteParams(['unitId'])
+  const unitId = useIdRouteParam<DaycareId>('unitId')
   const { i18n, lang } = useTranslation()
 
   const filters = useForm(

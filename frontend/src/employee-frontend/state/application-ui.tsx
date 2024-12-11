@@ -23,7 +23,11 @@ import {
   DaycareCareArea,
   UnitStub
 } from 'lib-common/generated/api-types/daycare'
-import { ApplicationId, AreaId } from 'lib-common/generated/api-types/shared'
+import {
+  ApplicationId,
+  AreaId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -58,7 +62,7 @@ interface UIState {
 
 interface ApplicationSearchFilters {
   area: AreaId[]
-  units: string[]
+  units: DaycareId[]
   basis: ApplicationBasis[]
   status: ApplicationSummaryStatusOptions
   type: ApplicationTypeToggle

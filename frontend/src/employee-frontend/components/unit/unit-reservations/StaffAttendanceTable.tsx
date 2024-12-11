@@ -24,6 +24,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { OperationalDay } from 'lib-common/generated/api-types/reservations'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -48,13 +49,6 @@ import {
 import { Translations, useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 
-const upsertDailyStaffRealtimeAttendancesResult = wrapResult(
-  upsertDailyStaffRealtimeAttendances
-)
-const upsertDailyExternalRealtimeAttendancesResult = wrapResult(
-  upsertDailyExternalRealtimeAttendances
-)
-
 import StaffAttendanceDetailsModal, {
   EditedAttendance,
   ModalAttendance,
@@ -70,10 +64,17 @@ import {
   NameWrapper
 } from './attendance-elements'
 
+const upsertDailyStaffRealtimeAttendancesResult = wrapResult(
+  upsertDailyStaffRealtimeAttendances
+)
+const upsertDailyExternalRealtimeAttendancesResult = wrapResult(
+  upsertDailyExternalRealtimeAttendances
+)
+
 type GroupFilter = (ids: UUID[]) => boolean
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   operationalDays: OperationalDay[]
   staffAttendances: EmployeeAttendance[]
   externalAttendances: ExternalAttendance[]
@@ -273,7 +274,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
     attendances: ModalAttendance[]
     plannedAttendances: ModalPlannedAttendance[]
   }
-  unitId: string
+  unitId: DaycareId
   groups: DaycareGroup[]
   defaultGroupId: string | null
   reloadStaffAttendances: () => Promise<Result<unknown>>

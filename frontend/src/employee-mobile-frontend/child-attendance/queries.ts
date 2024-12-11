@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { mutation, query } from 'lib-common/query'
@@ -164,12 +165,13 @@ export const cancelAbsenceMutation = mutation({
 })
 
 export const uploadChildImageMutation = mutation({
-  api: ({ childId, file }: { unitId: UUID; childId: UUID; file: File }) =>
+  api: ({ childId, file }: { unitId: DaycareId; childId: UUID; file: File }) =>
     uploadChildImage({ childId, file }),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const deleteChildImageMutation = mutation({
-  api: (arg: Arg0<typeof deleteImage> & { unitId: UUID }) => deleteImage(arg),
+  api: (arg: Arg0<typeof deleteImage> & { unitId: DaycareId }) =>
+    deleteImage(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })

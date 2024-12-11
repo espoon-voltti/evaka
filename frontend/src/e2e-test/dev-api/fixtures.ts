@@ -37,7 +37,7 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid, randomId } from 'lib-common/id-type'
@@ -165,7 +165,7 @@ export class Fixture {
   static daycare(initial: SemiPartial<DevDaycare, 'areaId'>): DaycareBuilder {
     const id = uniqueLabel()
     return new DaycareBuilder({
-      id: uuidv4(),
+      id: randomId(),
       name: `daycare_${id}`,
       type: ['CENTRE'],
       dailyPreschoolTime: new TimeRange(
@@ -708,7 +708,7 @@ export class Fixture {
         grantedInterpretationService: false,
         grantedAssistiveDevices: false,
         grantedServicesBasis: '',
-        selectedUnit: '',
+        selectedUnit: null,
         primaryGroup: '',
         decisionBasis: '',
         basisDocumentPedagogicalReport: false,
@@ -918,7 +918,7 @@ export class Fixture {
     })
   }
 
-  static staffOccupancyCoefficient(unitId: string, employeeId: string) {
+  static staffOccupancyCoefficient(unitId: DaycareId, employeeId: string) {
     return new StaffOccupancyCoefficientBuilder({
       coefficient: 7,
       employeeId,
@@ -1231,7 +1231,7 @@ abstract class FixtureBuilder<T> {
 }
 
 export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
-  id(id: string): DaycareBuilder {
+  id(id: DaycareId): DaycareBuilder {
     this.data.id = id
     return this
   }
@@ -1356,7 +1356,7 @@ export class FamilyBuilder extends FixtureBuilder<Family> {
 }
 
 export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
-  daycareAcl: { unitId: string; role: ScopedRole }[]
+  daycareAcl: { unitId: DaycareId; role: ScopedRole }[]
   groupAcl: {
     groupId: string
     created?: HelsinkiDateTime
@@ -1393,25 +1393,25 @@ export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
     return new EmployeeBuilder({ ...this.data, roles: ['MESSAGING'] })
   }
 
-  unitSupervisor(unitId: string): EmployeeBuilder {
+  unitSupervisor(unitId: DaycareId): EmployeeBuilder {
     return new EmployeeBuilder(this.data).withDaycareAcl(
       unitId,
       'UNIT_SUPERVISOR'
     )
   }
 
-  specialEducationTeacher(unitId: string): EmployeeBuilder {
+  specialEducationTeacher(unitId: DaycareId): EmployeeBuilder {
     return new EmployeeBuilder(this.data).withDaycareAcl(
       unitId,
       'SPECIAL_EDUCATION_TEACHER'
     )
   }
 
-  staff(unitId: string): EmployeeBuilder {
+  staff(unitId: DaycareId): EmployeeBuilder {
     return new EmployeeBuilder(this.data).withDaycareAcl(unitId, 'STAFF')
   }
 
-  withDaycareAcl(unitId: string, role: ScopedRole): this {
+  withDaycareAcl(unitId: DaycareId, role: ScopedRole): this {
     this.daycareAcl.push({ unitId, role })
     return this
   }
@@ -1600,7 +1600,7 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
   }
 
   withRequiredFieldsFilled(
-    unitId: UUID,
+    unitId: DaycareId,
     preparerId: UUID,
     decisionMakerId: UUID
   ) {
@@ -2062,7 +2062,7 @@ export const testCareArea2: DevCareArea = {
 }
 
 export const testClub: DevDaycare = {
-  id: '0b5ffd40-2f1a-476a-ad06-2861f433b0d1',
+  id: fromUuid('0b5ffd40-2f1a-476a-ad06-2861f433b0d1'),
   areaId: testCareArea.id,
   name: 'Alkuräjähdyksen kerho',
   type: ['CLUB'],
@@ -2136,7 +2136,7 @@ export const testClub: DevDaycare = {
 }
 
 export const testDaycare: DevDaycare = {
-  id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',
+  id: fromUuid('4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b'),
   areaId: testCareArea.id,
   name: 'Alkuräjähdyksen päiväkoti',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
@@ -2229,7 +2229,7 @@ export const testDaycare: DevDaycare = {
 }
 
 export const testDaycare2: DevDaycare = {
-  id: '6f540c39-e7f6-4222-a004-c527403378ec',
+  id: fromUuid('6f540c39-e7f6-4222-a004-c527403378ec'),
   areaId: testCareArea2.id,
   name: 'Mustan aukon päiväkoti',
   type: ['CENTRE'],
@@ -2314,7 +2314,7 @@ export const testDaycare2: DevDaycare = {
 }
 
 export const testDaycarePrivateVoucher: DevDaycare = {
-  id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
+  id: fromUuid('572adb7e-9b3d-11ea-bb37-0242ac130002'),
   areaId: testCareArea.id,
   name: 'PS-yksikkö',
   type: ['CENTRE'],
@@ -2398,7 +2398,7 @@ export const testDaycarePrivateVoucher: DevDaycare = {
 }
 
 export const testPreschool: DevDaycare = {
-  id: 'b53d80e0-319b-4d2b-950c-f5c3c9f834bc',
+  id: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
   areaId: testCareArea.id,
   name: 'Alkuräjähdyksen eskari',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
@@ -2825,7 +2825,7 @@ const applicationForm = (
   guardian2Email: string,
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null,
   preferredStartDate: LocalDate,
-  preferredUnits: string[],
+  preferredUnits: DaycareId[],
   connectedDaycare = false,
   assistanceNeeded = false
 ): ApplicationForm => {
@@ -2913,7 +2913,7 @@ export const applicationFixture = (
   otherGuardian: DevPerson | undefined = undefined,
   type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null = null,
-  preferredUnits: string[] = [testDaycare.id],
+  preferredUnits: DaycareId[] = [testDaycare.id],
   connectedDaycare = false,
   status: ApplicationStatus = 'SENT',
   preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
@@ -2980,7 +2980,7 @@ export const feeDecisionsFixture = (
   status: FeeDecisionStatus,
   adult: DevPerson,
   child: DevPerson,
-  daycareId: UUID,
+  daycareId: DaycareId,
   partner: DevPerson | null,
   validDuring: FiniteDateRange = new FiniteDateRange(
     LocalDate.todayInSystemTz().subYears(1),
@@ -3044,7 +3044,7 @@ export const voucherValueDecisionsFixture = (
   id: UUID,
   adultId: UUID,
   childId: UUID,
-  daycareId: UUID,
+  daycareId: DaycareId,
   partner: DevPerson | null = null,
   status: 'DRAFT' | 'SENT' = 'DRAFT',
   validFrom = LocalDate.todayInSystemTz().subYears(1),
@@ -3111,7 +3111,7 @@ export const testDaycareGroup: DevDaycareGroup = {
 export function createDaycarePlacementFixture(
   id: string,
   childId: string,
-  unitId: string,
+  unitId: DaycareId,
   startDate = LocalDate.of(2022, 5, 1),
   endDate = LocalDate.of(2023, 8, 31),
   type: PlacementType = 'DAYCARE',

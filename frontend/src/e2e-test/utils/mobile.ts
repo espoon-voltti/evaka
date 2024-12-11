@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 
 import config from '../config'
@@ -15,7 +16,7 @@ import {
  *
  * @return An URL that completes the pairing in the browser
  */
-export async function pairMobileDevice(unitId: UUID): Promise<string> {
+export async function pairMobileDevice(unitId: DaycareId): Promise<string> {
   const longTermToken = uuidv4()
   await postMobileDevice({
     body: {

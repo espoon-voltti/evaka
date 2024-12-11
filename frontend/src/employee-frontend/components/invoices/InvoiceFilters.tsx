@@ -9,6 +9,7 @@ import {
   InvoiceDistinctiveParams,
   InvoiceStatus
 } from 'lib-common/generated/api-types/invoicing'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
@@ -75,7 +76,7 @@ export default React.memo(function InvoiceFilters() {
   )
 
   const selectUnit = useCallback(
-    (unit?: string) => setSearchFilters((old) => ({ ...old, unit })),
+    (unit?: DaycareId) => setSearchFilters((old) => ({ ...old, unit })),
     [setSearchFilters]
   )
 

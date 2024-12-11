@@ -5,6 +5,7 @@
 import React, { Fragment, useCallback, useContext } from 'react'
 
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -56,7 +57,8 @@ export default React.memo(function IncomeStatementsFilters({
   )
 
   const setUnit = useCallback(
-    (unit: string | undefined) => setSearchFilters((old) => ({ ...old, unit })),
+    (unit: DaycareId | undefined) =>
+      setSearchFilters((old) => ({ ...old, unit })),
     [setSearchFilters]
   )
 

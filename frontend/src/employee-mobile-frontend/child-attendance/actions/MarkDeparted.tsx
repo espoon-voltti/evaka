@@ -14,6 +14,7 @@ import {
   AttendanceTimes,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -109,7 +110,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   childList,
   multiselect
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childList: {
     child: AttendanceChild
     attendanceStatus: ChildAttendanceStatusResponse
@@ -427,7 +428,7 @@ const MarkDepartedWithParams = React.memo(function MarkDepartedWithParams({
   childIds,
   multiselect
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childIds: UUID[]
   multiselect: boolean
 }) {
@@ -452,7 +453,11 @@ const MarkDepartedWithParams = React.memo(function MarkDepartedWithParams({
   )
 })
 
-export default React.memo(function MarkDeparted({ unitId }: { unitId: UUID }) {
+export default React.memo(function MarkDeparted({
+  unitId
+}: {
+  unitId: DaycareId
+}) {
   const [searchParams] = useSearchParams()
   const children = searchParams.get('children') ?? ''
   const multiselect = searchParams.get('multiselect') === 'true'

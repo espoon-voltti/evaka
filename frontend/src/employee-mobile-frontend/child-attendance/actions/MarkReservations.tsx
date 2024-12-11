@@ -37,6 +37,7 @@ import {
   ConfirmedRangeDateUpdate,
   Reservation
 } from 'lib-common/generated/api-types/reservations'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
@@ -217,7 +218,7 @@ export default React.memo(function MarkReservations({
   unitId,
   childId
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childId: UUID
 }) {
   const navigate = useNavigate()

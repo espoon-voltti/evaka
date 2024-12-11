@@ -5,13 +5,13 @@
 import React, { useContext } from 'react'
 import { Navigate } from 'react-router'
 
-import { UUID } from 'lib-common/types'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 
 import { PinLogin } from './auth/PinLogin'
 import { UserContext } from './auth/state'
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   children?: React.ReactNode
 }
 

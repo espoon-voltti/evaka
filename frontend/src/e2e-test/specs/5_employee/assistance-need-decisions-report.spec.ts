@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import {
+  AssistanceNeedDecisionId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -39,7 +42,7 @@ let page: Page
 let decisionMaker: DevEmployee
 let director: DevEmployee
 
-let unitId: UUID
+let unitId: DaycareId
 let childId: UUID
 
 const mockedTime = LocalDate.of(2021, 8, 16)

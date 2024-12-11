@@ -10,7 +10,11 @@ import styled, { useTheme } from 'styled-components'
 import { combine, isLoading, Success, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycareAclRow, UserRole } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareAclRow,
+  DaycareId,
+  UserRole
+} from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -277,7 +281,7 @@ function AclTable({
 
 interface RemoveState {
   employee: FormattedRow
-  removeFn: (unitId: UUID, employeeId: UUID) => Promise<unknown>
+  removeFn: (unitId: DaycareId, employeeId: UUID) => Promise<unknown>
 }
 
 export interface UpdateState {

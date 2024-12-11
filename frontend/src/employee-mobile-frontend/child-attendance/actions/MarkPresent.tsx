@@ -12,6 +12,7 @@ import {
   AttendanceChild,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -53,7 +54,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
   childList,
   multiselect
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childList: {
     child: AttendanceChild
     attendanceStatus: ChildAttendanceStatusResponse
@@ -196,7 +197,7 @@ const MarkPresentWithParams = React.memo(function MarkPresentWithParams({
   childIds,
   multiselect
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childIds: UUID[]
   multiselect: boolean
 }) {
@@ -221,7 +222,11 @@ const MarkPresentWithParams = React.memo(function MarkPresentWithParams({
   )
 })
 
-export default React.memo(function MarkPresent({ unitId }: { unitId: UUID }) {
+export default React.memo(function MarkPresent({
+  unitId
+}: {
+  unitId: DaycareId
+}) {
   const [searchParams] = useSearchParams()
   const children = searchParams.get('children')
   const multiselect = searchParams.get('multiselect') === 'true'

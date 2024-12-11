@@ -12,6 +12,7 @@ import {
   CalendarEvent,
   CalendarEventType
 } from 'lib-common/generated/api-types/calendarevent'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -70,7 +71,7 @@ export default React.memo(function DiscussionSurveyForm({
   form: BoundForm<typeof surveyForm>
   eventData: CalendarEvent | null
   groupId: UUID
-  unitId: UUID
+  unitId: DaycareId
 }) {
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events

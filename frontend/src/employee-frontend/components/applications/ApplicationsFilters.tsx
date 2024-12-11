@@ -11,7 +11,7 @@ import {
   ApplicationTypeToggle
 } from 'lib-common/generated/api-types/application'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
-import { AreaId } from 'lib-common/generated/api-types/shared'
+import { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Label } from 'lib-components/typography'
@@ -169,7 +169,7 @@ export default React.memo(function ApplicationFilters() {
     })
   }
 
-  const changeUnits = (selectedUnits: string[]) => {
+  const changeUnits = (selectedUnits: DaycareId[]) => {
     setApplicationsResult(Loading.of())
     setApplicationSearchFilters({
       ...applicationSearchFilters,

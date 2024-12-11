@@ -10,9 +10,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -30,7 +30,7 @@ import { placementGuaranteeReportQuery } from './queries'
 
 interface PlacementGuaranteeReportFilters {
   date: LocalDate
-  unitId: UUID | null
+  unitId: DaycareId | null
 }
 
 const initialFilters: PlacementGuaranteeReportFilters = {

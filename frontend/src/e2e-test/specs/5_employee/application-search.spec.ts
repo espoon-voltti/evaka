@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
@@ -79,7 +79,7 @@ describe('Employee searches applications', () => {
     const careArea3 = await Fixture.careArea().save()
     const daycare3 = await Fixture.daycare({ areaId: careArea3.id }).save()
 
-    const createApplicationForUnit = (unitId: string) => ({
+    const createApplicationForUnit = (unitId: DaycareId) => ({
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
         unitId
       ]),
@@ -110,7 +110,7 @@ describe('Employee searches applications', () => {
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
 
-    const createApplicationForUnit = (unitId: string) => ({
+    const createApplicationForUnit = (unitId: DaycareId) => ({
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
         unitId
       ]),
@@ -140,7 +140,7 @@ describe('Employee searches applications', () => {
       .save()
 
     const createApplicationForUnit = (
-      unitId: string,
+      unitId: DaycareId,
       assistanceNeeded: boolean
     ) => ({
       ...applicationFixture(

@@ -12,7 +12,10 @@ import {
   childDailyNoteLevelValues,
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
-import { ChildDailyNoteId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildDailyNoteId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import { useMutation, useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
@@ -105,7 +108,7 @@ const emptyNote = () => ({
 })
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   childId: UUID
   formData?: ChildDailyNoteFormData
   dailyNoteId: ChildDailyNoteId | undefined

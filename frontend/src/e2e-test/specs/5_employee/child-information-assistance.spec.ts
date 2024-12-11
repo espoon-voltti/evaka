@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -36,8 +37,8 @@ let page: Page
 let childInformationPage: ChildInformationPage
 let assistance: AssistanceSection
 let childId: UUID
-let unitId: UUID
-let voucherUnitId: UUID
+let unitId: DaycareId
+let voucherUnitId: DaycareId
 let admin: DevEmployee
 
 beforeEach(async () => {

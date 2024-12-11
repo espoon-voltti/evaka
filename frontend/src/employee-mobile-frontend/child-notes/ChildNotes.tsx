@@ -10,6 +10,7 @@ import {
   ChildDailyNote,
   ChildStickyNote
 } from 'lib-common/generated/api-types/note'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useChainedQuery,
@@ -87,7 +88,7 @@ export default React.memo(function ChildNotes({
   unitId,
   childId
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childId: UUID
 }) {
   const { i18n } = useTranslation()

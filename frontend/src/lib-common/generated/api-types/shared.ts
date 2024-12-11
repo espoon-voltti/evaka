@@ -105,7 +105,7 @@ export type DaycareAssistanceId = string
 
 export type DaycareCaretakerId = string
 
-export type DaycareId = string
+export type DaycareId = Id<'Daycare'>
 
 export type DecisionId = string
 

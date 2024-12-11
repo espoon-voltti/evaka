@@ -11,10 +11,9 @@ import { isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
 import { Bold, H1, InformationText, Title } from 'lib-components/typography'
@@ -110,7 +109,7 @@ const OccupancyContainer = styled.div`
 
 function useSpeculatedOccupancies(
   applicationId: ApplicationId,
-  unitId: UUID,
+  unitId: DaycareId,
   period: FiniteDateRange,
   preschoolDaycarePeriod: FiniteDateRange | undefined
 ): Result<OccupancyResponseSpeculated> {
@@ -136,7 +135,7 @@ function useSpeculatedOccupancies(
 
 interface Props {
   applicationId: ApplicationId
-  unitId: string
+  unitId: DaycareId
   unitName: string
   period: FiniteDateRange
   preschoolDaycarePeriod?: FiniteDateRange
@@ -172,13 +171,13 @@ export default React.memo(function UnitCard({
 
   const removeUnit = useCallback(() => {
     setPlacement((prev) =>
-      prev.unitId === unitId ? { ...prev, unitId: '' } : prev
+      prev.unitId === unitId ? { ...prev, unitId: null } : prev
     )
     setAdditionalUnits((prev) => prev.filter((unit) => unit.id !== unitId))
   }, [setAdditionalUnits, setPlacement, unitId])
 
   const selectUnit = useCallback(
-    (unitId: UUID) => setPlacement((prev) => ({ ...prev, unitId })),
+    (unitId: DaycareId | null) => setPlacement((prev) => ({ ...prev, unitId })),
     [setPlacement]
   )
 
@@ -237,7 +236,7 @@ export default React.memo(function UnitCard({
       )}
       <SelectionChip
         data-qa="select-placement-unit"
-        onChange={(checked) => selectUnit(checked ? unitId : '')}
+        onChange={(checked) => selectUnit(checked ? unitId : null)}
         selected={isSelectedUnit}
         text={
           isSelectedUnit

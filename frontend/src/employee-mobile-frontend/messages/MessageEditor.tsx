@@ -18,6 +18,7 @@ import {
   PostMessageBody,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { cancelMutation, useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
@@ -104,7 +105,7 @@ const messageForm = mapped(
 )
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   account: MessageAccount
   availableRecipients: MessageReceiversResponse[]
   draft: DraftContent | undefined

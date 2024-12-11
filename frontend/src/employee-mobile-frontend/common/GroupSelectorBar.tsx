@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
@@ -56,7 +56,7 @@ const GroupSelectorWrapper = animated(styled.div`
 `)
 
 export interface Props {
-  unitId: UUID
+  unitId: DaycareId
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   onSearch?: () => void

@@ -14,11 +14,10 @@ import {
   FinanceDecisionType,
   financeDecisionTypes
 } from 'lib-common/generated/api-types/invoicing'
-import { AreaId } from 'lib-common/generated/api-types/shared'
+import { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -37,7 +36,7 @@ import { customerFeesReportQuery } from './queries'
 const filterForm = object({
   date: required(localDate()),
   areaId: oneOf<AreaId>(),
-  unitId: oneOf<UUID>(),
+  unitId: oneOf<DaycareId>(),
   decisionType: required(oneOf<FinanceDecisionType>())
 })
 
@@ -45,7 +44,7 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
   unitOptions,
   areaOptions
 }: {
-  unitOptions: { id: UUID; name: string }[]
+  unitOptions: { id: DaycareId; name: string }[]
   areaOptions: { id: AreaId; name: string }[]
 }) {
   const { i18n, lang } = useTranslation()

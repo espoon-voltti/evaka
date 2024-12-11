@@ -11,10 +11,11 @@ import {
   DaycareGroup,
   DaycareResponse
 } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -106,7 +107,7 @@ function attendanceGroupToString(group: AttendanceGroupFilter): string {
 }
 
 export default React.memo(function TabCalendar() {
-  const { id: unitId } = useRouteParams(['id'])
+  const unitId = useIdRouteParam<DaycareId>('id')
   const { unitInformation, filters, setFilters } = useContext(UnitContext)
 
   return renderResult(unitInformation, (unitInformation) => (
@@ -139,7 +140,7 @@ const Calendar = React.memo(function Calendar({
   unitId,
   unitInformation
 }: {
-  unitId: string
+  unitId: DaycareId
   unitInformation: DaycareResponse
 }) {
   const groups = useQueryResult(unitGroupsQuery({ daycareId: unitId }))

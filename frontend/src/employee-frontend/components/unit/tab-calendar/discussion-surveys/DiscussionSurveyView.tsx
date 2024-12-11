@@ -31,6 +31,7 @@ import {
   ChildBasics,
   DaycarePlacementWithDetails
 } from 'lib-common/generated/api-types/placement'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -214,7 +215,7 @@ export default React.memo(function DiscussionReservationSurveyView({
   groupId,
   eventData
 }: {
-  unitId: UUID
+  unitId: DaycareId
   groupId: UUID
   eventData: CalendarEvent
 }) {

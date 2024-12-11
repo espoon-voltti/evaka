@@ -18,7 +18,8 @@ import {
   object,
   oneOf,
   required,
-  transformed
+  transformed,
+  value
 } from 'lib-common/form/form'
 import {
   BoundForm,
@@ -38,9 +39,9 @@ import {
   ReservationResponse,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -88,7 +89,7 @@ const form = transformed(
   object({
     date: required(localDate()),
     childId: required(string()),
-    unitId: required(string()),
+    unitId: required(value<DaycareId>()),
     reservations: array(reservationForm),
     reservationNoTimes: boolean(),
     attendances: array(attendanceForm),
@@ -163,7 +164,7 @@ export default React.memo(function ChildDateModal({
   onClose
 }: {
   target: ChildDateEditorTarget
-  unitId: UUID
+  unitId: DaycareId
   onClose: () => void
 }) {
   const { i18n } = useTranslation()

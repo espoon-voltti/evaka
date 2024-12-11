@@ -26,6 +26,7 @@ import {
 } from 'lib-common/form/types'
 import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -60,14 +61,14 @@ const upsertDailyExternalRealtimeAttendancesResult = wrapResult(
 type ExternalPersonModalProps = {
   onClose: () => void
   onSave: () => void
-  unitId: UUID
+  unitId: DaycareId
   groups: DaycareGroup[]
   defaultGroupId: UUID
 }
 
 const externalPersonForm = transformed(
   object({
-    unitId: value<string>(),
+    unitId: value<DaycareId>(),
     date: validated(required(localDate()), (value) =>
       value.isAfter(LocalDate.todayInHelsinkiTz()) ? 'dateTooLate' : undefined
     ),
@@ -120,7 +121,7 @@ const externalPersonForm = transformed(
 )
 
 function initialFormState(
-  unitId: UUID,
+  unitId: DaycareId,
   groups: DaycareGroup[],
   defaultGroupId: UUID
 ): StateOf<typeof externalPersonForm> {

@@ -10,6 +10,7 @@ import { combine } from 'lib-common/api'
 import { MessageReceiver } from 'lib-common/api-types/messaging'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useChainedQuery,
@@ -32,7 +33,7 @@ import MessageEditor from './MessageEditor'
 import { messagingAccountsQuery, recipientsQuery } from './queries'
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   childGroupAccount: AuthorizedMessageAccount | undefined
   child: AttendanceChild
 }
@@ -112,7 +113,7 @@ export default React.memo(function MessageEditorPageWrapper({
   unitId,
   childId
 }: {
-  unitId: UUID
+  unitId: DaycareId
   childId: UUID
 }) {
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 
 import {
@@ -21,7 +22,7 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let daycareId: UUID
+let daycareId: DaycareId
 const groupId: UUID = uuidv4()
 
 const eskoId = uuidv4()

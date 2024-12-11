@@ -23,9 +23,8 @@ import {
   PlacementPlanDraft,
   PlacementSummary
 } from 'lib-common/generated/api-types/placement'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -109,7 +108,7 @@ function hasOverlap(
 }
 
 export interface DaycarePlacementPlanForm {
-  unitId: UUID | null
+  unitId: DaycareId | null
   period: FiniteDateRange | null
   preschoolDaycarePeriod: FiniteDateRange | null
 }
@@ -252,7 +251,7 @@ export default React.memo(function PlacementDraft() {
       }
     }
 
-  function addUnit(unitId: UUID) {
+  function addUnit(unitId: DaycareId) {
     return (
       units.isSuccess &&
       placementDraft.isSuccess &&

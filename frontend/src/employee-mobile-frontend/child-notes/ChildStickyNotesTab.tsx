@@ -5,7 +5,10 @@
 import React, { useCallback, useMemo } from 'react'
 
 import { ChildStickyNote } from 'lib-common/generated/api-types/note'
-import { ChildStickyNoteId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildStickyNoteId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import {
@@ -38,7 +41,7 @@ const getStickyNoteTabLabels = (i18n: Translations): StickyNoteTabLabels => ({
 })
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   childId: UUID
   notes: ChildStickyNote[]
 }

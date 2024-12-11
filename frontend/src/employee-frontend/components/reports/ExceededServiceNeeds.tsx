@@ -9,6 +9,7 @@ import { Link } from 'react-router'
 import { object, oneOf, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ExceededServiceNeedReportUnit } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -45,7 +46,7 @@ export default React.memo(function ReportExceededServiceNeeds() {
 })
 
 const filtersForm = object({
-  unitId: required(oneOf<string>()),
+  unitId: required(oneOf<DaycareId>()),
   year: required(oneOf<number>()),
   month: required(oneOf<number>())
 })

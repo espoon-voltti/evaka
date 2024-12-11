@@ -14,11 +14,12 @@ import {
 } from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Uri, uri } from 'lib-common/uri'
-import useRouteParams from 'lib-common/useRouteParams'
+import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 import {
   Notifications,
   NotificationsContextProvider
@@ -150,7 +151,7 @@ function shouldForwardProp(propName: string, target: unknown) {
 }
 
 function UnitRouter() {
-  const { unitId } = useRouteParams(['unitId'])
+  const unitId = useIdRouteParam<DaycareId>('unitId')
 
   return (
     <Routes>
@@ -170,7 +171,7 @@ function UnitRouter() {
   )
 }
 
-function GroupRouter({ unitId }: { unitId: UUID }) {
+function GroupRouter({ unitId }: { unitId: DaycareId }) {
   const { groupId } = useRouteParams([], ['groupId'])
   const unitOrGroup: UnitOrGroup = useMemo(
     () => toUnitOrGroup(unitId, groupId),
@@ -258,7 +259,7 @@ function ChildAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
   )
 }
 
-function ChildRouter({ unitId }: { unitId: UUID }) {
+function ChildRouter({ unitId }: { unitId: DaycareId }) {
   const { childId } = useRouteParams(['childId'])
 
   return (

@@ -14,6 +14,7 @@ import {
   ChildWithName,
   HolidayPeriodAttendanceReportRow
 } from 'lib-common/generated/api-types/reports'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -44,7 +45,7 @@ import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { holidayPeriodAttendanceReportQuery } from './queries'
 
 interface ReportQueryParams {
-  unitId: UUID
+  unitId: DaycareId
   periodId: UUID
   groupIds: UUID[] | null
 }

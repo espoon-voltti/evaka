@@ -8,8 +8,8 @@ import styled from 'styled-components'
 import { useTranslation } from 'employee-mobile-frontend/common/i18n'
 import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { defaultMargins } from 'lib-components/white-space'
@@ -42,7 +42,7 @@ const getUserName = (u: Staff | undefined) => {
 export const LoggedInUser = React.memo(function LoggedInUser({
   unitId
 }: {
-  unitId: UUID | undefined
+  unitId: DaycareId | undefined
 }) {
   const { user, refreshAuthStatus } = useContext(UserContext)
 

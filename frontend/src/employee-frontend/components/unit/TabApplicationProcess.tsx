@@ -4,8 +4,8 @@
 
 import React, { useContext } from 'react'
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
@@ -22,7 +22,7 @@ import TabWaitingConfirmation from './TabWaitingConfirmation'
 import { unitApplicationsQuery } from './queries'
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
 }
 
 export default React.memo(function TabApplicationProcess({ unitId }: Props) {
