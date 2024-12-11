@@ -86,6 +86,37 @@ export type DailyServiceTimesValue = DailyServiceTimesValue.IrregularTimes | Dai
 
 
 
+export namespace ServiceTimesPresenceStatus {
+  /**
+  * Generated from fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus.Absent
+  */
+  export interface Absent {
+    type: 'ABSENT'
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus.Present
+  */
+  export interface Present {
+    type: 'PRESENT'
+    times: TimeRange
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus.Unknown
+  */
+  export interface Unknown {
+    type: 'UNKNOWN'
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
+*/
+export type ServiceTimesPresenceStatus = ServiceTimesPresenceStatus.Absent | ServiceTimesPresenceStatus.Present | ServiceTimesPresenceStatus.Unknown
+
+
+
 export function deserializeJsonDailyServiceTimes(json: JsonOf<DailyServiceTimes>): DailyServiceTimes {
   return {
     ...json,
@@ -144,6 +175,21 @@ export function deserializeJsonDailyServiceTimesValue(json: JsonOf<DailyServiceT
     case 'IRREGULAR': return deserializeJsonDailyServiceTimesValueIrregularTimes(json)
     case 'REGULAR': return deserializeJsonDailyServiceTimesValueRegularTimes(json)
     case 'VARIABLE_TIME': return deserializeJsonDailyServiceTimesValueVariableTimes(json)
+    default: return json
+  }
+}
+
+
+
+export function deserializeJsonServiceTimesPresenceStatusPresent(json: JsonOf<ServiceTimesPresenceStatus.Present>): ServiceTimesPresenceStatus.Present {
+  return {
+    ...json,
+    times: TimeRange.parseJson(json.times)
+  }
+}
+export function deserializeJsonServiceTimesPresenceStatus(json: JsonOf<ServiceTimesPresenceStatus>): ServiceTimesPresenceStatus {
+  switch (json.type) {
+    case 'PRESENT': return deserializeJsonServiceTimesPresenceStatusPresent(json)
     default: return json
   }
 }

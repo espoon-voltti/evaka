@@ -72,6 +72,8 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
       children: number
       childrenPresent: number
       staffRequired: number
+      unknownChildren: number
+      unknownChildrenCapacityFactor: number
     }
   }>({})
   const [tooltipVisible, { on: showTooltip, off: hideTooltip }] =
@@ -98,6 +100,10 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
         datasets[1].data[tooltip.dataPoints[0].dataIndex]?.y ?? 0
       const staffRequired =
         datasets[2].data[tooltip.dataPoints[0].dataIndex]?.y ?? 0
+      const unknownChildren =
+        datasets[3].data[tooltip.dataPoints[0].dataIndex]?.y ?? 0
+      const unknownChildrenCapacityFactor =
+        datasets[4].data[tooltip.dataPoints[0].dataIndex]?.y ?? 0
 
       setTooltipParams((previous) => {
         const { x, y, xAlign, yAlign, caretX, caretY } = tooltip
@@ -106,7 +112,9 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
           date,
           children,
           childrenPresent,
-          staffRequired
+          staffRequired,
+          unknownChildren,
+          unknownChildrenCapacityFactor
         }
         const updated = { position, data }
         return isEqual(previous, updated) ? previous : updated
@@ -163,6 +171,21 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
                 </td>
                 <td align="right">
                   {parseFloat(tooltipParams.data.staffRequired.toFixed(1))}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <FixedSpaceRow alignItems="center" spacing="xs">
+                    <LegendSquare small color="transparent" />
+                    <span>{i18n.unit.occupancy.realtime.unknownChildren}</span>
+                  </FixedSpaceRow>
+                </td>
+                <td align="right">
+                  {parseFloat(tooltipParams.data.unknownChildren.toFixed(1))} (
+                  {parseFloat(
+                    tooltipParams.data.unknownChildrenCapacityFactor.toFixed(1)
+                  )}
+                  )
                 </td>
               </tr>
             </tbody>
@@ -232,6 +255,18 @@ function graphData(
         })),
         colors.main.m3,
         'y1'
+      ),
+      hidden(
+        rows.map((row) => ({
+          x: row.dateTime.toSystemTzDate(),
+          y: row.unknownChildCount
+        }))
+      ),
+      hidden(
+        rows.map((row) => ({
+          x: row.dateTime.toSystemTzDate(),
+          y: row.unknownChildCapacityFactor
+        }))
       )
     ]
   }

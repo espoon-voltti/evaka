@@ -5,6 +5,7 @@
 package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+import fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
@@ -179,15 +180,8 @@ fun getGroupMonthCalendar(
                                         (dailyServiceTimes[child.id]?.map { it.times }
                                                 ?: emptyList())
                                             .find { it.validityPeriod.includes(date) }
-                                            ?.let { value ->
-                                                when (value) {
-                                                    is DailyServiceTimesValue.RegularTimes ->
-                                                        value.regularTimes
-                                                    is DailyServiceTimesValue.IrregularTimes ->
-                                                        value.getTimesOnDate(date)
-                                                    is DailyServiceTimesValue.VariableTimes -> null
-                                                }
-                                            },
+                                            ?.getTimesOnDate(date)
+                                            ?: ServiceTimesPresenceStatus.Unknown,
                                 )
                             }
                             .sortedBy { it.childId },
@@ -546,7 +540,7 @@ data class GroupMonthCalendarDayChild(
     val missingHolidayReservation: Boolean,
     val absences: List<AbsenceWithModifierInfo>,
     val reservations: List<ChildReservation>,
-    val dailyServiceTimes: TimeRange?,
+    val dailyServiceTimes: ServiceTimesPresenceStatus,
     val scheduleType: ScheduleType,
     val shiftCare: ShiftCareType,
 )

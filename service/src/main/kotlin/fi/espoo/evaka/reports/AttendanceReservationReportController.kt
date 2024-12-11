@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getAbsencesOfChildrenByRange
+import fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.getDaycare
@@ -308,6 +309,12 @@ AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
         )
 }
 
+enum class PresenceStatus {
+    PRESENT,
+    ABSENT,
+    UNKNOWN,
+}
+
 data class DailyChildData(
     val date: LocalDate,
     val childId: ChildId,
@@ -315,22 +322,32 @@ data class DailyChildData(
     val groupName: String?,
     val age: Int,
     val capacityFactor: Double,
-    val serviceTimes: HelsinkiDateTimeRange?,
+    val serviceTimes: ServiceTimesPresenceStatus?,
     val reservations: List<HelsinkiDateTimeRange>,
     val fullDayAbsence: Boolean,
 ) {
-    fun isPresentPessimistic(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15): Boolean {
-        if (fullDayAbsence) return false
+    fun isPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15): PresenceStatus {
+        if (fullDayAbsence) return PresenceStatus.ABSENT
         if (reservations.isNotEmpty()) {
-            return reservations.any {
-                it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during)
-            }
+            val hasReservation =
+                reservations.any {
+                    it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during)
+                }
+            return if (hasReservation) PresenceStatus.PRESENT else PresenceStatus.ABSENT
         } else if (serviceTimes != null) {
-            return serviceTimes
-                .copy(end = serviceTimes.end.plusMinutes(bufferMinutes))
-                .overlaps(during)
+            when (serviceTimes) {
+                is ServiceTimesPresenceStatus.Present -> {
+                    val range = serviceTimes.times.asHelsinkiDateTimeRange(date)
+                    val isServiceTimesOverlapping =
+                        range.copy(end = range.end.plusMinutes(bufferMinutes)).overlaps(during)
+                    return if (isServiceTimesOverlapping) PresenceStatus.PRESENT
+                    else PresenceStatus.ABSENT
+                }
+                is ServiceTimesPresenceStatus.Absent -> return PresenceStatus.ABSENT
+                is ServiceTimesPresenceStatus.Unknown -> return PresenceStatus.UNKNOWN
+            }
         }
-        return false
+        return PresenceStatus.UNKNOWN
     }
 }
 
@@ -345,6 +362,8 @@ data class AttendanceReservationReportRow(
     val childCount: Int,
     val capacityFactor: Double,
     val staffCountRequired: Double,
+    val unknownChildCount: Int,
+    val unknownChildCapacityFactor: Double,
 )
 
 fun getAttendanceReservationReport(
@@ -410,7 +429,7 @@ fun getAttendanceReservationReport(
                 groupName = placementInfo.groupName,
                 age = childAgeYears,
                 capacityFactor = capacityFactor,
-                serviceTimes = serviceTimes?.asHelsinkiDateTimeRange(date),
+                serviceTimes = serviceTimes,
                 reservations = reservations,
                 fullDayAbsence = fullDayAbsence,
             )
@@ -432,23 +451,34 @@ fun getAttendanceReservationReport(
                 .map { intervalStart ->
                     val interval =
                         HelsinkiDateTimeRange(intervalStart, intervalStart.plusMinutes(15))
-                    val childrenPresent =
-                        childrenInGroup.filter { it.isPresentPessimistic(interval) }
+                    val presentChildren =
+                        childrenInGroup.filter { it.isPresent(interval) == PresenceStatus.PRESENT }
+
+                    val unknownChildren =
+                        childrenInGroup.filter {
+                            it.date == intervalStart.toLocalDate() &&
+                                it.isPresent(interval) == PresenceStatus.UNKNOWN
+                        }
 
                     AttendanceReservationReportRow(
                         groupId = group.id,
                         groupName = group.name,
                         dateTime = intervalStart,
-                        childCountUnder3 = childrenPresent.count { it.age < 3 },
-                        childCountOver3 = childrenPresent.count { it.age >= 3 },
-                        childCount = childrenPresent.count(),
+                        childCountUnder3 = presentChildren.count { it.age < 3 },
+                        childCountOver3 = presentChildren.count { it.age >= 3 },
+                        childCount = presentChildren.count(),
                         capacityFactor =
-                            BigDecimal(childrenPresent.sumOf { it.capacityFactor })
+                            BigDecimal(presentChildren.sumOf { it.capacityFactor })
                                 .setScale(2, RoundingMode.HALF_UP)
                                 .toDouble(),
                         staffCountRequired =
-                            BigDecimal(childrenPresent.sumOf { it.capacityFactor } / 7)
+                            BigDecimal(presentChildren.sumOf { it.capacityFactor } / 7)
                                 .setScale(1, RoundingMode.HALF_UP)
+                                .toDouble(),
+                        unknownChildCount = unknownChildren.count(),
+                        unknownChildCapacityFactor =
+                            BigDecimal(unknownChildren.sumOf { it.capacityFactor })
+                                .setScale(2, RoundingMode.HALF_UP)
                                 .toDouble(),
                     )
                 }
@@ -520,7 +550,10 @@ fun getAttendanceReservationReportByChild(
             if (fullDayAbsence) {
                 listOf(entry(null, true))
             } else {
-                val effectiveReservations = reservations.ifEmpty { listOfNotNull(serviceTimes) }
+                val effectiveReservations =
+                    reservations.ifEmpty {
+                        listOfNotNull((serviceTimes as? ServiceTimesPresenceStatus.Present)?.times)
+                    }
                 if (effectiveReservations.isEmpty()) {
                     listOf(entry(null, false))
                 } else {
