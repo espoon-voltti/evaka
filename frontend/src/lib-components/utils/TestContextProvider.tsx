@@ -43,7 +43,9 @@ export const testTranslations: Translations = {
       validDate: '',
       dateTooEarly: '',
       dateTooLate: ''
-    }
+    },
+    open: '',
+    close: ''
   },
   documentTemplates: {
     templateQuestions: {

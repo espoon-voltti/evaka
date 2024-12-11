@@ -26,7 +26,9 @@ const translations: Translations = {
       validDate: 'Invalid date',
       dateTooEarly: 'Date too early',
       dateTooLate: 'Date too late'
-    }
+    },
+    open: 'Open date picker',
+    close: 'Close date picker'
   }
 }
 
@@ -44,7 +46,7 @@ describe('DateRangePicker', () => {
     )
 
     const [start, end] = screen.getAllByRole('textbox', {
-      description: 'Date picker description'
+      name: 'Date picker description'
     })
     expect(start).toHaveAttribute('placeholder', 'Placeholder')
     expect(end).toHaveAttribute('placeholder', 'Placeholder')
