@@ -65,6 +65,12 @@ export interface EmployeeLoginRequest {
   employeeNumber?: string
 }
 
+export interface EmployeeSuomiFiLoginRequest {
+  ssn: string
+  firstName: string
+  lastName: string
+}
+
 export interface EmployeeUser {
   id: string
   firstName: string
@@ -99,6 +105,19 @@ export async function employeeLogin(
 ): Promise<EmployeeUser> {
   const { data } = await client.post<EmployeeUser>(
     `/system/employee-login`,
+    employee,
+    {
+      headers: createServiceRequestHeaders(undefined, systemUserHeader)
+    }
+  )
+  return data
+}
+
+export async function employeeSuomiFiLogin(
+  employee: EmployeeSuomiFiLoginRequest
+): Promise<EmployeeUser> {
+  const { data } = await client.post<EmployeeUser>(
+    `/system/employee-sfi-login`,
     employee,
     {
       headers: createServiceRequestHeaders(undefined, systemUserHeader)
