@@ -295,8 +295,9 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             dateOfDeath = person.dateOfDeath,
             streetAddress = person.streetAddress,
             postalCode = person.postalCode,
-            postOffice = person.city,
+            postOffice = person.postOffice,
             residenceCode = person.residenceCode,
+            municipalityOfResidence = person.municipalityOfResidence,
             restrictedDetailsEnabled = person.restrictedDetailsEnabled,
             restrictedDetailsEndDate = person.restrictedDetailsEndDate,
         )
@@ -330,7 +331,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                         origin = PersonAddressDTO.Origin.VTJ,
                         streetAddress = person.streetAddress,
                         postalCode = person.postalCode,
-                        city = person.city,
+                        postOffice = person.postOffice,
                         residenceCode = person.residenceCode,
                     )
                 } else {
@@ -338,11 +339,12 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                         origin = PersonAddressDTO.Origin.VTJ,
                         streetAddress = "",
                         postalCode = "",
-                        city = "",
+                        postOffice = "",
                         residenceCode = "",
                     )
                 },
             residenceCode = person.residenceCode,
+            municipalityOfResidence = person.municipalityOfResidence,
             phone = phone,
             backupPhone = backupPhone,
             email = email,
@@ -367,10 +369,11 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                     origin = PersonAddressDTO.Origin.EVAKA,
                     streetAddress = person.streetAddress,
                     postalCode = person.postalCode,
-                    city = person.postOffice,
+                    postOffice = person.postOffice,
                     residenceCode = person.residenceCode,
                 ),
             residenceCode = person.residenceCode,
+            municipalityOfResidence = person.municipalityOfResidence,
             phone = person.phone,
             backupPhone = person.backupPhone,
             email = person.email,
@@ -380,7 +383,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     private fun hasRestriction(person: VtjPersonDTO) = person.restrictedDetailsEnabled
 
     private fun hasAddress(person: VtjPersonDTO): Boolean =
-        setOf(person.streetAddress, person.postalCode, person.city).all(String::isNotBlank)
+        setOf(person.streetAddress, person.postalCode, person.postOffice).all(String::isNotBlank)
 }
 
 data class PersonDTO(
@@ -401,6 +404,7 @@ data class PersonDTO(
     val postalCode: String,
     val postOffice: String,
     val residenceCode: String,
+    val municipalityOfResidence: String,
     val nationalities: List<String> = emptyList(),
     val restrictedDetailsEnabled: Boolean = false,
     val restrictedDetailsEndDate: LocalDate? = null,
@@ -427,10 +431,12 @@ data class PersonDTO(
             nativeLanguage = NativeLanguage(code = this.language ?: ""),
             streetAddress = this.streetAddress,
             postalCode = this.postalCode,
-            city = this.postOffice,
+            postOffice = this.postOffice,
             streetAddressSe = "",
-            citySe = "",
+            postOfficeSe = "",
             residenceCode = this.residenceCode,
+            municipalityOfResidence = this.municipalityOfResidence,
+            municipalityOfResidenceSe = "",
         )
 }
 
@@ -473,6 +479,7 @@ data class PersonJSON(
     val postOffice: String = "",
     val postalCode: String = "",
     val residenceCode: String = "",
+    val municipalityOfResidence: String = "",
     val restrictedDetailsEnabled: Boolean = false,
     val invoiceRecipientName: String = "",
     val invoicingStreetAddress: String = "",
@@ -501,6 +508,7 @@ data class PersonJSON(
                 postOffice = p.postOffice,
                 postalCode = p.postalCode,
                 residenceCode = p.residenceCode,
+                municipalityOfResidence = p.municipalityOfResidence,
                 restrictedDetailsEnabled = p.restrictedDetailsEnabled,
                 invoiceRecipientName = p.invoiceRecipientName,
                 invoicingStreetAddress = p.invoicingStreetAddress,
@@ -523,6 +531,7 @@ data class PersonPatch(
     val streetAddress: String? = null,
     val postalCode: String? = null,
     val postOffice: String? = null,
+    val municipalityOfResidence: String? = null,
     val invoiceRecipientName: String? = null,
     val invoicingStreetAddress: String? = null,
     val invoicingPostalCode: String? = null,
@@ -542,6 +551,7 @@ data class PersonWithChildrenDTO(
     val preferredName: String,
     val address: PersonAddressDTO,
     val residenceCode: String,
+    val municipalityOfResidence: String,
     val phone: String,
     val backupPhone: String,
     val email: String?,
@@ -568,7 +578,8 @@ data class PersonWithChildrenDTO(
             residenceCode = residenceCode,
             streetAddress = address.streetAddress,
             postalCode = address.postalCode,
-            postOffice = address.city,
+            postOffice = address.postOffice,
+            municipalityOfResidence = municipalityOfResidence,
             restrictedDetailsEnabled = restrictedDetails.enabled,
             restrictedDetailsEndDate = restrictedDetails.endDate,
             language = nativeLanguage?.code,
@@ -582,7 +593,7 @@ data class PersonAddressDTO(
     val origin: Origin,
     val streetAddress: String,
     val postalCode: String,
-    val city: String,
+    val postOffice: String,
     val residenceCode: String,
 ) {
     enum class Origin {
@@ -673,6 +684,7 @@ private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO =
         postalCode = inputPerson.postalCode,
         postOffice = getPostOfficeByLanguage(inputPerson),
         residenceCode = inputPerson.residenceCode,
+        municipalityOfResidence = getMunicipalityOfResidenceByLanguage(inputPerson),
         restrictedDetailsEnabled = inputPerson.restrictedDetailsEnabled,
         restrictedDetailsEndDate = inputPerson.restrictedDetailsEndDate,
         nationalities = inputPerson.nationalities.map { it.countryCode },
@@ -697,6 +709,7 @@ private fun getPersonWithUpdatedProperties(
         postalCode = sourcePerson.postalCode,
         postOffice = getPostOfficeByLanguage(sourcePerson),
         residenceCode = sourcePerson.residenceCode,
+        municipalityOfResidence = sourcePerson.municipalityOfResidence,
         restrictedDetailsEnabled = sourcePerson.restrictedDetailsEnabled,
         restrictedDetailsEndDate = sourcePerson.restrictedDetailsEndDate,
         nationalities = sourcePerson.nationalities.map { it.countryCode },
@@ -715,13 +728,24 @@ private fun getStreetAddressByLanguage(vtjPerson: VtjPersonDTO): String {
 }
 
 private fun getPostOfficeByLanguage(vtjPerson: VtjPersonDTO): String {
-    if (vtjPerson.nativeLanguage == null || vtjPerson.citySe == "") {
-        return vtjPerson.city
+    if (vtjPerson.nativeLanguage == null || vtjPerson.postOfficeSe == "") {
+        return vtjPerson.postOffice
     }
 
     return when (vtjPerson.nativeLanguage.code) {
-        "sv" -> vtjPerson.citySe
-        else -> vtjPerson.city
+        "sv" -> vtjPerson.postOfficeSe
+        else -> vtjPerson.postOffice
+    }
+}
+
+private fun getMunicipalityOfResidenceByLanguage(vtjPerson: VtjPersonDTO): String {
+    if (vtjPerson.nativeLanguage == null || vtjPerson.municipalityOfResidenceSe == "") {
+        return vtjPerson.municipalityOfResidence
+    }
+
+    return when (vtjPerson.nativeLanguage.code) {
+        "sv" -> vtjPerson.municipalityOfResidenceSe
+        else -> vtjPerson.municipalityOfResidence
     }
 }
 

@@ -248,6 +248,8 @@ private val popovsWithBasicChildData: VtjPerson by lazy {
         nativeLanguage = NativeLanguage("viro, eesti", "et"),
         address = address,
         residenceCode = "90000130991H045 ",
+        municipalityOfResidence = "Vaasa",
+        municipalityOfResidenceSe = "Vasa",
         restrictedDetails = RestrictedDetails(false),
         nationalities = emptyList(),
         dependants = listOf(kakTy, minja, mir, petrus, pan),

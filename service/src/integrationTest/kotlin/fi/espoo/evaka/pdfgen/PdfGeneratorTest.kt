@@ -122,6 +122,7 @@ private val child =
         "02270",
         "Espoo",
         "",
+        "",
     )
 private val guardian =
     PersonDTO(
@@ -141,6 +142,7 @@ private val guardian =
         "Kuusikallionrinne 26 A 4",
         "02270",
         "Espoo",
+        "",
         "",
     )
 private val manager =
