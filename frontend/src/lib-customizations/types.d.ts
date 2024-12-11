@@ -278,12 +278,6 @@ interface BaseFeatureFlags {
    * Enable support for citizen weak login
    */
   weakLogin?: boolean
-
-  /**
-   * Select the type of holiday questionnaire
-   * Note the corresponding backend environment variable feature flag.
-   */
-  holidayQuestionnaireType?: 'FIXED_PERIOD' | 'OPEN_RANGES'
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
