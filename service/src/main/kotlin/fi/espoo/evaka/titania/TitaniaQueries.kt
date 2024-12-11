@@ -5,7 +5,6 @@
 package fi.espoo.evaka.titania
 
 import fi.espoo.evaka.attendance.RawAttendance
-import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -27,19 +26,6 @@ fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Dat
 fun Database.Read.getEmployeeIdsByNumbers(employeeNumbers: List<String>): Map<String, EmployeeId> {
     return employeeNumbersQuery(employeeNumbers).toMap { columnPair("employee_number", "id") }
 }
-
-fun Database.Transaction.createEmployees(employees: List<NewEmployee>): Map<String, EmployeeId> =
-    prepareBatch(employees) {
-            sql(
-                """
-INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, active)
-VALUES (${bind { it.firstName }}, ${bind { it.lastName }}, ${bind { it.email }}, ${bind { it.externalId }}, ${bind { it.employeeNumber }}, ${bind { it.roles }}, true)
-RETURNING id, employee_number
-"""
-            )
-        }
-        .executeAndReturn()
-        .toMap { columnPair("employee_number", "id") }
 
 fun Database.Read.getEmployeeIdsByNumbersMapById(
     employeeNumbers: Collection<String>

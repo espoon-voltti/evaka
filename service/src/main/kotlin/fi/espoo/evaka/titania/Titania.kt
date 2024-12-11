@@ -186,7 +186,6 @@ data class UpdateWorkingTimeEventsResponse(val message: String) {
 
 data class UpdateWorkingTimeEventsServiceResponse(
     val updateWorkingTimeEventsResponse: UpdateWorkingTimeEventsResponse,
-    val createdEmployees: List<EmployeeId>,
     val overlappingShifts: List<TitaniaOverLappingShifts>,
 )
 

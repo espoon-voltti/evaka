@@ -18,7 +18,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
-import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
@@ -526,28 +525,15 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             db.transaction { tx -> titaniaService.updateWorkingTimeEventsInternal(tx, request) }
 
         assertThat(response.deleted).isEmpty()
-        assertThat(response.inserted)
-            .extracting({ it.type }, { it.startTime }, { it.endTime }, { it.description })
-            .containsExactly(
-                Tuple(
-                    StaffAttendanceType.PRESENT,
-                    HelsinkiDateTime.of(LocalDate.of(2022, 6, 15), LocalTime.of(9, 6)),
-                    HelsinkiDateTime.of(LocalDate.of(2022, 6, 15), LocalTime.of(15, 22)),
-                    null,
-                )
-            )
+        assertThat(response.inserted).isEmpty()
 
         val employees = db.transaction { tx -> tx.getEmployees() }
 
-        assertThat(employees)
-            .extracting({ it.firstName }, { it.lastName })
-            .containsExactly(Tuple("1", "Employee"))
+        assertThat(employees).isEmpty()
 
         val numbers = db.transaction { tx -> tx.getEmployeeIdsByNumbers(listOf("1234")) }
 
-        assertThat(numbers).containsOnlyKeys("1234")
-
-        assertThat(response.createdEmployees).containsExactly(employees[0].id)
+        assertThat(numbers).isEmpty()
     }
 
     @Test
@@ -700,7 +686,6 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertThat(response.inserted).isEmpty()
         assertThat(response.deleted).isEmpty()
-        assertThat(response.createdEmployees).isEmpty()
         assertThat(response.overLappingShifts)
             .containsExactlyInAnyOrder(
                 TitaniaOverLappingShifts(
