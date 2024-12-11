@@ -12,7 +12,7 @@ export async function enduserLogin(page: Page, person: DevPerson) {
     throw new Error('Person does not have an SSN: cannot login')
   }
 
-  const authUrl = `${config.citizenApiUrl}/auth/saml/login/callback?RelayState=%2Fapplications`
+  const authUrl = `${config.apiUrl}/citizen/auth/sfi/login/callback?RelayState=%2Fapplications`
   if (!page.url.startsWith(config.enduserUrl)) {
     // We must be in the correct domain to be able to fetch()
     await page.goto(config.enduserLoginUrl)
@@ -85,7 +85,7 @@ export async function employeeLogin(
     email?: string | null
   }
 ) {
-  const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
+  const authUrl = `${config.apiUrl}/employee/auth/ad/login/callback?RelayState=%2Femployee`
   const preset = JSON.stringify({
     externalId,
     firstName,

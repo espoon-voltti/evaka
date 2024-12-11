@@ -39,11 +39,11 @@ function Login({ error }: Props) {
           {i18n.login.subtitle}
         </Title>
         <Center>
-          <LinkButton data-qa="login-btn" href={getLoginUrl('saml')}>
+          <LinkButton data-qa="login-btn" href={getLoginUrl('ad')}>
             <span>{i18n.login.loginAD}</span>
           </LinkButton>
           <Gap horizontal />
-          <LinkButton data-qa="login-btn" href={getLoginUrl('evaka')}>
+          <LinkButton data-qa="login-btn" href={getLoginUrl('keycloak')}>
             <span>{i18n.login.loginEvaka}</span>
           </LinkButton>
         </Center>

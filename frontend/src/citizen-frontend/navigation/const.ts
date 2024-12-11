@@ -6,12 +6,11 @@ export const logoutUrl = `/api/citizen/auth/logout?RelayState=/`
 
 export const getWeakLoginUri = (
   url = `${window.location.pathname}${window.location.search}${window.location.hash}`
-) =>
-  `/api/application/auth/evaka-customer/login?RelayState=${encodeURIComponent(url)}`
+) => `/api/citizen/auth/keycloak/login?RelayState=${encodeURIComponent(url)}`
 
 export const getStrongLoginUri = (
   url = `${window.location.pathname}${window.location.search}${window.location.hash}`
-) => `/api/application/auth/saml/login?RelayState=${encodeURIComponent(url)}`
+) => `/api/citizen/auth/sfi/login?RelayState=${encodeURIComponent(url)}`
 
 export const headerHeightDesktop = 80
 export const headerHeightMobile = 60

@@ -60,8 +60,7 @@ const config = {
       env('BROWSER', parseEnum(['chromium', 'firefox', 'webkit'] as const)) ??
       'chromium'
   },
-  apiUrl: `${browserUrl}/api/internal`,
-  citizenApiUrl: `${browserUrl}/api/application`,
+  apiUrl: `${browserUrl}/api`,
   adminUrl: `${browserUrl}/employee/applications`,
   employeeUrl: `${browserUrl}/employee`,
   employeeLoginUrl: `${browserUrl}/employee/login`,
