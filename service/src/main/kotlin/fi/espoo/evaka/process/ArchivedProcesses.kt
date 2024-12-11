@@ -207,28 +207,20 @@ fun updateDocumentProcessHistory(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
 ) {
-    data class Document(val status: DocumentStatus, val processId: ArchivedProcessId?)
-    val document =
-        tx.createQuery {
-                sql("SELECT status, process_id FROM child_document WHERE id = ${bind(documentId)}")
-            }
-            .exactlyOne<Document>()
-    document.processId?.let { processId ->
-        val processState = tx.getProcess(processId)?.history?.lastOrNull()?.state
-        val newProcessState =
-            when {
-                newStatus == DocumentStatus.COMPLETED -> ArchivedProcessState.COMPLETED
-                processState == ArchivedProcessState.COMPLETED &&
-                    newStatus != DocumentStatus.COMPLETED -> ArchivedProcessState.INITIAL
-                else -> null
-            }
-        newProcessState?.let {
+    val process = tx.getArchiveProcessByChildDocumentId(documentId) ?: return
+    val processState = process.history.lastOrNull()?.state ?: return
+
+    when {
+        newStatus == DocumentStatus.COMPLETED && processState != ArchivedProcessState.COMPLETED -> {
             tx.insertProcessHistoryRow(
-                processId = processId,
-                state = it,
+                processId = process.id,
+                state = ArchivedProcessState.COMPLETED,
                 now = now,
                 userId = userId,
             )
+        }
+        newStatus != DocumentStatus.COMPLETED && processState == ArchivedProcessState.COMPLETED -> {
+            tx.cancelLastProcessHistoryRow(process.id, ArchivedProcessState.COMPLETED)
         }
     }
 }
