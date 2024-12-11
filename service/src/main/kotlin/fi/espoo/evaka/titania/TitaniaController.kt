@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.titania
 
-import fi.espoo.evaka.Audit
-import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import jakarta.servlet.http.HttpServletRequest
@@ -34,7 +32,6 @@ class TitaniaController(private val titaniaService: TitaniaService) {
         return db.connect { dbc ->
             lateinit var result: UpdateWorkingTimeEventsServiceResponse
             dbc.transaction { tx -> result = titaniaService.updateWorkingTimeEvents(tx, request) }
-            result.createdEmployees.forEach { Audit.EmployeeCreate.log(targetId = AuditId(it)) }
             if (result.overlappingShifts.isNotEmpty()) {
                 throw TitaniaException(
                     TitaniaErrorDetail(

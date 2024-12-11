@@ -6,7 +6,6 @@ package fi.espoo.evaka.titania
 
 import fi.espoo.evaka.attendance.RawAttendance
 import fi.espoo.evaka.attendance.StaffAttendanceType
-import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -37,11 +36,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
             if (internal.overLappingShifts.isEmpty()) UpdateWorkingTimeEventsResponse.ok()
             else UpdateWorkingTimeEventsResponse.validationFailed()
         logger.debug { "Titania response: $response" }
-        return UpdateWorkingTimeEventsServiceResponse(
-            response,
-            internal.createdEmployees,
-            internal.overLappingShifts,
-        )
+        return UpdateWorkingTimeEventsServiceResponse(response, internal.overLappingShifts)
     }
 
     fun updateWorkingTimeEventsInternal(
@@ -66,25 +61,6 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
             }
         val employeeNumbers = persons.map { (employeeNumber, _) -> employeeNumber }.distinct()
         val employeeNumberToId = tx.getEmployeeIdsByNumbers(employeeNumbers)
-        val unknownEmployeeNumbers = employeeNumbers - employeeNumberToId.keys
-        val unknownEmployees: List<NewEmployee> =
-            unknownEmployeeNumbers
-                .map { employeeNumber ->
-                    persons.find { person -> person.first == employeeNumber }!!.second
-                }
-                .map { person ->
-                    NewEmployee(
-                        firstName = person.firstName(),
-                        lastName = person.lastName(),
-                        email = null,
-                        externalId = null,
-                        employeeNumber = person.employeeId,
-                        temporaryInUnitId = null,
-                        active = true,
-                    )
-                }
-        val createdEmployees = tx.createEmployees(unknownEmployees)
-        val allEmployeeNumberToId = employeeNumberToId + createdEmployees
 
         var unmergedSameDayPlans = mutableListOf<StaffAttendancePlan>()
         val overlappingShifts = mutableListOf<TitaniaOverLappingShifts>()
@@ -110,7 +86,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                             val previous = plans.lastOrNull()
                             val next =
                                 StaffAttendancePlan(
-                                    allEmployeeNumberToId[employeeNumber]!!,
+                                    employeeNumberToId[employeeNumber] ?: return@fold plans,
                                     event.code?.let { staffAttendanceTypeFromTitaniaEventCode(it) }
                                         ?: StaffAttendanceType.PRESENT,
                                     HelsinkiDateTime.of(
@@ -169,7 +145,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                         .forEach {
                                             overlappingShifts.add(
                                                 TitaniaOverLappingShifts(
-                                                    allEmployeeNumberToId[employeeNumber]!!,
+                                                    employeeNumberToId[employeeNumber]!!,
                                                     next.startTime.toLocalDate(),
                                                     it.startTime.toLocalTime(),
                                                     it.endTime.toLocalTime(),
@@ -189,12 +165,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
 
         if (overlappingShifts.isNotEmpty()) {
             tx.insertReportRows(requestTime, overlappingShifts)
-            return TitaniaUpdateResponse(
-                listOf(),
-                listOf(),
-                createdEmployees.values.toList(),
-                overlappingShifts,
-            )
+            return TitaniaUpdateResponse(listOf(), listOf(), overlappingShifts)
         }
 
         logger.info {
@@ -208,7 +179,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         logger.info { "Adding ${newPlans.size} new staff attendance plans" }
         tx.insertStaffAttendancePlans(newPlans)
 
-        return TitaniaUpdateResponse(deleted, newPlans, createdEmployees.values.toList(), listOf())
+        return TitaniaUpdateResponse(deleted, newPlans, listOf())
     }
 
     fun getStampedWorkingTimeEvents(
@@ -410,7 +381,6 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
 data class TitaniaUpdateResponse(
     val deleted: List<StaffAttendancePlan>,
     val inserted: List<StaffAttendancePlan>,
-    val createdEmployees: List<EmployeeId>,
     val overLappingShifts: List<TitaniaOverLappingShifts>,
 )
 

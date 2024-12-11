@@ -8,18 +8,16 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insert
 import java.nio.charset.StandardCharsets
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert.assertEquals
 import org.skyscreamer.jsonassert.JSONCompareMode
-import org.springframework.boot.test.system.CapturedOutput
-import org.springframework.boot.test.system.OutputCaptureExtension
 import org.springframework.core.io.ClassPathResource
 import org.springframework.util.StreamUtils
 
-@ExtendWith(OutputCaptureExtension::class)
 internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
@@ -114,18 +112,20 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
     }
 
     @Test
-    fun `should log created employees`(capturedOutput: CapturedOutput) {
-        http
-            .put("/integration/titania/working-time-events")
-            .asUser(AuthenticatedUser.Integration)
-            .jsonBody(jsonMapper.writeValueAsString(titaniaUpdateRequestValidExampleData))
-            .response()
+    fun `put working time events with unknown employee number should respond 200`() {
+        val (_, res, _) =
+            http
+                .put("/integration/titania/working-time-events")
+                .asUser(AuthenticatedUser.Integration)
+                .jsonBody(jsonMapper.writeValueAsString(titaniaUpdateRequestValidExampleData))
+                .response()
 
-        assertThat(capturedOutput).contains("\"eventCode\":\"EmployeeCreate\"")
+        assertThat(res).returns(200) { it.statusCode }
     }
 
     @Test
     fun `put working time events with conflicting shifts should respond 400`() {
+        db.transaction { tx -> tx.insert(DevEmployee(employeeNumber = "176716")) }
         val (_, res, _) =
             http
                 .put("/integration/titania/working-time-events")
