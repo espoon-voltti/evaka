@@ -31,7 +31,7 @@ const SessionExpiredModal: React.FC<Props> = ({
       closeLabel={i18n.sessionTimeout.cancel}
       zIndex={999}
     >
-      <p>{i18n.sessionTimeout.sessionExpiredMessage}</p>
+      <CenteredP>{i18n.sessionTimeout.sessionExpiredMessage}</CenteredP>
       <ButtonFooter>
         <Button
           primary
@@ -43,7 +43,9 @@ const SessionExpiredModal: React.FC<Props> = ({
     </BaseModal>
   )
 }
-
+const CenteredP = styled.p`
+  text-align: center;
+`
 export default SessionExpiredModal
 const ButtonFooter = styled.div`
   display: flex;
