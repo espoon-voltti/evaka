@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.partnerIsCodebtor
+import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -211,7 +212,8 @@ INSERT INTO fee_decision (
     fee_thresholds,
     difference,
     total_fee,
-    created
+    created,
+    process_id
 ) VALUES (
     ${bind { it.id }},
     ${bind { it.status }},
@@ -226,7 +228,8 @@ INSERT INTO fee_decision (
     ${bindJson { it.feeThresholds }},
     ${bind { it.difference }},
     ${bind { it.totalFee }},
-    ${bind { it.created }}
+    ${bind { it.created }},
+    NULL
 )
 """
         )
@@ -253,7 +256,8 @@ INSERT INTO fee_decision (
     fee_thresholds,
     difference,
     total_fee,
-    created
+    created,
+    process_id
 ) VALUES (
     ${bind { it.id }},
     ${bind { it.status }},
@@ -268,7 +272,8 @@ INSERT INTO fee_decision (
     ${bindJson { it.feeThresholds }},
     ${bind { it.difference }},
     ${bind { it.totalFee }},
-    ${bind { it.created }}
+    ${bind { it.created }},
+    NULL
 ) ON CONFLICT (id) DO UPDATE SET
     status = ${bind { it.status }},
     decision_number = ${bind { it.decisionNumber }},
@@ -780,6 +785,15 @@ fun Database.Transaction.setFeeDecisionToIgnored(id: FeeDecisionId) {
     createUpdate {
             sql(
                 "UPDATE fee_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'"
+            )
+        }
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.setFeeDecisionProcessId(id: FeeDecisionId, processId: ArchivedProcessId) {
+    createUpdate {
+            sql(
+                "UPDATE fee_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL"
             )
         }
         .updateExactlyOne()

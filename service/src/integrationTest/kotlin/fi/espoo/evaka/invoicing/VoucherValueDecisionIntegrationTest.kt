@@ -28,6 +28,8 @@ import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementResponse
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -166,6 +168,35 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+        }
+    }
+
+    @Test
+    fun `sending value decision updates process id`() {
+        createPlacement(startDate, endDate)
+        sendAllValueDecisions()
+
+        getAllValueDecisions().first().let { decision ->
+            val process =
+                db.read { tx -> tx.getArchiveProcessByVoucherValueDecisionId(decision.id) }
+            assertNotNull(process)
+            assertEquals("1/123.789.b/${now.toLocalDate().year}", process.processNumber)
+            assertEquals(
+                listOf(
+                    ArchivedProcessState.INITIAL,
+                    ArchivedProcessState.DECIDING,
+                    ArchivedProcessState.COMPLETED,
+                ),
+                process.history.map { it.state },
+            )
+            assertEquals(
+                listOf(
+                    AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    financeWorker.evakaUserId,
+                    AuthenticatedUser.SystemInternalUser.evakaUserId,
+                ),
+                process.history.map { it.enteredBy.id },
+            )
         }
     }
 

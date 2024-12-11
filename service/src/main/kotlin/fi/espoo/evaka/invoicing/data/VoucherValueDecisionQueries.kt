@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.partnerIsCodebtor
+import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -69,7 +70,8 @@ INSERT INTO voucher_value_decision (
     assistance_need_coefficient,
     voucher_value,
     difference,
-    created
+    created,
+    process_id
 ) VALUES (
     ${bind(decision.id)},
     ${bind(decision.status)}::voucher_value_decision_status,
@@ -104,7 +106,8 @@ INSERT INTO voucher_value_decision (
     ${bind(decision.assistanceNeedCoefficient)},
     ${bind(decision.voucherValue)},
     ${bind(decision.difference)},
-    ${bind(decision.created)}
+    ${bind(decision.created)},
+    NULL
 ) ON CONFLICT (id) DO UPDATE SET
     status = ${bind(decision.status)},
     decision_number = ${bind(decision.decisionNumber)},
@@ -693,6 +696,18 @@ fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisi
     createUpdate {
             sql(
                 "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'"
+            )
+        }
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.setVoucherValueDecisionProcessId(
+    id: VoucherValueDecisionId,
+    processId: ArchivedProcessId,
+) {
+    createUpdate {
+            sql(
+                "UPDATE voucher_value_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL"
             )
         }
         .updateExactlyOne()

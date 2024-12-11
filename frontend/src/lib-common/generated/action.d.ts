@@ -278,6 +278,13 @@ export type FeeAlteration =
   | 'UPDATE'
   | 'UPLOAD_ATTACHMENT'
 
+export type FeeDecision =
+  | 'IGNORE'
+  | 'READ'
+  | 'READ_METADATA'
+  | 'UNIGNORE'
+  | 'UPDATE'
+
 export type Group =
   | 'CREATE_ABSENCES'
   | 'CREATE_CALENDAR_EVENT'
@@ -484,6 +491,13 @@ export type Unit =
   | 'UPDATE_STAFF_GROUP_ACL'
   | 'UPDATE_TEMPORARY_EMPLOYEE'
   | 'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+
+export type VoucherValueDecision =
+  | 'IGNORE'
+  | 'READ'
+  | 'READ_METADATA'
+  | 'UNIGNORE'
+  | 'UPDATE'
 
 export namespace Citizen {
 

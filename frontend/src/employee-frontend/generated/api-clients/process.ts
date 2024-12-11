@@ -74,3 +74,35 @@ export async function getChildDocumentMetadata(
   })
   return deserializeJsonProcessMetadataResponse(json)
 }
+
+
+/**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.getFeeDecisionMetadata
+*/
+export async function getFeeDecisionMetadata(
+  request: {
+    feeDecisionId: UUID
+  }
+): Promise<ProcessMetadataResponse> {
+  const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
+    url: uri`/employee/process-metadata/fee-decisions/${request.feeDecisionId}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonProcessMetadataResponse(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.getVoucherValueDecisionMetadata
+*/
+export async function getVoucherValueDecisionMetadata(
+  request: {
+    voucherValueDecisionId: UUID
+  }
+): Promise<ProcessMetadataResponse> {
+  const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
+    url: uri`/employee/process-metadata/voucher-value-decisions/${request.voucherValueDecisionId}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonProcessMetadataResponse(json)
+}
