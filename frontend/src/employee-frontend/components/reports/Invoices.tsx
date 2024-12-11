@@ -3,44 +3,40 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useEffect, useState } from 'react'
+import range from 'lodash/range'
+import React, { useState } from 'react'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
-import {
-  InvoiceReport,
-  InvoiceReportRow
-} from 'lib-common/generated/api-types/reports'
-import LocalDate from 'lib-common/local-date'
+import { InvoiceReportRow } from 'lib-common/generated/api-types/reports'
 import { formatCents } from 'lib-common/money'
+import { useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
+import YearMonth from 'lib-common/year-month'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { getInvoiceReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+import { invoicesReportQuery } from './queries'
 
-const getInvoiceReportResult = wrapResult(getInvoiceReport)
+const currentMonth = YearMonth.todayInHelsinkiTz()
+const monthOptions = range(1, 13)
+const yearOptions = range(currentMonth.year, currentMonth.year - 4, -1)
 
 type InvoiceReportFilters = Arg0<typeof getInvoiceReport>
 
 export default React.memo(function ReportInvoices() {
   const { i18n } = useTranslation()
-  const [report, setReport] = useState<Result<InvoiceReport>>(Loading.of())
   const [filters, setFilters] = useState<InvoiceReportFilters>({
-    date: LocalDate.todayInSystemTz()
+    yearMonth: currentMonth
   })
-
-  useEffect(() => {
-    setReport(Loading.of())
-    void getInvoiceReportResult(filters).then(setReport)
-  }, [filters])
+  const report = useQueryResult(invoicesReportQuery(filters))
 
   return (
     <Container>
@@ -48,10 +44,31 @@ export default React.memo(function ReportInvoices() {
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.invoices.title}</Title>
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePickerDeprecated
-            date={filters.date}
-            onChange={(date) => setFilters({ date })}
+          <FilterLabel>{i18n.reports.common.period}</FilterLabel>
+          <Combobox
+            items={monthOptions}
+            selectedItem={filters.yearMonth.month}
+            onChange={(month) => {
+              if (month !== null) {
+                setFilters({
+                  ...filters,
+                  yearMonth: new YearMonth(filters.yearMonth.year, month)
+                })
+              }
+            }}
+            getItemLabel={(month) => i18n.datePicker.months[month - 1]}
+          />
+          <Combobox
+            items={yearOptions}
+            selectedItem={filters.yearMonth.year}
+            onChange={(year) => {
+              if (year !== null) {
+                setFilters({
+                  ...filters,
+                  yearMonth: new YearMonth(year, filters.yearMonth.month)
+                })
+              }
+            }}
           />
         </FilterRow>
         {report.isLoading && <Loader />}
@@ -68,7 +85,7 @@ export default React.memo(function ReportInvoices() {
                 { label: 'Osoitteettomia', key: 'amountWithoutAddress' },
                 { label: 'Nollalaskuja', key: 'amountWithZeroPrice' }
               ]}
-              filename={`Laskujen_täsmäytys ${filters.date.formatIso()}.csv`}
+              filename={`Laskujen_täsmäytys ${filters.yearMonth.formatIso()}.csv`}
             />
             <TableScrollable>
               <Thead>

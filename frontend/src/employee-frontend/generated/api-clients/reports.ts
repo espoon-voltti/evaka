@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
+import YearMonth from 'lib-common/year-month'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
 import { AreaId } from 'lib-common/generated/api-types/shared'
@@ -555,11 +556,11 @@ export async function getIncompleteIncomeReport(): Promise<IncompleteIncomeDbRow
 */
 export async function getInvoiceReport(
   request: {
-    date: LocalDate
+    yearMonth: YearMonth
   }
 ): Promise<InvoiceReport> {
   const params = createUrlSearchParams(
-    ['date', request.date.formatIso()]
+    ['yearMonth', request.yearMonth.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<InvoiceReport>>({
     url: uri`/employee/reports/invoices`.toString(),
