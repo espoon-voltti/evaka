@@ -362,6 +362,8 @@ data class AttendanceReservationReportRow(
     val childCount: Int,
     val capacityFactor: Double,
     val staffCountRequired: Double,
+    val unknownChildCount: Int,
+    val unknownChildCapacityFactor: Double,
 )
 
 fun getAttendanceReservationReport(
@@ -449,23 +451,34 @@ fun getAttendanceReservationReport(
                 .map { intervalStart ->
                     val interval =
                         HelsinkiDateTimeRange(intervalStart, intervalStart.plusMinutes(15))
-                    val childrenPresent =
+                    val presentChildren =
                         childrenInGroup.filter { it.isPresent(interval) == PresenceStatus.PRESENT }
+
+                    val unknownChildren =
+                        childrenInGroup.filter {
+                            it.date == intervalStart.toLocalDate() &&
+                                it.isPresent(interval) == PresenceStatus.UNKNOWN
+                        }
 
                     AttendanceReservationReportRow(
                         groupId = group.id,
                         groupName = group.name,
                         dateTime = intervalStart,
-                        childCountUnder3 = childrenPresent.count { it.age < 3 },
-                        childCountOver3 = childrenPresent.count { it.age >= 3 },
-                        childCount = childrenPresent.count(),
+                        childCountUnder3 = presentChildren.count { it.age < 3 },
+                        childCountOver3 = presentChildren.count { it.age >= 3 },
+                        childCount = presentChildren.count(),
                         capacityFactor =
-                            BigDecimal(childrenPresent.sumOf { it.capacityFactor })
+                            BigDecimal(presentChildren.sumOf { it.capacityFactor })
                                 .setScale(2, RoundingMode.HALF_UP)
                                 .toDouble(),
                         staffCountRequired =
-                            BigDecimal(childrenPresent.sumOf { it.capacityFactor } / 7)
+                            BigDecimal(presentChildren.sumOf { it.capacityFactor } / 7)
                                 .setScale(1, RoundingMode.HALF_UP)
+                                .toDouble(),
+                        unknownChildCount = unknownChildren.count(),
+                        unknownChildCapacityFactor =
+                            BigDecimal(unknownChildren.sumOf { it.capacityFactor })
+                                .setScale(2, RoundingMode.HALF_UP)
                                 .toDouble(),
                     )
                 }

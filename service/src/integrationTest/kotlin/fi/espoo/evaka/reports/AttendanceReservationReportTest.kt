@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.children.Group
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.GroupId
@@ -194,6 +195,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -204,6 +207,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -259,6 +264,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 0.88,
                         staffCountRequired = 0.1,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -269,6 +276,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 0.88,
                         staffCountRequired = 0.1,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -322,6 +331,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -332,6 +343,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -342,6 +355,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.0,
                         staffCountRequired = 0.1,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -352,6 +367,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.0,
                         staffCountRequired = 0.1,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -403,6 +420,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 8.75,
                         staffCountRequired = 1.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -413,6 +432,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 8.75,
                         staffCountRequired = 1.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -477,6 +498,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -487,6 +510,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -531,6 +556,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     )
                 }
                 .toList()
@@ -576,6 +603,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     )
                 }
                 .toList()
@@ -585,7 +614,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
-    fun `reservation with no times is ignored`() {
+    fun `reservation with no times is considered as unknown presence`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
             tx.insert(
@@ -608,7 +637,90 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         }
 
         val result = getReport(date, date)
-        val expected = createEmptyReport(date, date)
+        val expected =
+            createEmptyReport(date, date).mapValues { (_, value) ->
+                value.copy(unknownChildCount = 1, unknownChildCapacityFactor = 1.75)
+            }
+        assertThat(result).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `no reservation nor service times is considered as unknown presence`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+        }
+
+        val result = getReport(date, date)
+        val expected =
+            createEmptyReport(date, date).mapValues { (_, value) ->
+                value.copy(unknownChildCount = 1, unknownChildCapacityFactor = 1.75)
+            }
+        assertThat(result).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `unknown presence outside of service times`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insert(
+                DevDailyServiceTimes(
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(date.plusMonths(1), date.plusMonths(2)),
+                )
+            )
+        }
+
+        val result = getReport(date, date)
+        val expected =
+            createEmptyReport(date, date).mapValues { (_, value) ->
+                value.copy(unknownChildCount = 1, unknownChildCapacityFactor = 1.75)
+            }
+        assertThat(result).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `Service times type VARIABLE_TIME produces unknown presence`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insert(
+                DevDailyServiceTimes(
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(date, date),
+                    type = DailyServiceTimesType.VARIABLE_TIME,
+                    regularTimes = null,
+                )
+            )
+        }
+
+        val result = getReport(date, date)
+        val expected =
+            createEmptyReport(date, date).mapValues { (_, value) ->
+                value.copy(unknownChildCount = 1, unknownChildCapacityFactor = 1.75)
+            }
         assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
@@ -649,6 +761,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -659,6 +773,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -714,6 +830,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 8,
                         capacityFactor = 12.5,
                         staffCountRequired = 1.8,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -724,6 +842,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 8,
                         capacityFactor = 12.5,
                         staffCountRequired = 1.8,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -855,6 +975,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 2,
                         capacityFactor = 2.75,
                         staffCountRequired = 0.4,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = group1.id,
@@ -865,6 +987,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 2,
                         capacityFactor = 2.75,
                         staffCountRequired = 0.4,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = group2.id,
@@ -875,6 +999,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = group2.id,
@@ -885,6 +1011,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -942,6 +1070,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -952,6 +1082,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -995,6 +1127,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -1005,6 +1139,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -1085,6 +1221,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -1095,6 +1233,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                 )
             }
@@ -1160,6 +1300,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -1170,6 +1312,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCount = 1,
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
                     ),
                     *createRowsForTimespan(
                             AttendanceReservationReportRow(
@@ -1181,6 +1325,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                                 childCount = 1,
                                 capacityFactor = 1.75,
                                 staffCountRequired = 0.3,
+                                unknownChildCount = 0,
+                                unknownChildCapacityFactor = 0.0,
                             ),
                             HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(8, 0)),
                             HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(16, 0)),
@@ -1224,7 +1370,7 @@ private fun createEmptyReport(
         if (operationDays.contains(time.dayOfWeek)) {
             if (groups.isEmpty()) {
                 times[RowKey(null, time)] =
-                    AttendanceReservationReportRow(null, null, time, 0, 0, 0, 0.0, 0.0)
+                    AttendanceReservationReportRow(null, null, time, 0, 0, 0, 0.0, 0.0, 0, 0.0)
             } else {
                 groups.forEach { group ->
                     times[RowKey(group, time)] =
@@ -1236,6 +1382,8 @@ private fun createEmptyReport(
                             0,
                             0,
                             0.0,
+                            0.0,
+                            0,
                             0.0,
                         )
                 }

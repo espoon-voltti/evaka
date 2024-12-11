@@ -166,6 +166,8 @@ export interface AttendanceReservationReportRow {
   groupId: GroupId | null
   groupName: string | null
   staffCountRequired: number
+  unknownChildCapacityFactor: number
+  unknownChildCount: number
 }
 
 /**

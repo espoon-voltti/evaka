@@ -2208,6 +2208,7 @@ export const fi = {
         childrenMax: 'Lasten maksimimäärä (kertoimella)',
         childrenPresent: 'Lasten lukumäärä',
         children: 'Lasten määrä (kertoimella)',
+        unknownChildren: '+ lapsia ilman varausta',
         utilization: 'Käyttöaste'
       }
     },
