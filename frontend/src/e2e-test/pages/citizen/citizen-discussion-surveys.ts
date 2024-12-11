@@ -23,8 +23,9 @@ export class DiscussionReservationModal extends Element {
   }
 
   assertEventTimes = async (expectedEventTimeIds: string[]) => {
-    const count = await this.findAllByDataQa('discussion-time-duration').count()
-    expect(count).toEqual(expectedEventTimeIds.length)
+    await this.findAllByDataQa('discussion-time-duration').assertCount(
+      expectedEventTimeIds.length
+    )
     for (const et of expectedEventTimeIds) {
       await this.findByDataQa(`radio-${et}`).waitUntilVisible()
     }
