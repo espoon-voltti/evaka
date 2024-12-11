@@ -213,7 +213,7 @@ enum class ScheduledJob(
     ),
     GenerateReplacementInvoices(
         ScheduledJobs::generateReplacementDraftInvoices,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(4, 15))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(4, 15))),
     ),
 }
 
