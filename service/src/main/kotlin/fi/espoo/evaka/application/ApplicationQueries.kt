@@ -54,6 +54,7 @@ enum class ApplicationBasis {
     SIBLING_BASIS,
     ASSISTANCE_NEED,
     CLUB_CARE,
+    CONTINUATION,
     DAYCARE,
     EXTENDED_CARE,
     DUPLICATE_APPLICATION,
@@ -220,6 +221,7 @@ fun Database.Read.fetchApplicationSummaries(
                             }
                         ApplicationBasis.ASSISTANCE_NEED -> assistanceNeeded(true)
                         ApplicationBasis.CLUB_CARE -> PredicateSql { where("was_on_club_care") }
+                        ApplicationBasis.CONTINUATION -> PredicateSql { where("continuation") }
                         ApplicationBasis.DAYCARE ->
                             PredicateSql {
                                 where("(a.document ->> 'wasOnDaycare')::boolean = true")
@@ -447,6 +449,7 @@ fun Database.Read.fetchApplicationSummaries(
             COALESCE(a.document -> 'careDetails' ->> 'assistanceNeeded', a.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as assistanceNeed,
             club_care.was_on_club_care AS was_on_club_care,
             (a.document ->> 'wasOnDaycare')::boolean as wasOnDaycare,
+            continuation_status.continuation,
             COALESCE((a.document ->> 'urgent')::boolean, false) as urgent,
             (SELECT COALESCE(array_length(attachments.attachment_ids, 1), 0)) AS attachmentCount,
             COALESCE((a.document ->> 'extendedCare')::boolean, false) as extendedCare,
@@ -493,6 +496,15 @@ fun Database.Read.fetchApplicationSummaries(
             FROM placement p 
             WHERE p.child_id = a.child_id AND p.type = 'CLUB'::placement_type AND p.start_date <= ${bind(today)}) AS was_on_club_care
         ) club_care ON true
+        JOIN LATERAL (
+            SELECT EXISTS(
+                SELECT FROM placement p 
+                WHERE
+                    p.child_id = a.child_id AND
+                    ${bind(today)} BETWEEN p.start_date AND p.end_date AND
+                    p.unit_id = (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid
+            ) AS continuation
+        ) continuation_status ON true
         LEFT JOIN LATERAL (
             SELECT daycare.id, daycare.name
             FROM daycare
@@ -554,6 +566,7 @@ fun Database.Read.fetchApplicationSummaries(
                     assistanceNeed = column("assistanceNeed"),
                     wasOnClubCare = column("was_on_club_care"),
                     wasOnDaycare = column("wasOnDaycare"),
+                    continuation = column("continuation"),
                     extendedCare = column("extendedCare"),
                     duplicateApplication = column("has_duplicates"),
                     transferApplication = column("transferapplication"),

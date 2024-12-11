@@ -99,6 +99,7 @@ export const applicationBasisColors = {
   ADDITIONAL_INFO: main.m1,
   ASSISTANCE_NEED: accents.a6turquoise,
   CLUB_CARE: accents.a2orangeDark,
+  CONTINUATION: accents.a5orangeLight,
   DAYCARE: status.warning,
   DUPLICATE_APPLICATION: accents.a3emerald,
   EXTENDED_CARE: main.m3,

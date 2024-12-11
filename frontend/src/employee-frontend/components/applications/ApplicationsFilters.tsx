@@ -6,6 +6,7 @@ import React, { Fragment, useContext, useEffect } from 'react'
 
 import { Loading, wrapResult } from 'lib-common/api'
 import {
+  ApplicationBasis,
   ApplicationStatusOption,
   applicationStatusOptions,
   ApplicationTypeToggle
@@ -31,7 +32,6 @@ import {
   ApplicationDateFilter,
   ApplicationDateType,
   ApplicationBasisFilter,
-  ApplicationBasis,
   ApplicationSummaryStatusOptions,
   PreschoolType,
   preschoolTypes,

@@ -285,6 +285,42 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(applicationId_1, summary.data[1].id)
     }
 
+    @Test
+    fun `application summary can be be filtered by children with existing placement to the preferred unit`() {
+        db.transaction {
+            // Active placement
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = now.today().minusMonths(12),
+                    endDate = now.today().plusMonths(6),
+                )
+            )
+
+            // Past placement (not included)
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = now.today().minusMonths(12),
+                    endDate = now.today().minusDays(1),
+                )
+            )
+        }
+
+        val summary =
+            getApplicationSummaries(
+                type = ApplicationTypeToggle.ALL,
+                status = setOf(ApplicationStatusOption.SENT),
+                basis = setOf(ApplicationBasis.CONTINUATION),
+            )
+        assertEquals(1, summary.total)
+        assertEquals(applicationId_1, summary.data[0].id)
+    }
+
     private fun getApplicationSummaries(
         page: Int? = null,
         sortBy: ApplicationSortColumn? = null,

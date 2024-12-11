@@ -60,6 +60,7 @@ data class ApplicationSummary(
     val assistanceNeed: Boolean,
     val wasOnClubCare: Boolean? = null,
     val wasOnDaycare: Boolean? = null,
+    val continuation: Boolean,
     val extendedCare: Boolean,
     val duplicateApplication: Boolean = false,
     val transferApplication: Boolean,

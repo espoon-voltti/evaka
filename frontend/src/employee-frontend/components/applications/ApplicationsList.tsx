@@ -381,6 +381,13 @@ const ApplicationsList = React.memo(function Applications({
                 size="s"
               />
             )}
+            {application.continuation && (
+              <RoundIcon
+                content="="
+                color={applicationBasisColors.CONTINUATION}
+                size="s"
+              />
+            )}
             {application.extendedCare && (
               <RoundIcon
                 content="V"

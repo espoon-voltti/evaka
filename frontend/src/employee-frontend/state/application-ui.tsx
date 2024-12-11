@@ -14,6 +14,7 @@ import React, {
 
 import { Result, Loading } from 'lib-common/api'
 import {
+  ApplicationBasis,
   ApplicationStatusOption,
   ApplicationTypeToggle,
   PagedApplicationSummaries,
@@ -34,7 +35,6 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 
 import {
   ApplicationDateType,
-  ApplicationBasis,
   ApplicationSummaryStatusOptions,
   PreschoolType,
   ApplicationDistinctions
