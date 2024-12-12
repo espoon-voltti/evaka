@@ -28,12 +28,14 @@ const components: Translations = {
   datePicker: {
     placeholder: 'pp.kk.vvvv',
     description:
-      'Kirjoita päivämäärä kenttään muodossa pp.kk.vvvv. Tab-näppäimellä pääset kuukausivalitsimeen.',
+      'Kirjoita päivämäärä kenttään muodossa pp.kk.vvvv. Nuoli alas -näppäimellä pääset kuukausivalitsimeen.',
     validationErrors: {
       validDate: 'Anna muodossa pp.kk.vvvv',
       dateTooEarly: 'Valitse myöhäisempi päivä',
       dateTooLate: 'Valitse aikaisempi päivä'
-    }
+    },
+    open: 'Avaa päivämäärävalitsin',
+    close: 'Sulje päivämäärävalitsin'
   },
   documentTemplates: {
     templateQuestions: {

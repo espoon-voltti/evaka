@@ -6,7 +6,6 @@ import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 import InputField, { InputInfo } from '../../atoms/form/InputField'
 import { useTranslations } from '../../i18n'
@@ -37,27 +36,20 @@ const DateInputField = styled(InputField)`
 `
 
 export default React.memo(function DatePickerInput(props: Props) {
-  const i18n = useTranslations()
   const { locale, useBrowserPicker, ...rest } = props
-  const ariaId = useUniqueId('date-picker-input')
 
   return (
     <>
       {useBrowserPicker ? (
-        <DateInputNative {...rest} locale={locale} ariaId={ariaId} />
+        <DateInputNative locale={locale} {...rest} />
       ) : (
-        <DateInputText {...rest} locale={locale} ariaId={ariaId} />
+        <DateInputText locale={locale} {...rest} />
       )}
-      <HelpTextForScreenReader lang={locale} id={ariaId}>
-        {i18n.datePicker.description}
-      </HelpTextForScreenReader>
     </>
   )
 })
 
-interface InternalProps extends Omit<Props, 'useBrowserPicker'> {
-  ariaId: string
-}
+type InternalProps = Omit<Props, 'useBrowserPicker'>
 
 const DateInputText = React.memo(function DateInputText({
   value,
@@ -69,8 +61,7 @@ const DateInputText = React.memo(function DateInputText({
   disabled,
   'data-qa': dataQa,
   id,
-  required,
-  ariaId
+  required
 }: InternalProps) {
   const i18n = useTranslations()
 
@@ -88,7 +79,7 @@ const DateInputText = React.memo(function DateInputText({
       onChange={handleChange}
       onFocus={onFocus}
       onBlur={onBlur}
-      aria-describedby={ariaId}
+      aria-label={i18n.datePicker.description}
       info={info}
       hideErrorsBeforeTouched={hideErrorsBeforeTouched}
       readonly={disabled}
@@ -112,8 +103,7 @@ const DateInputNative = React.memo(function DateInputNative({
   id,
   required,
   minDate,
-  maxDate,
-  ariaId
+  maxDate
 }: InternalProps) {
   const i18n = useTranslations()
 
@@ -140,7 +130,7 @@ const DateInputNative = React.memo(function DateInputNative({
       onChangeTarget={handleChange}
       onFocus={onFocus}
       onBlur={onBlur}
-      aria-describedby={ariaId}
+      aria-label={i18n.datePicker.description}
       info={info}
       hideErrorsBeforeTouched={hideErrorsBeforeTouched}
       readonly={disabled}
@@ -154,14 +144,3 @@ const DateInputNative = React.memo(function DateInputNative({
     />
   )
 })
-
-const HelpTextForScreenReader = styled.p`
-  border: 0;
-  clip: rect(0 0 0 0);
-  height: 1px;
-  width: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  position: absolute;
-`

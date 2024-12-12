@@ -26,7 +26,9 @@ const translations: Translations = {
       validDate: 'Invalid date',
       dateTooEarly: 'Date too early',
       dateTooLate: 'Date too late'
-    }
+    },
+    open: 'Open date picker',
+    close: 'Close date picker'
   }
 }
 
@@ -38,7 +40,7 @@ describe('DatePicker', () => {
       </TestContextProvider>
     )
     const get = () =>
-      screen.getByRole('textbox', { description: 'Date picker description' })
+      screen.getByRole('textbox', { name: 'Date picker description' })
 
     it('attributes', () => {
       render(

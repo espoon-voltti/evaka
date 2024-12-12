@@ -44,6 +44,7 @@ export default React.memo(function DatePickerDay({
   return (
     <DayPicker
       mode="single"
+      autoFocus
       onDayClick={handleDayClick}
       locale={localeData}
       selected={date?.toSystemTzDate()}
