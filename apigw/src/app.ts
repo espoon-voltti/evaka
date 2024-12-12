@@ -17,6 +17,7 @@ import {
 } from './enduser/suomi-fi-saml.js'
 import { createSamlAdIntegration } from './internal/ad-saml.js'
 import { createDevAdRouter } from './internal/dev-ad-auth.js'
+import { createDevEmployeeSfiRouter } from './internal/dev-sfi-auth.js'
 import { createKeycloakEmployeeIntegration } from './internal/keycloak-employee-saml.js'
 import {
   checkMobileEmployeeIdToken,
@@ -191,7 +192,10 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
 
   let employeeSfiIntegration: SamlIntegration | undefined
   if (config.sfi.type === 'mock') {
-    // TODO
+    router.use(
+      '/employee/auth/sfi',
+      createDevEmployeeSfiRouter(employeeSessions)
+    )
   } else if (config.sfi.type === 'saml') {
     employeeSfiIntegration = createEmployeeSuomiFiIntegration(
       employeeSessions,

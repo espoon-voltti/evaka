@@ -120,6 +120,7 @@ import { StaffAttendancePlanId } from './api-types'
 import { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { VoucherValueDecision } from './api-types'
+import { VtjPersonSummary } from './api-types'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
@@ -1882,6 +1883,25 @@ export async function getStaffAttendances(
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() }
     })
     return json.map(e => deserializeJsonStaffMemberAttendance(e))
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.getVtjPersons
+*/
+export async function getVtjPersons(
+  options?: { mockedTime?: HelsinkiDateTime }
+): Promise<VtjPersonSummary[]> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<VtjPersonSummary[]>>({
+      url: uri`/vtj-person`.toString(),
+      method: 'GET',
+      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() }
+    })
+    return json
   } catch (e) {
     throw new DevApiError(e)
   }
