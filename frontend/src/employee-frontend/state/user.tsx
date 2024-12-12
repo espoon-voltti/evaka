@@ -62,10 +62,10 @@ export const UserContextProvider = React.memo(function UserContextProvider({
   }, [refetch])
 
   useEffect(() => {
-    const eventListener = ((loginStatusEvent: LoginStatusChangeEvent) => {
+    const eventListener = (loginStatusEvent: LoginStatusChangeEvent) => {
       loginStatusEvent.preventDefault()
-      setUnauthorizedApiCallDetected(!loginStatusEvent.loginStatus)
-    }) as EventListener
+      setUnauthorizedApiCallDetected(!loginStatusEvent.detail)
+    }
     window.addEventListener(LoginStatusChangeEvent.name, eventListener)
     return () => {
       window.removeEventListener(LoginStatusChangeEvent.name, eventListener)
