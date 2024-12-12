@@ -18,7 +18,7 @@ export function createDevEmployeeSfiRouter(
     sessions,
     root: '/employee',
     loginFormHandler: async (req, res) => {
-      const defaultSsn = '070644-937X'
+      const defaultSsn = '060195-966B'
 
       const persons = _.orderBy(
         await getVtjPersons(),

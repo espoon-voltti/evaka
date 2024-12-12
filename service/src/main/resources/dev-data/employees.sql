@@ -16,6 +16,8 @@ INSERT INTO employee (id, first_name, last_name, email, external_id, active) VAL
     ('00000000-0000-4000-8005-000000000000', 'Kaisa', 'Kasvattaja', 'kaisa.kasvattaja@espoo.fi', 'espoo-ad:00000000-0000-4000-8005-000000000000', TRUE),
     ('00000000-0000-4000-8005-000000000001', 'Kalle', 'Kasvattaja', 'kalle.kasvattaja@espoo.fi', 'espoo-ad:00000000-0000-4000-8005-000000000001', TRUE),
     ('00000000-0000-4000-8006-000000000000', 'Erkki', 'Erityisopettaja', 'erkki.erityisopettaja@espoo.fi', 'espoo-ad:00000000-0000-4000-8006-000000000000', TRUE);
+INSERT INTO employee (id, first_name, last_name, social_security_number, active) VALUES
+    ('fdbf9276-c5a9-4092-87f8-6a27521d940a', 'Hannele', 'Finström', '060195-966B', true);
 
 INSERT INTO evaka_user (id, type, employee_id, name)
 SELECT id, 'EMPLOYEE', id, last_name || ' ' || first_name
@@ -27,7 +29,8 @@ INSERT INTO daycare_acl (daycare_id, employee_id, role) VALUES
     ('2dcf0fc0-788e-11e9-bd12-db78e886e666', '00000000-0000-4000-8006-000000000000', 'SPECIAL_EDUCATION_TEACHER'),
     ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-4000-8004-000000000001', 'UNIT_SUPERVISOR'),
     ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-4000-8005-000000000001', 'STAFF'),
-    ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-4000-8006-000000000000', 'SPECIAL_EDUCATION_TEACHER');
+    ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-4000-8006-000000000000', 'SPECIAL_EDUCATION_TEACHER'),
+    ('2dd6e5f6-788e-11e9-bd72-9f1cfe999999', 'fdbf9276-c5a9-4092-87f8-6a27521d940a', 'UNIT_SUPERVISOR');
 
 INSERT INTO message_account (employee_id, type)
 SELECT id, 'PERSONAL'::message_account_type AS type
