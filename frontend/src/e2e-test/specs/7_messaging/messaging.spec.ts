@@ -715,50 +715,6 @@ describe('Sending and receiving messages', () => {
         )
       })
 
-      test('Citizen session is kept alive as long as user keeps typing', async () => {
-        await openSupervisorPage(mockedDateAt10)
-        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
-        const messageEditor = await messagesPage.openMessageEditor()
-        await messageEditor.sendNewMessage(defaultMessage)
-        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
-
-        await openCitizen(mockedDateAt11)
-
-        await citizenPage.goto(config.enduserMessagesUrl)
-        await citizenPage.page.evaluate(() => {
-          if (window.evaka) window.evaka.keepSessionAliveThrottleTime = 300 // Set to 300ms for tests
-        })
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-        await citizenMessagesPage.assertThreadContent(defaultMessage)
-
-        const initialExpiry = await citizenMessagesPage.getSessionExpiry()
-
-        await citizenMessagesPage.startReplyToFirstThread()
-
-        const slowTypedText =
-          'Olen aika hidas kirjoittamaan näitä viestejä, mutta yritän parhaani: Lapseni ovat sitä ja tätä...'
-
-        const msDelayPerCharToTypeSlowly = 1000 / slowTypedText.length
-        const authStatusRequests: string[] = []
-        citizenPage.page.on('request', (request) => {
-          if (request.url().includes('/api/application/auth/status')) {
-            authStatusRequests.push(request.url())
-          }
-        })
-        // typing this takes so long that session keepalive mechanism should renew the session
-        await citizenMessagesPage.messageReplyContent.locator.pressSequentially(
-          slowTypedText,
-          {
-            delay: msDelayPerCharToTypeSlowly
-          }
-        )
-
-        const finalExpiry = await citizenMessagesPage.getSessionExpiry()
-        expect(authStatusRequests.length).toBeGreaterThanOrEqual(3)
-        expect(finalExpiry).toBeGreaterThan(initialExpiry + 0.3)
-      })
-
       describe('Messages can be deleted / archived', () => {
         test('Unit supervisor sends message and citizen deletes the message', async () => {
           await openSupervisorPage(mockedDateAt10)
@@ -798,6 +754,45 @@ describe('Sending and receiving messages', () => {
       })
     }
   )
+
+  describe('Session keepalive while typing', () => {
+    test('Citizen session is kept alive as long as user keeps typing', async () => {
+      citizenPage = await Page.open({
+        mockedTime: mockedDateAt10
+      })
+      await enduserLoginWeak(citizenPage, account)
+      await citizenPage.goto(config.enduserMessagesUrl)
+      await citizenPage.page.evaluate(() => {
+        if (window.evaka) window.evaka.keepSessionAliveThrottleTime = 300
+      })
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      const editor = await citizenMessagesPage.createNewMessage()
+      const initialExpiry = await citizenMessagesPage.getSessionExpiry()
+
+      const slowTypedText =
+        'Olen aika hidas kirjoittamaan näitä viestejä, mutta yritän parhaani: Lapseni ovat sitä ja tätä...'
+      const msDelayPerCharToTypeSlowly = 1200 / slowTypedText.length
+      const authStatusRequests: string[] = []
+      citizenPage.page.on('request', (request) => {
+        if (request.url().includes('/api/application/auth/status')) {
+          authStatusRequests.push(request.url())
+        }
+      })
+
+      await editor.title.locator.pressSequentially('Asiaa lapsista', {
+        delay: msDelayPerCharToTypeSlowly
+      })
+      await editor.content.locator.pressSequentially(slowTypedText, {
+        delay: msDelayPerCharToTypeSlowly
+      })
+
+      const finalExpiry = await citizenMessagesPage.getSessionExpiry()
+      // session expiry should be at least 0.3s longer than initially
+      expect(finalExpiry).toBeGreaterThan(initialExpiry + 0.3)
+      // slow typing should have caused at least 3 auth status requests to keep session alive
+      expect(authStatusRequests.length).toBeGreaterThanOrEqual(3)
+    })
+  })
 
   describe('Drafts', () => {
     test('A draft is saved correctly', async () => {
