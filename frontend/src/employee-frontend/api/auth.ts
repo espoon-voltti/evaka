@@ -30,7 +30,7 @@ const redirectUri = (() => {
   }${searchParams}${window.location.hash}`
 })()
 
-export function getLoginUrl(type: 'ad' | 'keycloak' = 'ad') {
+export function getLoginUrl(type: 'ad' | 'keycloak' | 'sfi' = 'ad') {
   const relayState = encodeURIComponent(redirectUri)
   return `/api/employee/auth/${type}/login?RelayState=${relayState}`
 }

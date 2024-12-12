@@ -284,6 +284,10 @@ interface BaseFeatureFlags {
    * Enable support for citizen weak login
    */
   weakLogin?: boolean
+  /**
+   * Enable support for employee Suomi.fi login
+   */
+  employeeSfiLogin?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

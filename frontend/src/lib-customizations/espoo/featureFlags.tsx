@@ -45,7 +45,8 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    weakLogin: true
+    weakLogin: true,
+    employeeSfiLogin: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -81,7 +82,8 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    weakLogin: true
+    weakLogin: true,
+    employeeSfiLogin: true
   },
   prod: {
     environmentLabel: null,
@@ -116,7 +118,8 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
     multiSelectDeparture: false,
-    weakLogin: false
+    weakLogin: false,
+    employeeSfiLogin: false
   }
 }
 
