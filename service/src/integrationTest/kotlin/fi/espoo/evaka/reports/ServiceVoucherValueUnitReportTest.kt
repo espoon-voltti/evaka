@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
@@ -20,18 +19,19 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reports.VoucherReportRowType.CORRECTION
 import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
+import fi.espoo.evaka.snDefaultPartDayDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -39,6 +39,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toValueDecisionServiceNeed
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -51,6 +52,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired
+    private lateinit var serviceVoucherValueReportController: ServiceVoucherValueReportController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @BeforeEach
@@ -1103,102 +1106,88 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         marReport.assertContainsRow(CORRECTION, febFirst, febFirst.toEndOfMonth(), 86000, 0, 86000)
     }
 
-    private fun List<ServiceVoucherValueRow>.assertContainsRow(
-        type: VoucherReportRowType,
-        periodStart: LocalDate,
-        periodEnd: LocalDate,
-        value: Int,
-        finalCoPayment: Int,
-        realizedValue: Int,
-    ) {
-        val row =
-            this.find {
-                it.type == type &&
-                    it.realizedPeriod.start == periodStart &&
-                    it.realizedPeriod.end == periodEnd
-            }
-        assertNotNull(row)
-        assertEquals(value, row.serviceVoucherValue)
-        assertEquals(finalCoPayment, row.serviceVoucherFinalCoPayment)
-        assertEquals(realizedValue, row.realizedAmount)
-    }
-
-    private fun LocalDate.toEndOfMonth() = this.plusMonths(1).withDayOfMonth(1).minusDays(1)
-
-    private val adminUser =
-        AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
-
-    private fun getUnitReport(
-        unitId: DaycareId,
-        year: Int,
-        month: Int,
-    ): List<ServiceVoucherValueRow> {
-        val (_, response, data) =
-            http
-                .get(
-                    "/employee/reports/service-voucher-value/units/$unitId",
-                    listOf("year" to year, "month" to month),
-                )
-                .asUser(adminUser)
-                .responseObject<ServiceVoucherValueReportController.ServiceVoucherUnitReport>(
-                    jsonMapper
-                )
-        assertEquals(200, response.statusCode)
-
-        return data.get().rows
-    }
-
-    private val financeUser =
-        AuthenticatedUser.Employee(
-            id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN),
+    @Test
+    fun `realized base amount is calculated correctly`() {
+        // Base value 87000
+        createVoucherDecision(
+            janFirst,
+            unitId = testDaycare.id,
+            serviceNeedOption = snDefaultPartDayDaycare, // voucher value coefficient 0.60
+            assistanceNeedCoefficient = BigDecimal("1.50"),
+            value = 78300, // 87000 * 0.60 * 1.50 = 78300
+            coPayment = 10000,
         )
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
 
-    private fun createVoucherDecision(
-        validFrom: LocalDate,
-        unitId: DaycareId,
-        value: Int,
-        coPayment: Int,
-        approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
-        alwaysUseDaycareFinanceDecisionHandler: Boolean = false,
-        feeAlterations: List<FeeAlterationWithEffect> = listOf(),
-        validTo: LocalDate = validFrom.plusYears(1),
-    ): VoucherValueDecision {
-        val id =
-            db.transaction {
-                val decision =
-                    createVoucherValueDecisionFixture(
-                        status = VoucherValueDecisionStatus.DRAFT,
-                        validFrom = validFrom,
-                        validTo = validTo,
-                        headOfFamilyId = testAdult_1.id,
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        unitId = unitId,
-                        value = value,
-                        coPayment = coPayment,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
-                        feeAlterations = feeAlterations,
-                    )
-                it.upsertValueDecisions(listOf(decision))
+        assertEquals(1, janReport.size)
+        val row =
+            janReport.assertContainsRow(
+                ORIGINAL,
+                janFirst,
+                janFirst.toEndOfMonth(),
+                78300,
+                10000,
+                68300,
+            )
+        assertEquals(
+            45533, // 87000 * 0.60 * (68300/78300) = 45533.333...
+            row.realizedAmountBeforeAssistanceNeed,
+        )
+    }
 
-                sendVoucherValueDecisions(
-                    tx = it,
-                    asyncJobRunner = asyncJobRunner,
-                    user = financeUser,
-                    evakaEnv = evakaEnv,
-                    now = approvedAt,
-                    ids = listOf(decision.id),
-                    decisionHandlerId = null,
-                    alwaysUseDaycareFinanceDecisionHandler,
-                )
-                decision.id
-            }
+    @Test
+    fun `realized base amount is calculated correctly when co-payment is zero`() {
+        // Base value 87000
+        createVoucherDecision(
+            janFirst,
+            unitId = testDaycare.id,
+            serviceNeedOption = snDefaultPartDayDaycare, // voucher value coefficient 0.60
+            assistanceNeedCoefficient = BigDecimal("1.50"),
+            value = 78300, // 87000 * 0.60 * 1.50 = 78300
+            coPayment = 0,
+        )
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(1, janReport.size)
+        val row =
+            janReport.assertContainsRow(
+                ORIGINAL,
+                janFirst,
+                janFirst.toEndOfMonth(),
+                78300,
+                0,
+                78300,
+            )
+        assertEquals(
+            52200, // 87000 * 0.60 = 52200
+            row.realizedAmountBeforeAssistanceNeed,
+        )
+    }
 
-        return db.read { it.getValueDecisionsByIds(listOf(id)).first() }
+    @Test
+    fun `realized base amount equals realized amount when assistance need coefficient is 1`() {
+        // Base value 87000
+        createVoucherDecision(
+            janFirst,
+            unitId = testDaycare.id,
+            serviceNeedOption = snDefaultPartDayDaycare, // voucher value coefficient 0.60
+            assistanceNeedCoefficient = BigDecimal("1.00"),
+            value = 52200, // 87000 * 0.60 = 52200
+            coPayment = 10000,
+        )
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+
+        assertEquals(1, janReport.size)
+        val row =
+            janReport.assertContainsRow(
+                ORIGINAL,
+                janFirst,
+                janFirst.toEndOfMonth(),
+                52200,
+                10000,
+                42200,
+            )
+        assertEquals(42200, row.realizedAmountBeforeAssistanceNeed)
     }
 
     @Test
@@ -1397,5 +1386,103 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             finalCoPayment = 0,
             realizedValue = 53927,
         )
+    }
+
+    private fun List<ServiceVoucherValueRow>.assertContainsRow(
+        type: VoucherReportRowType,
+        periodStart: LocalDate,
+        periodEnd: LocalDate,
+        value: Int,
+        finalCoPayment: Int,
+        realizedValue: Int,
+    ): ServiceVoucherValueRow {
+        val row =
+            this.find {
+                it.type == type &&
+                    it.realizedPeriod.start == periodStart &&
+                    it.realizedPeriod.end == periodEnd
+            }
+        assertNotNull(row)
+        assertEquals(value, row.serviceVoucherValue)
+        assertEquals(finalCoPayment, row.serviceVoucherFinalCoPayment)
+        assertEquals(realizedValue, row.realizedAmount)
+        return row
+    }
+
+    private fun LocalDate.toEndOfMonth() = this.plusMonths(1).withDayOfMonth(1).minusDays(1)
+
+    private val adminUser =
+        AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
+
+    private fun getUnitReport(
+        unitId: DaycareId,
+        year: Int,
+        month: Int,
+    ): List<ServiceVoucherValueRow> =
+        serviceVoucherValueReportController
+            .getServiceVoucherReportForUnit(
+                dbInstance(),
+                adminUser,
+                RealEvakaClock(),
+                unitId,
+                year,
+                month,
+            )
+            .rows
+
+    private val financeUser =
+        AuthenticatedUser.Employee(
+            id = testDecisionMaker_1.id,
+            roles = setOf(UserRole.FINANCE_ADMIN),
+        )
+
+    private fun createVoucherDecision(
+        validFrom: LocalDate,
+        unitId: DaycareId,
+        value: Int,
+        coPayment: Int,
+        approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
+        alwaysUseDaycareFinanceDecisionHandler: Boolean = false,
+        feeAlterations: List<FeeAlterationWithEffect> = listOf(),
+        validTo: LocalDate = validFrom.plusYears(1),
+        serviceNeedOption: ServiceNeedOption = snDefaultDaycare,
+        assistanceNeedCoefficient: BigDecimal = BigDecimal("1.00"),
+    ): VoucherValueDecision {
+        val id =
+            db.transaction {
+                val decision =
+                    createVoucherValueDecisionFixture(
+                        status = VoucherValueDecisionStatus.DRAFT,
+                        validFrom = validFrom,
+                        validTo = validTo,
+                        headOfFamilyId = testAdult_1.id,
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        unitId = unitId,
+                        value = value,
+                        coPayment = coPayment,
+                        placementType = PlacementType.DAYCARE,
+                        assistanceNeedCoefficient = assistanceNeedCoefficient,
+                        serviceNeed = serviceNeedOption.toValueDecisionServiceNeed(),
+                        feeAlterations = feeAlterations,
+                    )
+                it.upsertValueDecisions(listOf(decision))
+
+                sendVoucherValueDecisions(
+                    tx = it,
+                    asyncJobRunner = asyncJobRunner,
+                    user = financeUser,
+                    evakaEnv = evakaEnv,
+                    now = approvedAt,
+                    ids = listOf(decision.id),
+                    decisionHandlerId = null,
+                    alwaysUseDaycareFinanceDecisionHandler,
+                )
+                decision.id
+            }
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        return db.read { it.getValueDecisionsByIds(listOf(id)).first() }
     }
 }

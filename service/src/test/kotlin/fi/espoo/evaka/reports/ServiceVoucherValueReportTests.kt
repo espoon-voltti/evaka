@@ -202,6 +202,7 @@ class ServiceVoucherValueReportTests {
             unitId = unitId,
             realizedPeriod = range,
             type = type,
+            realizedAmountBeforeAssistanceNeed = amount,
             realizedAmount = amount,
             // irrelevant fields
             childFirstName = "",

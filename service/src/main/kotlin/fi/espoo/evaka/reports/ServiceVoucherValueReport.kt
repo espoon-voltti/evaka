@@ -174,6 +174,8 @@ fun getServiceVoucherReport(
                 ServiceVoucherValueUnitAggregate(
                     unit = unit,
                     childCount = rows.map { it.childId }.distinct().size,
+                    monthlyPaymentSumBeforeAssistanceNeed =
+                        rows.sumOf { row -> row.realizedAmountBeforeAssistanceNeed },
                     monthlyPaymentSum = rows.sumOf { row -> row.realizedAmount },
                 )
             }
@@ -184,6 +186,7 @@ fun getServiceVoucherReport(
 data class ServiceVoucherValueUnitAggregate(
     val unit: UnitData,
     val childCount: Int,
+    val monthlyPaymentSumBeforeAssistanceNeed: Int,
     val monthlyPaymentSum: Int,
 ) {
     data class UnitData(
@@ -219,6 +222,7 @@ data class ServiceVoucherValueRow(
     val serviceVoucherFinalCoPayment: Int,
     val serviceNeedDescription: String,
     val assistanceNeedCoefficient: BigDecimal,
+    val realizedAmountBeforeAssistanceNeed: Int,
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
@@ -460,6 +464,7 @@ SELECT
     decision.final_co_payment AS service_voucher_final_co_payment,
     decision.service_need_voucher_value_description_fi AS service_need_description,
     decision.assistance_need_coefficient AS assistance_need_coefficient,
+    round(decision.service_need_voucher_value_coefficient * decision.base_value * (row.realized_amount::numeric(16, 8) / decision.voucher_value::numeric(16, 8))) AS realized_amount_before_assistance_need,
     row.realized_amount,
     row.realized_period,
     (CASE
@@ -555,6 +560,7 @@ SELECT
     decision.final_co_payment AS service_voucher_final_co_payment,
     decision.service_need_voucher_value_description_fi AS service_need_description,
     decision.assistance_need_coefficient AS assistance_need_coefficient,
+    round(decision.service_need_voucher_value_coefficient * decision.base_value * (sn_decision.realized_amount::numeric(16, 8) / decision.voucher_value)) AS realized_amount_before_assistance_need,
     sn_decision.realized_amount,
     sn_decision.realized_period,
     upper(sn_decision.realized_period) - lower(sn_decision.realized_period) AS number_of_days,

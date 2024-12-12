@@ -25,6 +25,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import { faLockAlt, faSearch } from 'lib-icons'
 
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -139,13 +140,28 @@ export default React.memo(function VoucherServiceProviders() {
           .filter(({ unit }) =>
             unit.name.toLowerCase().includes(unitFilter.toLowerCase())
           )
-          .map(({ unit, childCount, monthlyPaymentSum }) => ({
-            unitId: unit.id,
-            unitName: unit.name,
-            areaName: unit.areaName,
-            childCount: childCount,
-            sum: formatCents(monthlyPaymentSum, true)
-          }))
+          .map(
+            ({
+              unit,
+              childCount,
+              monthlyPaymentSumBeforeAssistanceNeed,
+              monthlyPaymentSum
+            }) => ({
+              unitId: unit.id,
+              unitName: unit.name,
+              areaName: unit.areaName,
+              childCount: childCount,
+              sumBeforeAssistanceNeed: formatCents(
+                monthlyPaymentSumBeforeAssistanceNeed,
+                true
+              ),
+              assistanceNeedSum: formatCents(
+                monthlyPaymentSum - monthlyPaymentSumBeforeAssistanceNeed,
+                true
+              ),
+              sum: formatCents(monthlyPaymentSum, true)
+            })
+          )
           .sort((l, r) => l.unitName.localeCompare(r.unitName, 'fi'))
       ),
     [report, unitFilter]
@@ -243,6 +259,22 @@ export default React.memo(function VoucherServiceProviders() {
                   label: i18n.reports.voucherServiceProviders.childCount,
                   key: 'childCount'
                 },
+                ...(featureFlags.voucherValueSeparation
+                  ? [
+                      {
+                        label:
+                          i18n.reports.voucherServiceProviders
+                            .sumBeforeAssistanceNeed,
+                        key: 'sumBeforeAssistanceNeed' as const
+                      },
+                      {
+                        label:
+                          i18n.reports.voucherServiceProviders
+                            .assistanceNeedSum,
+                        key: 'assistanceNeedSum' as const
+                      }
+                    ]
+                  : []),
                 {
                   label: i18n.reports.voucherServiceProviders.unitVoucherSum,
                   key: 'sum'
@@ -262,6 +294,19 @@ export default React.memo(function VoucherServiceProviders() {
                   <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.common.unitName}</Th>
                   <Th>{i18n.reports.voucherServiceProviders.childCount}</Th>
+                  {featureFlags.voucherValueSeparation && (
+                    <>
+                      <Th>
+                        {
+                          i18n.reports.voucherServiceProviders
+                            .sumBeforeAssistanceNeed
+                        }
+                      </Th>
+                      <Th>
+                        {i18n.reports.voucherServiceProviders.assistanceNeedSum}
+                      </Th>
+                    </>
+                  )}
                   <Th>{i18n.reports.voucherServiceProviders.unitVoucherSum}</Th>
                 </Tr>
               </Thead>
@@ -282,6 +327,12 @@ export default React.memo(function VoucherServiceProviders() {
                       </Link>
                     </StyledTd>
                     <StyledTd data-qa="child-count">{row.childCount}</StyledTd>
+                    {featureFlags.voucherValueSeparation && (
+                      <>
+                        <StyledTd>{row.sumBeforeAssistanceNeed}</StyledTd>
+                        <StyledTd>{row.assistanceNeedSum}</StyledTd>
+                      </>
+                    )}
                     <StyledTd data-qa="child-sum">{row.sum}</StyledTd>
                   </Tr>
                 ))}

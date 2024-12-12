@@ -202,6 +202,12 @@ interface BaseFeatureFlags {
   voucherUnitPayments: boolean
 
   /**
+   * Whether to show voucher value sums before assistance need factor and the effect of
+   * assistance need factor as separate columns in voucher value report.
+   */
+  voucherValueSeparation: boolean
+
+  /**
    * Enable language selection for assistance need decisions
    */
   assistanceNeedDecisionsLanguageSelect: boolean

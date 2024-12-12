@@ -43,6 +43,7 @@ import {
 import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import { faHome, faLockAlt } from 'lib-icons'
 
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -274,6 +275,14 @@ export default React.memo(function VoucherServiceProviderUnit() {
                       r.serviceVoucherFinalCoPayment,
                       true
                     ),
+                    realizedAmountBeforeAssistanceNeed: formatCents(
+                      r.realizedAmountBeforeAssistanceNeed,
+                      true
+                    ),
+                    realizedAssistanceNeedAmount: formatCents(
+                      r.realizedAmount - r.realizedAmountBeforeAssistanceNeed,
+                      true
+                    ),
                     realizedAmount: formatCents(r.realizedAmount, true)
                   })),
                   {
@@ -288,6 +297,8 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     assistanceNeedCapacityFactor: null,
                     serviceVoucherValue: null,
                     serviceVoucherFinalCoPayment: null,
+                    realizedAmountBeforeAssistanceNeed: null,
+                    realizedAssistanceNeedAmount: null,
                     realizedAmount: formatCents(
                       sortedReport.value.voucherTotal,
                       true
@@ -346,6 +357,22 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         .serviceVoucherFinalCoPayment,
                     key: 'serviceVoucherFinalCoPayment'
                   },
+                  ...(featureFlags.voucherValueSeparation
+                    ? [
+                        {
+                          label:
+                            i18n.reports.voucherServiceProviderUnit
+                              .serviceVoucherRealizedValueBeforeAssistanceNeed,
+                          key: 'realizedAmountBeforeAssistanceNeed' as const
+                        },
+                        {
+                          label:
+                            i18n.reports.voucherServiceProviderUnit
+                              .serviceVoucherRealizedAssistanceNeedValue,
+                          key: 'realizedAssistanceNeedAmount' as const
+                        }
+                      ]
+                    : []),
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit
@@ -392,6 +419,22 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         .serviceVoucherFinalCoPayment
                     }
                   </StyledTh>
+                  {featureFlags.voucherValueSeparation && (
+                    <>
+                      <StyledTh>
+                        {
+                          i18n.reports.voucherServiceProviderUnit
+                            .serviceVoucherRealizedValueBeforeAssistanceNeed
+                        }
+                      </StyledTh>
+                      <StyledTh>
+                        {
+                          i18n.reports.voucherServiceProviderUnit
+                            .serviceVoucherRealizedAssistanceNeedValue
+                        }
+                      </StyledTh>
+                    </>
+                  )}
                   <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
@@ -465,6 +508,23 @@ export default React.memo(function VoucherServiceProviderUnit() {
                       <Td data-qa="co-payment">
                         {formatCents(row.serviceVoucherFinalCoPayment, true)}
                       </Td>
+                      {featureFlags.voucherValueSeparation && (
+                        <>
+                          <Td>
+                            {formatCents(
+                              row.realizedAmountBeforeAssistanceNeed,
+                              true
+                            )}
+                          </Td>
+                          <Td>
+                            {formatCents(
+                              row.realizedAmount -
+                                row.realizedAmountBeforeAssistanceNeed,
+                              true
+                            )}
+                          </Td>
+                        </>
+                      )}
                       <Td data-qa="realized-amount">
                         {formatCents(row.realizedAmount, true)}
                       </Td>
