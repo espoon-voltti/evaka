@@ -313,12 +313,7 @@ WHERE id = ${bind(testDaycare.id)}
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
         val invalidRoleLists =
-            listOf(
-                setOf(UserRole.UNIT_SUPERVISOR),
-                setOf(UserRole.FINANCE_ADMIN),
-                setOf(UserRole.END_USER),
-                setOf(),
-            )
+            listOf(setOf(UserRole.UNIT_SUPERVISOR), setOf(UserRole.FINANCE_ADMIN), setOf())
         invalidRoleLists.forEach { roles ->
             assertThrows<Forbidden> {
                 applicationController.getDecisionDrafts(

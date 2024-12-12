@@ -4823,11 +4823,7 @@ export const fi = {
       SPECIAL_EDUCATION_TEACHER: 'Erityisopettaja',
       EARLY_CHILDHOOD_EDUCATION_SECRETARY: 'Varhaiskasvatussihteeri',
       STAFF: 'Henkilökunta',
-      GROUP_STAFF: 'Ryhmän henkilökunta',
-      UNIT_SUPERVISOR: 'Johtaja',
-      MOBILE: 'Mobiili',
-      END_USER: 'Kuntalainen',
-      CITIZEN_WEAK: 'Kuntalainen (heikko)'
+      UNIT_SUPERVISOR: 'Johtaja'
     }
   },
   welcomePage: {

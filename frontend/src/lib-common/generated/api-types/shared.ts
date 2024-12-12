@@ -265,8 +265,6 @@ export interface Translatable {
 * Generated from fi.espoo.evaka.shared.auth.UserRole
 */
 export type UserRole =
-  | 'END_USER'
-  | 'CITIZEN_WEAK'
   | 'ADMIN'
   | 'REPORT_VIEWER'
   | 'DIRECTOR'
@@ -278,8 +276,6 @@ export type UserRole =
   | 'STAFF'
   | 'SPECIAL_EDUCATION_TEACHER'
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-  | 'MOBILE'
-  | 'GROUP_STAFF'
 
 export type VoucherValueDecisionId = string
 
