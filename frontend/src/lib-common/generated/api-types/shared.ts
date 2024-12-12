@@ -284,6 +284,8 @@ export type UserRole =
 
 export type VoucherValueDecisionId = string
 
+export type ChildId = PersonId
+
 
 export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {
   return {

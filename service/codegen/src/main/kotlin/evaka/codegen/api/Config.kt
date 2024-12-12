@@ -125,6 +125,8 @@ val lenientIdTypes =
         DatabaseTable.VoucherValueDecision::class,
     )
 
+val idTypeAliases = mapOf("PersonId" to listOf("ChildId"))
+
 val defaultMetadata =
     TypeMetadata(
         Byte::class to TsPlain(type = "number"),
