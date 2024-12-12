@@ -20,6 +20,7 @@ import {
   getFuturePreschoolersUnitsReport,
   getHolidayPeriodAttendanceReport,
   getIncompleteIncomeReport,
+  getInvoiceReport,
   getMealReportByUnit,
   getMissingHeadOfFamilyReport,
   getNonSsnChildrenReportRows,
@@ -70,6 +71,7 @@ const queryKeys = createQueryKeys('reports', {
     'familyContacts',
     filters
   ],
+  invoices: (filters: Arg0<typeof getInvoiceReport>) => ['invoices', filters],
   missingHeadOfFamily: (filters: Arg0<typeof getMissingHeadOfFamilyReport>) => [
     'missingHeadOfFamily',
     filters
@@ -149,6 +151,11 @@ export const exceededServiceNeedsReportRowsQuery = query({
 export const familyContactsReportQuery = query({
   api: getFamilyContactsReport,
   queryKey: queryKeys.familyContacts
+})
+
+export const invoicesReportQuery = query({
+  api: getInvoiceReport,
+  queryKey: queryKeys.invoices
 })
 
 export const missingHeadOfFamilyReportQuery = query({

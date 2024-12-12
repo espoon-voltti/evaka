@@ -21,6 +21,7 @@ import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import java.time.LocalDate
+import java.time.YearMonth
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -49,11 +50,11 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `simple case of three invoices`() {
-        val date = LocalDate.of(2019, 1, 1)
-        insertInvoices(date)
+        val yearMonth = YearMonth.of(2019, 1)
+        insertInvoices(yearMonth.atDay(1))
 
         getAndAssert(
-            date,
+            yearMonth,
             InvoiceReport(
                 reportRows =
                     listOf(
@@ -81,13 +82,13 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val testUser =
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
 
-    private fun getAndAssert(date: LocalDate, expected: InvoiceReport) {
+    private fun getAndAssert(yearMonth: YearMonth, expected: InvoiceReport) {
         val result =
             invoiceReportController.getInvoiceReport(
                 dbInstance(),
                 testUser,
                 MockEvakaClock(2024, 10, 31, 12, 0, 0),
-                date,
+                yearMonth,
             )
         assertEquals(expected, result)
     }

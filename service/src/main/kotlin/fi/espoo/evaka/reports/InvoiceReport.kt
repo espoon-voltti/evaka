@@ -15,8 +15,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import java.time.LocalDate
-import org.springframework.format.annotation.DateTimeFormat
+import java.time.YearMonth
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -28,7 +27,7 @@ class InvoiceReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam yearMonth: YearMonth,
     ): InvoiceReport {
         return db.connect { dbc ->
                 dbc.read {
@@ -39,12 +38,12 @@ class InvoiceReportController(private val accessControl: AccessControl) {
                         Action.Global.READ_INVOICE_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getInvoiceReportWithRows(FiniteDateRange.ofMonth(date))
+                    it.getInvoiceReportWithRows(FiniteDateRange.ofMonth(yearMonth))
                 }
             }
             .also {
                 Audit.InvoicesReportRead.log(
-                    meta = mapOf("date" to date, "count" to it.reportRows.size)
+                    meta = mapOf("yearMonth" to yearMonth, "count" to it.reportRows.size)
                 )
             }
     }

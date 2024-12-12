@@ -127,7 +127,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `invoice report returns http 200`() {
-        assertOkResponse(http.get("/employee/reports/invoices", listOf("date" to "2020-08-01")))
+        assertOkResponse(http.get("/employee/reports/invoices", listOf("yearMonth" to "2020-08")))
     }
 
     @Test
