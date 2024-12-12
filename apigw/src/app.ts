@@ -316,7 +316,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   )
   router.all('/citizen/*', citizenSessions.requireAuthentication, citizenProxy)
 
-  const internalSessions = sessionSupport<'employee-mobile'>(
+  const internalSessions = sessionSupport(
     'employee-mobile',
     redisClient,
     config.employee
