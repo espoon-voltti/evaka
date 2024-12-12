@@ -1803,7 +1803,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson(),
         ),
-        CREATE_REPLACEMENT_DRAFT_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        CREATE_REPLACEMENT_DRAFT_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         DELETE(HasGlobalRole(ADMIN)),
         DOWNLOAD_ADDRESS_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
         DUPLICATE(HasGlobalRole(ADMIN)),

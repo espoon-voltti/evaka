@@ -347,6 +347,10 @@ class InvoiceController(
         @PathVariable invoiceId: InvoiceId,
         @RequestBody body: MarkReplacementDraftSentRequest,
     ) {
+        if (body.reason == InvoiceReplacementReason.OTHER && body.notes.isBlank()) {
+            throw BadRequest("Notes are required when reason is OTHER")
+        }
+
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(

@@ -6,8 +6,9 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { string } from 'lib-common/form/fields'
-import { object, oneOf, required } from 'lib-common/form/form'
+import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { FieldErrors } from 'lib-common/form/types'
 import {
   InvoiceDetailedResponse,
   InvoiceReplacementReason,
@@ -26,10 +27,18 @@ import { H3, Label, P } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { markReplacementDraftSentMutation } from '../invoices/queries'
 
-const replacementDraftForm = object({
-  reason: required(oneOf<InvoiceReplacementReason>()),
-  notes: string()
-})
+const replacementDraftForm = validated(
+  object({
+    reason: required(oneOf<InvoiceReplacementReason>()),
+    notes: string()
+  }),
+  (output): FieldErrors<'required'> | undefined => {
+    if (output.reason === 'OTHER' && !output.notes) {
+      return { notes: 'required' }
+    }
+    return undefined
+  }
+)
 
 export function ReplacementDraftForm({
   invoiceResponse
