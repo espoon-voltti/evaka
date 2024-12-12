@@ -140,7 +140,7 @@ export interface EmployeeFeatures {
   units: boolean
 }
 
-export type EmployeeId = string
+export type EmployeeId = Id<'Employee'>
 
 export type EvakaUserId = string
 

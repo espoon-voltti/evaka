@@ -15,7 +15,7 @@ import {
   DaycareGroupResponse
 } from 'lib-common/generated/api-types/daycare'
 import { Employee, TemporaryEmployee } from 'lib-common/generated/api-types/pis'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -45,7 +45,7 @@ const addFullAclForRoleResult = wrapResult(addFullAclForRole)
 
 interface EmployeeOption {
   label: string
-  value: string
+  value: EmployeeId
 }
 
 type DaycareAclAdditionFormState = {

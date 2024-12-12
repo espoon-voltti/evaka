@@ -37,7 +37,11 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  ApplicationId,
+  DaycareId,
+  EmployeeId
+} from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid, randomId } from 'lib-common/id-type'
@@ -336,7 +340,7 @@ export class Fixture {
   static employee(initial?: Partial<DevEmployee>): EmployeeBuilder {
     const id = uniqueLabel()
     return new EmployeeBuilder({
-      id: uuidv4(),
+      id: randomId(),
       email: `email_${id}@evaka.test`,
       externalId: `espoo-ad:${uuidv4()}`,
       firstName: `first_name_${id}`,
@@ -921,7 +925,7 @@ export class Fixture {
     })
   }
 
-  static staffOccupancyCoefficient(unitId: DaycareId, employeeId: string) {
+  static staffOccupancyCoefficient(unitId: DaycareId, employeeId: EmployeeId) {
     return new StaffOccupancyCoefficientBuilder({
       coefficient: 7,
       employeeId,
@@ -1605,8 +1609,8 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
 
   withRequiredFieldsFilled(
     unitId: DaycareId,
-    preparerId: UUID,
-    decisionMakerId: UUID
+    preparerId: EmployeeId,
+    decisionMakerId: EmployeeId
   ) {
     this.data.form = {
       ...this.data.form,
@@ -2967,12 +2971,13 @@ const feeThresholds = {
 }
 
 export const decisionFixture = (
+  employeeId: EmployeeId,
   applicationId: ApplicationId,
   startDate: LocalDate,
   endDate: LocalDate
 ): DecisionRequest => ({
   id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130987',
-  employeeId: 'SET_THIS',
+  employeeId,
   applicationId: applicationId,
   unitId: testDaycare.id,
   type: 'DAYCARE',

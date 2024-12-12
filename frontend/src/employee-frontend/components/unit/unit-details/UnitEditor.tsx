@@ -21,7 +21,11 @@ import {
   Language,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import { AreaId, Coordinate } from 'lib-common/generated/api-types/shared'
+import {
+  AreaId,
+  Coordinate,
+  EmployeeId
+} from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -85,7 +89,7 @@ type FormData = {
   invoicedByMunicipality: boolean
   costCenter: string
   dwCostCenter: string
-  financeDecisionHandlerId: string
+  financeDecisionHandlerId: EmployeeId | null
   additionalInfo: string
   phone: string
   email: string
@@ -818,7 +822,7 @@ function toFormData(unit: Daycare | undefined): FormData {
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
     costCenter: unit?.costCenter ?? '',
     dwCostCenter: unit?.dwCostCenter ?? '',
-    financeDecisionHandlerId: unit?.financeDecisionHandler?.id ?? '',
+    financeDecisionHandlerId: unit?.financeDecisionHandler?.id ?? null,
     additionalInfo: unit?.additionalInfo ?? '',
     phone: unit?.phone ?? '',
     email: unit?.email ?? '',

@@ -17,6 +17,7 @@ import {
   staffAttendanceTypes
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -71,7 +72,7 @@ interface Props<
 > {
   date: LocalDate
   name: string
-  employeeId?: UUID
+  employeeId?: EmployeeId
   staffOccupancyEffectDefault: boolean
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]

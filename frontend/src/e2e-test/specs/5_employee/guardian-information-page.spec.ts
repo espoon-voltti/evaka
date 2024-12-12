@@ -67,13 +67,9 @@ beforeEach(async () => {
   await createApplications({ body: [application, application2] })
   await createDecisions({
     body: [
+      decisionFixture(admin.id, application.id, startDate, startDate),
       {
-        ...decisionFixture(application.id, startDate, startDate),
-        employeeId: admin.id
-      },
-      {
-        ...decisionFixture(application2.id, startDate, startDate),
-        employeeId: admin.id,
+        ...decisionFixture(admin.id, application2.id, startDate, startDate),
         id: randomId<ApplicationId>()
       }
     ]

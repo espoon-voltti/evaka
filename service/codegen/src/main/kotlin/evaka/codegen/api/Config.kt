@@ -79,7 +79,6 @@ val lenientIdTypes =
         DatabaseTable.DaycareCaretaker::class,
         DatabaseTable.Decision::class,
         DatabaseTable.DocumentTemplate::class,
-        DatabaseTable.Employee::class,
         DatabaseTable.EmployeePin::class,
         DatabaseTable.EvakaUser::class,
         DatabaseTable.FamilyContact::class,

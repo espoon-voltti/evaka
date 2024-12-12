@@ -32,7 +32,7 @@ import {
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -333,7 +333,7 @@ export const UnitFilter = React.memo(function UnitFilter({
 interface FinanceDecisionHandlerFilterProps {
   financeDecisionHandlers: FinanceDecisionHandlerOption[]
   selected?: FinanceDecisionHandlerOption
-  select: (decisionHandler?: string) => void
+  select: (decisionHandler?: EmployeeId) => void
 }
 
 export const FinanceDecisionHandlerFilter = React.memo(

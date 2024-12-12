@@ -36,12 +36,12 @@ import {
   AssistanceNeedPreschoolDecisionGuardianId,
   AssistanceNeedPreschoolDecisionId,
   DaycareId,
+  EmployeeId,
   OfficialLanguage
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
@@ -137,13 +137,13 @@ const form = mapped(
     otherRepresentativeDetails: string(),
     viewOfGuardians: string(),
 
-    preparer1EmployeeId: value<UUID | null>(),
+    preparer1EmployeeId: value<EmployeeId | null>(),
     preparer1PhoneNumber: string(),
     preparer1Title: string(),
-    preparer2EmployeeId: value<UUID | null>(),
+    preparer2EmployeeId: value<EmployeeId | null>(),
     preparer2PhoneNumber: string(),
     preparer2Title: string(),
-    decisionMakerEmployeeId: value<UUID | null>(),
+    decisionMakerEmployeeId: value<EmployeeId | null>(),
     decisionMakerTitle: string()
   }),
   (output): AssistanceNeedPreschoolDecisionForm => ({

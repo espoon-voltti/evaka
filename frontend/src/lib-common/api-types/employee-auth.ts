@@ -5,11 +5,10 @@
 import { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 
 import { Action } from '../generated/action'
-import { EmployeeFeatures } from '../generated/api-types/shared'
-import { UUID } from '../types'
+import { EmployeeFeatures, EmployeeId } from '../generated/api-types/shared'
 
 export interface User {
-  id: UUID
+  id: EmployeeId
   name: string
   userType: 'EMPLOYEE'
   accessibleFeatures: EmployeeFeatures

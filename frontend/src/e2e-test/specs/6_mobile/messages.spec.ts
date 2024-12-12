@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -60,7 +62,7 @@ let daycareGroup3: DevDaycareGroup
 let child: DevPerson
 let child2: DevPerson
 
-const employeeId = uuidv4()
+const employeeId = randomId<EmployeeId>()
 const empFirstName = 'Yrjö'
 const empLastName = 'Yksikkö'
 const employeeName = `${empLastName} ${empFirstName}`

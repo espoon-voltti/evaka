@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 
 import {
@@ -25,7 +26,7 @@ let page: Page
 let daycareId: DaycareId
 const groupId: UUID = uuidv4()
 
-const eskoId = uuidv4()
+const eskoId = randomId<EmployeeId>()
 const esko = {
   id: eskoId,
   externalId: `espoo-ad:${eskoId}`,
@@ -34,13 +35,13 @@ const esko = {
   email: 'esko@evaka.test'
 }
 const pete = {
-  id: uuidv4(),
+  id: randomId<EmployeeId>(),
   firstName: 'Pete',
   lastName: 'Päiväkoti',
   email: 'pete@evaka.test'
 }
 const yrjo = {
-  id: uuidv4(),
+  id: randomId<EmployeeId>(),
   firstName: 'Yrjö',
   lastName: 'Yksikkö',
   email: 'yrjo@evaka.test'

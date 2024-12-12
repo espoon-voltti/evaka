@@ -8,11 +8,12 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
@@ -48,7 +49,7 @@ export default React.memo(function StaffMarkDepartedPage({
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { employeeId } = useRouteParams(['employeeId'])
+  const employeeId = useIdRouteParam<EmployeeId>('employeeId')
 
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {

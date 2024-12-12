@@ -10,9 +10,10 @@ import {
   GroupInfo,
   StaffMemberAttendance
 } from 'lib-common/generated/api-types/attendance'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   FixedSpaceColumn,
@@ -38,7 +39,7 @@ export default React.memo(function StaffPreviousAttendancesPage({
 }: {
   unitOrGroup: UnitOrGroup
 }) {
-  const { employeeId } = useRouteParams(['employeeId'])
+  const employeeId = useIdRouteParam<EmployeeId>('employeeId')
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 

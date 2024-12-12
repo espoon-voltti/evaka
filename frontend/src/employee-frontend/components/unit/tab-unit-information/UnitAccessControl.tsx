@@ -13,6 +13,7 @@ import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import {
   DaycareAclRow,
   DaycareId,
+  EmployeeId,
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
@@ -83,7 +84,7 @@ export type DaycareAclRole = Extract<
 >
 
 export interface FormattedRow {
-  id: UUID
+  id: EmployeeId
   firstName: string
   lastName: string
   name: string
@@ -281,7 +282,7 @@ function AclTable({
 
 interface RemoveState {
   employee: FormattedRow
-  removeFn: (unitId: DaycareId, employeeId: UUID) => Promise<unknown>
+  removeFn: (unitId: DaycareId, employeeId: EmployeeId) => Promise<unknown>
 }
 
 export interface UpdateState {

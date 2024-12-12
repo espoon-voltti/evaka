@@ -22,9 +22,9 @@ import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-type
 import {
   AreaId,
   DaycareId,
+  EmployeeId,
   UserRole
 } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import TreeDropdown, {
   sortTreeByText,
@@ -76,7 +76,7 @@ export default React.memo(function DaycareRolesModal({
   units,
   onClose
 }: {
-  employeeId: UUID
+  employeeId: EmployeeId
   units: Daycare[]
   onClose: () => void
 }) {

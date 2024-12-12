@@ -11,7 +11,7 @@ import {
   FeeDecisionDifference,
   FeeDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
@@ -101,7 +101,7 @@ function FeeDecisionFilters() {
   const selectUnit = (id?: DaycareId) =>
     setSearchFilters((filters) => ({ ...filters, unit: id }))
 
-  const selectFinanceDecisionHandler = (id?: string) =>
+  const selectFinanceDecisionHandler = (id?: EmployeeId) =>
     setSearchFilters((filters) => ({
       ...filters,
       financeDecisionHandlerId: id
