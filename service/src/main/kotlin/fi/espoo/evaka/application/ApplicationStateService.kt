@@ -775,8 +775,7 @@ class ApplicationStateService(
         tx.createUpdate {
                 sql(
                     """
-                UPDATE placement_plan
-                SET unit_confirmation_status = 'REJECTED'
+                DELETE FROM placement_plan
                 WHERE 
                     unit_id = ${bind(unitId)} AND
                     unit_confirmation_status = 'REJECTED_NOT_CONFIRMED'
@@ -787,6 +786,14 @@ class ApplicationStateService(
             .executeAndReturnGeneratedKeys()
             .toList<PlacementPlanReject>()
             .forEach { placementPlan ->
+                tx.clearDecisionDrafts(listOf(placementPlan.applicationId))
+                tx.updateApplicationStatus(
+                    placementPlan.applicationId,
+                    WAITING_PLACEMENT,
+                    user.evakaUserId,
+                    clock.now(),
+                )
+
                 val reason =
                     rejectReasonTranslations[placementPlan.unitRejectReason]?.let { translation ->
                         val otherReason =
