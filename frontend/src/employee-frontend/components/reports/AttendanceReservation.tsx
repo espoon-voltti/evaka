@@ -15,11 +15,10 @@ import styled from 'styled-components'
 import { Failure, Loading, Result, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Loader from 'lib-components/atoms/Loader'
@@ -46,7 +45,7 @@ const getAttendanceReservationReportByUnitResult = wrapResult(
 
 interface AttendanceReservationReportFilters {
   range: FiniteDateRange
-  groupIds: UUID[]
+  groupIds: GroupId[]
 }
 
 const dateFormat = 'EEEEEE d.M.'
@@ -58,7 +57,7 @@ interface AttendanceReservationReportUiRow {
   childCountOver3: number
   childCountUnder3: number
   dateTime: HelsinkiDateTime
-  groupId: UUID | null
+  groupId: GroupId | null
   groupName: string | null
   staffCountRequired: string
 }

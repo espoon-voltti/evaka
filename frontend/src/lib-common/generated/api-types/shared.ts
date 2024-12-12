@@ -152,7 +152,7 @@ export type FeeThresholdsId = string
 
 export type FosterParentId = string
 
-export type GroupId = string
+export type GroupId = Id<'Group'>
 
 export type GroupNoteId = Id<'GroupNote'>
 

@@ -10,10 +10,10 @@ import {
   CaretakerAmount,
   CaretakersResponse
 } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
-import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -68,8 +68,8 @@ const FlexRowRightAlign = styled(FlexRow)`
 `
 
 export default React.memo(function GroupCaretakers() {
-  const { groupId } = useRouteParams(['groupId'])
   const unitId = useIdRouteParam<DaycareId>('unitId')
+  const groupId = useIdRouteParam<GroupId>('groupId')
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [caretakers, setCaretakers] = useState<Result<CaretakersResponse>>(

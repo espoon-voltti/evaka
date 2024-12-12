@@ -2,16 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  EmployeeId,
+  GroupId
+} from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 
-import {
-  testDaycare,
-  Fixture,
-  uuidv4,
-  testCareArea
-} from '../../dev-api/fixtures'
+import { testDaycare, Fixture, testCareArea } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import {
@@ -24,7 +23,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let daycareId: DaycareId
-const groupId: UUID = uuidv4()
+const groupId = randomId<GroupId>()
 
 const eskoId = randomId<EmployeeId>()
 const esko = {

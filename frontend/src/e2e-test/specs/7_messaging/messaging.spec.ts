@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -17,7 +17,6 @@ import {
   testDaycareGroup,
   testChild2,
   Fixture,
-  uuidv4,
   testAdult2,
   testAdult,
   testChild,
@@ -58,7 +57,7 @@ let account: CitizenWeakAccount
 let careArea: DevCareArea
 let daycarePlacementFixture: DevPlacement
 let backupDaycareId: DaycareId
-let backupGroupFixtureId: UUID
+let backupGroupFixtureId: GroupId
 
 const mockedDate = LocalDate.of(2022, 5, 21)
 const mockedDateAt10 = HelsinkiDateTime.fromLocal(
@@ -125,7 +124,7 @@ beforeEach(async () => {
   }).save()
 
   backupDaycareId = testDaycare2.id
-  backupGroupFixtureId = uuidv4()
+  backupGroupFixtureId = randomId()
   await createDaycareGroups({
     body: [
       {

@@ -4,7 +4,9 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -20,8 +22,7 @@ import {
   testChildNoSsn,
   familyWithTwoGuardians,
   Fixture,
-  preschoolTerm2021,
-  uuidv4
+  preschoolTerm2021
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -38,7 +39,7 @@ let attendanceListPage: MobileListPage
 const now = HelsinkiDateTime.of(2022, 5, 17, 13, 0, 0)
 
 const group2 = {
-  id: uuidv4(),
+  id: randomId<GroupId>(),
   name: '#2',
   daycareId: testDaycare.id,
   startDate: LocalDate.of(2021, 1, 1)
@@ -260,7 +261,7 @@ describe('Child confirmed reservations', () => {
 
 async function createPlacements(
   childId: string,
-  groupId: string = testDaycareGroup.id,
+  groupId = testDaycareGroup.id,
   placementType: PlacementType = 'DAYCARE'
 ) {
   const daycarePlacementFixture = await Fixture.placement({

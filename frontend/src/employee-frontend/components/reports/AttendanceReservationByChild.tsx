@@ -15,12 +15,11 @@ import {
   AttendanceReservationReportByChildGroup,
   AttendanceReservationReportByChildItem
 } from 'lib-common/generated/api-types/reports'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import Title from 'lib-components/atoms/Title'
@@ -70,7 +69,7 @@ export default React.memo(function AttendanceReservationByChild() {
       defaultDate.endOfWeek()
     )
   })
-  const [groupIds, setGroupIds] = useState<UUID[]>([])
+  const [groupIds, setGroupIds] = useState<GroupId[]>([])
   const [orderBy, setOrderBy] = useState<OrderBy>('start')
 
   const [filterByTime, setFilterByTime] = useState(false)

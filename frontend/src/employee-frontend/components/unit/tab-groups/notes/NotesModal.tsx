@@ -9,6 +9,7 @@ import { Result, wrapResult } from 'lib-common/api'
 import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
 import {
   ChildStickyNoteId,
+  GroupId,
   GroupNoteId
 } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
@@ -93,7 +94,7 @@ const Tab = styled.div<{ active?: boolean }>`
 `
 
 interface Props {
-  group: { id: UUID; name: string }
+  group: { id: GroupId; name: string }
   child?: { id: UUID; name: string }
   notesByGroup: Result<NotesByGroupResponse>
   reload: () => void

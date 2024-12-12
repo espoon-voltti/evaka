@@ -5,12 +5,12 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CalendarEventId,
-  CalendarEventTimeId
+  CalendarEventTimeId,
+  GroupId
 } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 
 import {
   testCareArea2,
@@ -44,8 +44,8 @@ let unitSupervisor: DevEmployee
 const mockedToday = LocalDate.of(2022, 3, 7)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
-const groupId: UUID = uuidv4()
-const groupId2 = uuidv4()
+const groupId = randomId<GroupId>()
+const groupId2 = randomId<GroupId>()
 const testSurveyId = randomId<CalendarEventId>()
 const eventTimeId = randomId<CalendarEventTimeId>()
 const eventTimeId2 = randomId<CalendarEventTimeId>()

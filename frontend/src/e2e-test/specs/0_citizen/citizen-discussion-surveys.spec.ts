@@ -6,7 +6,8 @@ import { DevCalendarEventTime, DevPerson } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CalendarEventId,
-  CalendarEventTimeId
+  CalendarEventTimeId,
+  GroupId
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
@@ -43,7 +44,7 @@ let calendarPage: CitizenCalendarPage
 let children: DevPerson[]
 const today = LocalDate.of(2022, 1, 10)
 
-const groupId = uuidv4()
+const groupId = randomId<GroupId>()
 const groupEventId = randomId<CalendarEventId>()
 const unitEventId = randomId<CalendarEventId>()
 const individualEventId = randomId<CalendarEventId>()

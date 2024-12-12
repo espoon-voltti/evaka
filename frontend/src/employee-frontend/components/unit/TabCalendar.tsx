@@ -11,10 +11,10 @@ import {
   DaycareGroup,
   DaycareResponse
 } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import { tryFromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { SelectionChip } from 'lib-components/atoms/Chip'
@@ -42,7 +42,7 @@ import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceRe
 export type CalendarMode = 'week' | 'month'
 
 export type AttendanceGroupFilter =
-  | { type: 'group'; id: UUID }
+  | { type: 'group'; id: GroupId }
   | { type: 'all-children' | 'no-group' | 'staff' }
 
 const GroupSelectorWrapper = styled.div`
@@ -86,15 +86,13 @@ function getDefaultGroup(
   groups: DaycareGroup[]
 ): AttendanceGroupFilter {
   if (groupParam !== null) {
-    if (
-      groupParam === 'no-group' ||
-      groupParam === 'staff' ||
-      groupParam === 'all-children'
-    ) {
-      return { type: groupParam }
-    }
-    if (groups.some((g) => g.id === groupParam)) {
-      return { type: 'group', id: groupParam }
+    if (groupParam === 'no-group') return { type: 'no-group' }
+    if (groupParam === 'staff') return { type: 'staff' }
+    if (groupParam === 'all-children') return { type: 'all-children' }
+
+    const groupId = tryFromUuid<GroupId>(groupParam)
+    if (groupId && groups.some((g) => g.id === groupId)) {
+      return { type: 'group', id: groupId }
     }
   }
 

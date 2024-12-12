@@ -5,7 +5,7 @@
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
-import { BackupCareId } from 'lib-common/generated/api-types/shared'
+import { BackupCareId, GroupId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -44,7 +44,7 @@ const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(8)
 const backupCareStartDate = mockedToday.startOfWeek().addWeeks(2)
 const backupCareEndDate = backupCareStartDate.addDays(8)
-const groupId: UUID = uuidv4()
+const groupId = randomId<GroupId>()
 
 beforeEach(async () => {
   await resetServiceState()
@@ -74,7 +74,7 @@ const insertTestDataAndLogin = async ({
     name: 'Testailijat'
   }).save()
 
-  const groupId2 = uuidv4()
+  const groupId2 = randomId<GroupId>()
   await Fixture.daycareGroup({
     id: groupId2,
     daycareId: testDaycare.id,
@@ -138,7 +138,7 @@ describe('Unit group calendar', () => {
 
   test('Child in backup care in other group for part of the week is shown', async () => {
     await insertTestDataAndLogin()
-    const groupId3 = uuidv4()
+    const groupId3 = randomId<GroupId>()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
     await Fixture.daycareGroup({
@@ -168,7 +168,7 @@ describe('Unit group calendar', () => {
 
   test('Reservations are shown in the backup group calendar when backup is within the same unit', async () => {
     await insertTestDataAndLogin()
-    const groupId3 = uuidv4()
+    const groupId3 = randomId<GroupId>()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
     await Fixture.daycareGroup({

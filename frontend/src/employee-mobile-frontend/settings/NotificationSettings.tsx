@@ -23,14 +23,13 @@ import {
   useFormField
 } from 'lib-common/form/hooks'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import {
   pushNotificationCategories,
   PushNotificationCategory,
   PushSettings
 } from 'lib-common/generated/api-types/webpush'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -229,7 +228,7 @@ const categoryForm = object({
 })
 
 const groupForm = object({
-  id: value<UUID>(),
+  id: value<GroupId>(),
   name: string(),
   checked: boolean()
 })
@@ -240,7 +239,7 @@ const settingsForm = mapped(
     groups: array(groupForm),
     // On personal mobile devices, we might be subscribed to groups that belong to a unit that isn't selected, so
     // they can't appear as checkboxes
-    hiddenGroups: array(value<UUID>())
+    hiddenGroups: array(value<GroupId>())
   }),
   ({ categories, groups, hiddenGroups }) => ({
     categories: categories

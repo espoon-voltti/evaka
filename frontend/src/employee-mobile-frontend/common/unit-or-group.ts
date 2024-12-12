@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import { fromUuid } from 'lib-common/id-type'
 
 export type UnitOrGroup =
   | { type: 'unit'; unitId: DaycareId }
@@ -11,8 +11,8 @@ export type UnitOrGroup =
 
 export const toUnitOrGroup = (
   unitId: DaycareId,
-  groupId?: UUID | null
+  groupId?: string | null
 ): UnitOrGroup =>
   groupId && groupId !== 'all'
-    ? { type: 'group', unitId, id: groupId }
+    ? { type: 'group', unitId, id: fromUuid(groupId) }
     : { type: 'unit', unitId }

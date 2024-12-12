@@ -19,6 +19,7 @@ import {
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
@@ -145,7 +146,7 @@ function getChildMinMaxHeadcounts(
     : undefined
 }
 
-type IdAndName = { id: UUID; name: string }
+type IdAndName<T extends string> = { id: T; name: string }
 
 export default React.memo(function Group({
   unit,
@@ -177,8 +178,8 @@ export default React.memo(function Group({
   )
 
   const [notesModal, setNotesModal] = useState<{
-    child?: IdAndName
-    group: IdAndName
+    child?: IdAndName<PersonId>
+    group: IdAndName<GroupId>
   }>()
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
@@ -501,7 +502,7 @@ interface GroupPlacementRowProps {
   permittedGroupPlacementActions: Partial<Record<UUID, Action.Placement[]>>
   permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
-  onShowNote: (child?: IdAndName) => void
+  onShowNote: (child?: IdAndName<PersonId>) => void
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void
@@ -717,7 +718,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
 interface DaycareDailyNoteProps {
   placement: DaycareGroupPlacementDetailed | UnitBackupCare
   notesResponse: Result<NotesByGroupResponse>
-  onOpen: (child: IdAndName) => void
+  onOpen: (child: IdAndName<PersonId>) => void
 }
 
 const DailyNote = React.memo(function DaycareDailyNote({

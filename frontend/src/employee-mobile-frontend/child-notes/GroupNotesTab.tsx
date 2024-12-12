@@ -5,9 +5,8 @@
 import React, { useCallback, useMemo } from 'react'
 
 import { GroupNote } from 'lib-common/generated/api-types/note'
-import { GroupNoteId } from 'lib-common/generated/api-types/shared'
+import { GroupId, GroupNoteId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import {
   StickyNoteTab,
   StickyNoteTabLabels
@@ -38,7 +37,7 @@ const getStickyNoteTabLabels = (i18n: Translations): StickyNoteTabLabels => ({
 })
 
 interface Props {
-  groupId: UUID
+  groupId: GroupId
   notes: GroupNote[]
 }
 

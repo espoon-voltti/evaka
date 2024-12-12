@@ -7,10 +7,10 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -24,7 +24,7 @@ import { Translations, useTranslation } from '../common/i18n'
 import PlusMinus from './PlusMinus'
 
 export interface Props {
-  groupId: UUID | undefined
+  groupId: GroupId | undefined
   date: LocalDate
   count: number
   countOther: number

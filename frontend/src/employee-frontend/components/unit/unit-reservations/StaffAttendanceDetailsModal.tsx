@@ -17,7 +17,7 @@ import {
   staffAttendanceTypes
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -55,7 +55,7 @@ import { openAttendanceQuery } from '../queries'
 
 export interface ModalAttendance {
   id: UUID
-  groupId: UUID | null
+  groupId: GroupId | null
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   type: StaffAttendanceType
@@ -78,7 +78,7 @@ interface Props<
   plannedAttendances: ModalPlannedAttendance[]
   isExternal: boolean
   groups: DaycareGroup[]
-  defaultGroupId: UUID | null
+  defaultGroupId: GroupId | null
   validate: (a: EditedAttendance[]) => [undefined | T[], ValidationError[]]
   onSave: (body: T[]) => void
   onSuccess: () => void
@@ -88,7 +88,7 @@ interface Props<
 
 export interface EditedAttendance {
   id: UUID | null
-  groupId: UUID | null
+  groupId: GroupId | null
   arrived: string
   departed: string
   type: StaffAttendanceType

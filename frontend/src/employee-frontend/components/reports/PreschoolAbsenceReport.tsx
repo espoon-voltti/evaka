@@ -15,6 +15,7 @@ import {
   PreschoolTerm
 } from 'lib-common/generated/api-types/daycare'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -50,7 +51,7 @@ export default React.memo(function PreschoolAbsenceReport() {
   )
   const [selectedUnit, setSelectedUnit] = useState<Daycare | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<
-    DaycareGroup | null | { name: string; id: string | null }
+    DaycareGroup | null | { name: string; id: GroupId | null }
   >(allOption)
   const [selectedTerm, setSelectedTerm] = useState<PreschoolTerm | null>(null)
   const units = useQueryResult(unitsQuery({ includeClosed: true }))
@@ -206,7 +207,7 @@ const PreschoolAbsenceGrid = ({
 }: {
   term: FiniteDateRange
   daycare: Daycare
-  groupId?: string | null
+  groupId?: GroupId | null
 }) => {
   const { i18n } = useTranslation()
 

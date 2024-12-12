@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { ApplicationId, GroupId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -37,7 +37,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let unitPage: UnitPage
-const groupId: UUID = randomId<ApplicationId>()
+const groupId = randomId<GroupId>()
 let child1Fixture: DevPerson
 let child2Fixture: DevPerson
 let child1DaycarePlacementId: UUID

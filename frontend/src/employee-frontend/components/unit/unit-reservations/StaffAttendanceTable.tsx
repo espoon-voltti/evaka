@@ -24,7 +24,11 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { OperationalDay } from 'lib-common/generated/api-types/reservations'
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  EmployeeId,
+  GroupId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -81,7 +85,7 @@ interface Props {
   reloadStaffAttendances: () => Promise<Result<unknown>>
   groups: DaycareGroup[]
   groupFilter: GroupFilter | null
-  defaultGroup: UUID | null
+  defaultGroup: GroupId | null
 }
 
 type DetailsModalTarget =
@@ -276,7 +280,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
   }
   unitId: DaycareId
   groups: DaycareGroup[]
-  defaultGroupId: string | null
+  defaultGroupId: GroupId | null
   reloadStaffAttendances: () => Promise<Result<unknown>>
   onClose: () => void
 }) {
@@ -963,7 +967,7 @@ const validateDeparted = (
 
 const validateGroupId = (
   item: EditedAttendance
-): [undefined, ErrorKey] | [string | null, undefined] => {
+): [undefined, ErrorKey] | [GroupId | null, undefined] => {
   if (presentInGroup(item.type) && item.groupId === null) {
     return [undefined, 'required']
   }

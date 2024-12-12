@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { GroupId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -30,7 +32,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let unitPage: UnitPage
-const groupId: UUID = uuidv4()
+const groupId = randomId<GroupId>()
 let child1Fixture: DevPerson
 let child2Fixture: DevPerson
 let child3Fixture: DevPerson

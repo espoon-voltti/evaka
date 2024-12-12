@@ -40,7 +40,8 @@ import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import {
   ApplicationId,
   DaycareId,
-  EmployeeId
+  EmployeeId,
+  GroupId
 } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -256,7 +257,7 @@ export class Fixture {
   ): DaycareGroupBuilder {
     const id = uniqueLabel()
     return new DaycareGroupBuilder({
-      id: uuidv4(),
+      id: randomId(),
       name: `daycareGroup_${id}`,
       startDate: LocalDate.of(2020, 1, 1),
       endDate: null,
@@ -1366,7 +1367,7 @@ export class FamilyBuilder extends FixtureBuilder<Family> {
 export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
   daycareAcl: { unitId: DaycareId; role: ScopedRole }[]
   groupAcl: {
-    groupId: string
+    groupId: GroupId
     created?: HelsinkiDateTime
     updated?: HelsinkiDateTime
   }[]
@@ -1425,7 +1426,7 @@ export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
   }
 
   withGroupAcl(
-    groupId: string,
+    groupId: GroupId,
     created?: HelsinkiDateTime,
     updated?: HelsinkiDateTime
   ): this {
@@ -3107,7 +3108,7 @@ export const voucherValueDecisionsFixture = (
 })
 
 export const testDaycareGroup: DevDaycareGroup = {
-  id: '2f998c23-0f90-4afd-829b-d09ecf2f6188',
+  id: fromUuid('2f998c23-0f90-4afd-829b-d09ecf2f6188'),
   daycareId: testDaycare.id,
   name: 'Kosmiset vakiot',
   startDate: LocalDate.of(2000, 1, 1),

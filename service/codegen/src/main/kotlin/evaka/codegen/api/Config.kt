@@ -86,7 +86,6 @@ val lenientIdTypes =
         DatabaseTable.FeeDecision::class,
         DatabaseTable.FeeThresholds::class,
         DatabaseTable.FosterParent::class,
-        DatabaseTable.Group::class,
         DatabaseTable.GroupPlacement::class,
         DatabaseTable.HolidayPeriod::class,
         DatabaseTable.HolidayQuestionnaire::class,

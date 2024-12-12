@@ -12,8 +12,7 @@ import React, {
 import styled from 'styled-components'
 
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import TreeDropdown, {
   TreeNode
@@ -62,7 +61,7 @@ export default React.memo(function OccupancyContainer({
   const { startDate, endDate } = filters
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(true)
-  const [groupIds, setGroupIds] = useState<UUID[] | null>(null)
+  const [groupIds, setGroupIds] = useState<GroupId[] | null>(null)
   const [mode, setMode] = useState<DayGraphMode>('PLANNED')
 
   const activeGroups = useMemo(
@@ -77,7 +76,7 @@ export default React.memo(function OccupancyContainer({
     () => groupsToTree(i18n, activeGroups, groupIds),
     [i18n, activeGroups, groupIds]
   )
-  const handleTreeChange = useCallback((newTree: TreeNode[]) => {
+  const handleTreeChange = useCallback((newTree: GroupTreeNode[]) => {
     setGroupIds(treeToGroupIds(newTree))
   }, [])
 
@@ -177,8 +176,8 @@ const GroupSelectWrapper = styled.div`
 function groupsToTree(
   i18n: Translations,
   groups: DaycareGroupResponse[],
-  selectedGroupIds: UUID[] | null
-): TreeNode[] {
+  selectedGroupIds: GroupId[] | null
+): GroupTreeNode[] {
   return [
     {
       text: i18n.unit.occupancy.fullUnit,
@@ -195,11 +194,17 @@ function groupsToTree(
   ]
 }
 
-function treeToGroupIds(tree: TreeNode[]): UUID[] | null {
+interface GroupTreeNode extends TreeNode {
+  key: GroupId | 'unit'
+  children: GroupTreeNode[]
+}
+
+function treeToGroupIds(tree: GroupTreeNode[]): GroupId[] | null {
   const root = tree[0]
   const checkedGroupIds = root.children
     .filter((child) => child.checked)
     .map((child) => child.key)
+    .filter((key): key is GroupId => key !== 'unit')
   if (checkedGroupIds.length === root.children.length) {
     return null
   }
