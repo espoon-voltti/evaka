@@ -262,7 +262,7 @@ const sv: Translations = {
         För information om privata daghem,{' '}
         <ExternalLink
           text="klicka här."
-          href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik"
+          href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/ansokan-till-privat-smabarnspedagogik"
           newTab
         />
       </span>
@@ -309,7 +309,7 @@ const sv: Translations = {
       list: 'Enheter'
     },
     serviceVoucherLink:
-      'https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228',
+      'https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/ansokan-till-privat-smabarnspedagogik#section-55369',
     noApplying: 'Ingen sökning via eVaka, kontakta tjänsten',
     backToSearch: 'Tillbaka till sökning'
   },
@@ -1305,7 +1305,7 @@ const sv: Translations = {
           },
           mapLink: 'Enheter på kartan',
           serviceVoucherLink:
-            'https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228',
+            'https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/ansokan-till-privat-smabarnspedagogik#section-55369',
           languageFilter: {
             label: 'Enhetens språk:',
             fi: 'finska',

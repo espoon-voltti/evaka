@@ -264,7 +264,7 @@ const en: Translations = {
         For information on private units,{' '}
         <ExternalLink
           text="click here."
-          href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers"
+          href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/applying-private-early-childhood-education"
           newTab
         />
       </span>
@@ -311,7 +311,7 @@ const en: Translations = {
       list: 'Units'
     },
     serviceVoucherLink:
-      'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
+      'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/applying-private-early-childhood-education#section-55369',
     noApplying: 'No applying via eVaka, contact the unit',
     backToSearch: 'Back to search'
   },
@@ -1355,7 +1355,7 @@ const en: Translations = {
           },
           mapLink: 'Unit map view',
           serviceVoucherLink:
-            'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228',
+            'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/applying-private-early-childhood-education#section-55369',
           languageFilter: {
             label: 'Language of the location:',
             fi: 'Finnish',
