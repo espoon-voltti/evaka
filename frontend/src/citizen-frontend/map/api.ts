@@ -45,6 +45,9 @@ export const autocompleteAddress = async (
         'boundary.rect.max_lon': mapConfig.searchAreaRect.maxLongitude,
         'boundary.rect.min_lat': mapConfig.searchAreaRect.minLatitude,
         'boundary.rect.max_lat': mapConfig.searchAreaRect.maxLatitude
+      },
+      headers: {
+        'x-evaka-csrf': '1'
       }
     })
     .then((res) =>
@@ -133,9 +136,17 @@ export async function fetchUnitsWithDistances(
 }`
 
   return axios
-    .post<JsonOf<ItineraryResponse>>('/api/application/map-api/query', {
-      query
-    })
+    .post<JsonOf<ItineraryResponse>>(
+      '/api/application/map-api/query',
+      {
+        query
+      },
+      {
+        headers: {
+          'x-evaka-csrf': '1'
+        }
+      }
+    )
     .then((res) =>
       unitsWithStraightDistance.map((unit) => {
         const plan = res.data.data[uuidToKey(unit.id)]
@@ -191,9 +202,17 @@ export const fetchDistance = async (
 }`
 
   return axios
-    .post<JsonOf<ItineraryResponse>>('/api/application/map-api/query', {
-      query
-    })
+    .post<JsonOf<ItineraryResponse>>(
+      '/api/application/map-api/query',
+      {
+        query
+      },
+      {
+        headers: {
+          'x-evaka-csrf': '1'
+        }
+      }
+    )
     .then((res) => {
       const plan = res.data.data.plan
       if (!plan) throw Error('No plan found')
