@@ -253,6 +253,8 @@ export type StaffAttendanceExternalId = string
 
 export type StaffAttendanceRealtimeId = string
 
+export type TitaniaErrorsId = Id<'TitaniaErrors'>
+
 /**
 * Generated from fi.espoo.evaka.shared.domain.Translatable
 */

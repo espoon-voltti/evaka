@@ -11,6 +11,7 @@ import {
 } from 'lib-common/generated/api-types/reports'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Thead, Th, Tbody, Td, Tr } from 'lib-components/layout/Table'
@@ -20,7 +21,7 @@ import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import { titaniaErrorsReportQuery } from './queries'
+import { clearTitaniaErrorMutation, titaniaErrorsReportQuery } from './queries'
 
 export default React.memo(function TitaniaErrors() {
   const { i18n } = useTranslation()
@@ -36,18 +37,18 @@ export default React.memo(function TitaniaErrors() {
         {renderResult(titaniaErrorsResult, (rows) => (
           <>
             {rows.map((row: TitaniaErrorReportRow) => (
-              <>
-                <H1 key={row.requestTime.format()}>
+              <div key={row.requestTime.format()}>
+                <H1>
                   {i18n.reports.titaniaErrors.header +
                     ' ' +
                     row.requestTime.format()}
                 </H1>
                 {row.units.map((unit: TitaniaErrorUnit) => (
-                  <>
-                    <H2 key={unit.unitName}>{unit.unitName}</H2>
+                  <div key={unit.unitName}>
+                    <H2>{unit.unitName}</H2>
                     {unit.employees.map((employee: TitaniaErrorEmployee) => (
-                      <>
-                        <H3 key={employee.employeeName}>
+                      <div key={employee.employeeName}>
+                        <H3>
                           {employee.employeeName +
                             (employee.employeeNumber == ''
                               ? ''
@@ -55,35 +56,47 @@ export default React.memo(function TitaniaErrors() {
                         </H3>
                         <Table>
                           <Thead>
-                            <Th>{i18n.reports.titaniaErrors.date}</Th>
-                            <Th>{i18n.reports.titaniaErrors.shift1}</Th>
-                            <Th>{i18n.reports.titaniaErrors.shift2}</Th>
+                            <Tr>
+                              <Th>{i18n.reports.titaniaErrors.date}</Th>
+                              <Th>{i18n.reports.titaniaErrors.shift1}</Th>
+                              <Th>{i18n.reports.titaniaErrors.shift2}</Th>
+                              <Th />
+                            </Tr>
                           </Thead>
                           <Tbody>
-                            {employee.conflictingShifts.map(
-                              (conflict, index) => (
-                                <Tr key={index}>
-                                  <Td>{conflict.shiftDate.format()}</Td>
-                                  <Td>
-                                    {conflict.shiftBegins.format() +
-                                      ' - ' +
-                                      conflict.shiftEnds.format()}
-                                  </Td>
-                                  <Td>
-                                    {conflict.overlappingShiftBegins.format() +
-                                      ' - ' +
-                                      conflict.overlappingShiftEnds.format()}
-                                  </Td>
-                                </Tr>
-                              )
-                            )}
+                            {employee.conflictingShifts.map((conflict) => (
+                              <Tr key={conflict.id}>
+                                <Td>{conflict.shiftDate.format()}</Td>
+                                <Td>
+                                  {conflict.shiftBegins.format() +
+                                    ' - ' +
+                                    conflict.shiftEnds.format()}
+                                </Td>
+                                <Td>
+                                  {conflict.overlappingShiftBegins.format() +
+                                    ' - ' +
+                                    conflict.overlappingShiftEnds.format()}
+                                </Td>
+                                <Td>
+                                  <MutateButton
+                                    primary
+                                    text={i18n.common.remove}
+                                    mutation={clearTitaniaErrorMutation}
+                                    onClick={() => ({
+                                      conflictId: conflict.id
+                                    })}
+                                    data-qa={`delete-button-${conflict.id}`}
+                                  />
+                                </Td>
+                              </Tr>
+                            ))}
                           </Tbody>
                         </Table>
-                      </>
+                      </div>
                     ))}
-                  </>
+                  </div>
                 ))}
-              </>
+              </div>
             ))}
           </>
         ))}

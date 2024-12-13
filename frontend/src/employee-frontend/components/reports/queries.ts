@@ -7,6 +7,7 @@ import { Arg0, UUID } from 'lib-common/types'
 
 import { sendJamixOrders } from '../../generated/api-clients/jamix'
 import {
+  clearTitaniaErrors,
   getAssistanceNeedsAndActionsReport,
   getAssistanceNeedsAndActionsReportByChild,
   getAttendanceReservationReportByChild,
@@ -251,6 +252,11 @@ export const sendJamixOrdersMutation = mutation({
 export const titaniaErrorsReportQuery = query({
   api: getTitaniaErrorsReport,
   queryKey: queryKeys.titaniaErrorsReport
+})
+
+export const clearTitaniaErrorMutation = mutation({
+  api: clearTitaniaErrors,
+  invalidateQueryKeys: () => [queryKeys.titaniaErrorsReport()]
 })
 
 export const incompleteIncomeReportQuery = query({

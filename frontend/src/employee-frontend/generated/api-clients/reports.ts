@@ -70,6 +70,7 @@ import { SextetReportRow } from 'lib-common/generated/api-types/reports'
 import { SourceUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import { TitaniaErrorReportRow } from 'lib-common/generated/api-types/reports'
+import { TitaniaErrorsId } from 'lib-common/generated/api-types/shared'
 import { UnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { VardaChildErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { VardaUnitErrorReportRow } from 'lib-common/generated/api-types/reports'
@@ -1018,6 +1019,22 @@ export async function getStartingPlacementsReport(
     params
   })
   return json.map(e => deserializeJsonStartingPlacementsRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.TitaniaErrorReport.clearTitaniaErrors
+*/
+export async function clearTitaniaErrors(
+  request: {
+    conflictId: TitaniaErrorsId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/reports/titania-errors/${request.conflictId}`.toString(),
+    method: 'DELETE'
+  })
+  return json
 }
 
 

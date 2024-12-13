@@ -176,6 +176,8 @@ sealed interface DatabaseTable {
 
     sealed class StaffOccupancyCoefficient : DatabaseTable
 
+    sealed class TitaniaErrors : DatabaseTable
+
     sealed class VoucherValueDecision : DatabaseTable
 }
 
@@ -343,6 +345,8 @@ typealias StaffAttendancePlanId = Id<DatabaseTable.StaffAttendancePlan>
 typealias StaffAttendanceRealtimeId = Id<DatabaseTable.StaffAttendanceRealtime>
 
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>
+
+typealias TitaniaConflictId = Id<DatabaseTable.TitaniaErrors>
 
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 
