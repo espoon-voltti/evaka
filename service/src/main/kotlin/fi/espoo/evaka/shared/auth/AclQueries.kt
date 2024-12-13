@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.auth
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -69,6 +70,27 @@ fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
             WHERE employee_id = ${bind(employeeId)}
         )
     """
+            )
+        }
+        .exactlyOne<Boolean>()
+
+fun Database.Read.hasRoleInAnyUnitWithProviderType(
+    employeeId: EmployeeId,
+    role: UserRole,
+    providerType: ProviderType,
+): Boolean =
+    createQuery {
+            sql(
+                """
+SELECT EXISTS (
+    SELECT FROM daycare_acl acl
+    JOIN daycare d ON d.id = acl.daycare_id
+    WHERE
+        acl.employee_id = ${bind(employeeId)} AND
+        acl.role = ${bind(role)} AND
+        d.provider_type = ${bind(providerType)}
+)
+"""
             )
         }
         .exactlyOne<Boolean>()
