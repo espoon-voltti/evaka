@@ -9,11 +9,14 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attendance.getOccupancyCoefficientsByUnit
+import fi.espoo.evaka.pairing.listPersonalDevices
 import fi.espoo.evaka.pis.TemporaryEmployee
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.pis.deactivateInactiveEmployees
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
@@ -21,6 +24,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonalMobileDevice
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -45,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var unitAclController: UnitAclController
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private val employee =
         DaycareAclRowEmployee(
             id = EmployeeId(UUID.randomUUID()),
@@ -271,6 +276,52 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(MessageAccountState.ACTIVE_ACCOUNT, employeeMessageAccountState())
         deleteSupervisor(testDaycare2.id)
         assertEquals(MessageAccountState.INACTIVE_ACCOUNT, employeeMessageAccountState())
+    }
+
+    @Test
+    fun `personal mobile device is deleted in async job after supervisor role is removed`() {
+        val supervisor1 = DevEmployee()
+        val device1 = DevPersonalMobileDevice(employeeId = supervisor1.id)
+        val supervisor2 = DevEmployee()
+        val device2 = DevPersonalMobileDevice(employeeId = supervisor2.id)
+        db.transaction { tx ->
+            tx.insert(supervisor1, unitRoles = mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(device1)
+            tx.insert(
+                supervisor2,
+                unitRoles =
+                    mapOf(
+                        testDaycare.id to UserRole.UNIT_SUPERVISOR,
+                        testDaycare2.id to UserRole.UNIT_SUPERVISOR,
+                    ),
+            )
+            tx.insert(device2)
+        }
+
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 12, 13), LocalTime.of(12, 0))
+        unitAclController.deleteUnitSupervisor(
+            dbInstance(),
+            admin,
+            MockEvakaClock(now),
+            testDaycare.id,
+            supervisor1.id,
+        )
+        unitAclController.deleteUnitSupervisor(
+            dbInstance(),
+            admin,
+            MockEvakaClock(now),
+            testDaycare.id,
+            supervisor2.id,
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusHours(1)))
+
+        db.read { tx ->
+            assertEquals(emptyList(), tx.listPersonalDevices(employeeId = supervisor1.id))
+            assertEquals(
+                listOf(device2.id),
+                tx.listPersonalDevices(employeeId = supervisor2.id).map { it.id },
+            )
+        }
     }
 
     @Test

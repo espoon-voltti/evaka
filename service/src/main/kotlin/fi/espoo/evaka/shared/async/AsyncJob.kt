@@ -424,6 +424,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class DeletePersonalDevicesIfNeeded(val employeeId: EmployeeId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -458,6 +462,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     PlacementTool::class,
                     PlacementToolFromSSN::class,
                     InvoiceCorrectionMigration::class,
+                    DeletePersonalDevicesIfNeeded::class,
                 ),
             )
         val email =
