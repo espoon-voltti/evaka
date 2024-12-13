@@ -6,6 +6,8 @@ package fi.espoo.evaka.process
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -20,6 +22,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.user.EvakaUser
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -338,20 +341,32 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     """
         SELECT 
             dt.name,
-            cd.created AS created_at,
+            cd.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
             dt.confidential,
-            cd.process_id,
-            CASE WHEN cd.document_key IS NOT NULL 
-                THEN '/employee/child-documents/' || cd.id || '/pdf'
-            END AS download_path
+            cd.document_key
         FROM child_document cd
         JOIN document_template dt ON dt.id = cd.template_id
         LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
         WHERE cd.id = ${bind(documentId)}
     """
+                )
+            }
+            .map {
+                DocumentMetadata(
+                    name = column("name"),
+                    createdAt = column("created"),
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    confidential = column("confidential"),
+                    downloadPath =
+                        column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
                 )
             }
             .exactlyOne()
@@ -363,19 +378,33 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
-            'Päätös tuesta varhaiskasvatuksessa' AS name,
-            d.created AS created_at,
+            d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
             TRUE AS confidential,
-            CASE WHEN d.document_key IS NOT NULL 
-                THEN '/employee/assistance-need-decision/' || d.id || '/pdf'
-            END AS download_path
+            d.document_key
         FROM assistance_need_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """
+                )
+            }
+            .map {
+                DocumentMetadata(
+                    name = "Päätös tuesta varhaiskasvatuksessa",
+                    createdAt = column("created"),
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    confidential = true,
+                    downloadPath =
+                        column<String?>("document_key")?.let {
+                            "/employee/assistance-need-decision/$decisionId/pdf"
+                        },
                 )
             }
             .exactlyOne()
@@ -387,19 +416,32 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
-            'Päätös tuesta esiopetuksessa' AS name,
-            d.created AS created_at,
+            d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            TRUE AS confidential,
-            CASE WHEN d.document_key IS NOT NULL 
-                THEN '/employee/assistance-need-preschool-decisions/' || d.id || '/pdf'
-            END AS download_path
+            d.document_key
         FROM assistance_need_preschool_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """
+                )
+            }
+            .map {
+                DocumentMetadata(
+                    name = "Päätös tuesta esiopetuksessa",
+                    createdAt = column("created"),
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    confidential = true,
+                    downloadPath =
+                        column<String?>("document_key")?.let {
+                            "/employee/assistance-need-preschool-decisions/$decisionId/pdf"
+                        },
                 )
             }
             .exactlyOne()
@@ -411,24 +453,40 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
-            CASE 
-                WHEN a.type = 'DAYCARE'
-                THEN 'Varhaiskasvatus- ja palvelusetelihakemus'
-                WHEN a.type = 'PRESCHOOL'
-                THEN 'Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen'
-                WHEN a.type = 'CLUB'
-                THEN 'Kerhohakemus'
-            END AS name,
-            coalesce(a.sentdate at time zone 'europe/helsinki', a.created_at) AS created_at,
+            a.type,
+            a.sentdate,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            a.confidential AS confidential,
-            NULL AS download_path
+            a.confidential AS confidential
         FROM application a
         LEFT JOIN evaka_user e ON e.id = a.created_by
         WHERE a.id = ${bind(applicationId)}
     """
+                )
+            }
+            .map {
+                DocumentMetadata(
+                    name =
+                        column<ApplicationType>("type").let { type ->
+                            when (type) {
+                                ApplicationType.DAYCARE ->
+                                    "Varhaiskasvatus- ja palvelusetelihakemus"
+                                ApplicationType.PRESCHOOL ->
+                                    "Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen"
+                                ApplicationType.CLUB -> "Kerhohakemus"
+                            }
+                        },
+                    createdAt =
+                        column<LocalDate>("sentdate").let { HelsinkiDateTime.atStartOfDay(it) },
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    confidential = column("confidential"),
+                    downloadPath = null,
                 )
             }
             .exactlyOne()
@@ -455,34 +513,48 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
-            CASE 
-                WHEN d.type = 'DAYCARE'
-                THEN 'Päätös varhaiskasvatuksesta'
-                WHEN d.type = 'DAYCARE_PART_TIME'
-                THEN 'Päätös osa-aikaisesta varhaiskasvatuksesta'
-                WHEN d.type = 'PRESCHOOL'
-                THEN 'Päätös esiopetuksesta'
-                WHEN d.type = 'PREPARATORY_EDUCATION'
-                THEN 'Päätös valmistavasta opetuksesta'
-                WHEN d.type = 'PRESCHOOL_DAYCARE'
-                THEN 'Päätös liittyvästä varhaiskasvatuksesta'
-                WHEN d.type = 'CLUB'
-                THEN 'Päätös kerhosta'
-                WHEN d.type = 'PRESCHOOL_CLUB'
-                THEN 'Päätös esiopetuksen kerhosta'
-            END AS name,
-            coalesce(d.sent_date at time zone 'europe/helsinki', d.created) AS created_at,
+            d.type,
+            d.sent_date,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            TRUE AS confidential,
-            CASE WHEN d.document_key IS NOT NULL 
-                THEN '/employee/decisions/' || d.id || '/download'
-            END AS download_path
+            d.document_key
         FROM decision d
         LEFT JOIN evaka_user e ON e.id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """
+                )
+            }
+            .map {
+                DocumentMetadata(
+                    name =
+                        column<DecisionType>("type").let {
+                            when (it) {
+                                DecisionType.DAYCARE -> "Päätös varhaiskasvatuksesta"
+                                DecisionType.DAYCARE_PART_TIME ->
+                                    "Päätös osa-aikaisesta varhaiskasvatuksesta"
+                                DecisionType.PRESCHOOL -> "Päätös esiopetuksesta"
+                                DecisionType.PREPARATORY_EDUCATION ->
+                                    "Päätös valmistavasta opetuksesta"
+                                DecisionType.PRESCHOOL_DAYCARE ->
+                                    "Päätös liittyvästä varhaiskasvatuksesta"
+                                DecisionType.CLUB -> "Päätös kerhosta"
+                                DecisionType.PRESCHOOL_CLUB -> "Päätös esiopetuksen kerhosta"
+                            }
+                        },
+                    createdAt =
+                        column<LocalDate>("sent_date").let { HelsinkiDateTime.atStartOfDay(it) },
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    confidential = true,
+                    downloadPath =
+                        column<String?>("document_key")?.let {
+                            "/employee/decisions/$decisionId/download"
+                        },
                 )
             }
             .exactlyOne()
@@ -494,19 +566,30 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
-            'Maksupäätös' AS name,
-            d.created AS created_at,
+            d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            TRUE AS confidential,
-            CASE WHEN d.document_key IS NOT NULL 
-                THEN '/employee/fee-decisions/pdf/' || d.id
-            END AS download_path
+            d.document_key
         FROM fee_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
         WHERE d.id = ${bind(decisionId)}
     """
+                )
+            }
+            .map {
+                DocumentMetadata(
+                    name = "Maksupäätös",
+                    createdAt = column("created"),
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    confidential = true,
+                    downloadPath =
+                        column<String?>("document_key")?.let { "/employee/fee-decisions/pdf/$it" },
                 )
             }
             .exactlyOne()
@@ -517,20 +600,31 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         createQuery {
                 sql(
                     """
-        SELECT 
-            'Arvopäätös' AS name,
-            d.created AS created_at,
+        SELECT
+            d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            TRUE AS confidential,
-            CASE WHEN d.document_key IS NOT NULL 
-                THEN '/employee/value-decisions/pdf/' || d.id
-            END AS download_path
+            d.document_key
         FROM voucher_value_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by
         WHERE d.id = ${bind(voucherValueDecisionId)}
     """
+                )
+            }
+            .map {
+                DocumentMetadata(
+                    name = "Arvopäätös",
+                    createdAt = column("created"),
+                    createdBy =
+                        EvakaUser(
+                            id = column("created_by_id"),
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        ),
+                    confidential = true,
+                    downloadPath =
+                        column<String?>("document_key")?.let { "/employee/value-decisions/pdf/$it" },
                 )
             }
             .exactlyOne()

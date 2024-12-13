@@ -32,6 +32,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.DaycareId
@@ -92,6 +93,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
     @Autowired private lateinit var emailEnv: EmailEnv
+    @Autowired private lateinit var processMetadataController: ProcessMetadataController
 
     private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
     private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
@@ -1027,6 +1029,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
             process.history.map { it.enteredBy.id },
         )
+
+        val metadata =
+            processMetadataController.getFeeDecisionMetadata(
+                dbInstance(),
+                adminUser,
+                RealEvakaClock(),
+                draft.id,
+            )
+        assertEquals(process.processNumber, metadata.data?.process?.processNumber)
     }
 
     @Test

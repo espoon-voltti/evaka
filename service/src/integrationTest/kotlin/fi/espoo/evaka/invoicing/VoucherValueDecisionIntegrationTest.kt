@@ -29,6 +29,7 @@ import fi.espoo.evaka.placement.PlacementResponse
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ChildId
@@ -43,6 +44,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -79,6 +81,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var emailMessageProvider: IEmailMessageProvider
     @Autowired lateinit var emailEnv: EmailEnv
+    @Autowired lateinit var processMetadataController: ProcessMetadataController
+
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
 
     @BeforeEach
     fun beforeEach() {
@@ -86,6 +91,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         MockEmailClient.clear()
 
         db.transaction { tx ->
+            tx.insert(admin)
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
             tx.insert(testArea)
@@ -197,6 +203,15 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 ),
                 process.history.map { it.enteredBy.id },
             )
+
+            val metadata =
+                processMetadataController.getVoucherValueDecisionMetadata(
+                    dbInstance(),
+                    admin.user,
+                    MockEvakaClock(now),
+                    decision.id,
+                )
+            assertEquals(process.processNumber, metadata.data?.process?.processNumber)
         }
     }
 
