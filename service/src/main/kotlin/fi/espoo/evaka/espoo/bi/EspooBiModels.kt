@@ -121,8 +121,8 @@ data class BiGroupCaretakerAllocation(
 
 data class BiApplication(
     val id: UUID,
-    val created: HelsinkiDateTime,
-    val updated: HelsinkiDateTime,
+    val createdAt: HelsinkiDateTime,
+    val updatedAt: HelsinkiDateTime,
     val type: ApplicationType,
     val transferApplication: Boolean,
     val origin: ApplicationOrigin,

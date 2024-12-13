@@ -426,13 +426,14 @@ fun Database.Transaction.insertTestApplication(
     transferApplication: Boolean = false,
     allowOtherGuardianAccess: Boolean = true,
     document: DatabaseForm,
-    formModified: HelsinkiDateTime = HelsinkiDateTime.now(),
+    modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 ): ApplicationId {
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access, document, form_modified, confidential)
-VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(formModified)}, NULL)
+INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access, document, modified_at, modified_by, created_at, created_by, confidential)
+VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, NULL)
 """
             )
         }
@@ -947,7 +948,10 @@ INSERT INTO application(
     transferapplication,
     allow_other_guardian_access,
     document,
-    form_modified
+    created_at,
+    created_by,
+    modified_at,
+    modified_by
 )
 VALUES (
     ${bind(application.id)},
@@ -964,7 +968,10 @@ VALUES (
     ${bind(application.transferApplication)},
     ${bind(application.allowOtherGuardianAccess)},
     ${bindJson(document)},
-    ${bind(application.formModified)}
+    ${bind(application.createdAt)},
+    ${bind(application.createdBy)},
+    ${bind(application.modifiedAt)},
+    ${bind(application.modifiedBy)}
 )
 """
                     )

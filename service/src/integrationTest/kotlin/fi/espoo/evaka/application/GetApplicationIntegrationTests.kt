@@ -229,7 +229,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET created = '2020-01-01T00:00:00Z' WHERE id = ${bind(old)}"
+                    "UPDATE application SET created_at = '2020-01-01T00:00:00Z' WHERE id = ${bind(old)}"
                 )
             }
         }

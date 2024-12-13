@@ -274,9 +274,14 @@ class ApplicationStateService(
         personService.getGuardians(tx, user, application.childId)
 
         val applicationFlags = tx.applicationFlags(application, currentDate)
-        tx.updateApplicationFlags(application.id, applicationFlags)
+        tx.updateApplicationFlags(application.id, applicationFlags, clock.now(), user.evakaUserId)
 
-        tx.resetCheckedByAdminAndConfidentiality(applicationId, application.form)
+        tx.resetCheckedByAdminAndConfidentiality(
+            applicationId,
+            application.form,
+            clock.now(),
+            user.evakaUserId,
+        )
 
         val sentDate = application.sentDate ?: currentDate
         val dueDate =
@@ -289,7 +294,7 @@ class ApplicationStateService(
                     applicationFlags.isTransferApplication,
                     application.attachments,
                 )
-        tx.updateApplicationDates(application.id, sentDate, dueDate)
+        tx.updateApplicationDates(application.id, sentDate, dueDate, clock.now(), user.evakaUserId)
 
         tx.getPersonById(application.guardianId)?.let {
             val email =
@@ -374,7 +379,7 @@ class ApplicationStateService(
                     now = clock.now(),
                     userId = user.evakaUserId,
                 )
-                tx.setApplicationProcessId(applicationId, processId)
+                tx.setApplicationProcessId(applicationId, processId, clock.now(), user.evakaUserId)
             }
 
         Audit.ApplicationSend.log(targetId = AuditId(applicationId))
@@ -387,11 +392,11 @@ class ApplicationStateService(
         application: ApplicationDetails,
     ) {
         val applicationFlags = tx.applicationFlags(application, clock.today())
-        tx.updateApplicationFlags(application.id, applicationFlags)
+        tx.updateApplicationFlags(application.id, applicationFlags, clock.now(), user.evakaUserId)
 
         val sentDate = application.sentDate!!
         val dueDate = application.sentDate
-        tx.updateApplicationDates(application.id, sentDate, dueDate)
+        tx.updateApplicationDates(application.id, sentDate, dueDate, clock.now(), user.evakaUserId)
 
         if (!application.hideFromGuardian) {
             messageService.sendMessageAsEmployee(
@@ -421,7 +426,12 @@ class ApplicationStateService(
             )
         }
 
-        tx.resetCheckedByAdminAndConfidentiality(application.id, application.form)
+        tx.resetCheckedByAdminAndConfidentiality(
+            application.id,
+            application.form,
+            clock.now(),
+            user.evakaUserId,
+        )
 
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
     }
@@ -454,7 +464,12 @@ class ApplicationStateService(
             )
         )
 
-        tx.resetCheckedByAdminAndConfidentiality(applicationId, application.form)
+        tx.resetCheckedByAdminAndConfidentiality(
+            applicationId,
+            application.form,
+            clock.now(),
+            user.evakaUserId,
+        )
 
         asyncJobRunner.plan(
             tx,
@@ -495,7 +510,12 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_PLACEMENT, CANCELLED))
 
-        tx.resetCheckedByAdminAndConfidentiality(applicationId, application.form)
+        tx.resetCheckedByAdminAndConfidentiality(
+            applicationId,
+            application.form,
+            clock.now(),
+            user.evakaUserId,
+        )
 
         if (application.status == CANCELLED) {
             tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
@@ -531,9 +551,19 @@ class ApplicationStateService(
         if (application.confidential == null) {
             when {
                 user is AuthenticatedUser.Citizen ->
-                    tx.setApplicationConfidentiality(applicationId, true)
+                    tx.setApplicationConfidentiality(
+                        applicationId,
+                        true,
+                        clock.now(),
+                        user.evakaUserId,
+                    )
                 confidential != null ->
-                    tx.setApplicationConfidentiality(applicationId, confidential)
+                    tx.setApplicationConfidentiality(
+                        applicationId,
+                        confidential,
+                        clock.now(),
+                        user.evakaUserId,
+                    )
                 else -> throw BadRequest("Confidentiality must be set")
             }
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
@@ -574,11 +604,16 @@ class ApplicationStateService(
 
         if (application.confidential == null) {
             if (confidential != null) {
-                tx.setApplicationConfidentiality(applicationId, confidential)
+                tx.setApplicationConfidentiality(
+                    applicationId,
+                    confidential,
+                    clock.now(),
+                    user.evakaUserId,
+                )
             } else throw BadRequest("Confidentiality must be set")
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
-        tx.setApplicationVerified(applicationId, true)
+        tx.setApplicationVerified(applicationId, true, clock.now(), user.evakaUserId)
         Audit.ApplicationAdminDetailsUpdate.log(targetId = AuditId(applicationId))
     }
 
@@ -1106,8 +1141,13 @@ class ApplicationStateService(
             }
         }
 
-        tx.updateApplicationAllowOtherGuardianAccess(applicationId, update.allowOtherGuardianAccess)
-        tx.updateApplicationContents(now, original, updatedForm)
+        tx.updateApplicationAllowOtherGuardianAccess(
+            applicationId,
+            update.allowOtherGuardianAccess,
+            now,
+            user.evakaUserId,
+        )
+        tx.updateApplicationContents(now, user.evakaUserId, original, updatedForm)
         return getApplication(tx, applicationId)
     }
 
@@ -1152,6 +1192,7 @@ class ApplicationStateService(
 
         tx.updateApplicationContents(
             now,
+            user.evakaUserId,
             original,
             updatedForm,
             manuallySetDueDate = update.dueDate,
@@ -1168,6 +1209,7 @@ class ApplicationStateService(
 
     private fun Database.Transaction.updateApplicationContents(
         now: HelsinkiDateTime,
+        modifiedBy: EvakaUserId,
         original: ApplicationDetails,
         updatedForm: ApplicationForm,
         manuallySetDueDate: LocalDate? = null,
@@ -1183,8 +1225,10 @@ class ApplicationStateService(
             original.childRestricted,
             original.guardianRestricted,
             now,
+            modifiedBy,
         )
-        resetCheckedByAdminAndConfidentiality(original.id, updatedForm)
+
+        resetCheckedByAdminAndConfidentiality(original.id, updatedForm, now, modifiedBy)
         when (manuallySetDueDate) {
             null ->
                 // We don't want to calculate the due date for applications in the CREATED state.
