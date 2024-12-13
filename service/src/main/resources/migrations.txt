@@ -472,3 +472,4 @@ V473__person_municipality_of_residence.sql
 V474__holiday_questionnaire_open_ranges.sql
 V475__application_modified_metadata.sql
 V476__finance_metadata_process.sql
+V477__delete_disallowed_personal_mobile_pairings.sql
