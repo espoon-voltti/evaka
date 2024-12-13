@@ -7,6 +7,13 @@ import { validate, v4 as uuidv4 } from 'uuid'
 declare const id: unique symbol
 export type Id<B extends string> = string & { [id]: B }
 
+export function tryFromUuid<T extends Id<string>>(id: string): T | undefined {
+  if (!validate(id)) {
+    return undefined
+  }
+  return id as T
+}
+
 export function fromUuid<T extends Id<string>>(id: string): T {
   if (!validate(id)) {
     throw new Error(`Invalid UUID: ${id}`)
