@@ -5,21 +5,9 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.messaging.deactivateEmployeeMessageAccount
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.auth.*
+import fi.espoo.evaka.shared.auth.hasAnyDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
-
-fun removeDaycareAclForRole(
-    tx: Database.Transaction,
-    daycareId: DaycareId,
-    employeeId: EmployeeId,
-    role: UserRole,
-) {
-    tx.syncDaycareGroupAcl(daycareId, employeeId, emptyList())
-    tx.deleteDaycareAclRow(daycareId, employeeId, role)
-    deactivatePersonalMessageAccountIfNeeded(tx, employeeId)
-}
 
 fun deactivatePersonalMessageAccountIfNeeded(tx: Database.Transaction, employeeId: EmployeeId) {
     if (!tx.hasAnyDaycareAclRow(employeeId)) {
