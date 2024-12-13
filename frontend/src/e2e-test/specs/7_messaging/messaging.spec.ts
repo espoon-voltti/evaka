@@ -9,7 +9,7 @@ import {
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -483,7 +483,7 @@ describe('Sending and receiving messages', () => {
         await Fixture.serviceNeed({
           placementId: daycarePlacementFixture.id,
           optionId: serviceNeedOption.id,
-          confirmedBy: unitSupervisor.id,
+          confirmedBy: evakaUserId(unitSupervisor.id),
           shiftCare: 'FULL',
           startDate: daycarePlacementFixture.startDate,
           endDate: daycarePlacementFixture.endDate

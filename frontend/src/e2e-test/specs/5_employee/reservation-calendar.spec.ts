@@ -6,7 +6,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import { BackupCareId, GroupId } from 'lib-common/generated/api-types/shared'
-import { randomId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -96,7 +96,7 @@ const insertTestDataAndLogin = async ({
     startDate: placementStartDate,
     endDate: placementEndDate,
     optionId: serviceNeedOption.id,
-    confirmedBy: unitSupervisor.id,
+    confirmedBy: evakaUserId(unitSupervisor.id),
     shiftCare: childShiftCare
   }).save()
   await Fixture.backupCare({
@@ -659,7 +659,7 @@ describe('Unit group calendar for shift care unit', () => {
         startDate: range.start,
         endDate: range.end,
         optionId: serviceNeedOption.id,
-        confirmedBy: employee.id,
+        confirmedBy: evakaUserId(employee.id),
         shiftCare: child.id === child1.id ? 'FULL' : 'NONE'
       }).save()
     }

@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -55,7 +56,7 @@ beforeEach(async () => {
     startDate: startDate,
     endDate: endDate,
     optionId: serviceNeedOption.id,
-    confirmedBy: unitSupervisor.id
+    confirmedBy: evakaUserId(unitSupervisor.id)
   }).save()
   await Fixture.backupCare({
     childId: testChild2.id,

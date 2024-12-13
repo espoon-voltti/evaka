@@ -5,6 +5,7 @@
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -93,7 +94,7 @@ describe('Child Information placement info', () => {
         placementId,
         endDate: LocalDate.todayInSystemTz(),
         terminationRequestedDate: LocalDate.todayInSystemTz(),
-        terminatedBy: familyWithTwoGuardians.guardian.id
+        terminatedBy: evakaUserId(familyWithTwoGuardians.guardian.id)
       }
     })
 

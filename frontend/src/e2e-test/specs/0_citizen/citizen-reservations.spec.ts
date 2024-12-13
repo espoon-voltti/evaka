@@ -8,6 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -171,7 +172,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       absenceType: 'UNKNOWN_ABSENCE',
       date: today.addDays(35),
       absenceCategory: 'BILLABLE',
-      modifiedBy: employee.id
+      modifiedBy: evakaUserId(employee.id)
     }).save()
 
     const calendarPage = await openCalendarPage(env)
@@ -920,7 +921,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: testAdult.id
+      modifiedBy: evakaUserId(testAdult.id)
     }).save()
 
     const calendarPage = await openCalendarPage(env)
@@ -987,7 +988,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: testAdult.id,
+      modifiedBy: evakaUserId(testAdult.id),
       absenceType: 'PLANNED_ABSENCE'
     }).save()
 
@@ -1019,7 +1020,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: testAdult.id,
+      modifiedBy: evakaUserId(testAdult.id),
       absenceType: 'SICKLEAVE'
     }).save()
 
@@ -1047,13 +1048,13 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: testAdult.id,
+      modifiedBy: evakaUserId(testAdult.id),
       absenceCategory: 'BILLABLE'
     }).save()
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: testAdult.id,
+      modifiedBy: evakaUserId(testAdult.id),
       absenceCategory: 'NONBILLABLE'
     }).save()
 
@@ -1081,7 +1082,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: testAdult.id,
+      modifiedBy: evakaUserId(testAdult.id),
       absenceCategory: 'BILLABLE',
       absenceType: 'PLANNED_ABSENCE'
     }).save()
@@ -1110,7 +1111,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: testAdult.id,
+      modifiedBy: evakaUserId(testAdult.id),
       absenceCategory: 'BILLABLE',
       absenceType: 'PLANNED_ABSENCE'
     }).save()
@@ -1141,7 +1142,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await Fixture.absence({
       childId: testChild2.id,
       date: today,
-      modifiedBy: testAdult.id,
+      modifiedBy: evakaUserId(testAdult.id),
       absenceCategory: 'BILLABLE',
       absenceType: 'PLANNED_ABSENCE'
     }).save()
@@ -1349,7 +1350,7 @@ describe('Citizen calendar child visibility', () => {
       startDate: placement.startDate,
       endDate: placement.endDate,
       optionId: serviceNeedOption.id,
-      confirmedBy: unitSupervisor.id,
+      confirmedBy: evakaUserId(unitSupervisor.id),
       shiftCare: 'FULL'
     }).save()
 
@@ -1392,7 +1393,7 @@ describe('Citizen calendar child visibility', () => {
       startDate: placement.startDate,
       endDate: placement.endDate,
       optionId: serviceNeedOption.id,
-      confirmedBy: unitSupervisor.id,
+      confirmedBy: evakaUserId(unitSupervisor.id),
       shiftCare: 'FULL'
     }).save()
 

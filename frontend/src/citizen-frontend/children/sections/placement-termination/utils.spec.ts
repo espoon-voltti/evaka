@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
-import { fromUuid } from 'lib-common/id-type'
+import { evakaUserId, fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import { terminatedPlacementInfo } from './utils'
@@ -29,7 +29,7 @@ describe('Terminated placement info', () => {
           terminatable: true,
           terminationRequestedDate: LocalDate.of(2021, 1, 20),
           terminatedBy: {
-            id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
+            id: evakaUserId(fromUuid('87a5c962-9b3d-11ea-bb37-0242ac130002')),
             name: 'Karhula Johannes Olavi Antero Tapio',
             type: 'CITIZEN'
           }
@@ -79,7 +79,7 @@ describe('Terminated placement info', () => {
           terminatable: true,
           terminationRequestedDate: LocalDate.of(2022, 3, 1),
           terminatedBy: {
-            id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
+            id: evakaUserId(fromUuid('87a5c962-9b3d-11ea-bb37-0242ac130002')),
             name: 'Karhula Johannes Olavi Antero Tapio',
             type: 'CITIZEN'
           }
@@ -114,7 +114,7 @@ describe('Terminated placement info', () => {
           terminatable: true,
           terminationRequestedDate: LocalDate.of(2022, 2, 1),
           terminatedBy: {
-            id: 'c174821e-81d1-11ed-b390-3330163bf811',
+            id: evakaUserId(fromUuid('c174821e-81d1-11ed-b390-3330163bf811')),
             name: 'Karhula Johannes Olavi Antero Tapio',
             type: 'CITIZEN'
           }

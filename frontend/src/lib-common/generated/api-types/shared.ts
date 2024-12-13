@@ -142,7 +142,7 @@ export interface EmployeeFeatures {
 
 export type EmployeeId = Id<'Employee'>
 
-export type EvakaUserId = string
+export type EvakaUserId = Id<'EvakaUser'>
 
 export type FeeAlterationId = string
 

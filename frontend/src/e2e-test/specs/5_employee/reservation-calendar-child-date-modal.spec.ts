@@ -4,6 +4,7 @@
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -340,7 +341,7 @@ test('Intermittent shift care outside opening times', async () => {
     shiftCare: 'INTERMITTENT',
     startDate: today.subDays(2),
     endDate: today.addDays(1),
-    confirmedBy: unitSupervisor.id
+    confirmedBy: evakaUserId(unitSupervisor.id)
   }).save()
   // No intermittent shift care for date 2
   await Fixture.serviceNeed({
@@ -349,7 +350,7 @@ test('Intermittent shift care outside opening times', async () => {
     shiftCare: 'NONE',
     startDate: today.addDays(2),
     endDate: today.addDays(2),
-    confirmedBy: unitSupervisor.id
+    confirmedBy: evakaUserId(unitSupervisor.id)
   }).save()
   const weekCalendar = await navigateToTestView({
     intermittentShiftCareEnabled: true
@@ -404,7 +405,7 @@ test('Intermittent shift care on a holiday', async () => {
     shiftCare: 'INTERMITTENT',
     startDate: today.subDays(2),
     endDate: date1,
-    confirmedBy: unitSupervisor.id
+    confirmedBy: evakaUserId(unitSupervisor.id)
   }).save()
   // No intermittent shift care for date 2
   await Fixture.serviceNeed({
@@ -413,7 +414,7 @@ test('Intermittent shift care on a holiday', async () => {
     shiftCare: 'NONE',
     startDate: date1.addDays(1),
     endDate: date2,
-    confirmedBy: unitSupervisor.id
+    confirmedBy: evakaUserId(unitSupervisor.id)
   }).save()
   const weekCalendar = await navigateToTestView({
     intermittentShiftCareEnabled: true
@@ -460,7 +461,7 @@ test('Intermittent shift care on a weekend', async () => {
     shiftCare: 'INTERMITTENT',
     startDate: today.subDays(2),
     endDate: today.addDays(7),
-    confirmedBy: unitSupervisor.id
+    confirmedBy: evakaUserId(unitSupervisor.id)
   }).save()
   const weekCalendar = await navigateToTestView({
     intermittentShiftCareEnabled: true

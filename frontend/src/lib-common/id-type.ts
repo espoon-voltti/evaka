@@ -4,6 +4,8 @@
 
 import { validate, v4 as uuidv4 } from 'uuid'
 
+import { EmployeeId, EvakaUserId, PersonId } from './generated/api-types/shared'
+
 declare const id: unique symbol
 export type Id<B extends string> = string & { [id]: B }
 
@@ -30,4 +32,10 @@ export function fromNullableUuid<T extends Id<string>>(
 
 export function randomId<T extends Id<string>>(): T {
   return uuidv4() as T
+}
+
+export function evakaUserId(employeeId: EmployeeId): EvakaUserId
+export function evakaUserId(personId: PersonId): EvakaUserId
+export function evakaUserId(id: string): EvakaUserId {
+  return id as EvakaUserId
 }

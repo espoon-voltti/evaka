@@ -7,7 +7,7 @@ import { BrowserContextOptions } from 'playwright'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import { EvakaBrowserContextOptions, mobileViewport } from '../../browser'
@@ -598,7 +598,7 @@ describe('Child mobile attendance list', () => {
       endDate: placement.endDate,
       shiftCare: 'FULL',
       optionId: serviceNeedOption.id,
-      confirmedBy: employee.id
+      confirmedBy: evakaUserId(employee.id)
     }).save()
 
     const mobileSignupUrl = await pairMobileDevice(testDaycare.id)

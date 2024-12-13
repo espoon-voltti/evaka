@@ -4,7 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { GroupId } from 'lib-common/generated/api-types/shared'
-import { randomId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -123,7 +123,7 @@ describe('Unit groups - unit supervisor', () => {
         placementId: child1DaycarePlacementId,
         endDate: LocalDate.todayInSystemTz(),
         terminationRequestedDate: LocalDate.todayInSystemTz(),
-        terminatedBy: unitSupervisor.id
+        terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
     const groupsPage = await loadUnitGroupsPage()
@@ -136,7 +136,7 @@ describe('Unit groups - unit supervisor', () => {
         placementId: child1DaycarePlacementId,
         endDate: LocalDate.todayInSystemTz(),
         terminationRequestedDate: LocalDate.todayInSystemTz(),
-        terminatedBy: unitSupervisor.id
+        terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
 
@@ -145,7 +145,7 @@ describe('Unit groups - unit supervisor', () => {
         placementId: child2DaycarePlacementId,
         endDate: LocalDate.todayInSystemTz(),
         terminationRequestedDate: LocalDate.todayInSystemTz(),
-        terminatedBy: unitSupervisor.id
+        terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
 
@@ -157,7 +157,7 @@ describe('Unit groups - unit supervisor', () => {
         placementId: child1DaycarePlacementId,
         endDate: LocalDate.todayInSystemTz(),
         terminationRequestedDate: LocalDate.todayInSystemTz().subDays(15),
-        terminatedBy: unitSupervisor.id
+        terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
     groupsPage = await loadUnitGroupsPage()
@@ -267,7 +267,7 @@ describe('Unit groups - unit supervisor', () => {
     await Fixture.serviceNeed({
       placementId: child2DaycarePlacementId,
       optionId: specialServiceNeed.id,
-      confirmedBy: unitSupervisor.id
+      confirmedBy: evakaUserId(unitSupervisor.id)
     }).save()
 
     await page.reload()
@@ -291,7 +291,7 @@ describe('Unit groups - staff', () => {
         placementId: child1DaycarePlacementId,
         endDate: LocalDate.todayInSystemTz(),
         terminationRequestedDate: LocalDate.todayInSystemTz(),
-        terminatedBy: unitSupervisor.id
+        terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
     const groupsPage = await loadUnitGroupsPage()

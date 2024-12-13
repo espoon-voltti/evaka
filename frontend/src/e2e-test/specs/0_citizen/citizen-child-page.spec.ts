@@ -4,6 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -578,7 +579,7 @@ describe.each(['desktop', 'mobile'] as const)(
         startDate: mockedDate.subMonths(1),
         endDate: mockedDate,
         optionId: serviceNeedOption.id,
-        confirmedBy: daycareSupervisor.id
+        confirmedBy: evakaUserId(daycareSupervisor.id)
       }).save()
       await Fixture.dailyServiceTime({
         childId: testChild.id,

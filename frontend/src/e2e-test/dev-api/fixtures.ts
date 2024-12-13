@@ -46,7 +46,7 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { fromUuid, randomId } from 'lib-common/id-type'
+import { evakaUserId, fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -3151,7 +3151,7 @@ export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
   worksAtECHA: false
 })
 
-export const nullUUID = '00000000-0000-0000-0000-000000000000'
+const nullUUID = evakaUserId(fromUuid('00000000-0000-0000-0000-000000000000'))
 
 export const systemInternalUser: EvakaUser = {
   id: nullUUID,
@@ -3160,7 +3160,7 @@ export const systemInternalUser: EvakaUser = {
 }
 
 export const employeeToEvakaUser = (employee: DevEmployee): EvakaUser => ({
-  id: employee.id,
+  id: evakaUserId(employee.id),
   name: employee.firstName + ' ' + employee.lastName,
   type: 'EMPLOYEE'
 })

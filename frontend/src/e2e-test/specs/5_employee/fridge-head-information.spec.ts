@@ -5,7 +5,7 @@
 import DateRange from 'lib-common/date-range'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { fromUuid } from 'lib-common/id-type'
+import { evakaUserId, fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -213,7 +213,7 @@ describe('Employee - Head of family details', () => {
           coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
         }
       },
-      modifiedBy: employee.id
+      modifiedBy: evakaUserId(employee.id)
     }).save()
 
     const totalChildIncome = 1234
@@ -231,7 +231,7 @@ describe('Employee - Head of family details', () => {
           coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
         }
       },
-      modifiedBy: employee.id
+      modifiedBy: evakaUserId(employee.id)
     }).save()
 
     await guardianInformation.navigateToGuardian(regularPerson.id)

@@ -5,6 +5,7 @@
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -122,7 +123,7 @@ describe('Service need', () => {
     await Fixture.serviceNeed({
       placementId: placement.id,
       optionId: inactiveServiceNeedOption.id,
-      confirmedBy: employee.id
+      confirmedBy: evakaUserId(employee.id)
     }).save()
     const section = await openCollapsible()
 

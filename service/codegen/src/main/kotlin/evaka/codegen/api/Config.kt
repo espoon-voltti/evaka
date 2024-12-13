@@ -80,7 +80,6 @@ val lenientIdTypes =
         DatabaseTable.Decision::class,
         DatabaseTable.DocumentTemplate::class,
         DatabaseTable.EmployeePin::class,
-        DatabaseTable.EvakaUser::class,
         DatabaseTable.FamilyContact::class,
         DatabaseTable.FeeAlteration::class,
         DatabaseTable.FeeDecision::class,

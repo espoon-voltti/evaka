@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -84,7 +85,7 @@ describe('Assistance need and actions report', () => {
 
     await Fixture.assistanceAction({
       childId,
-      updatedBy: admin.id,
+      updatedBy: evakaUserId(admin.id),
       startDate: validDuring.start,
       endDate: validDuring.end,
       actions: ['ASSISTANCE_SERVICE_CHILD']
@@ -129,7 +130,7 @@ describe('Assistance need and actions report', () => {
     }).save()
     await Fixture.assistanceAction({
       childId,
-      updatedBy: admin.id,
+      updatedBy: evakaUserId(admin.id),
       startDate: validDuring.start,
       endDate: validDuring.end,
       actions: ['ASSISTANCE_SERVICE_CHILD']
@@ -198,7 +199,7 @@ describe('Assistance need and actions report', () => {
     }).save()
     await Fixture.assistanceAction({
       childId,
-      updatedBy: admin.id,
+      updatedBy: evakaUserId(admin.id),
       startDate: validDuring.start,
       endDate: validDuring.end,
       actions: ['ASSISTANCE_SERVICE_CHILD']
