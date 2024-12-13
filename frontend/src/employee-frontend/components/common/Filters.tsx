@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
 import {
+  ApplicationBasis,
   ApplicationStatusOption,
   applicationStatusOptions,
   ApplicationTypeToggle,
@@ -1088,17 +1089,6 @@ export function ApplicationDateFilter({
   )
 }
 
-export type ApplicationBasis =
-  | 'ADDITIONAL_INFO'
-  | 'SIBLING_BASIS'
-  | 'ASSISTANCE_NEED'
-  | 'CLUB_CARE'
-  | 'DAYCARE'
-  | 'EXTENDED_CARE'
-  | 'DUPLICATE_APPLICATION'
-  | 'URGENT'
-  | 'HAS_ATTACHMENTS'
-
 interface ApplicationBasisFilterProps {
   toggled: ApplicationBasis[]
   toggle: (applicationDateType: ApplicationBasis) => () => void
@@ -1172,6 +1162,18 @@ export function ApplicationBasisFilter({
             size="m"
             onClick={toggle('DAYCARE')}
             active={toggled.includes('DAYCARE')}
+          />
+        </Tooltip>
+        <Tooltip
+          tooltip={i18n.applications.basisTooltip.CONTINUATION}
+          position="top"
+        >
+          <RoundIcon
+            content="="
+            color={applicationBasisColors.CONTINUATION}
+            size="m"
+            onClick={toggle('CONTINUATION')}
+            active={toggled.includes('CONTINUATION')}
           />
         </Tooltip>
         <Tooltip

@@ -364,6 +364,7 @@ export const fi = {
       SIBLING_BASIS: 'Käyttää sisarusperustetta',
       ASSISTANCE_NEED: 'Tuen tarve',
       CLUB_CARE: 'Edellisenä toimintakautena ollut kerhopaikka',
+      CONTINUATION: 'Jatkava lapsi',
       DAYCARE: 'On ilmoittanut luopuvansa varhaiskasvatuspaikasta',
       EXTENDED_CARE: 'Vuorotyö',
       DUPLICATE_APPLICATION: 'Tuplahakemus',

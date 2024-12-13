@@ -88,6 +88,7 @@ export type ApplicationBasis =
   | 'SIBLING_BASIS'
   | 'ASSISTANCE_NEED'
   | 'CLUB_CARE'
+  | 'CONTINUATION'
   | 'DAYCARE'
   | 'EXTENDED_CARE'
   | 'DUPLICATE_APPLICATION'
@@ -293,6 +294,7 @@ export interface ApplicationSummary {
   attachmentCount: number
   checkedByAdmin: boolean
   confidential: boolean | null
+  continuation: boolean
   currentPlacementUnit: PreferredUnit | null
   dateOfBirth: LocalDate | null
   dueDate: LocalDate | null
