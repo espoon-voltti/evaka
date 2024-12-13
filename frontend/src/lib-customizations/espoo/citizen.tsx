@@ -533,6 +533,15 @@ const customizations: CitizenCustomizations = {
           title: 'Tulotietojen täyttäminen',
           estimate: 'Arvio palkkatuloistani (ennen veroja)'
         }
+      },
+      decisions: {
+        assistanceDecisions: {
+          decision: {
+            motivationForDecision:
+              'Perustelut lapsen tuen tasolle ja tuen järjestelyt loma-aikoina',
+            unitMayChange: ''
+          }
+        }
       }
     },
     sv: {
@@ -1061,6 +1070,15 @@ const customizations: CitizenCustomizations = {
         grossIncome: {
           title: 'Att fylla i uppgifterna om inkomster',
           estimate: 'Uppskattning av mina bruttolön (före skatt)'
+        }
+      },
+      decisions: {
+        assistanceDecisions: {
+          decision: {
+            motivationForDecision:
+              'Motivering för barnets stödbehov och arrangemang för stöd under lovtider',
+            unitMayChange: ''
+          }
         }
       }
     },

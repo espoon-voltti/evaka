@@ -25,6 +25,11 @@ const customizations: EmployeeCustomizations = {
         }
       },
       childInformation: {
+        assistanceNeedDecision: {
+          motivationForDecision:
+            'Perustelut lapsen tuen tasolle ja tuen järjestelyt loma-aikoina',
+          unitMayChange: ''
+        },
         pedagogicalDocument: {
           explanation:
             'Pedagogisen dokumentoinnin ominaisuutta käytetään toiminnasta kertovien kuvien ja digitaalisten dokumenttien jakamiseen.',
@@ -37,7 +42,15 @@ const customizations: EmployeeCustomizations = {
         }
       }
     },
-    sv: {}
+    sv: {
+      childInformation: {
+        assistanceNeedDecision: {
+          motivationForDecision:
+            'Motivering för barnets stödbehov och arrangemang för stöd under lovtider',
+          unitMayChange: ''
+        }
+      }
+    }
   },
   cityLogo: <img src={Logo} alt="Espoo Logo" data-qa="footer-city-logo" />,
   featureFlags,

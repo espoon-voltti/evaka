@@ -467,7 +467,7 @@ describe('Citizen assistance decisions', () => {
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.selectedUnit(),
-      `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+      `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}`
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.motivationForDecision(),
