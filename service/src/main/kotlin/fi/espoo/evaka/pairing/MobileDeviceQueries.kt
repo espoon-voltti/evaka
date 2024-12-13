@@ -78,3 +78,7 @@ fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
 
 fun Database.Transaction.deleteDevice(id: MobileDeviceId) =
     createUpdate { sql("DELETE FROM mobile_device WHERE id = ${bind(id)}") }.execute()
+
+fun Database.Transaction.deletePersonalDevices(employee: EmployeeId) = execute {
+    sql("DELETE FROM mobile_device WHERE employee_id = ${bind(employee)}")
+}

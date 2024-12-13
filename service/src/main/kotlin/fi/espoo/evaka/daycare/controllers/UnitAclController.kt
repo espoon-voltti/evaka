@@ -10,14 +10,16 @@ import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.OccupancyCoefficientUpsert
 import fi.espoo.evaka.attendance.getOccupancyCoefficientForEmployeeInUnit
 import fi.espoo.evaka.attendance.upsertOccupancyCoefficient
-import fi.espoo.evaka.daycare.removeDaycareAclForRole
+import fi.espoo.evaka.daycare.deactivatePersonalMessageAccountIfNeeded
 import fi.espoo.evaka.messaging.deactivateEmployeeMessageAccount
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.pairing.deletePersonalDevices
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.TemporaryEmployee
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.getEmployee
+import fi.espoo.evaka.pis.getEmployeeRoles
 import fi.espoo.evaka.pis.getPinCode
 import fi.espoo.evaka.pis.getTemporaryEmployees
 import fi.espoo.evaka.pis.updateEmployee
@@ -26,6 +28,8 @@ import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.*
@@ -41,8 +45,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class UnitAclController(private val accessControl: AccessControl) {
-
+class UnitAclController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+) {
     val coefficientPositiveValue = BigDecimal("7.00")
     val coefficientNegativeValue = BigDecimal("0.00")
 
@@ -110,7 +116,13 @@ class UnitAclController(private val accessControl: AccessControl) {
                     daycareId,
                 )
                 validateIsPermanentEmployee(it, employeeId)
-                removeDaycareAclForRole(it, daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
+                removeDaycareAclForRole(
+                    it,
+                    clock.now(),
+                    daycareId,
+                    employeeId,
+                    UserRole.UNIT_SUPERVISOR,
+                )
             }
         }
         Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
@@ -136,6 +148,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(
                     it,
+                    clock.now(),
                     daycareId,
                     employeeId,
                     UserRole.SPECIAL_EDUCATION_TEACHER,
@@ -165,6 +178,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(
                     it,
+                    clock.now(),
                     daycareId,
                     employeeId,
                     UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
@@ -192,7 +206,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     daycareId,
                 )
                 validateIsPermanentEmployee(it, employeeId)
-                removeDaycareAclForRole(it, daycareId, employeeId, UserRole.STAFF)
+                removeDaycareAclForRole(it, clock.now(), daycareId, employeeId, UserRole.STAFF)
             }
         }
         Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
@@ -594,4 +608,47 @@ class UnitAclController(private val accessControl: AccessControl) {
 
     fun parseCoefficientValue(bool: Boolean) =
         if (bool) coefficientPositiveValue else coefficientNegativeValue
+
+    init {
+        asyncJobRunner.registerHandler(::deletePersonalMobileDevicesIfNeeded)
+    }
+
+    private fun deletePersonalMobileDevicesIfNeeded(
+        db: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.DeletePersonalDevicesIfNeeded,
+    ) {
+        db.transaction { tx ->
+            if (
+                !accessControl.hasPermissionFor(
+                    tx,
+                    AuthenticatedUser.Employee(job.employeeId, tx.getEmployeeRoles(job.employeeId)),
+                    clock,
+                    Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING,
+                )
+            ) {
+                tx.deletePersonalDevices(job.employeeId)
+            }
+        }
+    }
+
+    fun removeDaycareAclForRole(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime,
+        daycareId: DaycareId,
+        employeeId: EmployeeId,
+        role: UserRole,
+    ) {
+        tx.syncDaycareGroupAcl(daycareId, employeeId, emptyList())
+        tx.deleteDaycareAclRow(daycareId, employeeId, role)
+        deactivatePersonalMessageAccountIfNeeded(tx, employeeId)
+
+        // Delete personal mobile devices after a while, in case the employee is added back to this
+        // or some other unit
+        asyncJobRunner.plan(
+            tx,
+            listOf(AsyncJob.DeletePersonalDevicesIfNeeded(employeeId)),
+            runAt = now.plusHours(1),
+        )
+    }
 }

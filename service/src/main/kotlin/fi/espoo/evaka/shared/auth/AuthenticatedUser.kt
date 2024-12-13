@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.google.common.hash.HashCode
 import com.google.common.hash.Hashing
+import fi.espoo.evaka.pis.EmployeeRoles
 import fi.espoo.evaka.pis.EmployeeUser
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -45,6 +46,11 @@ sealed class AuthenticatedUser {
         val globalRoles: Set<UserRole>,
         val allScopedRoles: Set<UserRole>,
     ) : AuthenticatedUser() {
+        constructor(
+            id: EmployeeId,
+            roles: EmployeeRoles,
+        ) : this(id, roles.globalRoles, roles.allScopedRoles)
+
         constructor(
             id: EmployeeId,
             roles: Set<UserRole>,
