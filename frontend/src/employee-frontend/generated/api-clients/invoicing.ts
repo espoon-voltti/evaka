@@ -12,8 +12,8 @@ import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import { FeeAlterationId } from 'lib-common/generated/api-types/shared'
 import { FeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import { FeeDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
@@ -52,8 +52,8 @@ import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionVoucherValueId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
-import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import { VoucherValueDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { client } from '../../api/client'
@@ -61,7 +61,7 @@ import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeDecision } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonFeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonFeeDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
@@ -73,7 +73,7 @@ import { deserializeJsonPagedInvoiceSummaryResponses } from 'lib-common/generate
 import { deserializeJsonPagedPayments } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonPagedVoucherValueDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonVoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonVoucherValueDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonVoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
 import { uri } from 'lib-common/uri'
 
@@ -196,12 +196,12 @@ export async function getFeeDecision(
   request: {
     id: FeeDecisionId
   }
-): Promise<FeeDecisionDetailed> {
-  const { data: json } = await client.request<JsonOf<FeeDecisionDetailed>>({
+): Promise<FeeDecisionResponse> {
+  const { data: json } = await client.request<JsonOf<FeeDecisionResponse>>({
     url: uri`/employee/fee-decisions/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonFeeDecisionDetailed(json)
+  return deserializeJsonFeeDecisionResponse(json)
 }
 
 
@@ -950,12 +950,12 @@ export async function getVoucherValueDecision(
   request: {
     id: VoucherValueDecisionId
   }
-): Promise<VoucherValueDecisionDetailed> {
-  const { data: json } = await client.request<JsonOf<VoucherValueDecisionDetailed>>({
+): Promise<VoucherValueDecisionResponse> {
+  const { data: json } = await client.request<JsonOf<VoucherValueDecisionResponse>>({
     url: uri`/employee/value-decisions/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonVoucherValueDecisionDetailed(json)
+  return deserializeJsonVoucherValueDecisionResponse(json)
 }
 
 

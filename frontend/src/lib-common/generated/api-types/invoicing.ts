@@ -262,6 +262,14 @@ export interface FeeDecisionPlacement {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.FeeDecisionResponse
+*/
+export interface FeeDecisionResponse {
+  data: FeeDecisionDetailed
+  permittedActions: Action.FeeDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 */
 export interface FeeDecisionServiceNeed {
@@ -1081,6 +1089,14 @@ export interface VoucherValueDecisionPlacementDetailed {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.VoucherValueDecisionResponse
+*/
+export interface VoucherValueDecisionResponse {
+  data: VoucherValueDecisionDetailed
+  permittedActions: Action.VoucherValueDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 */
 export interface VoucherValueDecisionServiceNeed {
@@ -1229,6 +1245,14 @@ export function deserializeJsonFeeDecisionDetailed(json: JsonOf<FeeDecisionDetai
     partner: (json.partner != null) ? deserializeJsonPersonDetailed(json.partner) : null,
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonFeeDecisionResponse(json: JsonOf<FeeDecisionResponse>): FeeDecisionResponse {
+  return {
+    ...json,
+    data: deserializeJsonFeeDecisionDetailed(json.data)
   }
 }
 
@@ -1523,6 +1547,14 @@ export function deserializeJsonVoucherValueDecisionDetailed(json: JsonOf<Voucher
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: LocalDate.parseIso(json.validTo)
+  }
+}
+
+
+export function deserializeJsonVoucherValueDecisionResponse(json: JsonOf<VoucherValueDecisionResponse>): VoucherValueDecisionResponse {
+  return {
+    ...json,
+    data: deserializeJsonVoucherValueDecisionDetailed(json.data)
   }
 }
 

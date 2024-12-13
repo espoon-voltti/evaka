@@ -25,6 +25,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
+import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
@@ -34,6 +37,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -96,6 +100,7 @@ class VoucherValueDecisionService(
         clock: EvakaClock,
         decisionId: VoucherValueDecisionId,
     ): Boolean {
+        val now = clock.now()
         val decision = getDecision(tx, decisionId)
         check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
             "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
@@ -148,14 +153,24 @@ class VoucherValueDecisionService(
                     )
                 )
             ),
-            runAt = clock.now(),
+            runAt = now,
         )
 
-        tx.markVoucherValueDecisionsSent(listOf(decision.id), clock.now())
+        tx.markVoucherValueDecisionsSent(listOf(decision.id), now)
+
+        tx.getArchiveProcessByVoucherValueDecisionId(decisionId)?.let { process ->
+            tx.insertProcessHistoryRow(
+                processId = process.id,
+                state = ArchivedProcessState.COMPLETED,
+                now = now,
+                userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+            )
+        }
+
         asyncJobRunner.plan(
             tx,
             listOf(AsyncJob.SendNewVoucherValueDecisionEmail(decisionId = decision.id)),
-            runAt = clock.now(),
+            runAt = now,
         )
         return true
     }

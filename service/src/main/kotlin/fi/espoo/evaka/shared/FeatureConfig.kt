@@ -166,7 +166,9 @@ enum class ArchiveProcessType {
     APPLICATION_PRESCHOOL,
     APPLICATION_CLUB,
     ASSISTANCE_NEED_DECISION_DAYCARE,
-    ASSISTANCE_NEED_DECISION_PRESCHOOL;
+    ASSISTANCE_NEED_DECISION_PRESCHOOL,
+    FEE_DECISION,
+    VOUCHER_VALUE_DECISION;
 
     companion object {
         fun fromApplicationType(type: ApplicationType): ArchiveProcessType =

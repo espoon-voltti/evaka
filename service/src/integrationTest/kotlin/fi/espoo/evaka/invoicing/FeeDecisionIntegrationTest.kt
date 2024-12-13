@@ -31,6 +31,9 @@ import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.ProcessMetadataController
+import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -90,6 +93,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
     @Autowired private lateinit var emailEnv: EmailEnv
+    @Autowired private lateinit var processMetadataController: ProcessMetadataController
 
     private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
     private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
@@ -986,7 +990,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `confirmDrafts updates status, decision number, approver on draft`() {
+    fun `confirmDrafts updates status, decision number, approver and process id on draft`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
 
@@ -1005,6 +1009,35 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result = getDecision(draft.id)
         assertEqualEnough(toDetailed(activated), result)
+
+        val process = db.read { tx -> tx.getArchiveProcessByFeeDecisionId(draft.id) }
+        assertNotNull(process)
+        assertEquals("1/123.789.a/${LocalDate.now().year}", process.processNumber)
+        assertEquals(
+            listOf(
+                ArchivedProcessState.INITIAL,
+                ArchivedProcessState.DECIDING,
+                ArchivedProcessState.COMPLETED,
+            ),
+            process.history.map { it.state },
+        )
+        assertEquals(
+            listOf(
+                AuthenticatedUser.SystemInternalUser.evakaUserId,
+                user.evakaUserId,
+                AuthenticatedUser.SystemInternalUser.evakaUserId,
+            ),
+            process.history.map { it.enteredBy.id },
+        )
+
+        val metadata =
+            processMetadataController.getFeeDecisionMetadata(
+                dbInstance(),
+                adminUser,
+                RealEvakaClock(),
+                draft.id,
+            )
+        assertEquals(process.processNumber, metadata.data?.process?.processNumber)
     }
 
     @Test
@@ -2461,7 +2494,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     private fun getDecision(id: FeeDecisionId): FeeDecisionDetailed {
-        return feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id)
+        return feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id).data
     }
 
     private fun getHeadOfFamilyDecisions(id: PersonId): List<FeeDecision> {
