@@ -36,6 +36,7 @@ import DiscussionReservationModal from './discussion-reservation-modal/Discussio
 import DiscussionSurveyModal from './discussion-reservation-modal/DiscussionSurveyModal'
 import { showModalEventTime } from './discussion-reservation-modal/discussion-survey'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
+import OpenRangesSelectionModal from './holiday-modal/OpenRangesSelectionModal'
 import { useExtendedReservationsRange } from './hooks'
 import {
   activeQuestionnaireQuery,
@@ -317,13 +318,25 @@ const CalendarPage = React.memo(function CalendarPage() {
                       : 'WEAK'
                   }
                 >
-                  <FixedPeriodSelectionModal
-                    close={closeModal}
-                    questionnaire={questionnaire.questionnaire}
-                    availableChildren={response.children}
-                    eligibleChildren={questionnaire.eligibleChildren}
-                    previousAnswers={questionnaire.previousAnswers}
-                  />
+                  {questionnaire.questionnaire.type === 'FIXED_PERIOD' ? (
+                    <FixedPeriodSelectionModal
+                      close={closeModal}
+                      questionnaire={questionnaire.questionnaire}
+                      availableChildren={response.children}
+                      eligibleChildren={questionnaire.eligibleChildren}
+                      previousAnswers={questionnaire.previousAnswers}
+                    />
+                  ) : questionnaire.questionnaire.type === 'OPEN_RANGES' ? (
+                    <OpenRangesSelectionModal
+                      close={closeModal}
+                      questionnaire={questionnaire.questionnaire}
+                      availableChildren={response.children}
+                      eligibleChildren={questionnaire.eligibleChildren}
+                      previousAnswers={questionnaire.previousAnswers}
+                    />
+                  ) : (
+                    <div>Not Yet Implemented</div>
+                  )}
                 </RequireAuth>
               )}
             </div>

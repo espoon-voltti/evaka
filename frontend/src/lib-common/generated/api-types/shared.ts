@@ -126,6 +126,7 @@ export interface EmployeeFeatures {
   financeBasics: boolean
   holidayAndTermPeriods: boolean
   messages: boolean
+  openRangesHolidayQuestionnaire: boolean
   personSearch: boolean
   personalMobileDevice: boolean
   pinCode: boolean

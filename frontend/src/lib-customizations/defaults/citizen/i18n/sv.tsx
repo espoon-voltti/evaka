@@ -482,7 +482,9 @@ const sv: Translations = {
       addTimePeriod: 'Lägg till en period',
       emptySelection: 'Ingen gratis ledighet',
       notEligible: (period: FiniteDateRange) =>
-        `Enkäten rör inte barnet, eftersom hen inte varit i småbarnspedagogiken oavbrutet under tiden ${period.format()}.`
+        `Enkäten rör inte barnet, eftersom hen inte varit i småbarnspedagogiken oavbrutet under tiden ${period.format()}.`,
+      rangesOverlap:
+        'Det finns redan en dubblettpost för denna period. Om det behövs, redigera föregående tidsperiod.'
     },
     previousDay: 'Föregående dag',
     nextDay: 'Nästa dag',

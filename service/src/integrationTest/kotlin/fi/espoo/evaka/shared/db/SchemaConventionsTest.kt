@@ -566,6 +566,12 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val finiteDateRangeCheck = { columnName: String ->
             "CHECK ((NOT (lower_inf($columnName) OR upper_inf($columnName))))"
         }
+        val nullableDateRangeCheck = { columnName: String ->
+            "CHECK ((($columnName IN NULL) OR (NOT lower_inf($columnName))))"
+        }
+        val nullableFiniteDateRangeCheck = { columnName: String ->
+            "CHECK ((($columnName IS NULL) OR (NOT (lower_inf($columnName) OR upper_inf($columnName)))))"
+        }
 
         val violations =
             columns
@@ -577,10 +583,15 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                             val columnName = column.ref.columnName
                             if (column.dataType == "datemultirange") {
                                 // datemultirange maps to DateSet which must be finite
-                                constraint.checkClause == finiteDateRangeCheck(columnName)
+                                constraint.checkClause == finiteDateRangeCheck(columnName) ||
+                                    constraint.checkClause ==
+                                        nullableFiniteDateRangeCheck(columnName)
                             } else {
                                 constraint.checkClause == dateRangeCheck(columnName) ||
-                                    constraint.checkClause == finiteDateRangeCheck(columnName)
+                                    constraint.checkClause == finiteDateRangeCheck(columnName) ||
+                                    constraint.checkClause == nullableDateRangeCheck(columnName) ||
+                                    constraint.checkClause ==
+                                        nullableFiniteDateRangeCheck(columnName)
                             }
                         }
                 }

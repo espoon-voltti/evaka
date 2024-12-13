@@ -17,6 +17,7 @@ import fi.espoo.evaka.espoo.bi.EspooBiHttpClient
 import fi.espoo.evaka.espoo.bi.EspooBiJob
 import fi.espoo.evaka.espoo.bi.MockEspooBiClient
 import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
+import fi.espoo.evaka.holidayperiod.QuestionnaireType
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
@@ -222,6 +223,7 @@ class EspooConfig {
                             archiveDurationMonths = 120 * 12,
                         ),
                 ),
+            holidayQuestionnaireType = QuestionnaireType.FIXED_PERIOD,
         )
 
     @Bean

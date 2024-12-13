@@ -469,3 +469,4 @@ V470__cascade_citizen_user_delete.sql
 V471__application_confidentiality.sql
 V472__employee_ssn.sql
 V473__person_municipality_of_residence.sql
+V474__holiday_questionnaire_open_ranges.sql

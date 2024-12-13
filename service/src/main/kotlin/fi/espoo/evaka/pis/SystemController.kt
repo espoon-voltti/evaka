@@ -9,11 +9,13 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.daycare.anyUnitHasFeature
+import fi.espoo.evaka.holidayperiod.QuestionnaireType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pairing.*
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -46,6 +48,7 @@ class SystemController(
     private val env: EvakaEnv,
     private val passwordService: PasswordService,
     private val webPush: WebPush?,
+    private val featureConfig: FeatureConfig,
 ) {
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
@@ -309,6 +312,9 @@ class SystemController(
                             placementTool =
                                 permittedGlobalActions.contains(Action.Global.PLACEMENT_TOOL),
                             replacementInvoices = env.replacementInvoicesStart != null,
+                            openRangesHolidayQuestionnaire =
+                                featureConfig.holidayQuestionnaireType ==
+                                    QuestionnaireType.OPEN_RANGES,
                         )
 
                     EmployeeUserResponse(

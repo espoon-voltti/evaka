@@ -106,12 +106,12 @@ export const deleteHolidayPeriodMutation = mutation({
   ]
 })
 
-export const createFixedPeriodQuestionnaireMutation = mutation({
+export const createQuestionnaireMutation = mutation({
   api: createHolidayQuestionnaire,
   invalidateQueryKeys: () => [queryKeys.questionnaires()]
 })
 
-export const updateFixedPeriodQuestionnaireMutation = mutation({
+export const updateQuestionnaireMutation = mutation({
   api: updateHolidayQuestionnaire,
   invalidateQueryKeys: ({ id }) => [
     queryKeys.questionnaires(),

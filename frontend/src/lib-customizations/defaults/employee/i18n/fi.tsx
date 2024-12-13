@@ -4868,7 +4868,8 @@ export const fi = {
   holidayQuestionnaires: {
     confirmDelete: 'Haluatko varmasti poistaa kyselyn?',
     types: {
-      FIXED_PERIOD: 'Kiinteä kausi'
+      FIXED_PERIOD: 'Kiinteä kausi',
+      OPEN_RANGES: 'Avoin kausi'
     },
     questionnaires: 'Poissaolokyselyt',
     absenceType: 'Poissaolon tyyppi',
@@ -4884,7 +4885,10 @@ export const fi = {
       '30.5.2022-24.8.2022, 6.6.2022-31.8.2022, pilkuilla tai rivinvaihdoilla erotettuna',
     requiresStrongAuth: 'Vahva tunnistautuminen',
     conditionContinuousPlacement:
-      'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus'
+      'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus',
+    period: 'Poissaolokausi',
+    absenceTypeThreshold: 'Yhtenäisen poissaolon minimipituus',
+    days: 'päivää'
   },
   terms: {
     term: 'Lukukausi',

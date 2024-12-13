@@ -10,6 +10,7 @@ import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { OpenRangesBody } from 'lib-common/generated/api-types/holidayperiod'
 import { client } from '../../api-client'
 import { deserializeJsonActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { deserializeJsonHolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
@@ -29,6 +30,24 @@ export async function answerFixedPeriodQuestionnaire(
     url: uri`/citizen/holiday-period/questionnaire/fixed-period/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FixedPeriodsBody>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodControllerCitizen.answerOpenRangeQuestionnaire
+*/
+export async function answerOpenRangeQuestionnaire(
+  request: {
+    id: HolidayQuestionnaireId,
+    body: OpenRangesBody
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/holiday-period/questionnaire/open-range/${request.id}`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<OpenRangesBody>
   })
   return json
 }

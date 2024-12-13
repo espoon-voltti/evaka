@@ -1,17 +1,15 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { useLang, useTranslation } from 'citizen-frontend/localization'
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   HolidayQuestionnaire,
-  FixedPeriodsBody,
-  HolidayQuestionnaireAnswer
+  HolidayQuestionnaireAnswer,
+  OpenRangesBody
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatFirstName } from 'lib-common/names'
@@ -22,11 +20,13 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
-import { answerFixedPeriodQuestionnaireMutation } from '../queries'
+import { useLang, useTranslation } from '../../localization'
+import { getDuplicateChildInfo } from '../../utils/duplicated-child-utils'
+import { answerOpenRangesQuestionnaireMutation } from '../queries'
 
-import { PeriodSelector } from './PeriodSelector'
+import { RangeSelector } from './RangesSelector'
 
-type FormState = FixedPeriodsBody['fixedPeriods']
+type FormState = OpenRangesBody['openRanges']
 
 const initializeForm = (
   children: ReservationChild[],
@@ -36,20 +36,20 @@ const initializeForm = (
     (acc, child) => ({
       ...acc,
       [child.id]:
-        previousAnswers.find((a) => a.childId === child.id)?.fixedPeriod ?? null
+        previousAnswers.find((a) => a.childId === child.id)?.openRanges ?? []
     }),
     {}
   )
 
 interface Props {
   close: () => void
-  questionnaire: HolidayQuestionnaire.FixedPeriodQuestionnaire
+  questionnaire: HolidayQuestionnaire.OpenRangesQuestionnaire
   availableChildren: ReservationChild[]
   eligibleChildren: UUID[]
   previousAnswers: HolidayQuestionnaireAnswer[]
 }
 
-export default React.memo(function FixedPeriodSelectionModal({
+export default React.memo(function OpenRangesSelectionModal({
   close,
   questionnaire,
   availableChildren,
@@ -59,14 +59,17 @@ export default React.memo(function FixedPeriodSelectionModal({
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const [fixedPeriods, setFixedPeriods] = useState<FormState>(() =>
+  const [openRanges, setOpenRanges] = useState<FormState>(() =>
     initializeForm(availableChildren, previousAnswers)
   )
 
-  const selectPeriod = useCallback(
-    (childId: string) => (period: FiniteDateRange | null) =>
-      setFixedPeriods((prev) => ({ ...prev, [childId]: period })),
-    [setFixedPeriods]
+  const selectRanges = useCallback(
+    (childId: string) => (ranges: FiniteDateRange[]) =>
+      setOpenRanges((prev) => ({
+        ...prev,
+        [childId]: ranges
+      })),
+    [setOpenRanges]
   )
 
   const duplicateChildInfo = getDuplicateChildInfo(availableChildren, i18n)
@@ -76,20 +79,21 @@ export default React.memo(function FixedPeriodSelectionModal({
       <MutateFormModal
         mobileFullScreen
         title={questionnaire.title[lang]}
-        resolveMutation={answerFixedPeriodQuestionnaireMutation}
+        resolveMutation={answerOpenRangesQuestionnaireMutation}
         resolveAction={() => ({
           id: questionnaire.id,
-          body: { fixedPeriods }
+          body: { openRanges }
         })}
-        onSuccess={close}
         resolveLabel={i18n.common.confirm}
+        onSuccess={close}
         rejectAction={close}
         rejectLabel={i18n.common.cancel}
-        data-qa="fixed-period-selection-modal"
+        data-qa="open-ranges-selection-modal"
       >
         <FixedSpaceColumn>
           <HolidaySection>
             <div>{questionnaire.description[lang]}</div>
+            <div>{questionnaire.period.format()}</div>
             <ExternalLink
               text={i18n.calendar.holidayModal.additionalInformation}
               href={questionnaire.descriptionLink[lang]}
@@ -108,11 +112,10 @@ export default React.memo(function FixedPeriodSelectionModal({
                   : ''}
               </H2>
               {eligibleChildren.includes(child.id) ? (
-                <PeriodSelector
-                  label={questionnaire.periodOptionLabel[lang]}
-                  options={questionnaire.periodOptions}
-                  value={fixedPeriods[child.id] ?? null}
-                  onSelectPeriod={selectPeriod(child.id)}
+                <RangeSelector
+                  period={questionnaire.period}
+                  value={openRanges[child.id] ?? []}
+                  onSelectRanges={selectRanges(child.id)}
                 />
               ) : questionnaire.conditions.continuousPlacement ? (
                 <div data-qa="not-eligible">
