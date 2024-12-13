@@ -146,7 +146,9 @@ sealed interface Action {
         ),
         PERSONAL_MOBILE_DEVICE_PAGE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .withUnitProviderTypes(ProviderType.MUNICIPAL, ProviderType.MUNICIPAL_SCHOOL)
+                .inAnyUnit(),
             IsEmployee.ownerOfAnyMobileDevice(),
         ),
         PIN_CODE_PAGE(
@@ -201,7 +203,9 @@ sealed interface Action {
         READ_PERSONAL_MOBILE_DEVICES(IsEmployee.any()),
         CREATE_PERSONAL_MOBILE_DEVICE_PAIRING(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .withUnitProviderTypes(ProviderType.MUNICIPAL, ProviderType.MUNICIPAL_SCHOOL)
+                .inAnyUnit(),
         ),
         SEARCH_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         CREATE_DRAFT_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
