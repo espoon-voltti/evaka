@@ -5,6 +5,7 @@
 import axios, { AxiosError } from 'axios'
 
 import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 
 export const API_URL = '/api/internal'
 
@@ -28,7 +29,13 @@ if (isAutomatedTest) {
 
 client.interceptors.response.use(undefined, async (err: AxiosError) => {
   if (err.response && err.response.status == 401) {
-    window.location.replace('/employee/login')
+    const event = new LoginStatusChangeEvent(false)
+    window.dispatchEvent(event)
+
+    // Check if the event was handled by a listener
+    if (!event.defaultPrevented) {
+      window.location.replace('/employee/login')
+    }
   }
 
   return Promise.reject(err)

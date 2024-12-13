@@ -2,10 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useCallback, useMemo } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 
 import { AdRole, User } from 'lib-common/api-types/employee-auth'
 import { query, useQuery } from 'lib-common/query'
+import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 
 import { getAuthStatus } from '../api/auth'
 
@@ -16,6 +23,8 @@ export interface UserState {
   user: User | undefined
   roles: AdRole[]
   refreshAuthStatus: () => void
+  unauthorizedApiCallDetected: boolean
+  dismissUnauthorizedApiCallDetection: () => void
 }
 
 export const UserContext = createContext<UserState>({
@@ -24,7 +33,9 @@ export const UserContext = createContext<UserState>({
   loggedIn: false,
   user: undefined,
   roles: [],
-  refreshAuthStatus: () => undefined
+  refreshAuthStatus: () => undefined,
+  unauthorizedApiCallDetected: false,
+  dismissUnauthorizedApiCallDetection: () => undefined
 })
 
 const authStatusQuery = query({
@@ -37,8 +48,29 @@ export const UserContextProvider = React.memo(function UserContextProvider({
 }: {
   children: React.JSX.Element
 }) {
+  const [unauthorizedApiCallDetected, setUnauthorizedApiCallDetected] =
+    useState(false)
   const { data: authStatus, refetch } = useQuery(authStatusQuery())
-  const refreshAuthStatus = useCallback(() => void refetch(), [refetch])
+
+  const refreshAuthStatus = useCallback(async () => {
+    const result = await refetch()
+    // Reset logout detection if user is logged in again
+    if (result.data?.loggedIn) {
+      setUnauthorizedApiCallDetected(false)
+    }
+    return result
+  }, [refetch])
+
+  useEffect(() => {
+    const eventListener = (loginStatusEvent: LoginStatusChangeEvent) => {
+      loginStatusEvent.preventDefault()
+      setUnauthorizedApiCallDetected(!loginStatusEvent.detail)
+    }
+    window.addEventListener(LoginStatusChangeEvent.name, eventListener)
+    return () => {
+      window.removeEventListener(LoginStatusChangeEvent.name, eventListener)
+    }
+  }, [setUnauthorizedApiCallDetected])
 
   const value = useMemo(
     () => ({
@@ -47,9 +79,12 @@ export const UserContextProvider = React.memo(function UserContextProvider({
       loggedIn: authStatus?.loggedIn ?? false,
       user: authStatus?.user,
       roles: authStatus?.roles ?? [],
-      refreshAuthStatus
+      refreshAuthStatus,
+      unauthorizedApiCallDetected,
+      dismissUnauthorizedApiCallDetection: () =>
+        setUnauthorizedApiCallDetected(false)
     }),
-    [authStatus, refreshAuthStatus]
+    [authStatus, refreshAuthStatus, unauthorizedApiCallDetected]
   )
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 })
