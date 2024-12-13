@@ -2310,7 +2310,8 @@ export const fi = {
       }
     },
     termination: {
-      title: 'Irtisanotut paikat',
+      title: 'Päättyvät sijoitukset',
+      info: 'Listalla näkyvät ne lapset, joilla huoltaja on tehnyt irtisanomisilmoituksen edellisen kahden viikon aikana, tai joilla on huoltajan hyväksymä siirtohakemus toiseen yksikköön. Lapsia, joilla on muusta syystä päättyvä sijoitus, ei näytetä tällä listalla.',
       terminationRequestedDate: 'Irtisanomispäivä',
       endDate: 'Päättymispäivämäärä',
       groupName: 'Ryhmä'

@@ -3,12 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { Link } from 'react-router'
 
 import { TerminatedPlacement } from 'lib-common/generated/api-types/placement'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  ExpandingInfoBox,
+  InfoButton
+} from 'lib-components/molecules/ExpandingInfo'
 
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
@@ -59,6 +64,8 @@ export default React.memo(function TerminatedPlacements({
   recentlyTerminatedPlacements
 }: Props) {
   const { i18n } = useTranslation()
+  const [isInfoOpen, setIsInfoOpen] = useState(false)
+  const toggleInfo = useCallback(() => setIsInfoOpen((prev) => !prev), [])
 
   const sortedRows = sortBy(recentlyTerminatedPlacements, [
     (p: TerminatedPlacement) => p.terminationRequestedDate,
@@ -68,7 +75,20 @@ export default React.memo(function TerminatedPlacements({
 
   return (
     <>
-      <Title size={2}>{i18n.unit.termination.title}</Title>
+      <FixedSpaceRow alignItems="center">
+        <Title size={2}>{i18n.unit.termination.title}</Title>
+        <InfoButton
+          aria-label={i18n.common.openExpandingInfo}
+          open={isInfoOpen}
+          onClick={toggleInfo}
+        />
+      </FixedSpaceRow>
+      {isInfoOpen && (
+        <ExpandingInfoBox
+          info={i18n.unit.termination.info}
+          close={toggleInfo}
+        />
+      )}
       <div>
         <Table data-qa="table-of-terminated-placements">
           <Thead>

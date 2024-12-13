@@ -6,6 +6,7 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.application.getActiveTransferApplicationsFromUnit
 import fi.espoo.evaka.backupcare.UnitBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.CaretakerAmount
@@ -519,12 +520,17 @@ class DaycareController(
                                 unitId,
                             )
                         ) {
-                            tx.getTerminatedPlacements(
-                                clock.today(),
-                                unitId,
-                                clock.today().minusWeeks(terminatedPlacementsViewWeeks),
-                                clock.today(),
-                            )
+                            val terminatedPlacements =
+                                tx.getTerminatedPlacements(
+                                    clock.today(),
+                                    unitId,
+                                    clock.today().minusWeeks(terminatedPlacementsViewWeeks),
+                                    clock.today(),
+                                )
+                            val transferApplications =
+                                tx.getActiveTransferApplicationsFromUnit(unitId, clock.today())
+
+                            terminatedPlacements + transferApplications
                         } else {
                             emptyList()
                         }
