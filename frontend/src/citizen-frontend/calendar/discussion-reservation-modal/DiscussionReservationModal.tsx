@@ -19,11 +19,13 @@ import {
   CitizenCalendarEvent
 } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
+import {
+  CalendarEventTimeId,
+  ChildId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
@@ -64,7 +66,7 @@ import { showModalEventTime } from './discussion-survey'
 
 const discussionTimeReservationForm = mapped(
   object({
-    selectedChild: required(value<UUID | undefined>()),
+    selectedChild: required(value<ChildId | undefined>()),
     eventTimeId: required(value<CalendarEventTimeId | undefined>())
   }),
   (output): CalendarEventTimeCitizenReservationForm => ({

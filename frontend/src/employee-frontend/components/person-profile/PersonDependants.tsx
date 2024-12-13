@@ -8,7 +8,7 @@ import { Link } from 'react-router'
 
 import { wrapResult } from 'lib-common/api'
 import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { getAge } from 'lib-common/utils/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -24,7 +24,7 @@ import { renderResult } from '../async-rendering'
 const getPersonDependantsResult = wrapResult(getPersonDependants)
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 

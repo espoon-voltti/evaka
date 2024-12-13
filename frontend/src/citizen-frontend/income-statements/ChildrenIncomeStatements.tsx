@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Pagination from 'lib-components/Pagination'
@@ -163,7 +164,7 @@ type DeletionState =
   | {
       status: 'confirming' | 'deleting'
       rowToDelete: UUID
-      childId: UUID
+      childId: ChildId
     }
 
 interface ChildrenIncomeStatementsProps {
@@ -186,7 +187,7 @@ export default React.memo(function ChildrenIncomeStatements({
   )
 
   const onDelete = useCallback(
-    (childId: UUID, id: UUID) => {
+    (childId: ChildId, id: UUID) => {
       setDeletionState({ status: 'deleting', rowToDelete: id, childId })
       deleteChildIncomeStatement({ childId, id })
         .then(() => {

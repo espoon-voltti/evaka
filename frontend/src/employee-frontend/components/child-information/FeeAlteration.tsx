@@ -6,6 +6,7 @@ import React, { useCallback, useContext, useRef, useState } from 'react'
 
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -33,7 +34,7 @@ const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

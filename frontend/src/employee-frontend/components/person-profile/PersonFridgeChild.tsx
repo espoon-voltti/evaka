@@ -8,6 +8,7 @@ import { Link } from 'react-router'
 
 import { wrapResult } from 'lib-common/api'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -35,7 +36,7 @@ const deleteParentshipResult = wrapResult(deleteParentship)
 const retryParentshipResult = wrapResult(retryParentship)
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 

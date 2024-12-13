@@ -8,9 +8,10 @@ import styled from 'styled-components'
 import { localDateRange } from 'lib-common/form/fields'
 import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -30,7 +31,7 @@ const filterForm = object({
 
 export default React.memo(function ChildAttendanceReport() {
   const { i18n, lang } = useTranslation()
-  const { childId } = useRouteParams(['childId'])
+  const childId = useIdRouteParam<ChildId>('childId')
 
   const filters = useForm(
     filterForm,

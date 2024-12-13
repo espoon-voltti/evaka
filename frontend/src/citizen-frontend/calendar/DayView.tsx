@@ -39,12 +39,14 @@ import {
   ReservationsResponse,
   UsedServiceResult
 } from 'lib-common/generated/api-types/reservations'
-import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
+import {
+  CalendarEventTimeId,
+  ChildId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
-import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -375,7 +377,7 @@ const DayModal = React.memo(function DayModal({
       eventTimeId: null
     })
   const onCancelClick = useCallback(
-    (childId: UUID, eventTimeId: CalendarEventTimeId) => {
+    (childId: ChildId, eventTimeId: CalendarEventTimeId) => {
       setConfirmationModalState({ visible: true, childId, eventTimeId })
     },
     [setConfirmationModalState]
@@ -801,12 +803,12 @@ function isEditable(
 }
 
 const childForm = object({
-  childId: value<UUID>(),
+  childId: value<ChildId>(),
   day
 })
 
 function initialChildFormState(
-  childId: UUID,
+  childId: ChildId,
   day: ReservationResponseDay
 ): StateOf<typeof childForm> {
   return {

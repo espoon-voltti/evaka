@@ -10,8 +10,8 @@ import { combine, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceSummary } from 'lib-common/generated/api-types/children'
 import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import YearMonth from 'lib-common/year-month'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -26,7 +26,7 @@ import { faChevronLeft, faChevronRight } from 'lib-icons'
 import { attendanceSummaryQuery } from './queries'
 
 interface AttendanceSummaryTableProps {
-  childId: UUID
+  childId: ChildId
   serviceNeedsResponse: Result<ServiceNeedSummary[]>
 }
 

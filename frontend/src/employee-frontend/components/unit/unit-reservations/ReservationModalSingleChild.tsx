@@ -37,9 +37,9 @@ import {
   Child,
   DailyReservationRequest
 } from 'lib-common/generated/api-types/reservations'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Repetition } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
@@ -109,7 +109,7 @@ const reservationForm = mapped(
     irregularTimes: array(irregularDay)
   }),
   (output) =>
-    (childId: UUID): DailyReservationRequest[] => {
+    (childId: ChildId): DailyReservationRequest[] => {
       const dates = [...output.dateRange.dates()]
       switch (output.repetition) {
         case 'DAILY':

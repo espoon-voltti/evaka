@@ -8,6 +8,7 @@ import { Link } from 'react-router'
 
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import { ChildId, PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -45,7 +46,7 @@ const updateFosterParentRelationshipResult = wrapResult(
 )
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 
@@ -216,13 +217,13 @@ const FosterChildCreationModal = React.memo(function FosterChildCreationModal({
   reload,
   close
 }: {
-  parentId: UUID
+  parentId: PersonId
   reload: () => Promise<unknown>
   close: () => void
 }) {
   const { i18n, lang } = useTranslation()
   const [form, setForm] = useState<{
-    childId: string | null
+    childId: ChildId | null
     validDuring: DateRange
   }>({
     childId: null,

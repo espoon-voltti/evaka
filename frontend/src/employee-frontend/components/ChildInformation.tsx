@@ -10,9 +10,9 @@ import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -72,7 +72,7 @@ const HeadOfFamilyLink = styled(Link)`
 `
 
 interface SectionProps {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 
@@ -283,7 +283,7 @@ function getCurrentHeadOfChildId(
 const ChildInformation = React.memo(function ChildInformation({
   id
 }: {
-  id: UUID
+  id: ChildId
 }) {
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
@@ -370,7 +370,7 @@ const ChildInformation = React.memo(function ChildInformation({
 })
 
 export default React.memo(function ChildInformationWrapper() {
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<ChildId>('id')
   return (
     <ChildContextProvider id={id}>
       <ChildInformation id={id} />

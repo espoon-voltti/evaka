@@ -37,7 +37,8 @@ import {
   AssistanceNeedPreschoolDecisionId,
   DaycareId,
   EmployeeId,
-  OfficialLanguage
+  OfficialLanguage,
+  PersonId
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -94,7 +95,7 @@ const LabeledValue = styled(FixedSpaceColumn).attrs({ spacing: 'xs' })``
 const guardianForm = object({
   id: value<AssistanceNeedPreschoolDecisionGuardianId>(),
   name: string(),
-  personId: string(),
+  personId: value<PersonId>(),
   isHeard: boolean(),
   details: string()
 })

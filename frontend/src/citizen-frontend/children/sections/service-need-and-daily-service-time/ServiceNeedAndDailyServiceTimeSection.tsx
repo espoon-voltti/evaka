@@ -7,8 +7,8 @@ import React, { useState } from 'react'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
 import { combine, Failure, Result, Success, wrapResult } from 'lib-common/api'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -34,7 +34,7 @@ import ServiceApplications from './ServiceApplications'
 import ServiceNeedTable from './ServiceNeedTable'
 
 interface ServiceNeedProps {
-  childId: UUID
+  childId: ChildId
   showServiceTimes: boolean
 }
 

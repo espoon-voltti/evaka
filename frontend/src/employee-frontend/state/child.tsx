@@ -21,7 +21,7 @@ import {
   PersonJSON
 } from 'lib-common/generated/api-types/pis'
 import { PlacementResponse } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
 import { getChildBackupCares } from '../generated/api-clients/backupcare'
@@ -38,7 +38,7 @@ const getChildPlacementsResult = wrapResult(getChildPlacements)
 const getParentshipsResult = wrapResult(getParentships)
 
 export interface ChildState {
-  childId: UUID | undefined
+  childId: ChildId | undefined
   person: Result<PersonJSON>
   setPerson: (value: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
@@ -79,7 +79,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   id,
   children
 }: {
-  id: UUID
+  id: ChildId
   children: React.ReactNode
 }) {
   const [childResponse, setChildResponse] = useState<Result<ChildResponse>>(

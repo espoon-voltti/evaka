@@ -10,8 +10,8 @@ import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
 import { wrapResult } from 'lib-common/api'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { P } from 'lib-components/typography'
@@ -24,7 +24,7 @@ import PlacementTerminationForm from './PlacementTerminationForm'
 import TerminatedPlacements from './TerminatedPlacements'
 
 interface PlacementTerminationProps {
-  childId: UUID
+  childId: ChildId
 }
 
 const getPlacementsResult = wrapResult(getPlacements)

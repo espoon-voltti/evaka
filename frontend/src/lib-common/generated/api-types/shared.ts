@@ -214,7 +214,7 @@ export type PaymentId = string
 
 export type PedagogicalDocumentId = string
 
-export type PersonId = string
+export type PersonId = Id<'Person'>
 
 /**
 * Generated from fi.espoo.evaka.shared.security.PilotFeature

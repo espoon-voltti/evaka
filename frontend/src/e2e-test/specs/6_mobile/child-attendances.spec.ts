@@ -5,7 +5,7 @@
 import { BrowserContextOptions } from 'playwright'
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -82,7 +82,7 @@ beforeEach(async () => {
 })
 
 async function createPlacements(
-  childId: string,
+  childId: PersonId,
   groupId = testDaycareGroup.id,
   placementType: PlacementType = 'DAYCARE',
   today: LocalDate = now.toLocalDate()

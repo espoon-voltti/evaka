@@ -14,6 +14,7 @@ import {
   IncomeTypeOptions,
   IncomeWithPermittedActions
 } from 'lib-common/generated/api-types/invoicing'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
@@ -28,7 +29,7 @@ import IncomeItemHeader from './IncomeItemHeader'
 import { IncomeNotifications } from './IncomeNotifications'
 
 interface Props {
-  personId: UUID
+  personId: PersonId
   incomes: IncomeWithPermittedActions[]
   incomeTypeOptions: IncomeTypeOptions
   coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>

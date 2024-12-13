@@ -10,10 +10,9 @@ import styled from 'styled-components'
 import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import { mockNow } from 'lib-common/utils/helpers'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -57,7 +56,7 @@ export default React.memo(function MarkAbsentBeforehand({
   childId
 }: {
   unitId: DaycareId
-  childId: UUID
+  childId: ChildId
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()

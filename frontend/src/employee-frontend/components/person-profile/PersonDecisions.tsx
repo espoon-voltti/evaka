@@ -8,7 +8,7 @@ import { Link } from 'react-router'
 
 import { wrapResult } from 'lib-common/api'
 import { Decision } from 'lib-common/generated/api-types/decision'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -22,7 +22,7 @@ import { renderResult } from '../async-rendering'
 const getDecisionsByGuardianResult = wrapResult(getDecisionsByGuardian)
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 

@@ -28,7 +28,11 @@ import {
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  DaycareId,
+  GroupId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -460,14 +464,21 @@ export default React.memo(function CalendarEventsSection({
   )
 })
 
+interface AttendeeTreeNode extends TreeNode {
+  key: DaycareId | GroupId | ChildId
+  children: AttendeeTreeNode[]
+}
+
 interface CreationForm {
-  attendees: TreeNode[]
+  attendees: AttendeeTreeNode[]
   period: FiniteDateRange
   title: string
   description: string
 }
 
-const getFormTree = (tree: TreeNode[]) => {
+const getFormTree = (
+  tree: AttendeeTreeNode[]
+): Partial<Record<GroupId, ChildId[] | null>> | null => {
   if (tree.length !== 1) {
     throw Error(
       'Calendar event tree select should have one initial parent (the current unit)'
@@ -482,11 +493,11 @@ const getFormTree = (tree: TreeNode[]) => {
     tree[0].children
       ?.filter((group) => group.checked)
       .map((group) => [
-        group.key,
+        group.key as GroupId,
         hasUncheckedChildren(group)
           ? (group.children
               ?.filter((child) => child.checked)
-              .map((child) => child.key) ?? [])
+              .map((child) => child.key as ChildId) ?? [])
           : null
       ]) ?? []
   )
@@ -591,7 +602,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
                     }))
                 ),
               (child) => child.id
-            ).map<TreeNode>((child) => ({
+            ).map<AttendeeTreeNode>((child) => ({
               text: `${child.firstName ?? ''} ${child.lastName ?? ''}`,
               key: child.id,
               checked: useDefault
@@ -853,7 +864,7 @@ const EditEventModal = React.memo(function EditEventModal({
   const [form, setForm] = useState<{
     title: string
     description: string
-    tree: Record<string, UUID[] | null> | null
+    tree: Record<GroupId, ChildId[] | null> | null
   }>({
     title: event.title,
     description: event.description,

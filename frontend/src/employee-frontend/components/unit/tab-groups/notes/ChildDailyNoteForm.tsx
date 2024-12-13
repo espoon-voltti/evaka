@@ -13,7 +13,7 @@ import {
   ChildDailyNoteReminder,
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -86,7 +86,7 @@ const formDataToRequestBody = (
 
 interface Props {
   note: ChildDailyNote | null
-  childId: UUID
+  childId: ChildId
   childName: string
   onSuccess: () => void
   onCancel: () => void

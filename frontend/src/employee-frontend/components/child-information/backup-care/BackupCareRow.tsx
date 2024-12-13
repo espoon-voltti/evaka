@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
@@ -21,7 +21,7 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 
 export interface Props {
-  childId: UUID
+  childId: ChildId
   backupCare: ChildBackupCare
   permittedActions: Action.BackupCare[]
 }

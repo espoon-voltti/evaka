@@ -4,16 +4,15 @@
 
 import React from 'react'
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 
 import { cancelAbsenceMutation } from '../../child-attendance/queries'
 import { InlineWideAsyncButton } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   unitId: DaycareId
 }
 

@@ -74,7 +74,7 @@ export interface ChildGroupInfo {
 
 export const getCombinedChildPlacementsForGroup = (
   placements: DaycarePlacementWithDetails[],
-  groupId: UUID
+  groupId: GroupId
 ) => {
   const validPlacements = placements.filter((p) =>
     p.groupPlacements.some((gp) => gp.groupId === groupId)
@@ -93,7 +93,7 @@ export const getCombinedChildPlacementsForGroup = (
 export const getInvitedChildInfo = (
   unitDetails: UnitGroupDetails,
   eventData: CalendarEvent,
-  groupId: UUID
+  groupId: GroupId
 ) => {
   const fullGroupSelections = eventData.groups.filter((g) => {
     const anyIndividuals =

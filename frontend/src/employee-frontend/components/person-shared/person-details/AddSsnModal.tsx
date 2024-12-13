@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import InputField from 'lib-components/atoms/form/InputField'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import colors from 'lib-customizations/common'
@@ -27,7 +27,7 @@ const Error = styled.div`
 `
 
 interface Props {
-  personId: UUID
+  personId: PersonId
   onUpdateComplete?: (data: PersonJSON) => void
 }
 

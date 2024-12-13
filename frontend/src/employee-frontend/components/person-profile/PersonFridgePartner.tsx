@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -44,7 +44,7 @@ const TopBar = styled.div`
 `
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 

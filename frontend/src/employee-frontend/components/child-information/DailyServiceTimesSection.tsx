@@ -6,7 +6,10 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
-import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  DailyServiceTimeId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -30,7 +33,7 @@ import {
 } from './queries'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

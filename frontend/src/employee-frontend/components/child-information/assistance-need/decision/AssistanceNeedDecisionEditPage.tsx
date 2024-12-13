@@ -18,9 +18,10 @@ import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assis
 import { Employee, PersonJSON } from 'lib-common/generated/api-types/pis'
 import {
   AssistanceNeedDecisionId,
+  ChildId,
   OfficialLanguage
 } from 'lib-common/generated/api-types/shared'
-import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionInfoHeader from 'lib-components/assistance-need-decision/AssistanceNeedDecisionInfoHeader'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -90,7 +91,7 @@ const HorizontalLineWithoutBottomMargin = styled(HorizontalLine)`
 `
 
 export default React.memo(function AssistanceNeedDecisionEditPage() {
-  const { childId } = useRouteParams(['childId'])
+  const childId = useIdRouteParam<ChildId>('childId')
   const id = useIdRouteParam<AssistanceNeedDecisionId>('id')
   const [child] = useApiState(
     () => getPersonIdentityResult({ personId: childId }),

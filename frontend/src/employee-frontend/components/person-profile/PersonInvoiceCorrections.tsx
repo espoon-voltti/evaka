@@ -28,7 +28,11 @@ import {
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  DaycareId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { formatCents, parseCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -72,7 +76,7 @@ export default React.memo(function PersonInvoiceCorrections({
   id,
   open: startOpen
 }: {
-  id: string
+  id: PersonId
   open: boolean
 }) {
   const { i18n } = useTranslation()
@@ -179,7 +183,7 @@ const ChildSection = React.memo(function ChildSection({
   onStartCreate,
   onEditorCancel
 }: {
-  personId: UUID
+  personId: PersonId
   permittedPersonActions: Set<Action.Person>
   child: PersonJSON
   corrections: InvoiceCorrectionWithPermittedActions[]
@@ -413,8 +417,8 @@ const InvoiceCorrectionEditModal = React.memo(
     products,
     onEditorClose
   }: {
-    personId: UUID
-    childId: UUID
+    personId: PersonId
+    childId: ChildId
     row: InvoiceCorrection | null
     units: Record<DaycareId, InvoiceDaycare | undefined>
     products: ProductWithName[]
@@ -602,7 +606,7 @@ const NoteQuickEditor = React.memo(function NoteQuickEditor({
 }: {
   initialValue: string
   correctionId: UUID
-  personId: UUID
+  personId: PersonId
   closeNote: () => void
 }) {
   const { i18n } = useTranslation()

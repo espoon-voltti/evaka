@@ -5,7 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -18,7 +18,7 @@ import FridgeParents from './FridgeParents'
 import Guardians from './Guardians'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

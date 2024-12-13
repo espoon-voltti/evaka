@@ -4,7 +4,7 @@
 
 import React, { useContext, useMemo, useState } from 'react'
 
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 
@@ -14,7 +14,7 @@ import { useTranslation } from '../../state/i18n'
 import ChildDocuments from './ChildDocuments'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

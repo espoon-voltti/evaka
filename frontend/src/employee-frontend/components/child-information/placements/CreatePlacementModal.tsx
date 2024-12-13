@@ -9,10 +9,9 @@ import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -37,7 +36,7 @@ import { unitsQuery } from '../../unit/queries'
 const createPlacementResult = wrapResult(createPlacement)
 
 export interface Props {
-  childId: UUID
+  childId: ChildId
   reload: () => unknown
 }
 

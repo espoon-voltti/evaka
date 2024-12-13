@@ -10,7 +10,10 @@ import styled from 'styled-components'
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import {
+  AssistanceNeedDecisionId,
+  ChildId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -51,7 +54,7 @@ export const TitleRow = styled.div`
 `
 
 export interface Props {
-  id: UUID
+  id: ChildId
 }
 
 export default React.memo(function AssistanceNeedDecisionSection({

@@ -14,8 +14,8 @@ import {
   Attachment,
   PedagogicalDocumentCitizen
 } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -381,7 +381,7 @@ const PedagogicalDocumentsTable = React.memo(
 export default React.memo(function PedagogicalDocumentsSection({
   childId
 }: {
-  childId: UUID
+  childId: ChildId
 }) {
   const [open, setOpen] = useState(false)
   const t = useTranslation()
@@ -409,7 +409,7 @@ export default React.memo(function PedagogicalDocumentsSection({
 })
 
 const PedagogicalDocumentsContent = React.memo(
-  function PedagogicalDocumentsContent({ childId }: { childId: UUID }) {
+  function PedagogicalDocumentsContent({ childId }: { childId: ChildId }) {
     const pedagogicalDocuments = useQueryResult(
       pedagogicalDocumentsQuery({ childId })
     )

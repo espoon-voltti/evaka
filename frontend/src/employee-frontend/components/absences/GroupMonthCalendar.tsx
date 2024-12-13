@@ -17,9 +17,8 @@ import {
   AbsenceCategory,
   GroupMonthCalendar
 } from 'lib-common/generated/api-types/absence'
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -99,7 +98,7 @@ interface AbsenceCalendarProps {
 }
 
 export interface SelectedCell {
-  childId: UUID
+  childId: ChildId
   date: LocalDate
   absenceCategories: AbsenceCategory[]
 }

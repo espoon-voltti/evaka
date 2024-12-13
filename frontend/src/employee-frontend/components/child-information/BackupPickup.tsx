@@ -6,8 +6,8 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -37,7 +37,7 @@ import {
 } from './queries'
 
 interface BackupPickupProps {
-  childId: UUID
+  childId: ChildId
 }
 
 function BackupPickup({ childId }: BackupPickupProps) {

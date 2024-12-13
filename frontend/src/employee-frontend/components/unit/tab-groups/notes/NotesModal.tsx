@@ -8,11 +8,11 @@ import styled from 'styled-components'
 import { Result, wrapResult } from 'lib-common/api'
 import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
 import {
+  ChildId,
   ChildStickyNoteId,
   GroupId,
   GroupNoteId
 } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { StickyNoteTab } from 'lib-components/employee/notes/StickyNoteTab'
@@ -95,7 +95,7 @@ const Tab = styled.div<{ active?: boolean }>`
 
 interface Props {
   group: { id: GroupId; name: string }
-  child?: { id: UUID; name: string }
+  child?: { id: ChildId; name: string }
   notesByGroup: Result<NotesByGroupResponse>
   reload: () => void
   onClose: () => void

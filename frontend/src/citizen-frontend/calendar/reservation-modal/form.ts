@@ -36,6 +36,7 @@ import {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { Repetition } from 'lib-common/reservations'
@@ -198,7 +199,7 @@ export const timesUnion = transformed(
 )
 
 export function toDailyReservationRequest(
-  childId: UUID,
+  childId: ChildId,
   date: LocalDate,
   day: DayOutput
 ): DailyReservationRequest | undefined {
@@ -232,7 +233,7 @@ export const nonEmptyArray = <T>() =>
 
 export const reservationForm = mapped(
   object({
-    selectedChildren: nonEmptyArray<UUID>(),
+    selectedChildren: nonEmptyArray<ChildId>(),
     dateRange: required(localDateRange()),
     repetition: required(oneOf<Repetition>()),
     times: timesUnion

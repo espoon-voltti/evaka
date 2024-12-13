@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  GroupId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
@@ -51,7 +54,7 @@ import {
 
 let unitSupervisorPage: Page
 let citizenPage: Page
-let childId: UUID
+let childId: PersonId
 let unitSupervisor: DevEmployee
 let account: CitizenWeakAccount
 let careArea: DevCareArea

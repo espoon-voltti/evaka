@@ -6,8 +6,8 @@ import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router'
 
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H3 } from 'lib-components/typography'
 
@@ -20,7 +20,7 @@ import StatusLabel from '../common/StatusLabel'
 import { getFosterParentsQuery } from './queries'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
 }
 
 export default React.memo(function FosterParents({ childId }: Props) {

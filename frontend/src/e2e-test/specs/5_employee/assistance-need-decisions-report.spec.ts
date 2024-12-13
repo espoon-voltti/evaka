@@ -4,12 +4,12 @@
 
 import {
   AssistanceNeedDecisionId,
-  DaycareId
+  DaycareId,
+  PersonId
 } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -43,7 +43,7 @@ let decisionMaker: DevEmployee
 let director: DevEmployee
 
 let unitId: DaycareId
-let childId: UUID
+let childId: PersonId
 
 const mockedTime = LocalDate.of(2021, 8, 16)
 

@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -41,7 +41,7 @@ const getChildPedagogicalDocumentsResult = wrapResult(
 const deletePedagogicalDocumentResult = wrapResult(deletePedagogicalDocument)
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

@@ -41,7 +41,8 @@ import {
   ApplicationId,
   DaycareId,
   EmployeeId,
-  GroupId
+  GroupId,
+  PersonId
 } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -301,7 +302,7 @@ export class Fixture {
   static person(initial?: Partial<DevPerson>): PersonBuilder {
     const id = uniqueLabel()
     return new PersonBuilder({
-      id: uuidv4(),
+      id: randomId(),
       dateOfBirth: LocalDate.of(2020, 5, 5),
       dateOfDeath: null,
       ssn: '050520A999M',
@@ -1589,7 +1590,7 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
     return this
   }
 
-  withGuardian(guardianId: UUID) {
+  withGuardian(guardianId: PersonId) {
     this.data.form.guardianInfo.push({
       id: randomId(),
       personId: guardianId,
@@ -1706,8 +1707,8 @@ export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuest
 }
 
 export class GuardianBuilder extends FixtureBuilder<{
-  guardianId: string
-  childId: string
+  guardianId: PersonId
+  childId: PersonId
 }> {
   async save() {
     await insertGuardians({ body: [this.data] })
@@ -2489,7 +2490,7 @@ export const testPreschool: DevDaycare = {
 }
 
 export const testAdult = Fixture.person({
-  id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
+  id: fromUuid<PersonId>('87a5c962-9b3d-11ea-bb37-0242ac130002'),
   ssn: '070644-937X',
   firstName: 'Johannes Olavi Antero Tapio',
   lastName: 'Karhula',
@@ -2506,7 +2507,7 @@ export const testAdult = Fixture.person({
 }).data
 
 export const testChild = Fixture.person({
-  id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
+  id: fromUuid<PersonId>('572adb7e-9b3d-11ea-bb37-0242ac130002'),
   ssn: '070714A9126',
   firstName: 'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
   lastName: 'Karhula',
@@ -2524,7 +2525,7 @@ export const testChild = Fixture.person({
 }).data
 
 export const testChild2 = Fixture.person({
-  id: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
+  id: fromUuid<PersonId>('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
   ssn: '160616A978U',
   firstName: 'Kaarina Veera Nelli',
   lastName: 'Karhula',
@@ -2541,7 +2542,7 @@ export const testChild2 = Fixture.person({
 }).data
 
 export const testChildRestricted = Fixture.person({
-  id: '28e189d7-abbe-4be9-9074-6e4c881f18de',
+  id: fromUuid<PersonId>('28e189d7-abbe-4be9-9074-6e4c881f18de'),
   ssn: '160620A999J',
   firstName: 'Porri Hatter',
   lastName: 'Karhula',
@@ -2558,7 +2559,7 @@ export const testChildRestricted = Fixture.person({
 }).data
 
 export const testAdult2 = Fixture.person({
-  id: 'fb915d31-738f-453f-a2ca-2e7f61db641d',
+  id: fromUuid<PersonId>('fb915d31-738f-453f-a2ca-2e7f61db641d'),
   ssn: '311299-999E',
   firstName: 'Ville',
   lastName: 'Vilkas',
@@ -2575,7 +2576,7 @@ export const testAdult2 = Fixture.person({
 }).data
 
 export const testChildDeceased = Fixture.person({
-  id: 'b8711722-0c1b-4044-a794-5b308207d78b',
+  id: fromUuid<PersonId>('b8711722-0c1b-4044-a794-5b308207d78b'),
   ssn: '150515-999T',
   firstName: 'Unelma',
   lastName: 'Aapinen',
@@ -2593,7 +2594,7 @@ export const testChildDeceased = Fixture.person({
 }).data
 
 export const testChildNoSsn = Fixture.person({
-  id: 'a5e87ec8-6221-46f8-8b2b-9ab124d51c22',
+  id: fromUuid<PersonId>('a5e87ec8-6221-46f8-8b2b-9ab124d51c22'),
   firstName: 'Heluna',
   lastName: 'Hetuton',
   email: '',
@@ -2610,7 +2611,7 @@ export const testChildNoSsn = Fixture.person({
 }).data
 
 const twoGuardiansGuardian1 = {
-  id: '9d6289ba-9ffd-11ea-bb37-0242ac130002',
+  id: fromUuid<PersonId>('9d6289ba-9ffd-11ea-bb37-0242ac130002'),
   ssn: '220281-9456',
   firstName: 'Mikael Ilmari Juhani Johannes',
   lastName: 'Högfors',
@@ -2627,7 +2628,7 @@ const twoGuardiansGuardian1 = {
   restrictedDetailsEndDate: null
 }
 const twoGuardiansGuardian2 = {
-  id: 'd1c30734-c02f-4546-8123-856f8101565e',
+  id: fromUuid<PersonId>('d1c30734-c02f-4546-8123-856f8101565e'),
   ssn: '170590-9540',
   firstName: 'Kaarina Marjatta Anna Liisa',
   lastName: 'Högfors',
@@ -2645,7 +2646,7 @@ const twoGuardiansGuardian2 = {
 }
 const twoGuardiansChildren = [
   Fixture.person({
-    id: '6ec99620-9ffd-11ea-bb37-0242ac130002',
+    id: fromUuid<PersonId>('6ec99620-9ffd-11ea-bb37-0242ac130002'),
     ssn: '071013A960W',
     firstName: 'Antero Onni Leevi Aatu',
     lastName: 'Högfors',
@@ -2668,7 +2669,7 @@ export const familyWithTwoGuardians = {
 }
 
 const separatedGuardiansGuardian1 = {
-  id: '1c1b2946-fdf3-4e02-a3e4-2c2a797bafc3',
+  id: fromUuid<PersonId>('1c1b2946-fdf3-4e02-a3e4-2c2a797bafc3'),
   firstName: 'John',
   lastName: 'Doe',
   dateOfBirth: LocalDate.of(1980, 1, 1),
@@ -2678,7 +2679,7 @@ const separatedGuardiansGuardian1 = {
   postOffice: 'Espoo'
 }
 const separatedGuardiansGuardian2 = Fixture.person({
-  id: '56064714-649f-457e-893a-44832936166c',
+  id: fromUuid<PersonId>('56064714-649f-457e-893a-44832936166c'),
   firstName: 'Joan',
   lastName: 'Doe',
   dateOfBirth: LocalDate.of(1979, 2, 1),
@@ -2689,7 +2690,7 @@ const separatedGuardiansGuardian2 = Fixture.person({
 }).data
 const separatedGuardiansChildren = [
   Fixture.person({
-    id: '5474ee62-16cf-4cfe-a297-40559e165a32',
+    id: fromUuid<PersonId>('5474ee62-16cf-4cfe-a297-40559e165a32'),
     firstName: 'Ricky',
     lastName: 'Doe',
     dateOfBirth: LocalDate.of(2017, 6, 1),
@@ -2706,7 +2707,7 @@ export const familyWithSeparatedGuardians = {
 }
 
 const restrictedDetailsGuardian = {
-  id: '7699f488-3fdc-11eb-b378-0242ac130002',
+  id: fromUuid<PersonId>('7699f488-3fdc-11eb-b378-0242ac130002'),
   ssn: '080884-999H',
   firstName: 'Kaj Erik',
   lastName: 'Pelimerkki',
@@ -2723,7 +2724,7 @@ const restrictedDetailsGuardian = {
 }
 
 const guardian2WithNoRestrictions = {
-  id: '1fd05a42-3fdd-11eb-b378-0242ac130002',
+  id: fromUuid<PersonId>('1fd05a42-3fdd-11eb-b378-0242ac130002'),
   ssn: '130486-9980',
   firstName: 'Helga Helen',
   lastName: 'Lehtokurppa',
@@ -2741,7 +2742,7 @@ const guardian2WithNoRestrictions = {
 
 const restrictedDetailsGuardiansChildren = [
   Fixture.person({
-    id: '82a2586e-3fdd-11eb-b378-0242ac130002',
+    id: fromUuid<PersonId>('82a2586e-3fdd-11eb-b378-0242ac130002'),
     firstName: 'Vadelma',
     lastName: 'Pelimerkki',
     dateOfBirth: LocalDate.of(2017, 5, 15),
@@ -2759,7 +2760,7 @@ export const familyWithRestrictedDetailsGuardian = {
 }
 
 const deadGuardian = Fixture.person({
-  id: 'faacfd43-878f-4a70-9e74-2051a18480e6',
+  id: fromUuid<PersonId>('faacfd43-878f-4a70-9e74-2051a18480e6'),
   ssn: '080581-999A',
   firstName: 'Kuisma',
   lastName: 'Kuollut',
@@ -2777,7 +2778,7 @@ const deadGuardian = Fixture.person({
 }).data
 
 const deadGuardianChild = Fixture.person({
-  id: '1ad3469b-593d-45e4-a68b-a09f759bd029',
+  id: fromUuid<PersonId>('1ad3469b-593d-45e4-a68b-a09f759bd029'),
   firstName: 'Kuopus',
   lastName: 'Kuollut',
   dateOfBirth: LocalDate.of(2019, 9, 9),
@@ -2793,7 +2794,7 @@ export const familyWithDeadGuardian: Family = {
 }
 
 export const testChildZeroYearOld = Fixture.person({
-  id: '0909e93d-3aa8-44f8-ac30-ecd77339d849',
+  id: fromUuid<PersonId>('0909e93d-3aa8-44f8-ac30-ecd77339d849'),
   ssn: null,
   firstName: 'Vasta Syntynyt',
   lastName: 'Korhonen-Hämäläinen',
@@ -2810,7 +2811,7 @@ export const testChildZeroYearOld = Fixture.person({
 }).data
 
 export const testAdultRestricted = Fixture.person({
-  id: '92d707e9-6cbc-487b-8bde-0097d90044cd',
+  id: fromUuid<PersonId>('92d707e9-6cbc-487b-8bde-0097d90044cd'),
   ssn: '031083-910S',
   firstName: 'Seija Anna Kaarina',
   lastName: 'Sotka',
@@ -3053,8 +3054,8 @@ export const feeDecisionsFixture = (
 
 export const voucherValueDecisionsFixture = (
   id: UUID,
-  adultId: UUID,
-  childId: UUID,
+  adultId: PersonId,
+  childId: PersonId,
   daycareId: DaycareId,
   partner: DevPerson | null = null,
   status: 'DRAFT' | 'SENT' = 'DRAFT',
@@ -3121,7 +3122,7 @@ export const testDaycareGroup: DevDaycareGroup = {
  **/
 export function createDaycarePlacementFixture(
   id: string,
-  childId: string,
+  childId: PersonId,
   unitId: DaycareId,
   startDate = LocalDate.of(2022, 5, 1),
   endDate = LocalDate.of(2023, 8, 31),

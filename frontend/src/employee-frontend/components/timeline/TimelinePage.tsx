@@ -8,10 +8,11 @@ import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { Timeline } from 'lib-common/generated/api-types/timeline'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import PageWrapper from 'lib-components/layout/PageWrapper'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -43,7 +44,7 @@ const TlContainer = styled.div`
 `
 
 export default React.memo(function TimelinePage() {
-  const { personId } = useRouteParams(['personId'])
+  const personId = useIdRouteParam<PersonId>('personId')
   const { i18n } = useTranslation()
   const timelineMaxRange = useMemo(
     () =>

@@ -6,9 +6,8 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -29,7 +28,7 @@ export default React.memo(function ChildInfoPage({
   childId
 }: {
   unitId: DaycareId
-  childId: UUID
+  childId: ChildId
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()

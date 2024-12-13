@@ -8,8 +8,8 @@ import styled, { useTheme } from 'styled-components'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { BoundFormState, useBoolean } from 'lib-common/form/hooks'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { StatusIcon } from 'lib-components/atoms/StatusIcon'
 import {
@@ -23,7 +23,7 @@ import { useTranslation } from '../localization'
 
 interface ChildSelectorProps {
   childItems: ReservationChild[]
-  bind: BoundFormState<UUID[]>
+  bind: BoundFormState<ChildId[]>
 }
 
 export default React.memo(function ChildSelector({

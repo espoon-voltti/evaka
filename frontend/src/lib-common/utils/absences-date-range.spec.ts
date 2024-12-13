@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import uniqueId from 'lodash/uniqueId'
-
 import { Absence } from 'lib-common/generated/api-types/absence'
+import { ChildId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import HelsinkiDateTime from '../helsinki-date-time'
@@ -12,7 +12,7 @@ import HelsinkiDateTime from '../helsinki-date-time'
 import { groupAbsencesByDateRange } from './absences'
 
 const base = {
-  childId: uniqueId(),
+  childId: randomId<ChildId>(),
   modifiedByStaff: true,
   modifiedAt: HelsinkiDateTime.now()
 }
