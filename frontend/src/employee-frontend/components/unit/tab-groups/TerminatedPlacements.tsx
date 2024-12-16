@@ -9,6 +9,7 @@ import { Link } from 'react-router'
 import { TerminatedPlacement } from 'lib-common/generated/api-types/placement'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
@@ -68,7 +69,9 @@ export default React.memo(function TerminatedPlacements({
 
   return (
     <>
-      <Title size={2}>{i18n.unit.termination.title}</Title>
+      <ExpandingInfo info={i18n.unit.termination.info}>
+        <Title size={2}>{i18n.unit.termination.title}</Title>
+      </ExpandingInfo>
       <div>
         <Table data-qa="table-of-terminated-placements">
           <Thead>

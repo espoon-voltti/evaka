@@ -4,7 +4,10 @@
 
 package fi.espoo.evaka.daycare.controllers
 
-import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.*
+import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
 import fi.espoo.evaka.daycare.getDaycare
@@ -24,27 +27,14 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevBackupCare
-import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
-import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevPersonType
-import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
@@ -275,6 +265,8 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val placementId3 = PlacementId(UUID.randomUUID())
         val placementId4 = PlacementId(UUID.randomUUID())
         val placementId5 = PlacementId(UUID.randomUUID())
+        val placementId6 = PlacementId(UUID.randomUUID())
+        val placementId7 = PlacementId(UUID.randomUUID())
         db.transaction {
             it.insert(group)
 
@@ -356,6 +348,54 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     endDate = today.plusYears(1),
                 )
             )
+
+            // Active transfer application
+            it.insert(testChild_5, DevPersonType.CHILD)
+            it.insert(
+                DevPlacement(
+                    id = placementId6,
+                    childId = testChild_5.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(20),
+                )
+            )
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId6,
+                    daycareGroupId = group.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(20),
+                )
+            )
+            it.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                guardianId = testAdult_1.id,
+                childId = testChild_5.id,
+                document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                status = ApplicationStatus.ACTIVE,
+                transferApplication = true,
+            )
+
+            // Active transfer application without group
+            it.insert(testChild_6, DevPersonType.CHILD)
+            it.insert(
+                DevPlacement(
+                    id = placementId7,
+                    childId = testChild_6.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(21),
+                )
+            )
+            it.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                guardianId = testAdult_1.id,
+                childId = testChild_6.id,
+                document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                status = ApplicationStatus.ACTIVE,
+                transferApplication = true,
+            )
         }
 
         val details = getGroupDetails(testDaycare.id)
@@ -426,6 +466,50 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         ),
                     currentDaycareGroupName = group.name,
                     connectedDaycareOnly = true,
+                ),
+                TerminatedPlacement(
+                    id = placementId6,
+                    endDate = today.plusDays(20),
+                    type = PlacementType.DAYCARE,
+                    terminationRequestedDate = null,
+                    child =
+                        ChildBasics(
+                            id = testChild_5.id,
+                            socialSecurityNumber = testChild_5.ssn,
+                            firstName = testChild_5.firstName,
+                            lastName = testChild_5.lastName,
+                            dateOfBirth = testChild_5.dateOfBirth,
+                        ),
+                    terminatedBy =
+                        EvakaUser(
+                            id = EvakaUserId(testAdult_1.id.raw),
+                            name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
+                            type = EvakaUserType.CITIZEN,
+                        ),
+                    currentDaycareGroupName = group.name,
+                    connectedDaycareOnly = false,
+                ),
+                TerminatedPlacement(
+                    id = placementId7,
+                    endDate = today.plusDays(21),
+                    type = PlacementType.DAYCARE,
+                    terminationRequestedDate = null,
+                    child =
+                        ChildBasics(
+                            id = testChild_6.id,
+                            socialSecurityNumber = testChild_6.ssn,
+                            firstName = testChild_6.firstName,
+                            lastName = testChild_6.lastName,
+                            dateOfBirth = testChild_6.dateOfBirth,
+                        ),
+                    terminatedBy =
+                        EvakaUser(
+                            id = EvakaUserId(testAdult_1.id.raw),
+                            name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
+                            type = EvakaUserType.CITIZEN,
+                        ),
+                    currentDaycareGroupName = null,
+                    connectedDaycareOnly = false,
                 ),
             ),
             details.recentlyTerminatedPlacements.sortedBy { it.endDate },

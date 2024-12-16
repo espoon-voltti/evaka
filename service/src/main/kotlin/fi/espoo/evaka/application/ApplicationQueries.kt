@@ -17,20 +17,14 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.ArchivedProcessId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.placement.TerminatedPlacement
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.freeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import fi.espoo.evaka.user.EvakaUser
@@ -1458,3 +1452,39 @@ fun Database.Read.personHasSentApplicationWithId(
             )
         }
         .exactlyOne<Boolean>()
+
+fun Database.Read.getActiveTransferApplicationsFromUnit(
+    unitId: DaycareId,
+    today: LocalDate,
+): List<TerminatedPlacement> =
+    createQuery {
+            sql(
+                """
+SELECT
+    p.id,
+    p.end_date,
+    p.type,
+    NULL AS termination_requested_date,
+    child.id AS child_id,
+    child.first_name AS child_first_name,
+    child.last_name AS child_last_name,
+    child.social_security_number AS child_social_security_number,
+    child.date_of_birth AS child_date_of_birth,
+    terminated_by.id AS terminated_by_id,
+    terminated_by.name AS terminated_by_name,
+    terminated_by.type AS terminated_by_type,    
+    g.name AS current_daycare_group_name,
+    FALSE AS connected_daycare_only
+FROM application a
+JOIN placement p ON a.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
+JOIN person child ON a.child_id = child.id
+JOIN evaka_user terminated_by ON a.guardian_id = terminated_by.id
+LEFT JOIN daycare_group_placement gp ON p.id = gp.daycare_placement_id AND daterange(gp.start_date, gp.end_date, '[]') @> ${bind(today)}
+LEFT JOIN daycare_group g ON gp.daycare_group_id = g.id
+WHERE p.unit_id = ${bind(unitId)}
+AND a.transferapplication
+AND a.status = 'ACTIVE'
+"""
+            )
+        }
+        .toList<TerminatedPlacement>()
