@@ -517,6 +517,26 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `cannot set daycare close date to earlier than open date`() {
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        val openingDate = today
+        db.transaction { tx -> tx.insert(admin) }
+
+        val daycare = getDaycare(testDaycare.id).daycare
+        val fields = DaycareFields.fromDaycare(daycare).copy(openingDate = openingDate)
+
+        assertThrows<BadRequest> {
+            updateDaycare(admin.user, fields.copy(closingDate = openingDate.minusDays(1)))
+        }
+
+        updateDaycare(admin.user, fields.copy(closingDate = openingDate))
+
+        assertThrows<BadRequest> { updateUnitClosingDate(admin.user, openingDate.minusDays(1)) }
+
+        updateUnitClosingDate(admin.user, openingDate)
+    }
+
+    @Test
     fun `cannot set daycare close date to earlier than the end of last placement`() {
         val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
         val endDate = today.plusYears(1)
@@ -540,6 +560,10 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         }
 
         updateDaycare(admin.user, fields.copy(closingDate = endDate))
+
+        assertThrows<BadRequest> { updateUnitClosingDate(admin.user, endDate.minusDays(1)) }
+
+        updateUnitClosingDate(admin.user, endDate)
     }
 
     @Test
@@ -594,6 +618,16 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             MockEvakaClock(now),
             testDaycare.id,
             fields,
+        )
+    }
+
+    private fun updateUnitClosingDate(user: AuthenticatedUser.Employee, closingDate: LocalDate) {
+        daycareController.updateUnitClosingDate(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            testDaycare.id,
+            closingDate,
         )
     }
 

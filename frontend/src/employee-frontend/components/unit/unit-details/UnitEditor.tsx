@@ -11,6 +11,7 @@ import {
 } from 'employee-frontend/components/child-information/daily-service-times/DailyServiceTimesForms'
 import { DayOfWeek } from 'employee-frontend/types'
 import DateRange from 'lib-common/date-range'
+import { useBoolean } from 'lib-common/form/hooks'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { time } from 'lib-common/form-validation'
 import {
@@ -49,10 +50,15 @@ import { fontWeights, H1, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
-import { faPen } from 'lib-icons'
+import { faPen, farXmark } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+
+import {
+  closingDateIsBeforeLastPlacementDate,
+  UnitClosingDateModal
+} from './UnitClosingDateModal'
 
 // CareType is a mix of these two enums
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
@@ -498,13 +504,11 @@ function validateForm(
     })
   }
   if (
-    form.closingDate != null &&
-    lastPlacementDate != null &&
-    form.closingDate.isBefore(lastPlacementDate)
+    closingDateIsBeforeLastPlacementDate(form.closingDate, lastPlacementDate)
   ) {
     errors.push({
       text: i18n.unitEditor.error.closingDateBeforeLastPlacementDate(
-        lastPlacementDate
+        lastPlacementDate!
       ),
       key: 'unit-closing-placement'
     })
@@ -971,6 +975,11 @@ export default function UnitEditor(props: Props) {
     [form.financeDecisionHandlerId] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
+  const [
+    showClosingDateModal,
+    { on: closingDateModalOn, off: closingDateModalOff }
+  ] = useBoolean(false)
+
   const getFormData = () => {
     const [fields, errors] = validateForm(i18n, props.lastPlacementDate, form)
     setValidationErrors(errors)
@@ -1006,15 +1015,31 @@ export default function UnitEditor(props: Props) {
         <TopBar>
           <H1 fitted>{props.unit.name}</H1>
           {!props.editable && (
-            <Button
-              appearance="inline"
-              icon={faPen}
-              onClick={onClickEditHandler}
-              text={i18n.common.edit}
-              data-qa="enable-edit-button"
-            />
+            <FixedSpaceRow>
+              <Button
+                appearance="inline"
+                icon={faPen}
+                onClick={onClickEditHandler}
+                text={i18n.common.edit}
+                data-qa="enable-edit-button"
+              />
+              <Button
+                appearance="inline"
+                icon={farXmark}
+                onClick={closingDateModalOn}
+                text={i18n.unitEditor.closingDateModal}
+                data-qa="open-closing-date-modal"
+              />
+            </FixedSpaceRow>
           )}
         </TopBar>
+      )}
+      {props.unit && showClosingDateModal && (
+        <UnitClosingDateModal
+          unit={props.unit}
+          lastPlacementDate={props.lastPlacementDate}
+          onClose={closingDateModalOff}
+        />
       )}
       {!props.unit && <H1>{i18n.titles.createUnit}</H1>}
       <H3>{i18n.unit.info.title}</H3>
@@ -1038,7 +1063,7 @@ export default function UnitEditor(props: Props) {
       <FormPart>
         <div>{`${i18n.unitEditor.label.openingDate} / ${i18n.unitEditor.label.closingDate}`}</div>
         <AlertBoxContainer>
-          <div>
+          <div data-qa="opening-and-closing-dates">
             {props.editable ? (
               <DatePickerDeprecated
                 date={form.openingDate ?? undefined}
