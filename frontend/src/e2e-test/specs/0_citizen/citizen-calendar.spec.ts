@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { CalendarEventId } from 'lib-common/generated/api-types/shared'
+import {
+  CalendarEventId,
+  PlacementId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -18,8 +21,7 @@ import {
   testChild,
   testChild2,
   testChildRestricted,
-  testDaycare,
-  uuidv4
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -52,11 +54,13 @@ beforeEach(async () => {
   children = [testChild, testChild2, testChildRestricted]
   jariId = testChild.id
   await Fixture.family({ guardian: testAdult, children }).save()
-  const placementIds = new Map(children.map((child) => [child.id, uuidv4()]))
+  const placementIds = new Map(
+    children.map((child) => [child.id, randomId<PlacementId>()])
+  )
   await createDaycarePlacements({
     body: children.map((child) =>
       createDaycarePlacementFixture(
-        placementIds.get(child.id) ?? '',
+        placementIds.get(child.id)!,
         child.id,
         testDaycare.id,
         today,
@@ -75,7 +79,7 @@ beforeEach(async () => {
       startDate: today,
       endDate: today.addYears(1),
       daycareGroupId: daycareGroup.id,
-      daycarePlacementId: placementIds.get(child.id) ?? ''
+      daycarePlacementId: placementIds.get(child.id)!
     }).save()
   }
 

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 
 import config from '../../config'
 import {
@@ -11,7 +12,6 @@ import {
   testChild,
   testAdult,
   Fixture,
-  uuidv4,
   testCareArea
 } from '../../dev-api/fixtures'
 import {
@@ -119,7 +119,7 @@ describe('Income statements', () => {
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           testChild.id,
           testDaycare.id,
           startDate,

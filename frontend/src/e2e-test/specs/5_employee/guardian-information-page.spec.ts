@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import {
+  ApplicationId,
+  PlacementId
+} from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
@@ -47,7 +50,7 @@ beforeEach(async () => {
   const admin = await Fixture.employee().admin().save()
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
-    randomId<ApplicationId>(),
+    randomId<PlacementId>(),
     testChild.id,
     testDaycare.id
   )

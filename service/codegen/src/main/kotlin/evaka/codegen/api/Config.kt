@@ -109,7 +109,6 @@ val lenientIdTypes =
         DatabaseTable.Partnership::class,
         DatabaseTable.Payment::class,
         DatabaseTable.PedagogicalDocument::class,
-        DatabaseTable.Placement::class,
         DatabaseTable.PlacementPlan::class,
         DatabaseTable.PreschoolAssistance::class,
         DatabaseTable.ServiceApplication::class,

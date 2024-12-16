@@ -6,7 +6,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CalendarEventId,
   CalendarEventTimeId,
-  GroupId
+  GroupId,
+  PlacementId
 } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -17,7 +18,6 @@ import {
   testDaycare2,
   familyWithRestrictedDetailsGuardian,
   Fixture,
-  uuidv4,
   familyWithTwoGuardians
 } from '../../dev-api/fixtures'
 import {
@@ -49,8 +49,8 @@ const groupId2 = randomId<GroupId>()
 const testSurveyId = randomId<CalendarEventId>()
 const eventTimeId = randomId<CalendarEventTimeId>()
 const eventTimeId2 = randomId<CalendarEventTimeId>()
-const child1DaycarePlacementId = uuidv4()
-const child1DaycarePlacementId2 = uuidv4()
+const child1DaycarePlacementId = randomId<PlacementId>()
+const child1DaycarePlacementId2 = randomId<PlacementId>()
 
 beforeEach(async () => {
   await resetServiceState()
@@ -112,7 +112,7 @@ beforeEach(async () => {
     endDate: placementEndDate
   }).save()
 
-  const child2DaycarePlacementId = uuidv4()
+  const child2DaycarePlacementId = randomId<PlacementId>()
   await Fixture.placement({
     id: child2DaycarePlacementId,
     childId: child2Fixture.id,

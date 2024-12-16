@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -11,7 +12,6 @@ import {
   testDaycare,
   testAdult,
   Fixture,
-  uuidv4,
   testChildRestricted,
   testCareArea
 } from '../../dev-api/fixtures'
@@ -52,7 +52,7 @@ beforeEach(async () => {
 describe('Guardian income statements', () => {
   test("Shows placed child's income statements", async () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId(),
       child.id,
       testDaycare.id
     )

@@ -21,8 +21,7 @@ import {
   testDaycareGroup,
   testChild,
   familyWithTwoGuardians,
-  Fixture,
-  uuidv4
+  Fixture
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -62,7 +61,7 @@ beforeEach(async () => {
   childId = familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
+    randomId(),
     childId,
     unitId
   )
@@ -386,7 +385,7 @@ describe('Assistance need decisions report', () => {
     }).save()
 
     const daycarePlacementFixture2 = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId(),
       anotherChildId,
       anotherDaycare.id
     )

@@ -233,7 +233,7 @@ export const pilotFeatures = [
 
 export type PilotFeature = typeof pilotFeatures[number]
 
-export type PlacementId = string
+export type PlacementId = Id<'Placement'>
 
 export type PlacementPlanId = string
 

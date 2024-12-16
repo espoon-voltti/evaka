@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -142,7 +143,7 @@ describe('Person finance decisions', () => {
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           testChild2.id,
           testDaycarePrivateVoucher.id,
           from,

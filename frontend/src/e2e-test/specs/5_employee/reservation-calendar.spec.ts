@@ -5,19 +5,21 @@
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
-import { BackupCareId, GroupId } from 'lib-common/generated/api-types/shared'
+import {
+  BackupCareId,
+  GroupId,
+  PlacementId
+} from 'lib-common/generated/api-types/shared'
 import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
 
 import {
   testCareArea2,
   testDaycare2,
   testDaycare,
   Fixture,
-  uuidv4,
   familyWithTwoGuardians,
   testCareArea,
   fullDayTimeRange
@@ -35,7 +37,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let child1Fixture: DevPerson
-let child1DaycarePlacementId: UUID
+let child1DaycarePlacementId: PlacementId
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee
 
@@ -82,7 +84,7 @@ const insertTestDataAndLogin = async ({
   }).save()
 
   child1Fixture = familyWithTwoGuardians.children[0]
-  child1DaycarePlacementId = uuidv4()
+  child1DaycarePlacementId = randomId()
   const placementBuilder = await Fixture.placement({
     id: child1DaycarePlacementId,
     childId: child1Fixture.id,

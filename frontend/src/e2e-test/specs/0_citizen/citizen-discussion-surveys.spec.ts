@@ -7,7 +7,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CalendarEventId,
   CalendarEventTimeId,
-  GroupId
+  GroupId,
+  PlacementId
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
@@ -22,8 +23,7 @@ import {
   testCareArea,
   testChild,
   testChild2,
-  testDaycare,
-  uuidv4
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -67,12 +67,14 @@ beforeEach(async () => {
     children: children
   }).save()
 
-  const placementIds = new Map(children.map((child) => [child.id, uuidv4()]))
+  const placementIds = new Map(
+    children.map((child) => [child.id, randomId<PlacementId>()])
+  )
 
   await createDaycarePlacements({
     body: children.map((child) =>
       createDaycarePlacementFixture(
-        placementIds.get(child.id) ?? '',
+        placementIds.get(child.id)!,
         child.id,
         testDaycare.id,
         today,
@@ -92,7 +94,7 @@ beforeEach(async () => {
       startDate: today,
       endDate: today.addYears(1),
       daycareGroupId: daycareGroup.id,
-      daycarePlacementId: placementIds.get(child.id) ?? ''
+      daycarePlacementId: placementIds.get(child.id)!
     }).save()
   }
 
@@ -457,7 +459,7 @@ describe.each(e)('Citizen calendar event time visibility (%s)', (env) => {
   })
   test('Citizen receives only one correct set of event times despite 2 placements', async () => {
     const placement1 = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId(),
       testChild2.id,
       testDaycare.id,
       today,
@@ -465,7 +467,7 @@ describe.each(e)('Citizen calendar event time visibility (%s)', (env) => {
     )
 
     const placement2 = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId(),
       testChild2.id,
       testDaycare.id,
       today.addDays(4),
@@ -505,7 +507,7 @@ describe.each(e)('Citizen calendar event time visibility (%s)', (env) => {
 
   test('Citizen is receives only one correct set of event times despite 2 group placements', async () => {
     const placement1 = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId(),
       testChild2.id,
       testDaycare.id,
       today,

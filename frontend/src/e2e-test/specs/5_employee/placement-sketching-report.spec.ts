@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import {
+  ApplicationId,
+  PlacementId
+} from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -129,7 +132,7 @@ describe('Placement sketching report', () => {
     const currentUnit = preferredUnit
 
     const daycarePlacementFixture = createDaycarePlacementFixture(
-      randomId<ApplicationId>(),
+      randomId<PlacementId>(),
       createdApplication.childId,
       preferredUnit.id,
       placementStartDate

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PersonId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -12,7 +13,6 @@ import {
   testDaycare,
   testDaycareGroup,
   Fixture,
-  uuidv4,
   familyWithTwoGuardians,
   testCareArea
 } from '../../dev-api/fixtures'
@@ -61,7 +61,7 @@ beforeEach(async () => {
 
   staff = await Fixture.employee().staff(unitId).save()
   const daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
+    randomId(),
     childId,
     unitId
   )

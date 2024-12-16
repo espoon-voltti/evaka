@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -10,8 +11,7 @@ import {
   testAdult,
   testCareArea,
   testChild,
-  testDaycare,
-  uuidv4
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -41,14 +41,14 @@ beforeEach(async () => {
   await createDaycarePlacements({
     body: [
       createDaycarePlacementFixture(
-        uuidv4(),
+        randomId(),
         testChild.id,
         testDaycare.id,
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       createDaycarePlacementFixture(
-        uuidv4(),
+        randomId(),
         testChild.id,
         testDaycare.id,
         LocalDate.todayInSystemTz().addDays(1),

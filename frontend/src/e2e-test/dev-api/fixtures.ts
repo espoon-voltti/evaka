@@ -42,7 +42,8 @@ import {
   DaycareId,
   EmployeeId,
   GroupId,
-  PersonId
+  PersonId,
+  PlacementId
 } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -400,7 +401,7 @@ export class Fixture {
     initial: SemiPartial<DevPlacement, 'childId' | 'unitId'>
   ): PlacementBuilder {
     return new PlacementBuilder({
-      id: uuidv4(),
+      id: randomId(),
       type: 'DAYCARE',
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz().addYears(1),
@@ -3121,7 +3122,7 @@ export const testDaycareGroup: DevDaycareGroup = {
  *  @deprecated Use `Fixture.placement()` instead
  **/
 export function createDaycarePlacementFixture(
-  id: string,
+  id: PlacementId,
   childId: PersonId,
   unitId: DaycareId,
   startDate = LocalDate.of(2022, 5, 1),

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 
 import {
   createDaycarePlacementFixture,
   testDaycareGroup,
   Fixture,
-  uuidv4,
   testAdult,
   testChild,
   testCareArea,
@@ -59,7 +59,7 @@ beforeEach(async () => {
   })
 
   await createDaycarePlacements({
-    body: [createDaycarePlacementFixture(uuidv4(), child.id, unitId)]
+    body: [createDaycarePlacementFixture(randomId(), child.id, unitId)]
   })
 
   templateIdVasu = (

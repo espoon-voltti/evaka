@@ -19,7 +19,7 @@ describe('Terminated placement info', () => {
       terminatable: true,
       placements: [
         {
-          id: 'd4e1cf34-72d5-4fad-b40c-5b1b4cb36883',
+          id: fromUuid('d4e1cf34-72d5-4fad-b40c-5b1b4cb36883'),
           type: 'DAYCARE',
           childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
@@ -55,7 +55,7 @@ describe('Terminated placement info', () => {
       endDate: LocalDate.of(2022, 6, 1),
       placements: [
         {
-          id: 'd4e1cf34-72d5-4fad-b40c-5b1b4cb36883',
+          id: fromUuid('d4e1cf34-72d5-4fad-b40c-5b1b4cb36883'),
           type: 'PRESCHOOL_DAYCARE',
           childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
@@ -69,7 +69,7 @@ describe('Terminated placement info', () => {
       ],
       additionalPlacements: [
         {
-          id: '08e9e908-03d2-48a2-9634-5468b2165945',
+          id: fromUuid('08e9e908-03d2-48a2-9634-5468b2165945'),
           type: 'DAYCARE',
           childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
@@ -104,7 +104,7 @@ describe('Terminated placement info', () => {
       terminatable: true,
       placements: [
         {
-          id: '8920e598-8b3a-11ed-bf51-4f02a3804b0b',
+          id: fromUuid('8920e598-8b3a-11ed-bf51-4f02a3804b0b'),
           type: 'PRESCHOOL_DAYCARE',
           childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
@@ -120,7 +120,7 @@ describe('Terminated placement info', () => {
           }
         },
         {
-          id: '94e520b0-8b3a-11ed-b202-df238eb02b71',
+          id: fromUuid('94e520b0-8b3a-11ed-b202-df238eb02b71'),
           type: 'PRESCHOOL',
           childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),

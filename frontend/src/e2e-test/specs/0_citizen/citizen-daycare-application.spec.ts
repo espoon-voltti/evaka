@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
   applicationFixture,
   testDaycare,
   testAdult,
-  uuidv4,
   Fixture,
   testAdult2,
   testChild,
@@ -178,7 +178,7 @@ describe('Citizen daycare applications', () => {
     await createDaycarePlacements({
       body: [
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'DAYCARE',
           childId: testChild.id,
           unitId: testDaycare.id,
