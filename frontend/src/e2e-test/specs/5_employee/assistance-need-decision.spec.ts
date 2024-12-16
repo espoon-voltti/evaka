@@ -296,7 +296,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.selectedUnit,
-        `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+        `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}`
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.motivationForDecision,
@@ -422,7 +422,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.selectedUnit,
-        `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+        `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}`
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.motivationForDecision,
