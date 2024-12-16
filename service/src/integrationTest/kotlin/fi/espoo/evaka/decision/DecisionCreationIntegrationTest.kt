@@ -37,7 +37,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
@@ -67,6 +67,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    private val clock = MockEvakaClock(2024, 12, 16, 13, 32, 25)
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val citizen = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
@@ -319,7 +320,7 @@ WHERE id = ${bind(testDaycare.id)}
                 applicationController.getDecisionDrafts(
                     dbInstance(),
                     AuthenticatedUser.Employee(testDecisionMaker_1.id, roles),
-                    RealEvakaClock(),
+                    clock,
                     applicationId,
                 )
             }
@@ -352,7 +353,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizen,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(1, notificationCount)
 
@@ -360,12 +361,12 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizenWeak,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(1, notificationCountAsWeak)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -377,7 +378,7 @@ WHERE id = ${bind(testDaycare.id)}
                             childId = testChild_6.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -431,7 +432,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 otherGuardian,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(0, notificationCount)
 
@@ -439,12 +440,12 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 otherGuardianWeak,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(0, notificationCountAsWeak)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -456,7 +457,7 @@ WHERE id = ${bind(testDaycare.id)}
                             childId = testChild_6.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -502,7 +503,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 otherGuardian,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(0, notificationCount)
 
@@ -510,12 +511,12 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 otherGuardianWeak,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(0, notificationCountAsWeak)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -527,7 +528,7 @@ WHERE id = ${bind(testDaycare.id)}
                             childId = testChild_6.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -586,7 +587,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 otherGuardian,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(1, notificationCount)
 
@@ -594,12 +595,12 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 otherGuardianWeak,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(1, notificationCountAsWeak)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -611,7 +612,7 @@ WHERE id = ${bind(testDaycare.id)}
                             childId = testChild_1.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -659,12 +660,12 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizen,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(1, notificationCount)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -676,7 +677,7 @@ WHERE id = ${bind(testDaycare.id)}
                             childId = testChild_6.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -721,12 +722,12 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizen,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(0, notificationCount)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, clock)
         assertEquals(
             ApplicationDecisions(
                 decisions = emptyList(),
@@ -749,7 +750,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationController.getDecisionDrafts(
                 dbInstance(),
                 serviceWorker,
-                RealEvakaClock(),
+                clock,
                 applicationId,
             )
         assertEquals(
@@ -803,11 +804,11 @@ WHERE id = ${bind(testDaycare.id)}
         applicationController.simpleApplicationAction(
             dbInstance(),
             serviceWorker,
-            RealEvakaClock(),
+            clock,
             applicationId,
             SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL,
         )
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(clock)
 
         val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).toList() }
         rows.forEach { row ->
@@ -865,17 +866,11 @@ WHERE id = ${bind(testDaycare.id)}
                         ),
                 )
 
-            applicationStateService.setVerified(
-                tx,
-                serviceWorker,
-                RealEvakaClock(),
-                applicationId,
-                false,
-            )
+            applicationStateService.setVerified(tx, serviceWorker, clock, applicationId, false)
             applicationStateService.createPlacementPlan(
                 tx,
                 serviceWorker,
-                RealEvakaClock(),
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = unit.id,
