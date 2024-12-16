@@ -7,8 +7,6 @@ package fi.espoo.evaka.shared.auth
 import fi.espoo.evaka.shared.db.DatabaseEnum
 
 enum class UserRole : DatabaseEnum {
-    END_USER,
-    CITIZEN_WEAK,
     ADMIN,
     REPORT_VIEWER,
     DIRECTOR,
@@ -21,9 +19,7 @@ enum class UserRole : DatabaseEnum {
     SPECIAL_EDUCATION_TEACHER,
 
     /** Varhaiskasvatussihteeri */
-    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-    MOBILE,
-    @Deprecated("Exists only for backwards compatibility") GROUP_STAFF;
+    EARLY_CHILDHOOD_EDUCATION_SECRETARY;
 
     fun isGlobalRole(): Boolean =
         when (this) {
@@ -49,15 +45,12 @@ enum class UserRole : DatabaseEnum {
     override val sqlType: String = "user_role"
 
     companion object {
-        @Suppress("DEPRECATION")
         val SCOPED_ROLES =
             setOf(
                 UNIT_SUPERVISOR,
                 STAFF,
                 SPECIAL_EDUCATION_TEACHER,
                 EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                MOBILE,
-                GROUP_STAFF,
             )
     }
 }

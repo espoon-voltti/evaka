@@ -339,12 +339,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 preferredStartDate = LocalDate.of(2020, 3, 17),
             )
         val invalidRoleLists =
-            listOf(
-                setOf(UserRole.UNIT_SUPERVISOR),
-                setOf(UserRole.FINANCE_ADMIN),
-                setOf(UserRole.END_USER),
-                setOf(),
-            )
+            listOf(setOf(UserRole.UNIT_SUPERVISOR), setOf(UserRole.FINANCE_ADMIN), setOf())
         invalidRoleLists.forEach { roles ->
             assertThrows<Forbidden> {
                 applicationController.getPlacementPlanDraft(

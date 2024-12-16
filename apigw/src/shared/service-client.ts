@@ -16,16 +16,17 @@ export const client = axios.create({
 export type UUID = string
 
 export type UserRole =
-  | 'CITIZEN_WEAK'
   | 'ADMIN'
-  | 'DIRECTOR'
   | 'REPORT_VIEWER'
+  | 'DIRECTOR'
   | 'FINANCE_ADMIN'
   | 'FINANCE_STAFF'
   | 'SERVICE_WORKER'
-  | 'STAFF'
+  | 'MESSAGING'
   | 'UNIT_SUPERVISOR'
-  | 'MOBILE'
+  | 'STAFF'
+  | 'SPECIAL_EDUCATION_TEACHER'
+  | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
 
 export type ServiceRequestHeader =
   | 'Authorization'
