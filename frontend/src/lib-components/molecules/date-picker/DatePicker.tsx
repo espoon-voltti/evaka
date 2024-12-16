@@ -109,7 +109,7 @@ export const DatePickerF = React.memo(function DatePickerF({
       onChange={value.set}
       minDate={config.state?.minDate}
       maxDate={config.state?.maxDate}
-      info={'info' in props ? props.info : value.inputInfo()}
+      info={'info' in props ? props.info : bind.inputInfo()}
     />
   )
 })
