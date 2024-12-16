@@ -61,7 +61,6 @@ import PairingWizard from './pairing/PairingWizard'
 import { queryClient, QueryClientProvider } from './query'
 import { RememberContext, RememberContextProvider } from './remember'
 import { SettingsPage } from './settings/SettingsPage'
-import StaffPage from './staff/StaffPage'
 import ExternalStaffMemberPage from './staff-attendance/ExternalStaffMemberPage'
 import MarkExternalStaffMemberArrivalPage from './staff-attendance/MarkExternalStaffMemberArrivalPage'
 import StaffAttendanceEditPage from './staff-attendance/StaffAttendanceEditPage'
@@ -213,10 +212,6 @@ function GroupRouter({ unitId }: { unitId: DaycareId }) {
           element={<ChildAttendanceRouter unitOrGroup={unitOrGroup} />}
         />
         <Route
-          path="staff/*"
-          element={<StaffRouter unitOrGroup={unitOrGroup} />}
-        />
-        <Route
           path="staff-attendance/*"
           element={<StaffAttendanceRouter unitOrGroup={unitOrGroup} />}
         />
@@ -301,14 +296,6 @@ function ChildRouter({ unitId }: { unitId: DaycareId }) {
           </RequirePinAuth>
         }
       />
-    </Routes>
-  )
-}
-
-function StaffRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
-  return (
-    <Routes>
-      <Route index element={<StaffPage unitOrGroup={unitOrGroup} />} />
     </Routes>
   )
 }
@@ -448,9 +435,6 @@ export const routes = {
   },
   childSensitiveInfo(unitId: UUID, child: UUID): Uri {
     return uri`${this.child(unitId, child)}/info`
-  },
-  staff(unitOrGroup: UnitOrGroup): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff`
   },
   staffAttendanceRoot(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance`
