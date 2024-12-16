@@ -69,14 +69,6 @@ export interface OccupancyResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyResponseGroupLevel
-*/
-export interface OccupancyResponseGroupLevel {
-  groupId: GroupId
-  occupancies: OccupancyResponse
-}
-
-/**
 * Generated from fi.espoo.evaka.occupancy.OccupancyResponseSpeculated
 */
 export interface OccupancyResponseSpeculated {
@@ -192,14 +184,6 @@ export function deserializeJsonOccupancyResponse(json: JsonOf<OccupancyResponse>
     max: (json.max != null) ? deserializeJsonOccupancyPeriod(json.max) : null,
     min: (json.min != null) ? deserializeJsonOccupancyPeriod(json.min) : null,
     occupancies: json.occupancies.map(e => deserializeJsonOccupancyPeriod(e))
-  }
-}
-
-
-export function deserializeJsonOccupancyResponseGroupLevel(json: JsonOf<OccupancyResponseGroupLevel>): OccupancyResponseGroupLevel {
-  return {
-    ...json,
-    occupancies: deserializeJsonOccupancyResponse(json.occupancies)
   }
 }
 
