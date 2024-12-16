@@ -20,7 +20,7 @@ const Employee = z.object({
   email: z.string()
 })
 
-export function createDevAdRouter(sessions: Sessions): Router {
+export function createDevAdRouter(sessions: Sessions<'employee'>): Router {
   return createDevAuthRouter({
     sessions,
     root: '/employee',

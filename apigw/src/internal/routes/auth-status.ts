@@ -124,7 +124,9 @@ const userChanged = (
   rolesChanged(sessionUser.allScopedRoles, user.allScopedRoles) ||
   rolesChanged(sessionUser.globalRoles, user.globalRoles)
 
-export default (sessions: Sessions) =>
+export const internalAuthStatus = (
+  sessions: Sessions<'employee' | 'employee-mobile'>
+) =>
   toRequestHandler(async (req, res) => {
     const sessionUser = sessions.getUser(req)
     const validUser = sessionUser && (await validateUser(req, sessionUser))

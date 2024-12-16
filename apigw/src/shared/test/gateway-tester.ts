@@ -13,8 +13,7 @@ import express from 'express'
 import nock from 'nock'
 import { Cookie, CookieJar } from 'tough-cookie'
 
-import { enduserGwRouter } from '../../enduser/app.js'
-import { internalGwRouter } from '../../internal/app.js'
+import { apiRouter } from '../../app.js'
 import { Config, evakaServiceUrl } from '../config.js'
 import { CitizenUser, EmployeeUser } from '../service-client.js'
 import { sessionCookie, SessionType } from '../session.js'
@@ -147,8 +146,7 @@ export class GatewayTester {
   ): Promise<GatewayTester> {
     const app = express()
     const redisClient = new MockRedisClient()
-    app.use('/api/application', enduserGwRouter(config, redisClient))
-    app.use('/api/internal', internalGwRouter(config, redisClient))
+    app.use('/api', apiRouter(config, redisClient))
     return new Promise((resolve) => {
       const server = app.listen(() => {
         resolve(new GatewayTester(server, sessionType))

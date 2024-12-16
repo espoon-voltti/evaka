@@ -8,8 +8,7 @@ import express from 'express'
 import helmet from 'helmet'
 import * as redis from 'redis'
 
-import { enduserGwRouter } from './enduser/app.js'
-import { internalGwRouter } from './internal/app.js'
+import { apiRouter } from './app.js'
 import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
 import {
   logError,
@@ -21,7 +20,6 @@ import { fallbackErrorHandler } from './shared/middleware/error-handler.js'
 import tracing from './shared/middleware/tracing.js'
 import { assertRedisConnection } from './shared/redis-client.js'
 import { trustReverseProxy } from './shared/reverse-proxy.js'
-import csp from './shared/routes/csp.js'
 
 const config = configFromEnv()
 
@@ -64,10 +62,7 @@ app.get('/health', (_, res) => {
 })
 app.use(tracing)
 app.use(loggingMiddleware)
-
-app.use('/api/application', enduserGwRouter(config, redisClient))
-app.use('/api/csp', csp)
-app.use('/api/internal', internalGwRouter(config, redisClient))
+app.use('/api/', apiRouter(config, redisClient))
 app.use(fallbackErrorHandler)
 
 const server = app.listen(httpPort, () =>

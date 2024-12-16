@@ -23,12 +23,12 @@ import {
   SamlSessionSchema,
   validateRelayStateUrl
 } from '../saml/index.js'
-import { Sessions } from '../session.js'
+import { Sessions, SessionType } from '../session.js'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 
-export interface SamlEndpointConfig {
-  sessions: Sessions
+export interface SamlEndpointConfig<T extends SessionType> {
+  sessions: Sessions<T>
   saml: SAML
   strategyName: string
   defaultPageUrl: string
@@ -60,8 +60,8 @@ export class SamlError extends Error {
 // browser to the SP (us) and the IDP.
 // * HTTP redirect: the browser makes a GET request with query parameters
 // * HTTP POST: the browser makes a POST request with URI-encoded form body
-export default function createSamlRouter(
-  endpointConfig: SamlEndpointConfig
+export default function createSamlRouter<T extends SessionType>(
+  endpointConfig: SamlEndpointConfig<T>
 ): express.Router {
   const { sessions, strategyName, saml, defaultPageUrl, authenticate } =
     endpointConfig

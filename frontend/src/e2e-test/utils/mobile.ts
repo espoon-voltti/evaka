@@ -26,7 +26,7 @@ export async function pairMobileDevice(unitId: DaycareId): Promise<string> {
       pushNotificationCategories: []
     }
   })
-  return `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${longTermToken}`
+  return `${config.mobileBaseUrl}/api/dev-api/auth/mobile-e2e-signup?token=${longTermToken}`
 }
 
 /** Create a personal mobile device for the given employee
@@ -45,5 +45,5 @@ export async function pairPersonalMobileDevice(
       longTermToken
     }
   })
-  return `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${longTermToken}`
+  return `${config.mobileBaseUrl}/api/dev-api/auth/mobile-e2e-signup?token=${longTermToken}`
 }
