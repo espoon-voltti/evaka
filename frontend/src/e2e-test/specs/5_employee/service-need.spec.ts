@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -23,7 +24,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let admin: DevEmployee
-let childId: UUID
+let childId: PersonId
 let employee: DevEmployee
 let placement: DevPlacement
 let activeServiceNeedOption: ServiceNeedOption
@@ -122,7 +123,7 @@ describe('Service need', () => {
     await Fixture.serviceNeed({
       placementId: placement.id,
       optionId: inactiveServiceNeedOption.id,
-      confirmedBy: employee.id
+      confirmedBy: evakaUserId(employee.id)
     }).save()
     const section = await openCollapsible()
 

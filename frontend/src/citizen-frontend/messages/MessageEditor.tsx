@@ -85,7 +85,10 @@ export default React.memo(function MessageEditor({
   const user = useUser()
 
   const childIds = useMemo(
-    () => Object.keys(receiverOptions.childrenToMessageAccounts),
+    () =>
+      Object.keys(
+        receiverOptions.childrenToMessageAccounts
+      ) as (keyof typeof receiverOptions.childrenToMessageAccounts)[],
     [receiverOptions]
   )
 

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -35,7 +35,7 @@ let page: Page
 let serviceWorker: DevEmployee
 let staff: DevEmployee
 let assistanceNeedDecisionEditPage: AssistanceNeedDecisionEditPage
-let childId: UUID
+let childId: PersonId
 let assistanceNeedDecision: DevAssistanceNeedDecision
 let preFilledAssistanceNeedDecision: DevAssistanceNeedDecision
 

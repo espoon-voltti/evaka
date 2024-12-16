@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -72,7 +73,7 @@ describe('Service time usage', () => {
       startDate: yesterday,
       endDate: today.addYears(1),
       optionId: serviceNeedOption.id,
-      confirmedBy: daycareSupervisor.id
+      confirmedBy: evakaUserId(daycareSupervisor.id)
     }).save()
   })
 
@@ -221,7 +222,7 @@ describe('Service time alert', () => {
       startDate: LocalDate.of(2022, 1, 1),
       endDate: today.addYears(1),
       optionId: serviceNeedOption.id,
-      confirmedBy: daycareSupervisor.id
+      confirmedBy: evakaUserId(daycareSupervisor.id)
     }).save()
   })
 

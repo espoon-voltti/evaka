@@ -11,10 +11,9 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -42,7 +41,7 @@ export default React.memo(function DiscussionSurveyEditor({
   eventData
 }: {
   unitId: DaycareId
-  groupId: UUID
+  groupId: GroupId
   eventData: CalendarEvent | null
 }) {
   const { i18n } = useTranslation()

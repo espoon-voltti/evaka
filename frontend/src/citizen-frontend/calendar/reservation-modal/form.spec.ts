@@ -9,6 +9,8 @@ import {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
+import { ChildId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -41,6 +43,11 @@ const emptyCalendarDaysIncludingWeekend: ReservationResponseDay[] = [
   children: []
 }))
 
+const childId1 = randomId<ChildId>()
+const childId2 = randomId<ChildId>()
+const childId3 = randomId<ChildId>()
+const childId4 = randomId<ChildId>()
+
 // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
 //          [] []       | [] [] [] [] []       | [] [] [] [] []
 const emptyCalendarDays = emptyCalendarDaysIncludingWeekend.filter(
@@ -53,7 +60,7 @@ const defaultReservableTimeRange = new TimeRange(
 )
 
 const emptyChild: ReservationResponseDayChild = {
-  childId: 'child-1',
+  childId: childId1,
   scheduleType: 'RESERVATION_REQUIRED',
   shiftCare: false,
   holidayPeriodEffect: null,
@@ -90,7 +97,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'notInitialized',
@@ -216,7 +223,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               reservations: [
                 {
                   type: 'TIMES',
@@ -227,7 +234,7 @@ describe('resetTimes', () => {
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               reservations: [
                 {
                   type: 'TIMES',
@@ -236,7 +243,7 @@ describe('resetTimes', () => {
                 }
               ]
             },
-            { ...emptyChild, childId: 'child-3' }
+            { ...emptyChild, childId: childId3 }
           ]
         })
       )
@@ -248,7 +255,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -272,7 +279,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3']
+          selectedChildren: [childId1, childId2, childId3]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -303,17 +310,17 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               scheduleType: 'FIXED_SCHEDULE'
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               scheduleType: 'FIXED_SCHEDULE'
             },
             {
               ...emptyChild,
-              childId: 'child-3',
+              childId: childId3,
               scheduleType: 'FIXED_SCHEDULE',
               absence:
                 day.date.getIsoDayOfWeek() === 3
@@ -334,7 +341,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -352,7 +359,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3']
+          selectedChildren: [childId1, childId2, childId3]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -375,7 +382,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               scheduleType: 'TERM_BREAK'
             }
           ]
@@ -389,7 +396,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1']
+          selectedChildren: [childId1]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -487,7 +494,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: {
                 type: 'OTHER_ABSENCE',
@@ -496,7 +503,7 @@ describe('resetTimes', () => {
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: {
                 type: 'OTHER_ABSENCE',
@@ -513,7 +520,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -537,7 +544,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: {
                 type: 'OTHER_ABSENCE',
@@ -546,7 +553,7 @@ describe('resetTimes', () => {
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: null
             }
@@ -560,7 +567,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -584,13 +591,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             }
@@ -604,7 +611,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -628,13 +635,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: []
             }
@@ -648,7 +655,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'DAILY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'dailyTimes',
@@ -676,7 +683,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'notInitialized',
@@ -804,17 +811,17 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
-              childId: 'child-3',
+              childId: childId3,
               absence:
                 day.date.getIsoDayOfWeek() === 3
                   ? { type: 'OTHER_ABSENCE', editable: true }
@@ -831,7 +838,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -855,7 +862,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3']
+          selectedChildren: [childId1, childId2, childId3]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -941,17 +948,17 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               absence: { type: 'OTHER_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               absence: { type: 'FREE_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
-              childId: 'child-3',
+              childId: childId3,
               absence:
                 day.date.getIsoDayOfWeek() === 3
                   ? { type: 'OTHER_ABSENCE', editable: false }
@@ -968,7 +975,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -983,7 +990,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3']
+          selectedChildren: [childId1, childId2, childId3]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1063,7 +1070,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               reservations: [
                 {
                   type: 'TIMES',
@@ -1077,7 +1084,7 @@ describe('resetTimes', () => {
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               reservations: [
                 {
                   type: 'TIMES',
@@ -1091,7 +1098,7 @@ describe('resetTimes', () => {
             },
             {
               ...emptyChild,
-              childId: 'child-3',
+              childId: childId3,
               reservations: [
                 {
                   type: 'TIMES',
@@ -1114,7 +1121,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1192,7 +1199,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3']
+          selectedChildren: [childId1, childId2, childId3]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1277,7 +1284,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               scheduleType: 'FIXED_SCHEDULE',
               absence:
                 day.date.getIsoDayOfWeek() === 4
@@ -1286,7 +1293,7 @@ describe('resetTimes', () => {
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               scheduleType: 'FIXED_SCHEDULE',
               absence:
                 day.date.getIsoDayOfWeek() === 3 ||
@@ -1304,7 +1311,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1359,24 +1366,24 @@ describe('resetTimes', () => {
           date: monday,
           holiday: true,
           children: [
-            { ...emptyChild, childId: 'child-1', shiftCare: false },
-            { ...emptyChild, childId: 'child-2', shiftCare: false }
+            { ...emptyChild, childId: childId1, shiftCare: false },
+            { ...emptyChild, childId: childId2, shiftCare: false }
           ]
         },
         {
           date: tuesday,
           holiday: true,
           children: [
-            { ...emptyChild, childId: 'child-1', shiftCare: true },
-            { ...emptyChild, childId: 'child-2', shiftCare: false }
+            { ...emptyChild, childId: childId1, shiftCare: true },
+            { ...emptyChild, childId: childId2, shiftCare: false }
           ]
         },
         {
           date: wednesday,
           holiday: true,
           children: [
-            { ...emptyChild, childId: 'child-1', shiftCare: true },
-            { ...emptyChild, childId: 'child-2', shiftCare: true }
+            { ...emptyChild, childId: childId1, shiftCare: true },
+            { ...emptyChild, childId: childId2, shiftCare: true }
           ]
         }
       ]
@@ -1387,7 +1394,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange: new FiniteDateRange(monday, wednesday),
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1431,10 +1438,10 @@ describe('resetTimes', () => {
         (day) => ({
           ...day,
           children: [
-            { ...emptyChild, childId: 'child-1', holidayPeriodEffect: null },
+            { ...emptyChild, childId: childId1, holidayPeriodEffect: null },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsClosed' }
             }
           ]
@@ -1447,7 +1454,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: [emptyChild.childId, 'child-2']
+          selectedChildren: [emptyChild.childId, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1583,19 +1590,19 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
-              childId: 'child-3',
+              childId: childId3,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence:
                 day.date.getIsoDayOfWeek() === 3
@@ -1613,7 +1620,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1631,7 +1638,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3']
+          selectedChildren: [childId1, childId2, childId3]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1687,19 +1694,19 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: { type: 'OTHER_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: { type: 'OTHER_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
-              childId: 'child-3',
+              childId: childId3,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence:
                 day.date.getIsoDayOfWeek() === 3
@@ -1717,7 +1724,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1732,7 +1739,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3']
+          selectedChildren: [childId1, childId2, childId3]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1788,19 +1795,19 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
-              childId: 'child-3',
+              childId: childId3,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations:
                 day.date.getIsoDayOfWeek() === 3
@@ -1827,7 +1834,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1845,7 +1852,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3']
+          selectedChildren: [childId1, childId2, childId3]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1900,7 +1907,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               scheduleType: 'RESERVATION_REQUIRED',
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations:
@@ -1925,7 +1932,7 @@ describe('resetTimes', () => {
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               scheduleType: 'FIXED_SCHEDULE',
               absence:
@@ -1943,7 +1950,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1993,7 +2000,7 @@ describe('resetTimes', () => {
         children: [
           {
             ...emptyChild,
-            childId: 'child-1',
+            childId: childId1,
             reservableTimeRange: {
               type: 'NORMAL' as const,
               range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
@@ -2001,7 +2008,7 @@ describe('resetTimes', () => {
           },
           {
             ...emptyChild,
-            childId: 'child-2',
+            childId: childId2,
             reservableTimeRange: {
               type: 'NORMAL' as const,
               range: new TimeRange(LocalTime.of(7, 0), LocalTime.of(16, 0))
@@ -2009,7 +2016,7 @@ describe('resetTimes', () => {
           },
           {
             ...emptyChild,
-            childId: 'child-3',
+            childId: childId3,
             reservableTimeRange: {
               type: 'INTERMITTENT_SHIFT_CARE' as const,
               // Very short operation time -> can still reserve any times
@@ -2021,7 +2028,7 @@ describe('resetTimes', () => {
           },
           {
             ...emptyChild,
-            childId: 'child-4',
+            childId: childId4,
             reservableTimeRange: {
               type: 'INTERMITTENT_SHIFT_CARE' as const,
               // Placement unit not open at all -> can still reserve any times
@@ -2043,7 +2050,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2', 'child-3', 'child-4']
+          selectedChildren: [childId1, childId2, childId3, childId4]
         })
       ).toEqual({
         branch: 'weeklyTimes',
@@ -2081,7 +2088,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'IRREGULAR',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'notInitialized',
@@ -2221,12 +2228,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               reservations: [r]
             }
           ]
@@ -2237,12 +2244,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2'
+              childId: childId2
             }
           ]
         },
@@ -2252,12 +2259,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               absence: ae
             }
           ]
@@ -2268,12 +2275,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               absence: ae
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               absence: ae
             }
           ]
@@ -2284,12 +2291,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               absence: ae
             },
             {
               ...emptyChild,
-              childId: 'child-2'
+              childId: childId2
             }
           ]
         },
@@ -2299,12 +2306,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               absence: an
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               absence: an
             }
           ]
@@ -2315,11 +2322,11 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1'
+              childId: childId1
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               absence: an
             }
           ]
@@ -2330,13 +2337,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               scheduleType: 'FIXED_SCHEDULE',
               absence: ae
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               scheduleType: 'FIXED_SCHEDULE',
               absence: ae
             }
@@ -2348,13 +2355,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               scheduleType: 'FIXED_SCHEDULE',
               absence: ae
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               scheduleType: 'FIXED_SCHEDULE'
             }
           ]
@@ -2365,12 +2372,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               scheduleType: 'FIXED_SCHEDULE'
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               scheduleType: 'FIXED_SCHEDULE'
             }
           ]
@@ -2383,7 +2390,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'IRREGULAR',
           selectedRange: range,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'irregularTimes',
@@ -2505,7 +2512,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               reservations: [
                 {
                   type: 'TIMES',
@@ -2525,7 +2532,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'IRREGULAR',
           selectedRange: range,
-          selectedChildren: ['child-1']
+          selectedChildren: [childId1]
         })
       ).toEqual({
         branch: 'irregularTimes',
@@ -2557,7 +2564,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               reservations: [
                 {
                   type: 'TIMES',
@@ -2577,7 +2584,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'IRREGULAR',
           selectedRange: range,
-          selectedChildren: ['child-1']
+          selectedChildren: [childId1]
         })
       ).toEqual({
         branch: 'irregularTimes',
@@ -2605,14 +2612,14 @@ describe('resetTimes', () => {
         {
           date: tuesday,
           holiday: true,
-          children: [{ ...emptyChild, childId: 'child-1', shiftCare: true }]
+          children: [{ ...emptyChild, childId: childId1, shiftCare: true }]
         },
         {
           date: wednesday,
           holiday: true,
           children: [
-            { ...emptyChild, childId: 'child-1', shiftCare: true },
-            { ...emptyChild, childId: 'child-2', shiftCare: true }
+            { ...emptyChild, childId: childId1, shiftCare: true },
+            { ...emptyChild, childId: childId2, shiftCare: true }
           ]
         }
       ]
@@ -2623,7 +2630,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'IRREGULAR',
           selectedRange: new FiniteDateRange(monday, wednesday),
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'irregularTimes',
@@ -2709,13 +2716,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [r]
             }
@@ -2727,13 +2734,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' }
             }
           ]
@@ -2744,13 +2751,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: aa
             }
@@ -2762,13 +2769,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: aa
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: aa
             }
@@ -2780,13 +2787,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: aa
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' }
             }
           ]
@@ -2797,13 +2804,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: ae
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: ae
             }
@@ -2815,12 +2822,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' }
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: ae
             }
@@ -2834,7 +2841,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'IRREGULAR',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'irregularTimes',
@@ -2904,13 +2911,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               reservations: [r]
             }
@@ -2922,12 +2929,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsClosed' }
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsClosed' }
             }
           ]
@@ -2938,13 +2945,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             }
@@ -2956,13 +2963,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             }
@@ -2974,13 +2981,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsClosed' }
             }
           ]
@@ -2991,13 +2998,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: ae
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: ae
             }
@@ -3009,12 +3016,12 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1',
+              childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsClosed' }
             },
             {
               ...emptyChild,
-              childId: 'child-2',
+              childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: ae
             }
@@ -3028,7 +3035,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'IRREGULAR',
           selectedRange,
-          selectedChildren: ['child-1', 'child-2']
+          selectedChildren: [childId1, childId2]
         })
       ).toEqual({
         branch: 'irregularTimes',

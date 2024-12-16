@@ -5,10 +5,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 
@@ -48,7 +47,7 @@ export const RealtimeRealizedOccupanciesForSingleDay = React.memo(
     shiftCareUnit
   }: {
     unitId: DaycareId
-    groupIds: UUID[] | null
+    groupIds: GroupId[] | null
     date: LocalDate
     shiftCareUnit: boolean
   }) {
@@ -75,7 +74,7 @@ export const RealtimePlannedOccupanciesForSingleDay = React.memo(
     date
   }: {
     unitId: DaycareId
-    groupIds: UUID[] | null
+    groupIds: GroupId[] | null
     date: LocalDate
   }) {
     const rows = useQueryResult(
@@ -97,7 +96,7 @@ export const SimpleOccupanciesForSingleDay = React.memo(
     date
   }: {
     unitId: DaycareId
-    groupId: UUID | null
+    groupId: GroupId | null
     date: LocalDate
   }) {
     const { i18n } = useTranslation()

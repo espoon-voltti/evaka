@@ -7,8 +7,9 @@ import React from 'react'
 import { useUser } from 'citizen-frontend/auth/state'
 import { Failure, Success } from 'lib-common/api'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
@@ -24,7 +25,7 @@ import PlacementTerminationSection from './sections/placement-termination/Placem
 import ServiceNeedAndDailyServiceTimeSection from './sections/service-need-and-daily-service-time/ServiceNeedAndDailyServiceTimeSection'
 
 export default React.memo(function ChildPage() {
-  const { childId } = useRouteParams(['childId'])
+  const childId = useIdRouteParam<ChildId>('childId')
   const children = useQueryResult(childrenQuery())
   const child = children.chain<ChildAndPermittedActions>((children) => {
     const child = children.find((child) => child.id === childId)

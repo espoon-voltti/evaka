@@ -12,9 +12,9 @@ import { array, value } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
-import { UserRole } from 'lib-common/generated/api-types/shared'
+import { EmployeeId, UserRole } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -248,7 +248,7 @@ const EmployeePage = React.memo(function EmployeePage({
 
 export default React.memo(function EmployeePageLoader() {
   const { i18n } = useTranslation()
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<EmployeeId>('id')
   const employee = useQueryResult(employeeDetailsQuery({ id }))
   const units = useQueryResult(unitsQuery({ includeClosed: false }))
 

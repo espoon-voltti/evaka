@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -254,7 +255,7 @@ const addTestData = async (date: LocalDate) => {
     endDate: placement.endDate,
     optionId: serviceNeedOption.id,
     shiftCare: 'INTERMITTENT',
-    confirmedBy: unitSupervisor.id,
+    confirmedBy: evakaUserId(unitSupervisor.id),
     confirmedAt: date.toHelsinkiDateTime(LocalTime.of(12, 0))
   }).save()
   await Fixture.groupPlacement({

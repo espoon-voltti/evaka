@@ -7,7 +7,8 @@ import React from 'react'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import {
   CalendarEventId,
-  DaycareId
+  DaycareId,
+  GroupId
 } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -25,11 +26,9 @@ export default React.memo(function DiscussionReservationSurveyWrapper({
 }: {
   mode: DiscussionReservationSurveyViewMode
 }) {
-  const { groupId, eventId: eventIdOrNew } = useRouteParams([
-    'groupId',
-    'eventId'
-  ])
+  const { eventId: eventIdOrNew } = useRouteParams(['groupId', 'eventId'])
   const unitId = useIdRouteParam<DaycareId>('unitId')
+  const groupId = useIdRouteParam<GroupId>('groupId')
   const eventId =
     eventIdOrNew && eventIdOrNew !== 'new'
       ? fromUuid<CalendarEventId>(eventIdOrNew)

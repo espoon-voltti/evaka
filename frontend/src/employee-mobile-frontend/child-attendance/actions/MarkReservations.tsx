@@ -37,12 +37,11 @@ import {
   ConfirmedRangeDateUpdate,
   Reservation
 } from 'lib-common/generated/api-types/reservations'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
@@ -219,7 +218,7 @@ export default React.memo(function MarkReservations({
   childId
 }: {
   unitId: DaycareId
-  childId: UUID
+  childId: ChildId
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
@@ -450,7 +449,7 @@ const ReservationsEdit = ({
   onCancel,
   onSuccess
 }: {
-  childId: UUID
+  childId: ChildId
   reservations: ConfirmedRangeDate[]
   onCancel: () => void
   onSuccess: () => void

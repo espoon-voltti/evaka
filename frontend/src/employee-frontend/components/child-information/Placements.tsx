@@ -7,8 +7,8 @@ import React, { Fragment, useContext, useState } from 'react'
 
 import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
@@ -25,7 +25,7 @@ import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

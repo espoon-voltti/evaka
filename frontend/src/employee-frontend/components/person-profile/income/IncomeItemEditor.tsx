@@ -19,7 +19,7 @@ import {
   IncomeTypeOptions,
   IncomeValue
 } from 'lib-common/generated/api-types/invoicing'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import { AttachmentId, PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -133,7 +133,7 @@ function updateIncomeData(
 function formToIncomeBody(
   form: IncomeForm,
   coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>,
-  personId: UUID
+  personId: PersonId
 ): IncomeRequest | undefined {
   if (form.validFrom === null) return undefined
 
@@ -164,7 +164,7 @@ function formToIncomeBody(
 }
 
 interface CommonProps {
-  personId: UUID
+  personId: PersonId
   incomeTypeOptions: IncomeTypeOptions
   coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>
   cancel: () => void

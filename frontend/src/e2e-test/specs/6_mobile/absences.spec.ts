@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
 
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
@@ -14,7 +14,7 @@ import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
-let childId: UUID
+let childId: PersonId
 
 let page: Page
 let listPage: MobileListPage

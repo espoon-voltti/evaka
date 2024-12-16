@@ -11,7 +11,7 @@ import {
 import { Result, Success, wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import { AttachmentId, PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -34,7 +34,7 @@ import FeeAlterationRowInput from './FeeAlterationRowInput'
 const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const newFeeAlteration = (
-  personId: UUID,
+  personId: PersonId,
   feeAlterationId?: UUID
 ): PartialFeeAlteration => ({
   id: feeAlterationId ?? null,
@@ -49,7 +49,7 @@ const newFeeAlteration = (
 })
 
 interface Props {
-  personId: UUID
+  personId: PersonId
   baseFeeAlteration?: FeeAlteration
   cancel: () => void
   update?: (v: FeeAlteration) => Promise<Result<unknown>>

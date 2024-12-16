@@ -8,6 +8,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 
 import { isLoading, wrapResult } from 'lib-common/api'
 import { FamilyContact } from 'lib-common/generated/api-types/pis'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -41,7 +42,7 @@ const updateFamilyContactPriorityResult = wrapResult(
 )
 
 export interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 
@@ -88,7 +89,7 @@ const FamilyContactTable = React.memo(function FamilyContactForm({
   contacts,
   reloadContacts
 }: {
-  childId: string
+  childId: ChildId
   contacts: FamilyContact[]
   reloadContacts: () => void
 }) {
@@ -148,7 +149,7 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
   reloadContacts,
   contactPriorityOptions
 }: {
-  childId: UUID
+  childId: ChildId
   contact: FamilyContact
   reloadContacts: () => void
   contactPriorityOptions: number[]

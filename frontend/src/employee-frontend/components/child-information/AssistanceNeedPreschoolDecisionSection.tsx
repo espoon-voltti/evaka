@@ -7,7 +7,10 @@ import React, { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
-import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
+import {
+  AssistanceNeedPreschoolDecisionId,
+  ChildId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -29,7 +32,7 @@ import {
 } from './queries'
 
 export interface Props {
-  childId: UUID
+  childId: ChildId
 }
 
 export default React.memo(function AssistanceNeedPreschoolDecisionSection({

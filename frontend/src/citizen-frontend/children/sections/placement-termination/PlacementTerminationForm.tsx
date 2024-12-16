@@ -14,8 +14,8 @@ import {
   PlacementType,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -94,7 +94,7 @@ const maybeCreateDaycareOnlyTerminatable = (
 }
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   placementGroup: TerminatablePlacementGroup
   onSuccess: () => void
 }

@@ -15,6 +15,7 @@ import styled from 'styled-components'
 import { isLoading, Result, wrapResult } from 'lib-common/api'
 import { GroupMonthCalendarDay } from 'lib-common/generated/api-types/absence'
 import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
@@ -38,7 +39,7 @@ const getStaffAttendancesByGroupResult = wrapResult(getStaffAttendancesByGroup)
 const upsertStaffAttendanceResult = wrapResult(upsertStaffAttendance)
 
 interface Props {
-  groupId: string
+  groupId: GroupId
   selectedDate: LocalDate
   days: GroupMonthCalendarDay[]
   emptyCols: number[]

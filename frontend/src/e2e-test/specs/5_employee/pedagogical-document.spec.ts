@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -29,7 +29,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let childInformationPage: ChildInformationPage
-let childId: UUID
+let childId: PersonId
 
 const testfile1Name = 'test_file.png'
 const testfile1Path = `src/e2e-test/assets/${testfile1Name}`

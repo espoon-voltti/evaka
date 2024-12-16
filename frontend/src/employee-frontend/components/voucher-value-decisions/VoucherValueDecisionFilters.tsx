@@ -11,7 +11,7 @@ import {
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
@@ -106,7 +106,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
   )
 
   const selectFinanceDecisionHandler = useCallback(
-    (financeDecisionHandlerId?: string) =>
+    (financeDecisionHandlerId?: EmployeeId) =>
       setSearchFilters((filters) => ({ ...filters, financeDecisionHandlerId })),
     [setSearchFilters]
   )

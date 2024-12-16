@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -356,7 +357,7 @@ describe('Employee - Unit month calendar', () => {
       optionId: serviceNeedOption140h.id,
       startDate: placementStart,
       endDate: placementEnd,
-      confirmedBy: unitSupervisor.id
+      confirmedBy: evakaUserId(unitSupervisor.id)
     }).save()
     await Fixture.groupPlacement({
       daycarePlacementId: kaarinaPlacement.id,
@@ -378,7 +379,7 @@ describe('Employee - Unit month calendar', () => {
       optionId: serviceNeedOptionDaycare35.id,
       startDate: placementStart,
       endDate: placementEnd,
-      confirmedBy: unitSupervisor.id
+      confirmedBy: evakaUserId(unitSupervisor.id)
     }).save()
     await Fixture.groupPlacement({
       daycarePlacementId: jariPlacement.id,

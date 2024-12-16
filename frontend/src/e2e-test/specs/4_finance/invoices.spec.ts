@@ -4,7 +4,9 @@
 
 import { DevEmployee, DevPlacement } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -217,7 +219,7 @@ describe('Invoices', () => {
 
     test('Sending an invoice with a recipient without a SSN', async () => {
       const adultWithoutSSN = await Fixture.person({
-        id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
+        id: fromUuid<PersonId>('a6cf0ec0-4573-4816-be30-6b87fd943817'),
         firstName: 'Aikuinen',
         lastName: 'Hetuton',
         ssn: null,

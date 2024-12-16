@@ -7,8 +7,8 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -28,7 +28,7 @@ import { inferApplicationType } from '../person-profile/PersonApplications'
 import { getChildApplicationSummariesQuery } from './queries'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

@@ -18,7 +18,7 @@ import {
   PersonJSON,
   PersonResponse
 } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
 import {
@@ -59,7 +59,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   id,
   children
 }: {
-  id: UUID
+  id: PersonId
   children: React.JSX.Element
 }) {
   const [personResponse, setPersonResponse] = useState<Result<PersonResponse>>(

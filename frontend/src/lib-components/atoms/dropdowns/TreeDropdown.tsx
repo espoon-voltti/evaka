@@ -181,7 +181,7 @@ const updateNodeCheckedRecursively = <N extends TreeNode>(
   )
 })
 
-export const hasUncheckedChildren = (node: TreeNode): boolean =>
+export const hasUncheckedChildren = <N extends TreeNode>(node: N): boolean =>
   node.children.some((child) => !child.checked || hasUncheckedChildren(child))
 
 const hasOnlyUncheckedChildren = (node: TreeNode): boolean =>

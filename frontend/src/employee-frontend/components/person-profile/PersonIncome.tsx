@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { combine, Failure, Result, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { IncomeRequest } from 'lib-common/generated/api-types/invoicing'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -52,7 +53,7 @@ const getIncomeStatementsResult = wrapResult(getIncomeStatements)
 const getIncomeStatementChildrenResult = wrapResult(getIncomeStatementChildren)
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 
@@ -103,7 +104,7 @@ export default React.memo(function PersonIncome({
 export const IncomeStatements = React.memo(function IncomeStatements({
   personId
 }: {
-  personId: UUID
+  personId: PersonId
 }) {
   const { i18n } = useTranslation()
   const [page, setPage] = useState(1)
@@ -134,7 +135,7 @@ export const Incomes = React.memo(function Incomes({
   personId,
   permittedActions
 }: {
-  personId: UUID
+  personId: PersonId
   permittedActions: Set<Action.Person> | Set<Action.Child | Action.Person>
 }) {
   const { i18n } = useTranslation()

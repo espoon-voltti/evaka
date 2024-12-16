@@ -20,13 +20,14 @@ import {
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
+import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { getCombinedChildPlacementsForGroup } from '../DiscussionSurveyView'
 
 export interface TreeNodeInfo {
-  key: string
+  key: GroupId | PersonId
   text: string
   checked: boolean
   children: TreeNodeInfo[]
@@ -42,7 +43,7 @@ export const treeNodeInfo = (): Form<
 > =>
   object({
     text: string(),
-    key: string(),
+    key: value<GroupId | PersonId>(),
     checked: boolean(),
     children: array(recursive(treeNodeInfo)),
     firstName: string(),
@@ -90,7 +91,7 @@ const isChildSelected = (childId: string, selections: IndividualChild[]) =>
 
 export const filterAttendees = (
   groupData: UnitGroupDetails,
-  groupId: UUID,
+  groupId: GroupId,
   eventData: CalendarEvent | null,
   period: FiniteDateRange
 ): TreeNodeInfo[] => {
@@ -147,7 +148,7 @@ export const mergeAttendeeChanges = (
   groupData: UnitGroupDetails,
   prev: { attendees: TreeNodeInfo[] },
   period: FiniteDateRange,
-  groupId: UUID,
+  groupId: GroupId,
   eventData: CalendarEvent | null
 ): TreeNodeInfo[] => {
   const previousGroupNode = prev.attendees[0]

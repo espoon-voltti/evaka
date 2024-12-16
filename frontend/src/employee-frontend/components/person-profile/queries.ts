@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
@@ -43,15 +44,16 @@ export const createInvoiceCorrectionMutation = mutation({
 })
 
 export const updateInvoiceCorrectionNoteMutation = mutation({
-  api: (args: Arg0<typeof updateInvoiceCorrectionNote> & { personId: UUID }) =>
-    updateInvoiceCorrectionNote(args),
+  api: (
+    args: Arg0<typeof updateInvoiceCorrectionNote> & { personId: PersonId }
+  ) => updateInvoiceCorrectionNote(args),
   invalidateQueryKeys: (args) => [
     queryKeys.invoiceCorrections({ personId: args.personId })
   ]
 })
 
 export const deleteInvoiceCorrectionMutation = mutation({
-  api: (args: Arg0<typeof deleteInvoiceCorrection> & { personId: UUID }) =>
+  api: (args: Arg0<typeof deleteInvoiceCorrection> & { personId: PersonId }) =>
     deleteInvoiceCorrection(args),
   invalidateQueryKeys: (args) => [
     queryKeys.invoiceCorrections({ personId: args.personId })

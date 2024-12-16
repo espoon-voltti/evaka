@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -14,7 +16,6 @@ import {
   testChild,
   testChild2,
   Fixture,
-  uuidv4,
   testAdult,
   testCareArea
 } from '../../dev-api/fixtures'
@@ -50,9 +51,9 @@ let pinLoginPage: PinLoginPage
 let unreadMessageCountsPage: UnreadMobileMessagesPage
 let nav: MobileNav
 
-const daycareGroupId = uuidv4()
-const daycareGroup2Id = uuidv4()
-const daycareGroup3Id = uuidv4()
+const daycareGroupId = randomId<GroupId>()
+const daycareGroup2Id = randomId<GroupId>()
+const daycareGroup3Id = randomId<GroupId>()
 
 let daycareGroup: DevDaycareGroup
 let daycareGroup2: DevDaycareGroup
@@ -60,7 +61,7 @@ let daycareGroup3: DevDaycareGroup
 let child: DevPerson
 let child2: DevPerson
 
-const employeeId = uuidv4()
+const employeeId = randomId<EmployeeId>()
 const empFirstName = 'Yrjö'
 const empLastName = 'Yksikkö'
 const employeeName = `${empLastName} ${empFirstName}`

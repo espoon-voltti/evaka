@@ -14,7 +14,7 @@ import {
   ChildWithName,
   HolidayPeriodAttendanceReportRow
 } from 'lib-common/generated/api-types/reports'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -47,7 +47,7 @@ import { holidayPeriodAttendanceReportQuery } from './queries'
 interface ReportQueryParams {
   unitId: DaycareId
   periodId: UUID
-  groupIds: UUID[] | null
+  groupIds: GroupId[] | null
 }
 
 export default React.memo(function HolidayPeriodAttendanceReport() {
@@ -57,7 +57,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
   const [selectedPeriod, setSelectedPeriod] = useState<HolidayPeriod | null>(
     null
   )
-  const [selectedGroups, setSelectedGroups] = useState<UUID[] | null>(null)
+  const [selectedGroups, setSelectedGroups] = useState<GroupId[] | null>(null)
 
   const units = useQueryResult(unitsQuery({ includeClosed: false }))
   const periods = useQueryResult(holidayPeriodsQuery())

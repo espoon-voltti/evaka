@@ -7,8 +7,7 @@ import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold, fontWeights, P } from 'lib-components/typography'
@@ -30,7 +29,7 @@ const postPairingResult = wrapResult(postPairing)
 const postPairingResponseResult = wrapResult(postPairingResponse)
 const putMobileDeviceNameResult = wrapResult(putMobileDeviceName)
 
-type IdProps = { unitId: DaycareId } | { employeeId: UUID }
+type IdProps = { unitId: DaycareId } | { employeeId: EmployeeId }
 
 type Props = IdProps & { closeModal: () => void }
 

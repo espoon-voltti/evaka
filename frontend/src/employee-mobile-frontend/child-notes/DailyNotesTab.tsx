@@ -14,10 +14,10 @@ import {
 } from 'lib-common/generated/api-types/note'
 import {
   ChildDailyNoteId,
+  ChildId,
   DaycareId
 } from 'lib-common/generated/api-types/shared'
 import { useMutation, useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -109,7 +109,7 @@ const emptyNote = () => ({
 
 interface Props {
   unitId: DaycareId
-  childId: UUID
+  childId: ChildId
   formData?: ChildDailyNoteFormData
   dailyNoteId: ChildDailyNoteId | undefined
 }

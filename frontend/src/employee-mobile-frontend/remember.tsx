@@ -4,11 +4,11 @@
 
 import React, { createContext, useMemo, useState } from 'react'
 
-import { UUID } from 'lib-common/types'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 
 export interface RememberState {
-  groupId: UUID | undefined
-  saveGroupId: (groupId: UUID | undefined) => void
+  groupId: GroupId | undefined
+  saveGroupId: (groupId: GroupId | undefined) => void
 }
 
 export const RememberContext = createContext<RememberState>({
@@ -22,12 +22,12 @@ export const RememberContextProvider = React.memo(
   }: {
     children: React.ReactNode
   }) {
-    const [groupId, setGroupId] = useState<UUID>()
+    const [groupId, setGroupId] = useState<GroupId>()
 
     const value = useMemo<RememberState>(
       () => ({
         groupId,
-        saveGroupId: (groupId: UUID | undefined) => setGroupId(groupId)
+        saveGroupId: (groupId: GroupId | undefined) => setGroupId(groupId)
       }),
       [groupId, setGroupId]
     )

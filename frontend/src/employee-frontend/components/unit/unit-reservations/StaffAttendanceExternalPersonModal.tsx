@@ -26,7 +26,7 @@ import {
 } from 'lib-common/form/types'
 import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -77,7 +77,7 @@ const externalPersonForm = transformed(
     name: validated(string(), (value) =>
       value.length < 3 ? 'required' : undefined
     ),
-    group: required(oneOf<UUID>()),
+    group: required(oneOf<GroupId>()),
     hasStaffOccupancyEffect: required(boolean())
   }),
   ({

@@ -10,9 +10,9 @@ import styled from 'styled-components'
 import { PersonContext } from 'employee-frontend/state/person'
 import { wrapResult } from 'lib-common/api'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -41,7 +41,7 @@ const generateRetroactiveFeeDecisionsResult = wrapResult(
 )
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 
@@ -138,7 +138,7 @@ const Modal = React.memo(function Modal({
   clear,
   loadDecisions
 }: {
-  headOfFamily: string
+  headOfFamily: PersonId
   clear: () => void
   loadDecisions: () => void
 }) {

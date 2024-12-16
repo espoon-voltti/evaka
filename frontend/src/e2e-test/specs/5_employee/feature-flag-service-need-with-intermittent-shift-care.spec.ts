@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 
 import config from '../../config'
 import {
@@ -20,7 +20,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let admin: DevEmployee
-let childId: UUID
+let childId: PersonId
 let placement: DevPlacement
 let activeServiceNeedOption: ServiceNeedOption
 

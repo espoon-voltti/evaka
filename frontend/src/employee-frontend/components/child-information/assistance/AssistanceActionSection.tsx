@@ -8,8 +8,8 @@ import styled from 'styled-components'
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
 import { combine, Result } from 'lib-common/api'
 import { AssistanceActionResponse } from 'lib-common/generated/api-types/assistanceaction'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -34,7 +34,7 @@ const TitleRow = styled.div`
 `
 
 export interface Props {
-  id: UUID
+  id: ChildId
   assistanceActions: Result<AssistanceActionResponse[]>
 }
 

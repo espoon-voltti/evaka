@@ -79,15 +79,12 @@ val lenientIdTypes =
         DatabaseTable.DaycareCaretaker::class,
         DatabaseTable.Decision::class,
         DatabaseTable.DocumentTemplate::class,
-        DatabaseTable.Employee::class,
         DatabaseTable.EmployeePin::class,
-        DatabaseTable.EvakaUser::class,
         DatabaseTable.FamilyContact::class,
         DatabaseTable.FeeAlteration::class,
         DatabaseTable.FeeDecision::class,
         DatabaseTable.FeeThresholds::class,
         DatabaseTable.FosterParent::class,
-        DatabaseTable.Group::class,
         DatabaseTable.GroupPlacement::class,
         DatabaseTable.HolidayPeriod::class,
         DatabaseTable.HolidayQuestionnaire::class,
@@ -112,7 +109,6 @@ val lenientIdTypes =
         DatabaseTable.Partnership::class,
         DatabaseTable.Payment::class,
         DatabaseTable.PedagogicalDocument::class,
-        DatabaseTable.Person::class,
         DatabaseTable.Placement::class,
         DatabaseTable.PlacementPlan::class,
         DatabaseTable.PreschoolAssistance::class,
@@ -126,6 +122,8 @@ val lenientIdTypes =
         DatabaseTable.StaffOccupancyCoefficient::class,
         DatabaseTable.VoucherValueDecision::class,
     )
+
+val idTypeAliases = mapOf("PersonId" to listOf("ChildId"))
 
 val defaultMetadata =
     TypeMetadata(

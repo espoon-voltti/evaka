@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
@@ -16,7 +16,6 @@ import {
   useMutation,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -59,7 +58,7 @@ export default React.memo(function AttendanceChildPage({
   childId
 }: {
   unitId: DaycareId
-  childId: UUID
+  childId: ChildId
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()

@@ -8,8 +8,8 @@ import { Loading, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
@@ -33,7 +33,7 @@ const createParentshipResult = wrapResult(createParentship)
 const updateParentshipResult = wrapResult(updateParentship)
 
 interface Props {
-  headPersonId: UUID
+  headPersonId: PersonId
   onSuccess: () => void
   parentship?: Parentship
 }

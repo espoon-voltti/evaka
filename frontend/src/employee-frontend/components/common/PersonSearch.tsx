@@ -7,6 +7,8 @@ import styled from 'styled-components'
 
 import { Result, Success, wrapResult } from 'lib-common/api'
 import { PersonSummary } from 'lib-common/generated/api-types/pis'
+import { PersonId } from 'lib-common/generated/api-types/shared'
+import { tryFromUuid } from 'lib-common/id-type'
 import { getAge } from 'lib-common/utils/local-date'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -48,8 +50,9 @@ const search = async (q: string): Promise<Result<PersonSummary[]>> => {
     }).then((res) => res.map((r) => [r]))
   }
 
-  if (q.length === 36) {
-    return await getPersonIdentityResult({ personId: q }).then((res) =>
+  const personId = tryFromUuid<PersonId>(q)
+  if (personId !== undefined) {
+    return await getPersonIdentityResult({ personId }).then((res) =>
       res.map((r) => [r])
     )
   }

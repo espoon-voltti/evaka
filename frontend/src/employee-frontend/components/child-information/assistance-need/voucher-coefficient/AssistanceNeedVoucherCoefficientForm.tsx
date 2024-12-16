@@ -18,6 +18,7 @@ import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -61,7 +62,7 @@ interface CommonProps {
 }
 
 interface CreateProps extends CommonProps {
-  childId: UUID
+  childId: ChildId
 }
 
 interface UpdateProps extends CommonProps {

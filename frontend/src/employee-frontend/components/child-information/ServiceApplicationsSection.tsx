@@ -16,8 +16,8 @@ import {
   shiftCareType,
   ShiftCareType
 } from 'lib-common/generated/api-types/serviceneed'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -415,7 +415,7 @@ const UndecidedServiceApplication = React.memo(
 const ServiceApplications = React.memo(function ServiceApplications({
   childId
 }: {
-  childId: UUID
+  childId: ChildId
 }) {
   const { i18n } = useTranslation()
   const applications = useQueryResult(
@@ -506,7 +506,7 @@ export default React.memo(function ServiceApplicationsSection({
   childId,
   startOpen
 }: {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }) {
   const { i18n } = useTranslation()

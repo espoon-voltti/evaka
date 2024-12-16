@@ -140,9 +140,9 @@ export interface EmployeeFeatures {
   units: boolean
 }
 
-export type EmployeeId = string
+export type EmployeeId = Id<'Employee'>
 
-export type EvakaUserId = string
+export type EvakaUserId = Id<'EvakaUser'>
 
 export type FeeAlterationId = string
 
@@ -152,7 +152,7 @@ export type FeeThresholdsId = string
 
 export type FosterParentId = string
 
-export type GroupId = string
+export type GroupId = Id<'Group'>
 
 export type GroupNoteId = Id<'GroupNote'>
 
@@ -214,7 +214,7 @@ export type PaymentId = string
 
 export type PedagogicalDocumentId = string
 
-export type PersonId = string
+export type PersonId = Id<'Person'>
 
 /**
 * Generated from fi.espoo.evaka.shared.security.PilotFeature
@@ -283,6 +283,8 @@ export type UserRole =
   | 'GROUP_STAFF'
 
 export type VoucherValueDecisionId = string
+
+export type ChildId = PersonId
 
 
 export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {

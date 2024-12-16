@@ -8,8 +8,8 @@ import { Loading, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
@@ -36,7 +36,7 @@ const createPartnershipResult = wrapResult(createPartnership)
 const updatePartnershipResult = wrapResult(updatePartnership)
 
 interface Props {
-  headPersonId: UUID
+  headPersonId: PersonId
   onSuccess: () => void
   partnership?: Partnership
 }

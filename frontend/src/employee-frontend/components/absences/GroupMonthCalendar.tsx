@@ -17,8 +17,8 @@ import {
   AbsenceCategory,
   GroupMonthCalendar
 } from 'lib-common/generated/api-types/absence'
+import { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -47,7 +47,7 @@ const addPresencesResult = wrapResult(addPresences)
 const deleteHolidayReservationsResult = wrapResult(deleteHolidayReservations)
 
 interface Props {
-  groupId: UUID
+  groupId: GroupId
   selectedDate: LocalDate
   reservationEnabled: boolean
   staffAttendanceEnabled: boolean
@@ -89,7 +89,7 @@ export default React.memo(function GroupMonthCalendarWrapper({
 })
 
 interface AbsenceCalendarProps {
-  groupId: UUID
+  groupId: GroupId
   groupMonthCalendar: GroupMonthCalendar
   selectedDate: LocalDate
   reservationEnabled: boolean
@@ -98,7 +98,7 @@ interface AbsenceCalendarProps {
 }
 
 export interface SelectedCell {
-  childId: UUID
+  childId: ChildId
   date: LocalDate
   absenceCategories: AbsenceCategory[]
 }
@@ -203,7 +203,7 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
 })
 
 function sendAbsenceUpdates(
-  groupId: UUID,
+  groupId: GroupId,
   selectedCells: SelectedCell[],
   update: AbsenceUpdate
 ): Promise<Result<void>> {

@@ -6,7 +6,7 @@ import React, { useContext, useState } from 'react'
 
 import { ChildContext } from 'employee-frontend/state'
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -14,7 +14,7 @@ import { Gap } from 'lib-components/white-space'
 import { Incomes, IncomeStatements } from '../person-profile/PersonIncome'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

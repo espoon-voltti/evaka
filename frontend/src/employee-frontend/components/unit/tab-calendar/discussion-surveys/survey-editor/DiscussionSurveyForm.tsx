@@ -12,7 +12,11 @@ import {
   CalendarEvent,
   CalendarEventType
 } from 'lib-common/generated/api-types/calendarevent'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  DaycareId,
+  GroupId
+} from 'lib-common/generated/api-types/shared'
 import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -48,16 +52,18 @@ export const WidthLimiter = styled.div`
 `
 export type DiscussionSurveyEditMode = 'create' | 'reserve'
 
-const getTreeSelectionAsRecord = (tree: TreeNode[]) =>
+const getTreeSelectionAsRecord = (
+  tree: TreeNode[]
+): Partial<Record<GroupId, ChildId[] | null>> | null =>
   Object.fromEntries(
     tree
       ?.filter((group) => group.checked)
       .map((group) => [
-        group.key,
+        group.key as GroupId,
         hasUncheckedChildren(group)
           ? (group.children
               ?.filter((child) => child.checked)
-              .map((child) => child.key) ?? [])
+              .map((child) => child.key as ChildId) ?? [])
           : null
       ]) ?? []
   )

@@ -18,9 +18,9 @@ import {
   AssistanceActionRequest,
   AssistanceActionResponse
 } from 'lib-common/generated/api-types/assistanceaction'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -65,7 +65,7 @@ interface CommonProps {
 }
 
 interface CreateProps extends CommonProps {
-  childId: UUID
+  childId: ChildId
 }
 
 interface UpdateProps extends CommonProps {

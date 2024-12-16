@@ -27,7 +27,7 @@ import {
   PagedSentMessages,
   PagedMessageCopies
 } from 'lib-common/generated/api-types/messaging'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { ApplicationId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromNullableUuid } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
@@ -109,7 +109,7 @@ export interface MessagesState {
   unreadCountsByAccount: Result<UnreadCountByAccount[]>
   sentMessagesAsThreads: Result<MessageThread[]>
   messageCopiesAsThreads: Result<MessageThread[]>
-  prefilledRecipient: string | null
+  prefilledRecipient: PersonId | null
   prefilledTitle: string | null
   relatedApplicationId: ApplicationId | null
   accountAllowsNewMessage: () => boolean
@@ -183,7 +183,9 @@ export const MessageContextProvider = React.memo(
     const unitId = searchParams.get('unitId')
     const threadId = searchParams.get('threadId')
     const prefilledTitle = searchParams.get('title')
-    const prefilledRecipient = searchParams.get('recipient')
+    const prefilledRecipient = fromNullableUuid<PersonId>(
+      searchParams.get('recipient')
+    )
     const relatedApplicationId = fromNullableUuid<ApplicationId>(
       searchParams.get('applicationId')
     )

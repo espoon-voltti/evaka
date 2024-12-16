@@ -10,7 +10,7 @@ import {
   Attachment,
   PedagogicalDocument
 } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import { AttachmentId, ChildId } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
@@ -37,7 +37,7 @@ const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 interface Props {
   id: UUID
-  childId: UUID
+  childId: ChildId
   attachments: Attachment[]
   description: string
   createdAt: HelsinkiDateTime

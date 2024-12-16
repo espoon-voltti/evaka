@@ -10,8 +10,7 @@ import {
   boolean,
   localDate,
   localTimeRange,
-  openEndedLocalTimeRange,
-  string
+  openEndedLocalTimeRange
 } from 'lib-common/form/fields'
 import {
   array,
@@ -39,7 +38,7 @@ import {
   ReservationResponse,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -88,7 +87,7 @@ function isAbsenceErrorCode(
 const form = transformed(
   object({
     date: required(localDate()),
-    childId: required(string()),
+    childId: value<ChildId>(),
     unitId: required(value<DaycareId>()),
     reservations: array(reservationForm),
     reservationNoTimes: boolean(),

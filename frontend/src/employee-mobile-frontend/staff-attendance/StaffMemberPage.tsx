@@ -9,8 +9,9 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -39,7 +40,7 @@ export default React.memo(function StaffMemberPage({
 }: {
   unitOrGroup: UnitOrGroup
 }) {
-  const { employeeId } = useRouteParams(['employeeId'])
+  const employeeId = useIdRouteParam<EmployeeId>('employeeId')
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 

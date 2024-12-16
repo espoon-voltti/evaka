@@ -6,8 +6,8 @@ import React, { useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { PersonId } from 'lib-common/generated/api-types/shared'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -72,7 +72,7 @@ export const InfoLabelContainer = styled.div`
 `
 
 interface SectionProps {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 
@@ -208,7 +208,11 @@ const layouts: Layouts<typeof components> = {
   ]
 }
 
-const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
+const PersonProfile = React.memo(function PersonProfile({
+  id
+}: {
+  id: PersonId
+}) {
   const { i18n } = useTranslation()
 
   const { roles } = useContext(UserContext)
@@ -276,7 +280,7 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
 })
 
 export default React.memo(function PersonProfileWrapper() {
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<PersonId>('id')
   return (
     <PersonContextProvider id={id}>
       <PersonProfile id={id} />

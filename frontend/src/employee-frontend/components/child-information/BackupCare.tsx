@@ -5,7 +5,7 @@
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useEffect, useState } from 'react'
 
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import Loader from 'lib-components/atoms/Loader'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -18,7 +18,7 @@ import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 
 export interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 

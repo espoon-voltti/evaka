@@ -5,8 +5,8 @@
 import React, { useContext, useState } from 'react'
 
 import { Action } from 'lib-common/generated/action'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
@@ -25,7 +25,7 @@ import { PreschoolAssistanceSection } from './assistance/PreschoolAssistanceSect
 import { assistanceQuery } from './queries'
 
 export interface Props {
-  childId: UUID
+  childId: ChildId
   startOpen: boolean
 }
 
@@ -78,7 +78,7 @@ const AssistanceContent = ({
   id,
   permittedActions
 }: {
-  id: UUID
+  id: ChildId
   permittedActions: Set<Action.Child | Action.Person>
 }) => {
   const assistanceResult = useQueryResult(assistanceQuery({ child: id }))

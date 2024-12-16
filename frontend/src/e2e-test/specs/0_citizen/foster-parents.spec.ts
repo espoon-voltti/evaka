@@ -6,7 +6,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -70,7 +70,7 @@ beforeEach(async () => {
         parentId: fosterParent.id,
         validDuring: new DateRange(mockedDate, mockedDate),
         modifiedAt: mockedNow,
-        modifiedBy: employee.id
+        modifiedBy: evakaUserId(employee.id)
       }
     ]
   })
@@ -162,7 +162,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
         parentId: fosterParent.id,
         validDuring: new DateRange(mockedDate, mockedDate),
         modifiedAt: mockedNow,
-        modifiedBy: employee.id
+        modifiedBy: evakaUserId(employee.id)
       }
     ]
   })

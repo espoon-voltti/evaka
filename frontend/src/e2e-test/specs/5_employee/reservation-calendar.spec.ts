@@ -5,8 +5,8 @@
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
-import { BackupCareId } from 'lib-common/generated/api-types/shared'
-import { randomId } from 'lib-common/id-type'
+import { BackupCareId, GroupId } from 'lib-common/generated/api-types/shared'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -44,7 +44,7 @@ const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(8)
 const backupCareStartDate = mockedToday.startOfWeek().addWeeks(2)
 const backupCareEndDate = backupCareStartDate.addDays(8)
-const groupId: UUID = uuidv4()
+const groupId = randomId<GroupId>()
 
 beforeEach(async () => {
   await resetServiceState()
@@ -74,7 +74,7 @@ const insertTestDataAndLogin = async ({
     name: 'Testailijat'
   }).save()
 
-  const groupId2 = uuidv4()
+  const groupId2 = randomId<GroupId>()
   await Fixture.daycareGroup({
     id: groupId2,
     daycareId: testDaycare.id,
@@ -96,7 +96,7 @@ const insertTestDataAndLogin = async ({
     startDate: placementStartDate,
     endDate: placementEndDate,
     optionId: serviceNeedOption.id,
-    confirmedBy: unitSupervisor.id,
+    confirmedBy: evakaUserId(unitSupervisor.id),
     shiftCare: childShiftCare
   }).save()
   await Fixture.backupCare({
@@ -138,7 +138,7 @@ describe('Unit group calendar', () => {
 
   test('Child in backup care in other group for part of the week is shown', async () => {
     await insertTestDataAndLogin()
-    const groupId3 = uuidv4()
+    const groupId3 = randomId<GroupId>()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
     await Fixture.daycareGroup({
@@ -168,7 +168,7 @@ describe('Unit group calendar', () => {
 
   test('Reservations are shown in the backup group calendar when backup is within the same unit', async () => {
     await insertTestDataAndLogin()
-    const groupId3 = uuidv4()
+    const groupId3 = randomId<GroupId>()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
     await Fixture.daycareGroup({
@@ -659,7 +659,7 @@ describe('Unit group calendar for shift care unit', () => {
         startDate: range.start,
         endDate: range.end,
         optionId: serviceNeedOption.id,
-        confirmedBy: employee.id,
+        confirmedBy: evakaUserId(employee.id),
         shiftCare: child.id === child1.id ? 'FULL' : 'NONE'
       }).save()
     }

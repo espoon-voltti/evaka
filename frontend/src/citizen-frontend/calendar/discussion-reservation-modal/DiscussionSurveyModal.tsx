@@ -11,7 +11,10 @@ import {
   CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
+import {
+  CalendarEventTimeId,
+  ChildId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
@@ -45,7 +48,7 @@ import {
 import { deleteCalendarEventTimeReservationMutation } from '../queries'
 
 interface ChildWithSurveys {
-  childId: string
+  childId: ChildId
   surveys: CitizenCalendarEvent[]
   firstName: string
 }
@@ -71,7 +74,7 @@ export const DiscussionHeader = styled.div`
 `
 export interface ConfirmModalState {
   visible: boolean
-  childId: UUID | null
+  childId: ChildId | null
   eventTimeId: CalendarEventTimeId | null
 }
 export default React.memo(function DiscussionSurveyModal({
@@ -116,7 +119,7 @@ export default React.memo(function DiscussionSurveyModal({
       eventTimeId: null
     })
   const onCancelClick = useCallback(
-    (childId: UUID, eventTimeId: CalendarEventTimeId) => {
+    (childId: ChildId, eventTimeId: CalendarEventTimeId) => {
       setConfirmationModalState({ visible: true, childId, eventTimeId })
     },
     [setConfirmationModalState]
@@ -239,9 +242,9 @@ export default React.memo(function DiscussionSurveyModal({
 
 interface DiscussionChildElementProps {
   childWithSurveys: ChildWithSurveys
-  onCancelClick: (childId: UUID, eventTimeId: CalendarEventTimeId) => void
+  onCancelClick: (childId: ChildId, eventTimeId: CalendarEventTimeId) => void
   openDiscussionReservations: (
-    selectedChildId: UUID,
+    selectedChildId: ChildId,
     selectedEventId: UUID
   ) => void
 }
@@ -287,7 +290,7 @@ interface ChildSurveyElementProps {
   reservations: CitizenCalendarEventTime[]
   childId: UUID
   openDiscussionReservations: () => void
-  onCancelClick: (childId: UUID, eventTimeId: CalendarEventTimeId) => void
+  onCancelClick: (childId: ChildId, eventTimeId: CalendarEventTimeId) => void
 }
 const ChildSurveyElement = React.memo(function ChildSurveyElement({
   survey,

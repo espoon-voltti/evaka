@@ -10,13 +10,12 @@ import {
   ChildDailyNote,
   ChildStickyNote
 } from 'lib-common/generated/api-types/note'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useChainedQuery,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -89,7 +88,7 @@ export default React.memo(function ChildNotes({
   childId
 }: {
   unitId: DaycareId
-  childId: UUID
+  childId: ChildId
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()

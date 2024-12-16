@@ -16,8 +16,8 @@ import {
   DocumentType,
   documentTypes
 } from 'lib-common/generated/api-types/document'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import {
@@ -123,7 +123,7 @@ const PaddingBox = styled.div`
 export default React.memo(function ChildDocumentsSection({
   childId
 }: {
-  childId: UUID
+  childId: ChildId
 }) {
   const i18n = useTranslation()
 
@@ -186,7 +186,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   childId,
   types
 }: {
-  childId: UUID
+  childId: ChildId
   types: DocumentType[]
 }) {
   const i18n = useTranslation()

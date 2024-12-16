@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UnitStaffAttendancesTable } from 'e2e-test/pages/employee/units/unit-calendar-page-base'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -45,8 +47,8 @@ let groupStaff: DevEmployee
 const mockedToday = LocalDate.of(2022, 3, 30)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
-const groupId = uuidv4()
-const groupId2 = uuidv4()
+const groupId = randomId<GroupId>()
+const groupId2 = randomId<GroupId>()
 
 beforeEach(async () => {
   await resetServiceState()
@@ -368,7 +370,7 @@ describe('Realtime staff attendances', () => {
       attendedGroupId = groupId
     }: {
       arrived: HelsinkiDateTime
-      attendedGroupId?: string
+      attendedGroupId?: GroupId
     }) {
       await Fixture.realtimeStaffAttendance({
         employeeId: groupStaff.id,
@@ -590,7 +592,7 @@ describe('Realtime staff attendances', () => {
         enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
       }).save()
 
-      const anotherGroupId = uuidv4()
+      const anotherGroupId = randomId<GroupId>()
       await Fixture.daycareGroup({
         id: anotherGroupId,
         daycareId: anotherDaycare.id,

@@ -7,7 +7,7 @@ import { Link } from 'react-router'
 
 import { isLoading, Loading, Result, wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Dimmed, H4, Label } from 'lib-components/typography'
@@ -20,14 +20,14 @@ import { renderResult } from '../async-rendering'
 const getPersonIdentityResult = wrapResult(getPersonIdentity)
 
 async function maybeGetPerson(
-  personId: UUID | undefined | null
+  personId: PersonId | undefined | null
 ): Promise<Result<PersonJSON>> {
   if (personId) return getPersonIdentityResult({ personId })
   return Loading.of()
 }
 
 interface VTJGuardianProps {
-  guardianId: UUID | undefined | null
+  guardianId: PersonId | undefined | null
   otherGuardianLivesInSameAddress?: boolean
 }
 

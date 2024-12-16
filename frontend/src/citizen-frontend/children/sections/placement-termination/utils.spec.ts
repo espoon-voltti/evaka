@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
-import { fromUuid } from 'lib-common/id-type'
+import { evakaUserId, fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import { terminatedPlacementInfo } from './utils'
@@ -21,7 +21,7 @@ describe('Terminated placement info', () => {
         {
           id: 'd4e1cf34-72d5-4fad-b40c-5b1b4cb36883',
           type: 'DAYCARE',
-          childId: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
+          childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
           unitName: 'Alkuräjähdyksen eskari',
           startDate: LocalDate.of(2021, 1, 1),
@@ -29,7 +29,7 @@ describe('Terminated placement info', () => {
           terminatable: true,
           terminationRequestedDate: LocalDate.of(2021, 1, 20),
           terminatedBy: {
-            id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
+            id: evakaUserId(fromUuid('87a5c962-9b3d-11ea-bb37-0242ac130002')),
             name: 'Karhula Johannes Olavi Antero Tapio',
             type: 'CITIZEN'
           }
@@ -57,7 +57,7 @@ describe('Terminated placement info', () => {
         {
           id: 'd4e1cf34-72d5-4fad-b40c-5b1b4cb36883',
           type: 'PRESCHOOL_DAYCARE',
-          childId: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
+          childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
           unitName: 'Alkuräjähdyksen eskari',
           startDate: LocalDate.of(2022, 1, 1),
@@ -71,7 +71,7 @@ describe('Terminated placement info', () => {
         {
           id: '08e9e908-03d2-48a2-9634-5468b2165945',
           type: 'DAYCARE',
-          childId: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
+          childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
           unitName: 'Alkuräjähdyksen eskari',
           startDate: LocalDate.of(2022, 2, 2),
@@ -79,7 +79,7 @@ describe('Terminated placement info', () => {
           terminatable: true,
           terminationRequestedDate: LocalDate.of(2022, 3, 1),
           terminatedBy: {
-            id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
+            id: evakaUserId(fromUuid('87a5c962-9b3d-11ea-bb37-0242ac130002')),
             name: 'Karhula Johannes Olavi Antero Tapio',
             type: 'CITIZEN'
           }
@@ -106,7 +106,7 @@ describe('Terminated placement info', () => {
         {
           id: '8920e598-8b3a-11ed-bf51-4f02a3804b0b',
           type: 'PRESCHOOL_DAYCARE',
-          childId: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
+          childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
           unitName: 'Alkuräjähdyksen eskari',
           startDate: LocalDate.of(2022, 1, 1),
@@ -114,7 +114,7 @@ describe('Terminated placement info', () => {
           terminatable: true,
           terminationRequestedDate: LocalDate.of(2022, 2, 1),
           terminatedBy: {
-            id: 'c174821e-81d1-11ed-b390-3330163bf811',
+            id: evakaUserId(fromUuid('c174821e-81d1-11ed-b390-3330163bf811')),
             name: 'Karhula Johannes Olavi Antero Tapio',
             type: 'CITIZEN'
           }
@@ -122,7 +122,7 @@ describe('Terminated placement info', () => {
         {
           id: '94e520b0-8b3a-11ed-b202-df238eb02b71',
           type: 'PRESCHOOL',
-          childId: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
+          childId: fromUuid('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
           unitId: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
           unitName: 'Alkuräjähdyksen eskari',
           startDate: LocalDate.of(2022, 2, 11),

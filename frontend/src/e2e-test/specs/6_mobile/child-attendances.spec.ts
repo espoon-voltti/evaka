@@ -5,7 +5,9 @@
 import { BrowserContextOptions } from 'playwright'
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import { EvakaBrowserContextOptions, mobileViewport } from '../../browser'
@@ -19,7 +21,6 @@ import {
   testChildRestricted,
   familyWithTwoGuardians,
   Fixture,
-  uuidv4,
   preschoolTerm2023
 } from '../../dev-api/fixtures'
 import {
@@ -43,7 +44,7 @@ let childAttendancePage: ChildAttendancePage
 const now = HelsinkiDateTime.of(2024, 5, 17, 13, 0, 0)
 
 const group2 = {
-  id: uuidv4(),
+  id: randomId<GroupId>(),
   name: '#2',
   daycareId: testDaycare.id,
   startDate: LocalDate.of(2021, 1, 1)
@@ -81,8 +82,8 @@ beforeEach(async () => {
 })
 
 async function createPlacements(
-  childId: string,
-  groupId: string = testDaycareGroup.id,
+  childId: PersonId,
+  groupId = testDaycareGroup.id,
   placementType: PlacementType = 'DAYCARE',
   today: LocalDate = now.toLocalDate()
 ) {
@@ -472,7 +473,7 @@ describe('Child mobile attendance list', () => {
     await Fixture.daycare({ ...testDaycare2, areaId: testCareArea.id }).save()
 
     const daycareGroup2Fixture = await Fixture.daycareGroup({
-      id: uuidv4(),
+      id: randomId<GroupId>(),
       name: 'testgroup',
       daycareId: testDaycare2.id,
       startDate: LocalDate.of(2022, 1, 1)
@@ -597,7 +598,7 @@ describe('Child mobile attendance list', () => {
       endDate: placement.endDate,
       shiftCare: 'FULL',
       optionId: serviceNeedOption.id,
-      confirmedBy: employee.id
+      confirmedBy: evakaUserId(employee.id)
     }).save()
 
     const mobileSignupUrl = await pairMobileDevice(testDaycare.id)

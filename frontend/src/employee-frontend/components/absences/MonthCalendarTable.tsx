@@ -14,6 +14,7 @@ import {
   GroupMonthCalendarDay,
   GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/absence'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import TimeRange from 'lib-common/time-range'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -323,7 +324,7 @@ const MonthCalendarTableHead = React.memo(function AbsenceTableHead({
 })
 
 interface AbsenceTableProps {
-  groupId: string
+  groupId: GroupId
   groupMonthCalendar: GroupMonthCalendar
   selectedCells: SelectedCell[]
   toggleCellSelection: (cell: SelectedCell) => void

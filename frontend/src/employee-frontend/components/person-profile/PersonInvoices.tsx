@@ -8,9 +8,9 @@ import { Link } from 'react-router'
 
 import { PersonContext } from 'employee-frontend/state/person'
 import { UserContext } from 'employee-frontend/state/user'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -29,7 +29,7 @@ import {
 } from './queries'
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 

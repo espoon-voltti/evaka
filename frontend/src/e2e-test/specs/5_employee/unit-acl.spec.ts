@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  EmployeeId,
+  GroupId
+} from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 
-import {
-  testDaycare,
-  Fixture,
-  uuidv4,
-  testCareArea
-} from '../../dev-api/fixtures'
+import { testDaycare, Fixture, testCareArea } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import {
@@ -23,9 +23,9 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let daycareId: DaycareId
-const groupId: UUID = uuidv4()
+const groupId = randomId<GroupId>()
 
-const eskoId = uuidv4()
+const eskoId = randomId<EmployeeId>()
 const esko = {
   id: eskoId,
   externalId: `espoo-ad:${eskoId}`,
@@ -34,13 +34,13 @@ const esko = {
   email: 'esko@evaka.test'
 }
 const pete = {
-  id: uuidv4(),
+  id: randomId<EmployeeId>(),
   firstName: 'Pete',
   lastName: 'Päiväkoti',
   email: 'pete@evaka.test'
 }
 const yrjo = {
-  id: uuidv4(),
+  id: randomId<EmployeeId>(),
   firstName: 'Yrjö',
   lastName: 'Yksikkö',
   email: 'yrjo@evaka.test'

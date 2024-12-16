@@ -211,6 +211,9 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
             is TsIdType -> tsIdType(namedType)
         }
 
+    fun typeAliases(targetType: String, aliases: List<String>): List<TsCode> =
+        aliases.map { alias -> TsCode("export type $alias = $targetType") }
+
     private fun needsJsonDeserializer(type: KType): Boolean {
         val cache = mutableMapOf<KType, Boolean>()
 

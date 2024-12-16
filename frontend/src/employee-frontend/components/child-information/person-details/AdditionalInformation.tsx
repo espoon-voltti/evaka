@@ -7,13 +7,13 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import {
   MealTexture,
   SpecialDiet
 } from 'lib-common/generated/api-types/specialdiet'
 import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -79,7 +79,7 @@ const filterMealTextures = (
 }
 
 interface Props {
-  childId: UUID
+  childId: ChildId
 }
 
 function getDietCaption(diet: SpecialDiet) {

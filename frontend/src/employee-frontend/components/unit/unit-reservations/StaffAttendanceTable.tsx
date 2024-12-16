@@ -24,7 +24,11 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { OperationalDay } from 'lib-common/generated/api-types/reservations'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  EmployeeId,
+  GroupId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -81,11 +85,11 @@ interface Props {
   reloadStaffAttendances: () => Promise<Result<unknown>>
   groups: DaycareGroup[]
   groupFilter: GroupFilter | null
-  defaultGroup: UUID | null
+  defaultGroup: GroupId | null
 }
 
 type DetailsModalTarget =
-  | { type: 'employee'; employeeId: UUID; hasOccupancyEffect: boolean }
+  | { type: 'employee'; employeeId: EmployeeId; hasOccupancyEffect: boolean }
   | { type: 'external'; name: string }
 
 interface DetailsModalConfig {
@@ -276,7 +280,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
   }
   unitId: DaycareId
   groups: DaycareGroup[]
-  defaultGroupId: string | null
+  defaultGroupId: GroupId | null
   reloadStaffAttendances: () => Promise<Result<unknown>>
   onClose: () => void
 }) {
@@ -353,7 +357,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
 })
 
 interface StaffRow {
-  employeeId: UUID
+  employeeId: EmployeeId
   name: string
   attendances: Attendance[]
   plannedAttendances: PlannedStaffAttendance[]
@@ -434,22 +438,24 @@ function computePersonCountSums(
 ): Record<string, number | undefined> {
   const employeeAttendanceDates = staffRows
     .flatMap(({ attendances, employeeId }) =>
-      getUniqueAttendanceDates(attendances, groupFilter).map((date) => ({
-        date,
-        employeeId
-      }))
+      getUniqueAttendanceDates(attendances, groupFilter).map(
+        (date): { date: LocalDate; employeeKey: string } => ({
+          date,
+          employeeKey: employeeId
+        })
+      )
     )
     .concat(
       externalRows.flatMap((row) =>
         getUniqueAttendanceDates(row.attendances, groupFilter).map((date) => ({
           date,
-          employeeId: `external-${row.name}`
+          employeeKey: `external-${row.name}`
         }))
       )
     )
   return mapValues(
     groupBy(employeeAttendanceDates, ({ date }) => date.toString()),
-    (rows) => uniqBy(rows, ({ employeeId }) => employeeId).length
+    (rows) => uniqBy(rows, ({ employeeKey }) => employeeKey).length
   )
 }
 
@@ -961,7 +967,7 @@ const validateDeparted = (
 
 const validateGroupId = (
   item: EditedAttendance
-): [undefined, ErrorKey] | [string | null, undefined] => {
+): [undefined, ErrorKey] | [GroupId | null, undefined] => {
   if (presentInGroup(item.type) && item.groupId === null) {
     return [undefined, 'required']
   }

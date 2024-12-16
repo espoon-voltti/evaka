@@ -774,6 +774,7 @@ describe('Application transitions', () => {
     await createApplications({ body: [application] })
 
     const decision = decisionFixture(
+      serviceWorker.id,
       applicationId,
       application.form.preferences.preferredStartDate ??
         LocalDate.todayInSystemTz(),
@@ -783,14 +784,7 @@ describe('Application transitions', () => {
     const decisionId = decision.id
 
     // NOTE: This will NOT generate a PDF, just create the decision
-    await createDecisions({
-      body: [
-        {
-          ...decision,
-          employeeId: serviceWorker.id
-        }
-      ]
-    })
+    await createDecisions({ body: [decision] })
     await employeeLogin(page, serviceWorker)
 
     await applicationReadView.navigateToApplication(applicationId)

@@ -16,8 +16,8 @@ import {
   CalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -115,7 +115,7 @@ export const DiscussionReservationModal = React.memo(
 
     const mappedForm = mapped(
       object({
-        childId: value<UUID | null>()
+        childId: value<ChildId | null>()
       }),
       (output) => ({
         ...output

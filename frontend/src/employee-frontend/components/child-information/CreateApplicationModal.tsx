@@ -12,8 +12,8 @@ import {
 } from 'lib-common/generated/api-types/application'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -76,7 +76,7 @@ function CreateApplicationModal({
       ? personToSelectOption(sortedGuardians[0], i18n)
       : null
   )
-  const [personId, setPersonId] = useState<UUID | undefined>(undefined)
+  const [personId, setPersonId] = useState<PersonId | undefined>(undefined)
   const [newVtjPersonSsn, setNewVtjPersonSsn] = useState<string | undefined>(
     undefined
   )
@@ -162,7 +162,7 @@ function CreateApplicationModal({
             createPaperApplicationResult({
               body: {
                 ...commonBody,
-                guardianId: guardian?.id ?? ''
+                guardianId: guardian?.id ?? null
               }
             })
         : personType === 'DB_SEARCH'
@@ -170,7 +170,7 @@ function CreateApplicationModal({
               createPaperApplicationResult({
                 body: {
                   ...commonBody,
-                  guardianId: personId ?? ''
+                  guardianId: personId ?? null
                 }
               })
           : personType === 'VTJ'

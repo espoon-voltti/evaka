@@ -7,8 +7,9 @@ import { Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
@@ -40,7 +41,7 @@ import {
 
 export default React.memo(function ApplicationCreation() {
   const navigate = useNavigate()
-  const { childId } = useRouteParams(['childId'])
+  const childId = useIdRouteParam<ChildId>('childId')
   const t = useTranslation()
   useTitle(t, t.applications.creation.title)
   const children = useQueryResult(applicationChildrenQuery())

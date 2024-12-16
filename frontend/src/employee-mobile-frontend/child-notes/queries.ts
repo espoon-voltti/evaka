@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
@@ -39,13 +39,13 @@ export const createGroupNoteMutation = mutation({
 })
 
 export const updateGroupNoteMutation = mutation({
-  api: (arg: Arg0<typeof updateGroupNote> & { groupId: UUID }) =>
+  api: (arg: Arg0<typeof updateGroupNote> & { groupId: GroupId }) =>
     updateGroupNote(arg),
   invalidateQueryKeys: ({ groupId }) => [groupNotesQuery({ groupId }).queryKey]
 })
 
 export const deleteGroupNoteMutation = mutation({
-  api: (arg: Arg0<typeof deleteGroupNote> & { groupId: UUID }) =>
+  api: (arg: Arg0<typeof deleteGroupNote> & { groupId: GroupId }) =>
     deleteGroupNote(arg),
   invalidateQueryKeys: ({ groupId }) => [groupNotesQuery({ groupId }).queryKey]
 })

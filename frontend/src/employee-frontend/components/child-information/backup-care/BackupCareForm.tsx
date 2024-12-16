@@ -13,6 +13,7 @@ import {
   ChildBackupCare
 } from 'lib-common/generated/api-types/backupcare'
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   first,
@@ -20,7 +21,6 @@ import {
   useQueryResult,
   useSelectMutation
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
   MutateButton,
@@ -46,7 +46,7 @@ import {
 import { unitsQuery } from '../queries'
 
 export interface Props {
-  childId: UUID
+  childId: ChildId
   backupCare?: ChildBackupCare
 }
 

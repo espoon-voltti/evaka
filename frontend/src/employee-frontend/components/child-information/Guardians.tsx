@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { Result, Success, wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import { ChildId, PersonId } from 'lib-common/generated/api-types/shared'
 import { getAge } from 'lib-common/utils/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -62,7 +62,7 @@ export default React.memo(function Guardians() {
       )
     )
 
-  const [editingEvakaRights, setEditingEvakaRights] = useState<UUID>()
+  const [editingEvakaRights, setEditingEvakaRights] = useState<PersonId>()
 
   const stopEditing = useCallback(() => setEditingEvakaRights(undefined), [])
 
@@ -173,8 +173,8 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
   stopEditing,
   reloadGuardians
 }: {
-  childId: UUID
-  guardianId: UUID
+  childId: ChildId
+  guardianId: PersonId
   denied: boolean
   stopEditing: () => void
   reloadGuardians: () => void

@@ -7,9 +7,8 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import {
   DatePickerDeprecated,
@@ -42,7 +41,7 @@ interface FormState {
 
 interface Props {
   unitId: DaycareId
-  groupId: UUID
+  groupId: GroupId
   existing: CaretakerAmount | null
   onSuccess: () => undefined | void
   onReject: () => undefined | void

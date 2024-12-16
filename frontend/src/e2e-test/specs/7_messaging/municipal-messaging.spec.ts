@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -13,7 +15,6 @@ import {
   testDaycare2,
   testDaycareGroup,
   Fixture,
-  uuidv4,
   testAdult,
   testChild,
   testChild2,
@@ -64,7 +65,7 @@ beforeEach(async () => {
   await Fixture.daycareGroup(testDaycareGroup).save()
   const daycareGroup2Fixture = {
     ...testDaycareGroup,
-    id: uuidv4(),
+    id: randomId<GroupId>(),
     daycareId: testDaycare2.id
   }
   await Fixture.daycareGroup(daycareGroup2Fixture).save()

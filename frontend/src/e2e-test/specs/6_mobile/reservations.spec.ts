@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -317,7 +318,7 @@ describe('when unit is open every day for shift care child', () => {
       startDate: placement.startDate,
       endDate: placement.endDate,
       optionId: serviceNeedOption.id,
-      confirmedBy: unitSupervisor.id,
+      confirmedBy: evakaUserId(unitSupervisor.id),
       shiftCare: 'FULL'
     }).save()
     await Fixture.groupPlacement({

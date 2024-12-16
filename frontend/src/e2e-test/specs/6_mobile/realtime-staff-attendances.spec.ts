@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { FeatureFlags } from 'lib-customizations/types'
@@ -48,7 +50,7 @@ let careArea: DevCareArea
 
 const daycareGroup2Fixture: DevDaycareGroup = {
   ...testDaycareGroup,
-  id: uuidv4(),
+  id: randomId(),
   name: 'Ryhmä 2'
 }
 
@@ -310,7 +312,7 @@ describe('Realtime staff attendance page', () => {
       enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
     }).save()
 
-    const anotherGroupId = uuidv4()
+    const anotherGroupId = randomId<GroupId>()
     await Fixture.daycareGroup({
       id: anotherGroupId,
       daycareId: anotherDaycare.id,

@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -34,7 +35,7 @@ beforeEach(async (): Promise<void> => resetServiceState())
 
 const setupPlacement = async (
   placementId: string,
-  childId: UUID,
+  childId: PersonId,
   unitId: DaycareId,
   childPlacementType: PlacementType
 ) => {
@@ -61,7 +62,7 @@ async function openChildPlacements(page: Page, childId: UUID) {
 
 describe('Child Information placement info', () => {
   let page: Page
-  let childId: UUID
+  let childId: PersonId
   let unitId: DaycareId
 
   beforeEach(async () => {
@@ -93,7 +94,7 @@ describe('Child Information placement info', () => {
         placementId,
         endDate: LocalDate.todayInSystemTz(),
         terminationRequestedDate: LocalDate.todayInSystemTz(),
-        terminatedBy: familyWithTwoGuardians.guardian.id
+        terminatedBy: evakaUserId(familyWithTwoGuardians.guardian.id)
       }
     })
 

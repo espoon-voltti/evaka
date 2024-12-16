@@ -31,10 +31,9 @@ import {
   FeeDecisionDifference
 } from 'lib-common/generated/api-types/invoicing'
 import { Employee } from 'lib-common/generated/api-types/pis'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
 import { areaQuery } from '../components/unit/queries'
@@ -51,7 +50,7 @@ interface FeeDecisionSearchFilters {
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   searchByStartDate: boolean
-  financeDecisionHandlerId: UUID | undefined
+  financeDecisionHandlerId: EmployeeId | undefined
   difference: FeeDecisionDifference[]
 }
 
@@ -69,7 +68,7 @@ interface ValueDecisionSearchFilters {
   unit?: DaycareId
   statuses: VoucherValueDecisionStatus[]
   distinctiveDetails: VoucherValueDecisionDistinctiveParams[]
-  financeDecisionHandlerId?: UUID
+  financeDecisionHandlerId?: EmployeeId
   difference: VoucherValueDecisionDifference[]
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
@@ -138,7 +137,7 @@ interface IncomeStatementSearchFilterState {
 }
 
 export interface FinanceDecisionHandlerOption {
-  value: UUID
+  value: EmployeeId
   label: string
 }
 

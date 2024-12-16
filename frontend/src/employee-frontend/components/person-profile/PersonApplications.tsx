@@ -11,7 +11,7 @@ import {
   ApplicationType,
   PersonApplicationSummary
 } from 'lib-common/generated/api-types/application'
-import { UUID } from 'lib-common/types'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -29,7 +29,7 @@ const getGuardianApplicationSummariesResult = wrapResult(
 )
 
 interface Props {
-  id: UUID
+  id: PersonId
   open: boolean
 }
 

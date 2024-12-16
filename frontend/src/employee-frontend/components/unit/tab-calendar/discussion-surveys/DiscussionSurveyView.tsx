@@ -31,7 +31,7 @@ import {
   ChildBasics,
   DaycarePlacementWithDetails
 } from 'lib-common/generated/api-types/placement'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -74,7 +74,7 @@ export interface ChildGroupInfo {
 
 export const getCombinedChildPlacementsForGroup = (
   placements: DaycarePlacementWithDetails[],
-  groupId: UUID
+  groupId: GroupId
 ) => {
   const validPlacements = placements.filter((p) =>
     p.groupPlacements.some((gp) => gp.groupId === groupId)
@@ -93,7 +93,7 @@ export const getCombinedChildPlacementsForGroup = (
 export const getInvitedChildInfo = (
   unitDetails: UnitGroupDetails,
   eventData: CalendarEvent,
-  groupId: UUID
+  groupId: GroupId
 ) => {
   const fullGroupSelections = eventData.groups.filter((g) => {
     const anyIndividuals =
@@ -216,7 +216,7 @@ export default React.memo(function DiscussionReservationSurveyView({
   eventData
 }: {
   unitId: DaycareId
-  groupId: UUID
+  groupId: GroupId
   eventData: CalendarEvent
 }) {
   const { i18n } = useTranslation()

@@ -8,8 +8,9 @@ import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { Arg0, UUID } from 'lib-common/types'
+import { Arg0 } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -67,7 +68,7 @@ export default React.memo(function DuplicatePeople() {
   )
   const [duplicate, setDuplicate] = useState<Selection | null>(null)
   const [master, setMaster] = useState<Selection | null>(null)
-  const [deleteId, setDeleteId] = useState<UUID | null>(null)
+  const [deleteId, setDeleteId] = useState<PersonId | null>(null)
   const { setErrorMessage } = useContext(UIContext)
 
   const [filters, setFilters] = useState<DuplicatePeopleFilters>({

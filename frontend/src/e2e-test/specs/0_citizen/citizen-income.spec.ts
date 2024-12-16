@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 
 import {
   testCareArea,
@@ -31,7 +32,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
   const child = testChild
   let daycare: DevDaycare
   let guardian: DevPerson
-  let financeAdminId: UUID
+  let financeAdminId: EmployeeId
 
   const today = LocalDate.of(2022, 1, 5)
   const placementStart = today
@@ -91,7 +92,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
       endDate: placementEnd,
       optionId: serviceNeedOption.id,
       shiftCare: 'NONE',
-      confirmedBy: financeAdmin.id,
+      confirmedBy: evakaUserId(financeAdmin.id),
       confirmedAt: placementStart.toHelsinkiDateTime(LocalTime.of(12, 0))
     }).save()
 
@@ -113,7 +114,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
       personId: guardian.id,
       validFrom: placementStart,
       validTo: incomeEndDate,
-      modifiedBy: financeAdminId,
+      modifiedBy: evakaUserId(financeAdminId),
       modifiedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
     }).save()
 

@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Result, wrapResult } from 'lib-common/api'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -22,7 +23,9 @@ const getSelectableFinanceDecisionHandlersResult = wrapResult(
 )
 
 interface Props {
-  onResolve: (decisionHandlerId: UUID | undefined) => Promise<Result<void>>
+  onResolve: (
+    decisionHandlerId: EmployeeId | undefined
+  ) => Promise<Result<void>>
   onReject: () => void
   checkedIds: UUID[]
 }
@@ -37,7 +40,7 @@ export default React.memo(function FinanceDecisionHandlerSelectModal(
 ) {
   const { i18n, lang } = useTranslation()
   const [selectedFinanceDecisionHandler, setFinanceDecisionHandler] =
-    useState<string>()
+    useState<EmployeeId>()
   const [financeDecisionHandlersResult] = useApiState(
     getSelectableFinanceDecisionHandlersResult,
     []

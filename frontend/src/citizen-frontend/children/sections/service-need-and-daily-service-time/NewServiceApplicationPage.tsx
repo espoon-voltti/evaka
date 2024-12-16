@@ -15,10 +15,13 @@ import {
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
-import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  ServiceNeedOptionId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -59,7 +62,7 @@ const form = transformed(
 )
 
 export default React.memo(function NewServiceApplicationPage() {
-  const { childId } = useRouteParams(['childId'])
+  const childId = useIdRouteParam<ChildId>('childId')
   const i18n = useTranslation()
   const navigate = useNavigate()
   const [lang] = useLang()

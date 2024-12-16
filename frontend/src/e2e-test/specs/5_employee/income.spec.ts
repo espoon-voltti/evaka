@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { EmployeeId, PersonId } from 'lib-common/generated/api-types/shared'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -24,11 +25,11 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let personId: UUID
+let personId: PersonId
 let incomesSection: IncomeSection
 let placementStart: LocalDate
 let placementEnd: LocalDate
-let financeAdminId: UUID
+let financeAdminId: EmployeeId
 beforeEach(async () => {
   await resetServiceState()
 
@@ -270,7 +271,7 @@ describe('Income', () => {
       personId: personId,
       validFrom: placementStart,
       validTo: incomeEndDate,
-      modifiedBy: financeAdminId,
+      modifiedBy: evakaUserId(financeAdminId),
       modifiedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
     }).save()
 
@@ -312,7 +313,7 @@ describe('Income', () => {
       personId: personId,
       validFrom: placementStart,
       validTo: incomeEndDate,
-      modifiedBy: financeAdminId,
+      modifiedBy: evakaUserId(financeAdminId),
       modifiedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
     }).save()
 

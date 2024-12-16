@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId, fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -41,7 +43,7 @@ const childZeroYo = Fixture.person({
   ...testChildZeroYearOld,
   dateOfBirth: mockToday.subWeeks(9),
   firstName: 'Vauva',
-  id: '023c3d55-3bd5-494b-8996-60a3643fe94b'
+  id: fromUuid<PersonId>('023c3d55-3bd5-494b-8996-60a3643fe94b')
 }).data
 
 beforeEach(async () => {
@@ -211,7 +213,7 @@ describe('Employee - Head of family details', () => {
           coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
         }
       },
-      modifiedBy: employee.id
+      modifiedBy: evakaUserId(employee.id)
     }).save()
 
     const totalChildIncome = 1234
@@ -229,7 +231,7 @@ describe('Employee - Head of family details', () => {
           coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
         }
       },
-      modifiedBy: employee.id
+      modifiedBy: evakaUserId(employee.id)
     }).save()
 
     await guardianInformation.navigateToGuardian(regularPerson.id)

@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -72,7 +73,7 @@ describe('Service applications', () => {
       startDate: placement.startDate,
       endDate: placement.endDate,
       optionId: serviceNeedOption1.id,
-      confirmedBy: unitSupervisor.id
+      confirmedBy: evakaUserId(unitSupervisor.id)
     }).save()
 
     let citizenPage = await Page.open({ mockedTime: mockedTime1 })

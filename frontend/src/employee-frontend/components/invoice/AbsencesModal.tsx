@@ -11,8 +11,8 @@ import {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/absence'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -63,7 +63,7 @@ const TableData = styled.td`
 `
 
 interface Props {
-  child: { id: UUID; firstName: string; lastName: string }
+  child: { id: ChildId; firstName: string; lastName: string }
   date: LocalDate
 }
 

@@ -14,6 +14,7 @@ import {
   ChildDocumentSummaryWithPermittedActions,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useMutationResult,
@@ -104,7 +105,7 @@ const CreationModal = React.memo(function CreationModal({
   templates,
   onClose
 }: {
-  childId: UUID
+  childId: ChildId
   templates: DocumentTemplateSummary[]
   onClose: () => void
 }) {
@@ -163,7 +164,7 @@ export default React.memo(function ChildDocumentsList({
   childId,
   hasCreatePermission
 }: {
-  childId: UUID
+  childId: ChildId
   hasCreatePermission: boolean
 }) {
   const { i18n } = useTranslation()

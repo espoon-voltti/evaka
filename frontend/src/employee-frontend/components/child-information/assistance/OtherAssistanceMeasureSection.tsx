@@ -16,6 +16,7 @@ import {
   OtherAssistanceMeasureResponse,
   OtherAssistanceMeasureType
 } from 'lib-common/generated/api-types/assistance'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -42,7 +43,7 @@ import { OtherAssistanceMeasureRow } from './OtherAssistanceMeasureRow'
 import { TitleRow } from './TitleRow'
 
 export interface Props {
-  childId: UUID
+  childId: ChildId
   rows: Result<OtherAssistanceMeasureResponse[]>
 }
 

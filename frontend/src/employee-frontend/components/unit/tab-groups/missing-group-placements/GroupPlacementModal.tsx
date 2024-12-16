@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -43,7 +44,7 @@ interface Props {
 interface GroupPlacementForm {
   startDate: LocalDate
   endDate: LocalDate
-  groupId: UUID | null
+  groupId: GroupId | null
   errors: string[]
 }
 
