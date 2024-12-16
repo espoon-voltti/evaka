@@ -243,7 +243,7 @@ export type PreschoolTermId = Id<'PreschoolTerm'>
 
 export type ServiceApplicationId = string
 
-export type ServiceNeedId = string
+export type ServiceNeedId = Id<'ServiceNeed'>
 
 export type ServiceNeedOptionId = Id<'ServiceNeedOption'>
 

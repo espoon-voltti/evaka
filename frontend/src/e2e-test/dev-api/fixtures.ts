@@ -444,7 +444,7 @@ export class Fixture {
     >
   ): ServiceNeedBuilder {
     return new ServiceNeedBuilder({
-      id: uuidv4(),
+      id: randomId(),
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz(),
       shiftCare: 'NONE',

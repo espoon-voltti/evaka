@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
-import { evakaUserId } from 'lib-common/id-type'
+import {
+  EmployeeId,
+  ServiceNeedId
+} from 'lib-common/generated/api-types/shared'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -13,8 +16,7 @@ import {
   testDaycareGroup,
   testChild,
   testAdult,
-  Fixture,
-  uuidv4
+  Fixture
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare, DevPerson } from '../../generated/api-types'
@@ -86,7 +88,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
     }).save()
 
     await Fixture.serviceNeed({
-      id: uuidv4(),
+      id: randomId<ServiceNeedId>(),
       placementId: placement.id,
       startDate: placementStart,
       endDate: placementEnd,
