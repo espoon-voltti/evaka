@@ -527,17 +527,6 @@ export interface UnitNotifications {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.UnitStaffAttendance
-*/
-export interface UnitStaffAttendance {
-  count: number
-  countOther: number
-  date: LocalDate
-  groups: GroupStaffAttendance[]
-  updated: HelsinkiDateTime | null
-}
-
-/**
 * Generated from fi.espoo.evaka.daycare.UnitStub
 */
 export interface UnitStub {
@@ -804,15 +793,5 @@ export function deserializeJsonUnitGroupDetails(json: JsonOf<UnitGroupDetails>):
     missingGroupPlacements: json.missingGroupPlacements.map(e => deserializeJsonMissingGroupPlacement(e)),
     placements: json.placements.map(e => deserializeJsonDaycarePlacementWithDetails(e)),
     recentlyTerminatedPlacements: json.recentlyTerminatedPlacements.map(e => deserializeJsonTerminatedPlacement(e))
-  }
-}
-
-
-export function deserializeJsonUnitStaffAttendance(json: JsonOf<UnitStaffAttendance>): UnitStaffAttendance {
-  return {
-    ...json,
-    date: LocalDate.parseIso(json.date),
-    groups: json.groups.map(e => deserializeJsonGroupStaffAttendance(e)),
-    updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
   }
 }
