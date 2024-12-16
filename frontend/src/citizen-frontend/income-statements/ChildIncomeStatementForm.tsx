@@ -12,7 +12,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -85,6 +85,8 @@ const ChildIncome = React.memo(function ChildIncome({
     [onChange]
   )
 
+  const onOtherInfoChanged = useFieldDispatch(onChange, 'otherInfo')
+
   return (
     <>
       <Label>{t.income.childIncome.childAttachments}</Label>
@@ -110,7 +112,7 @@ const ChildIncome = React.memo(function ChildIncome({
         <TextArea
           placeholder={t.income.childIncome.write}
           value={formData.otherInfo}
-          onChange={useFieldDispatch(onChange, 'otherInfo')}
+          onChange={onOtherInfoChanged}
           data-qa="other-info"
         />
       </OtherInfoContainer>
@@ -132,18 +134,21 @@ const ChildIncomeTimeRangeSelection = React.memo(
       formData,
       isValidStartDate,
       showFormErrors,
-      onChange
+      onChange,
+      readOnly
     }: {
       formData: ChildIncomeTypeSelectionData
       isValidStartDate: (date: LocalDate) => boolean
       showFormErrors: boolean
       onChange: SetStateCallback<Form.IncomeStatementForm>
+      readOnly: boolean
     },
     ref: React.ForwardedRef<HTMLDivElement>
   ) {
     const t = useTranslation()
     const [lang] = useLang()
 
+    const onStartDateChanged = useFieldDispatch(onChange, 'startDate')
     const startDateInputInfo = useMemo(
       () =>
         errorToInputInfo(
@@ -152,6 +157,7 @@ const ChildIncomeTimeRangeSelection = React.memo(
         ),
       [formData.startDate, t]
     )
+    const onEndDateChanged = useFieldDispatch(onChange, 'endDate')
 
     return (
       <FixedSpaceColumn spacing="zero" ref={ref}>
@@ -171,32 +177,42 @@ const ChildIncomeTimeRangeSelection = React.memo(
               {t.income.incomeType.startDate} *
             </Label>
             <Gap size="xs" />
-            <DatePicker
-              id="start-date"
-              date={formData.startDate}
-              onChange={useFieldDispatch(onChange, 'startDate')}
-              info={startDateInputInfo}
-              hideErrorsBeforeTouched={!showFormErrors}
-              locale={lang}
-              isInvalidDate={(d) =>
-                isValidStartDate(d) ? null : t.validationErrors.unselectableDate
-              }
-              data-qa="start-date"
-              required={true}
-            />
+            {readOnly ? (
+              <span>{formData.startDate?.format() ?? '-'}</span>
+            ) : (
+              <DatePicker
+                id="start-date"
+                date={formData.startDate}
+                onChange={onStartDateChanged}
+                info={startDateInputInfo}
+                hideErrorsBeforeTouched={!showFormErrors}
+                locale={lang}
+                isInvalidDate={(d) =>
+                  isValidStartDate(d)
+                    ? null
+                    : t.validationErrors.unselectableDate
+                }
+                data-qa="start-date"
+                required={true}
+              />
+            )}
           </div>
           <div>
             <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
             <Gap size="xs" />
-            <DatePicker
-              id="end-date"
-              date={formData.endDate}
-              onChange={useFieldDispatch(onChange, 'endDate')}
-              minDate={formData.startDate ?? undefined}
-              hideErrorsBeforeTouched
-              locale={lang}
-              data-qa="end-date"
-            />
+            {readOnly ? (
+              <span>{formData.endDate?.format() ?? '-'}</span>
+            ) : (
+              <DatePicker
+                id="end-date"
+                date={formData.endDate}
+                onChange={onEndDateChanged}
+                minDate={formData.startDate ?? undefined}
+                hideErrorsBeforeTouched
+                locale={lang}
+                data-qa="end-date"
+              />
+            )}
           </div>
         </FixedSpaceRow>
       </FixedSpaceColumn>
@@ -232,6 +248,8 @@ export default React.memo(
   ) {
     const t = useTranslation()
     const scrollTarget = useRef<HTMLDivElement>(null)
+
+    const limitedEditing = status !== 'DRAFT'
 
     const isValidStartDate = useCallback(
       (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date)),
@@ -285,6 +303,7 @@ export default React.memo(
               isValidStartDate={isValidStartDate}
               showFormErrors={showFormErrors}
               onChange={onChange}
+              readOnly={limitedEditing}
               ref={scrollTarget}
             />
             <Gap size="L" />
@@ -304,7 +323,7 @@ export default React.memo(
               />
             </AssureCheckbox>
             <FixedSpaceRow>
-              <LegacyButton text={t.common.cancel} onClick={onCancel} />
+              <Button text={t.common.cancel} onClick={onCancel} />
               {status === 'DRAFT' && draftSaveEnabled && (
                 <AsyncButton
                   text={t.income.saveAsDraft}
