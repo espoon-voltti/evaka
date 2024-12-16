@@ -14,7 +14,7 @@ evaka:
         sv: "dagis@esbo.fi"
       sender_name:
         fi: "Varhaiskasvatuksen palveluohjaus"
-        sv: "Barninvalskoordinatorer / Esbo stad"
+        sv: "Servicesakkunnig / Esbo stad"
   oph:
     municipality_code: "049"
     organizer_oid: "1.2.246.562.10.90008375488"

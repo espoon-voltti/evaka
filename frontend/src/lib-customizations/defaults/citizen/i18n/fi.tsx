@@ -265,7 +265,7 @@ export default {
         Tietoa yksityisistä päiväkodeista löydät{' '}
         <ExternalLink
           text="täältä."
-          href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit"
+          href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityiseen-varhaiskasvatukseen-hakeminen"
           newTab
         />
       </span>
@@ -312,7 +312,7 @@ export default {
       list: 'Yksiköt'
     },
     serviceVoucherLink:
-      'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228',
+      'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityiseen-varhaiskasvatukseen-hakeminen#section-55369',
     noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön',
     backToSearch: 'Takaisin hakuun'
   },
@@ -1306,7 +1306,7 @@ export default {
           },
           mapLink: 'Yksiköt kartalla',
           serviceVoucherLink:
-            'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228',
+            'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityiseen-varhaiskasvatukseen-hakeminen#section-55369',
           languageFilter: {
             label: 'Yksikön kieli',
             fi: 'suomi',
