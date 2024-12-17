@@ -14,12 +14,10 @@ import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.pis.deactivateInactiveEmployees
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.DaycareAclRow
-import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
-import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -470,6 +468,140 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 temporaryEmployeeId,
             )
         }
+    }
+
+    @Test
+    fun groupAccessCanBeAddedAndRemoved() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2023, 3, 29), LocalTime.of(8, 37)))
+        val group2 =
+            DevDaycareGroup(
+                daycareId = testDaycare.id,
+                id = GroupId(UUID.randomUUID()),
+                name = "Group2",
+            )
+        val unit2Group =
+            DevDaycareGroup(daycareId = testDaycare2.id, id = GroupId(UUID.randomUUID()))
+        db.transaction { tx ->
+            tx.insert(group2)
+            tx.insert(unit2Group)
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareAclRow(testDaycare2.id, employee.id, UserRole.STAFF)
+        }
+
+        data class DaycareGroupAcl(
+            val daycareGroupId: GroupId,
+            val employeeId: EmployeeId,
+            val created: HelsinkiDateTime,
+            val updated: HelsinkiDateTime,
+        )
+
+        fun readAllGroupAcls() =
+            db.read { tx ->
+                tx.createQuery { sql("SELECT * FROM daycare_group_acl") }.toList<DaycareGroupAcl>()
+            }
+
+        // add access to two groups in daycare 1
+        // daycare 2 has no groups
+        val moment1 = clock.now()
+        unitAclController.updateGroupAclWithOccupancyCoefficient(
+            dbInstance(),
+            admin,
+            MockEvakaClock(moment1),
+            testDaycare.id,
+            employee.id,
+            UnitAclController.AclUpdate(
+                groupIds = listOf(testDaycareGroup.id, group2.id),
+                hasStaffOccupancyEffect = null,
+            ),
+        )
+
+        val step1Acls = readAllGroupAcls()
+        assertThat(step1Acls)
+            .containsExactlyInAnyOrder(
+                DaycareGroupAcl(
+                    daycareGroupId = testDaycareGroup.id,
+                    employeeId = employee.id,
+                    created = moment1,
+                    updated = moment1,
+                ),
+                DaycareGroupAcl(
+                    daycareGroupId = group2.id,
+                    employeeId = employee.id,
+                    created = moment1,
+                    updated = moment1,
+                ),
+            )
+
+        // add access to one group in daycare 2
+        // daycare 1 still has two groups
+        val moment2 = clock.now().plusMinutes(1)
+        unitAclController.updateGroupAclWithOccupancyCoefficient(
+            dbInstance(),
+            admin,
+            MockEvakaClock(moment2),
+            testDaycare2.id,
+            employee.id,
+            UnitAclController.AclUpdate(
+                groupIds = listOf(unit2Group.id),
+                hasStaffOccupancyEffect = null,
+            ),
+        )
+
+        val step2Acls = readAllGroupAcls()
+        assertThat(step2Acls)
+            .containsExactlyInAnyOrder(
+                DaycareGroupAcl(
+                    daycareGroupId = testDaycareGroup.id,
+                    employeeId = employee.id,
+                    created = moment1,
+                    updated = moment1,
+                ),
+                DaycareGroupAcl(
+                    daycareGroupId = group2.id,
+                    employeeId = employee.id,
+                    created = moment1,
+                    updated = moment1,
+                ),
+                DaycareGroupAcl(
+                    daycareGroupId = unit2Group.id,
+                    employeeId = employee.id,
+                    created = moment2,
+                    updated = moment2,
+                ),
+            )
+
+        // remove access to group 2 in daycare 1
+        // daycare 2 still has one group
+        val moment3 = clock.now().plusMinutes(2)
+        unitAclController.updateGroupAclWithOccupancyCoefficient(
+            dbInstance(),
+            admin,
+            MockEvakaClock(moment3),
+            testDaycare.id,
+            employee.id,
+            UnitAclController.AclUpdate(
+                groupIds = listOf(testDaycareGroup.id),
+                hasStaffOccupancyEffect = null,
+            ),
+        )
+
+        val step3Acls = readAllGroupAcls()
+        assertThat(step3Acls)
+            .containsExactlyInAnyOrder(
+                DaycareGroupAcl(
+                    daycareGroupId = testDaycareGroup.id,
+                    employeeId = employee.id,
+                    created = moment1,
+                    updated = moment1,
+                ),
+                DaycareGroupAcl(
+                    daycareGroupId = unit2Group.id,
+                    employeeId = employee.id,
+                    created = moment2,
+                    updated = moment2,
+                ),
+            )
     }
 
     @Test

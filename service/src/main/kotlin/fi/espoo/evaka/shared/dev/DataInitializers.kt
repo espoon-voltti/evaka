@@ -88,7 +88,7 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
+import fi.espoo.evaka.shared.auth.syncDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -294,7 +294,7 @@ RETURNING id
                 insertDaycareAclRow(daycareId, employeeId, role)
             }
             groupAcl.forEach { (daycareId, groups) ->
-                insertDaycareGroupAcl(daycareId, employeeId, groups, now)
+                syncDaycareGroupAcl(daycareId, employeeId, groups, now)
             }
         }
 

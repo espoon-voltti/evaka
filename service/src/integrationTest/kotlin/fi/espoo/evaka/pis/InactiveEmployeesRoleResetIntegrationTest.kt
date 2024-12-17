@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
+import fi.espoo.evaka.shared.auth.syncDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -156,7 +156,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     role = UserRole.STAFF,
                 )
                 it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(1000))
-                it.insertDaycareGroupAcl(
+                it.syncDaycareGroupAcl(
                     daycareId = unitId,
                     employeeId = employeeId,
                     groupIds = listOf(groupId),

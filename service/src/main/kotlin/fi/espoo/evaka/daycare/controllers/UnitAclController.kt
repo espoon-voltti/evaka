@@ -26,15 +26,7 @@ import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.DaycareAclRow
-import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.clearDaycareGroupAcl
-import fi.espoo.evaka.shared.auth.deleteDaycareAclRow
-import fi.espoo.evaka.shared.auth.getDaycareAclRows
-import fi.espoo.evaka.shared.auth.hasAnyDaycareAclRow
-import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
+import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.*
 import fi.espoo.evaka.shared.security.AccessControl
@@ -230,8 +222,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                             daycareId,
                         )
                         validateIsPermanentEmployee(tx, employeeId)
-                        tx.clearDaycareGroupAcl(daycareId, employeeId)
-                        tx.insertDaycareGroupAcl(daycareId, employeeId, it, clock.now())
+                        tx.syncDaycareGroupAcl(daycareId, employeeId, it, clock.now())
                     }
 
                     val occupancyCoefficientId =
@@ -284,7 +275,6 @@ class UnitAclController(private val accessControl: AccessControl) {
                     val roleAction = getRoleAddAction(aclInfo.role)
                     accessControl.requirePermissionFor(tx, user, clock, roleAction, daycareId)
                     validateIsPermanentEmployee(tx, employeeId)
-                    tx.clearDaycareGroupAcl(daycareId, employeeId)
                     tx.insertDaycareAclRow(daycareId, employeeId, aclInfo.role)
                     tx.upsertEmployeeMessageAccount(employeeId)
                     aclInfo.update.groupIds?.let {
@@ -295,7 +285,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                             Action.Unit.UPDATE_STAFF_GROUP_ACL,
                             daycareId,
                         )
-                        tx.insertDaycareGroupAcl(daycareId, employeeId, it, clock.now())
+                        tx.syncDaycareGroupAcl(daycareId, employeeId, it, clock.now())
                     }
                     val occupancyCoefficientId =
                         aclInfo.update.hasStaffOccupancyEffect?.let {
@@ -559,9 +549,8 @@ class UnitAclController(private val accessControl: AccessControl) {
             throw Forbidden("All groups must be in unit")
         }
 
-        tx.clearDaycareGroupAcl(unitId, employeeId)
         tx.insertDaycareAclRow(unitId, employeeId, UserRole.STAFF)
-        tx.insertDaycareGroupAcl(unitId, employeeId, input.groupIds.toList(), now)
+        tx.syncDaycareGroupAcl(unitId, employeeId, input.groupIds, now)
 
         tx.upsertEmployeeMessageAccount(employeeId)
         tx.upsertOccupancyCoefficient(
@@ -596,7 +585,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         unitId: DaycareId,
         employee: Employee,
     ) {
-        tx.clearDaycareGroupAcl(unitId, employee.id)
+        tx.syncDaycareGroupAcl(unitId, employee.id, emptyList())
         tx.deleteDaycareAclRow(unitId, employee.id, UserRole.STAFF)
         if (!tx.hasAnyDaycareAclRow(employee.id)) {
             tx.deactivateEmployeeMessageAccount(employee.id)

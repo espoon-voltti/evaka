@@ -10,6 +10,7 @@ import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.messaging.MessageController.PostMessagePreflightResponse
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -27,23 +28,9 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
+import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevParentship
-import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPersonType
-import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.DevServiceNeed
-import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.*
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.test.validDaycareApplication
@@ -276,7 +263,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             employee1Account = tx.upsertEmployeeMessageAccount(employee1.id)
             tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareGroupAcl(
+            tx.syncDaycareGroupAcl(
                 testDaycare.id,
                 employee1.id,
                 listOf(groupId1, groupId2),
@@ -1666,7 +1653,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val employee = DevEmployee(firstName = "New", lastName = "Staff")
             tx.insert(employee)
             tx.insertDaycareAclRow(testDaycare.id, employee.id, userRole)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId1), now)
+            tx.syncDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId1), now)
             employee.user
         }
     }
