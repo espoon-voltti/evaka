@@ -140,22 +140,22 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
-    fun `Pending decision older than one week but already two reminders does not send third`() {
-        createPendingDecision(LocalDate.now().minusDays(8), null, null, 2)
+    fun `Pending decision older than one week but already four reminders does not send fifth`() {
+        createPendingDecision(LocalDate.now().minusDays(8), null, null, 4)
         runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
     }
 
     @Test
-    fun `Bug verification - Pending decision with pending_decision_email_sent older than 1 week but already two reminders should not send reminder`() {
+    fun `Bug verification - Pending decision with pending_decision_email_sent older than 1 week but already four reminders should not send reminder`() {
         createPendingDecision(
             LocalDate.now().minusDays(8),
             null,
             HelsinkiDateTime.from(
                 LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC)
             ),
-            2,
+            4,
         )
         runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails

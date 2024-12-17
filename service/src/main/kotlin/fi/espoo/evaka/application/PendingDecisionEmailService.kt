@@ -65,11 +65,57 @@ FROM decision d
 WHERE d.status = 'PENDING'
 AND d.resolved IS NULL
 AND (d.sent_date < ${bind(today)} - INTERVAL '1 week' AND d.sent_date > ${bind(today)} - INTERVAL '2 month')
-AND d.pending_decision_emails_sent_count < 2
-AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < ${bind(today)} - INTERVAL '1 week'))
-SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids
-FROM pending_decisions JOIN application ON pending_decisions.application_id = application.id
-GROUP BY application.guardian_id
+AND d.pending_decision_emails_sent_count < 4
+AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < ${bind(today)} - INTERVAL '1 week')),
+pending_decisions_and_guardians AS (
+    SELECT pending_decisions.id AS decision_id, application.guardian_id
+    FROM pending_decisions
+    JOIN application ON pending_decisions.application_id = application_id
+    UNION
+    SELECT pending_decisions.id AS decision_id, other_guardian.id AS guardian_id
+    FROM pending_decisions
+    JOIN application a ON pending_decisions.application_id = a.id
+    JOIN application_other_guardian aog ON a.id = aog.application_id
+    JOIN person other_guardian ON aog.guardian_id = other_guardian.id
+    JOIN person guardian ON a.guardian_id = guardian.id
+    JOIN person child ON a.child_id = child.id
+    WHERE allow_other_guardian_access IS TRUE
+    AND (
+        EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+        OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(today)})
+    )
+    AND NOT other_guardian.restricted_details_enabled
+    AND NOT guardian.restricted_details_enabled
+    AND NOT child.restricted_details_enabled
+    AND other_guardian.street_address NOT ILIKE '%poste restante%'
+    AND guardian.street_address NOT ILIKE '%poste restante%'
+    AND child.street_address NOT ILIKE '%poste restante%'
+    AND (
+        (trim(other_guardian.residence_code) != '' AND
+         trim(guardian.residence_code) != '' AND
+         other_guardian.residence_code = guardian.residence_code) OR
+        (trim(other_guardian.street_address) != '' AND
+         trim(guardian.street_address) != '' AND
+         trim(other_guardian.postal_code) != '' AND
+         trim(guardian.postal_code) != '' AND
+         lower(other_guardian.street_address) = lower(guardian.street_address) AND
+         other_guardian.postal_code = guardian.postal_code)
+    )
+    AND (
+        (trim(other_guardian.residence_code) != '' AND
+         trim(child.residence_code) != '' AND
+         other_guardian.residence_code = child.residence_code) OR
+        (trim(other_guardian.street_address) != '' AND
+         trim(child.street_address) != '' AND
+         trim(other_guardian.postal_code) != '' AND
+         trim(child.postal_code) != '' AND
+         lower(other_guardian.street_address) = lower(child.street_address) AND
+         other_guardian.postal_code = child.postal_code)
+    )
+)
+SELECT guardian_id, array_agg(decision_id::uuid) AS decision_ids
+FROM pending_decisions_and_guardians
+GROUP BY guardian_id
 """
                             )
                         }

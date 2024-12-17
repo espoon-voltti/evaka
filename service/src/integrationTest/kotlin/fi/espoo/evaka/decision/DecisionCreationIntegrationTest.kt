@@ -43,7 +43,9 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
@@ -53,6 +55,7 @@ import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -69,6 +72,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Autowired private lateinit var applicationController: ApplicationControllerV2
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
+    @Autowired private lateinit var scheduledJobs: ScheduledJobs
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var applicationStateService: ApplicationStateService
     @Autowired private lateinit var personService: PersonService
@@ -515,8 +519,14 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `other guardian in different address as guardian sees decision but can't decide`() {
-        val guardian = DevPerson(ssn = "070644-937X", residenceCode = "1")
-        val otherGuardian = DevPerson(ssn = "311299-999E", residenceCode = "2")
+        val guardian =
+            DevPerson(ssn = "070644-937X", residenceCode = "1", email = "guardian@example.com")
+        val otherGuardian =
+            DevPerson(
+                ssn = "311299-999E",
+                residenceCode = "2",
+                email = "other.guardian@example.com",
+            )
         val child = DevPerson(ssn = "070714A9126", residenceCode = "2")
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
@@ -552,6 +562,27 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
+
+        sendPendingDecisionsEmails(clock.today().plusWeeks(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(1).plusDays(1), 1)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2).plusDays(2), 1)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(3), 1)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4).plusDays(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4).plusDays(3), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4).plusDays(4), 1)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(3), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(4), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(5), 0)
 
         val otherCitizen = AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
         val otherCitizenWeak = AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.WEAK)
@@ -604,8 +635,14 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `other guardian in different address as child sees decision but can't decide`() {
-        val guardian = DevPerson(ssn = "070644-937X", residenceCode = "1")
-        val otherGuardian = DevPerson(ssn = "311299-999E", residenceCode = "1")
+        val guardian =
+            DevPerson(ssn = "070644-937X", residenceCode = "1", email = "guardian@example.com")
+        val otherGuardian =
+            DevPerson(
+                ssn = "311299-999E",
+                residenceCode = "1",
+                email = "other.guardian@example.com",
+            )
         val child = DevPerson(ssn = "070714A9126", residenceCode = "2")
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
@@ -641,6 +678,27 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
+
+        sendPendingDecisionsEmails(clock.today().plusWeeks(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(1).plusDays(1), 1)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2).plusDays(2), 1)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(3), 1)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4).plusDays(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4).plusDays(3), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(4).plusDays(4), 1)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(3), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(4), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(5).plusDays(5), 0)
 
         val otherCitizen = AuthenticatedUser.Citizen(otherGuardian.id, CitizenAuthLevel.STRONG)
         val otherCitizenWeak = AuthenticatedUser.Citizen(otherCitizen.id, CitizenAuthLevel.WEAK)
@@ -694,8 +752,18 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `other guardian in the same address sees decision and can decide`() {
         val residenceCode = "same for all"
-        val guardian = DevPerson(ssn = "070644-937X", residenceCode = residenceCode)
-        val otherGuardian = DevPerson(ssn = "311299-999E", residenceCode = residenceCode)
+        val guardian =
+            DevPerson(
+                ssn = "070644-937X",
+                residenceCode = residenceCode,
+                email = "guardian@example.com",
+            )
+        val otherGuardian =
+            DevPerson(
+                ssn = "311299-999E",
+                residenceCode = residenceCode,
+                email = "other.guardian@example.com",
+            )
         val child = DevPerson(ssn = "070714A9126", residenceCode = residenceCode)
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
@@ -732,6 +800,16 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
+
+        sendPendingDecisionsEmails(clock.today().plusWeeks(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(1).plusDays(1), 2)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(2).plusDays(2), 2)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(1), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(2), 0)
+        sendPendingDecisionsEmails(clock.today().plusWeeks(3).plusDays(3), 0)
 
         val otherCitizen = AuthenticatedUser.Citizen(otherGuardian.id, CitizenAuthLevel.STRONG)
         val otherCitizenWeak = AuthenticatedUser.Citizen(otherGuardian.id, CitizenAuthLevel.WEAK)
@@ -1070,4 +1148,10 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
             applicationId
         }
+
+    private fun sendPendingDecisionsEmails(date: LocalDate, expectedCount: Int) {
+        val clock = MockEvakaClock(HelsinkiDateTime.of(date, LocalTime.MIN))
+        scheduledJobs.sendPendingDecisionReminderEmails(db, clock)
+        assertEquals(expectedCount, asyncJobRunner.runPendingJobsSync(clock))
+    }
 }
