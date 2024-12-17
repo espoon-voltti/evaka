@@ -5,6 +5,7 @@
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeesPage } from '../../pages/employee/employees'
 import { waitUntilEqual } from '../../utils'
@@ -14,16 +15,21 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let nav: EmployeeNav
 let employeesPage: EmployeesPage
+let admin: DevEmployee
+let employee: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
-  const admin = await Fixture.employee({
+  admin = await Fixture.employee({
     firstName: 'Seppo',
     lastName: 'Sorsa'
   })
     .admin()
     .save()
-  await Fixture.employee({ firstName: 'Teppo', lastName: 'Testaaja' })
+  employee = await Fixture.employee({
+    firstName: 'Teppo',
+    lastName: 'Testaaja'
+  })
     .serviceWorker()
     .save()
 
@@ -63,5 +69,13 @@ describe('Employees page', () => {
 
     await employeesPage.nameInput.fill('Test')
     await waitUntilEqual(() => employeesPage.visibleUsers, ['Testaaja Teppo'])
+  })
+
+  test('can navigate to employee page', async () => {
+    const employeePage = await employeesPage.openEmployeePage(employee)
+    await employeePage.content
+      .findTextExact(`${employee.firstName} ${employee.lastName}`)
+      .waitUntilVisible()
+    await employeePage.content.findTextExact(employee.email!).waitUntilVisible()
   })
 })
