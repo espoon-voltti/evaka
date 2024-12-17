@@ -94,8 +94,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   })
   router.use(
     cacheControl((req) =>
-      req.path.startsWith('/api/citizen/child-images/') ||
-      req.path.startsWith('/api/employee-mobile/child-images/')
+      req.path.startsWith('/citizen/child-images/') ||
+      req.path.startsWith('/employee-mobile/child-images/')
         ? 'allow-cache'
         : 'forbid-cache'
     )
