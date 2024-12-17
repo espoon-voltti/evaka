@@ -52,7 +52,6 @@ export default React.memo(function UnitList() {
                   presentChildren,
                   totalChildren,
                   presentStaff,
-                  presentStaffOther,
                   totalStaff,
                   utilization
                 }) => (
@@ -72,11 +71,7 @@ export default React.memo(function UnitList() {
                         </div>
                         <div>
                           <Stat data-qa="staff-count">
-                            {presentStaff}
-                            {presentStaffOther ? (
-                              <OtherStaff>+{presentStaffOther}</OtherStaff>
-                            ) : null}
-                            /{totalStaff}
+                            {presentStaff}/{totalStaff}
                           </Stat>
                           <StatDesc>{i18n.units.staff}</StatDesc>
                         </div>
@@ -126,10 +121,6 @@ const Stat = styled.div`
   font-size: 20px;
   font-weight: ${fontWeights.semibold};
   color: ${colors.grayscale.g100};
-`
-
-const OtherStaff = styled.span`
-  color: ${colors.grayscale.g70};
 `
 
 const StatDesc = styled.div`
