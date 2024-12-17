@@ -12,12 +12,12 @@ import {
 } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import {
+  CalendarEventId,
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
@@ -58,8 +58,8 @@ interface Props {
   surveys: CitizenCalendarEvent[]
   childData: ReservationChild[]
   openDiscussionReservations: (
-    selectedChildId: UUID | undefined,
-    selectedEventId: UUID | undefined
+    selectedChildId: ChildId | undefined,
+    selectedEventId: CalendarEventId | undefined
   ) => void
 }
 
@@ -245,7 +245,7 @@ interface DiscussionChildElementProps {
   onCancelClick: (childId: ChildId, eventTimeId: CalendarEventTimeId) => void
   openDiscussionReservations: (
     selectedChildId: ChildId,
-    selectedEventId: UUID
+    selectedEventId: CalendarEventId
   ) => void
 }
 
@@ -288,7 +288,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
 interface ChildSurveyElementProps {
   survey: CitizenCalendarEvent
   reservations: CitizenCalendarEventTime[]
-  childId: UUID
+  childId: ChildId
   openDiscussionReservations: () => void
   onCancelClick: (childId: ChildId, eventTimeId: CalendarEventTimeId) => void
 }

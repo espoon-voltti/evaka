@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 
 import {
   acceptDecision,
@@ -17,7 +17,7 @@ import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('applicationDecisions', {
   all: () => ['all'],
-  byApplication: (applicationId: UUID) => ['decisions', applicationId],
+  byApplication: (applicationId: ApplicationId) => ['decisions', applicationId],
   notifications: () => ['notifications'],
   financeDecisions: () => ['financeDecisions']
 })

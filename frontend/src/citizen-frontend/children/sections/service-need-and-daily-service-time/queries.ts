@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import YearMonth from 'lib-common/year-month'
 
 import { getChildAttendanceSummary } from '../../../generated/api-clients/children'
 import { createQueryKeys } from '../../../query'
 
 const queryKeys = createQueryKeys('serviceNeedAndDailyServiceTime', {
-  attendanceSummary: (childId: UUID, month: YearMonth) => [
+  attendanceSummary: (childId: ChildId, month: YearMonth) => [
     'attendanceSummary',
     childId,
     month

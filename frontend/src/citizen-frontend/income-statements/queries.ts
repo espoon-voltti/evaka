@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  ChildId,
+  IncomeStatementId
+} from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 
 import {
   createChildIncomeStatement,
@@ -25,7 +28,7 @@ import { createQueryKeys } from '../query'
 const queryKeys = createQueryKeys('incomeStatements', {
   allIncomeStatements: () => ['incomeStatements'],
   incomeStatements: (page: number) => ['incomeStatements', 'paginated', page],
-  incomeStatement: (incomeStatementId: UUID) => [
+  incomeStatement: (incomeStatementId: IncomeStatementId) => [
     'incomeStatements',
     'single',
     incomeStatementId
@@ -34,11 +37,11 @@ const queryKeys = createQueryKeys('incomeStatements', {
 
   guardianIncomeStatementChildren: () => ['guardianIncomeStatementChildren'],
 
-  allChildIncomeStatements: (childId: UUID) => [
+  allChildIncomeStatements: (childId: ChildId) => [
     'childIncomeStatements',
     childId
   ],
-  childIncomeStatements: (childId: UUID, page: number) => [
+  childIncomeStatements: (childId: ChildId, page: number) => [
     'childIncomeStatements',
     childId,
     'paginated',
@@ -48,10 +51,10 @@ const queryKeys = createQueryKeys('incomeStatements', {
     childId,
     incomeStatementId
   }: {
-    childId: UUID
-    incomeStatementId: UUID
+    childId: ChildId
+    incomeStatementId: IncomeStatementId
   }) => ['childIncomeStatements', childId, 'single', incomeStatementId],
-  childIncomeStatementStartDates: (childId: UUID) => [
+  childIncomeStatementStartDates: (childId: ChildId) => [
     'childIncomeStatements',
     childId,
     'startDates'

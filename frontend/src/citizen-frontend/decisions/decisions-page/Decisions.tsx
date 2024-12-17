@@ -13,9 +13,9 @@ import {
   AssistanceNeedDecisionCitizenListItem,
   AssistanceNeedPreschoolDecisionCitizenListItem
 } from 'lib-common/generated/api-types/assistanceneed'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -54,13 +54,13 @@ export default React.memo(function Decisions() {
       | AssistanceNeedDecisionCitizenListItem
       | AssistanceNeedPreschoolDecisionCitizenListItem
       | {
-          applicationId: UUID
+          applicationId: ApplicationId
           resolved: LocalDate | null
         }
     )[]
     firstName: string
     lastName: string
-    decidableApplications: UUID[]
+    decidableApplications: ApplicationId[]
   }) => {
     const unconfirmedDecisionsCount = child.decisions.filter(
       (decision) =>

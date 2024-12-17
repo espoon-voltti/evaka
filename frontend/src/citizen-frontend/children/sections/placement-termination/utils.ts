@@ -6,8 +6,8 @@ import {
   PlacementType,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 
 type TerminatedPlacementInfoType =
   | { type: 'placement'; placementType: PlacementType }
@@ -17,7 +17,7 @@ export function terminatedPlacementInfo(
   placementGroup: TerminatablePlacementGroup
 ): {
   type: TerminatedPlacementInfoType
-  unitId: UUID
+  unitId: DaycareId
   unitName: string
   lastDay: LocalDate
 } {

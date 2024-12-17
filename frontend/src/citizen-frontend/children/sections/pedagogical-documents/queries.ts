@@ -4,7 +4,7 @@
 
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { Arg0 } from 'lib-common/types'
 
 import {
   getPedagogicalDocumentsForChild,
@@ -14,7 +14,7 @@ import {
 import { createQueryKeys } from '../../../query'
 
 const queryKeys = createQueryKeys('pedagogicalDocuments', {
-  forChild: (childId: UUID) => ['documents', childId],
+  forChild: (childId: ChildId) => ['documents', childId],
   unreadCount: () => ['unreadCount']
 })
 

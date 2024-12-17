@@ -7,16 +7,16 @@ import React, { useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import { ChildId, ChildImageId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
 import { fontWeights } from 'lib-components/typography'
 import { theme } from 'lib-customizations/common'
 
 import { API_URL } from '../api-client'
 
 export interface ChildImageData {
-  childId: UUID
-  imageId: UUID | null
+  childId: ChildId
+  imageId: ChildImageId | null
   initialLetter: string
   colorIndex: number
 }
@@ -81,7 +81,7 @@ const Overlap = styled.div<{ overlap: number; index: number }>`
 `
 
 export interface RoundChildImageProps {
-  imageId: UUID | null
+  imageId: ChildImageId | null
   fallbackText: string
   colorIndex: number
   size: number

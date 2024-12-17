@@ -10,9 +10,10 @@ import { focusElementOnNextFrame } from 'citizen-frontend/utils/focus'
 import { combine, isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import { CalendarEventId, ChildId } from 'lib-common/generated/api-types/shared'
+import { fromNullableUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Desktop, RenderOnlyOn } from 'lib-components/layout/responsive-layout'
@@ -360,8 +361,8 @@ type URLModalState =
   | { type: 'discussions' }
   | {
       type: 'discussion-reservations'
-      selectedEventId: UUID | undefined
-      selectedChildId: UUID | undefined
+      selectedEventId: CalendarEventId | undefined
+      selectedChildId: ChildId | undefined
     }
 
 // Modal state not stored to the URL
@@ -382,8 +383,8 @@ interface UseModalStateResult {
   openHolidayModal: () => void
   openDiscussionSurveyModal: () => void
   openDiscussionReservationModal: (
-    selectedChildId: UUID | undefined,
-    selectedEventId: UUID | undefined
+    selectedChildId: ChildId | undefined,
+    selectedEventId: CalendarEventId | undefined
   ) => void
   closeModal: () => void
 }
@@ -430,7 +431,10 @@ export function useCalendarModalState(): UseModalStateResult {
     [openModal]
   )
   const openDiscussionReservationModal = useCallback(
-    (selectedChildId: UUID | undefined, selectedEventId: UUID | undefined) =>
+    (
+      selectedChildId: ChildId | undefined,
+      selectedEventId: CalendarEventId | undefined
+    ) =>
       openModal({
         type: 'discussion-reservations',
         selectedChildId,
@@ -467,8 +471,11 @@ function parseQueryString(qs: string): URLModalState | undefined {
   const modalParam = searchParams.get('modal')
   const startDateParam = searchParams.get('startDate')
   const endDateParam = searchParams.get('endDate')
-  const selectedChildId = searchParams.get('selectedChildId') ?? undefined
-  const selectedEventId = searchParams.get('selectedEventId') ?? undefined
+  const selectedChildId =
+    fromNullableUuid<ChildId>(searchParams.get('selectedChildId')) ?? undefined
+  const selectedEventId =
+    fromNullableUuid<CalendarEventId>(searchParams.get('selectedEventId')) ??
+    undefined
   const returnToDayModal = searchParams.has('returnToDayModal')
 
   const date = dateParam ? LocalDate.tryParseIso(dateParam) : undefined

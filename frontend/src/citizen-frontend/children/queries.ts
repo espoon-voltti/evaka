@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { Arg0 } from 'lib-common/types'
 
 import { getChildren } from '../generated/api-clients/children'
 import {
@@ -17,8 +18,8 @@ import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('children', {
   all: () => null,
-  serviceApplications: (childId: UUID) => [childId, 'service-applications'],
-  serviceNeedOptions: (childId: UUID, date: LocalDate) => [
+  serviceApplications: (childId: ChildId) => [childId, 'service-applications'],
+  serviceNeedOptions: (childId: ChildId, date: LocalDate) => [
     childId,
     'service-need-options',
     date
@@ -50,6 +51,6 @@ export const createServiceApplicationsMutation = mutation({
 export const deleteServiceApplicationsMutation = mutation({
   api: deleteServiceApplication,
   invalidateQueryKeys: (
-    arg: Arg0<typeof deleteServiceApplication> & { childId: UUID }
+    arg: Arg0<typeof deleteServiceApplication> & { childId: ChildId }
   ) => [queryKeys.serviceApplications(arg.childId)]
 })

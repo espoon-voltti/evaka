@@ -10,8 +10,11 @@ import {
   DecisionStatus,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
+import {
+  ApplicationId,
+  DecisionId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -32,8 +35,8 @@ const preschoolInfoTypes: DecisionType[] = [
 ]
 
 interface Props {
-  id: UUID
-  applicationId: UUID
+  id: DecisionId
+  applicationId: ApplicationId
   type: DecisionType
   sentDate: LocalDate
   resolved: LocalDate | null

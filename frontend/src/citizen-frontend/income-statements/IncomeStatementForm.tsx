@@ -18,8 +18,11 @@ import {
   OtherIncome,
   otherIncomes
 } from 'lib-common/generated/api-types/incomestatement'
+import {
+  AttachmentId,
+  IncomeStatementId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -61,7 +64,7 @@ import { AttachmentType } from './types/common'
 import * as Form from './types/form'
 
 interface Props {
-  incomeStatementId: UUID | undefined
+  incomeStatementId: IncomeStatementId | undefined
   status: IncomeStatementStatus
   formData: Form.IncomeStatementForm
   showFormErrors: boolean
@@ -173,7 +176,7 @@ export default React.memo(
     )
 
     const onAttachmentDeleted = useCallback(
-      (id: UUID) =>
+      (id: AttachmentId) =>
         onChange((prev) => ({
           ...prev,
           attachments: prev.attachments.filter((a) => a.id !== id)

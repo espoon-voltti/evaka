@@ -41,7 +41,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { Repetition } from 'lib-common/reservations'
 import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
 import { Translations } from 'lib-customizations/citizen'
 
 export const MAX_TIME_RANGE = new TimeRange(
@@ -345,7 +344,7 @@ export function resetTimes(
   next: {
     repetition: Repetition
     selectedRange: FiniteDateRange
-    selectedChildren: UUID[]
+    selectedChildren: ChildId[]
   }
 ): StateOf<typeof timesUnion> {
   const { repetition, selectedRange, selectedChildren } = next
@@ -439,7 +438,7 @@ export function resetTimes(
 
 export function resetDay(
   calendarDays: ReservationResponseDay[],
-  selectedChildren: UUID[]
+  selectedChildren: ChildId[]
 ): StateOf<typeof day> {
   // Daily data for selected children on selected days
   const children = calendarDays.flatMap((day) =>
@@ -614,8 +613,14 @@ const getCommonTimeRanges = (
 }
 
 export class DayProperties {
-  private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
-  private readonly operationDaysByChild: Record<UUID, Set<number> | undefined>
+  private readonly reservableDaysByChild: Record<
+    ChildId,
+    Set<string> | undefined
+  >
+  private readonly operationDaysByChild: Record<
+    ChildId,
+    Set<number> | undefined
+  >
 
   minDate: LocalDate | undefined
   maxDate: LocalDate | undefined
@@ -624,8 +629,8 @@ export class DayProperties {
     public readonly calendarDays: ReservationResponseDay[],
     reservableRange: FiniteDateRange
   ) {
-    const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
-    const operationDaysByChild: Record<UUID, Set<number> | undefined> = {}
+    const reservableDaysByChild: Record<ChildId, Set<string> | undefined> = {}
+    const operationDaysByChild: Record<ChildId, Set<number> | undefined> = {}
     const holidays = new Set<string>()
 
     let minDate: LocalDate | undefined = undefined
@@ -671,14 +676,14 @@ export class DayProperties {
 
   isOperationalDayForAnyChild(
     dayOfWeek: number,
-    selectedChildren: string[]
+    selectedChildren: ChildId[]
   ): boolean {
     return selectedChildren.some((childId) =>
       this.operationDaysByChild[childId]?.has(dayOfWeek)
     )
   }
 
-  getReservableDatesInRangeForChild(range: FiniteDateRange, childId: UUID) {
+  getReservableDatesInRangeForChild(range: FiniteDateRange, childId: ChildId) {
     const reservableDays = this.reservableDaysByChild[childId]
     if (!reservableDays) return []
 

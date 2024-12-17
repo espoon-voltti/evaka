@@ -8,7 +8,7 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
-import { UUID } from 'lib-common/types'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 
 import { FixedSpaceRow } from '../layout/flex-helpers'
 
@@ -27,7 +27,7 @@ const DownloadButton = styled.button`
 
 interface FileDownloadButtonProps {
   file: Attachment
-  getFileUrl: (fileId: UUID, fileName: string) => string
+  getFileUrl: (fileId: AttachmentId, fileName: string) => string
   afterOpen?: () => void
   icon?: IconDefinition | boolean
   'data-qa'?: string

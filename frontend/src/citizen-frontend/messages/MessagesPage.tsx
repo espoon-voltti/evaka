@@ -18,8 +18,8 @@ import { useUser } from 'citizen-frontend/auth/state'
 import { useTranslation } from 'citizen-frontend/localization'
 import { focusElementAfterDelay } from 'citizen-frontend/utils/focus'
 import { combine } from 'lib-common/api'
+import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { NotificationsContext } from 'lib-components/Notifications'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
@@ -81,7 +81,7 @@ export default React.memo(function MessagesPage() {
     [navigate]
   )
 
-  const params = useParams<{ threadId: UUID | undefined }>()
+  const params = useParams<{ threadId: MessageThreadId | undefined }>()
   useEffect(() => {
     setSelectedThread(params.threadId)
   }, [setSelectedThread, params.threadId])
@@ -89,7 +89,7 @@ export default React.memo(function MessagesPage() {
   const threadView = useRef<ThreadViewApi>(null)
 
   const selectThread = useCallback(
-    (threadId: UUID | undefined) => {
+    (threadId: MessageThreadId | undefined) => {
       if (!threadId) {
         void navigate('/messages')
       } else {

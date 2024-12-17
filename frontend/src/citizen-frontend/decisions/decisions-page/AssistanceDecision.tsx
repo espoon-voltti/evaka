@@ -12,8 +12,8 @@ import {
   AssistanceNeedDecisionStatus,
   UnitInfoBasics
 } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -25,7 +25,7 @@ import { faFileAlt } from 'lib-icons'
 import { useTranslation } from '../../localization'
 
 interface Props {
-  id: UUID
+  id: AssistanceNeedDecisionId
   decisionMade: LocalDate
   assistanceLevels: AssistanceLevel[]
   validityPeriod: DateRange

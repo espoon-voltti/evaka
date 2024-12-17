@@ -6,8 +6,10 @@ import React, { useCallback } from 'react'
 
 import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import {
+  AttachmentId,
+  IncomeStatementId
+} from 'lib-common/generated/api-types/shared'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 
@@ -22,10 +24,10 @@ export default React.memo(function Attachments({
   onUploaded,
   onDeleted
 }: {
-  incomeStatementId: UUID | undefined
+  incomeStatementId: IncomeStatementId | undefined
   attachments: Attachment[]
   onUploaded: (attachment: Attachment) => void
-  onDeleted: (attachmentId: UUID) => void
+  onDeleted: (attachmentId: AttachmentId) => void
 }) {
   const handleUpload = useCallback(
     async (file: File, onUploadProgress: (percentage: number) => void) =>

@@ -10,7 +10,6 @@ import { renderResult } from 'citizen-frontend/async-rendering'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Pagination from 'lib-components/Pagination'
 import Main from 'lib-components/atoms/Main'
 import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
@@ -42,7 +41,7 @@ const Buttons = styled.div`
   justify-content: flex-end;
 `
 
-function getLink(id: UUID, mode: 'view' | 'edit') {
+function getLink(id: IncomeStatementId, mode: 'view' | 'edit') {
   return `/income/${id}/${mode === 'edit' ? 'edit' : ''}`
 }
 
@@ -57,7 +56,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
   const navigate = useNavigate()
 
   const onEdit = useCallback(
-    (id: UUID) => () => navigate(getLink(id, 'edit')),
+    (id: IncomeStatementId) => () => navigate(getLink(id, 'edit')),
     [navigate]
   )
 

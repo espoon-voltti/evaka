@@ -15,11 +15,11 @@ import {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
 } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import {
@@ -156,13 +156,13 @@ export type BackgroundHighlightType =
 interface DailyChildGroupElement {
   type: DailyChildGroupElementType
   text: string
-  childId: UUID
+  childId: ChildId
 }
 
 interface GroupedDailyChildren {
   type: DailyChildGroupElementType
   text: string
-  childIds: UUID[]
+  childIds: ChildId[]
   key: string
 }
 
