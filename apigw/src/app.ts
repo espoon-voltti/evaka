@@ -79,7 +79,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     } else if (req.url.startsWith('/internal/auth/evaka/')) {
       req.url = req.url.replace(
         '/internal/auth/evaka/',
-        '/auth/keycloak-employee/'
+        '/employee/auth/keycloak/'
       )
     } else if (req.url === '/internal/auth/mobile') {
       req.url = '/employee-mobile/auth/finish-pairing'
