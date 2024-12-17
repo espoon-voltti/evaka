@@ -368,7 +368,6 @@ export interface GroupOccupancies {
 */
 export interface GroupStaffAttendance {
   count: number
-  countOther: number
   date: LocalDate
   groupId: GroupId
   updated: HelsinkiDateTime
@@ -475,7 +474,6 @@ export interface StaffAttendanceForDates {
 */
 export interface StaffAttendanceUpdate {
   count: number | null
-  countOther: number | null
   date: LocalDate
   groupId: GroupId
 }
