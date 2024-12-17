@@ -232,7 +232,7 @@ import org.springframework.web.multipart.MultipartFile
 
 private val fakeAdmin =
     AuthenticatedUser.Employee(
-        id = EmployeeId(UUID.fromString("00000000-0000-0000-0000-000000000001")),
+        id = EmployeeId(UUID.fromString("00000000-0000-4000-8000-000000000001")),
         roles = setOf(UserRole.ADMIN),
     )
 
