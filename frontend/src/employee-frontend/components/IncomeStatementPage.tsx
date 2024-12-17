@@ -17,9 +17,13 @@ import {
   IncomeStatement,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
-import { AttachmentId, PersonId } from 'lib-common/generated/api-types/shared'
+import {
+  AttachmentId,
+  IncomeStatementId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
-import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -56,7 +60,8 @@ const setIncomeStatementHandledResult = wrapResult(setIncomeStatementHandled)
 
 export default React.memo(function IncomeStatementPage() {
   const personId = useIdRouteParam<PersonId>('personId')
-  const { incomeStatementId } = useRouteParams(['incomeStatementId'])
+  const incomeStatementId =
+    useIdRouteParam<IncomeStatementId>('incomeStatementId')
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 

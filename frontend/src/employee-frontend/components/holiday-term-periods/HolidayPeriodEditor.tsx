@@ -5,7 +5,9 @@
 import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router'
 
-import { useQueryResult } from 'lib-common/query'
+import { HolidayPeriodId } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 
@@ -16,10 +18,14 @@ import { holidayPeriodQuery } from './queries'
 
 export default React.memo(function HolidayPeriodEditor() {
   const { id } = useRouteParams(['id'])
+  const holidayPeriodId =
+    id === 'new' ? undefined : fromUuid<HolidayPeriodId>(id)
 
-  const holidayPeriod = useQueryResult(holidayPeriodQuery({ id }), {
-    enabled: id !== 'new'
-  })
+  const holidayPeriod = useQueryResult(
+    holidayPeriodId
+      ? holidayPeriodQuery({ id: holidayPeriodId })
+      : constantQuery(null)
+  )
 
   const navigate = useNavigate()
 
@@ -31,19 +37,19 @@ export default React.memo(function HolidayPeriodEditor() {
   return (
     <Container>
       <ContentArea opaque>
-        {id === 'new' ? (
-          <HolidayPeriodForm
-            onSuccess={navigateToList}
-            onCancel={navigateToList}
-          />
-        ) : (
-          renderResult(holidayPeriod, (holiday) => (
+        {renderResult(holidayPeriod, (holiday) =>
+          holiday === null ? (
+            <HolidayPeriodForm
+              onSuccess={navigateToList}
+              onCancel={navigateToList}
+            />
+          ) : (
             <HolidayPeriodForm
               holidayPeriod={holiday}
               onSuccess={navigateToList}
               onCancel={navigateToList}
             />
-          ))
+          )
         )}
       </ContentArea>
     </Container>

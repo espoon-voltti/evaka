@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { isLoading, wrapResult } from 'lib-common/api'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import { UUID } from 'lib-common/types'
+import { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -50,8 +50,8 @@ const DevicesTable = React.memo(function DevicesTable({
   onDeleteDevice
 }: {
   rows: MobileDevice[]
-  onEditDevice: (deviceId: UUID) => void
-  onDeleteDevice: (deviceId: UUID) => void
+  onEditDevice: (deviceId: MobileDeviceId) => void
+  onDeleteDevice: (deviceId: MobileDeviceId) => void
 }) {
   const { i18n } = useTranslation()
 
@@ -175,7 +175,9 @@ export default React.memo(function UnitMobileDevices({ canAddNew }: Props) {
     () => getMobileDevicesResult({ unitId }),
     [unitId]
   )
-  const [mobileId, setMobileId] = useState<UUID | undefined>(undefined)
+  const [mobileId, setMobileId] = useState<MobileDeviceId | undefined>(
+    undefined
+  )
 
   const { uiMode, toggleUiMode, clearUiMode, startPairing } =
     useContext(UIContext)
@@ -189,7 +191,7 @@ export default React.memo(function UnitMobileDevices({ canAddNew }: Props) {
   }, [clearUiMode, mobileId, reloadMobileDevices])
 
   const openRemoveMobileDeviceModal = useCallback(
-    (id: UUID) => {
+    (id: MobileDeviceId) => {
       setMobileId(id)
       toggleUiMode(`remove-daycare-mobile-device-${unitId}`)
     },
@@ -197,7 +199,7 @@ export default React.memo(function UnitMobileDevices({ canAddNew }: Props) {
   )
 
   const openEditMobileDeviceModal = useCallback(
-    (id: UUID) => {
+    (id: MobileDeviceId) => {
       setMobileId(id)
       toggleUiMode(`edit-daycare-mobile-device-${unitId}`)
     },

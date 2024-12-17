@@ -11,6 +11,7 @@ import {
   VoucherValueDecisionSortParam,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
@@ -71,7 +72,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
     valueDecisions: { searchFilters, debouncedSearchTerms }
   } = useContext(InvoicingUiContext)
 
-  const checkedState = useCheckedState()
+  const checkedState = useCheckedState<VoucherValueDecisionId>()
 
   const loadDecisions = useCallback(() => {
     const { startDate, endDate } = searchFilters
@@ -129,9 +130,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
     }
   }, [decisions, checkedState.checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const checkedIds = Object.keys(checkedState.checked).filter(
-    (id) => !!checkedState.checked[id]
-  )
+  const checkedIds = checkedState.getCheckedIds()
 
   return (
     <Container data-qa="voucher-value-decisions-page">
@@ -172,7 +171,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
             searchFilters.statuses.length === 1 &&
             ['DRAFT', 'IGNORED'].includes(searchFilters.statuses[0])
           }
-          checked={checkedState.checked}
+          isChecked={checkedState.isChecked}
           toggleChecked={checkedState.toggleChecked}
           checkAll={checkAll}
           clearChecked={checkedState.clearChecked}

@@ -10,10 +10,13 @@ import {
   Attachment,
   PedagogicalDocument
 } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { AttachmentId, ChildId } from 'lib-common/generated/api-types/shared'
+import {
+  AttachmentId,
+  ChildId,
+  PedagogicalDocumentId
+} from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -36,7 +39,7 @@ const updatePedagogicalDocumentResult = wrapResult(updatePedagogicalDocument)
 const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 interface Props {
-  id: UUID
+  id: PedagogicalDocumentId
   childId: ChildId
   attachments: Attachment[]
   description: string

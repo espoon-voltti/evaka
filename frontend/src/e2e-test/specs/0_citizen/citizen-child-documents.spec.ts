@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
@@ -29,11 +30,11 @@ import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let child: DevPerson
-let templateIdVasu: UUID
+let templateIdVasu: DocumentTemplateId
 let documentIdVasu: UUID
-let templateIdHojks: UUID
+let templateIdHojks: DocumentTemplateId
 let documentIdHojks: UUID
-let templateIdPed: UUID
+let templateIdPed: DocumentTemplateId
 let documentIdPed: UUID
 let header: CitizenHeader
 

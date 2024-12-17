@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
@@ -68,13 +69,13 @@ export const staffDepartureMutation = mutation({
 })
 
 export const externalStaffArrivalMutation = mutation({
-  api: (arg: Arg0<typeof markExternalArrival> & { unitId: UUID }) =>
+  api: (arg: Arg0<typeof markExternalArrival> & { unitId: DaycareId }) =>
     markExternalArrival(arg),
   invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
 })
 
 export const externalStaffDepartureMutation = mutation({
-  api: (arg: Arg0<typeof markExternalDeparture> & { unitId: UUID }) =>
+  api: (arg: Arg0<typeof markExternalDeparture> & { unitId: DaycareId }) =>
     markExternalDeparture(arg),
   invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
 })

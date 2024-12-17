@@ -19,8 +19,7 @@ import {
   Fixture,
   testAdult,
   testCareArea,
-  testDaycare,
-  uuidv4
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createFosterParent,
@@ -65,7 +64,7 @@ beforeEach(async () => {
   await createFosterParent({
     body: [
       {
-        id: uuidv4(),
+        id: randomId(),
         childId: fosterChild.id,
         parentId: fosterParent.id,
         validDuring: new DateRange(mockedDate, mockedDate),
@@ -157,7 +156,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   await createFosterParent({
     body: [
       {
-        id: uuidv4(),
+        id: randomId(),
         childId: fosterChild.id,
         parentId: fosterParent.id,
         validDuring: new DateRange(mockedDate, mockedDate),

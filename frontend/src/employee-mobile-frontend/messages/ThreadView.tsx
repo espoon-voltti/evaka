@@ -22,11 +22,14 @@ import {
   MessageThread,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  MessageAccountId,
+  MessageThreadId
+} from 'lib-common/generated/api-types/shared'
 import { formatAccountNames } from 'lib-common/messaging'
 import { constantQuery, useChainedQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
@@ -60,7 +63,7 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
   unitOrGroup: UnitOrGroup
 }) {
   const navigate = useNavigate()
-  const { threadId } = useRouteParams(['threadId'])
+  const threadId = useIdRouteParam<MessageThreadId>('threadId')
   const { groupAccount } = useContext(MessageContext)
 
   const selectedAccount = groupAccount(
@@ -101,7 +104,7 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
 
 interface ReceivedThreadProps {
   unitId: DaycareId
-  accountId: UUID
+  accountId: MessageAccountId
   thread: MessageThread
   onBack: () => void
 }

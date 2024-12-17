@@ -10,6 +10,8 @@ import {
   MessageAccount,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
+import { MessageThreadId } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
 import { formatPreferredName } from 'lib-common/names'
 import Pagination from 'lib-components/Pagination'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -148,7 +150,7 @@ export default React.memo(function ThreadListContainer({
     () =>
       messageDrafts.map((value) =>
         value.map((draft) => ({
-          id: draft.id,
+          id: fromUuid<MessageThreadId>(draft.id), // Hack
           title: draft.title,
           content: draft.content,
           urgent: draft.urgent,

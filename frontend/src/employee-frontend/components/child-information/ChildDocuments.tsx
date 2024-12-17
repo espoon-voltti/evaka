@@ -14,7 +14,10 @@ import {
   ChildDocumentSummaryWithPermittedActions,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  DocumentTemplateId
+} from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useMutationResult,
@@ -115,7 +118,7 @@ const CreationModal = React.memo(function CreationModal({
   )
   const navigate = useNavigate()
 
-  const form = required(oneOf<UUID>())
+  const form = required(oneOf<DocumentTemplateId>())
   const bind = useForm(
     form,
     () => ({

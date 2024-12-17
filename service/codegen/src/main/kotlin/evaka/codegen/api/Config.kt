@@ -12,7 +12,6 @@ import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.MessageReceiver
 import fi.espoo.evaka.pairing.MobileDeviceDetails
 import fi.espoo.evaka.pis.SystemController
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.DateRange
@@ -70,56 +69,6 @@ object Imports {
     val createUrlSearchParams = TsImport.Named(LibCommon / "api.ts", "createUrlSearchParams")
     val devApiError = TsImport.Named(E2ETest / "dev-api", "DevApiError")
 }
-
-// For lenient id types, a string type alias is generated: `type FooId = string`.
-// For others, a strict type is generated: `type FooId = Id<'Foo'>`.
-val lenientIdTypes =
-    setOf(
-        DatabaseTable.DaycareAssistance::class,
-        DatabaseTable.DaycareCaretaker::class,
-        DatabaseTable.Decision::class,
-        DatabaseTable.DocumentTemplate::class,
-        DatabaseTable.EmployeePin::class,
-        DatabaseTable.FamilyContact::class,
-        DatabaseTable.FeeAlteration::class,
-        DatabaseTable.FeeDecision::class,
-        DatabaseTable.FeeThresholds::class,
-        DatabaseTable.FosterParent::class,
-        DatabaseTable.GroupPlacement::class,
-        DatabaseTable.HolidayPeriod::class,
-        DatabaseTable.HolidayQuestionnaire::class,
-        DatabaseTable.Income::class,
-        DatabaseTable.IncomeNotification::class,
-        DatabaseTable.IncomeStatement::class,
-        DatabaseTable.Invoice::class,
-        DatabaseTable.InvoiceCorrection::class,
-        DatabaseTable.InvoiceRow::class,
-        DatabaseTable.KoskiStudyRight::class,
-        DatabaseTable.Message::class,
-        DatabaseTable.MessageAccount::class,
-        DatabaseTable.MessageContent::class,
-        DatabaseTable.MessageDraft::class,
-        DatabaseTable.MessageRecipients::class,
-        DatabaseTable.MessageThread::class,
-        DatabaseTable.MessageThreadFolder::class,
-        DatabaseTable.MobileDevice::class,
-        DatabaseTable.OtherAssistanceMeasure::class,
-        DatabaseTable.Pairing::class,
-        DatabaseTable.Parentship::class,
-        DatabaseTable.Partnership::class,
-        DatabaseTable.Payment::class,
-        DatabaseTable.PedagogicalDocument::class,
-        DatabaseTable.PlacementPlan::class,
-        DatabaseTable.PreschoolAssistance::class,
-        DatabaseTable.ServiceApplication::class,
-        DatabaseTable.ServiceNeedOptionVoucherValue::class,
-        DatabaseTable.StaffAttendance::class,
-        DatabaseTable.StaffAttendanceRealtime::class,
-        DatabaseTable.StaffAttendanceExternal::class,
-        DatabaseTable.StaffAttendancePlan::class,
-        DatabaseTable.StaffOccupancyCoefficient::class,
-        DatabaseTable.VoucherValueDecision::class,
-    )
 
 val idTypeAliases = mapOf("PersonId" to listOf("ChildId"))
 

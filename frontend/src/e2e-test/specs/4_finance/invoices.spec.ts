@@ -4,7 +4,7 @@
 
 import { DevEmployee, DevPlacement } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import { FeeDecisionId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -105,7 +105,7 @@ describe('Invoices', () => {
       codebtor,
       FiniteDateRange.ofMonth(today.subMonths(1)),
       now,
-      'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+      fromUuid<FeeDecisionId>('bcc42d48-765d-4fe1-bc90-7a7b4c8205fe'),
       null,
       123123123
     )
@@ -261,7 +261,7 @@ describe('Invoices', () => {
       codebtor,
       FiniteDateRange.ofMonth(today.subMonths(1)),
       now,
-      'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+      fromUuid<FeeDecisionId>('bcc42d48-765d-4fe1-bc90-7a7b4c8205fe'),
       null,
       123123123
     )

@@ -5,11 +5,14 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  StaffAttendanceExternalId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import {
   MutateButton,
   cancelMutation
@@ -36,7 +39,8 @@ export default React.memo(function ExternalStaffMemberPage({
   unitId: DaycareId
 }) {
   const navigate = useNavigate()
-  const { attendanceId } = useRouteParams(['attendanceId'])
+  const attendanceId =
+    useIdRouteParam<StaffAttendanceExternalId>('attendanceId')
   const { i18n } = useTranslation()
 
   const staffAttendanceResponse = useQueryResult(

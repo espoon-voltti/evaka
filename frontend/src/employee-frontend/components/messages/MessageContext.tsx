@@ -27,9 +27,16 @@ import {
   PagedSentMessages,
   PagedMessageCopies
 } from 'lib-common/generated/api-types/messaging'
-import { ApplicationId, PersonId } from 'lib-common/generated/api-types/shared'
+import {
+  ApplicationId,
+  DaycareId,
+  MessageAccountId,
+  MessageId,
+  MessageThreadId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { fromNullableUuid } from 'lib-common/id-type'
+import { fromNullableUuid, fromUuid } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
@@ -83,7 +90,7 @@ export interface MessagesState {
   serviceWorkerAccount: AuthorizedMessageAccount | undefined
   personalAccount: AuthorizedMessageAccount | undefined
   groupAccounts: GroupMessageAccount[]
-  unitOptions: SelectOption[]
+  unitOptions: SelectOption<DaycareId>[]
   selectedDraft: DraftContent | undefined
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
@@ -181,7 +188,9 @@ export const MessageContextProvider = React.memo(
     const accountId = searchParams.get('accountId')
     const messageBox = searchParams.get('messageBox')
     const unitId = searchParams.get('unitId')
-    const threadId = searchParams.get('threadId')
+    const threadId = fromNullableUuid<MessageThreadId>(
+      searchParams.get('threadId')
+    )
     const prefilledTitle = searchParams.get('title')
     const prefilledRecipient = fromNullableUuid<PersonId>(
       searchParams.get('recipient')
@@ -355,7 +364,7 @@ export const MessageContextProvider = React.memo(
       []
     )
     const loadReceivedMessages = useRestApi(
-      (accountId: UUID, page: number) =>
+      (accountId: MessageAccountId, page: number) =>
         getReceivedMessagesResult({ accountId, page }),
       setReceivedMessagesResult
     )
@@ -375,7 +384,7 @@ export const MessageContextProvider = React.memo(
       []
     )
     const loadSentMessages = useRestApi(
-      (accountId: UUID, page: number) =>
+      (accountId: MessageAccountId, page: number) =>
         getSentMessagesResult({ accountId, page }),
       setSentMessagesResult
     )
@@ -390,7 +399,7 @@ export const MessageContextProvider = React.memo(
       []
     )
     const loadMessageCopies = useRestApi(
-      (accountId: UUID, page: number) =>
+      (accountId: MessageAccountId, page: number) =>
         getMessageCopiesResult({ accountId, page }),
       setMessageCopiesResult
     )
@@ -405,7 +414,7 @@ export const MessageContextProvider = React.memo(
       []
     )
     const loadArchivedMessages = useRestApi(
-      (accountId: UUID, page: number) =>
+      (accountId: MessageAccountId, page: number) =>
         getArchivedMessagesResult({ accountId, page }),
       setArchivedMessagesResult
     )
@@ -413,7 +422,7 @@ export const MessageContextProvider = React.memo(
     const [singleThread, setSingleThread] = useState<Result<MessageThread>>()
 
     const loadThread = useRestApi(
-      (accountId: UUID, threadId: UUID | null) =>
+      (accountId: MessageAccountId, threadId: MessageThreadId | null) =>
         threadId
           ? getThreadResult({ accountId, threadId })
           : Promise.resolve(Failure.of({ message: 'threadId is null' })),
@@ -466,29 +475,35 @@ export const MessageContextProvider = React.memo(
       () =>
         sentMessages.map((value) =>
           selectedAccount
-            ? value.map((message) => ({
-                id: message.contentId,
-                type: message.type,
-                title: message.threadTitle,
-                urgent: message.urgent,
-                sensitive: message.sensitive,
-                isCopy: false,
-                participants: message.recipientNames,
-                children: [],
-                messages: [
-                  {
-                    id: message.contentId,
-                    threadId: message.contentId,
-                    sender: { ...selectedAccount.account },
-                    sentAt: message.sentAt,
-                    recipients: [], // recipientNames should be used when viewing sent messages
-                    readAt: HelsinkiDateTime.now(),
-                    content: message.content,
-                    attachments: message.attachments,
-                    recipientNames: message.recipientNames
-                  }
-                ]
-              }))
+            ? value.map((message) => {
+                const fakeMessageId = fromUuid<MessageId>(message.contentId)
+                const fakeThreadId = fromUuid<MessageThreadId>(
+                  message.contentId
+                )
+                return {
+                  id: fakeThreadId,
+                  type: message.type,
+                  title: message.threadTitle,
+                  urgent: message.urgent,
+                  sensitive: message.sensitive,
+                  isCopy: false,
+                  participants: message.recipientNames,
+                  children: [],
+                  messages: [
+                    {
+                      id: fakeMessageId,
+                      threadId: fakeThreadId,
+                      sender: { ...selectedAccount.account },
+                      sentAt: message.sentAt,
+                      recipients: [], // recipientNames should be used when viewing sent messages
+                      readAt: HelsinkiDateTime.now(),
+                      content: message.content,
+                      attachments: message.attachments,
+                      recipientNames: message.recipientNames
+                    }
+                  ]
+                }
+              })
             : []
         ),
       [selectedAccount, sentMessages]

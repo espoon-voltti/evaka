@@ -101,15 +101,15 @@ export interface DaycareAclRowEmployee {
   temporary: boolean
 }
 
-export type DaycareAssistanceId = string
+export type DaycareAssistanceId = Id<'DaycareAssistance'>
 
-export type DaycareCaretakerId = string
+export type DaycareCaretakerId = Id<'DaycareCaretaker'>
 
 export type DaycareId = Id<'Daycare'>
 
-export type DecisionId = string
+export type DecisionId = Id<'Decision'>
 
-export type DocumentTemplateId = string
+export type DocumentTemplateId = Id<'DocumentTemplate'>
 
 /**
 * Generated from fi.espoo.evaka.shared.security.EmployeeFeatures
@@ -144,19 +144,19 @@ export type EmployeeId = Id<'Employee'>
 
 export type EvakaUserId = Id<'EvakaUser'>
 
-export type FeeAlterationId = string
+export type FeeAlterationId = Id<'FeeAlteration'>
 
-export type FeeDecisionId = string
+export type FeeDecisionId = Id<'FeeDecision'>
 
-export type FeeThresholdsId = string
+export type FeeThresholdsId = Id<'FeeThresholds'>
 
-export type FosterParentId = string
+export type FosterParentId = Id<'FosterParent'>
 
 export type GroupId = Id<'Group'>
 
 export type GroupNoteId = Id<'GroupNote'>
 
-export type GroupPlacementId = string
+export type GroupPlacementId = Id<'GroupPlacement'>
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -166,31 +166,31 @@ export interface HelsinkiDateTimeRange {
   start: HelsinkiDateTime
 }
 
-export type HolidayPeriodId = string
+export type HolidayPeriodId = Id<'HolidayPeriod'>
 
-export type HolidayQuestionnaireId = string
+export type HolidayQuestionnaireId = Id<'HolidayQuestionnaire'>
 
-export type IncomeId = string
+export type IncomeId = Id<'Income'>
 
-export type IncomeStatementId = string
+export type IncomeStatementId = Id<'IncomeStatement'>
 
-export type InvoiceCorrectionId = string
+export type InvoiceCorrectionId = Id<'InvoiceCorrection'>
 
-export type InvoiceId = string
+export type InvoiceId = Id<'Invoice'>
 
-export type InvoiceRowId = string
+export type InvoiceRowId = Id<'InvoiceRow'>
 
-export type MessageAccountId = string
+export type MessageAccountId = Id<'MessageAccount'>
 
-export type MessageContentId = string
+export type MessageContentId = Id<'MessageContent'>
 
-export type MessageDraftId = string
+export type MessageDraftId = Id<'MessageDraft'>
 
-export type MessageId = string
+export type MessageId = Id<'Message'>
 
-export type MessageThreadId = string
+export type MessageThreadId = Id<'MessageThread'>
 
-export type MobileDeviceId = string
+export type MobileDeviceId = Id<'MobileDevice'>
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.OfficialLanguage
@@ -202,17 +202,17 @@ export const officialLanguages = [
 
 export type OfficialLanguage = typeof officialLanguages[number]
 
-export type OtherAssistanceMeasureId = string
+export type OtherAssistanceMeasureId = Id<'OtherAssistanceMeasure'>
 
-export type PairingId = string
+export type PairingId = Id<'Pairing'>
 
-export type ParentshipId = string
+export type ParentshipId = Id<'Parentship'>
 
-export type PartnershipId = string
+export type PartnershipId = Id<'Partnership'>
 
-export type PaymentId = string
+export type PaymentId = Id<'Payment'>
 
-export type PedagogicalDocumentId = string
+export type PedagogicalDocumentId = Id<'PedagogicalDocument'>
 
 export type PersonId = Id<'Person'>
 
@@ -235,23 +235,23 @@ export type PilotFeature = typeof pilotFeatures[number]
 
 export type PlacementId = Id<'Placement'>
 
-export type PlacementPlanId = string
+export type PlacementPlanId = Id<'PlacementPlan'>
 
-export type PreschoolAssistanceId = string
+export type PreschoolAssistanceId = Id<'PreschoolAssistance'>
 
 export type PreschoolTermId = Id<'PreschoolTerm'>
 
-export type ServiceApplicationId = string
+export type ServiceApplicationId = Id<'ServiceApplication'>
 
 export type ServiceNeedId = Id<'ServiceNeed'>
 
 export type ServiceNeedOptionId = Id<'ServiceNeedOption'>
 
-export type ServiceNeedOptionVoucherValueId = string
+export type ServiceNeedOptionVoucherValueId = Id<'ServiceNeedOptionVoucherValue'>
 
-export type StaffAttendanceExternalId = string
+export type StaffAttendanceExternalId = Id<'StaffAttendanceExternal'>
 
-export type StaffAttendanceRealtimeId = string
+export type StaffAttendanceRealtimeId = Id<'StaffAttendanceRealtime'>
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.Translatable
@@ -278,7 +278,7 @@ export type UserRole =
   | 'SPECIAL_EDUCATION_TEACHER'
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
 
-export type VoucherValueDecisionId = string
+export type VoucherValueDecisionId = Id<'VoucherValueDecision'>
 
 export type ChildId = PersonId
 

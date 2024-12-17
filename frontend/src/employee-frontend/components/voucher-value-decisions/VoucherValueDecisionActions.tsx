@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { featureFlags } from 'lib-customizations/employee'
@@ -38,7 +39,7 @@ const ErrorMessage = styled.div`
 
 type Props = {
   statuses: VoucherValueDecisionStatus[]
-  checkedIds: string[]
+  checkedIds: VoucherValueDecisionId[]
   clearChecked: () => void
   loadDecisions: () => void
   onHandlerSelectModal: () => void

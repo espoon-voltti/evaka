@@ -10,9 +10,12 @@ import {
   CaretakerAmount,
   CaretakersResponse
 } from 'lib-common/generated/api-types/daycare'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareCaretakerId,
+  DaycareId,
+  GroupId
+} from 'lib-common/generated/api-types/shared'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -93,7 +96,7 @@ export default React.memo(function GroupCaretakers() {
     loadData()
   }, [unitId, groupId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const deleteRow = (id: UUID) => {
+  const deleteRow = (id: DaycareCaretakerId) => {
     void removeCaretakersResult({ daycareId: unitId, groupId, id }).then(
       loadData
     )

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import { ParentshipId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { evakaUserId, fromUuid } from 'lib-common/id-type'
+import { evakaUserId, fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -16,8 +16,7 @@ import {
   testAdultRestricted,
   testCareArea,
   testChildZeroYearOld,
-  testDaycare,
-  uuidv4
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -191,7 +190,7 @@ describe('Employee - Head of family details', () => {
 
   test('Manually added income is shown in family overview', async () => {
     await Fixture.fridgeChild({
-      id: uuidv4(),
+      id: randomId<ParentshipId>(),
       childId: child.id,
       headOfChild: regularPerson.id,
       startDate: mockToday,

@@ -7,14 +7,17 @@ import { useNavigate } from 'react-router'
 
 import { combine, Loading, Result } from 'lib-common/api'
 import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  IncomeStatementId
+} from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 
@@ -41,7 +44,7 @@ interface EditorState {
 
 function useInitialEditorState(
   childId: ChildId,
-  id: UUID | undefined
+  id: IncomeStatementId | undefined
 ): Result<EditorState> {
   const incomeStatement = useQueryResult(
     id
@@ -74,7 +77,9 @@ export default React.memo(function ChildIncomeStatementEditor() {
   const childId = useIdRouteParam<ChildId>('childId')
   const navigate = useNavigate()
   const incomeStatementId =
-    params.incomeStatementId === 'new' ? undefined : params.incomeStatementId
+    params.incomeStatementId === 'new'
+      ? undefined
+      : fromUuid<IncomeStatementId>(params.incomeStatementId)
 
   const [state, setState] = useState<Result<EditorState>>(Loading.of())
   const initialEditorState = useInitialEditorState(childId, incomeStatementId)

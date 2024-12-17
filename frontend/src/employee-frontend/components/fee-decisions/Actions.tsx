@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { FeeDecisionStatus } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -33,7 +34,7 @@ const ErrorMessage = styled.div`
 
 type Props = {
   statuses: FeeDecisionStatus[]
-  checkedIds: string[]
+  checkedIds: FeeDecisionId[]
   clearChecked: () => void
   loadDecisions: () => void
   onHandlerSelectModal: () => void

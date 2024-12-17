@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
+import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Pagination from 'lib-components/Pagination'
@@ -50,7 +51,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
   onRemoveIncomeStatement
 }: {
   items: IncomeStatement[]
-  onRemoveIncomeStatement: (id: UUID) => void
+  onRemoveIncomeStatement: (id: IncomeStatementId) => void
 }) {
   const t = useTranslation()
   const navigate = useNavigate()
@@ -124,7 +125,7 @@ type DeletionState =
     }
   | {
       status: 'confirming' | 'deleting'
-      rowToDelete: UUID
+      rowToDelete: IncomeStatementId
     }
 
 export default React.memo(function IncomeStatements() {
@@ -147,7 +148,7 @@ export default React.memo(function IncomeStatements() {
   })
 
   const onDelete = useCallback(
-    (id: UUID) => {
+    (id: IncomeStatementId) => {
       setDeletionState({ status: 'deleting', rowToDelete: id })
       deleteIncomeStatement({ id })
         .then(() => {

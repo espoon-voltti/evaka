@@ -13,7 +13,6 @@ import {
   testCareArea2,
   testDaycare2,
   Fixture,
-  uuidv4,
   familyWithTwoGuardians,
   testDaycare
 } from '../../dev-api/fixtures'
@@ -25,7 +24,8 @@ import {
   DevCareArea,
   DevDaycare,
   DevEmployee,
-  DevPerson
+  DevPerson,
+  StaffAttendancePlanId
 } from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
 import { waitUntilEqual } from '../../utils'
@@ -189,7 +189,7 @@ describe('Realtime staff attendances', () => {
   describe('Group staff attendances', () => {
     test('Attendance is shown on week view and day modal', async () => {
       await Fixture.staffAttendancePlan({
-        id: uuidv4(),
+        id: randomId<StaffAttendancePlanId>(),
         employeeId: groupStaff.id,
         startTime: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
         endTime: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
@@ -324,7 +324,7 @@ describe('Realtime staff attendances', () => {
       }).save()
 
       await Fixture.staffAttendancePlan({
-        id: uuidv4(),
+        id: randomId<StaffAttendancePlanId>(),
         employeeId: otherGroupStaff.id,
         startTime: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
         endTime: yesterday.toHelsinkiDateTime(LocalTime.of(15, 0))

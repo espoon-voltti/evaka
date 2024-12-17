@@ -19,6 +19,7 @@ import {
   PaymentSortParam,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
+import { PaymentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
@@ -40,7 +41,7 @@ type State = {
   sortBy: PaymentSortParam
   sortDirection: SortDirection
   payments: Result<Payment[]>
-  checkedPayments: Record<string, true>
+  checkedPayments: Record<PaymentId, true>
   showModal: boolean
 }
 
@@ -65,7 +66,7 @@ const useActions = (setState: Dispatch<SetStateAction<State>>) =>
         setState((s) => ({ ...s, sortDirection })),
       openModal: () => setState((s) => ({ ...s, showModal: true })),
       closeModal: () => setState((s) => ({ ...s, showModal: false })),
-      toggleChecked: (payment: string) =>
+      toggleChecked: (payment: PaymentId) =>
         setState((s) => {
           if (s.checkedPayments[payment]) {
             const { [payment]: _, ...rest } = s.checkedPayments
@@ -185,7 +186,7 @@ export function usePaymentsState() {
     }) =>
       sendPaymentsResult({
         body: {
-          paymentIds: Object.keys(state.checkedPayments),
+          paymentIds: Object.keys(state.checkedPayments) as PaymentId[],
           paymentDate,
           dueDate
         }

@@ -15,6 +15,7 @@ import {
   PagedInvoiceSummaryResponses,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import YearMonth from 'lib-common/year-month'
@@ -60,7 +61,7 @@ interface Props {
   checked: Set<UUID>
   checkAll: () => void
   clearChecked: () => void
-  toggleChecked: (id: UUID) => void
+  toggleChecked: (id: InvoiceId) => void
 
   fullAreaSelection: boolean
   setFullAreaSelection: (checked: boolean) => void

@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -45,7 +45,7 @@ export default React.memo(function PersonalMobileDevicesPage() {
     []
   )
   const [openModal, setOpenModal] = useState<{
-    id: UUID
+    id: MobileDeviceId
     action: 'rename' | 'delete'
     currentName?: string
   }>()
@@ -136,7 +136,7 @@ const EditNameModal = React.memo(function EditNameModal({
   close,
   currentName
 }: {
-  id: UUID
+  id: MobileDeviceId
   close: () => void
   currentName: string
 }) {
@@ -173,7 +173,7 @@ const DeleteModal = React.memo(function DeleteModal({
   id,
   close
 }: {
-  id: UUID
+  id: MobileDeviceId
   close: () => void
 }) {
   const { i18n } = useTranslation()

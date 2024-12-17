@@ -4,24 +4,28 @@
 
 import { useState } from 'react'
 
-import { Checked } from './invoicing-ui'
+export type Checked<T extends string> = Partial<Record<T, boolean | undefined>>
 
-export function useCheckedState() {
-  const [checked, setChecked] = useState<Checked>({})
-  const toggleChecked = (id: string) =>
+export function useCheckedState<T extends string>() {
+  const [checked, setChecked] = useState<Checked<T>>({} as Checked<T>)
+  const toggleChecked = (id: T) =>
     setChecked({
       ...checked,
       [id]: !checked[id]
     })
-  const checkIds = (ids: string[]) => {
-    const idsChecked = ids.map((id) => ({ [id]: true }))
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  const checkIds = (ids: T[]) => {
+    const idsChecked = ids.map((id) => [id, true] as const)
     setChecked({
       ...checked,
-      ...Object.assign({}, ...idsChecked)
+      ...Object.fromEntries(idsChecked)
     })
   }
-  const clearChecked = () => setChecked({})
+  const clearChecked = () => setChecked({} as Checked<T>)
+  const isChecked = (id: T) => checked[id] ?? false
+  const getCheckedIds = () =>
+    Object.entries(checked).flatMap(([id, checked]) =>
+      checked ? [id as T] : []
+    )
 
-  return { checked, toggleChecked, checkIds, clearChecked }
+  return { isChecked, getCheckedIds, toggleChecked, checkIds, clearChecked }
 }

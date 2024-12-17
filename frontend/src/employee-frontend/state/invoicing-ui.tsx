@@ -40,8 +40,6 @@ import { areaQuery } from '../components/unit/queries'
 
 import { UserContext } from './user'
 
-export type Checked = Record<string, boolean>
-
 interface FeeDecisionSearchFilters {
   area: string[]
   unit?: DaycareId

@@ -4,6 +4,7 @@
 
 import {
   ApplicationId,
+  DecisionId,
   PlacementId
 } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
@@ -73,7 +74,7 @@ beforeEach(async () => {
       decisionFixture(admin.id, application.id, startDate, startDate),
       {
         ...decisionFixture(admin.id, application2.id, startDate, startDate),
-        id: randomId<ApplicationId>()
+        id: randomId<DecisionId>()
       }
     ]
   })

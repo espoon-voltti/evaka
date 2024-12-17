@@ -98,7 +98,7 @@ export default React.memo(function GroupTransferModal({
         form.group !== null
           ? {
               unitId,
-              groupPlacementId: groupPlacementId || '',
+              groupPlacementId: groupPlacementId!,
               body: {
                 groupId: form.group.id,
                 startDate: form.startDate

@@ -6,7 +6,10 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { Result } from 'lib-common/api'
 import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import {
+  MessageAccountId,
+  MessageDraftId
+} from 'lib-common/generated/api-types/shared'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -14,9 +17,12 @@ import { SaveDraftParams } from 'lib-components/messages/types'
 
 type SaveState = 'clean' | 'dirty' | 'saving'
 
-export type Draft = UpdatableDraftContent & { accountId: UUID }
+export type Draft = UpdatableDraftContent & { accountId: MessageAccountId }
 
-const draftToSaveParams = ({ accountId, ...content }: Draft, id: string) => ({
+const draftToSaveParams = (
+  { accountId, ...content }: Draft,
+  id: MessageDraftId
+) => ({
   content,
   accountId,
   draftId: id
@@ -27,22 +33,22 @@ export function useDraft({
   saveDraftRaw,
   initDraftRaw
 }: {
-  initialId: UUID | null
+  initialId: MessageDraftId | null
   saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
-  initDraftRaw: (accountId: string) => Promise<Result<string>>
+  initDraftRaw: (accountId: MessageAccountId) => Promise<Result<MessageDraftId>>
 }): {
-  draftId: string | null
+  draftId: MessageDraftId | null
   saveDraft: () => void
   wasModified: boolean
   state: 'clean' | 'dirty' | 'saving'
   setDraft: (draft: Draft) => void
 } {
   const [saveState, setSaveState] = useState<SaveState>('clean')
-  const [id, setId] = useState<UUID | null>(initialId)
+  const [id, setId] = useState<MessageDraftId | null>(initialId)
   const [draft, setDraft] = useState<Draft>()
   const [wasModified, setWasModified] = useState(false)
 
-  const initDraft = useRestApi(initDraftRaw, (res: Result<UUID>) => {
+  const initDraft = useRestApi(initDraftRaw, (res) => {
     if (res.isSuccess) {
       setId(res.value)
       setInitializing(false)

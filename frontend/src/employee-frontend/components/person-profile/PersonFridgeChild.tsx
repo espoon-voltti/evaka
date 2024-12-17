@@ -8,8 +8,7 @@ import { Link } from 'react-router'
 
 import { wrapResult } from 'lib-common/api'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import { ParentshipId, PersonId } from 'lib-common/generated/api-types/shared'
 import { getAge } from 'lib-common/utils/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -50,9 +49,10 @@ export default React.memo(function PersonFridgeChild({
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
   const [open, setOpen] = useState(startOpen)
-  const [selectedParentshipId, setSelectedParentshipId] = useState('')
+  const [selectedParentshipId, setSelectedParentshipId] =
+    useState<ParentshipId>()
 
-  const getFridgeChildById = (id: UUID) =>
+  const getFridgeChildById = (id: ParentshipId | undefined) =>
     fridgeChildren
       .map((ps) => ps.find(({ data }) => data.id === id)?.data)
       .getOrElse(undefined)
@@ -76,7 +76,7 @@ export default React.memo(function PersonFridgeChild({
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              deleteParentshipResult({ id: selectedParentshipId }).then(
+              deleteParentshipResult({ id: selectedParentshipId! }).then(
                 (res) => {
                   clearUiMode()
                   if (res.isFailure) {

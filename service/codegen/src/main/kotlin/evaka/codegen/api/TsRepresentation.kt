@@ -110,9 +110,6 @@ data class TsIdType(override val clazz: KClass<*>) : TsNamedType<Nothing> {
 
     override val name: String
         get() = tableName + "Id"
-
-    val strict: Boolean
-        get() = !lenientIdTypes.contains(clazz)
 }
 
 data class TsPlainObject(

@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
-import { UUID } from 'lib-common/types'
+import { InvoiceId } from 'lib-common/generated/api-types/shared'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { fontWeights } from 'lib-components/typography'
@@ -33,7 +33,7 @@ type Props = {
   status: InvoiceStatus
   canSend: boolean
   canDelete: boolean
-  checkedInvoices: Set<UUID>
+  checkedInvoices: Set<InvoiceId>
   clearCheckedInvoices: () => void
   checkedAreas: string[]
   fullAreaSelection: boolean

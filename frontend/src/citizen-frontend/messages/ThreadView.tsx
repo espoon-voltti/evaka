@@ -21,6 +21,7 @@ import {
   Message,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
+import { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
@@ -209,7 +210,7 @@ const SingleMessage = React.memo(
 )
 
 interface Props {
-  accountId: UUID
+  accountId: MessageAccountId
   thread: CitizenMessageThread.Regular
   allowedAccounts: Partial<Record<UUID, ChildMessageAccountAccess>>
   closeThread: () => void

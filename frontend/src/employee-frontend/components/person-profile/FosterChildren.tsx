@@ -8,9 +8,12 @@ import { Link } from 'react-router'
 
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { ChildId, PersonId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  FosterParentId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -58,15 +61,18 @@ export default React.memo(function FosterChildren({
   const { permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const [open, setOpen] = useState(startOpen)
-  const [editing, setEditing] = useState<{ id: UUID; validDuring: DateRange }>()
-  const [deleting, setDeleting] = useState<UUID>()
+  const [editing, setEditing] = useState<{
+    id: FosterParentId
+    validDuring: DateRange
+  }>()
+  const [deleting, setDeleting] = useState<FosterParentId>()
   const [fosterChildren, reloadFosterChildren] = useApiState(
     () => getFosterChildrenResult({ parentId: id }),
     [id]
   )
 
   const startEditing = useCallback(
-    (id: UUID, validDuring: DateRange) => {
+    (id: FosterParentId, validDuring: DateRange) => {
       toggleUiMode('edit-foster-child')
       setEditing({ id, validDuring })
     },
@@ -79,7 +85,7 @@ export default React.memo(function FosterChildren({
   }, [clearUiMode])
 
   const startDeleting = useCallback(
-    (id: UUID) => {
+    (id: FosterParentId) => {
       toggleUiMode('delete-foster-child')
       setDeleting(id)
     },
@@ -289,7 +295,7 @@ const FosterChildEditingModal = React.memo(function FosterChildEditingModal({
   reload,
   close
 }: {
-  id: UUID
+  id: FosterParentId
   initialValidDuring: DateRange
   reload: () => Promise<unknown>
   close: () => void
@@ -332,7 +338,7 @@ const FosterChildDeleteConfirmationModal = React.memo(
     reload,
     close
   }: {
-    id: UUID
+    id: FosterParentId
     reload: () => Promise<unknown>
     close: () => void
   }) {

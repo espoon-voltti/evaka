@@ -12,6 +12,7 @@ import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { required } from 'lib-common/form/form'
 import { useBoolean, useForm } from 'lib-common/form/hooks'
 import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
+import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -56,7 +57,7 @@ const ValidityEditor = React.memo(function ValidityEditor({
   validity,
   onClose
 }: {
-  id: UUID
+  id: DocumentTemplateId
   validity: DateRange
   onClose: () => void
 }) {

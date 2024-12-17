@@ -7,6 +7,7 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
+import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { OnEnterView } from 'lib-components/OnEnterView'
@@ -51,7 +52,7 @@ export default React.memo(function ThreadList({
   const { selectedThread, threads, loadMoreThreads, hasMoreThreads } =
     useContext(MessageContext)
   const { addTimedNotification } = useContext(NotificationsContext)
-  const [confirmDelete, setConfirmDelete] = useState<UUID>()
+  const [confirmDelete, setConfirmDelete] = useState<MessageThreadId>()
 
   return (
     <>

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { memo } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import Combobox, {
@@ -10,8 +10,8 @@ import Combobox, {
 } from 'lib-components/atoms/dropdowns/Combobox'
 import { BaseProps } from 'lib-components/utils'
 
-export interface SelectOption {
-  value: string
+export interface SelectOption<T extends string> {
+  value: T
   label: string
 }
 
@@ -27,19 +27,19 @@ const Container = styled.div<{
   }
 `
 
-const getItemLabel = ({ label }: SelectOption) => label
+const getItemLabel = ({ label }: SelectOption<string>) => label
 
-const Select = memo(function Select({
+function Select_<T extends string>({
   'data-qa': dataQa,
   className,
   fullWidth,
   ...rest
-}: ComboboxProps<SelectOption> & BaseProps) {
+}: ComboboxProps<SelectOption<T>> & BaseProps) {
   return (
     <Container fullWidth={fullWidth} data-qa={dataQa} className={className}>
       <Combobox getItemLabel={getItemLabel} fullWidth={fullWidth} {...rest} />
     </Container>
   )
-})
+}
 
-export default Select
+export default React.memo(Select_) as typeof Select_

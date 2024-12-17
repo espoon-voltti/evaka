@@ -18,9 +18,11 @@ import {
   PostMessageBody,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  MessageDraftId
+} from 'lib-common/generated/api-types/shared'
 import { cancelMutation, useMutation, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
@@ -81,7 +83,9 @@ const messageForm = mapped(
       familyDaycare: false
     }
     return {
-      messageContent: (draftId: UUID | null): PostMessageBody | undefined =>
+      messageContent: (
+        draftId: MessageDraftId | null
+      ): PostMessageBody | undefined =>
         selectedRecipients.length === 0 ||
         output.title === '' ||
         output.content === ''
@@ -121,7 +125,9 @@ export default React.memo(function MessageEditor({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [draftId, setDraftId] = useState<UUID | null>(draft?.id ?? null)
+  const [draftId, setDraftId] = useState<MessageDraftId | null>(
+    draft?.id ?? null
+  )
   const { mutateAsync: init } = useMutation(initDraftMutation)
   const { mutate: saveDraft, isPending: isSavingDraft } =
     useMutation(saveDraftMutation)

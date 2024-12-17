@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { InvoiceId } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
@@ -37,7 +38,7 @@ export const invoicesQuery = query({
 })
 
 export const invoiceDetailsQuery = query({
-  api: (id: UUID) => getInvoice({ id }),
+  api: (id: InvoiceId) => getInvoice({ id }),
   queryKey: queryKeys.invoiceDetails
 })
 
