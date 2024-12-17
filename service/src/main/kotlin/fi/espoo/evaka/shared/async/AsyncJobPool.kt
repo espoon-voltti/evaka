@@ -216,6 +216,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
             metrics.get()?.failedJobs?.increment()
             Span.current().setStatus(StatusCode.ERROR)
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
+            Span.current().recordException(exception)
             logger.error(exception, logMeta) { "Failed to run async job $job" }
         } finally {
             MdcKey.USER_ID_HASH.unset()
