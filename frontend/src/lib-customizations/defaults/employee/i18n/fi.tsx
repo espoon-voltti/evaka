@@ -4085,7 +4085,7 @@ export const fi = {
         'Raportti näyttää varhaiskasvatuspaikkatakuulla olevat lapset'
     },
     placementSketching: {
-      title: 'Sijoitusten hahmotteluraportti',
+      title: 'Esiopetuksen sijoitusten hahmotteluraportti',
       description:
         'Raportti saapuneista esiopetushakemuksista sijoittamisen avuksi',
       placementStartDate: 'Nykyisen sijoituksen tarkistuspäivä',
