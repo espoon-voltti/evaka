@@ -232,16 +232,20 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     })
   )
 
-  router.all('/employee/auth/ad/*', (req: express.Request, _, next) => {
-    // horrible hack to fix logout URL
-    if (req.session?.idpProvider === 'evaka') {
-      req.url = req.url.replace(
-        '/employee/auth/ad/',
-        '/employee/auth/keycloak/'
-      )
+  router.all(
+    '/employee/auth/ad/*',
+    employeeSessions.middleware,
+    (req: express.Request, _, next) => {
+      // horrible hack to fix logout URL
+      if (req.session?.idpProvider === 'evaka') {
+        req.url = req.url.replace(
+          '/employee/auth/ad/',
+          '/employee/auth/keycloak/'
+        )
+      }
+      next()
     }
-    next()
-  })
+  )
 
   if (config.ad.type === 'mock') {
     router.use(
