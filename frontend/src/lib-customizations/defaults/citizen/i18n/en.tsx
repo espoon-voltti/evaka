@@ -1692,7 +1692,7 @@ const en: Translations = {
       }
     },
     assistanceDecisions: {
-      title: 'Support decision',
+      title: 'Decision of support in early childhood education',
       assistanceLevel: 'Level of support',
       validityPeriod: 'Valid',
       unit: 'Unit',
