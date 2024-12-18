@@ -106,31 +106,37 @@ AND role = ${bind(role)}
         }
         .execute()
 
-fun Database.Transaction.clearDaycareGroupAcl(daycareId: DaycareId, employeeId: EmployeeId) =
+fun Database.Transaction.syncDaycareGroupAcl(
+    daycareId: DaycareId,
+    employeeId: EmployeeId,
+    groupIds: Collection<GroupId>,
+    now: HelsinkiDateTime = HelsinkiDateTime.now(),
+) {
+    // Delete rows that are not in the supplied groupIds
     createUpdate {
             sql(
                 """
 DELETE FROM daycare_group_acl
 WHERE employee_id = ${bind(employeeId)}
-AND daycare_group_id IN (SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)})
+AND daycare_group_id IN (
+    SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}
+)
+AND daycare_group_id <> ALL (${bind(groupIds)})
 """
             )
         }
         .execute()
 
-fun Database.Transaction.insertDaycareGroupAcl(
-    daycareId: DaycareId,
-    employeeId: EmployeeId,
-    groupIds: Collection<GroupId>,
-    now: HelsinkiDateTime,
-) =
+    // Insert rows that are in the supplied groupIds and do not already exist
     executeBatch(groupIds) {
         sql(
             """
-INSERT INTO daycare_group_acl
+INSERT INTO daycare_group_acl (daycare_group_id, employee_id, created, updated)
 SELECT id, ${bind(employeeId)}, ${bind(now)}, ${bind(now)}
 FROM daycare_group
 WHERE id = ${bind { it }} AND daycare_id = ${bind(daycareId)}
+ON CONFLICT (daycare_group_id, employee_id) DO NOTHING
 """
         )
     }
+}

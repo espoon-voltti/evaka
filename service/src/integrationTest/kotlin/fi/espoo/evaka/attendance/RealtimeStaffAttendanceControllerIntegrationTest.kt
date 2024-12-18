@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
+import fi.espoo.evaka.shared.auth.syncDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -63,7 +63,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             tx.insertDaycareAclRow(testDaycare2.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareAclRow(testDaycare.id, staff.id, UserRole.STAFF)
             tx.insertDaycareAclRow(testDaycare2.id, staff.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, staff.id, listOf(groupId1), now)
+            tx.syncDaycareGroupAcl(testDaycare.id, staff.id, listOf(groupId1), now)
 
             tx.upsertOccupancyCoefficient(
                 OccupancyCoefficientUpsert(testDaycare.id, staff.id, BigDecimal(7))
