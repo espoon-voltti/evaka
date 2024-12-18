@@ -79,15 +79,14 @@ describe('Child Income statements', () => {
 
     const editPage = await child1ISList.createIncomeStatement()
     await editPage.setValidFromDate('01.02.2034')
-    await editPage.uploadAttachment(testFilePath1)
-    await editPage.selectAssure()
+    await editPage.uploadAttachment(testFilePath1, testFileName1)
     await editPage.saveDraft()
     await child1ISList.assertChildIncomeStatementRowCount(1)
 
     // Edit draft
     await child1ISList.clickEditChildIncomeStatement(0)
     await editPage.setValidFromDate('01.03.2034')
-    await editPage.uploadAttachment(testFilePath2)
+    await editPage.uploadAttachment(testFilePath2, testFileName2)
     await editPage.fillOtherInfo('foo bar baz')
     await editPage.selectAssure()
     await editPage.save()
@@ -126,7 +125,7 @@ describe('Child Income statements', () => {
 
     // Edit and sent
     await child1ISList.clickEditChildIncomeStatement(0)
-    await editPage.uploadAttachment(testFilePath1)
+    await editPage.uploadAttachment(testFilePath1, testFileName1)
     await editPage.selectAssure()
     await editPage.save()
     await child1ISList.assertChildIncomeStatementRowCount(1)

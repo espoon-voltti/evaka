@@ -84,10 +84,13 @@ export class CitizenChildIncomeStatementEditPage {
     await this.saveButton.click()
   }
 
-  async uploadAttachment(filePath: string) {
+  async uploadAttachment(filePath: string, fileName: string) {
     await new FileInput(
       this.page.findByDataQa('btn-upload-file')
     ).setInputFiles(filePath)
+    await this.page
+      .findByDataQa(`file-delete-button-${fileName}`)
+      .waitUntilVisible()
   }
 }
 
