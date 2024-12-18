@@ -596,3 +596,20 @@ fun Database.Transaction.updateOphPersonOid(id: PersonId, ophPersonOid: String) 
         }
         .updateExactlyOne()
 }
+
+fun Database.Transaction.updateWeakLoginUsername(id: PersonId, username: String): Boolean =
+    execute {
+        sql(
+            """
+UPDATE citizen_user
+SET username = ${bind(username)}
+WHERE id = ${bind(id)}
+"""
+        )
+    } > 0
+
+data class PersonEmails(val email: String?, val verifiedEmail: String?)
+
+fun Database.Read.getPersonEmails(id: PersonId): PersonEmails =
+    createQuery { sql("SELECT email, verified_email FROM person WHERE id = ${bind(id)}") }
+        .exactlyOne()

@@ -13,34 +13,7 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.sficlient.SfiMessage
-import fi.espoo.evaka.shared.AbsenceId
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.CalendarEventId
-import fi.espoo.evaka.shared.CalendarEventTimeId
-import fi.espoo.evaka.shared.ChildDocumentId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.InvoiceCorrectionId
-import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageContentId
-import fi.espoo.evaka.shared.MessageId
-import fi.espoo.evaka.shared.MessageRecipientId
-import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.MobileDeviceId
-import fi.espoo.evaka.shared.PairingId
-import fi.espoo.evaka.shared.PedagogicalDocumentId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PreschoolTermId
-import fi.espoo.evaka.shared.ServiceApplicationId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -432,6 +405,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendEmailVerificationCodeEmail(val id: PersonEmailVerificationId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -483,6 +460,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendDiscussionSurveyReservationCancellationEmail::class,
                     SendDiscussionSurveyCreationNotificationEmail::class,
                     SendDiscussionReservationReminderEmail::class,
+                    SendEmailVerificationCodeEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingReservationsReminder::class,
                     SendMissingHolidayReservationsReminder::class,
