@@ -4,17 +4,23 @@
 
 package fi.espoo.evaka.decision
 
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.getApplicationOtherGuardians
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getUnitManager
 import fi.espoo.evaka.daycare.service.DaycareManager
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
@@ -51,6 +57,9 @@ class DecisionService(
     private val templateProvider: ITemplateProvider,
     private val pdfGenerator: PdfGenerator,
     private val messageProvider: IMessageProvider,
+    private val emailEnv: EmailEnv,
+    private val emailMessageProvider: IEmailMessageProvider,
+    private val emailClient: EmailClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     fun finalizeDecisions(
@@ -248,6 +257,46 @@ class DecisionService(
             )
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
+    }
+
+    fun sendNewDecisionEmail(
+        db: Database.Connection,
+        clock: EvakaClock,
+        applicationId: ApplicationId,
+    ) {
+        val guardianId =
+            db.transaction { tx ->
+                val application =
+                    tx.fetchApplicationDetails(applicationId)
+                        ?: throw NotFound("Application $applicationId was not found")
+                val childId = application.childId
+
+                // make sure VTJ guardians are up-to-date
+                personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, childId)
+
+                val currentGuardians = tx.getChildGuardiansAndFosterParents(childId, clock.today())
+
+                application.guardianId.takeIf { currentGuardians.contains(it) }
+            }
+
+        if (guardianId != null) {
+            // simplified to get rid of superfluous language requirement
+            val fromAddress = emailEnv.sender(Language.fi)
+            val content = emailMessageProvider.decisionNotification()
+            Email.create(
+                    db,
+                    guardianId,
+                    EmailMessageType.DECISION_NOTIFICATION,
+                    fromAddress,
+                    content,
+                    "$applicationId - $guardianId",
+                )
+                ?.also { emailClient.send(it) }
+        } else {
+            logger.warn(
+                "Skipping sending decision for application $applicationId guardian - not a current guardian or foster parent"
+            )
+        }
     }
 
     fun getDecisionPdf(dbc: Database.Connection, decision: Decision): ResponseEntity<Any> {

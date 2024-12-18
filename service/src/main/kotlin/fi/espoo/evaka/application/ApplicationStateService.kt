@@ -894,6 +894,11 @@ class ApplicationStateService(
             clock.now(),
         )
         tx.markApplicationDecisionsSent(application.id, clock.today())
+        asyncJobRunner.plan(
+            tx,
+            listOf(AsyncJob.SendNewDecisionEmail(application.id)),
+            runAt = clock.now(),
+        )
         Audit.ApplicationConfirmDecisionsMailed.log(targetId = AuditId(applicationId))
     }
 
@@ -1465,12 +1470,16 @@ class ApplicationStateService(
             val decisionIds =
                 decisionService.finalizeDecisions(tx, user, clock, application.id, sendBySfi)
             tx.syncApplicationOtherGuardians(application.id, clock.today())
-            tx.updateApplicationStatus(
-                application.id,
-                if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING,
-                user.evakaUserId,
-                clock.now(),
-            )
+            val newStatus = if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
+            tx.updateApplicationStatus(application.id, newStatus, user.evakaUserId, clock.now())
+
+            if (newStatus == WAITING_CONFIRMATION) {
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.SendNewDecisionEmail(application.id)),
+                    runAt = clock.now(),
+                )
+            }
 
             tx.getArchiveProcessByApplicationId(application.id)?.also { process ->
                 if (process.history.none { it.state == ArchivedProcessState.DECIDING }) {
