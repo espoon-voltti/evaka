@@ -252,6 +252,7 @@ describe('Income statements', () => {
 
       await assertIncomeStatementCreated(startDate, null)
 
+      // update and send
       const startDate2 = '24.12.2044'
       await incomeStatementsPage.editIncomeStatement(0)
       await incomeStatementsPage.setValidFromDate(startDate2)
