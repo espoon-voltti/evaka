@@ -28,6 +28,7 @@ import {
   getOccupancyUnitReport,
   getPermittedReports,
   getPlacementGuaranteeReport,
+  getPlacementSketchingReport,
   getPreschoolAbsenceReport,
   getPreschoolApplicationReport,
   getServiceVoucherReportForAllUnits,
@@ -79,6 +80,10 @@ const queryKeys = createQueryKeys('reports', {
   occupancies: (filters: OccupancyReportFilters) => ['occupancies', filters],
   placementGuarantee: (filters: Arg0<typeof getPlacementGuaranteeReport>) => [
     'placementGuarantee',
+    filters
+  ],
+  placementSketching: (filters: Arg0<typeof getPlacementSketchingReport>) => [
+    'placementSketching',
     filters
   ],
   voucherServiceProviders: (
@@ -181,6 +186,11 @@ export const occupanciesReportQuery = query({
 export const placementGuaranteeReportQuery = query({
   api: getPlacementGuaranteeReport,
   queryKey: queryKeys.placementGuarantee
+})
+
+export const placementSketchingQuery = query({
+  api: getPlacementSketchingReport,
+  queryKey: queryKeys.placementSketching
 })
 
 export const voucherServiceProvidersReportQuery = query({
