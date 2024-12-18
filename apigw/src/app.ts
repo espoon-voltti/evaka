@@ -102,7 +102,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   )
 
   router.post(
-    '/csp/report',
+    '/csp',
     express.json({ type: 'application/csp-report' }),
     handleCspReport
   )
