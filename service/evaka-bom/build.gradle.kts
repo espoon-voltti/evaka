@@ -9,9 +9,13 @@ javaPlatform { allowDependencies() }
 dependencies {
     constraints {
         api("ch.qos.logback.access:tomcat:2.0.2")
-        api(
-            "org.apache.tomcat:tomcat-catalina:10.1.31"
-        ) // ch.qos.logback.access:tomcat breaks on runtime without this
+
+        // These constraints are needed for CVE fixes
+        api("org.apache.tomcat.embed:tomcat-embed-core:10.1.34")
+        api("org.apache.tomcat.embed:tomcat-embed-el:10.1.34")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.34")
+        api("org.apache.tomcat:tomcat-catalina:10.1.34")
+
         api("com.auth0:java-jwt:4.4.0")
         api("com.github.kagkarlsson:db-scheduler:15.1.1")
         api(libs.fuel)
@@ -56,7 +60,6 @@ dependencies {
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.18.0"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
-    api(platform("io.netty:netty-bom:4.1.115.Final")) // only needed for CVE fix
     api(platform("io.opentelemetry:opentelemetry-bom:1.45.0"))
     api(platform("org.apache.cxf:cxf-bom:4.0.3"))
     // Spring Boot specifies a version constraint for Jetty, but we have other libraries relying
@@ -66,6 +69,5 @@ dependencies {
     api(platform(libs.kotlin.bom))
     api(platform("org.junit:junit-bom:5.11.3"))
     api(platform(libs.spring.boot.dependencies))
-    api(platform("org.springframework:spring-framework-bom:6.1.14")) // only needed for CVE fix
     api(platform("software.amazon.awssdk:bom:2.29.1"))
 }
