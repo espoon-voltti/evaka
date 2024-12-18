@@ -464,7 +464,10 @@ SELECT
     decision.final_co_payment AS service_voucher_final_co_payment,
     decision.service_need_voucher_value_description_fi AS service_need_description,
     decision.assistance_need_coefficient AS assistance_need_coefficient,
-    round(decision.service_need_voucher_value_coefficient * decision.base_value * (row.realized_amount::numeric(16, 8) / decision.voucher_value::numeric(16, 8))) AS realized_amount_before_assistance_need,
+    CASE WHEN decision.assistance_need_coefficient = 1
+        THEN row.realized_amount
+        ELSE round(decision.service_need_voucher_value_coefficient * decision.base_value * (row.realized_amount::numeric(16, 8) / decision.voucher_value::numeric(16, 8)))
+    END AS realized_amount_before_assistance_need,
     row.realized_amount,
     row.realized_period,
     (CASE
@@ -560,7 +563,10 @@ SELECT
     decision.final_co_payment AS service_voucher_final_co_payment,
     decision.service_need_voucher_value_description_fi AS service_need_description,
     decision.assistance_need_coefficient AS assistance_need_coefficient,
-    round(decision.service_need_voucher_value_coefficient * decision.base_value * (sn_decision.realized_amount::numeric(16, 8) / decision.voucher_value)) AS realized_amount_before_assistance_need,
+    CASE WHEN decision.assistance_need_coefficient = 1
+        THEN sn_decision.realized_amount
+        ELSE round(decision.service_need_voucher_value_coefficient * decision.base_value * (sn_decision.realized_amount::numeric(16, 8) / decision.voucher_value))
+    END AS realized_amount_before_assistance_need,
     sn_decision.realized_amount,
     sn_decision.realized_period,
     upper(sn_decision.realized_period) - lower(sn_decision.realized_period) AS number_of_days,
