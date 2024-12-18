@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -359,11 +360,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     name = column("name"),
                     createdAt = column("created"),
                     createdBy =
-                        EvakaUser(
-                            id = column("created_by_id"),
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        ),
+                        column<EvakaUserId?>("created_by_id")?.let {
+                            EvakaUser(
+                                id = it,
+                                name = column("created_by_name"),
+                                type = column("created_by_type"),
+                            )
+                        },
                     confidential = column("confidential"),
                     downloadPath =
                         column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
@@ -395,11 +398,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     name = "Päätös tuesta varhaiskasvatuksessa",
                     createdAt = column("created"),
                     createdBy =
-                        EvakaUser(
-                            id = column("created_by_id"),
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        ),
+                        column<EvakaUserId?>("created_by_id")?.let {
+                            EvakaUser(
+                                id = it,
+                                name = column("created_by_name"),
+                                type = column("created_by_type"),
+                            )
+                        },
                     confidential = true,
                     downloadPath =
                         column<String?>("document_key")?.let {
@@ -432,11 +437,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     name = "Päätös tuesta esiopetuksessa",
                     createdAt = column("created"),
                     createdBy =
-                        EvakaUser(
-                            id = column("created_by_id"),
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        ),
+                        column<EvakaUserId?>("created_by_id")?.let {
+                            EvakaUser(
+                                id = it,
+                                name = column("created_by_name"),
+                                type = column("created_by_type"),
+                            )
+                        },
                     confidential = true,
                     downloadPath =
                         column<String?>("document_key")?.let {
@@ -480,11 +487,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     createdAt =
                         column<LocalDate>("sentdate").let { HelsinkiDateTime.atStartOfDay(it) },
                     createdBy =
-                        EvakaUser(
-                            id = column("created_by_id"),
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        ),
+                        column<EvakaUserId?>("created_by_id")?.let {
+                            EvakaUser(
+                                id = it,
+                                name = column("created_by_name"),
+                                type = column("created_by_type"),
+                            )
+                        },
                     confidential = column("confidential"),
                     downloadPath = null,
                 )
@@ -545,11 +554,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     createdAt =
                         column<LocalDate>("sent_date").let { HelsinkiDateTime.atStartOfDay(it) },
                     createdBy =
-                        EvakaUser(
-                            id = column("created_by_id"),
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        ),
+                        column<EvakaUserId?>("created_by_id")?.let {
+                            EvakaUser(
+                                id = it,
+                                name = column("created_by_name"),
+                                type = column("created_by_type"),
+                            )
+                        },
                     confidential = true,
                     downloadPath =
                         column<String?>("document_key")?.let {
@@ -582,11 +593,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     name = "Maksupäätös",
                     createdAt = column("created"),
                     createdBy =
-                        EvakaUser(
-                            id = column("created_by_id"),
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        ),
+                        column<EvakaUserId?>("created_by_id")?.let {
+                            EvakaUser(
+                                id = it,
+                                name = column("created_by_name"),
+                                type = column("created_by_type"),
+                            )
+                        },
                     confidential = true,
                     downloadPath =
                         column<String?>("document_key")?.let { "/employee/fee-decisions/pdf/$it" },
@@ -617,11 +630,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     name = "Arvopäätös",
                     createdAt = column("created"),
                     createdBy =
-                        EvakaUser(
-                            id = column("created_by_id"),
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        ),
+                        column<EvakaUserId?>("created_by_id")?.let {
+                            EvakaUser(
+                                id = it,
+                                name = column("created_by_name"),
+                                type = column("created_by_type"),
+                            )
+                        },
                     confidential = true,
                     downloadPath =
                         column<String?>("document_key")?.let { "/employee/value-decisions/pdf/$it" },
