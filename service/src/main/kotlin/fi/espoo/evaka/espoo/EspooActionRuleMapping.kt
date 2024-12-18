@@ -18,6 +18,8 @@ class EspooActionRuleMapping : ActionRuleMapping {
         when (action) {
             Action.Global.SEND_PATU_REPORT,
             Action.Global.SUBMIT_PATU_REPORT -> sequenceOf(HasGlobalRole(UserRole.ADMIN))
+            Action.Global.READ_NON_SSN_CHILDREN_REPORT ->
+                sequenceOf(HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER))
             else -> action.defaultRules.asSequence()
         }
 
@@ -44,6 +46,64 @@ class EspooActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
                     )
+            }
+            Action.Unit.READ_SERVICE_VOUCHER_REPORT -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.REPORT_VIEWER, UserRole.FINANCE_ADMIN)
+                        as ScopedActionRule<in T>
+                ) +
+                    sequenceOf(
+                        HasUnitRole(
+                                UserRole.UNIT_SUPERVISOR,
+                                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                            )
+                            .inUnit() as ScopedActionRule<in T>
+                    )
+            }
+            Action.Unit.READ_FAMILY_DAYCARE_MEAL_REPORT -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>) +
+                    sequenceOf(
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                    )
+            }
+            Action.Unit.READ_FAMILY_CONFLICT_REPORT -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+                        as ScopedActionRule<in T>
+                )
+            }
+            Action.Person.CREATE_PARTNERSHIP -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+                        as ScopedActionRule<in T>
+                )
+            }
+            Action.Person.CREATE_PARENTSHIP -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+                        as ScopedActionRule<in T>
+                )
+            }
+            Action.Partnership.UPDATE,
+            Action.Partnership.RETRY -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+                        as ScopedActionRule<in T>
+                )
+            }
+            Action.Parentship.UPDATE,
+            Action.Parentship.RETRY -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+                        as ScopedActionRule<in T>
+                )
             }
             Action.Child.READ_DAILY_SERVICE_TIMES -> {
                 @Suppress("UNCHECKED_CAST")
