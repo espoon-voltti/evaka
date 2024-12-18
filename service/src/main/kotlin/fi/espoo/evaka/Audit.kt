@@ -505,6 +505,7 @@ enum class Audit(
     TemporaryEmployeeDeleteAcl,
     TemporaryEmployeeDelete,
     TimelineRead,
+    TitaniaReportDelete,
     TitaniaReportRead,
     UnitAclCreate,
     UnitAclDelete,

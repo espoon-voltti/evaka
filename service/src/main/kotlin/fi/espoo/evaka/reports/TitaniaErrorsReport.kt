@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.TitaniaConflictId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -60,7 +61,7 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
                     tx.deleteTitaniaError(conflictId)
                 }
             }
-            .also { Audit.TitaniaReportRead.log() }
+            .also { Audit.TitaniaReportDelete.log(targetId = AuditId(conflictId)) }
     }
 }
 
@@ -139,10 +140,6 @@ fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
                     },
             )
         }
-}
-
-fun Database.Transaction.deleteTitaniaErrors() {
-    createUpdate { sql("DELETE FROM titania_errors") }.execute()
 }
 
 fun Database.Transaction.deleteTitaniaError(id: TitaniaConflictId) {
