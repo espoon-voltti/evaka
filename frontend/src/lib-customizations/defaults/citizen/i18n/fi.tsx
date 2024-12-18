@@ -1784,7 +1784,7 @@ export default {
       )
     },
     assistanceDecisions: {
-      title: 'Päätös erityisestä tuesta varhaiskasvatuksessa',
+      title: 'Päätös tuesta varhaiskasvatuksessa',
       assistanceLevel: 'Tuen taso',
       validityPeriod: 'Voimassa',
       unit: 'Yksikkö',
