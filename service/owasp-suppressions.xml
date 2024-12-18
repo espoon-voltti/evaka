@@ -16,16 +16,16 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
        <notes><![CDATA[
-       Misidentification
+       Misidentification. Tomact 10.* is not the same as Tomcat 3.0
        ]]></notes>
-       <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat/tomcat-jaspic-api@10\.1\.31$</packageUrl>
+       <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat/tomcat-jaspic-api@10\..*$</packageUrl>
        <cpe>cpe:/a:apache:tomcat:3.0</cpe>
     </suppress>
     <suppress>
         <notes><![CDATA[
-        Misidentification
+       Misidentification. Tomact 10.* is not the same as Tomcat 3.1
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat/tomcat-jsp-api@10\.1\.33$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat/tomcat-jsp-api@10\..*$</packageUrl>
         <cpe>cpe:/a:apache:tomcat:3.1</cpe>
     </suppress>
 </suppressions>
