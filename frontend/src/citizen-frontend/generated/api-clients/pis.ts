@@ -5,12 +5,27 @@
 // GENERATED FILE: no manual modifications
 
 import { EmailMessageType } from 'lib-common/generated/api-types/pis'
+import { EmailVerificationRequest } from 'lib-common/generated/api-types/pis'
+import { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
 import { UpdatePasswordRequest } from 'lib-common/generated/api-types/pis'
 import { client } from '../../api-client'
+import { deserializeJsonEmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import { uri } from 'lib-common/uri'
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.getEmailVerificationStatus
+*/
+export async function getEmailVerificationStatus(): Promise<EmailVerificationStatusResponse> {
+  const { data: json } = await client.request<JsonOf<EmailVerificationStatusResponse>>({
+    url: uri`/citizen/personal-data/email-verification`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonEmailVerificationStatusResponse(json)
+}
 
 
 /**
@@ -20,6 +35,18 @@ export async function getNotificationSettings(): Promise<EmailMessageType[]> {
   const { data: json } = await client.request<JsonOf<EmailMessageType[]>>({
     url: uri`/citizen/personal-data/notification-settings`.toString(),
     method: 'GET'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.sendEmailVerificationCode
+*/
+export async function sendEmailVerificationCode(): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/personal-data/email-verification-code`.toString(),
+    method: 'POST'
   })
   return json
 }
@@ -71,6 +98,23 @@ export async function updatePersonalData(
     url: uri`/citizen/personal-data`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PersonalDataUpdate>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.verifyEmail
+*/
+export async function verifyEmail(
+  request: {
+    body: EmailVerificationRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/personal-data/email-verification`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<EmailVerificationRequest>
   })
   return json
 }

@@ -26,6 +26,7 @@ import { Nationality } from './vtjclient'
 import { NativeLanguage } from './vtjclient'
 import { ParentshipId } from './shared'
 import { PartnershipId } from './shared'
+import { PersonEmailVerificationId } from './shared'
 import { PersonId } from './shared'
 import { UserRole } from './shared'
 
@@ -154,6 +155,33 @@ export const emailMessageTypes = [
 ] as const
 
 export type EmailMessageType = typeof emailMessageTypes[number]
+
+/**
+* Generated from fi.espoo.evaka.pis.EmailVerification
+*/
+export interface EmailVerification {
+  email: string
+  expiresAt: HelsinkiDateTime
+  id: PersonEmailVerificationId
+  sentAt: HelsinkiDateTime | null
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.EmailVerificationRequest
+*/
+export interface EmailVerificationRequest {
+  code: string
+  id: PersonEmailVerificationId
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.EmailVerificationStatusResponse
+*/
+export interface EmailVerificationStatusResponse {
+  email: string | null
+  latestVerification: EmailVerification | null
+  verifiedEmail: string | null
+}
 
 /**
 * Generated from fi.espoo.evaka.pis.Employee
@@ -712,6 +740,23 @@ export function deserializeJsonCreationModificationMetadata(json: JsonOf<Creatio
     createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
     createdFromApplicationCreated: (json.createdFromApplicationCreated != null) ? HelsinkiDateTime.parseIso(json.createdFromApplicationCreated) : null,
     modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
+  }
+}
+
+
+export function deserializeJsonEmailVerification(json: JsonOf<EmailVerification>): EmailVerification {
+  return {
+    ...json,
+    expiresAt: HelsinkiDateTime.parseIso(json.expiresAt),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
+  }
+}
+
+
+export function deserializeJsonEmailVerificationStatusResponse(json: JsonOf<EmailVerificationStatusResponse>): EmailVerificationStatusResponse {
+  return {
+    ...json,
+    latestVerification: (json.latestVerification != null) ? deserializeJsonEmailVerification(json.latestVerification) : null
   }
 }
 
