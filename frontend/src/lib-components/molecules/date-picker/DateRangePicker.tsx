@@ -143,7 +143,7 @@ const DateRangePicker = React.memo(function DateRangePicker({
 export default DateRangePicker
 
 export const DatePickerSpacer = React.memo(function DatePickerSpacer() {
-  return <DateInputSpacer>–</DateInputSpacer>
+  return <DateInputSpacer aria-hidden>–</DateInputSpacer>
 })
 
 const DateInputSpacer = styled.div`
@@ -157,6 +157,7 @@ export interface DateRangePickerFProps
   > {
   bind: BoundForm<LocalDateRangeField>
   info?: InputInfo | undefined
+  ariaId?: string
 }
 
 export const DateRangePickerF = React.memo(function DateRangePickerF({
@@ -197,7 +198,10 @@ export const DateRangePickerF = React.memo(function DateRangePickerF({
       />
       {info !== undefined && (!hideErrorsBeforeTouched || touched) ? (
         <InputFieldUnderRow className={classNames(info.status)}>
-          <span>{info.text}</span> <UnderRowStatusIcon status={info.status} />
+          <span role={info.status === 'warning' ? 'alert' : undefined}>
+            {info.text}
+          </span>
+          <UnderRowStatusIcon status={info.status} />
         </InputFieldUnderRow>
       ) : null}
     </div>

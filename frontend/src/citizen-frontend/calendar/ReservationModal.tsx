@@ -255,7 +255,9 @@ export default React.memo(function ReservationModal({
                   }
                   inlineChildren
                 >
-                  <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
+                  <Label id="reservation-daterange-label">
+                    {i18n.calendar.reservationModal.dateRangeLabel}
+                  </Label>
                 </ExpandingInfo>
                 <DateRangePickerF
                   bind={dateRange}
@@ -264,6 +266,8 @@ export default React.memo(function ReservationModal({
                   onFocus={(ev) => {
                     scrollIntoViewSoftKeyboard(ev.target, 'start')
                   }}
+                  required
+                  ariaId="reservation-daterange-label"
                 />
 
                 {overlappingClosedHolidayPeriods.length > 0 && (
