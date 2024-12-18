@@ -91,6 +91,7 @@ import fi.espoo.evaka.invoicing.service.IncomeNotification
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
+import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
@@ -1462,6 +1463,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             title = HtmlSafe("Testiviesti"),
                             urgent = false,
                             sensitive = false,
+                            senderName = HtmlSafe("Testiryhmä"),
+                            senderType = AccountType.GROUP,
                             isCopy = false,
                         ),
                     )
