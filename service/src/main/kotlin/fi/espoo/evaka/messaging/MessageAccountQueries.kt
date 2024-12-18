@@ -97,6 +97,30 @@ WHERE mav.id = ANY(${bind(accountIds)})
         .toList<String>()
 }
 
+fun Database.Read.getMessageAccount(
+    accountId: MessageAccountId,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String,
+): MessageAccount {
+    return createQuery {
+            sql(
+                """
+SELECT
+    acc.id,
+    CASE
+        WHEN acc.type = 'MUNICIPAL'::message_account_type THEN ${bind(municipalAccountName)}
+        WHEN acc.type = 'SERVICE_WORKER'::message_account_type THEN ${bind(serviceWorkerAccountName)}
+        ELSE (SELECT name FROM message_account_view WHERE id = acc.id)
+    END AS name,
+    acc.type
+FROM message_account acc
+WHERE acc.id = ${bind(accountId)}
+"""
+            )
+        }
+        .exactlyOne()
+}
+
 fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId {
     return createUpdate {
             sql("INSERT INTO message_account (type) VALUES (${bind(AccountType.MUNICIPAL)})")
