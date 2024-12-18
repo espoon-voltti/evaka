@@ -8,6 +8,7 @@ import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
+import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
@@ -135,6 +136,8 @@ data class MessageThreadData(
     val title: HtmlSafe<String>,
     val urgent: Boolean,
     val sensitive: Boolean,
+    val senderName: HtmlSafe<String>,
+    val senderType: AccountType,
     val isCopy: Boolean,
 )
 
