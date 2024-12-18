@@ -289,7 +289,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.UPDATE,
                     incomeStatementId,
                 )
-                verifyIncomeStatementModificationsAllowed(tx, user, user.id, incomeStatementId)
+
+                val original =
+                    tx.readIncomeStatementForPerson(user, user.id, incomeStatementId)
+                        ?: throw NotFound("Income statement not found")
+
+                verifyIncomeStatementUpdateAllowed(original, body)
 
                 tx.updateIncomeStatement(
                     user.evakaUserId,
@@ -333,7 +338,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.UPDATE,
                     incomeStatementId,
                 )
-                verifyIncomeStatementModificationsAllowed(tx, user, childId, incomeStatementId)
+
+                val original =
+                    tx.readIncomeStatementForPerson(user, childId, incomeStatementId)
+                        ?: throw NotFound("Income statement not found")
+
+                verifyIncomeStatementUpdateAllowed(original, body)
 
                 tx.updateIncomeStatement(
                     user.evakaUserId,
@@ -371,7 +381,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.DELETE,
                     id,
                 )
-                verifyIncomeStatementModificationsAllowed(tx, user, user.id, id)
+                verifyIncomeStatementDeletionAllowed(tx, user, user.id, id)
                 tx.removeIncomeStatement(id)
             }
         }
@@ -395,7 +405,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.DELETE,
                     id,
                 )
-                verifyIncomeStatementModificationsAllowed(tx, user, childId, id)
+                verifyIncomeStatementDeletionAllowed(tx, user, childId, id)
                 tx.removeIncomeStatement(id)
             }
         }
@@ -429,7 +439,55 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             }
     }
 
-    private fun verifyIncomeStatementModificationsAllowed(
+    private fun verifyIncomeStatementUpdateAllowed(
+        original: IncomeStatement,
+        update: IncomeStatementBody,
+    ) {
+        if (original.status == IncomeStatementStatus.HANDLED) {
+            throw Forbidden("Handled income statement cannot be modified")
+        }
+
+        if (original.status == IncomeStatementStatus.SENT) {
+            // Convert the original income statement into IncomeStatementBody for comparison.
+            // Copy otherInfo and attachmentIds from update because these are allowed to be updated.
+            // Everything else must remain equal.
+            val originalBody =
+                when {
+                    original is IncomeStatement.ChildIncome &&
+                        update is IncomeStatementBody.ChildIncome ->
+                        IncomeStatementBody.ChildIncome(
+                            startDate = original.startDate,
+                            endDate = original.endDate,
+                            otherInfo = update.otherInfo,
+                            attachmentIds = update.attachmentIds,
+                        )
+                    original is IncomeStatement.Income && update is IncomeStatementBody.Income ->
+                        IncomeStatementBody.Income(
+                            startDate = original.startDate,
+                            endDate = original.endDate,
+                            gross = original.gross,
+                            entrepreneur = original.entrepreneur,
+                            student = original.student,
+                            alimonyPayer = original.alimonyPayer,
+                            otherInfo = update.otherInfo,
+                            attachmentIds = update.attachmentIds,
+                        )
+                    original is IncomeStatement.HighestFee &&
+                        update is IncomeStatementBody.HighestFee ->
+                        IncomeStatementBody.HighestFee(
+                            startDate = original.startDate,
+                            endDate = original.endDate,
+                        )
+                    else -> throw BadRequest("Income statement type cannot be changed anymore")
+                }
+
+            if (originalBody != update) {
+                throw BadRequest("Only attachments and otherInfo can be updated after sending")
+            }
+        }
+    }
+
+    private fun verifyIncomeStatementDeletionAllowed(
         tx: Database.Transaction,
         user: AuthenticatedUser.Citizen,
         personId: PersonId,
@@ -439,7 +497,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             tx.readIncomeStatementForPerson(user, personId, id)
                 ?: throw NotFound("Income statement not found")
         if (incomeStatement.status == IncomeStatementStatus.HANDLED) {
-            throw Forbidden("Handled income statement cannot be modified or removed")
+            throw Forbidden("Handled income statement cannot be removed")
         }
     }
 }
