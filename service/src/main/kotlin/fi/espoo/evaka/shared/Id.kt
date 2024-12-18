@@ -152,6 +152,8 @@ sealed interface DatabaseTable {
 
     sealed class Person : DatabaseTable
 
+    sealed class PersonEmailVerification : DatabaseTable
+
     sealed class Placement : DatabaseTable
 
     sealed class PlacementPlan : DatabaseTable
@@ -323,6 +325,8 @@ typealias PaymentId = Id<DatabaseTable.Payment>
 typealias PedagogicalDocumentId = Id<DatabaseTable.PedagogicalDocument>
 
 typealias PersonId = Id<DatabaseTable.Person>
+
+typealias PersonEmailVerificationId = Id<DatabaseTable.PersonEmailVerification>
 
 typealias PlacementId = Id<DatabaseTable.Placement>
 

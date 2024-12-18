@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useCallback, useContext } from 'react'
+import styled from 'styled-components'
 
 import { boolean, string } from 'lib-common/form/fields'
 import {
@@ -16,9 +18,15 @@ import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
 import { StateOf, ValidationSuccess } from 'lib-common/form/types'
 import {
   optionalPhoneNumber,
+  regexp,
   requiredEmail,
   requiredPhoneNumber
 } from 'lib-common/form/validators'
+import {
+  EmailVerification,
+  EmailVerificationStatusResponse
+} from 'lib-common/generated/api-types/pis'
+import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -35,24 +43,36 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { H2, Label } from 'lib-components/typography'
+import { H2, Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faLockAlt, faPen } from 'lib-icons'
+import colors from 'lib-customizations/common'
+import {
+  faCheckCircle,
+  faExclamationTriangle,
+  faLockAlt,
+  faPen
+} from 'lib-icons'
 
 import { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
 import { EditButtonRow, MandatoryValueMissingWarning } from './components'
-import { updatePersonalDetailsMutation } from './queries'
+import {
+  sendEmailVerificationCodeMutation,
+  updatePersonalDetailsMutation,
+  verifyEmailMutation
+} from './queries'
 
 export interface Props {
   user: User
+  emailVerificationStatus: EmailVerificationStatusResponse
   reloadUser: () => void
 }
 
 export default React.memo(function PersonalDetailsSection({
   user,
+  emailVerificationStatus,
   reloadUser
 }: Props) {
   const t = useTranslation()
@@ -75,6 +95,11 @@ export default React.memo(function PersonalDetailsSection({
   const navigateToLogin = useCallback(
     () => window.location.replace(getStrongLoginUri()),
     []
+  )
+
+  const isEmailVerified = !!(
+    emailVerificationStatus.email &&
+    emailVerificationStatus.email === emailVerificationStatus.verifiedEmail
   )
 
   const formWrapper = (children: React.ReactNode) =>
@@ -253,15 +278,59 @@ export default React.memo(function PersonalDetailsSection({
                 </FixedSpaceRow>
               </FixedSpaceColumn>
             ) : (
-              <div data-qa="email">
-                {email ? (
-                  <span translate="no">{email}</span>
-                ) : (
-                  <MandatoryValueMissingWarning
-                    text={t.personalDetails.detailsSection.emailMissing}
-                  />
-                )}
-              </div>
+              <>
+                <div data-qa="email">
+                  {email ? (
+                    <>
+                      <span translate="no">{email}</span>
+                      <Gap size="xs" />
+                      {isEmailVerified ? (
+                        <div>
+                          <FontAwesomeIcon
+                            icon={faCheckCircle}
+                            color={colors.status.success}
+                          />
+                          <Gap horizontal size="xs" />
+                          {t.personalDetails.detailsSection.emailVerified}
+                        </div>
+                      ) : emailVerificationStatus.latestVerification ? (
+                        <EmailVerificationForm
+                          verification={
+                            emailVerificationStatus.latestVerification
+                          }
+                        />
+                      ) : (
+                        <div>
+                          <div>
+                            <UnverifiedEmailWarning>
+                              {t.personalDetails.detailsSection.emailUnverified}
+                            </UnverifiedEmailWarning>
+                            <Gap horizontal size="xs" />
+                            <FontAwesomeIcon
+                              icon={faExclamationTriangle}
+                              color={colors.status.warning}
+                            />
+                          </div>
+                          <Gap size="s" />
+                          <MutateButton
+                            appearance="inline"
+                            text={
+                              t.personalDetails.detailsSection
+                                .sendVerificationCode
+                            }
+                            mutation={sendEmailVerificationCodeMutation}
+                            onClick={() => undefined}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <MandatoryValueMissingWarning
+                      text={t.personalDetails.detailsSection.emailMissing}
+                    />
+                  )}
+                </div>
+              </>
             )}
           </ListGrid>
           {emailInfo && (
@@ -319,3 +388,65 @@ function initialFormState(user: User): StateOf<typeof personForm> {
     }
   }
 }
+
+const UnverifiedEmailWarning = styled.span`
+  color: ${({ theme }) => theme.colors.status.warning};
+`
+
+const emailVerificationForm = object({
+  verificationCode: validated(string(), regexp(/[0-9]{8}/, 'format'))
+})
+
+const EmailVerificationForm = React.memo(function EmailVerificationForm({
+  verification
+}: {
+  verification: EmailVerification
+}) {
+  const t = useTranslation()
+
+  const { addTimedNotification } = useContext(NotificationsContext)
+
+  const form = useForm(
+    emailVerificationForm,
+    () => ({ verificationCode: '' }),
+    t.validationErrors
+  )
+  const verificationCode = useFormField(form, 'verificationCode')
+
+  return (
+    <FixedSpaceColumn>
+      <LabelLike>
+        {t.personalDetails.detailsSection.verificationSection}
+      </LabelLike>
+      <div>
+        <FontAwesomeIcon icon={faCheckCircle} color={colors.status.success} />
+        <Gap horizontal size="xs" />
+        {t.personalDetails.detailsSection.verificationCodeSent(verification)}
+      </div>
+      <LabelLike>{`${t.personalDetails.detailsSection.verificationForm}*`}</LabelLike>
+      <InputFieldF
+        bind={verificationCode}
+        width="L"
+        hideErrorsBeforeTouched={true}
+      />
+      <Gap size="m" />
+      <MutateButton
+        primary
+        disabled={!form.isValid()}
+        text={t.personalDetails.detailsSection.confirmVerification}
+        mutation={verifyEmailMutation}
+        onClick={() => ({
+          body: {
+            id: verification.id,
+            code: form.value().verificationCode
+          }
+        })}
+        onSuccess={() => {
+          addTimedNotification({
+            children: t.personalDetails.detailsSection.emailVerifiedToast
+          })
+        }}
+      />
+    </FixedSpaceColumn>
+  )
+})

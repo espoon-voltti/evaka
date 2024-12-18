@@ -1993,6 +1993,7 @@ data class DevPerson(
     val ssn: String? = null,
     val ssnAddingDisabled: Boolean? = null,
     val email: String? = null,
+    val verifiedEmail: String? = null,
     val phone: String = "",
     val backupPhone: String = "",
     val language: String? = null,

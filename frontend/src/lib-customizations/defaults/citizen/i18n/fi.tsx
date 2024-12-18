@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { EmailVerification } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
@@ -2048,7 +2049,16 @@ export default {
       phoneMissing: 'Puhelinnumero puuttuu',
       noEmail: 'Minulla ei ole sähköpostiosoitetta',
       emailInfo:
-        'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
+        'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.',
+      emailVerified: 'Vahvistettu',
+      emailUnverified: 'Sähköpostia ei ole vahvistettu',
+      sendVerificationCode: 'Vahvista sähköposti',
+      verificationSection: 'Sähköpostin vahvistaminen',
+      verificationCodeSent: (verification: EmailVerification): ReactNode =>
+        `Vahvistuskoodi on lähetetty osoitteeseen ${verification.email}. Koodi on voimassa ${verification.expiresAt.toLocalTime().format()} asti.`,
+      verificationForm: 'Syötä saamasi vahvistuskoodi',
+      confirmVerification: 'Vahvista',
+      emailVerifiedToast: 'Sähköposti vahvistettu'
     },
     loginDetailsSection: {
       title: 'Kirjautumistiedot',

@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
@@ -766,4 +767,13 @@ $unsubscribeEn
                         .trimIndent(),
         )
     }
+
+    override fun emailVerification(verificationCode: HtmlSafe<String>): EmailContent =
+        EmailContent.fromHtml(
+            subject = "eVaka-sähköpostin vahvistaminen",
+            html =
+                """
+<p>Syötä tämä koodi eVakassa vahvistaaksesi sähköpostiosoitteesi: ${verificationCode}</p>
+""",
+        )
 }

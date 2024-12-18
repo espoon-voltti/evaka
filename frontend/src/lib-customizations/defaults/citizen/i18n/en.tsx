@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { EmailVerification } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
@@ -1808,7 +1809,16 @@ const en: Translations = {
       phoneMissing: 'Phone number missing',
       noEmail: 'I have no email address',
       emailInfo:
-        'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
+        'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.',
+      emailVerified: 'Verified',
+      emailUnverified: 'Email has not been verified',
+      sendVerificationCode: 'Verify email',
+      verificationSection: 'Email verification',
+      verificationCodeSent: (verification: EmailVerification): ReactNode =>
+        `A verification code has been sent to ${verification.email}. The code is valid until ${verification.expiresAt.toLocalTime().format()}.`,
+      verificationForm: 'Enter the verification code you received',
+      confirmVerification: 'Verify',
+      emailVerifiedToast: 'Sähköposti vahvistettu'
     },
     loginDetailsSection: {
       title: 'Login information',

@@ -309,6 +309,7 @@ export class Fixture {
       dateOfDeath: null,
       ssn: '050520A999M',
       email: `email_${id}@evaka.test`,
+      verifiedEmail: null,
       firstName: `firstName_${id}`,
       preferredName: '',
       lastName: `lastName_${id}`,

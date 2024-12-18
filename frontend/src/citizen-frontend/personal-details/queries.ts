@@ -5,15 +5,22 @@
 import { Queries } from 'lib-common/query'
 
 import {
+  getEmailVerificationStatus,
   getNotificationSettings,
+  sendEmailVerificationCode,
   updateNotificationSettings,
   updatePassword,
-  updatePersonalData
+  updatePersonalData,
+  verifyEmail
 } from '../generated/api-clients/pis'
 
 const q = new Queries()
 
-export const updatePersonalDetailsMutation = q.mutation(updatePersonalData)
+export const emailVerificationStatusQuery = q.query(getEmailVerificationStatus)
+
+export const updatePersonalDetailsMutation = q.mutation(updatePersonalData, [
+  emailVerificationStatusQuery
+])
 
 export const updatePasswordMutation = q.mutation(updatePassword)
 
@@ -23,3 +30,12 @@ export const updateNotificationSettingsMutation = q.mutation(
   updateNotificationSettings,
   [notificationSettingsQuery]
 )
+
+export const sendEmailVerificationCodeMutation = q.mutation(
+  sendEmailVerificationCode,
+  [emailVerificationStatusQuery]
+)
+
+export const verifyEmailMutation = q.mutation(verifyEmail, [
+  emailVerificationStatusQuery
+])
