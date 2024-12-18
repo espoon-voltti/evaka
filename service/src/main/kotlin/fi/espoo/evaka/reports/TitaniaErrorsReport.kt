@@ -5,6 +5,8 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.shared.TitaniaConflictId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -13,7 +15,9 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
 import java.time.LocalTime
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -38,6 +42,27 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
             }
             .also { Audit.TitaniaReportRead.log() }
     }
+
+    @DeleteMapping("/employee/reports/titania-errors/{conflictId}")
+    fun clearTitaniaErrors(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable conflictId: TitaniaConflictId,
+    ) {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_TITANIA_ERRORS,
+                    )
+                    tx.deleteTitaniaError(conflictId)
+                }
+            }
+            .also { Audit.TitaniaReportDelete.log(targetId = AuditId(conflictId)) }
+    }
 }
 
 fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
@@ -49,7 +74,8 @@ fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
                 te.request_time,
                 emp.first_name,
                 emp.last_name,
-		emp.employee_number,
+                emp.employee_number,
+                te.id,
                 te.shift_date,
                 te.shift_begins,
                 te.shift_ends,
@@ -100,6 +126,7 @@ fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
                                         employeeEntry.value[0].employeeNumber ?: "",
                                         employeeEntry.value.map { shiftEntry ->
                                             TitaniaErrorConflict(
+                                                shiftEntry.id,
                                                 shiftEntry.shiftDate,
                                                 shiftEntry.shiftBegins,
                                                 shiftEntry.shiftEnds,
@@ -115,11 +142,25 @@ fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
         }
 }
 
+fun Database.Transaction.deleteTitaniaError(id: TitaniaConflictId) {
+    createUpdate {
+            sql(
+                """
+                DELETE FROM titania_errors 
+                WHERE id = ${bind(id)}
+            """
+                    .trimIndent()
+            )
+        }
+        .execute()
+}
+
 data class TitaniaDbRow(
     val requestTime: HelsinkiDateTime,
     val firstName: String,
     val lastName: String,
     val employeeNumber: String?,
+    val id: TitaniaConflictId,
     val shiftDate: LocalDate,
     val shiftBegins: LocalTime,
     val shiftEnds: LocalTime,
@@ -129,6 +170,7 @@ data class TitaniaDbRow(
 )
 
 data class TitaniaErrorConflict(
+    val id: TitaniaConflictId,
     val shiftDate: LocalDate,
     val shiftBegins: LocalTime,
     val shiftEnds: LocalTime,

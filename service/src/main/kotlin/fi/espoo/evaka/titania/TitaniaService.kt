@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
-import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -62,7 +61,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         val employeeNumbers = persons.map { (employeeNumber, _) -> employeeNumber }.distinct()
         val employeeNumberToId = tx.getEmployeeIdsByNumbers(employeeNumbers)
 
-        var unmergedSameDayPlans = mutableListOf<StaffAttendancePlan>()
+        var unmergedPlans = mutableListOf<StaffAttendancePlan>()
         val overlappingShifts = mutableListOf<TitaniaOverLappingShifts>()
 
         val newPlans =
@@ -120,26 +119,17 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                 plans.add(next)
                             }
 
-                            if (
-                                unmergedSameDayPlans.lastOrNull()?.startTime?.toLocalDate() !=
-                                    next.startTime.toLocalDate()
-                            ) {
-                                unmergedSameDayPlans = mutableListOf(next)
+                            if (unmergedPlans.isEmpty()) {
+                                unmergedPlans = mutableListOf(next)
                             } else {
                                 // identical shifts are deduplicated later, ignore them here
-                                if (next !in unmergedSameDayPlans) {
-                                    unmergedSameDayPlans
+                                if (next !in unmergedPlans) {
+                                    unmergedPlans
                                         .filter { it.employeeId == next.employeeId }
                                         .filter {
-                                            TimeRange(
-                                                    next.startTime.toLocalTime(),
-                                                    next.endTime.toLocalTime(),
-                                                )
+                                            HelsinkiDateTimeRange(next.startTime, next.endTime)
                                                 .overlaps(
-                                                    TimeRange(
-                                                        it.startTime.toLocalTime(),
-                                                        it.endTime.toLocalTime(),
-                                                    )
+                                                    HelsinkiDateTimeRange(it.startTime, it.endTime)
                                                 )
                                         }
                                         .forEach {
@@ -155,7 +145,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                             )
                                         }
 
-                                    unmergedSameDayPlans.add(next)
+                                    unmergedPlans.add(next)
                                 }
                             }
 

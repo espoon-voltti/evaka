@@ -31,6 +31,7 @@ import { PreschoolAssistanceLevel } from './assistance'
 import { ProviderType } from './daycare'
 import { ServiceNeedId } from './shared'
 import { ServiceNeedOption } from './application'
+import { TitaniaErrorsId } from './shared'
 import { UUID } from '../../types'
 import { VoucherValueDecisionId } from './shared'
 
@@ -954,6 +955,7 @@ export interface StartingPlacementsRow {
 * Generated from fi.espoo.evaka.reports.TitaniaErrorConflict
 */
 export interface TitaniaErrorConflict {
+  id: TitaniaErrorsId
   overlappingShiftBegins: LocalTime
   overlappingShiftEnds: LocalTime
   shiftBegins: LocalTime
