@@ -1477,15 +1477,21 @@ SELECT
     FALSE AS connected_daycare_only
 FROM application a
 JOIN placement p ON a.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
-JOIN placement next_p ON a.child_id = next_p.child_id AND next_p.start_date > p.end_date AND next_p.unit_id != p.unit_id
 JOIN person child ON a.child_id = child.id
 JOIN evaka_user terminated_by ON a.guardian_id = terminated_by.id
-JOIN decision d ON a.id = d.application_id AND d.start_date > ${bind(today)} AND d.unit_id != p.unit_id 
 LEFT JOIN daycare_group_placement gp ON p.id = gp.daycare_placement_id AND daterange(gp.start_date, gp.end_date, '[]') @> ${bind(today)}
 LEFT JOIN daycare_group g ON gp.daycare_group_id = g.id
 WHERE p.unit_id = ${bind(unitId)}
 AND a.transferapplication
 AND a.status = 'ACTIVE'
+AND EXISTS(
+    SELECT FROM placement next_p
+    WHERE a.child_id = next_p.child_id AND next_p.start_date > p.end_date AND next_p.unit_id != p.unit_id
+)
+AND EXISTS(
+    SELECT FROM decision d
+    WHERE a.id = d.application_id AND d.start_date > ${bind(today)} AND d.unit_id != p.unit_id 
+)
 """
             )
         }
