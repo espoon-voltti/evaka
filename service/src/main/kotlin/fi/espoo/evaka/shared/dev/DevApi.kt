@@ -996,7 +996,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                tx.insertValidReservations(fakeAdmin.evakaUserId, body)
+                tx.insertValidReservations(fakeAdmin.evakaUserId, clock.now(), body)
             }
         }
     }
@@ -1932,6 +1932,8 @@ data class DevChildAttendance(
     val date: LocalDate,
     val arrived: LocalTime,
     val departed: LocalTime?,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 )
 
 data class DevAssistanceAction(
@@ -2097,7 +2099,10 @@ data class DevMobileDevice(
     val name: String = "Laite",
     val longTermToken: UUID? = null,
     val pushNotificationCategories: Set<PushNotificationCategory> = emptySet(),
-)
+) {
+    val user: AuthenticatedUser.MobileDevice
+        @JsonIgnore get() = AuthenticatedUser.MobileDevice(id)
+}
 
 data class DevPersonalMobileDevice(
     val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),

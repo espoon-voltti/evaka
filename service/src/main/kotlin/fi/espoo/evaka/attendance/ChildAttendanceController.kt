@@ -217,6 +217,8 @@ class ChildAttendanceController(
                                 unitId = unitId,
                                 date = today,
                                 range = TimeInterval(body.arrived, null),
+                                now = clock.now(),
+                                createdById = user.evakaUserId,
                             )
                         } catch (e: Exception) {
                             throw mapPSQLException(e)
@@ -408,6 +410,8 @@ class ChildAttendanceController(
                                         unitId,
                                         date,
                                         TimeInterval(startTime, endTime),
+                                        clock.now(),
+                                        user.evakaUserId,
                                     )
                                 }
                         }

@@ -769,6 +769,8 @@ export class Fixture {
       date: LocalDate.todayInHelsinkiTz(),
       arrived: LocalTime.nowInHelsinkiTz(),
       departed: LocalTime.nowInHelsinkiTz(),
+      modifiedAt: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser.id,
       ...initial
     })
   }
