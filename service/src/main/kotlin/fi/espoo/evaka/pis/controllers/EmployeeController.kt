@@ -119,6 +119,12 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable id: EmployeeId,
         @RequestBody body: List<UserRole>,
     ) {
+        body.forEach { role ->
+            if (!role.isGlobalRole()) {
+                throw BadRequest("Role $role is not a global role")
+            }
+        }
+
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
