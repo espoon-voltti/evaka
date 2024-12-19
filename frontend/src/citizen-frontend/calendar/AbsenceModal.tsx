@@ -189,7 +189,9 @@ export default React.memo(function AbsenceModal({
                 </TabletAndDesktop>
               </LineContainer>
               <CalendarModalSection>
-                <H2>{i18n.calendar.absenceModal.dateRange}</H2>
+                <H2 id="absence-daterange-label">
+                  {i18n.calendar.absenceModal.dateRange}
+                </H2>
                 <DateRangePickerF
                   bind={range}
                   locale={lang}
@@ -197,6 +199,8 @@ export default React.memo(function AbsenceModal({
                   onFocus={(ev) => {
                     scrollIntoViewSoftKeyboard(ev.target, 'start')
                   }}
+                  required
+                  ariaId="absence-daterange-label"
                 />
                 <Gap size="s" />
                 <P noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>

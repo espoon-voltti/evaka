@@ -20,6 +20,7 @@ export interface DateRangePickerLowLevelProps
   onChange: (value: [string, string]) => void
   startInfo?: InputInfo
   endInfo?: InputInfo
+  ariaId?: string
 }
 
 export default React.memo(function DateRangePickerLowLevel({
@@ -30,6 +31,7 @@ export default React.memo(function DateRangePickerLowLevel({
   'data-qa': dataQa,
   minDate,
   maxDate,
+  ariaId,
   ...datePickerProps
 }: DateRangePickerLowLevelProps) {
   const startDate = useMemo(() => LocalDate.parseFiOrNull(start), [start])
@@ -68,7 +70,7 @@ export default React.memo(function DateRangePickerLowLevel({
   )
 
   return (
-    <FixedSpaceRow data-qa={dataQa}>
+    <FixedSpaceRow data-qa={dataQa} aria-labelledby={ariaId} role="group">
       <DatePickerLowLevel
         value={start}
         onChange={handleChangeStart}

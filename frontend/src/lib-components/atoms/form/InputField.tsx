@@ -312,6 +312,8 @@ const InputField = React.memo(function InputField({
         step={step}
         id={id}
         aria-describedby={ariaId}
+        aria-invalid={infoStatus === 'warning'}
+        aria-required={required ?? false}
         required={required ?? false}
         ref={inputRef}
         autoFocus={autoFocus}
@@ -334,7 +336,10 @@ const InputField = React.memo(function InputField({
       )}
       {!!infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>
-          <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
+          <span
+            data-qa={dataQa ? `${dataQa}-info` : undefined}
+            role={infoStatus === 'warning' ? 'alert' : undefined}
+          >
             {infoText}
           </span>
           <UnderRowStatusIcon status={info?.status} />
