@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.math.roundToLong
@@ -115,10 +116,20 @@ data class AbsenceTypeResponse(val absenceType: AbsenceType, val staffCreated: B
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class ReservationResponse : Comparable<ReservationResponse> {
-    @JsonTypeName("NO_TIMES") data class NoTimes(val staffCreated: Boolean) : ReservationResponse()
+    @JsonTypeName("NO_TIMES")
+    data class NoTimes(
+        val staffCreated: Boolean,
+        val modifiedAt: HelsinkiDateTime?,
+        val modifiedBy: EvakaUser?,
+    ) : ReservationResponse()
 
     @JsonTypeName("TIMES")
-    data class Times(val range: TimeRange, val staffCreated: Boolean) : ReservationResponse()
+    data class Times(
+        val range: TimeRange,
+        val staffCreated: Boolean,
+        val modifiedAt: HelsinkiDateTime?,
+        val modifiedBy: EvakaUser?,
+    ) : ReservationResponse()
 
     override fun compareTo(other: ReservationResponse): Int {
         return when {
@@ -140,9 +151,19 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
     companion object {
         fun from(reservationRow: ReservationRow) =
             when (reservationRow.reservation) {
-                is Reservation.NoTimes -> NoTimes(reservationRow.staffCreated)
+                is Reservation.NoTimes ->
+                    NoTimes(
+                        reservationRow.staffCreated,
+                        reservationRow.modifiedAt,
+                        reservationRow.modifiedBy,
+                    )
                 is Reservation.Times ->
-                    Times(reservationRow.reservation.range, reservationRow.staffCreated)
+                    Times(
+                        reservationRow.reservation.range,
+                        reservationRow.staffCreated,
+                        reservationRow.modifiedAt,
+                        reservationRow.modifiedBy,
+                    )
             }
     }
 }
@@ -152,6 +173,8 @@ data class ReservationRow(
     val childId: ChildId,
     val reservation: Reservation,
     val staffCreated: Boolean,
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUser,
 )
 
 data class CreateReservationsResult(
@@ -319,6 +342,7 @@ fun createReservationsAndAbsences(
     val upsertedReservations =
         tx.insertValidReservations(
             user.evakaUserId,
+            now,
             validated.filterIsInstance<DailyReservationRequest.Reservations>().flatMap { res ->
                 listOfNotNull(res.reservation, res.secondReservation).map {
                     ReservationInsert(res.childId, res.date, it)
@@ -454,7 +478,7 @@ fun upsertChildDatePresence(
     val insertedReservations =
         reservations
             .filter { it.second == null }
-            .map { tx.insertReservation(userId, input.date, input.childId, it.first) }
+            .map { tx.insertReservation(userId, now, input.date, input.childId, it.first) }
 
     val deletedAttendances = tx.deleteAttendancesByDate(childId = input.childId, date = input.date)
     val insertedAttendances =
@@ -464,6 +488,8 @@ fun upsertChildDatePresence(
                 input.unitId,
                 input.date,
                 TimeInterval(attendance.start, attendance.end),
+                now,
+                userId,
             )
         }
 
@@ -545,6 +571,7 @@ private fun Database.Transaction.deleteReservations(
 
 private fun Database.Transaction.insertReservation(
     userId: EvakaUserId,
+    now: HelsinkiDateTime,
     date: LocalDate,
     childId: ChildId,
     reservation: Reservation,
@@ -552,8 +579,8 @@ private fun Database.Transaction.insertReservation(
     return createQuery {
             sql(
                 """
-        INSERT INTO attendance_reservation (child_id, created_by, date, start_time, end_time) 
-        VALUES (${bind(childId)}, ${bind(userId)}, ${bind(date)}, ${bind(reservation.asTimeRange()?.start)}, ${bind(reservation.asTimeRange()?.end)})
+        INSERT INTO attendance_reservation (child_id, created_at, created_by, date, start_time, end_time) 
+        VALUES (${bind(childId)}, ${bind(now)}, ${bind(userId)}, ${bind(date)}, ${bind(reservation.asTimeRange()?.start)}, ${bind(reservation.asTimeRange()?.end)})
         RETURNING id
     """
             )

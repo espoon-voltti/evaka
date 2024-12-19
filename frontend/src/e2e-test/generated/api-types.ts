@@ -406,6 +406,8 @@ export interface DevChildAttendance {
   childId: PersonId
   date: LocalDate
   departed: LocalTime | null
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUserId
   unitId: DaycareId
 }
 
@@ -1280,7 +1282,8 @@ export function deserializeJsonDevChildAttendance(json: JsonOf<DevChildAttendanc
     ...json,
     arrived: LocalTime.parseIso(json.arrived),
     date: LocalDate.parseIso(json.date),
-    departed: (json.departed != null) ? LocalTime.parseIso(json.departed) : null
+    departed: (json.departed != null) ? LocalTime.parseIso(json.departed) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 

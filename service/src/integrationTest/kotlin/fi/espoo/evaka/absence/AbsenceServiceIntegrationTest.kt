@@ -555,7 +555,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = holidayPeriod.end.minusDays(2),
                     startTime = null,
                     endTime = null,
-                    created = HelsinkiDateTime.of(placementStart, LocalTime.of(8, 0)),
+                    createdAt = HelsinkiDateTime.of(placementStart, LocalTime.of(8, 0)),
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
@@ -565,7 +565,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = holidayPeriod.end.minusDays(1),
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    created = HelsinkiDateTime.of(placementStart, LocalTime.of(9, 0)),
+                    createdAt = HelsinkiDateTime.of(placementStart, LocalTime.of(9, 0)),
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )

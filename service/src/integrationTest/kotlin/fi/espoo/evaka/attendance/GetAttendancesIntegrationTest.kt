@@ -13,6 +13,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
@@ -21,6 +22,8 @@ import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
@@ -36,6 +39,7 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.toEvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -52,7 +56,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Autowired private lateinit var childAttendanceController: ChildAttendanceController
 
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
-    private val mobileUser2 = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
+    private val mobileUser2 = DevMobileDevice(unitId = testDaycare2.id, name = "Laite ")
     private val groupId = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
@@ -60,6 +64,10 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private val now = HelsinkiDateTime.of(LocalDate.of(2022, 2, 3), LocalTime.of(12, 5, 1))
     private val placementStart = now.toLocalDate().minusDays(30)
     private val placementEnd = now.toLocalDate().plusDays(30)
+
+    private val user2 = mobileUser2.toEvakaUser()
+    private val employee2 =
+        DevEmployee(id = EmployeeId(user2.id.raw), lastName = "Laite", firstName = "")
 
     @BeforeEach
     fun beforeEach() {
@@ -89,7 +97,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 )
             )
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
-            tx.createMobileDeviceToUnit(mobileUser2.id, testDaycare2.id)
+            tx.insert(employee2)
+            tx.insert(mobileUser2)
         }
     }
 
@@ -361,7 +370,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = null,
             )
         }
-        val childInBackup = expectOneChildAttendance(backupUnitId, mobileUser2)
+        val childInBackup = expectOneChildAttendance(backupUnitId, mobileUser2.user)
         assertEquals(AttendanceStatus.PRESENT, childInBackup.status)
         assertNotNull(childInBackup.attendances)
         assertNull(childInBackup.attendances[0].departed)
@@ -393,7 +402,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = null,
             )
         }
-        val childInBackup = expectOneChildAttendance(backupUnitId, mobileUser2)
+        val childInBackup = expectOneChildAttendance(backupUnitId, mobileUser2.user)
         assertEquals(AttendanceStatus.PRESENT, childInBackup.status)
         assertNotNull(childInBackup.attendances)
         assertNull(childInBackup.attendances[0].departed)
@@ -413,13 +422,21 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = now.toLocalDate(),
                     startTime = reservationStart,
                     endTime = reservationEnd,
-                    createdBy = mobileUser2.evakaUserId,
+                    createdAt = now,
+                    createdBy = mobileUser2.toEvakaUser().id,
                 )
             )
         }
         val child = expectOneChild()
         assertEquals(
-            listOf(ReservationResponse.Times(TimeRange(reservationStart, reservationEnd), true)),
+            listOf(
+                ReservationResponse.Times(
+                    TimeRange(reservationStart, reservationEnd),
+                    true,
+                    now,
+                    mobileUser2.toEvakaUser(),
+                )
+            ),
             child.reservations,
         )
     }
@@ -433,12 +450,16 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = now.toLocalDate(),
                     startTime = null,
                     endTime = null,
-                    createdBy = mobileUser2.evakaUserId,
+                    createdAt = now,
+                    createdBy = mobileUser2.toEvakaUser().id,
                 )
             )
         }
         val child = expectOneChild()
-        assertEquals(listOf(ReservationResponse.NoTimes(true)), child.reservations)
+        assertEquals(
+            listOf(ReservationResponse.NoTimes(true, now, mobileUser2.toEvakaUser())),
+            child.reservations,
+        )
     }
 
     @Test
@@ -461,13 +482,21 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = now.toLocalDate(),
                     startTime = reservationStart,
                     endTime = reservationEnd,
-                    createdBy = mobileUser2.evakaUserId,
+                    createdAt = now,
+                    createdBy = mobileUser2.toEvakaUser().id,
                 )
             )
         }
-        val childInBackup = expectOneChild(backupUnitId, mobileUser2)
+        val childInBackup = expectOneChild(backupUnitId, mobileUser2.user)
         assertEquals(
-            listOf(ReservationResponse.Times(TimeRange(reservationStart, reservationEnd), true)),
+            listOf(
+                ReservationResponse.Times(
+                    TimeRange(reservationStart, reservationEnd),
+                    true,
+                    now,
+                    mobileUser2.toEvakaUser(),
+                )
+            ),
             childInBackup.reservations,
         )
     }
