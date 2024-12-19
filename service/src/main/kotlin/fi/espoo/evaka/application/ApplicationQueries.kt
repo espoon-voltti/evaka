@@ -1484,6 +1484,14 @@ LEFT JOIN daycare_group g ON gp.daycare_group_id = g.id
 WHERE p.unit_id = ${bind(unitId)}
 AND a.transferapplication
 AND a.status = 'ACTIVE'
+AND EXISTS(
+    SELECT FROM placement next_p
+    WHERE a.child_id = next_p.child_id AND next_p.start_date > p.end_date AND next_p.unit_id != p.unit_id
+)
+AND EXISTS(
+    SELECT FROM decision d
+    WHERE a.id = d.application_id AND d.start_date > ${bind(today)} AND d.unit_id != p.unit_id 
+)
 """
             )
         }

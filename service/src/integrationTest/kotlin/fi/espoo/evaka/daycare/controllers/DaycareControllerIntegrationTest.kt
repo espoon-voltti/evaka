@@ -14,6 +14,7 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.daycare.service.DaycareGroup
+import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.insertMessageContent
@@ -350,6 +351,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
 
             // Active transfer application
+            it.insert(testDaycare2)
             it.insert(testChild_5, DevPersonType.CHILD)
             it.insert(
                 DevPlacement(
@@ -368,14 +370,34 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     endDate = today.plusDays(20),
                 )
             )
-            it.insertTestApplication(
-                type = ApplicationType.DAYCARE,
-                guardianId = testAdult_1.id,
-                childId = testChild_5.id,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication),
-                status = ApplicationStatus.ACTIVE,
-                transferApplication = true,
+            it.insert(
+                DevPlacement(
+                    childId = testChild_5.id,
+                    unitId = testDaycare2.id,
+                    startDate = today.plusDays(21),
+                    endDate = today.plusYears(1),
+                )
             )
+            it.insertTestApplication(
+                    type = ApplicationType.DAYCARE,
+                    guardianId = testAdult_1.id,
+                    childId = testChild_5.id,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                    status = ApplicationStatus.ACTIVE,
+                    transferApplication = true,
+                )
+                .also { applicationId ->
+                    it.insertTestDecision(
+                        TestDecision(
+                            startDate = today.plusDays(21),
+                            endDate = today.plusYears(1),
+                            unitId = testDaycare2.id,
+                            createdBy = supervisor.evakaUserId,
+                            applicationId = applicationId,
+                            type = DecisionType.DAYCARE,
+                        )
+                    )
+                }
 
             // Active transfer application without group
             it.insert(testChild_6, DevPersonType.CHILD)
@@ -388,14 +410,74 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     endDate = today.plusDays(21),
                 )
             )
-            it.insertTestApplication(
-                type = ApplicationType.DAYCARE,
-                guardianId = testAdult_1.id,
-                childId = testChild_6.id,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication),
-                status = ApplicationStatus.ACTIVE,
-                transferApplication = true,
+            it.insert(
+                DevPlacement(
+                    childId = testChild_6.id,
+                    unitId = testDaycare2.id,
+                    startDate = today.plusDays(22),
+                    endDate = today.plusYears(1),
+                )
             )
+            it.insertTestApplication(
+                    type = ApplicationType.DAYCARE,
+                    guardianId = testAdult_1.id,
+                    childId = testChild_6.id,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                    status = ApplicationStatus.ACTIVE,
+                    transferApplication = true,
+                )
+                .also { applicationId ->
+                    it.insertTestDecision(
+                        TestDecision(
+                            startDate = today.plusDays(22),
+                            endDate = today.plusYears(1),
+                            unitId = testDaycare2.id,
+                            createdBy = supervisor.evakaUserId,
+                            applicationId = applicationId,
+                            type = DecisionType.DAYCARE,
+                        )
+                    )
+                }
+
+            // Old active transfer application, child has been transferred already -> not listed
+            it.insert(testChild_7, DevPersonType.CHILD)
+            it.insert(
+                DevPlacement(
+                    childId = testChild_7.id,
+                    unitId = testDaycare2.id,
+                    startDate = today.minusYears(1),
+                    endDate = today.minusDays(11),
+                )
+            )
+            it.insert(
+                DevPlacement(
+                    childId = testChild_7.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(21),
+                )
+            )
+            it.insertTestApplication(
+                    type = ApplicationType.DAYCARE,
+                    guardianId = testAdult_1.id,
+                    childId = testChild_7.id,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                    status = ApplicationStatus.ACTIVE,
+                    transferApplication = true,
+                    sentDate = today.minusMonths(2),
+                )
+                .also { applicationId ->
+                    it.insertTestDecision(
+                        TestDecision(
+                            startDate = today.minusDays(10),
+                            endDate = today.plusDays(21),
+                            unitId = testDaycare.id,
+                            createdBy = supervisor.evakaUserId,
+                            applicationId = applicationId,
+                            type = DecisionType.DAYCARE,
+                        )
+                    )
+                }
         }
 
         val details = getGroupDetails(testDaycare.id)
