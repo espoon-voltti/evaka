@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snDefaultPartDayDaycare
 import fi.espoo.evaka.testAdult_1
@@ -1107,7 +1108,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `realized base amount is calculated correctly`() {
+    fun `realized amount before assistance need is calculated correctly`() {
         // Base value 87000
         createVoucherDecision(
             janFirst,
@@ -1136,7 +1137,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `realized base amount is calculated correctly when co-payment is zero`() {
+    fun `realized amount before assistance need is calculated correctly when co-payment is zero`() {
         // Base value 87000
         createVoucherDecision(
             janFirst,
@@ -1165,7 +1166,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `realized base amount equals realized amount when assistance need coefficient is 1`() {
+    fun `realized amount before assistance need equals realized amount when assistance need coefficient is 1`() {
         // Base value 87000
         createVoucherDecision(
             janFirst,
@@ -1188,6 +1189,37 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 42200,
             )
         assertEquals(42200, row.realizedAmountBeforeAssistanceNeed)
+    }
+
+    @Test
+    fun `realized amount before assistance need equals realized amount when they differ by less than 1 EUR`() {
+        // Base value 87000
+        val jan13 = janFirst.plusDays(12)
+        createVoucherDecision(
+            validFrom = janFirst,
+            validTo = jan13,
+            unitId = testDaycare.id,
+            serviceNeedOption = snDaycareContractDays15, // voucher value coefficient 0.75
+            assistanceNeedCoefficient = BigDecimal("1.00"),
+            value = 65300, // 87000 * 0.75 = 65250 => rounds to 65300
+            coPayment = 0,
+        )
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+
+        assertEquals(1, janReport.size)
+        val row =
+            janReport.assertContainsRow(
+                ORIGINAL,
+                janFirst,
+                jan13,
+                65300,
+                0,
+                21767, // In effect 7 out of 21 business days: 65300 * (7 / 21) = 21767
+            )
+
+        // 87000 * 0.75 * (21767 / 65300) = 21750
+        // However, assistance need coefficient is 1 so realized amount 21767 is used
+        assertEquals(21767, row.realizedAmountBeforeAssistanceNeed)
     }
 
     @Test
