@@ -21,6 +21,7 @@ import fi.espoo.evaka.testDecisionMaker_3
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -53,7 +54,12 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 dbInstance(),
                 user,
                 RealEvakaClock(),
-                SearchEmployeeRequest(page = 1, searchTerm = null, hideDeactivated = false),
+                SearchEmployeeRequest(
+                    page = 1,
+                    searchTerm = null,
+                    hideDeactivated = false,
+                    globalRoles = emptySet(),
+                ),
             )
 
         assertEquals(4, body.total)
@@ -88,10 +94,34 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 dbInstance(),
                 user,
                 RealEvakaClock(),
-                SearchEmployeeRequest(page = 1, searchTerm = "super", hideDeactivated = false),
+                SearchEmployeeRequest(
+                    page = 1,
+                    searchTerm = "super",
+                    hideDeactivated = false,
+                    globalRoles = emptySet(),
+                ),
             )
         assertEquals(1, body.data.size)
         assertEquals("Sammy", body.data[0].firstName)
         assertEquals("Supervisor", body.data[0].lastName)
+    }
+
+    @Test
+    fun `admin searches employees with roles`() {
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val body =
+            controller.searchEmployees(
+                dbInstance(),
+                user,
+                RealEvakaClock(),
+                SearchEmployeeRequest(
+                    page = 1,
+                    searchTerm = null,
+                    hideDeactivated = false,
+                    globalRoles = setOf(UserRole.SERVICE_WORKER),
+                ),
+            )
+        assertEquals(1, body.data.size)
+        assertTrue { body.data.all { it.globalRoles.toSet().contains(UserRole.SERVICE_WORKER) } }
     }
 }
