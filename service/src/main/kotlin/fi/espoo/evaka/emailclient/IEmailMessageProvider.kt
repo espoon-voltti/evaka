@@ -122,6 +122,8 @@ interface IEmailMessageProvider {
         reminderData: DiscussionTimeReminderData,
     ): EmailContent
 
+    fun decisionNotification(): EmailContent
+
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 
     fun serviceApplicationDecidedNotification(accepted: Boolean, startDate: LocalDate): EmailContent

@@ -19,6 +19,7 @@ import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getSentDecisionsByApplication
 import fi.espoo.evaka.decision.updateDecisionDrafts
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
@@ -92,6 +93,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -1162,6 +1164,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         sendDecisionsWithoutProposalTest(
             child = testChild_2,
             applier = testAdult_1,
+            applierIsGuardian = true,
             secondDecisionTo = null,
             manualMailing = false,
         )
@@ -1171,6 +1174,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         sendDecisionsWithoutProposalTest(
             child = testChild_1,
             applier = testAdult_1,
+            applierIsGuardian = true,
             secondDecisionTo = null,
             manualMailing = false,
         )
@@ -1180,6 +1184,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         sendDecisionsWithoutProposalTest(
             child = testChild_6,
             applier = testAdult_5,
+            applierIsGuardian = true,
             secondDecisionTo = testAdult_6,
             manualMailing = false,
         )
@@ -1189,6 +1194,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         sendDecisionsWithoutProposalTest(
             child = testChild_7,
             applier = testAdult_5,
+            applierIsGuardian = false,
             secondDecisionTo = null,
             manualMailing = true,
         )
@@ -1198,6 +1204,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         sendDecisionsWithoutProposalTest(
             child = testChild_7,
             applier = testAdult_4,
+            applierIsGuardian = false,
             secondDecisionTo = null,
             manualMailing = true,
         )
@@ -1207,6 +1214,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         sendDecisionsWithoutProposalTest(
             child = testChild_2,
             applier = testAdult_4,
+            applierIsGuardian = false,
             secondDecisionTo = testChild_1,
             manualMailing = true,
         )
@@ -1214,6 +1222,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     private fun sendDecisionsWithoutProposalTest(
         child: DevPerson,
         applier: DevPerson,
+        applierIsGuardian: Boolean,
         secondDecisionTo: DevPerson?,
         manualMailing: Boolean,
     ) {
@@ -1273,6 +1282,59 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 assertEquals(1, messages.filter { it.ssn == secondDecisionTo.ssn }.size)
             }
             assertEquals(1, messages.filter { it.ssn == applier.ssn }.size)
+        }
+
+        if (manualMailing) {
+            assertThat(MockEmailClient.emails)
+                .extracting({ it.toAddress }, { it.content.subject })
+                .containsExactly(
+                    Tuple(
+                        "abc@espoo.fi",
+                        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+                    )
+                )
+        } else {
+            assertThat(MockEmailClient.emails)
+                .extracting({ it.toAddress }, { it.content.subject })
+                .containsExactly(
+                    Tuple(
+                        "abc@espoo.fi",
+                        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+                    ),
+                    Tuple(
+                        "abc@espoo.fi",
+                        "Uusi päätös eVakassa / Nytt beslut i eVaka / New decision in eVaka",
+                    ),
+                )
+        }
+
+        MockEmailClient.clear()
+
+        if (manualMailing) {
+            db.transaction { tx ->
+                service.confirmDecisionMailed(tx, serviceWorker, clock, applicationId)
+            }
+            asyncJobRunner.runPendingJobsSync(clock)
+
+            db.read {
+                val application = it.fetchApplicationDetails(applicationId)!!
+                assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
+            }
+
+            if (applierIsGuardian) {
+                assertThat(MockEmailClient.emails)
+                    .extracting({ it.toAddress }, { it.content.subject })
+                    .containsExactly(
+                        Tuple(
+                            "abc@espoo.fi",
+                            "Uusi päätös eVakassa / Nytt beslut i eVaka / New decision in eVaka",
+                        )
+                    )
+            } else {
+                assertThat(MockEmailClient.emails)
+                    .extracting({ it.toAddress }, { it.content.subject })
+                    .isEmpty()
+            }
         }
     }
 
@@ -1414,6 +1476,18 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val messages = MockSfiMessagesClient.getMessages()
             assertEquals(2, messages.size)
             assertEquals(2, messages.filter { it.ssn == testAdult_1.ssn }.size)
+            assertThat(MockEmailClient.emails)
+                .extracting({ it.toAddress }, { it.content.subject })
+                .containsExactly(
+                    Tuple(
+                        "abc@espoo.fi",
+                        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+                    ),
+                    Tuple(
+                        "abc@espoo.fi",
+                        "Uusi päätös eVakassa / Nytt beslut i eVaka / New decision in eVaka",
+                    ),
+                )
         }
     }
 
@@ -1490,6 +1564,15 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             val messages = MockSfiMessagesClient.getMessages()
             assertEquals(0, messages.size)
+
+            assertThat(MockEmailClient.emails)
+                .extracting({ it.toAddress }, { it.content.subject })
+                .containsExactly(
+                    Tuple(
+                        "abc@espoo.fi",
+                        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+                    )
+                )
 
             val placementPlan = tx.getPlacementPlan(applicationId)
             assertNotNull(placementPlan)
@@ -1574,6 +1657,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             assertEquals(0, decisionsByApplication.size)
             val messages = MockSfiMessagesClient.getMessages()
             assertEquals(0, messages.size)
+            assertThat(MockEmailClient.emails)
+                .extracting({ it.toAddress }, { it.content.subject })
+                .containsExactly(
+                    Tuple(
+                        "abc@espoo.fi",
+                        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+                    )
+                )
         }
     }
 
@@ -1651,6 +1742,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             assertEquals(0, decisionsByApplication.size)
             val messages = MockSfiMessagesClient.getMessages()
             assertEquals(0, messages.size)
+            assertThat(MockEmailClient.emails)
+                .extracting({ it.toAddress }, { it.content.subject })
+                .containsExactly(
+                    Tuple(
+                        "abc@espoo.fi",
+                        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+                    )
+                )
         }
     }
 

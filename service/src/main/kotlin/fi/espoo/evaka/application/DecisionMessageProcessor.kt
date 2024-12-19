@@ -22,6 +22,7 @@ class DecisionMessageProcessor(
     init {
         asyncJobRunner.registerHandler(::runCreateJob)
         asyncJobRunner.registerHandler(::runSendJob)
+        asyncJobRunner.registerHandler(::runEmailJob)
     }
 
     fun runCreateJob(
@@ -52,4 +53,15 @@ class DecisionMessageProcessor(
             decisionService.deliverDecisionToGuardians(tx, clock, decisionId)
             logger.info { "Successfully sent decision(s) pdf for decision (id: $decisionId)." }
         }
+
+    fun runEmailJob(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendNewDecisionEmail,
+    ) {
+        val applicationId = msg.applicationId
+
+        decisionService.sendNewDecisionEmail(db, clock, applicationId)
+        logger.info { "Successfully sent decision(s) email for application (id: $applicationId)." }
+    }
 }

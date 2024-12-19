@@ -342,6 +342,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendNewDecisionEmail(val applicationId: ApplicationId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendNewFeeDecisionEmail(val decisionId: FeeDecisionId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -478,6 +482,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendMissingReservationsReminder::class,
                     SendMissingHolidayReservationsReminder::class,
                     SendNewCustomerIncomeNotificationEmail::class,
+                    SendNewDecisionEmail::class,
                     SendNewFeeDecisionEmail::class,
                     SendNewVoucherValueDecisionEmail::class,
                     SendOutdatedIncomeNotificationEmail::class,

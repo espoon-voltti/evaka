@@ -565,6 +565,27 @@ $unsubscribeEn
         )
     }
 
+    override fun decisionNotification(): EmailContent {
+        return EmailContent.fromHtml(
+            subject = "Uusi päätös eVakassa / Nytt beslut i eVaka / New decision in eVaka",
+            html =
+                """
+<p>Sinulle on saapunut uusi päätös eVakaan.</p>
+<p>Päätös on nähtävissä eVakassa osoitteessa ${frontPageLink(Language.fi)}.</p>
+$unsubscribeFi
+<hr>
+<p>Du har fått ett nytt beslut i eVaka.</p>
+<p>Beslutet finns att se i eVaka på ${frontPageLink(Language.sv)}.</p>
+$unsubscribeSv
+<hr>
+<p>You have received a new decision in eVaka.</p>
+<p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
+$unsubscribeEn
+            """
+                    .trimIndent(),
+        )
+    }
+
     override fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent {
         val (decisionTypeFi, decisionTypeSv, decisionTypeEn) =
             when (decisionType) {
