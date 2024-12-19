@@ -160,8 +160,8 @@ test('Add two attendances for yesterday then update one and remove other', async
 
   let attendances = reservationsTable.attendanceCells(childId, date)
   await attendances.assertCount(2)
-  await attendances.nth(0).assertTextEquals('09:00\n16:00')
-  await attendances.nth(1).assertTextEquals('20:30\n-')
+  await attendances.nth(0).assertTextEquals('09:00\n16:00*')
+  await attendances.nth(1).assertTextEquals('20:30\n-*')
 
   await reservationsTable.openChildDateModal(childId, date)
   await modal.attendanceStart(0).assertValueEquals('09:00')
@@ -171,7 +171,7 @@ test('Add two attendances for yesterday then update one and remove other', async
 
   attendances = reservationsTable.attendanceCells(childId, date)
   await attendances.assertCount(1)
-  await attendances.nth(0).assertTextEquals('10:15\n16:00')
+  await attendances.nth(0).assertTextEquals('10:15\n16:00*')
 })
 
 test('Add absences for child in preschool daycare for tomorrow then update one and remove other', async () => {

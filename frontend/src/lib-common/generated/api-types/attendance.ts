@@ -15,6 +15,7 @@ import { ChildStickyNote } from './note'
 import { DailyServiceTimesValue } from './dailyservicetimes'
 import { DaycareId } from './shared'
 import { EmployeeId } from './shared'
+import { EvakaUser } from './user'
 import { GroupId } from './shared'
 import { HelsinkiDateTimeRange } from './shared'
 import { JsonOf } from '../../json'
@@ -96,6 +97,8 @@ export type AttendanceStatus =
 export interface AttendanceTimes {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
 }
 
 /**
@@ -484,7 +487,8 @@ export function deserializeJsonAttendanceTimes(json: JsonOf<AttendanceTimes>): A
   return {
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 

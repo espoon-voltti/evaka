@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
@@ -14,6 +15,7 @@ import { ChildImageId } from './shared'
 import { ChildServiceNeedInfo } from './absence'
 import { DailyServiceTimesValue } from './dailyservicetimes'
 import { DaycareId } from './shared'
+import { EvakaUser } from './user'
 import { GroupId } from './shared'
 import { HolidayPeriodEffect } from './holidayperiod'
 import { JsonOf } from '../../json'
@@ -47,6 +49,17 @@ export interface AbsenceRequest {
 export interface AbsenceTypeResponse {
   absenceType: AbsenceType
   staffCreated: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceTimesForDate
+*/
+export interface AttendanceTimesForDate {
+  date: LocalDate
+  interval: TimeInterval
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
+  staffModified: boolean
 }
 
 /**
@@ -87,7 +100,7 @@ export interface ChildDatePresence {
 export interface ChildRecordOfDay {
   absenceBillable: AbsenceTypeResponse | null
   absenceNonbillable: AbsenceTypeResponse | null
-  attendances: TimeInterval[]
+  attendances: AttendanceTimesForDate[]
   backupGroupId: GroupId | null
   childId: PersonId
   dailyServiceTimes: DailyServiceTimesValue | null
@@ -338,6 +351,8 @@ export namespace ReservationResponse {
   */
   export interface NoTimes {
     type: 'NO_TIMES'
+    modifiedAt: HelsinkiDateTime | null
+    modifiedBy: EvakaUser | null
     staffCreated: boolean
   }
 
@@ -346,6 +361,8 @@ export namespace ReservationResponse {
   */
   export interface Times {
     type: 'TIMES'
+    modifiedAt: HelsinkiDateTime | null
+    modifiedBy: EvakaUser | null
     range: TimeRange
     staffCreated: boolean
   }
@@ -429,6 +446,16 @@ export function deserializeJsonAbsenceRequest(json: JsonOf<AbsenceRequest>): Abs
 }
 
 
+export function deserializeJsonAttendanceTimesForDate(json: JsonOf<AttendanceTimesForDate>): AttendanceTimesForDate {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    interval: TimeInterval.parseJson(json.interval),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
 export function deserializeJsonChild(json: JsonOf<Child>): Child {
   return {
     ...json,
@@ -451,7 +478,7 @@ export function deserializeJsonChildDatePresence(json: JsonOf<ChildDatePresence>
 export function deserializeJsonChildRecordOfDay(json: JsonOf<ChildRecordOfDay>): ChildRecordOfDay {
   return {
     ...json,
-    attendances: json.attendances.map(e => TimeInterval.parseJson(e)),
+    attendances: json.attendances.map(e => deserializeJsonAttendanceTimesForDate(e)),
     dailyServiceTimes: (json.dailyServiceTimes != null) ? deserializeJsonDailyServiceTimesValue(json.dailyServiceTimes) : null,
     reservations: json.reservations.map(e => deserializeJsonReservationResponse(e))
   }
@@ -620,14 +647,23 @@ export function deserializeJsonReservationChildInfo(json: JsonOf<ReservationChil
 
 
 
+export function deserializeJsonReservationResponseNoTimes(json: JsonOf<ReservationResponse.NoTimes>): ReservationResponse.NoTimes {
+  return {
+    ...json,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
+  }
+}
+
 export function deserializeJsonReservationResponseTimes(json: JsonOf<ReservationResponse.Times>): ReservationResponse.Times {
   return {
     ...json,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,
     range: TimeRange.parseJson(json.range)
   }
 }
 export function deserializeJsonReservationResponse(json: JsonOf<ReservationResponse>): ReservationResponse {
   switch (json.type) {
+    case 'NO_TIMES': return deserializeJsonReservationResponseNoTimes(json)
     case 'TIMES': return deserializeJsonReservationResponseTimes(json)
     default: return json
   }

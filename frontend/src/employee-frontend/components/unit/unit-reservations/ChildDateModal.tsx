@@ -196,8 +196,8 @@ export default React.memo(function ChildDateModal({
       attendances: editingFuture
         ? []
         : childDayRecord.attendances.map((a) => ({
-            startTime: a.formatStart(),
-            endTime: a.formatEnd()
+            startTime: a.interval.formatStart(),
+            endTime: a.interval.formatEnd()
           })),
       billableAbsence: childDayRecord.possibleAbsenceCategories.includes(
         'BILLABLE'

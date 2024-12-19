@@ -476,3 +476,4 @@ V477__titania_errors_id.sql
 V478__delete_disallowed_personal_mobile_pairings.sql
 V479__drop_staff_attendance_count_other.sql
 V480__income_created.sql
+V481__attendance_reservation_modification_metadata.sql

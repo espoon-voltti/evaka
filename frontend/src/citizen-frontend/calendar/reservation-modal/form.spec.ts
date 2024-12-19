@@ -10,7 +10,9 @@ import {
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import { randomId } from 'lib-common/id-type'
+import { EvakaUser } from 'lib-common/generated/api-types/user'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId, fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -72,6 +74,14 @@ const emptyChild: ReservationResponseDayChild = {
     type: 'NORMAL',
     range: defaultReservableTimeRange
   }
+}
+
+const nullUUID = evakaUserId(fromUuid('00000000-0000-0000-0000-000000000000'))
+
+const user: EvakaUser = {
+  id: nullUUID,
+  name: 'eVaka',
+  type: 'SYSTEM'
 }
 
 const timeInputState = (
@@ -228,7 +238,9 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                  staffCreated: false
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
                 }
               ]
             },
@@ -239,7 +251,9 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                  staffCreated: false
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
                 }
               ]
             },
@@ -593,13 +607,27 @@ describe('resetTimes', () => {
               ...emptyChild,
               childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
-              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
+              reservations: [
+                {
+                  type: 'NO_TIMES',
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
+                }
+              ]
             },
             {
               ...emptyChild,
               childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
-              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
+              reservations: [
+                {
+                  type: 'NO_TIMES',
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
+                }
+              ]
             }
           ]
         })
@@ -637,7 +665,14 @@ describe('resetTimes', () => {
               ...emptyChild,
               childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
-              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
+              reservations: [
+                {
+                  type: 'NO_TIMES',
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
+                }
+              ]
             },
             {
               ...emptyChild,
@@ -1078,7 +1113,9 @@ describe('resetTimes', () => {
                     LocalTime.of(8, day.date.getIsoDayOfWeek() * 5),
                     LocalTime.of(16, 0)
                   ),
-                  staffCreated: false
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
                 }
               ]
             },
@@ -1092,7 +1129,9 @@ describe('resetTimes', () => {
                     LocalTime.of(8, day.date.getIsoDayOfWeek() * 5),
                     LocalTime.of(16, 0)
                   ),
-                  staffCreated: false
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
                 }
               ]
             },
@@ -1106,7 +1145,9 @@ describe('resetTimes', () => {
                     LocalTime.of(8, 15),
                     LocalTime.of(16, 0)
                   ),
-                  staffCreated: false
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
                 }
               ]
             }
@@ -1797,13 +1838,27 @@ describe('resetTimes', () => {
               ...emptyChild,
               childId: childId1,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
-              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
+              reservations: [
+                {
+                  type: 'NO_TIMES',
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
+                }
+              ]
             },
             {
               ...emptyChild,
               childId: childId2,
               holidayPeriodEffect: { type: 'ReservationsOpen' },
-              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
+              reservations: [
+                {
+                  type: 'NO_TIMES',
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
+                }
+              ]
             },
             {
               ...emptyChild,
@@ -1818,7 +1873,9 @@ describe('resetTimes', () => {
                           LocalTime.of(8, 15),
                           LocalTime.of(16, 0)
                         ),
-                        staffCreated: false
+                        staffCreated: false,
+                        modifiedAt: HelsinkiDateTime.now(),
+                        modifiedBy: user
                       }
                     ]
                   : []
@@ -1912,7 +1969,14 @@ describe('resetTimes', () => {
               holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations:
                 day.date.getIsoDayOfWeek() === 4
-                  ? [{ type: 'NO_TIMES', staffCreated: false }]
+                  ? [
+                      {
+                        type: 'NO_TIMES',
+                        staffCreated: false,
+                        modifiedAt: HelsinkiDateTime.now(),
+                        modifiedBy: user
+                      }
+                    ]
                   : day.date.getIsoDayOfWeek() === 5
                     ? [
                         {
@@ -1921,7 +1985,9 @@ describe('resetTimes', () => {
                             LocalTime.of(8, 0),
                             LocalTime.of(16, 0)
                           ),
-                          staffCreated: false
+                          staffCreated: false,
+                          modifiedAt: HelsinkiDateTime.now(),
+                          modifiedBy: user
                         }
                       ]
                     : [],
@@ -2211,7 +2277,9 @@ describe('resetTimes', () => {
       const r: ReservationResponse = {
         type: 'TIMES',
         range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-        staffCreated: false
+        staffCreated: false,
+        modifiedAt: HelsinkiDateTime.now(),
+        modifiedBy: user
       }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const an: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
@@ -2517,7 +2585,9 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                  staffCreated: false
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
                 }
               ],
               absence: { type: 'OTHER_ABSENCE', editable: true }
@@ -2569,7 +2639,9 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                  staffCreated: false
+                  staffCreated: false,
+                  modifiedAt: HelsinkiDateTime.now(),
+                  modifiedBy: user
                 }
               ],
               absence: { type: 'OTHER_ABSENCE', editable: false }
@@ -2702,7 +2774,12 @@ describe('resetTimes', () => {
     })
 
     it('Open holiday period + reservations + absences + employee-marked absences', () => {
-      const r: ReservationResponse = { type: 'NO_TIMES', staffCreated: false }
+      const r: ReservationResponse = {
+        type: 'NO_TIMES',
+        staffCreated: false,
+        modifiedAt: HelsinkiDateTime.now(),
+        modifiedBy: user
+      }
       const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 
@@ -2897,7 +2974,12 @@ describe('resetTimes', () => {
     })
 
     it('Closed holiday period + reservations + absences + employee-marked absences', () => {
-      const r: ReservationResponse = { type: 'NO_TIMES', staffCreated: false }
+      const r: ReservationResponse = {
+        type: 'NO_TIMES',
+        staffCreated: false,
+        modifiedAt: HelsinkiDateTime.now(),
+        modifiedBy: user
+      }
       const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 
