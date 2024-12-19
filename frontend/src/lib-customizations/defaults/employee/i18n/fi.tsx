@@ -1890,7 +1890,7 @@ export const fi = {
       details: {
         attachments: 'Liitteet',
         name: 'Nimi',
-        updated: 'Tulotiedot päivitetty',
+        created: 'Tulotiedot luotu',
         handler: 'Käsittelijä',
         originApplication:
           'Huoltaja on hakemuksella suostunut korkeimpaan maksuluokkaan',
