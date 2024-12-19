@@ -44,48 +44,6 @@ class OccupancyController(
     private val placementPlanService: PlacementPlanService,
 ) {
 
-    @GetMapping("/employee-mobile/occupancy/by-unit/{unitId}")
-    fun getOccupancyPeriods(
-        db: Database,
-        user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam type: OccupancyType,
-    ): OccupancyResponse {
-        val occupancies =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Unit.READ_OCCUPANCIES,
-                        unitId,
-                    )
-                    it.calculateOccupancyPeriods(
-                        clock.today(),
-                        unitId,
-                        FiniteDateRange(from, to),
-                        type,
-                        AccessControlFilter.PermitAll,
-                        groupId = null,
-                    )
-                }
-            }
-        Audit.OccupancyRead.log(
-            targetId = AuditId(unitId),
-            meta = mapOf("count" to occupancies.size),
-        )
-
-        return OccupancyResponse(
-            occupancies = occupancies,
-            max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
-            min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! },
-        )
-    }
-
     @GetMapping("/employee/occupancy/by-unit/{unitId}/speculated/{applicationId}")
     fun getOccupancyPeriodsSpeculated(
         db: Database,
@@ -279,64 +237,6 @@ class OccupancyController(
             }
             .also { Audit.OccupancyRead.log(targetId = AuditId(unitId)) }
     }
-
-    @GetMapping("/employee-mobile/occupancy/by-unit/{unitId}/groups")
-    fun getOccupancyPeriodsOnGroups(
-        db: Database,
-        user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam type: OccupancyType,
-    ): List<OccupancyResponseGroupLevel> {
-        val occupancies =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Unit.READ_OCCUPANCIES,
-                        unitId,
-                    )
-                    it.calculateOccupancyPeriodsGroupLevel(
-                        clock.today(),
-                        unitId,
-                        FiniteDateRange(from, to),
-                        type,
-                        AccessControlFilter.PermitAll,
-                    )
-                }
-            }
-        Audit.OccupancyRead.log(
-            targetId = AuditId(unitId),
-            meta = mapOf("count" to occupancies.size),
-        )
-
-        return occupancies
-            .groupBy({ it.groupId }) {
-                OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)
-            }
-            .entries
-            .map { (key, value) ->
-                OccupancyResponseGroupLevel(
-                    groupId = key,
-                    occupancies =
-                        OccupancyResponse(
-                            occupancies = value,
-                            max =
-                                value
-                                    .filter { it.percentage != null }
-                                    .maxByOrNull { it.percentage!! },
-                            min =
-                                value
-                                    .filter { it.percentage != null }
-                                    .minByOrNull { it.percentage!! },
-                        ),
-                )
-            }
-    }
 }
 
 data class UnitOccupancies(
@@ -399,8 +299,6 @@ private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyR
         min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! },
     )
 }
-
-data class OccupancyResponseGroupLevel(val groupId: GroupId, val occupancies: OccupancyResponse)
 
 data class OccupancyResponse(
     val occupancies: List<OccupancyPeriod>,

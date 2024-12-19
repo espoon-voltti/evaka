@@ -62,16 +62,7 @@ class StaffAttendanceService {
     }
 
     fun clearStaffAttendance(db: Database.Connection, groupId: GroupId, date: LocalDate) {
-        db.transaction { tx ->
-            val countOther = tx.getCountOtherForDate(groupId, date)
-            if (countOther > 0) {
-                tx.upsertStaffAttendance(
-                    StaffAttendanceUpdate(groupId, date, count = 0.0, countOther)
-                )
-            } else {
-                tx.deleteStaffAttendance(groupId, date)
-            }
-        }
+        db.transaction { tx -> tx.deleteStaffAttendance(groupId, date) }
     }
 }
 
@@ -79,14 +70,12 @@ data class GroupStaffAttendance(
     val groupId: GroupId,
     val date: LocalDate,
     val count: Double,
-    val countOther: Double,
     val updated: HelsinkiDateTime,
 )
 
 data class UnitStaffAttendance(
     val date: LocalDate,
     val count: Double,
-    val countOther: Double,
     val updated: HelsinkiDateTime?,
     val groups: List<GroupStaffAttendance>,
 )
@@ -106,12 +95,7 @@ data class GroupInfo(
     val endDate: LocalDate?,
 )
 
-data class StaffAttendanceUpdate(
-    val groupId: GroupId,
-    val date: LocalDate,
-    val count: Double?,
-    val countOther: Double?,
-)
+data class StaffAttendanceUpdate(val groupId: GroupId, val date: LocalDate, val count: Double?)
 
 fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? =
     createQuery {
@@ -142,26 +126,14 @@ SELECT EXISTS (
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {
     execute {
-        if (staffAttendance.countOther != null) {
-            sql(
-                """
-INSERT INTO staff_attendance (group_id, date, count, count_other)
-VALUES (${bind(staffAttendance.groupId)}, ${bind(staffAttendance.date)}, ${bind(staffAttendance.count)}, ${bind(staffAttendance.countOther)})
-ON CONFLICT (group_id, date) DO UPDATE SET
-    count = ${bind(staffAttendance.count)},
-    count_other = ${bind(staffAttendance.countOther)}
-"""
-            )
-        } else {
-            sql(
-                """
-INSERT INTO staff_attendance (group_id, date, count, count_other)
-VALUES (${bind(staffAttendance.groupId)}, ${bind(staffAttendance.date)}, ${bind(staffAttendance.count)}, DEFAULT)
+        sql(
+            """
+INSERT INTO staff_attendance (group_id, date, count)
+VALUES (${bind(staffAttendance.groupId)}, ${bind(staffAttendance.date)}, ${bind(staffAttendance.count)})
 ON CONFLICT (group_id, date) DO UPDATE SET
     count = ${bind(staffAttendance.count)}
 """
-            )
-        }
+        )
     }
 }
 
@@ -172,7 +144,7 @@ fun Database.Read.getStaffAttendanceByRange(
     createQuery {
             sql(
                 """
-SELECT group_id, date, count, count_other, updated
+SELECT group_id, date, count, updated
 FROM staff_attendance
 WHERE group_id = ${bind(groupId)}
 AND between_start_and_end(${bind(range)}, date)
@@ -189,7 +161,7 @@ fun Database.Read.getUnitStaffAttendanceForDate(
         createQuery {
                 sql(
                     """
-SELECT group_id, date, count, count_other, updated
+SELECT group_id, date, count, updated
 FROM staff_attendance sa
 JOIN daycare_group dg on sa.group_id = dg.id
 WHERE dg.daycare_id = ${bind(unitId)}
@@ -200,30 +172,15 @@ WHERE dg.daycare_id = ${bind(unitId)}
             .toList<GroupStaffAttendance>()
 
     val count = groupAttendances.sumOf { it.count }
-    val countOther = groupAttendances.sumOf { it.countOther }
     val updated = groupAttendances.maxOfOrNull { it.updated }
 
     return UnitStaffAttendance(
         date = date,
         count = count,
-        countOther = countOther,
         groups = groupAttendances,
         updated = updated,
     )
 }
-
-fun Database.Read.getCountOtherForDate(groupId: GroupId, date: LocalDate): Double =
-    createQuery {
-            sql(
-                """
-SELECT count_other
-FROM staff_attendance
-WHERE group_id = ${bind(groupId)}
-AND date = ${bind(date)}
-"""
-            )
-        }
-        .exactlyOneOrNull() ?: 0.0
 
 fun Database.Transaction.deleteStaffAttendance(groupId: GroupId, date: LocalDate) {
     createUpdate {

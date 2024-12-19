@@ -65,8 +65,7 @@ export default React.memo(function StaffAttendance({
         body: {
           groupId,
           date,
-          count,
-          countOther: null
+          count
         }
       }),
     [groupId]
