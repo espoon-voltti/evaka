@@ -74,10 +74,10 @@ fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
         }
         .exactlyOne<Boolean>()
 
-fun Database.Read.hasRoleInAnyUnitWithProviderType(
+fun Database.Read.hasRoleInAnyUnitWithProviderTypes(
     employeeId: EmployeeId,
     role: UserRole,
-    providerType: ProviderType,
+    providerTypes: Set<ProviderType>,
 ): Boolean =
     createQuery {
             sql(
@@ -88,7 +88,7 @@ SELECT EXISTS (
     WHERE
         acl.employee_id = ${bind(employeeId)} AND
         acl.role = ${bind(role)} AND
-        d.provider_type = ${bind(providerType)}
+        d.provider_type = ANY (${bind(providerTypes)})
 )
 """
             )

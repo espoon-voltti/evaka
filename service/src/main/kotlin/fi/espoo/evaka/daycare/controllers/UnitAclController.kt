@@ -620,10 +620,10 @@ class UnitAclController(
     ) {
         db.transaction { tx ->
             if (
-                !tx.hasRoleInAnyUnitWithProviderType(
+                !tx.hasRoleInAnyUnitWithProviderTypes(
                     job.employeeId,
                     UserRole.UNIT_SUPERVISOR,
-                    ProviderType.MUNICIPAL,
+                    setOf(ProviderType.MUNICIPAL, ProviderType.MUNICIPAL_SCHOOL),
                 )
             ) {
                 tx.deletePersonalDevices(job.employeeId)
