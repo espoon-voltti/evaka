@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service.generator
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.assistanceneed.getCapacityFactorsByChild
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.getAssistanceNeedVoucherCoefficientsForChild
 import fi.espoo.evaka.invoicing.controller.getFeeThresholds
@@ -47,7 +46,6 @@ import java.util.*
 
 fun generateAndInsertVoucherValueDecisionsV2(
     tx: Database.Transaction,
-    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     financeMinDate: LocalDate,
@@ -65,7 +63,6 @@ fun generateAndInsertVoucherValueDecisionsV2(
     val newDrafts =
         generateVoucherValueDecisionsDrafts(
             tx = tx,
-            jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             valueDecisionCapacityFactorEnabled = valueDecisionCapacityFactorEnabled,
@@ -84,7 +81,6 @@ fun generateAndInsertVoucherValueDecisionsV2(
 
 fun generateVoucherValueDecisionsDrafts(
     tx: Database.Read,
-    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     valueDecisionCapacityFactorEnabled: Boolean,
@@ -97,7 +93,6 @@ fun generateVoucherValueDecisionsDrafts(
     val voucherBases =
         getVoucherBases(
             tx = tx,
-            jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             valueDecisionCapacityFactorEnabled = valueDecisionCapacityFactorEnabled,
@@ -129,7 +124,6 @@ fun generateVoucherValueDecisionsDrafts(
 
 private fun getVoucherBases(
     tx: Database.Read,
-    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     valueDecisionCapacityFactorEnabled: Boolean,
@@ -149,7 +143,6 @@ private fun getVoucherBases(
 
     val incomesByPerson =
         tx.getIncomesFrom(
-                mapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 personIds = (allHeadOfChildIds + allPartnerIds + targetChildId).toList(),

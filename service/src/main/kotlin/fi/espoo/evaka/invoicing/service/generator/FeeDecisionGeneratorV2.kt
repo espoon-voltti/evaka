@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service.generator
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.controller.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
@@ -44,7 +43,6 @@ import java.util.*
 
 fun generateAndInsertFeeDecisionsV2(
     tx: Database.Transaction,
-    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     financeMinDate: LocalDate,
@@ -62,7 +60,6 @@ fun generateAndInsertFeeDecisionsV2(
     val newDrafts =
         generateFeeDecisionsDrafts(
             tx = tx,
-            jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             targetAdultId = headOfFamilyId,
@@ -80,7 +77,6 @@ fun generateAndInsertFeeDecisionsV2(
 
 fun generateFeeDecisionsDrafts(
     tx: Database.Read,
-    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     targetAdultId: PersonId,
@@ -92,7 +88,6 @@ fun generateFeeDecisionsDrafts(
     val feeBases =
         getFeeBases(
             tx = tx,
-            jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             targetAdultId = targetAdultId,
@@ -123,7 +118,6 @@ fun generateFeeDecisionsDrafts(
 
 private fun getFeeBases(
     tx: Database.Read,
-    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     targetAdultId: PersonId,
@@ -137,13 +131,7 @@ private fun getFeeBases(
     val allPersonIds = listOf(targetAdultId) + allPartnerIds + allChildIds
 
     val incomesByPerson =
-        tx.getIncomesFrom(
-                jsonMapper,
-                incomeTypesProvider,
-                coefficientMultiplierProvider,
-                allPersonIds,
-                minDate,
-            )
+        tx.getIncomesFrom(incomeTypesProvider, coefficientMultiplierProvider, allPersonIds, minDate)
             .groupBy(
                 keySelector = { it.personId },
                 valueTransform = {

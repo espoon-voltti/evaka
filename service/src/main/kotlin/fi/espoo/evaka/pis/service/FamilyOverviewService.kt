@@ -5,10 +5,10 @@
 package fi.espoo.evaka.pis.service
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.calculateIncomeTotal
 import fi.espoo.evaka.invoicing.data.parseIncomeDataJson
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class FamilyOverviewService(
-    private val jsonMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider,
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ) {
@@ -89,13 +88,7 @@ ORDER BY date_of_birth ASC
 """
                     )
                 }
-                .map {
-                    toFamilyOverviewPerson(
-                        jsonMapper,
-                        incomeTypesProvider,
-                        coefficientMultiplierProvider,
-                    )
-                }
+                .map { toFamilyOverviewPerson(incomeTypesProvider, coefficientMultiplierProvider) }
                 .useIterable { rows -> rows.partition { it.headOfChild == null } }
 
         if (adults.isEmpty()) {
@@ -164,7 +157,6 @@ data class FamilyOverviewIncome(
 )
 
 fun Row.toFamilyOverviewPerson(
-    jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): FamilyOverviewPerson {
@@ -182,11 +174,10 @@ fun Row.toFamilyOverviewPerson(
             FamilyOverviewIncome(
                 effect = column("income_effect"),
                 total =
-                    column<String?>("income_data")?.let {
+                    jsonColumn<Map<String, IncomeValue>?>("income_data")?.let {
                         calculateIncomeTotal(
                             parseIncomeDataJson(
                                 it,
-                                jsonMapper,
                                 incomeTypesProvider.get(),
                                 coefficientMultiplierProvider,
                             ),

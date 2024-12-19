@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -61,7 +60,6 @@ import org.springframework.beans.factory.annotation.Autowired
 class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired lateinit var mapper: JsonMapper
     @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
@@ -471,7 +469,6 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             1,
             db.read {
                     it.getIncomesForPerson(
-                        mapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider,
                         fridgeHeadOfChildId,
@@ -524,7 +521,6 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             1,
             db.read {
                     it.getIncomesForPerson(
-                        mapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider,
                         fridgeHeadOfChildId,
@@ -603,7 +599,6 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val incomes =
             db.read {
                 it.getIncomesForPerson(
-                    mapper,
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
                     fridgeHeadOfChildId,
