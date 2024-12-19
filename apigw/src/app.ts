@@ -228,7 +228,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
           return employeeSfiIntegration.router(req, res, next)
       } else {
         if (citizenSfiIntegration)
-          return citizenSfiIntegration?.router(req, res, next)
+          return citizenSfiIntegration.router(req, res, next)
       }
       res.sendStatus(404)
     }
