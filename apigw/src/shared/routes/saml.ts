@@ -61,6 +61,14 @@ const samlRequestOptions = (req: express.Request): AuthOptions => {
 
 const isSamlPostRequest = (req: express.Request) => 'SAMLRequest' in req.body
 
+type SamlAuditEvent =
+  | 'sign_in_started'
+  | 'sign_in'
+  | 'sign_in_failed'
+  | 'sign_out_requested'
+  | 'sign_out'
+  | 'sign_out_failed'
+
 export interface SamlIntegration {
   router: express.Router
   logout: AsyncRequestHandler
@@ -72,7 +80,8 @@ export function createSamlIntegration<T extends SessionType>(
   const { sessions, strategyName, saml, defaultPageUrl, authenticate } =
     endpointConfig
 
-  const eventCode = (name: string) => `evaka.saml.${strategyName}.${name}`
+  const eventCode = (name: SamlAuditEvent) =>
+    `evaka.saml.${strategyName}.${name}`
   const errorRedirectUrl = (err: unknown) => {
     let errorCode: string | undefined = undefined
     if (err instanceof AxiosError) {
@@ -165,11 +174,7 @@ export function createSamlIntegration<T extends SessionType>(
     try {
       const user = await authenticate(profile)
       await sessions.login(req, user)
-      logAuditEvent(
-        `evaka.saml.${strategyName}.sign_in`,
-        req,
-        'User logged in successfully'
-      )
+      logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
 
       // Persist in session to allow custom logic per strategy
       req.session.idpProvider = strategyName
