@@ -4426,7 +4426,8 @@ export const fi = {
         'Älä lähetä Vardaan muiden kuin kunnallisten ja kunnallisten ostopalveluyksiköiden tietoja.',
       handlerAddressIsMandatory:
         'Ilmoituksen vastaanottajan osoite on pakollinen, jos yksikön järjestämismuodoksi on valittu kunnallinen, ostopalvelu tai palveluseteli.'
-    }
+    },
+    closingDateModal: 'Aseta päättymispäivä'
   },
   fileUpload: {
     download: {

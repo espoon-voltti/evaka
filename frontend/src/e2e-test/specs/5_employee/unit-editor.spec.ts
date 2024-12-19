@@ -106,6 +106,38 @@ describe('Employee - unit details', () => {
     const unitDetailsPage = await unitEditorPage.submit()
     await unitDetailsPage.assertMealTimes(mealTimes)
   })
+
+  test('Admin can edit unit closing date', async () => {
+    const placementStart = today.addMonths(1)
+    const placementEnd = today.addYears(1)
+
+    const child = await Fixture.person().saveChild()
+    await Fixture.placement({
+      childId: child.id,
+      unitId: daycare1.id,
+      startDate: placementStart,
+      endDate: placementEnd
+    }).save()
+
+    const unitRow = unitsPage.unitRow(daycare1.id)
+    const unitPage = await unitRow.openUnit()
+    const unitInfoPage = await unitPage.openUnitInformation()
+    const unitDetailsPage = await unitInfoPage.openUnitDetails()
+    const unitClosingDateModal = await unitDetailsPage.openClosingDateModal()
+
+    await unitClosingDateModal.closingDate.fill(placementEnd.subDays(1))
+    await unitClosingDateModal.closingDateInfo.assertTextEquals(
+      'Valitse myöhäisempi päivä'
+    )
+    await unitClosingDateModal.submitButton.assertDisabled(true)
+
+    await unitClosingDateModal.closingDate.fill(placementEnd)
+    await unitClosingDateModal.closingDateInfo.waitUntilHidden()
+    await unitClosingDateModal.submit()
+    await unitDetailsPage.openingAndClosingDates.assertTextEquals(
+      `- ${placementEnd.format()}`
+    )
+  })
 })
 
 describe('Employee - unit editor validations and warnings', () => {

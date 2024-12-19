@@ -86,16 +86,23 @@ data class DaycareFields(
                 }
             }
         }
-    }
-
-    fun validateClosingDate(tx: Database.Read, daycareId: DaycareId) {
-        val lastPlacementDate = tx.getLastPlacementDate(daycareId)
-        if (closingDate != null && lastPlacementDate != null && lastPlacementDate > closingDate) {
-            throw BadRequest("Closing date cannot be before the last placement date")
+        if (openingDate != null && closingDate != null && closingDate.isBefore(openingDate)) {
+            throw BadRequest("Closing date cannot be before opening date")
         }
     }
 
     companion object {}
+}
+
+fun validateUnitClosingDate(tx: Database.Read, unitId: DaycareId, closingDate: LocalDate) {
+    val openingDate = tx.getDaycare(unitId)?.openingDate
+    if (openingDate != null && closingDate.isBefore(openingDate)) {
+        throw BadRequest("Closing date cannot be before opening date")
+    }
+    val lastPlacementDate = tx.getLastPlacementDate(unitId)
+    if (lastPlacementDate != null && lastPlacementDate > closingDate) {
+        throw BadRequest("Closing date cannot be before the last placement date")
+    }
 }
 
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
@@ -331,6 +338,12 @@ WHERE id = ${bind(id)}
 """
     )
 }
+
+fun Database.Transaction.updateUnitClosingDate(unitId: DaycareId, closingDate: LocalDate) =
+    createUpdate {
+            sql("UPDATE daycare SET closing_date = ${bind(closingDate)} WHERE id = ${bind(unitId)}")
+        }
+        .updateExactlyOne()
 
 fun Database.Read.getApplicationUnits(
     type: ApplicationUnitType,

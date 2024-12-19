@@ -13,6 +13,7 @@ import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
 import {
   Checkbox,
   Combobox,
+  DatePicker,
   DatePickerDeprecated,
   Element,
   Modal,
@@ -49,6 +50,7 @@ export class UnitPage {
   #groupsTab: Element
   #calendarTab: Element
   #applicationProcessTab: Element
+
   constructor(private readonly page: Page) {
     this.#unitInfoTab = page.findByDataQa('unit-info-tab')
     this.#groupsTab = page.findByDataQa('groups-tab')
@@ -123,6 +125,7 @@ export class UnitInfoPage {
   earlyChildhoodEducationSecretary: AclSection
   staffAcl: AclSection
   mobileAcl: MobileDevicesSection
+
   constructor(private readonly page: Page) {
     this.#unitName = page.findByDataQa('unit-name')
     this.#visitingAddress = page.findByDataQa('unit-visiting-address')
@@ -171,12 +174,15 @@ export class UnitInfoPage {
 export class UnitDetailsPage {
   #editUnitButton: Element
   #unitName: Element
+  openingAndClosingDates: Element
   #unitManagerName: Element
   #unitManagerPhone: Element
   #unitManagerEmail: Element
+
   constructor(private readonly page: Page) {
     this.#editUnitButton = page.findByDataQa('enable-edit-button')
     this.#unitName = page.find('[data-qa="unit-editor-container"]').find('h1')
+    this.openingAndClosingDates = page.findByDataQa('opening-and-closing-dates')
     this.#unitManagerName = page.findByDataQa('unit-manager-name')
     this.#unitManagerPhone = page.findByDataQa('unit-manager-phone')
     this.#unitManagerEmail = page.findByDataQa('unit-manager-email')
@@ -207,6 +213,13 @@ export class UnitDetailsPage {
     return new UnitEditor(this.page)
   }
 
+  async openClosingDateModal() {
+    await this.page.findByDataQa('open-closing-date-modal').click()
+    return new UnitClosingDateModal(
+      this.page.findByDataQa('unit-closing-date-modal')
+    )
+  }
+
   async assertMealTimes(mealTimes: MealTimes) {
     for (const [key, value] of Object.entries(mealTimes)) {
       await this.page
@@ -235,6 +248,7 @@ export class UnitEditor {
   #unitHandlerAddressInput: TextInput
   unitCostCenterInput: TextInput
   saveButton: Element
+
   constructor(private readonly page: Page) {
     this.#unitNameInput = new TextInput(page.findByDataQa('unit-name-input'))
     this.#areaSelect = new Combobox(page.findByDataQa('area-select'))
@@ -451,6 +465,17 @@ export class UnitEditor {
       const inputEnd = new TextInput(this.page.findByDataQa(`${key}-input-end`))
       await inputEnd.fill(value.end)
     }
+  }
+}
+
+export class UnitClosingDateModal extends Modal {
+  closingDate: DatePicker
+  closingDateInfo: Element
+
+  constructor(locator: Element) {
+    super(locator)
+    this.closingDate = new DatePicker(this.findByDataQa('closing-date'))
+    this.closingDateInfo = this.findByDataQa('closing-date-info')
   }
 }
 
@@ -807,6 +832,7 @@ export class ApplicationProcessPage {
   waitingConfirmation: WaitingConfirmationSection
   placementProposals: PlacementProposalsSection
   serviceApplications: ServiceApplicationsSection
+
   constructor(private readonly page: Page) {
     this.waitingConfirmation = new WaitingConfirmationSection(
       page.findByDataQa('waiting-confirmation-section')
@@ -861,6 +887,7 @@ class ServiceApplicationsSection {
       .waitUntilVisible()
     await this.page.findAllByDataQa('service-application-row').assertCount(n)
   }
+
   applicationRow = (n: number) =>
     this.page.findAllByDataQa('service-application-row').nth(n)
   applicationChildLink = (n: number) =>
@@ -870,6 +897,7 @@ class ServiceApplicationsSection {
 class PlacementProposalsSection {
   #placementProposalTable: Element
   #acceptButton: Element
+
   constructor(private readonly page: Page) {
     this.#placementProposalTable = page.findByDataQa('placement-proposal-table')
     this.#acceptButton = page.findByDataQa('placement-proposals-accept-button')

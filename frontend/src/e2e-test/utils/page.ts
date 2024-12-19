@@ -338,7 +338,7 @@ export class DatePicker extends Element {
   async fill(date: LocalDate | string) {
     const text = typeof date === 'string' ? date : date.format()
     await this.#input.fill(text)
-    await this.#input.press('Escape')
+    await this.#input.blur()
   }
 
   async assertValueEquals(value: string) {
