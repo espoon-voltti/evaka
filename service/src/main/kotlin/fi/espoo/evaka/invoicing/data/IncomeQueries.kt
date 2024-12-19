@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.invoicing.data
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.calculateIncomeTotal
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.calculateTotalExpense
@@ -28,7 +26,6 @@ import java.time.LocalDate
 
 fun Database.Transaction.insertIncome(
     clock: EvakaClock,
-    mapper: JsonMapper,
     income: IncomeRequest,
     modifiedBy: EvakaUserId,
 ): IncomeId {
@@ -50,7 +47,7 @@ fun Database.Transaction.insertIncome(
         ) VALUES (
             ${bind(income.personId)},
             ${bind(income.effect)},
-            ${bind(mapper.writeValueAsString(income.data))}::jsonb,
+            ${bindJson(income.data)},
             ${bind(income.isEntrepreneur)},
             ${bind(income.worksAtECHA)},
             ${bind(income.validFrom)},
@@ -70,7 +67,6 @@ fun Database.Transaction.insertIncome(
 
 fun Database.Transaction.updateIncome(
     clock: EvakaClock,
-    mapper: JsonMapper,
     id: IncomeId,
     income: IncomeRequest,
     modifiedBy: EvakaUserId,
@@ -81,7 +77,7 @@ fun Database.Transaction.updateIncome(
         UPDATE income
         SET
             effect = ${bind(income.effect)},
-            data = ${bind(mapper.writeValueAsString(income.data))}::jsonb,
+            data = ${bindJson(income.data)},
             is_entrepreneur = ${bind(income.isEntrepreneur)},
             works_at_echa = ${bind(income.worksAtECHA)},
             valid_from = ${bind(income.validFrom)},
@@ -99,7 +95,6 @@ fun Database.Transaction.updateIncome(
 }
 
 fun Database.Read.getIncome(
-    mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     id: IncomeId,
@@ -129,13 +124,10 @@ WHERE income.id = ${bind(id)}
 """
             )
         }
-        .exactlyOneOrNull {
-            toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
-        }
+        .exactlyOneOrNull { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Read.getIncomesForPerson(
-    mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personId: PersonId,
@@ -168,11 +160,10 @@ ORDER BY valid_from DESC
         """
             )
         }
-        .toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
+        .toList { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Read.getIncomesFrom(
-    mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personIds: List<PersonId>,
@@ -197,7 +188,7 @@ WHERE
 """
             )
         }
-        .toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
+        .toList { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
@@ -231,12 +222,10 @@ fun Database.Transaction.splitEarlierIncome(
 }
 
 fun Row.toIncome(
-    mapper: JsonMapper,
     incomeTypes: Map<String, IncomeType>,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Income {
-    val data =
-        parseIncomeDataJson(column("data"), mapper, incomeTypes, coefficientMultiplierProvider)
+    val data = parseIncomeDataJson(jsonColumn("data"), incomeTypes, coefficientMultiplierProvider)
     return Income(
         id = column<IncomeId>("id"),
         personId = column("person_id"),
@@ -263,12 +252,11 @@ fun Row.toIncome(
 }
 
 fun parseIncomeDataJson(
-    json: String,
-    jsonMapper: JsonMapper,
+    json: Map<String, IncomeValue>,
     incomeTypes: Map<String, IncomeType>,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Map<String, IncomeValue> {
-    return jsonMapper.readValue<Map<String, IncomeValue>>(json).mapValues { (type, value) ->
+    return json.mapValues { (type, value) ->
         value.copy(
             multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"),
             monthlyAmount =
