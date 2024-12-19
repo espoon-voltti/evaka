@@ -21,13 +21,14 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 
 fun Database.Transaction.insertIncome(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     income: IncomeRequest,
-    modifiedBy: EvakaUserId,
+    createdBy: EvakaUserId,
 ): IncomeId {
     val update = createQuery {
         sql(
@@ -41,6 +42,8 @@ fun Database.Transaction.insertIncome(
             valid_from,
             valid_to,
             notes,
+            created_at,
+            created_by,
             modified_at,
             modified_by,
             application_id
@@ -53,8 +56,10 @@ fun Database.Transaction.insertIncome(
             ${bind(income.validFrom)},
             ${bind(income.validTo)},
             ${bind(income.notes)},
-            ${bind(clock.now())},
-            ${bind(modifiedBy)},
+            ${bind(now)},
+            ${bind(createdBy)},
+            ${bind(now)},
+            ${bind(createdBy)},
             NULL
         )
         RETURNING id
@@ -104,9 +109,12 @@ fun Database.Read.getIncome(
                 """
 SELECT 
     income.*,
-    e.id AS modified_by_id,
-    e.name AS modified_by_name,
-    e.type AS modified_by_type,
+    created_by.id AS created_by_id,
+    created_by.name AS created_by_name,
+    created_by.type AS created_by_type,
+    modified_by.id AS modified_by_id,
+    modified_by.name AS modified_by_name,
+    modified_by.type AS modified_by_type,
     (SELECT coalesce(jsonb_agg(jsonb_build_object(
         'id', id,
         'name', name,
@@ -119,7 +127,8 @@ FROM (
     ORDER BY a.created
 ) s) AS attachments
 FROM income
-JOIN evaka_user e ON income.modified_by = e.id
+JOIN evaka_user created_by ON income.created_by = created_by.id
+JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE income.id = ${bind(id)}
 """
             )
@@ -138,9 +147,12 @@ fun Database.Read.getIncomesForPerson(
                 """
 SELECT
     income.*,
-    e.id AS modified_by_id,
-    e.name AS modified_by_name,
-    e.type AS modified_by_type,
+    created_by.id AS created_by_id,
+    created_by.name AS created_by_name,
+    created_by.type AS created_by_type,
+    modified_by.id AS modified_by_id,
+    modified_by.name AS modified_by_name,
+    modified_by.type AS modified_by_type,
     (SELECT coalesce(jsonb_agg(jsonb_build_object(
         'id', id,
         'name', name,
@@ -153,7 +165,8 @@ FROM (
     ORDER BY a.created
 ) s) AS attachments
 FROM income
-JOIN evaka_user e ON income.modified_by = e.id
+JOIN evaka_user created_by ON income.created_by = created_by.id
+JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE person_id = ${bind(personId)}
 AND (${bind(validAt)}::timestamp IS NULL OR tsrange(valid_from, valid_to) @> ${bind(validAt)}::timestamp)
 ORDER BY valid_from DESC
@@ -176,12 +189,16 @@ fun Database.Read.getIncomesFrom(
                 """
 SELECT
     income.*,
-    e.id AS modified_by_id,
-    e.name AS modified_by_name,
-    e.type AS modified_by_type,
+    created_by.id AS created_by_id,
+    created_by.name AS created_by_name,
+    created_by.type AS created_by_type,
+    modified_by.id AS modified_by_id,
+    modified_by.name AS modified_by_name,
+    modified_by.type AS modified_by_type,
     '[]' as attachments
 FROM income
-JOIN evaka_user e ON income.modified_by = e.id
+JOIN evaka_user created_by ON income.created_by = created_by.id
+JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE
     person_id = ANY(${bind(personIds)})
     AND (valid_to IS NULL OR valid_to >= ${bind(from)})
@@ -198,7 +215,7 @@ fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
 }
 
 fun Database.Transaction.splitEarlierIncome(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     personId: PersonId,
     period: DateRange,
     modifiedBy: EvakaUserId,
@@ -208,7 +225,7 @@ fun Database.Transaction.splitEarlierIncome(
             """
             UPDATE income SET
                 valid_to = ${bind(period.start.minusDays(1))},
-                modified_at = ${bind(clock.now())},
+                modified_at = ${bind(now)},
                 modified_by = ${bind(modifiedBy)}
             WHERE
                 person_id = ${bind(personId)}
@@ -236,6 +253,13 @@ fun Row.toIncome(
         validFrom = column("valid_from"),
         validTo = column("valid_to"),
         notes = column("notes"),
+        createdAt = column("created_at"),
+        createdBy =
+            EvakaUser(
+                column("created_by_id"),
+                column("created_by_name"),
+                column("created_by_type"),
+            ),
         modifiedAt = column("updated_at"),
         modifiedBy =
             EvakaUser(
