@@ -443,47 +443,49 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         original: IncomeStatement,
         update: IncomeStatementBody,
     ) {
+        if (original.status == IncomeStatementStatus.DRAFT) {
+            return // Allow all modifications for drafts
+        }
+
         if (original.status == IncomeStatementStatus.HANDLED) {
             throw Forbidden("Handled income statement cannot be modified")
         }
 
-        if (original.status == IncomeStatementStatus.SENT) {
-            // Convert the original income statement into IncomeStatementBody for comparison.
-            // Copy otherInfo and attachmentIds from update because these are allowed to be updated.
-            // Everything else must remain equal.
-            val originalBody =
-                when {
-                    original is IncomeStatement.ChildIncome &&
-                        update is IncomeStatementBody.ChildIncome ->
-                        IncomeStatementBody.ChildIncome(
-                            startDate = original.startDate,
-                            endDate = original.endDate,
-                            otherInfo = update.otherInfo,
-                            attachmentIds = update.attachmentIds,
-                        )
-                    original is IncomeStatement.Income && update is IncomeStatementBody.Income ->
-                        IncomeStatementBody.Income(
-                            startDate = original.startDate,
-                            endDate = original.endDate,
-                            gross = original.gross,
-                            entrepreneur = original.entrepreneur,
-                            student = original.student,
-                            alimonyPayer = original.alimonyPayer,
-                            otherInfo = update.otherInfo,
-                            attachmentIds = update.attachmentIds,
-                        )
-                    original is IncomeStatement.HighestFee &&
-                        update is IncomeStatementBody.HighestFee ->
-                        IncomeStatementBody.HighestFee(
-                            startDate = original.startDate,
-                            endDate = original.endDate,
-                        )
-                    else -> throw BadRequest("Income statement type cannot be changed anymore")
-                }
-
-            if (originalBody != update) {
-                throw BadRequest("Only attachments and otherInfo can be updated after sending")
+        // Convert the original income statement into IncomeStatementBody for comparison.
+        // Copy otherInfo and attachmentIds from update because these are allowed to be updated.
+        // Everything else must remain equal.
+        val originalBody =
+            when {
+                original is IncomeStatement.ChildIncome &&
+                    update is IncomeStatementBody.ChildIncome ->
+                    IncomeStatementBody.ChildIncome(
+                        startDate = original.startDate,
+                        endDate = original.endDate,
+                        otherInfo = update.otherInfo,
+                        attachmentIds = update.attachmentIds,
+                    )
+                original is IncomeStatement.Income && update is IncomeStatementBody.Income ->
+                    IncomeStatementBody.Income(
+                        startDate = original.startDate,
+                        endDate = original.endDate,
+                        gross = original.gross,
+                        entrepreneur = original.entrepreneur,
+                        student = original.student,
+                        alimonyPayer = original.alimonyPayer,
+                        otherInfo = update.otherInfo,
+                        attachmentIds = update.attachmentIds,
+                    )
+                original is IncomeStatement.HighestFee &&
+                    update is IncomeStatementBody.HighestFee ->
+                    IncomeStatementBody.HighestFee(
+                        startDate = original.startDate,
+                        endDate = original.endDate,
+                    )
+                else -> throw BadRequest("Income statement type cannot be changed anymore")
             }
+
+        if (originalBody != update) {
+            throw BadRequest("Only attachments and otherInfo can be updated after sending")
         }
     }
 
