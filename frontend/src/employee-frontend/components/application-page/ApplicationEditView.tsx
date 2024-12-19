@@ -1292,6 +1292,21 @@ export default React.memo(function ApplicationEditView({
               />
             </>
           )}
+          <Label>
+            {i18n.application.additionalInfo.serviceWorkerAttachmentsTitle}
+          </Label>
+
+          <FileUploadGridContainer>
+            <FileUpload
+              onUpload={onUploadAttachment('SERVICE_WORKER_ATTACHMENT')}
+              onDelete={onDeleteAttachment}
+              getDownloadUrl={getAttachmentUrl}
+              files={attachments.filter(
+                (a) => a.type === 'SERVICE_WORKER_ATTACHMENT'
+              )}
+              data-qa="file-upload-service-worker"
+            />
+          </FileUploadGridContainer>
         </ListGrid>
       </CollapsibleSection>
 

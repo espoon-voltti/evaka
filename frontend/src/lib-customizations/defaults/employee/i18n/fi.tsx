@@ -524,7 +524,9 @@ export const fi = {
       applicationInfo: 'Hakemuksen lisätiedot',
       allergies: 'Allergiat',
       diet: 'Erityisruokavalio',
-      maxFeeAccepted: 'Suostumus korkeimpaan maksuun'
+      maxFeeAccepted: 'Suostumus korkeimpaan maksuun',
+      serviceWorkerAttachmentsTitle: 'Palveluohjauksen liitteet',
+      noAttachments: 'Ei liitteitä'
     },
     decisions: {
       title: 'Päätökset',

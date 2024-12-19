@@ -115,6 +115,10 @@ export default React.memo(function ApplicationReadView({
     ({ type }) => type === 'EXTENDED_CARE'
   )
 
+  const serviceWorkerAttachments = attachments.filter(
+    ({ type }) => type === 'SERVICE_WORKER_ATTACHMENT'
+  )
+
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
   const paid = type === 'DAYCARE' || connectedDaycare
 
@@ -576,6 +580,25 @@ export default React.memo(function ApplicationReadView({
               <span>{child.diet}</span>
             </>
           )}
+          <Label>
+            {i18n.application.additionalInfo.serviceWorkerAttachmentsTitle}
+          </Label>
+          <AttachmentContainer>
+            {serviceWorkerAttachments.length ? (
+              <>
+                {serviceWorkerAttachments.map((attachment) => (
+                  <Attachment
+                    key={attachment.id}
+                    attachment={attachment}
+                    receivedAt={attachmentReceivedAt(attachment)}
+                    data-qa={`service-need-attachment-${attachment.name}`}
+                  />
+                ))}
+              </>
+            ) : (
+              <Dimmed>{i18n.application.additionalInfo.noAttachments}</Dimmed>
+            )}
+          </AttachmentContainer>
         </ListGrid>
       </CollapsibleSection>
 

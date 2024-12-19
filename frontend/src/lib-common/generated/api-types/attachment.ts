@@ -12,6 +12,7 @@ import { AttachmentId } from './shared'
 export type AttachmentType =
   | 'URGENCY'
   | 'EXTENDED_CARE'
+  | 'SERVICE_WORKER_ATTACHMENT'
 
 /**
 * Generated from fi.espoo.evaka.attachment.IncomeAttachment
