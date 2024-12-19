@@ -60,7 +60,7 @@ export class CitizenChildIncomeStatementEditPage {
   }
 
   async waitUntilReady() {
-    await this.startDateInput.waitUntilVisible()
+    await this.otherInfoInput.waitUntilVisible()
   }
 
   async setValidFromDate(date: string) {
@@ -68,8 +68,8 @@ export class CitizenChildIncomeStatementEditPage {
     await this.startDateInput.press('Enter')
   }
 
-  async typeOtherInfo(text: string) {
-    await this.otherInfoInput.type(text)
+  async fillOtherInfo(text: string) {
+    await this.otherInfoInput.fill(text)
   }
 
   async selectAssure() {
@@ -84,10 +84,13 @@ export class CitizenChildIncomeStatementEditPage {
     await this.saveButton.click()
   }
 
-  async uploadAttachment(filePath: string) {
+  async uploadAttachment(filePath: string, fileName: string) {
     await new FileInput(
       this.page.findByDataQa('btn-upload-file')
     ).setInputFiles(filePath)
+    await this.page
+      .findByDataQa(`file-delete-button-${fileName}`)
+      .waitUntilVisible()
   }
 }
 

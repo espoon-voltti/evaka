@@ -35,15 +35,6 @@ export function identity<T>(value: T): T {
   return value
 }
 
-export function useFieldSetter<T, K extends keyof T>(
-  onChange: SetStateCallback<T>,
-  key: K,
-  value: T[K]
-): () => void {
-  const setState = useFieldSetState(onChange, key)
-  return useCallback(() => setState(() => value), [setState, value])
-}
-
 export interface IncomeStatementFormAPI {
   scrollToErrors: () => void
 }

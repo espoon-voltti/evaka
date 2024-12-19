@@ -576,15 +576,15 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 alimonyPayer = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachment1),
-            )
+            ),
+            draft = true,
         )
 
         val original = getIncomeStatements().data[0]
 
         clock.tick()
 
-        updateIncomeStatement(
-            original.id,
+        val update1 =
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = LocalDate.of(2022, 6, 1),
@@ -611,8 +611,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 alimonyPayer = false,
                 otherInfo = "",
                 attachmentIds = listOf(attachment2, attachment3),
-            ),
-        )
+            )
+
+        // update and send
+        updateIncomeStatement(id = original.id, body = update1, draft = false)
 
         val modifiedAt = getIncomeStatement(original.id).modifiedAt
         assertNotEquals(original.modifiedAt, modifiedAt)
@@ -649,7 +651,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 otherInfo = "",
                 createdAt = original.createdAt,
                 modifiedAt = modifiedAt,
-                sentAt = original.sentAt,
+                sentAt = clock.now(),
                 status = IncomeStatementStatus.SENT,
                 handlerNote = "",
                 handledAt = null,
@@ -657,6 +659,24 @@ class IncomeStatementControllerCitizenIntegrationTest :
             ),
             getIncomeStatement(original.id),
         )
+
+        // attachments and otherInfo can be still updated after sending
+        val update2 =
+            update1.copy(otherInfo = "hello", attachmentIds = listOf(attachment1, attachment3))
+        updateIncomeStatement(id = original.id, body = update2, draft = false)
+        getIncomeStatement(original.id).let {
+            assertEquals("hello", (it as IncomeStatement.Income).otherInfo)
+            assertEquals(
+                listOf(idToAttachment(attachment1), idToAttachment(attachment3)),
+                it.attachments,
+            )
+        }
+
+        // other fields cannot be updated after sending
+        val update3 = update2.copy(alimonyPayer = true)
+        assertThrows<BadRequest> {
+            updateIncomeStatement(id = original.id, body = update3, draft = false)
+        }
     }
 
     @Test
