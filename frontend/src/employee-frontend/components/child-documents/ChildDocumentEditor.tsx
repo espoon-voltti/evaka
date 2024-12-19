@@ -47,9 +47,11 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faFilePdf } from 'lib-icons'
 import { faExclamationTriangle } from 'lib-icons'
 import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
 
+import { API_URL } from '../../api/client'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import MetadataSection from '../archive-metadata/MetadataSection'
@@ -65,6 +67,7 @@ import {
   queryKeys,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
+import { FlexRow } from '../common/styled/containers'
 
 import { getNextDocumentStatus, getPrevDocumentStatus } from './statuses'
 
@@ -426,6 +429,32 @@ const ChildDocumentReadViewInner = React.memo(
 
     return (
       <div>
+        {permittedActions.includes('DOWNLOAD') &&
+          document.pdfAvailable &&
+          publishedUpToDate && (
+            <>
+              <Container>
+                <FlexRow justifyContent="flex-end">
+                  <a
+                    href={`${API_URL}/employee/child-documents/${document.id}/pdf`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <FixedSpaceRow spacing="xs" alignItems="center">
+                      <FontAwesomeIcon icon={faFilePdf} />
+                      <span>
+                        {
+                          i18n.childInformation.childDocuments.editor
+                            .downloadPdf
+                        }
+                      </span>
+                    </FixedSpaceRow>
+                  </a>
+                </FlexRow>
+              </Container>
+              <Gap size="xs" />
+            </>
+          )}
         <Container>
           <ContentArea opaque>
             <DocumentBasics document={document} />
