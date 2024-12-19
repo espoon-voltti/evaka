@@ -98,7 +98,8 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 )
             }
             Action.Parentship.UPDATE,
-            Action.Parentship.RETRY -> {
+            Action.Parentship.RETRY,
+            Action.Parentship.DELETE_CONFLICTED_PARENTSHIP -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
