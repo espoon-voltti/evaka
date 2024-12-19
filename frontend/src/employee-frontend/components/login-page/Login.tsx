@@ -9,6 +9,7 @@ import Title from 'lib-components/atoms/Title'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { getLoginUrl } from '../../api/auth'
 import { useTranslation } from '../../state/i18n'
@@ -39,13 +40,27 @@ function Login({ error }: Props) {
           {i18n.login.subtitle}
         </Title>
         <Center>
-          <LinkButton data-qa="login-btn" href={getLoginUrl('saml')}>
+          <LinkButton data-qa="login-btn" href={getLoginUrl('ad')}>
             <span>{i18n.login.loginAD}</span>
           </LinkButton>
           <Gap horizontal />
-          <LinkButton data-qa="login-btn" href={getLoginUrl('evaka')}>
-            <span>{i18n.login.loginEvaka}</span>
-          </LinkButton>
+          {featureFlags.employeeSfiLogin ? (
+            <>
+              <LinkButton data-qa="login-btn" href={getLoginUrl('keycloak')}>
+                <span>{i18n.login.loginEvaka} (Keycloak)</span>
+              </LinkButton>
+              <Gap horizontal />
+              <LinkButton data-qa="login-btn" href={getLoginUrl('sfi')}>
+                <span>{i18n.login.loginEvaka} (Suomi.fi)</span>
+              </LinkButton>
+            </>
+          ) : (
+            <>
+              <LinkButton data-qa="login-btn" href={getLoginUrl('keycloak')}>
+                <span>{i18n.login.loginEvaka}</span>
+              </LinkButton>
+            </>
+          )}
         </Center>
         <ErrorMessage error={error} />
       </ContentArea>

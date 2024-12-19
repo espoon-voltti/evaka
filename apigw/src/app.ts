@@ -2,20 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SAML } from '@node-saml/node-saml'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
 import { createDevSfiRouter } from './enduser/dev-sfi-auth.js'
-import { authenticateKeycloakCitizen } from './enduser/keycloak-citizen-saml.js'
+import { createKeycloakCitizenIntegration } from './enduser/keycloak-citizen-saml.js'
 import mapRoutes from './enduser/mapRoutes.js'
 import { citizenAuthStatus } from './enduser/routes/auth-status.js'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.js'
-import { authenticateSuomiFi } from './enduser/suomi-fi-saml.js'
-import { authenticateAd } from './internal/ad-saml.js'
+import {
+  createCitizenSuomiFiIntegration,
+  createEmployeeSuomiFiIntegration
+} from './enduser/suomi-fi-saml.js'
+import { createSamlAdIntegration } from './internal/ad-saml.js'
 import { createDevAdRouter } from './internal/dev-ad-auth.js'
-import { authenticateKeycloakEmployee } from './internal/keycloak-employee-saml.js'
+import { createDevEmployeeSfiRouter } from './internal/dev-sfi-auth.js'
+import { createKeycloakEmployeeIntegration } from './internal/keycloak-employee-saml.js'
 import {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -32,16 +35,15 @@ import {
   enableDevApi,
   titaniaConfig
 } from './shared/config.js'
-import { toMiddleware } from './shared/express.js'
+import { toRequestHandler } from './shared/express.js'
 import { cacheControl } from './shared/middleware/cache-control.js'
 import { csrf } from './shared/middleware/csrf.js'
 import { errorHandler } from './shared/middleware/error-handler.js'
 import { createProxy } from './shared/proxy-utils.js'
 import { RedisClient } from './shared/redis-client.js'
 import { handleCspReport } from './shared/routes/csp.js'
-import createSamlRouter from './shared/routes/saml.js'
-import { createSamlConfig } from './shared/saml/index.js'
-import redisCacheProvider from './shared/saml/node-saml-cache-redis.js'
+import { SamlIntegration } from './shared/routes/saml.js'
+import { validateRelayStateUrl } from './shared/saml/index.js'
 import { sessionSupport } from './shared/session.js'
 
 export function apiRouter(config: Config, redisClient: RedisClient) {
@@ -58,15 +60,13 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
         '/application/map-api/',
         '/citizen/public/map-api/'
       )
-    } else if (req.url.startsWith('/application/auth/saml/')) {
-      req.url = req.url.replace('/application/auth/saml/', '/citizen/auth/sfi/')
     } else if (req.url.startsWith('/application/auth/evaka-customer/')) {
       req.url = req.url.replace(
         '/application/auth/evaka-customer/',
         '/citizen/auth/keycloak/'
       )
-    } else if (req.url.startsWith('/application/auth/')) {
-      req.url = req.url.replace('/application/auth/', '/citizen/auth/')
+    } else if (req.url === '/application/auth/status') {
+      req.url = '/citizen/auth/status'
     } else if (req.url.startsWith('/internal/employee/')) {
       req.url = req.url.replace('/internal/employee/', '/employee/')
     } else if (req.url.startsWith('/internal/employee-mobile/')) {
@@ -142,95 +142,26 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     getUserHeader: (req) => employeeMobileSessions.getUserHeader(req)
   })
 
-  router.use('/citizen/auth/logout', citizenSessions.middleware)
-  router.use('/employee/auth/logout', employeeSessions.middleware)
-  router.use(
-    toMiddleware(async (req, res) => {
-      if (req.path === '/citizen/auth/logout') {
-        const user = citizenSessions.getUser(req)
-        switch (user?.authType) {
-          case 'sfi':
-            req.url = req.url.replace(
-              '/citizen/auth/logout',
-              '/citizen/auth/sfi/logout'
-            )
-            break
-          case 'keycloak-citizen':
-            req.url = req.url.replace(
-              '/citizen/auth/logout',
-              '/citizen/auth/keycloak/logout'
-            )
-            break
-          default:
-            await citizenSessions.destroy(req, res)
-            res.redirect('/citizen')
-        }
-      } else if (req.path === '/employee/auth/logout') {
-        const user = employeeSessions.getUser(req)
-        switch (user?.authType) {
-          case 'ad':
-            req.url = req.url.replace(
-              '/employee/auth/logout',
-              '/employee/auth/ad/logout'
-            )
-            break
-          case 'keycloak-employee':
-            req.url = req.url.replace(
-              '/employee/auth/logout',
-              '/employee/auth/keycloak/logout'
-            )
-            break
-          default:
-            await employeeSessions.destroy(req, res)
-            res.redirect('/employee')
-        }
-      }
-    })
-  )
-
+  let citizenSfiIntegration: SamlIntegration | undefined
   if (config.sfi.type === 'mock') {
-    router.use(
-      '/citizen/auth/sfi/',
-      citizenSessions.middleware,
-      createDevSfiRouter(citizenSessions)
-    )
+    router.use('/citizen/auth/sfi', createDevSfiRouter(citizenSessions))
   } else if (config.sfi.type === 'saml') {
-    router.use(
-      '/citizen/auth/sfi/',
-      citizenSessions.middleware,
-      createSamlRouter({
-        sessions: citizenSessions,
-        strategyName: 'suomifi',
-        saml: new SAML(
-          createSamlConfig(
-            config.sfi.saml,
-            redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
-          )
-        ),
-        authenticate: authenticateSuomiFi,
-        defaultPageUrl: '/'
-      })
+    citizenSfiIntegration = createCitizenSuomiFiIntegration(
+      citizenSessions,
+      config.sfi.saml,
+      redisClient
     )
+    router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
   }
 
   if (!config.keycloakCitizen)
     throw new Error('Missing Keycloak SAML configuration (citizen)')
-  router.use(
-    '/citizen/auth/keycloak/',
-    citizenSessions.middleware,
-    createSamlRouter({
-      sessions: citizenSessions,
-      strategyName: 'evaka-customer',
-      saml: new SAML(
-        createSamlConfig(
-          config.keycloakCitizen,
-          redisCacheProvider(redisClient, { keyPrefix: 'customer-saml-resp:' })
-        )
-      ),
-      authenticate: authenticateKeycloakCitizen,
-      defaultPageUrl: '/'
-    })
+  const keycloakCitizenIntegration = createKeycloakCitizenIntegration(
+    citizenSessions,
+    config.keycloakCitizen,
+    redisClient
   )
+  router.use('/citizen/auth/keycloak', keycloakCitizenIntegration.router)
 
   router.all(
     '/employee/auth/ad/*',
@@ -247,48 +178,60 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     }
   )
 
+  let adIntegration: SamlIntegration | undefined
   if (config.ad.type === 'mock') {
-    router.use(
-      '/employee/auth/ad/',
-      employeeSessions.middleware,
-      createDevAdRouter(employeeSessions)
-    )
+    router.use('/employee/auth/ad', createDevAdRouter(employeeSessions))
   } else if (config.ad.type === 'saml') {
-    router.use(
-      '/employee/auth/ad/',
-      employeeSessions.middleware,
-      createSamlRouter({
-        sessions: employeeSessions,
-        strategyName: 'ead',
-        saml: new SAML(
-          createSamlConfig(
-            config.ad.saml,
-            redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
-          )
-        ),
-        authenticate: authenticateAd(config.ad),
-        defaultPageUrl: '/employee'
-      })
+    adIntegration = createSamlAdIntegration(
+      employeeSessions,
+      config.ad,
+      redisClient
     )
+    router.use('/employee/auth/ad', adIntegration.router)
+  }
+
+  let employeeSfiIntegration: SamlIntegration | undefined
+  if (config.sfi.type === 'mock') {
+    router.use(
+      '/employee/auth/sfi',
+      createDevEmployeeSfiRouter(employeeSessions)
+    )
+  } else if (config.sfi.type === 'saml') {
+    employeeSfiIntegration = createEmployeeSuomiFiIntegration(
+      employeeSessions,
+      config.sfi.saml,
+      redisClient
+    )
+    router.use('/employee/auth/sfi', employeeSfiIntegration.router)
   }
 
   if (!config.keycloakEmployee)
     throw new Error('Missing Keycloak SAML configuration (employee)')
+  const keycloakEmployeeIntegration = createKeycloakEmployeeIntegration(
+    employeeSessions,
+    config.keycloakEmployee,
+    redisClient
+  )
+  router.use('/employee/auth/keycloak', keycloakEmployeeIntegration.router)
+
   router.use(
-    '/employee/auth/keycloak/',
-    employeeSessions.middleware,
-    createSamlRouter({
-      sessions: employeeSessions,
-      strategyName: 'evaka',
-      saml: new SAML(
-        createSamlConfig(
-          config.keycloakEmployee,
-          redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
-        )
-      ),
-      authenticate: authenticateKeycloakEmployee,
-      defaultPageUrl: '/employee'
-    })
+    '/application/auth/saml',
+    express.urlencoded({ extended: false }),
+    (req, res, next) => {
+      const relayStateUrl = validateRelayStateUrl(req)
+      const hasEmployeeRelayStateUrl =
+        relayStateUrl?.pathname === '/employee' ||
+        relayStateUrl?.pathname.startsWith('/employee/')
+
+      if (hasEmployeeRelayStateUrl) {
+        if (employeeSfiIntegration)
+          return employeeSfiIntegration.router(req, res, next)
+      } else {
+        if (citizenSfiIntegration)
+          return citizenSfiIntegration.router(req, res, next)
+      }
+      res.sendStatus(404)
+    }
   )
 
   if (enableDevApi) {
@@ -306,18 +249,74 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     )
   }
 
+  router.get(
+    '/citizen/auth/logout',
+    citizenSessions.middleware,
+    toRequestHandler(async (req, res) => {
+      const user = citizenSessions.getUser(req)
+      switch (user?.authType) {
+        case 'sfi':
+          if (citizenSfiIntegration)
+            return citizenSfiIntegration.logout(req, res)
+          break
+        case 'keycloak-citizen':
+          return keycloakCitizenIntegration.logout(req, res)
+        case 'citizen-weak':
+        case 'dev':
+        case undefined:
+          // no need for special handling
+          break
+        case 'ad':
+        case 'keycloak-employee':
+        case 'employee-mobile':
+          // should not happen, but we'll still destroy the session normally
+          break
+      }
+      await citizenSessions.destroy(req, res)
+      res.redirect('/')
+    })
+  )
+  router.get(
+    '/employee/auth/logout',
+    employeeSessions.middleware,
+    toRequestHandler(async (req, res) => {
+      const user = employeeSessions.getUser(req)
+      switch (user?.authType) {
+        case 'ad':
+          if (adIntegration) return adIntegration.logout(req, res)
+          break
+        case 'sfi':
+          if (employeeSfiIntegration)
+            return employeeSfiIntegration.logout(req, res)
+          break
+        case 'keycloak-employee':
+          return keycloakEmployeeIntegration.logout(req, res)
+        case 'dev':
+          // no need for special handling
+          break
+        case 'citizen-weak':
+        case 'employee-mobile':
+        case 'keycloak-citizen':
+          // should not happen, but we'll still destroy the session normally
+          break
+      }
+      await employeeSessions.destroy(req, res)
+      res.redirect('/employee')
+    })
+  )
+
   // CSRF checks apply to all the API endpoints that frontend uses
   router.use(csrf)
 
-  router.use('/citizen/', citizenSessions.middleware)
-  router.use('/citizen/public/map-api/', mapRoutes)
-  router.all('/citizen/public/*', citizenProxy)
+  router.use('/citizen', citizenSessions.middleware)
   router.get('/citizen/auth/status', citizenAuthStatus(citizenSessions))
   router.post(
     '/citizen/auth/weak-login',
     express.json(),
     authWeakLogin(citizenSessions, redisClient)
   )
+  router.use('/citizen/public/map-api', mapRoutes)
+  router.all('/citizen/public/*', citizenProxy)
   router.all('/citizen/*', citizenSessions.requireAuthentication, citizenProxy)
 
   const internalSessions = sessionSupport(

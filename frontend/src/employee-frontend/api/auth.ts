@@ -13,7 +13,7 @@ import { JsonOf } from 'lib-common/json'
 
 import { client } from './client'
 
-export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`
+export const logoutUrl = `/api/employee/auth/logout?RelayState=/employee/login`
 
 const redirectUri = (() => {
   if (window.location.pathname === '/employee/login') {
@@ -30,9 +30,9 @@ const redirectUri = (() => {
   }${searchParams}${window.location.hash}`
 })()
 
-export function getLoginUrl(type: 'evaka' | 'saml' = 'saml') {
+export function getLoginUrl(type: 'ad' | 'keycloak' | 'sfi' = 'ad') {
   const relayState = encodeURIComponent(redirectUri)
-  return `/api/internal/auth/${type}/login?RelayState=${relayState}`
+  return `/api/employee/auth/${type}/login?RelayState=${relayState}`
 }
 
 export async function getAuthStatus(): Promise<AuthStatus<User>> {

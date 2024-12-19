@@ -2,21 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { User } from '../auth/state'
+export const logoutUrl = `/api/citizen/auth/logout?RelayState=/`
 
 export const getWeakLoginUri = (
   url = `${window.location.pathname}${window.location.search}${window.location.hash}`
-) =>
-  `/api/application/auth/evaka-customer/login?RelayState=${encodeURIComponent(url)}`
+) => `/api/citizen/auth/keycloak/login?RelayState=${encodeURIComponent(url)}`
 
 export const getStrongLoginUri = (
   url = `${window.location.pathname}${window.location.search}${window.location.hash}`
-) => `/api/application/auth/saml/login?RelayState=${encodeURIComponent(url)}`
-
-export const getLogoutUri = (user: User) =>
-  `/api/application/auth/${
-    user?.authLevel === 'WEAK' ? 'evaka-customer' : 'saml'
-  }/logout`
+) => `/api/citizen/auth/sfi/login?RelayState=${encodeURIComponent(url)}`
 
 export const headerHeightDesktop = 80
 export const headerHeightMobile = 60

@@ -653,6 +653,12 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
             .filter { it.guardians.isEmpty() }
             .map(Citizen::from)
 
+    @GetMapping("/vtj-person")
+    fun getVtjPersons(): List<VtjPersonSummary> =
+        MockPersonDetailsService.getAllPersons()
+            .filter { it.guardians.isEmpty() }
+            .map(VtjPersonSummary::from)
+
     @PostMapping("/guardian")
     fun insertGuardians(db: Database, @RequestBody guardians: List<DevGuardian>) {
         db.connect { dbc -> dbc.transaction { tx -> guardians.forEach { tx.insert(it) } } }
@@ -2316,6 +2322,17 @@ data class Citizen(
                 firstName = vtjPerson.firstNames,
                 lastName = vtjPerson.lastName,
                 dependantCount = vtjPerson.dependants.size,
+            )
+    }
+}
+
+data class VtjPersonSummary(val ssn: String, val firstName: String, val lastName: String) {
+    companion object {
+        fun from(vtjPerson: VtjPerson) =
+            VtjPersonSummary(
+                ssn = vtjPerson.socialSecurityNumber,
+                firstName = vtjPerson.firstNames,
+                lastName = vtjPerson.lastName,
             )
     }
 }

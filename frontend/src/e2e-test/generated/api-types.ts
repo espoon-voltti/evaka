@@ -1150,6 +1150,15 @@ export interface VoucherValueDecisionPlacement {
   unitId: DaycareId
 }
 
+/**
+* Generated from fi.espoo.evaka.shared.dev.VtjPersonSummary
+*/
+export interface VtjPersonSummary {
+  firstName: string
+  lastName: string
+  ssn: string
+}
+
 
 export function deserializeJsonCaretaker(json: JsonOf<Caretaker>): Caretaker {
   return {

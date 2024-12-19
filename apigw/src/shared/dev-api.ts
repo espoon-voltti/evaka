@@ -28,3 +28,14 @@ export async function getEmployees(): Promise<Employee[]> {
   const { data } = await client.get<Employee[]>(`/dev-api/employee`)
   return data
 }
+
+export async function getVtjPersons(): Promise<VtjPersonSummary[]> {
+  const { data } = await client.get<VtjPersonSummary[]>(`/dev-api/vtj-person`)
+  return data
+}
+
+export interface VtjPersonSummary {
+  ssn: string
+  firstName: string
+  lastName: string
+}
