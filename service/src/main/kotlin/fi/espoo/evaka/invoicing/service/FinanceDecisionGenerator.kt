@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.service.generator.generateAndInsertFeeDecisionsV2
 import fi.espoo.evaka.invoicing.service.generator.generateAndInsertVoucherValueDecisionsV2
@@ -23,7 +22,6 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class FinanceDecisionGenerator(
-    private val jsonMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider,
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     env: EvakaEnv,
@@ -81,7 +79,6 @@ FROM ids
     ) {
         generateAndInsertFeeDecisionsV2(
             tx = tx,
-            jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             financeMinDate = feeDecisionMinDate,
@@ -98,7 +95,6 @@ FROM ids
         tx.getChildrenOfHeadOfFamily(headOfFamily, DateRange(from, null)).forEach { childId ->
             generateAndInsertVoucherValueDecisionsV2(
                 tx = tx,
-                jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
@@ -124,7 +120,6 @@ FROM ids
         adults.forEach { adult ->
             generateAndInsertFeeDecisionsV2(
                 tx = tx,
-                jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
@@ -135,7 +130,6 @@ FROM ids
         children.forEach { childId ->
             generateAndInsertVoucherValueDecisionsV2(
                 tx = tx,
-                jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
@@ -150,7 +144,6 @@ FROM ids
         getAllPossiblyAffectedAdultsByChild(tx, childId).forEach { adultId ->
             generateAndInsertFeeDecisionsV2(
                 tx = tx,
-                jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
@@ -160,7 +153,6 @@ FROM ids
 
         generateAndInsertVoucherValueDecisionsV2(
             tx = tx,
-            jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             financeMinDate = feeDecisionMinDate,
