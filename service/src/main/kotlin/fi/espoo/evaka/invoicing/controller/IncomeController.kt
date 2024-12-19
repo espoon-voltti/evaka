@@ -126,10 +126,11 @@ class IncomeController(
                         income.personId,
                     )
 
+                    val now = clock.now()
                     val incomeTypes = incomeTypesProvider.get()
                     val validIncome = validateIncome(income, incomeTypes)
-                    tx.splitEarlierIncome(clock, validIncome.personId, period, user.evakaUserId)
-                    val id = tx.insertIncome(clock, validIncome, user.evakaUserId)
+                    tx.splitEarlierIncome(now, validIncome.personId, period, user.evakaUserId)
+                    val id = tx.insertIncome(now, validIncome, user.evakaUserId)
                     tx.associateOrphanAttachments(
                         user.evakaUserId,
                         AttachmentParent.Income(id),

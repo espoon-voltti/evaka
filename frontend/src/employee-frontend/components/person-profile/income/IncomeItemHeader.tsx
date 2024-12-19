@@ -55,8 +55,8 @@ interface Props {
   startEditing: () => void
   startDeleting: () => void
   permittedActions: Action.Income[]
-  modifiedBy?: EvakaUser | null
-  modifiedAt?: HelsinkiDateTime | null
+  modifiedBy?: EvakaUser
+  modifiedAt?: HelsinkiDateTime
   children?: React.JSX.Element[] | React.JSX.Element
 }
 
