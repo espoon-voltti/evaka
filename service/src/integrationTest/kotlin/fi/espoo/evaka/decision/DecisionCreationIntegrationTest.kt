@@ -19,7 +19,11 @@ import fi.espoo.evaka.application.SimpleApplicationAction
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.daycare.Daycare
+import fi.espoo.evaka.daycare.DaycareDecisionCustomization
+import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -30,32 +34,24 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowsByApplication
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_5
-import fi.espoo.evaka.testAdult_6
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_6
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toApplicationType
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -67,10 +63,9 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val citizen = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
-    private val citizenWeak = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.WEAK)
+    private val clock = MockEvakaClock(2024, 12, 16, 13, 32, 25)
+    private lateinit var serviceWorker: AuthenticatedUser.Employee
+    private lateinit var testDaycare: Daycare
 
     @Autowired private lateinit var applicationController: ApplicationControllerV2
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
@@ -82,39 +77,63 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            listOf(testAdult_5, testAdult_6).forEach { tx.insert(it, DevPersonType.ADULT) }
-            tx.insert(testChild_6, DevPersonType.CHILD)
-            MockPersonDetailsService.add(legacyMockVtjDataset())
-            tx.execute {
-                sql(
-                    """
-UPDATE daycare SET
-  name = 'Test Daycare',
-  decision_daycare_name = 'Test Daycare / daycare',
-  decision_preschool_name = 'Test Daycare / preschool',
-  street_address = 'Test address',
-  postal_code = 'Test postal code',
-  post_office = 'Test post office',
-  phone = 'Test phone',
-  decision_handler = 'Test decision handler',
-  decision_handler_address = 'Test decision handler address'
-WHERE id = ${bind(testDaycare.id)}
-"""
-                )
+        serviceWorker =
+            db.transaction { tx ->
+                val employeeId = tx.insert(DevEmployee(firstName = "Decision", lastName = "Maker"))
+                AuthenticatedUser.Employee(employeeId, setOf(UserRole.SERVICE_WORKER))
             }
-        }
+        testDaycare =
+            db.transaction { tx ->
+                val areaId = tx.insert(DevCareArea())
+                val unitId =
+                    tx.insert(
+                        DevDaycare(
+                            areaId = areaId,
+                            name = "Test Daycare",
+                            decisionCustomization =
+                                DaycareDecisionCustomization(
+                                    daycareName = "Test Daycare / daycare",
+                                    preschoolName = "Test Daycare / preschool",
+                                    handler = "Test decision handler",
+                                    handlerAddress = "Test decision handler address",
+                                ),
+                            visitingAddress =
+                                VisitingAddress(
+                                    streetAddress = "Test address",
+                                    postalCode = "Test postal code",
+                                    postOffice = "Test post office",
+                                ),
+                            phone = "Test phone",
+                        )
+                    )
+                tx.getDaycare(unitId)!!
+            }
     }
 
     @Test
     fun testDaycareFullTime() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
-        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -126,7 +145,7 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
 
         val decisions = createDecisions(applicationId)
@@ -141,11 +160,28 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun testDaycarePartTime() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 18), LocalDate.of(2023, 7, 29))
         val applicationId =
-            insertInitialData(type = PlacementType.DAYCARE_PART_TIME, period = period)
+            insertInitialData(
+                type = PlacementType.DAYCARE_PART_TIME,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -157,7 +193,7 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
 
         val decisions = createDecisions(applicationId)
@@ -172,10 +208,28 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun testPreschoolOnly() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
-        val applicationId = insertInitialData(type = PlacementType.PRESCHOOL, period = period)
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.PRESCHOOL,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -195,7 +249,7 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = false,
                     ),
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
 
         val decisions = createDecisions(applicationId)
@@ -210,18 +264,32 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun testPreschoolAll() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
         val preschoolDaycarePeriod =
             FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
         val applicationId =
             insertInitialData(
                 type = PlacementType.PRESCHOOL_DAYCARE,
+                adult = guardian,
+                child = child,
                 period = period,
                 preschoolDaycarePeriod = preschoolDaycarePeriod,
                 preparatoryEducation = false,
             )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -241,7 +309,7 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     ),
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
 
         val decisions = createDecisions(applicationId)
@@ -260,18 +328,32 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun testPreparatoryAll() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
         val preschoolDaycarePeriod =
             FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
         val applicationId =
             insertInitialData(
                 type = PlacementType.PRESCHOOL_DAYCARE,
+                adult = guardian,
+                child = child,
                 period = period,
                 preschoolDaycarePeriod = preschoolDaycarePeriod,
                 preparatoryEducation = true,
             )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -291,7 +373,7 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     ),
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
 
         val decisions = createDecisions(applicationId)
@@ -310,16 +392,32 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun testEndpointSecurity() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
-        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
         val invalidRoleLists =
             listOf(setOf(UserRole.UNIT_SUPERVISOR), setOf(UserRole.FINANCE_ADMIN), setOf())
         invalidRoleLists.forEach { roles ->
             assertThrows<Forbidden> {
                 applicationController.getDecisionDrafts(
                     dbInstance(),
-                    AuthenticatedUser.Employee(testDecisionMaker_1.id, roles),
-                    RealEvakaClock(),
+                    AuthenticatedUser.Employee(serviceWorker.id, roles),
+                    clock,
                     applicationId,
                 )
             }
@@ -328,10 +426,31 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun `citizen sees decision for his own application`() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        val (citizen, citizenWeak) =
+            db.transaction { tx ->
+                listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+                tx.insert(child, DevPersonType.CHILD)
+                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG) to
+                    AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.WEAK)
+            }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
-        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -343,7 +462,7 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
@@ -352,7 +471,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizen,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(1, notificationCount)
 
@@ -360,12 +479,12 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizenWeak,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(1, notificationCountAsWeak)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -374,10 +493,10 @@ WHERE id = ${bind(testDaycare.id)}
                         DecisionSummary(
                             id = createdDecisions[0].id,
                             applicationId = applicationId,
-                            childId = testChild_6.id,
+                            childId = child.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -396,18 +515,28 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun `other guardian in different address as guardian sees decision but can't decide`() {
+        val guardian = DevPerson(ssn = "070644-937X", residenceCode = "1")
+        val otherGuardian = DevPerson(ssn = "311299-999E", residenceCode = "2")
+        val child = DevPerson(ssn = "070714A9126", residenceCode = "2")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
                 type = PlacementType.DAYCARE,
                 period = period,
-                adult = testAdult_6,
-                child = testChild_6,
+                adult = otherGuardian,
+                child = child,
             )
         checkDecisionDrafts(
             applicationId,
-            adult = testAdult_6,
-            child = testChild_6,
+            adult = otherGuardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -419,32 +548,32 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     )
                 ),
-            otherGuardian = testAdult_5,
+            otherGuardian = guardian,
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
 
-        val otherGuardian = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
-        val otherGuardianWeak = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.WEAK)
+        val otherCitizen = AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+        val otherCitizenWeak = AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.WEAK)
 
         val notificationCount =
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
-                otherGuardian,
-                RealEvakaClock(),
+                otherCitizen,
+                clock,
             )
         assertEquals(0, notificationCount)
 
         val notificationCountAsWeak =
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
-                otherGuardianWeak,
-                RealEvakaClock(),
+                otherCitizenWeak,
+                clock,
             )
         assertEquals(0, notificationCountAsWeak)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), otherCitizen, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -453,10 +582,10 @@ WHERE id = ${bind(testDaycare.id)}
                         DecisionSummary(
                             id = createdDecisions[0].id,
                             applicationId = applicationId,
-                            childId = testChild_6.id,
+                            childId = child.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -475,10 +604,28 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun `other guardian in different address as child sees decision but can't decide`() {
+        val guardian = DevPerson(ssn = "070644-937X", residenceCode = "1")
+        val otherGuardian = DevPerson(ssn = "311299-999E", residenceCode = "1")
+        val child = DevPerson(ssn = "070714A9126", residenceCode = "2")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
-        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -490,32 +637,32 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
 
-        val otherGuardian = AuthenticatedUser.Citizen(testAdult_6.id, CitizenAuthLevel.STRONG)
-        val otherGuardianWeak = AuthenticatedUser.Citizen(testAdult_6.id, CitizenAuthLevel.WEAK)
+        val otherCitizen = AuthenticatedUser.Citizen(otherGuardian.id, CitizenAuthLevel.STRONG)
+        val otherCitizenWeak = AuthenticatedUser.Citizen(otherCitizen.id, CitizenAuthLevel.WEAK)
 
         val notificationCount =
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
-                otherGuardian,
-                RealEvakaClock(),
+                otherCitizen,
+                clock,
             )
         assertEquals(0, notificationCount)
 
         val notificationCountAsWeak =
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
-                otherGuardianWeak,
-                RealEvakaClock(),
+                otherCitizenWeak,
+                clock,
             )
         assertEquals(0, notificationCountAsWeak)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), otherCitizen, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -524,10 +671,10 @@ WHERE id = ${bind(testDaycare.id)}
                         DecisionSummary(
                             id = createdDecisions[0].id,
                             applicationId = applicationId,
-                            childId = testChild_6.id,
+                            childId = child.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -546,23 +693,30 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun `other guardian in the same address sees decision and can decide`() {
+        val residenceCode = "same for all"
+        val guardian = DevPerson(ssn = "070644-937X", residenceCode = residenceCode)
+        val otherGuardian = DevPerson(ssn = "311299-999E", residenceCode = residenceCode)
+        val child = DevPerson(ssn = "070714A9126", residenceCode = residenceCode)
         db.transaction { tx ->
-            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
         }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
 
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
                 type = PlacementType.DAYCARE,
                 period = period,
-                adult = testAdult_1,
-                child = testChild_1,
+                adult = guardian,
+                child = child,
             )
         checkDecisionDrafts(
             applicationId,
-            adult = testAdult_1,
-            child = testChild_1,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -574,32 +728,32 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     )
                 ),
-            otherGuardian = testAdult_2,
+            otherGuardian = otherGuardian,
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
 
-        val otherGuardian = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
-        val otherGuardianWeak = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.WEAK)
+        val otherCitizen = AuthenticatedUser.Citizen(otherGuardian.id, CitizenAuthLevel.STRONG)
+        val otherCitizenWeak = AuthenticatedUser.Citizen(otherGuardian.id, CitizenAuthLevel.WEAK)
 
         val notificationCount =
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
-                otherGuardian,
-                RealEvakaClock(),
+                otherCitizen,
+                clock,
             )
         assertEquals(1, notificationCount)
 
         val notificationCountAsWeak =
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
-                otherGuardianWeak,
-                RealEvakaClock(),
+                otherCitizenWeak,
+                clock,
             )
         assertEquals(1, notificationCountAsWeak)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), otherGuardian, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), otherCitizen, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -608,10 +762,10 @@ WHERE id = ${bind(testDaycare.id)}
                         DecisionSummary(
                             id = createdDecisions[0].id,
                             applicationId = applicationId,
-                            childId = testChild_1.id,
+                            childId = child.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -630,15 +784,31 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun `citizen sees decision notification for hidden application`() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        val citizen =
+            db.transaction { tx ->
+                listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+                tx.insert(child, DevPersonType.CHILD)
+                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+            }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
                 type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
                 period = period,
                 hideFromGuardian = true,
             )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -650,7 +820,7 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
@@ -659,12 +829,12 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizen,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(1, notificationCount)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, clock)
         assertEquals(
             citizenDecisions,
             ApplicationDecisions(
@@ -673,10 +843,10 @@ WHERE id = ${bind(testDaycare.id)}
                         DecisionSummary(
                             id = createdDecisions[0].id,
                             applicationId = applicationId,
-                            childId = testChild_6.id,
+                            childId = child.id,
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
-                            sentDate = LocalDate.now(),
+                            sentDate = clock.today(),
                             resolved = null,
                         )
                     ),
@@ -695,10 +865,30 @@ WHERE id = ${bind(testDaycare.id)}
 
     @Test
     fun `citizen doesn't see decisions if guardianship has been blocked`() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        val citizen =
+            db.transaction { tx ->
+                listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+                tx.insert(child, DevPersonType.CHILD)
+                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+            }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
-        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
         checkDecisionDrafts(
             applicationId,
+            adult = guardian,
+            child = child,
             decisions =
                 listOf(
                     DecisionDraft(
@@ -710,23 +900,23 @@ WHERE id = ${bind(testDaycare.id)}
                         planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6,
+            otherGuardian = otherGuardian,
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
 
-        db.transaction { tx -> tx.blockGuardian(testChild_6.id, testAdult_5.id) }
+        db.transaction { tx -> tx.blockGuardian(child.id, guardian.id) }
 
         val notificationCount =
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizen,
-                RealEvakaClock(),
+                clock,
             )
         assertEquals(0, notificationCount)
 
         val citizenDecisions =
-            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, clock)
         assertEquals(
             ApplicationDecisions(
                 decisions = emptyList(),
@@ -739,9 +929,9 @@ WHERE id = ${bind(testDaycare.id)}
 
     private fun checkDecisionDrafts(
         applicationId: ApplicationId,
-        unit: DevDaycare = testDaycare,
-        adult: DevPerson = testAdult_5,
-        child: DevPerson = testChild_6,
+        unit: Daycare = testDaycare,
+        adult: DevPerson,
+        child: DevPerson,
         otherGuardian: DevPerson? = null,
         decisions: List<DecisionDraft>,
     ) {
@@ -749,7 +939,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationController.getDecisionDrafts(
                 dbInstance(),
                 serviceWorker,
-                RealEvakaClock(),
+                clock,
                 applicationId,
             )
         assertEquals(
@@ -803,11 +993,11 @@ WHERE id = ${bind(testDaycare.id)}
         applicationController.simpleApplicationAction(
             dbInstance(),
             serviceWorker,
-            RealEvakaClock(),
+            clock,
             applicationId,
             SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL,
         )
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(clock)
 
         val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).toList() }
         rows.forEach { row ->
@@ -830,9 +1020,9 @@ WHERE id = ${bind(testDaycare.id)}
 
     private fun insertInitialData(
         type: PlacementType,
-        unit: DevDaycare = testDaycare,
-        adult: DevPerson = testAdult_5,
-        child: DevPerson = testChild_6,
+        unit: Daycare = testDaycare,
+        adult: DevPerson,
+        child: DevPerson,
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preparatoryEducation: Boolean = false,
@@ -865,17 +1055,11 @@ WHERE id = ${bind(testDaycare.id)}
                         ),
                 )
 
-            applicationStateService.setVerified(
-                tx,
-                serviceWorker,
-                RealEvakaClock(),
-                applicationId,
-                false,
-            )
+            applicationStateService.setVerified(tx, serviceWorker, clock, applicationId, false)
             applicationStateService.createPlacementPlan(
                 tx,
                 serviceWorker,
-                RealEvakaClock(),
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = unit.id,
