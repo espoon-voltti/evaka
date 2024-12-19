@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.controller
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.attachment.AttachmentParent
@@ -52,7 +51,6 @@ import org.springframework.web.bind.annotation.RestController
 class IncomeController(
     private val incomeTypesProvider: IncomeTypesProvider,
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
-    private val mapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl,
 ) {
@@ -75,7 +73,6 @@ class IncomeController(
 
                     val incomes =
                         tx.getIncomesForPerson(
-                            mapper,
                             incomeTypesProvider,
                             coefficientMultiplierProvider,
                             personId,
@@ -132,7 +129,7 @@ class IncomeController(
                     val incomeTypes = incomeTypesProvider.get()
                     val validIncome = validateIncome(income, incomeTypes)
                     tx.splitEarlierIncome(clock, validIncome.personId, period, user.evakaUserId)
-                    val id = tx.insertIncome(clock, mapper, validIncome, user.evakaUserId)
+                    val id = tx.insertIncome(clock, validIncome, user.evakaUserId)
                     tx.associateOrphanAttachments(
                         user.evakaUserId,
                         AttachmentParent.Income(id),
@@ -176,15 +173,10 @@ class IncomeController(
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.UPDATE, incomeId)
 
                 val existing =
-                    tx.getIncome(
-                        mapper,
-                        incomeTypesProvider,
-                        coefficientMultiplierProvider,
-                        incomeId,
-                    )
+                    tx.getIncome(incomeTypesProvider, coefficientMultiplierProvider, incomeId)
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome = validateIncome(income, incomeTypes)
-                tx.updateIncome(clock, mapper, incomeId, validIncome, user.evakaUserId)
+                tx.updateIncome(clock, incomeId, validIncome, user.evakaUserId)
 
                 val expandedPeriod =
                     existing?.let {
@@ -231,12 +223,8 @@ class IncomeController(
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.DELETE, incomeId)
 
                 val existing =
-                    tx.getIncome(
-                        mapper,
-                        incomeTypesProvider,
-                        coefficientMultiplierProvider,
-                        incomeId,
-                    ) ?: throw BadRequest("Income not found")
+                    tx.getIncome(incomeTypesProvider, coefficientMultiplierProvider, incomeId)
+                        ?: throw BadRequest("Income not found")
                 val period = DateRange(existing.validFrom, existing.validTo)
                 tx.deleteIncome(incomeId)
 

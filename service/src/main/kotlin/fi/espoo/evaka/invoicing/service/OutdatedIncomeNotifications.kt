@@ -163,7 +163,6 @@ class OutdatedIncomeNotifications(
             if (!it.personHasActiveIncomeOnDate(msg.guardianId, dayAfterExpiration)) {
                 it.insertIncome(
                     clock = clock,
-                    mapper = mapper,
                     income =
                         IncomeRequest(
                             personId = msg.guardianId,
