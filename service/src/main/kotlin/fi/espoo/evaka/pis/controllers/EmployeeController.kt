@@ -336,11 +336,16 @@ class EmployeeController(private val accessControl: AccessControl) {
                         Action.Global.SEARCH_EMPLOYEES,
                     )
                     getEmployeesPaged(
-                        tx,
-                        body.page ?: 1,
+                        tx = tx,
+                        page = body.page ?: 1,
                         pageSize = 50,
-                        body.searchTerm ?: "",
-                        body.hideDeactivated ?: false,
+                        searchTerm = body.searchTerm ?: "",
+                        hideDeactivated = body.hideDeactivated ?: false,
+                        globalRoles =
+                            body.globalRoles
+                                ?.takeIf { it.isNotEmpty() }
+                                ?.filter { it.isGlobalRole() }
+                                ?.toSet(),
                     )
                 }
             }
@@ -409,4 +414,5 @@ data class SearchEmployeeRequest(
     val page: Int?,
     val searchTerm: String?,
     val hideDeactivated: Boolean?,
+    val globalRoles: Set<UserRole>?,
 )
