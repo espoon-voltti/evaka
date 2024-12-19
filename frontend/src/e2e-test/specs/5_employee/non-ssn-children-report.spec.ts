@@ -93,7 +93,8 @@ describe('Non SSN children report', () => {
     await assertReport(report)
   })
 
-  test('report data is shown to finance admin', async () => {
+  // This test is skipped until e2e tests use default action rules instead of Espoo customizations
+  test.skip('report data is shown to finance admin', async () => {
     const financeAdmin = await Fixture.employee().financeAdmin().save()
 
     const page = await Page.open({
