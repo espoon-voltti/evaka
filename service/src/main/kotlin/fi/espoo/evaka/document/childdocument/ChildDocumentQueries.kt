@@ -56,6 +56,7 @@ SELECT
     cd.id,
     cd.status,
     cd.published_at,
+    cd.document_key IS NOT NULL AS pdf_available,
     cd.content,
     cd.published_content,
     p.id as child_id,

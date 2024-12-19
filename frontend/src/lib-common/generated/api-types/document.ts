@@ -155,6 +155,7 @@ export interface ChildDocumentDetails {
   child: ChildBasics
   content: DocumentContent
   id: ChildDocumentId
+  pdfAvailable: boolean
   publishedAt: HelsinkiDateTime | null
   publishedContent: DocumentContent | null
   status: DocumentStatus

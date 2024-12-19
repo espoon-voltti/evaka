@@ -857,6 +857,7 @@ export const fi = {
         publishConfirmTitle: 'Haluatko varmasti julkaista huoltajalle?',
         publishConfirmText:
           'Huoltaja saa nähdäkseen tämänhetkisen version. Tämän jälkeen tekemäsi muutokset eivät näy huoltajalle ennen kuin julkaiset uudelleen.',
+        downloadPdf: 'Lataa PDF-tiedostona',
         goToNextStatus: {
           DRAFT: 'Julkaise luonnos-tilassa',
           PREPARED: 'Julkaise laadittu-tilassa',

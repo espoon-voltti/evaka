@@ -145,6 +145,7 @@ data class ChildDocumentDetails(
     val id: ChildDocumentId,
     val status: DocumentStatus,
     val publishedAt: HelsinkiDateTime?,
+    val pdfAvailable: Boolean,
     @Json val content: DocumentContent,
     @Json val publishedContent: DocumentContent?,
     @Nested("child") val child: ChildBasics,
