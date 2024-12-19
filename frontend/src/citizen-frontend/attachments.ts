@@ -6,9 +6,9 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import {
   ApplicationId,
-  AttachmentId
+  AttachmentId,
+  IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
 
 import { API_URL, client } from './api-client'
 
@@ -37,7 +37,7 @@ async function doSaveAttachment(
 }
 
 export async function saveIncomeStatementAttachment(
-  incomeStatementId: UUID | undefined,
+  incomeStatementId: IncomeStatementId | undefined,
   file: File,
   onUploadProgress: (percentage: number) => void
 ): Promise<Result<AttachmentId>> {
@@ -75,7 +75,7 @@ export async function saveApplicationAttachment(
 }
 
 export function getAttachmentUrl(
-  attachmentId: UUID,
+  attachmentId: AttachmentId,
   requestedFilename: string
 ): string {
   const encodedFilename = encodeURIComponent(requestedFilename)

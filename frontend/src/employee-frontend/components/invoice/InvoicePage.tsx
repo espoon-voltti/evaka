@@ -7,8 +7,9 @@ import { Link } from 'react-router'
 
 import { combine } from 'lib-common/api'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -28,7 +29,7 @@ import Sum from './Sum'
 import { formatInvoicePeriod } from './utils'
 
 export default React.memo(function InvoiceDetailsPage() {
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<InvoiceId>('id')
   const { i18n } = useTranslation()
   const invoiceCodes = useQueryResult(invoiceCodesQuery())
   const response = useQueryResult(invoiceDetailsQuery(id))

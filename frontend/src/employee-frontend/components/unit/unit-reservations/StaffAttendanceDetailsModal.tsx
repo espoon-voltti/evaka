@@ -19,11 +19,11 @@ import {
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { presentInGroup } from 'lib-common/staff-attendance'
-import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -54,7 +54,7 @@ import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 import { openAttendanceQuery } from '../queries'
 
 export interface ModalAttendance {
-  id: UUID
+  id: Id<string>
   groupId: GroupId | null
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
@@ -87,7 +87,7 @@ interface Props<
 }
 
 export interface EditedAttendance {
-  id: UUID | null
+  id: Id<string> | null
   groupId: GroupId | null
   arrived: string
   departed: string

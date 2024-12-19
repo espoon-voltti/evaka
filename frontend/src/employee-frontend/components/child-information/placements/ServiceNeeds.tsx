@@ -14,6 +14,7 @@ import {
   ServiceNeed,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/serviceneed'
+import { ServiceNeedId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -50,8 +51,8 @@ export default React.memo(function ServiceNeeds({
   const t = i18n.childInformation.placements.serviceNeeds
 
   const [creatingNew, setCreatingNew] = useState<boolean | LocalDate>(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<ServiceNeedId | null>(null)
+  const [deletingId, setDeletingId] = useState<ServiceNeedId | null>(null)
 
   const gaps = useMemo(
     () =>

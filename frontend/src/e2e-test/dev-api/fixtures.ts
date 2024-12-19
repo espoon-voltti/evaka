@@ -41,8 +41,11 @@ import {
   ApplicationId,
   DaycareId,
   EmployeeId,
+  FeeDecisionId,
   GroupId,
-  PersonId
+  PersonId,
+  PlacementId,
+  VoucherValueDecisionId
 } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -50,7 +53,6 @@ import { evakaUserId, fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
 
 import {
   addAbsence,
@@ -344,7 +346,7 @@ export class Fixture {
     return new EmployeeBuilder({
       id: randomId(),
       email: `email_${id}@evaka.test`,
-      externalId: `espoo-ad:${uuidv4()}`,
+      externalId: `espoo-ad:${randomId()}`,
       firstName: `first_name_${id}`,
       lastName: `last_name_${id}`,
       roles: [],
@@ -363,7 +365,7 @@ export class Fixture {
     >
   ): DecisionBuilder {
     return new DecisionBuilder({
-      id: uuidv4(),
+      id: randomId(),
       type: 'DAYCARE',
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2021, 1, 1),
@@ -374,7 +376,7 @@ export class Fixture {
 
   static employeePin(initial: Partial<DevEmployeePin>): EmployeePinBuilder {
     return new EmployeePinBuilder({
-      id: uuidv4(),
+      id: randomId(),
       userId: null,
       pin: uniqueLabel(4),
       employeeExternalId: null,
@@ -387,7 +389,7 @@ export class Fixture {
     initial: SemiPartial<DevPedagogicalDocument, 'childId'>
   ): PedagogicalDocumentBuilder {
     return new PedagogicalDocumentBuilder({
-      id: uuidv4(),
+      id: randomId(),
       description: 'Test description',
       createdBy: systemInternalUser.id,
       modifiedAt: HelsinkiDateTime.now(),
@@ -400,7 +402,7 @@ export class Fixture {
     initial: SemiPartial<DevPlacement, 'childId' | 'unitId'>
   ): PlacementBuilder {
     return new PlacementBuilder({
-      id: uuidv4(),
+      id: randomId(),
       type: 'DAYCARE',
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz().addYears(1),
@@ -418,7 +420,7 @@ export class Fixture {
     >
   ): GroupPlacementBuilder {
     return new GroupPlacementBuilder({
-      id: uuidv4(),
+      id: randomId(),
       ...initial
     })
   }
@@ -444,7 +446,7 @@ export class Fixture {
     >
   ): ServiceNeedBuilder {
     return new ServiceNeedBuilder({
-      id: uuidv4(),
+      id: randomId(),
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz(),
       shiftCare: 'NONE',
@@ -523,7 +525,7 @@ export class Fixture {
     initial: SemiPartial<DaycareAssistance, 'childId'>
   ): DaycareAssistanceBuilder {
     return new DaycareAssistanceBuilder({
-      id: uuidv4(),
+      id: randomId(),
       level: 'GENERAL_SUPPORT',
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
@@ -539,7 +541,7 @@ export class Fixture {
     initial: SemiPartial<PreschoolAssistance, 'childId'>
   ): PreschoolAssistanceBuilder {
     return new PreschoolAssistanceBuilder({
-      id: uuidv4(),
+      id: randomId(),
       level: 'SPECIAL_SUPPORT',
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
@@ -555,7 +557,7 @@ export class Fixture {
     initial: SemiPartial<OtherAssistanceMeasure, 'childId'>
   ): OtherAssistanceMeasureBuilder {
     return new OtherAssistanceMeasureBuilder({
-      id: uuidv4(),
+      id: randomId(),
       type: 'TRANSPORT_BENEFIT',
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
@@ -806,7 +808,7 @@ export class Fixture {
     initial: SemiPartial<DevIncome, 'personId' | 'modifiedBy'>
   ): IncomeBuilder {
     return new IncomeBuilder({
-      id: uuidv4(),
+      id: randomId(),
       validFrom: LocalDate.todayInSystemTz(),
       validTo: LocalDate.todayInSystemTz().addYears(1),
       data: {
@@ -829,7 +831,7 @@ export class Fixture {
     initial: SemiPartial<DevIncomeStatement, 'personId'>
   ): IncomeStatementBuilder {
     return new IncomeStatementBuilder({
-      id: uuidv4(),
+      id: randomId(),
       createdAt: HelsinkiDateTime.now(),
       modifiedAt: HelsinkiDateTime.now(),
       createdBy: systemInternalUser.id,
@@ -873,7 +875,7 @@ export class Fixture {
 
   static holidayPeriod(initial?: Partial<HolidayPeriod>): HolidayPeriodBuilder {
     return new HolidayPeriodBuilder({
-      id: uuidv4(),
+      id: randomId(),
       period: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
@@ -888,7 +890,7 @@ export class Fixture {
     initial?: Partial<FixedPeriodQuestionnaire>
   ): HolidayQuestionnaireBuilder {
     return new HolidayQuestionnaireBuilder({
-      id: uuidv4(),
+      id: randomId(),
       type: 'FIXED_PERIOD',
       absenceType: 'OTHER_ABSENCE',
       title: { fi: '', sv: '', en: '' },
@@ -919,7 +921,7 @@ export class Fixture {
     initial: SemiPartial<DevFridgeChild, 'headOfChild' | 'childId'>
   ) {
     return new FridgeChildBuilder({
-      id: uuidv4(),
+      id: randomId(),
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2020, 12, 31),
       conflict: false,
@@ -967,7 +969,7 @@ export class Fixture {
     initial: SemiPartial<DevPayment, 'unitId' | 'unitName'>
   ): PaymentBuilder {
     return new PaymentBuilder({
-      id: uuidv4(),
+      id: randomId(),
       period: new FiniteDateRange(
         LocalDate.todayInHelsinkiTz(),
         LocalDate.todayInHelsinkiTz()
@@ -990,7 +992,7 @@ export class Fixture {
     initial: SemiPartial<DevStaffAttendance, 'employeeId' | 'groupId'>
   ): RealtimeStaffAttendanceBuilder {
     return new RealtimeStaffAttendanceBuilder({
-      id: uuidv4(),
+      id: randomId(),
       arrived: HelsinkiDateTime.now(),
       departed: null,
       occupancyCoefficient: 7,
@@ -1004,7 +1006,7 @@ export class Fixture {
     initial: SemiPartial<DevStaffAttendancePlan, 'employeeId'>
   ): StaffAttendancePlanBuilder {
     return new StaffAttendancePlanBuilder({
-      id: uuidv4(),
+      id: randomId(),
       type: 'PRESENT',
       startTime: HelsinkiDateTime.now(),
       endTime: HelsinkiDateTime.now(),
@@ -1086,7 +1088,7 @@ export class Fixture {
     initial?: Partial<DevDocumentTemplate>
   ): DocumentTemplateBuilder {
     return new DocumentTemplateBuilder({
-      id: uuidv4(),
+      id: randomId(),
       type: 'PEDAGOGICAL_REPORT',
       placementTypes: [
         'DAYCARE',
@@ -1204,7 +1206,7 @@ export class Fixture {
     initial: SemiPartial<DevParentship, 'childId' | 'headOfChildId'>
   ): ParentshipBuilder {
     return new ParentshipBuilder({
-      id: uuidv4(),
+      id: randomId(),
       createdAt: HelsinkiDateTime.now(),
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz(),
@@ -1216,7 +1218,7 @@ export class Fixture {
     initial: SemiPartial<DevInvoice, 'headOfFamilyId' | 'areaId'>
   ): InvoiceBuilder {
     return new InvoiceBuilder({
-      id: uuidv4(),
+      id: randomId(),
       status: 'DRAFT',
       number: null,
       invoiceDate: LocalDate.of(2021, 2, 1),
@@ -1867,7 +1869,7 @@ export class InvoiceBuilder extends FixtureBuilder<DevInvoice> {
     row: SemiPartial<DevInvoiceRow, 'childId' | 'unitId'>
   ): InvoiceBuilder {
     this.data.rows.push({
-      id: uuidv4(),
+      id: randomId(),
       amount: 1,
       unitPrice: 28900,
       periodStart: this.data.periodStart,
@@ -2978,7 +2980,7 @@ export const decisionFixture = (
   startDate: LocalDate,
   endDate: LocalDate
 ): DecisionRequest => ({
-  id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130987',
+  id: fromUuid('9dd0e1ba-9b3b-11ea-bb37-0242ac130987'),
   employeeId,
   applicationId: applicationId,
   unitId: testDaycare.id,
@@ -2999,7 +3001,7 @@ export const feeDecisionsFixture = (
     LocalDate.todayInSystemTz().addYears(1)
   ),
   sentAt: HelsinkiDateTime | null = null,
-  id = 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+  id = fromUuid<FeeDecisionId>('bcc42d48-765d-4fe1-bc90-7a7b4c8205fe'),
   documentKey: string | null = null,
   decisionNumber: number | null = null
 ): FeeDecision => ({
@@ -3053,7 +3055,7 @@ export const feeDecisionsFixture = (
 })
 
 export const voucherValueDecisionsFixture = (
-  id: UUID,
+  id: VoucherValueDecisionId,
   adultId: PersonId,
   childId: PersonId,
   daycareId: DaycareId,
@@ -3121,7 +3123,7 @@ export const testDaycareGroup: DevDaycareGroup = {
  *  @deprecated Use `Fixture.placement()` instead
  **/
 export function createDaycarePlacementFixture(
-  id: string,
+  id: PlacementId,
   childId: PersonId,
   unitId: DaycareId,
   startDate = LocalDate.of(2022, 5, 1),

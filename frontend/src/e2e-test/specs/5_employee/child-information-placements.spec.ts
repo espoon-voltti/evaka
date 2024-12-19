@@ -3,9 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  PersonId,
+  PlacementId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { evakaUserId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -16,7 +20,6 @@ import {
   testDaycareGroup,
   familyWithTwoGuardians,
   Fixture,
-  uuidv4,
   testCareArea,
   testDaycare
 } from '../../dev-api/fixtures'
@@ -34,7 +37,7 @@ import { employeeLogin } from '../../utils/user'
 beforeEach(async (): Promise<void> => resetServiceState())
 
 const setupPlacement = async (
-  placementId: string,
+  placementId: PlacementId,
   childId: PersonId,
   unitId: DaycareId,
   childPlacementType: PlacementType
@@ -83,7 +86,7 @@ describe('Child Information placement info', () => {
   })
 
   test('A terminated placement is indicated', async () => {
-    const placementId = uuidv4()
+    const placementId = randomId<PlacementId>()
     await setupPlacement(placementId, childId, unitId, 'DAYCARE')
 
     let childPlacements = await openChildPlacements(page, childId)

@@ -11,6 +11,7 @@ import {
   FeeDecisionSummary,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Loader from 'lib-components/atoms/Loader'
@@ -61,8 +62,8 @@ interface Props {
   sortDirection: SortDirection
   setSortDirection: (v: SortDirection) => void
   showCheckboxes: boolean
-  checked: Record<string, boolean>
-  toggleChecked: (id: string) => void
+  isChecked: (id: FeeDecisionId) => boolean
+  toggleChecked: (id: FeeDecisionId) => void
   checkAll: () => void
   clearChecked: () => void
 }
@@ -78,7 +79,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
   sortDirection,
   setSortDirection,
   showCheckboxes,
-  checked,
+  isChecked,
   toggleChecked,
   checkAll,
   clearChecked
@@ -87,7 +88,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
 
   const allChecked =
     decisions
-      ?.map((ds) => ds.length > 0 && ds.every((it) => checked[it.id]))
+      ?.map((ds) => ds.length > 0 && ds.every((it) => isChecked(it.id)))
       .getOrElse(false) ?? false
 
   const isSorted = (column: FeeDecisionSortParam) =>
@@ -144,7 +145,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
               <Checkbox
                 label={item.id}
                 hiddenLabel
-                checked={!!checked[item.id]}
+                checked={isChecked(item.id)}
                 onChange={() => toggleChecked(item.id)}
                 data-qa="toggle-decision"
               />

@@ -6,8 +6,11 @@ import React from 'react'
 
 import { Result, wrapResult } from 'lib-common/api'
 import { MessageType } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageAccountId,
+  MessageThreadId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
 import { AsyncIconOnlyButton } from 'lib-components/atoms/buttons/AsyncIconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
@@ -31,7 +34,7 @@ import {
 const archiveThreadResult = wrapResult(archiveThread)
 
 export type ThreadListItem = {
-  id: UUID
+  id: MessageThreadId
   title: string
   content: string
   urgent: boolean
@@ -47,7 +50,7 @@ export type ThreadListItem = {
 
 interface Props {
   items: Result<ThreadListItem[]>
-  accountId: UUID
+  accountId: MessageAccountId
   onArchive?: () => void
 }
 

@@ -6,8 +6,8 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import { AccountType } from 'lib-common/generated/api-types/messaging'
+import { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { type cancelMutation, MutationDescription } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faTrash } from 'lib-icons'
 
@@ -36,7 +36,7 @@ const EditorRow = styled.div`
 `
 
 export interface SelectableAccount {
-  id: UUID
+  id: MessageAccountId
   name: string
   selected: boolean
   toggleable: boolean
@@ -45,7 +45,7 @@ export interface SelectableAccount {
 
 interface Props<T, R> {
   recipients: SelectableAccount[]
-  onToggleRecipient: (id: UUID, selected: boolean) => void
+  onToggleRecipient: (id: MessageAccountId, selected: boolean) => void
   mutation: MutationDescription<T, R>
   onSubmit: () => T | typeof cancelMutation
   onSuccess: (response: R) => void

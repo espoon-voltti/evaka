@@ -10,9 +10,9 @@ import {
   VoucherValueDecisionResponse,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
@@ -42,7 +42,7 @@ const VoucherValueDecisionMetadataSection = React.memo(
   function VoucherValueDecisionMetadataSection({
     voucherValueDecisionId
   }: {
-    voucherValueDecisionId: UUID
+    voucherValueDecisionId: VoucherValueDecisionId
   }) {
     const result = useQueryResult(
       voucherValueDecisionMetadataQuery({ voucherValueDecisionId })
@@ -54,7 +54,7 @@ const VoucherValueDecisionMetadataSection = React.memo(
 export default React.memo(function VoucherValueDecisionPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const navigate = useNavigate()
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<VoucherValueDecisionId>('id')
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decisionResponse, setDecisionResponse] = useState<

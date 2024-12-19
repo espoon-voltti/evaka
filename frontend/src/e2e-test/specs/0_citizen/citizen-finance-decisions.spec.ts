@@ -8,14 +8,15 @@ import {
   DecisionIncome,
   FeeDecision
 } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
   testDaycare,
   feeDecisionsFixture,
-  uuidv4,
   voucherValueDecisionsFixture,
   Fixture,
   testAdultRestricted,
@@ -73,12 +74,12 @@ beforeEach(async () => {
     partner,
     feeDecisionValidDuring,
     now,
-    uuidv4(),
+    randomId<FeeDecisionId>(),
     'test-fd-key'
   )
   await insertFeeDecision(feeDecision)
   voucherValueDecision = voucherValueDecisionsFixture(
-    uuidv4(),
+    randomId(),
     headOfFamily.id,
     child.id,
     testDaycare.id,

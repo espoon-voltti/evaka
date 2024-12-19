@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { UUID } from 'lib-common/types'
+import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faQuestion } from 'lib-icons'
 
@@ -13,7 +13,7 @@ import { useTranslation } from '../localization'
 import { archiveThreadMutation } from './queries'
 
 export interface Props {
-  threadId: UUID
+  threadId: MessageThreadId
   onClose: () => void
   onSuccess: () => void
 }

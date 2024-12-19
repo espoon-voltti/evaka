@@ -7,7 +7,10 @@ import {
   AuthorizedMessageAccount,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import {
+  MessageAccountId,
+  MessageDraftId
+} from 'lib-common/generated/api-types/shared'
 
 export interface GroupMessageAccount extends AuthorizedMessageAccount {
   daycareGroup: Group
@@ -31,7 +34,7 @@ export const isServiceWorkerMessageAccount = (
 ): acc is AuthorizedMessageAccount => acc.account.type === 'SERVICE_WORKER'
 
 export interface SaveDraftParams {
-  accountId: UUID
-  draftId: UUID
+  accountId: MessageAccountId
+  draftId: MessageDraftId
   content: UpdatableDraftContent
 }

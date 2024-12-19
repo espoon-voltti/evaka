@@ -6,8 +6,11 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 
+import {
+  HolidayPeriodId,
+  HolidayQuestionnaireId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -37,7 +40,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
   const holidayPeriods = useQueryResult(holidayPeriodsQuery())
   const questionnaires = useQueryResult(questionnairesQuery())
 
-  const [periodToDelete, setPeriodToDelete] = useState<UUID>()
+  const [periodToDelete, setPeriodToDelete] = useState<HolidayPeriodId>()
   const { mutateAsync: deleteHolidayPeriod } = useMutationResult(
     deleteHolidayPeriodMutation
   )
@@ -52,7 +55,8 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
     void navigate('/holiday-periods/new')
   }, [navigate])
 
-  const [questionnaireToDelete, setQuestionnaireToDelete] = useState<UUID>()
+  const [questionnaireToDelete, setQuestionnaireToDelete] =
+    useState<HolidayQuestionnaireId>()
   const { mutateAsync: deleteQuestionnaire } = useMutationResult(
     deleteQuestionnaireMutation
   )

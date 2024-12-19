@@ -12,7 +12,7 @@ import {
   ServiceApplication,
   ServiceNeedOptionBasics
 } from 'lib-common/generated/api-types/serviceneed'
-import { UUID } from 'lib-common/types'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -53,7 +53,7 @@ export default React.memo(function ServiceApplications({
   applications,
   canCreate
 }: {
-  childId: UUID
+  childId: ChildId
   applications: CitizenServiceApplication[]
   canCreate: boolean
 }) {

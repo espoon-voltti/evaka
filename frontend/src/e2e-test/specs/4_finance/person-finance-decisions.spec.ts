@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -15,7 +17,6 @@ import {
   testAdult,
   feeDecisionsFixture,
   Fixture,
-  uuidv4,
   voucherValueDecisionsFixture,
   testCareArea
 } from '../../dev-api/fixtures'
@@ -68,7 +69,7 @@ describe('Person finance decisions', () => {
             null,
             new FiniteDateRange(sentAt, sentAt),
             sentAt.toHelsinkiDateTime(LocalTime.of(12, 0)),
-            uuidv4()
+            randomId<FeeDecisionId>()
           )
         ]
       })
@@ -97,7 +98,7 @@ describe('Person finance decisions', () => {
       await createVoucherValueDecisions({
         body: [
           voucherValueDecisionsFixture(
-            uuidv4(),
+            randomId(),
             testAdult.id,
             testChild2.id,
             testDaycare.id,
@@ -142,7 +143,7 @@ describe('Person finance decisions', () => {
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           testChild2.id,
           testDaycarePrivateVoucher.id,
           from,

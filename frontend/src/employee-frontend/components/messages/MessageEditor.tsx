@@ -19,7 +19,11 @@ import {
   PostMessageFilters,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import {
+  AttachmentId,
+  MessageAccountId,
+  MessageDraftId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -80,7 +84,7 @@ type Message = Omit<
   UpdatableDraftContent,
   'recipientIds' | 'recipientNames'
 > & {
-  sender: SelectOption
+  sender: SelectOption<MessageAccountId>
   attachments: Attachment[]
 }
 
@@ -98,7 +102,10 @@ const messageToUpdatableDraftWithAccount = (
   accountId: m.sender.value
 })
 
-const getEmptyMessage = (sender: SelectOption, title: string): Message => ({
+const getEmptyMessage = (
+  sender: SelectOption<MessageAccountId>,
+  title: string
+): Message => ({
   sender,
   title,
   content: '',
@@ -110,7 +117,7 @@ const getEmptyMessage = (sender: SelectOption, title: string): Message => ({
 
 const getInitialMessage = (
   draft: DraftContent | undefined,
-  sender: SelectOption,
+  sender: SelectOption<MessageAccountId>,
   title: string
 ): Message => (draft ? { ...draft, sender } : getEmptyMessage(sender, title))
 
@@ -174,17 +181,17 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
 
 interface Props {
   availableReceivers: MessageReceiversResponse[]
-  defaultSender: SelectOption
+  defaultSender: SelectOption<MessageAccountId>
   deleteAttachment: (arg: {
     attachmentId: AttachmentId
   }) => Promise<Result<void>>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
-  initDraftRaw: (accountId: string) => Promise<Result<string>>
+  initDraftRaw: (accountId: MessageAccountId) => Promise<Result<MessageDraftId>>
   accounts: AuthorizedMessageAccount[]
   onClose: (didChanges: boolean) => void
-  onDiscard: (accountId: UUID, draftId: UUID) => void
-  onSend: (accountId: UUID, msg: PostMessageBody) => void
+  onDiscard: (accountId: MessageAccountId, draftId: MessageDraftId) => void
+  onSend: (accountId: MessageAccountId, msg: PostMessageBody) => void
   saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
   saveMessageAttachment: (
     draftId: UUID,
@@ -293,7 +300,7 @@ export default React.memo(function MessageEditor({
   )
 
   const handleSenderChange = useCallback(
-    (sender: SelectOption | null) => {
+    (sender: SelectOption<MessageAccountId> | null) => {
       const shouldResetSensitivity = !shouldSensitiveCheckboxBeEnabled(
         selectedReceivers,
         message.type,

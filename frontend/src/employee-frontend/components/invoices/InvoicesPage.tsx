@@ -12,6 +12,7 @@ import {
   InvoiceSortParam,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
+import { InvoiceId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   first,
@@ -20,7 +21,6 @@ import {
   useQueryResult,
   useSelectMutation
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
@@ -77,8 +77,10 @@ export default React.memo(function InvoicesPage() {
 
   const [fullAreaSelection, { set: setFullAreaSelection }] = useBoolean(false)
 
-  const [checkedInvoices, setCheckedInvoices] = useState<Set<UUID>>(new Set())
-  const toggleChecked = (invoiceId: UUID) =>
+  const [checkedInvoices, setCheckedInvoices] = useState<Set<InvoiceId>>(
+    new Set()
+  )
+  const toggleChecked = (invoiceId: InvoiceId) =>
     setCheckedInvoices((prev) => {
       const next = new Set([...prev])
       if (next.has(invoiceId)) {
@@ -173,7 +175,7 @@ const Modal = React.memo(function Modal({
 }: {
   onClose: () => void
   onSendDone: () => void
-  checkedInvoices: Set<UUID>
+  checkedInvoices: Set<InvoiceId>
   fullAreaSelection: boolean
 }) {
   const { i18n } = useTranslation()

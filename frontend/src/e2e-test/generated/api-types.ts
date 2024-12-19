@@ -1103,7 +1103,7 @@ export interface SfiMessage {
   streetAddress: string
 }
 
-export type StaffAttendancePlanId = string
+export type StaffAttendancePlanId = Id<'StaffAttendancePlan'>
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision

@@ -18,7 +18,10 @@ import {
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import {
+  MessageAccountId,
+  MessageDraftId
+} from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
@@ -117,7 +120,7 @@ export default React.memo(function MessagesPage({
   }, [setSelectedDraft])
 
   const onSend = useCallback(
-    (accountId: UUID, messageBody: PostMessageBody) => {
+    (accountId: MessageAccountId, messageBody: PostMessageBody) => {
       setSending(true)
       void createMessageResult({
         accountId,
@@ -167,7 +170,7 @@ export default React.memo(function MessagesPage({
     ]
   )
 
-  const onDiscard = (accountId: UUID, draftId: UUID) => {
+  const onDiscard = (accountId: MessageAccountId, draftId: MessageDraftId) => {
     hideEditor()
     void deleteDraftMessageResult({ accountId, draftId }).then(() =>
       refreshMessages(accountId)

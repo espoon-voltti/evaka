@@ -12,8 +12,8 @@ import {
   OpenRangesBody
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -45,7 +45,7 @@ interface Props {
   close: () => void
   questionnaire: HolidayQuestionnaire.OpenRangesQuestionnaire
   availableChildren: ReservationChild[]
-  eligibleChildren: UUID[]
+  eligibleChildren: ChildId[]
   previousAnswers: HolidayQuestionnaireAnswer[]
 }
 

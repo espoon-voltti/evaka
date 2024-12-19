@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import { GroupId, PlacementId } from 'lib-common/generated/api-types/shared'
 import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 
 import {
   familyWithTwoGuardians,
@@ -16,8 +15,7 @@ import {
   testChild2,
   testChildZeroYearOld,
   testDaycare,
-  testDaycarePrivateVoucher,
-  uuidv4
+  testDaycarePrivateVoucher
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -36,8 +34,8 @@ const groupId = randomId<GroupId>()
 let child1Fixture: DevPerson
 let child2Fixture: DevPerson
 let child3Fixture: DevPerson
-let child1DaycarePlacementId: UUID
-let child2DaycarePlacementId: UUID
+let child1DaycarePlacementId: PlacementId
+let child2DaycarePlacementId: PlacementId
 
 let daycare: DevDaycare
 let daycare2: DevDaycare
@@ -65,7 +63,7 @@ beforeEach(async () => {
   }).save()
 
   child1Fixture = familyWithTwoGuardians.children[0]
-  child1DaycarePlacementId = uuidv4()
+  child1DaycarePlacementId = randomId()
   await Fixture.placement({
     id: child1DaycarePlacementId,
     childId: child1Fixture.id,
@@ -75,7 +73,7 @@ beforeEach(async () => {
   }).save()
 
   child2Fixture = await Fixture.person(testChildZeroYearOld).saveChild()
-  child2DaycarePlacementId = uuidv4()
+  child2DaycarePlacementId = randomId()
   await Fixture.placement({
     id: child2DaycarePlacementId,
     childId: child2Fixture.id,
@@ -221,7 +219,7 @@ describe('Unit groups - unit supervisor', () => {
   })
 
   test('Supervisor sees backup care numeric child occupancy factor when not equal to 1', async () => {
-    const child3DaycarePlacementId = uuidv4()
+    const child3DaycarePlacementId = randomId<PlacementId>()
     await Fixture.placement({
       id: child3DaycarePlacementId,
       childId: child3Fixture.id,

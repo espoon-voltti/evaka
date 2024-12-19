@@ -197,11 +197,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
     }
 
     fun tsIdType(namedType: TsIdType): TsCode =
-        if (namedType.strict) {
-            TsCode("export type ${namedType.name} = Id<'${namedType.tableName}'>", Imports.id)
-        } else {
-            TsCode("export type ${namedType.name} = string")
-        }
+        TsCode("export type ${namedType.name} = Id<'${namedType.tableName}'>", Imports.id)
 
     fun namedType(namedType: TsNamedType<*>): TsCode =
         when (namedType) {

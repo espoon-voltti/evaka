@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import { UUID } from 'lib-common/types'
+import { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { faTimes } from 'lib-icons'
 
 import { useTranslations } from '../i18n'
@@ -18,7 +18,7 @@ import { SelectableAccount } from './MessageReplyEditor'
 interface ToggleableRecipientProps {
   'data-qa'?: string
   recipient: SelectableAccount
-  onToggleRecipient: (id: UUID, selected: boolean) => void
+  onToggleRecipient: (id: MessageAccountId, selected: boolean) => void
   labelAdd: string
 }
 

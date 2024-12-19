@@ -8,7 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { evakaUserId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -24,7 +24,6 @@ import {
   testAdult,
   Fixture,
   systemInternalUser,
-  uuidv4,
   testChild,
   testChildRestricted,
   preschoolTerm2021
@@ -88,7 +87,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     const placementFixtures = zip(children, placementTypes).map(
       ([child, placementType]) =>
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           child!.id,
           testDaycare.id,
           today,
@@ -1249,21 +1248,21 @@ describe('Citizen calendar child visibility', () => {
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           child.id,
           testDaycare.id,
           placement1start,
           placement1end
         ),
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           child.id,
           testDaycare.id,
           placement2start,
           placement2end
         ),
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           child2.id,
           testDaycare.id,
           placement1start.subYears(1),
@@ -1332,7 +1331,7 @@ describe('Citizen calendar child visibility', () => {
 
     // Sibling is in 24/7 daycare with shift care
     const placement = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId(),
       testChild2.id,
       testDaycare2.id,
       placement1start,
@@ -1375,7 +1374,7 @@ describe('Citizen calendar child visibility', () => {
 
     // Child is in 24/7 daycare with shift care
     const placement = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId(),
       testChild2.id,
       testDaycare2.id,
       placement1start,
@@ -1453,7 +1452,7 @@ describe('Citizen calendar visibility', () => {
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           child.id,
           daycareId,
           today.addDays(13),
@@ -1474,7 +1473,7 @@ describe('Citizen calendar visibility', () => {
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           child.id,
           daycareId,
           today.addDays(15),
@@ -1498,7 +1497,7 @@ describe('Citizen calendar visibility', () => {
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           child.id,
           daycareId,
           today.subYears(1),
@@ -1534,7 +1533,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
-          uuidv4(),
+          randomId(),
           testChild2.id,
           testDaycare2.id,
           placement1start,

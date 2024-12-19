@@ -9,9 +9,12 @@ import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import {
+  ChildId,
+  IncomeStatementId
+} from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -36,7 +39,8 @@ import { childIncomeStatementQuery } from './queries'
 
 export default React.memo(function ChildIncomeStatementView() {
   const childId = useIdRouteParam<ChildId>('childId')
-  const { incomeStatementId } = useRouteParams(['incomeStatementId'])
+  const incomeStatementId =
+    useIdRouteParam<IncomeStatementId>('incomeStatementId')
   const t = useTranslation()
   const navigate = useNavigate()
   const result = useQueryResult(

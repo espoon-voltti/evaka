@@ -35,12 +35,15 @@ import {
   StaffMember,
   StaffMemberAttendance
 } from 'lib-common/generated/api-types/attendance'
-import { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
+import {
+  EmployeeId,
+  GroupId,
+  StaffAttendanceRealtimeId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
@@ -92,7 +95,7 @@ const getDeparted = (
 const staffAttendanceForm = mapped(
   validated(
     object({
-      id: value<UUID | null>(),
+      id: value<StaffAttendanceRealtimeId | null>(),
       type: required(oneOf<StaffAttendanceType>()),
       groupEditMode: required(boolean()),
       groupId: required(oneOf<GroupId | null>()),

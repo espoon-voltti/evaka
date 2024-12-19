@@ -105,7 +105,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
 
   const navigate = useNavigate()
 
-  const languageOptions = useMemo<SelectOption[]>(
+  const languageOptions = useMemo<SelectOption<OfficialLanguage>[]>(
     () => [
       {
         value: 'FI',
@@ -119,11 +119,11 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
     [i18n]
   )
   const selectLanguage = useCallback(
-    (o: SelectOption | null) => {
+    (o: SelectOption<OfficialLanguage> | null) => {
       if (formState && o) {
         setFormState({
           ...formState,
-          language: (o.value as OfficialLanguage) ?? 'FI'
+          language: o.value
         })
       }
     },

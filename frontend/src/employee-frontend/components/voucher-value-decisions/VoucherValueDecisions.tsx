@@ -11,6 +11,7 @@ import {
   VoucherValueDecisionSortParam,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -57,8 +58,8 @@ interface Props {
   sortDirection: SortDirection
   setSortDirection: (v: SortDirection) => void
   showCheckboxes: boolean
-  checked: Record<string, boolean>
-  toggleChecked: (id: string) => void
+  isChecked: (id: VoucherValueDecisionId) => boolean
+  toggleChecked: (id: VoucherValueDecisionId) => void
   checkAll: () => void
   clearChecked: () => void
 }
@@ -74,7 +75,7 @@ export default React.memo(function VoucherValueDecisions({
   sortDirection,
   setSortDirection,
   showCheckboxes,
-  checked,
+  isChecked,
   toggleChecked,
   checkAll,
   clearChecked
@@ -83,7 +84,7 @@ export default React.memo(function VoucherValueDecisions({
 
   const allChecked =
     decisions
-      ?.map((ds) => ds.length > 0 && ds.every((d) => checked[d.id]))
+      ?.map((ds) => ds.length > 0 && ds.every((d) => isChecked(d.id)))
       .getOrElse(false) ?? false
 
   const isSorted = (column: VoucherValueDecisionSortParam) =>
@@ -141,7 +142,7 @@ export default React.memo(function VoucherValueDecisions({
               <Checkbox
                 label={item.id}
                 hiddenLabel
-                checked={!!checked[item.id]}
+                checked={isChecked(item.id)}
                 onChange={() => toggleChecked(item.id)}
                 data-qa="toggle-decision"
               />

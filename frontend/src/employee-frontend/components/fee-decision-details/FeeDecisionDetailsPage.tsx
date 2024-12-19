@@ -10,9 +10,9 @@ import {
   FeeDecisionResponse,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -42,7 +42,7 @@ const FeeDecisionMetadataSection = React.memo(
   function FeeDecisionMetadataSection({
     feeDecisionId
   }: {
-    feeDecisionId: UUID
+    feeDecisionId: FeeDecisionId
   }) {
     const result = useQueryResult(feeDecisionMetadataQuery({ feeDecisionId }))
     return <MetadataSection metadataResult={result} />
@@ -52,7 +52,7 @@ const FeeDecisionMetadataSection = React.memo(
 export default React.memo(function FeeDecisionDetailsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const navigate = useNavigate()
-  const { id } = useRouteParams(['id'])
+  const id = useIdRouteParam<FeeDecisionId>('id')
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decisionResponse, setDecisionResponse] = useState<

@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import { PaymentId } from 'lib-common/generated/api-types/shared'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { fontWeights } from 'lib-components/typography'
@@ -38,17 +39,16 @@ type Props = {
   actions: PaymentsActions
   reloadPayments: () => void
   status: PaymentStatus
-  checkedPayments: Record<string, true>
+  checkedIds: PaymentId[]
 }
 
 const Actions = React.memo(function Actions({
   actions,
   reloadPayments,
   status,
-  checkedPayments
+  checkedIds
 }: Props) {
   const { i18n } = useTranslation()
-  const checkedIds = Object.keys(checkedPayments)
 
   return selectablePaymentStatuses.includes(status) ? (
     <StickyActionBar align="right">

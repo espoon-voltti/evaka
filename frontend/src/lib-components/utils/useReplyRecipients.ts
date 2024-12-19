@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Message } from 'lib-common/generated/api-types/messaging'
+import { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 
 import { SelectableAccount } from '../messages/MessageReplyEditor'
@@ -37,19 +38,25 @@ function getInitialRecipients(
   ]
 }
 
-export function useRecipients(messages: Message[], accountId: UUID) {
+export function useRecipients(
+  messages: Message[],
+  accountId: MessageAccountId
+) {
   const [recipients, setRecipients] = useState<SelectableAccount[]>([])
 
   useEffect(() => {
     setRecipients(getInitialRecipients(messages, accountId))
   }, [messages, accountId])
 
-  const onToggleRecipient = useCallback((id: UUID, selected: boolean) => {
-    setRecipients((prev) =>
-      prev.map((acc) =>
-        acc.id === id && acc.toggleable ? { ...acc, selected } : acc
+  const onToggleRecipient = useCallback(
+    (id: MessageAccountId, selected: boolean) => {
+      setRecipients((prev) =>
+        prev.map((acc) =>
+          acc.id === id && acc.toggleable ? { ...acc, selected } : acc
+        )
       )
-    )
-  }, [])
+    },
+    []
+  )
   return { recipients, onToggleRecipient }
 }

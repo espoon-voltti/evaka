@@ -9,11 +9,12 @@ import {
   PlacementType
 } from 'lib-common/generated/api-types/placement'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import { GroupPlacementId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 export interface DaycareGroupPlacementDetailed {
-  id: UUID | null
+  id: GroupPlacementId | null
   groupId: UUID | null
   groupName: string | null
   daycarePlacementId: UUID

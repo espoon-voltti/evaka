@@ -8,9 +8,8 @@ import styled from 'styled-components'
 import { combine, Failure, Result, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { IncomeRequest } from 'lib-common/generated/api-types/invoicing'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -34,7 +33,6 @@ import { getChildPlacementPeriods } from '../../generated/api-clients/placement'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
-import { IncomeId } from '../../types/income'
 import { useIncomeTypeOptions } from '../../utils/income'
 import { renderResult } from '../async-rendering'
 
@@ -154,14 +152,14 @@ export const Incomes = React.memo(function Incomes({
     [personId]
   )
 
-  const [openIncomeRows, setOpenIncomeRows] = useState<IncomeId[]>([])
-  const toggleIncomeRow = useCallback((id: IncomeId) => {
+  const [openIncomeRows, setOpenIncomeRows] = useState<(IncomeId | 'new')[]>([])
+  const toggleIncomeRow = useCallback((id: IncomeId | 'new') => {
     setOpenIncomeRows((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     )
   }, [])
   const isIncomeRowOpen = useCallback(
-    (id: IncomeId) => openIncomeRows.includes(id),
+    (id: IncomeId | 'new') => openIncomeRows.includes(id),
     [openIncomeRows]
   )
 
@@ -201,7 +199,7 @@ export const Incomes = React.memo(function Incomes({
   const [editing, setEditing] = useState<string>()
   const [deleting, setDeleting] = useState<string>()
 
-  const toggleCreated = (res: Result<string>): Result<string> => {
+  const toggleCreated = (res: Result<IncomeId>): Result<IncomeId> => {
     if (res.isSuccess) {
       toggleIncomeRow(res.value)
     }
@@ -267,10 +265,10 @@ export const Incomes = React.memo(function Incomes({
                   toggleCreated
                 )
               }
-              updateIncome={(incomeId: UUID, income: IncomeRequest) =>
+              updateIncome={(incomeId: IncomeId, income: IncomeRequest) =>
                 updateIncomeResult({ incomeId, body: income })
               }
-              deleteIncome={(incomeId: UUID) =>
+              deleteIncome={(incomeId: IncomeId) =>
                 deleteIncomeResult({ incomeId })
               }
               onSuccessfulUpdate={() => {

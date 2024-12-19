@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PartnershipId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 
@@ -101,7 +102,7 @@ describe('Mobile PIN login', () => {
     }).save()
     await Fixture.person(testAdult2).saveAdult()
 
-    const parentshipId = uuidv4()
+    const parentshipId = randomId<PartnershipId>()
     await createFridgePartner({
       body: [
         {
@@ -160,7 +161,7 @@ describe('Mobile PIN login', () => {
     await createFridgeChild({
       body: [
         {
-          id: uuidv4(),
+          id: randomId(),
           childId: child.id,
           headOfChild: testAdult.id,
           startDate: today,

@@ -21,8 +21,11 @@ import {
   Message,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
+import {
+  ChildId,
+  MessageAccountId
+} from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -209,9 +212,9 @@ const SingleMessage = React.memo(
 )
 
 interface Props {
-  accountId: UUID
+  accountId: MessageAccountId
   thread: CitizenMessageThread.Regular
-  allowedAccounts: Partial<Record<UUID, ChildMessageAccountAccess>>
+  allowedAccounts: Partial<Record<ChildId, ChildMessageAccountAccess>>
   closeThread: () => void
   onThreadDeleted: () => void
 }

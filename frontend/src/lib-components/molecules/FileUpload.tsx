@@ -84,7 +84,7 @@ interface FileUploadProps {
   ) => Promise<Result<AttachmentId>>
   onDelete: (id: AttachmentId) => Promise<Result<void>>
   onStateChange?: (status: UploadStatus) => void
-  getDownloadUrl: (id: UUID, fileName: string) => string
+  getDownloadUrl: (id: AttachmentId, fileName: string) => string
   disabled?: boolean
   slim?: boolean
   'data-qa'?: string

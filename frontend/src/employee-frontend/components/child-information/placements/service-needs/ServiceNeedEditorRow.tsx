@@ -18,7 +18,10 @@ import {
   ShiftCareType,
   shiftCareType
 } from 'lib-common/generated/api-types/serviceneed'
-import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
+import {
+  ServiceNeedId,
+  ServiceNeedOptionId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -62,7 +65,7 @@ interface ServiceNeedCreateRowProps {
   initialRange?: FiniteDateRange
   onSuccess: () => void
   onCancel: () => void
-  editingId?: string
+  editingId?: ServiceNeedId
 }
 
 function ServiceNeedEditorRow({

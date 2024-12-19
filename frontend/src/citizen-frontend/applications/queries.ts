@@ -5,9 +5,9 @@
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ApplicationId, ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 
 import {
   createApplication,
@@ -44,11 +44,11 @@ const queryKeys = createQueryKeys('applications', {
       shiftCare
     }
   ],
-  application: (applicationId: UUID) => ['application', applicationId],
+  application: (applicationId: ApplicationId) => ['application', applicationId],
   guardianApplications: () => ['guardianApplications'],
   children: () => ['children'],
-  duplicates: (childId: UUID) => ['duplicates', childId],
-  activePlacementsByApplicationType: (childId: UUID) => [
+  duplicates: (childId: ChildId) => ['duplicates', childId],
+  activePlacementsByApplicationType: (childId: ChildId) => [
     'activePlacementsByApplicationType',
     childId
   ],

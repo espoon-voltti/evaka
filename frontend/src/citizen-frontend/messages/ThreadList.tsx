@@ -7,7 +7,10 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import {
+  MessageAccountId,
+  MessageThreadId
+} from 'lib-common/generated/api-types/shared'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { OnEnterView } from 'lib-components/OnEnterView'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -29,14 +32,17 @@ import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import ThreadListItem from './ThreadListItem'
 import { isRedactedThread, MessageContext } from './state'
 
-const hasUnreadMessages = (thread: CitizenMessageThread, accountId: UUID) =>
+const hasUnreadMessages = (
+  thread: CitizenMessageThread,
+  accountId: MessageAccountId
+) =>
   isRedactedThread(thread)
     ? thread.hasUnreadMessages
     : thread.messages.some((m) => !m.readAt && m.sender.id !== accountId)
 
 interface Props {
-  accountId: UUID
-  selectThread: (threadId: UUID | undefined) => void
+  accountId: MessageAccountId
+  selectThread: (threadId: MessageThreadId | undefined) => void
   setEditorVisible: (value: boolean) => void
   newMessageButtonEnabled: boolean
 }
@@ -51,7 +57,7 @@ export default React.memo(function ThreadList({
   const { selectedThread, threads, loadMoreThreads, hasMoreThreads } =
     useContext(MessageContext)
   const { addTimedNotification } = useContext(NotificationsContext)
-  const [confirmDelete, setConfirmDelete] = useState<UUID>()
+  const [confirmDelete, setConfirmDelete] = useState<MessageThreadId>()
 
   return (
     <>

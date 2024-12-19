@@ -15,13 +15,13 @@ import {
   CitizenMessageThread,
   MyAccountResponse
 } from 'lib-common/generated/api-types/messaging'
+import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
   useMutation,
   usePagedInfiniteQueryResult,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 
 import { useUser } from '../auth/state'
 
@@ -37,9 +37,9 @@ export interface MessagePageState {
   hasMoreThreads: boolean
   loadMoreThreads: () => void
   selectedThread: CitizenMessageThread | undefined
-  setSelectedThread: (threadId: UUID | undefined) => void
-  setReplyContent: (threadId: UUID, content: string) => void
-  getReplyContent: (threadId: UUID) => string
+  setSelectedThread: (threadId: MessageThreadId | undefined) => void
+  setReplyContent: (threadId: MessageThreadId, content: string) => void
+  getReplyContent: (threadId: MessageThreadId) => string
 }
 
 const defaultState: MessagePageState = {
@@ -64,7 +64,7 @@ export const isRegularThread = (
 
 const markMessagesReadByThreadId = (
   thread: CitizenMessageThread,
-  threadId: UUID
+  threadId: MessageThreadId
 ): CitizenMessageThread =>
   isRegularThread(thread) && thread.id === threadId
     ? {
@@ -93,16 +93,21 @@ export const MessageContextProvider = React.memo(
       enabled: messageAccount.isSuccess
     })
 
-    const [selectedThreadId, setSelectedThreadId] = useState<UUID>()
+    const [selectedThreadId, setSelectedThreadId] = useState<MessageThreadId>()
 
-    const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
+    const [replyContents, setReplyContents] = useState<
+      Record<MessageThreadId, string>
+    >({})
     const getReplyContent = useCallback(
-      (threadId: UUID) => replyContents[threadId] ?? '',
+      (threadId: MessageThreadId) => replyContents[threadId] ?? '',
       [replyContents]
     )
-    const setReplyContent = useCallback((threadId: UUID, content: string) => {
-      setReplyContents((state) => ({ ...state, [threadId]: content }))
-    }, [])
+    const setReplyContent = useCallback(
+      (threadId: MessageThreadId, content: string) => {
+        setReplyContents((state) => ({ ...state, [threadId]: content }))
+      },
+      []
+    )
 
     const selectedThread = useMemo(
       () =>

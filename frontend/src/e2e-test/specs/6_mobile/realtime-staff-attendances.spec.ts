@@ -15,7 +15,6 @@ import {
   testDaycareGroup,
   Fixture,
   fullDayTimeRange,
-  uuidv4,
   familyWithTwoGuardians,
   testDaycare
 } from '../../dev-api/fixtures'
@@ -27,7 +26,8 @@ import {
 import {
   DevCareArea,
   DevDaycareGroup,
-  DevEmployee
+  DevEmployee,
+  StaffAttendancePlanId
 } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import {
@@ -373,7 +373,7 @@ describe('Realtime staff attendance page', () => {
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
     await Fixture.staffAttendancePlan({
-      id: uuidv4(),
+      id: randomId<StaffAttendancePlanId>(),
       employeeId: staffFixture.id,
       startTime: planStart,
       endTime: planEnd
@@ -418,7 +418,7 @@ describe('Realtime staff attendance page', () => {
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
     await Fixture.staffAttendancePlan({
-      id: uuidv4(),
+      id: randomId<StaffAttendancePlanId>(),
       employeeId: staffFixture.id,
       startTime: planStart,
       endTime: planEnd
@@ -458,7 +458,7 @@ describe('Realtime staff attendance page', () => {
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
     await Fixture.staffAttendancePlan({
-      id: uuidv4(),
+      id: randomId<StaffAttendancePlanId>(),
       employeeId: staffFixture.id,
       startTime: planStart,
       endTime: planEnd
@@ -500,7 +500,7 @@ describe('Realtime staff attendance page', () => {
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
     await Fixture.staffAttendancePlan({
-      id: uuidv4(),
+      id: randomId<StaffAttendancePlanId>(),
       employeeId: staffFixture.id,
       startTime: planStart,
       endTime: planEnd
@@ -551,7 +551,7 @@ describe('Realtime staff attendance page', () => {
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
     await Fixture.staffAttendancePlan({
-      id: uuidv4(),
+      id: randomId<StaffAttendancePlanId>(),
       employeeId: staffFixture.id,
       startTime: planStart,
       endTime: planEnd
@@ -594,7 +594,7 @@ describe('Realtime staff attendance page', () => {
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
     await Fixture.staffAttendancePlan({
-      id: uuidv4(),
+      id: randomId<StaffAttendancePlanId>(),
       employeeId: staffFixture.id,
       startTime: planStart,
       endTime: planEnd
@@ -648,7 +648,7 @@ describe('Realtime staff attendance page', () => {
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
     await Fixture.staffAttendancePlan({
-      id: uuidv4(),
+      id: randomId<StaffAttendancePlanId>(),
       employeeId: staffFixture.id,
       startTime: planStart,
       endTime: planEnd

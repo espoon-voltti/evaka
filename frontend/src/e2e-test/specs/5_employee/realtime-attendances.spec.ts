@@ -3,18 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UnitStaffAttendancesTable } from 'e2e-test/pages/employee/units/unit-calendar-page-base'
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import { GroupId, PlacementId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
 
 import {
   testCareArea2,
   testDaycare2,
   Fixture,
-  uuidv4,
   familyWithTwoGuardians,
   testDaycare
 } from '../../dev-api/fixtures'
@@ -26,7 +24,8 @@ import {
   DevCareArea,
   DevDaycare,
   DevEmployee,
-  DevPerson
+  DevPerson,
+  StaffAttendancePlanId
 } from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
 import { waitUntilEqual } from '../../utils'
@@ -37,7 +36,7 @@ let page: Page
 let unitPage: UnitPage
 let calendarPage: UnitCalendarPage
 let child1Fixture: DevPerson
-let child1DaycarePlacementId: UUID
+let child1DaycarePlacementId: PlacementId
 let careArea: DevCareArea
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee
@@ -84,7 +83,7 @@ beforeEach(async () => {
   }).save()
 
   child1Fixture = familyWithTwoGuardians.children[0]
-  child1DaycarePlacementId = uuidv4()
+  child1DaycarePlacementId = randomId()
   await Fixture.placement({
     id: child1DaycarePlacementId,
     childId: child1Fixture.id,
@@ -190,7 +189,7 @@ describe('Realtime staff attendances', () => {
   describe('Group staff attendances', () => {
     test('Attendance is shown on week view and day modal', async () => {
       await Fixture.staffAttendancePlan({
-        id: uuidv4(),
+        id: randomId<StaffAttendancePlanId>(),
         employeeId: groupStaff.id,
         startTime: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
         endTime: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
@@ -325,7 +324,7 @@ describe('Realtime staff attendances', () => {
       }).save()
 
       await Fixture.staffAttendancePlan({
-        id: uuidv4(),
+        id: randomId<StaffAttendancePlanId>(),
         employeeId: otherGroupStaff.id,
         startTime: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
         endTime: yesterday.toHelsinkiDateTime(LocalTime.of(15, 0))

@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  MessageAccountId
+} from 'lib-common/generated/api-types/shared'
 import { mutation, pagedInfiniteQuery, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
@@ -57,14 +60,14 @@ export const messagingAccountsQuery = query({
 })
 
 export const receivedMessagesQuery = pagedInfiniteQuery({
-  api: (accountId: string) => (page: number) =>
+  api: (accountId: MessageAccountId) => (page: number) =>
     getReceivedMessages({ accountId, page }),
   id: (thread) => thread.id,
   queryKey: queryKeys.receivedMessages
 })
 
 export const sentMessagesQuery = pagedInfiniteQuery({
-  api: (accountId: string) => (page: number) =>
+  api: (accountId: MessageAccountId) => (page: number) =>
     getSentMessages({ accountId, page }),
   id: (message) => message.contentId,
   queryKey: queryKeys.sentMessages

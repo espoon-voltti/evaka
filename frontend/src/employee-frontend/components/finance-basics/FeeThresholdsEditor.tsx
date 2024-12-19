@@ -9,6 +9,7 @@ import { Failure, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { throwIfNull } from 'lib-common/form-validation'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -57,7 +58,7 @@ export default React.memo(function FeeThresholdsEditor({
   existingThresholds
 }: {
   i18n: Translations
-  id: string | undefined
+  id: FeeThresholdsId | undefined
   initialState: FormState
   close: () => void
   reloadData: () => void

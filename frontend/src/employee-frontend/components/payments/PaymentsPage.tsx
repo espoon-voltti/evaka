@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import { PaymentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -71,7 +72,7 @@ export default React.memo(function PaymentsPage() {
         actions={actions}
         reloadPayments={reloadPayments}
         status={searchFilters.status}
-        checkedPayments={checkedPayments}
+        checkedIds={Object.keys(checkedPayments) as PaymentId[]}
       />
       {showModal ? (
         <Modal

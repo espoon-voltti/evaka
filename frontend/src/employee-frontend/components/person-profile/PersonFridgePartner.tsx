@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import { PartnershipId, PersonId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -61,7 +61,8 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
     () => getPartnershipsResult({ personId: id }),
     [id]
   )
-  const [selectedPartnershipId, setSelectedPartnershipId] = useState('')
+  const [selectedPartnershipId, setSelectedPartnershipId] =
+    useState<PartnershipId>()
 
   // FIXME: This component shouldn't know about family's dependency on its data
   const reload = () => {
@@ -101,7 +102,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
           resolve={{
             action: () =>
               deletePartnershipResult({
-                partnershipId: selectedPartnershipId
+                partnershipId: selectedPartnershipId!
               }).then((res) => {
                 clearUiMode()
                 if (res.isFailure) {
@@ -133,7 +134,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
             flipped
             text={i18n.personProfile.partnerAdd}
             onClick={() => {
-              setSelectedPartnershipId('')
+              setSelectedPartnershipId(undefined)
               toggleUiMode('add-fridge-partner')
             }}
             data-qa="add-partner-button"

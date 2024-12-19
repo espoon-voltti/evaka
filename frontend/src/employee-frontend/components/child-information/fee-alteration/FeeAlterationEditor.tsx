@@ -11,7 +11,11 @@ import {
 import { Result, Success, wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
-import { AttachmentId, PersonId } from 'lib-common/generated/api-types/shared'
+import {
+  AttachmentId,
+  FeeAlterationId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -35,7 +39,7 @@ const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const newFeeAlteration = (
   personId: PersonId,
-  feeAlterationId?: UUID
+  feeAlterationId?: FeeAlterationId
 ): PartialFeeAlteration => ({
   id: feeAlterationId ?? null,
   personId,

@@ -22,8 +22,8 @@ import {
   MessageType,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
+import { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { formatAccountNames } from 'lib-common/messaging'
-import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
@@ -175,7 +175,7 @@ const AutoScrollPositionSpan = styled.span<{ top: string }>`
 `
 
 interface Props {
-  accountId: UUID
+  accountId: MessageAccountId
   goBack: () => void
   thread: MessageThread
   view: View

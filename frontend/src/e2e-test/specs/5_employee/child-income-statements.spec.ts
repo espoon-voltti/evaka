@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -11,7 +12,6 @@ import {
   testDaycare,
   testChild,
   Fixture,
-  uuidv4,
   testCareArea
 } from '../../dev-api/fixtures'
 import {
@@ -43,7 +43,7 @@ beforeEach(async () => {
 describe('Child profile income statements', () => {
   test('Shows income statements', async () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
-      uuidv4(),
+      randomId(),
       testChild.id,
       testDaycare.id
     )

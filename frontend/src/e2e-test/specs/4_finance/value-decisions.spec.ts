@@ -4,6 +4,7 @@
 
 import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { fromUuid } from 'lib-common/id-type'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
@@ -60,7 +61,7 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
   await createVoucherValueDecisions({
     body: [
       voucherValueDecisionsFixture(
-        'e2d75fa4-7359-406b-81b8-1703785ca649',
+        fromUuid('e2d75fa4-7359-406b-81b8-1703785ca649'),
         testAdult.id,
         testChild2.id,
         testDaycare.id,
@@ -70,7 +71,7 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
         decision1DateTo
       ),
       voucherValueDecisionsFixture(
-        'ed462aca-f74e-4384-910f-628823201023',
+        fromUuid('ed462aca-f74e-4384-910f-628823201023'),
         testAdult.id,
         testChild.id,
         testDaycare2.id,
@@ -89,7 +90,7 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
   childIncome: DecisionIncome | null = null
 ) => {
   const decision = voucherValueDecisionsFixture(
-    'e2d75fa4-7359-406b-81b8-1703785ca649',
+    fromUuid('e2d75fa4-7359-406b-81b8-1703785ca649'),
     familyWithTwoGuardians.guardian.id,
     familyWithTwoGuardians.children[0].id,
     testDaycare.id,

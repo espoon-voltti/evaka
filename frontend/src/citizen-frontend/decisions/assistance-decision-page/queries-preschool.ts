@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 
 import {
   getAssistanceNeedPreschoolDecision,
@@ -15,7 +15,7 @@ import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('assistancePreschoolDecisions', {
   all: () => ['all'],
-  detail: (id: UUID) => ['preschoolDecisions', id],
+  detail: (id: AssistanceNeedPreschoolDecisionId) => ['preschoolDecisions', id],
   unreadCounts: () => ['unreadCounts']
 })
 

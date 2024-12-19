@@ -14,14 +14,12 @@ import {
   IncomeTypeOptions,
   IncomeWithPermittedActions
 } from 'lib-common/generated/api-types/invoicing'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import { IncomeId } from '../../../types/income'
 
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'
@@ -34,18 +32,18 @@ interface Props {
   incomeTypeOptions: IncomeTypeOptions
   coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>
   incomeNotifications: IncomeNotification[]
-  isRowOpen: (id: IncomeId) => boolean
-  toggleRow: (id: IncomeId) => void
+  isRowOpen: (id: IncomeId | 'new') => boolean
+  toggleRow: (id: IncomeId | 'new') => void
   editing: string | undefined
   setEditing: React.Dispatch<React.SetStateAction<string | undefined>>
   deleting: string | undefined
   setDeleting: React.Dispatch<React.SetStateAction<string | undefined>>
   createIncome: (income: IncomeRequest) => Promise<Result<unknown>>
   updateIncome: (
-    incomeId: UUID,
+    incomeId: IncomeId,
     income: IncomeRequest
   ) => Promise<Result<unknown>>
-  deleteIncome: (incomeId: UUID) => Promise<Result<unknown>>
+  deleteIncome: (incomeId: IncomeId) => Promise<Result<unknown>>
   onSuccessfulUpdate: () => void
   onFailedUpdate: (value: Failure<unknown>) => void
 }

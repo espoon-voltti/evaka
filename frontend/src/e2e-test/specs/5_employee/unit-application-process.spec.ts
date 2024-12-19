@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId, GroupId } from 'lib-common/generated/api-types/shared'
+import {
+  ApplicationId,
+  GroupId,
+  PlacementId
+} from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 
 import {
   applicationFixture,
@@ -40,8 +43,8 @@ let unitPage: UnitPage
 const groupId = randomId<GroupId>()
 let child1Fixture: DevPerson
 let child2Fixture: DevPerson
-let child1DaycarePlacementId: UUID
-let child2DaycarePlacementId: UUID
+let child1DaycarePlacementId: PlacementId
+let child2DaycarePlacementId: PlacementId
 
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee
@@ -67,7 +70,7 @@ beforeEach(async () => {
   }).save()
 
   child1Fixture = familyWithTwoGuardians.children[0]
-  child1DaycarePlacementId = randomId<ApplicationId>()
+  child1DaycarePlacementId = randomId()
   await Fixture.placement({
     id: child1DaycarePlacementId,
     childId: child1Fixture.id,
@@ -81,7 +84,7 @@ beforeEach(async () => {
     children: [testChild, testChild2]
   }).save()
   child2Fixture = testChild2
-  child2DaycarePlacementId = randomId<ApplicationId>()
+  child2DaycarePlacementId = randomId()
   await Fixture.placement({
     id: child2DaycarePlacementId,
     childId: child2Fixture.id,

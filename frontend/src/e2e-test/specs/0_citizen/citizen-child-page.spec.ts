@@ -4,7 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { evakaUserId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -19,8 +19,7 @@ import {
   testChild2,
   testClub,
   testDaycare,
-  testPreschool,
-  uuidv4
+  testPreschool
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -63,7 +62,7 @@ describe('Citizen children page', () => {
   test('Citizen can see its children and navigate to their page', async () => {
     await createDaycarePlacements({
       body: [testChild, testChild2].map((child) => ({
-        id: uuidv4(),
+        id: randomId(),
         type: 'DAYCARE',
         childId: child.id,
         unitId: testDaycare.id,
@@ -96,7 +95,7 @@ describe('Citizen children page', () => {
     await createDaycarePlacements({
       body: [
         {
-          id: uuidv4(),
+          id: randomId(),
           type,
           childId: testChild2.id,
           unitId,
@@ -249,7 +248,7 @@ describe('Citizen children page', () => {
       const daycareAfterPreschoolEnd = preschool2End.addMonths(6)
       const placements: DevPlacement[] = [
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'DAYCARE',
           childId: testChild2.id,
           unitId: testDaycare.id,
@@ -260,7 +259,7 @@ describe('Citizen children page', () => {
           terminationRequestedDate: null
         },
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'DAYCARE',
           childId: testChild2.id,
           unitId: testPreschool.id,
@@ -271,7 +270,7 @@ describe('Citizen children page', () => {
           terminationRequestedDate: null
         },
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'PRESCHOOL',
           childId: testChild2.id,
           unitId: testPreschool.id,
@@ -282,7 +281,7 @@ describe('Citizen children page', () => {
           terminationRequestedDate: null
         },
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
           childId: testChild2.id,
           unitId: testPreschool.id,
@@ -293,7 +292,7 @@ describe('Citizen children page', () => {
           terminationRequestedDate: null
         },
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
           childId: testChild2.id,
           unitId: testPreschool.id,
@@ -337,7 +336,7 @@ describe('Citizen children page', () => {
       const daycare2end = daycare1End.addMonths(2)
       const placements: DevPlacement[] = [
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'DAYCARE',
           childId: testChild2.id,
           unitId: testDaycare.id,
@@ -348,7 +347,7 @@ describe('Citizen children page', () => {
           terminationRequestedDate: null
         },
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'DAYCARE',
           childId: testChild2.id,
           unitId: testPreschool.id,
@@ -409,7 +408,7 @@ describe('Citizen children page', () => {
       const daycareAfterPreschoolEnd = preschool2End.addMonths(6)
       const placements: DevPlacement[] = [
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
           childId: testChild2.id,
           unitId: testPreschool.id,
@@ -420,7 +419,7 @@ describe('Citizen children page', () => {
           terminationRequestedDate: null
         },
         {
-          id: uuidv4(),
+          id: randomId(),
           type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
           childId: testChild2.id,
           unitId: testPreschool.id,

@@ -14,12 +14,15 @@ import {
   ChildWithName,
   HolidayPeriodAttendanceReportRow
 } from 'lib-common/generated/api-types/reports'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  GroupId,
+  HolidayPeriodId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -46,7 +49,7 @@ import { holidayPeriodAttendanceReportQuery } from './queries'
 
 interface ReportQueryParams {
   unitId: DaycareId
-  periodId: UUID
+  periodId: HolidayPeriodId
   groupIds: GroupId[] | null
 }
 

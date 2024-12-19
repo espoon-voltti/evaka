@@ -5,8 +5,8 @@
 import sum from 'lodash/sum'
 import { useMemo } from 'react'
 
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 
 import { useUser } from '../auth/state'
 import { unreadChildDocumentsCountQuery } from '../child-documents/queries'
@@ -27,10 +27,10 @@ export function useUnreadChildNotifications() {
   )
 
   const unreadChildNotifications = useMemo(() => {
-    const counts: Record<UUID, number> = {}
-    const addCounts = (countRecord: Record<UUID, number>) =>
+    const counts: Record<ChildId, number> = {}
+    const addCounts = (countRecord: Record<ChildId, number>) =>
       Object.entries(countRecord).forEach(([id, count]) => {
-        counts[id] = (counts[id] ?? 0) + count
+        counts[id as ChildId] = (counts[id as ChildId] ?? 0) + count
       })
 
     addCounts(unreadPedagogicalDocumentsCount)

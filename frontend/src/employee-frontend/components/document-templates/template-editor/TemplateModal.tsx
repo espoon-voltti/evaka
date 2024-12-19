@@ -30,12 +30,12 @@ import {
 } from 'lib-common/generated/api-types/document'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
+  DocumentTemplateId,
   OfficialLanguage,
   officialLanguages
 } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -94,7 +94,7 @@ export const documentTemplateForm = transformed(
 
 export type TemplateModalMode =
   | { type: 'new' }
-  | { type: 'duplicate'; from: UUID }
+  | { type: 'duplicate'; from: DocumentTemplateId }
   | { type: 'import'; data: JsonOf<ExportedDocumentTemplate> }
 
 interface Props {

@@ -20,14 +20,17 @@ import {
   ExternalAttendance,
   PlannedStaffAttendance,
   StaffAttendanceUpsert,
-  ExternalAttendanceUpsert
+  ExternalAttendanceUpsert,
+  StaffAttendanceType
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { OperationalDay } from 'lib-common/generated/api-types/reservations'
 import {
   DaycareId,
   EmployeeId,
-  GroupId
+  GroupId,
+  StaffAttendanceExternalId,
+  StaffAttendanceRealtimeId
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -488,13 +491,21 @@ const BottomSumTd = styled.td<{ centered?: boolean }>`
   text-align: ${(p) => (p.centered ? 'center' : 'left')};
 `
 
+interface AttendanceRowAttendance {
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+  groupId: GroupId | null
+  departedAutomatically: boolean
+  type: StaffAttendanceType
+}
+
 interface AttendanceRowProps extends BaseProps {
   rowIndex: number
   isPositiveOccupancyCoefficient: boolean
   name: string
   employeeId?: string
   operationalDays: OperationalDay[]
-  attendances: Attendance[]
+  attendances: AttendanceRowAttendance[]
   plannedAttendances?: PlannedStaffAttendance[]
   groupFilter: GroupFilter | null
   openDetails: (date: LocalDate) => void
@@ -516,7 +527,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
   const { i18n } = useTranslation()
   const today = LocalDate.todayInHelsinkiTz()
 
-  const attendanceTooltipText = (attendance: Attendance) =>
+  const attendanceTooltipText = (attendance: AttendanceRowAttendance) =>
     attendance.departedAutomatically ? (
       <div>
         <div>{i18n.unit.staffAttendance.departedAutomatically}</div>
@@ -655,10 +666,13 @@ const AttendanceRow = React.memo(function AttendanceRow({
 })
 
 function getAttendancesForGroupAndDate(
-  attendances: Attendance[],
+  attendances: AttendanceRowAttendance[],
   groupFilter: GroupFilter | null,
   date: LocalDate
-): { matchingAttendances: Attendance[]; hasHiddenAttendances: boolean } {
+): {
+  matchingAttendances: AttendanceRowAttendance[]
+  hasHiddenAttendances: boolean
+} {
   const attendancesForDate = attendances.filter(
     (a) =>
       a.arrived.toLocalDate().isEqual(date) ||
@@ -790,7 +804,7 @@ export const staffAttendanceValidator =
         groupId !== undefined
       ) {
         body[i] = {
-          id: item.id,
+          id: item.id as StaffAttendanceRealtimeId | null,
           type: item.type,
           arrived,
           departed,
@@ -856,6 +870,7 @@ export const externalAttendanceValidator =
       ) {
         body[i] = {
           ...item,
+          id: item.id as StaffAttendanceExternalId | null,
           arrived,
           departed,
           groupId

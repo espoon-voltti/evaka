@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
+import {
+  PlacementId,
+  ServiceNeedOptionId
+} from 'lib-common/generated/api-types/shared'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -25,7 +28,7 @@ import { employeeLogin } from '../../utils/user'
 let daycareId: UUID
 let groupId: UUID
 let childId: UUID
-let placementId: UUID
+let placementId: PlacementId
 let unitSupervisor: DevEmployee
 let daycareServiceNeedOptionId: ServiceNeedOptionId
 

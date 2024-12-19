@@ -31,6 +31,7 @@ import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import {
   ChildId,
   DaycareId,
+  InvoiceCorrectionId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import { formatCents, parseCents } from 'lib-common/money'
@@ -605,7 +606,7 @@ const NoteQuickEditor = React.memo(function NoteQuickEditor({
   closeNote
 }: {
   initialValue: string
-  correctionId: UUID
+  correctionId: InvoiceCorrectionId
   personId: PersonId
   closeNote: () => void
 }) {

@@ -11,9 +11,9 @@ import {
   ServiceNeedOptionVoucherValueRange,
   ServiceNeedOptionVoucherValueRangeWithId
 } from 'lib-common/generated/api-types/invoicing'
+import { ServiceNeedOptionVoucherValueId } from 'lib-common/generated/api-types/shared'
 import { isValidCents, parseCentsOrThrow } from 'lib-common/money'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -30,7 +30,7 @@ import {
 
 export type VoucherValueEditorProps = {
   i18n: Translations
-  id: UUID | undefined
+  id: ServiceNeedOptionVoucherValueId | undefined
   initialState: FormState
   close: () => void
   existingVoucherValues: ServiceNeedOptionVoucherValueRangeWithId[]

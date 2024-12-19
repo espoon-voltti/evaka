@@ -8,8 +8,11 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
+import {
+  AttachmentId,
+  IncomeStatementId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -40,7 +43,7 @@ import {
 import * as Form from './types/form'
 
 interface Props {
-  incomeStatementId: UUID | undefined
+  incomeStatementId: IncomeStatementId | undefined
   status: IncomeStatementStatus
   formData: Form.IncomeStatementForm
   showFormErrors: boolean
@@ -61,7 +64,7 @@ const ChildIncome = React.memo(function ChildIncome({
   formData,
   onChange
 }: {
-  incomeStatementId: UUID | undefined
+  incomeStatementId: IncomeStatementId | undefined
   formData: Form.IncomeStatementForm
   onChange: SetStateCallback<Form.IncomeStatementForm>
 }) {
@@ -77,7 +80,7 @@ const ChildIncome = React.memo(function ChildIncome({
   )
 
   const onAttachmentDeleted = useCallback(
-    (id: UUID) =>
+    (id: AttachmentId) =>
       onChange((prev) => ({
         ...prev,
         attachments: prev.attachments.filter((a) => a.id !== id)
