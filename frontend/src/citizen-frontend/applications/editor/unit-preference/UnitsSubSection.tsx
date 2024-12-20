@@ -39,6 +39,7 @@ export default React.memo(function UnitsSubSection({
   const t = useTranslation()
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
+  const [isUnitSelectionInvalid, setIsUnitSelectionInvalid] = useState(false)
 
   const { data: units = null } = useQuery(
     applicationUnitsQuery(
@@ -146,6 +147,11 @@ export default React.memo(function UnitsSubSection({
                     }))
                   }
                 }}
+                onBlur={() => {
+                  setIsUnitSelectionInvalid(
+                    formData.preferredUnits.length === 0
+                  )
+                }}
                 maxSelected={maxUnits}
                 isClearable={false}
                 placeholder={
@@ -177,6 +183,7 @@ export default React.memo(function UnitsSubSection({
               </Label>
               <Gap size="xs" />
               {!verificationRequested &&
+                !isUnitSelectionInvalid &&
                 formData.preferredUnits.length === 0 && (
                   <Info>
                     {
@@ -185,14 +192,15 @@ export default React.memo(function UnitsSubSection({
                     }
                   </Info>
                 )}
-              {verificationRequested && errors.preferredUnits?.arrayErrors && (
-                <AlertBox
-                  message={
-                    t.validationErrors[errors.preferredUnits.arrayErrors]
-                  }
-                  thin
-                />
-              )}
+              {(verificationRequested || isUnitSelectionInvalid) &&
+                errors.preferredUnits?.arrayErrors && (
+                  <AlertBox
+                    message={
+                      t.validationErrors[errors.preferredUnits.arrayErrors]
+                    }
+                    thin
+                  />
+                )}
               <FixedSpaceColumn spacing="s">
                 {units
                   ? formData.preferredUnits
