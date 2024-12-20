@@ -406,6 +406,7 @@ enum class Audit(
     PartnerShipsUpdate,
     PartnersInDifferentAddressReportRead,
     PatuReportSend,
+    PaymentsSearch,
     PaymentsConfirmDrafts,
     PaymentsCreate,
     PaymentsDeleteDrafts,

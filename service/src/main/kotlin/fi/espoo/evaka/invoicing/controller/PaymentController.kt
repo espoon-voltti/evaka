@@ -33,9 +33,21 @@ class PaymentController(
     fun searchPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @RequestBody params: SearchPaymentsRequest,
     ): PagedPayments {
-        return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.SEARCH_PAYMENTS,
+                    )
+                    tx.searchPayments(params)
+                }
+            }
+            .also { Audit.PaymentsSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     @PostMapping("/employee/payments/create-drafts")
