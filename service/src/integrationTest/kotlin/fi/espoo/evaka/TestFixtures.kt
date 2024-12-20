@@ -38,6 +38,7 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
@@ -751,3 +752,13 @@ fun DevEmployee.toEvakaUser() =
         name = this.lastName + " " + this.firstName,
         type = EvakaUserType.EMPLOYEE,
     )
+
+fun DevPerson.toEvakaUser(type: EvakaUserType) =
+    EvakaUser(
+        id = EvakaUserId(this.id.raw),
+        name = this.lastName + " " + this.firstName,
+        type = type,
+    )
+
+fun DevMobileDevice.toEvakaUser() =
+    EvakaUser(id = EvakaUserId(this.id.raw), name = this.name, type = EvakaUserType.EMPLOYEE)

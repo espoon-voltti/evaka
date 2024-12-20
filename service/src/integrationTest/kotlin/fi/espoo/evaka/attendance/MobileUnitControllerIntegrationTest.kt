@@ -141,36 +141,48 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 testDaycare.id,
                 today,
                 TimeInterval(LocalTime.of(8, 30), null),
+                now,
+                mobileUser.evakaUserId,
             )
             tx.insertAttendance(
                 testChild_2.id,
                 testDaycare.id,
                 today,
                 TimeInterval(LocalTime.of(9, 0), null),
+                now,
+                mobileUser.evakaUserId,
             )
             tx.insertAttendance(
                 testChild_3.id,
                 testDaycare.id,
                 today,
                 TimeInterval(LocalTime.of(9, 30), null),
+                now,
+                mobileUser.evakaUserId,
             )
             tx.insertAttendance(
                 testChild_4.id,
                 testDaycare.id,
                 today,
                 TimeInterval(LocalTime.of(10, 0), null),
+                now,
+                mobileUser.evakaUserId,
             )
             tx.insertAttendance(
                 testChild_5.id,
                 testDaycare.id,
                 today,
                 TimeInterval(LocalTime.of(10, 15), null),
+                now,
+                mobileUser.evakaUserId,
             )
             tx.insertAttendance(
                 testChild_6.id,
                 testDaycare.id,
                 today,
                 TimeInterval(LocalTime.of(10, 30), null),
+                now,
+                mobileUser.evakaUserId,
             )
 
             val employee1 = DevEmployee(firstName = "One", lastName = "in group 1")
@@ -234,6 +246,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 testDaycare.id,
                 today,
                 TimeInterval(LocalTime.of(6, 0), null),
+                now,
+                mobileUser.evakaUserId,
             )
         }
         val unitInfo = fetchUnitInfo(testDaycare.id)

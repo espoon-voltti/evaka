@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isHoliday
+import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -121,14 +122,15 @@ data class ReservationInsert(val childId: ChildId, val date: LocalDate, val rang
 
 fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
+    createdAt: HelsinkiDateTime,
     reservations: List<ReservationInsert>,
 ): List<AttendanceReservationId> {
     return reservations.mapNotNull {
         createQuery {
                 sql(
                     """
-INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
-SELECT ${bind(it.childId)}, ${bind(it.date)}, ${bind(it.range?.start)}, ${bind(it.range?.end)}, ${bind(userId)}
+INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_at, created_by)
+SELECT ${bind(it.childId)}, ${bind(it.date)}, ${bind(it.range?.start)}, ${bind(it.range?.end)}, ${bind(createdAt)}, ${bind(userId)}
 FROM realized_placement_all(${bind(it.date)}) rp
 JOIN daycare d ON d.id = rp.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(it.date)}
@@ -167,7 +169,11 @@ SELECT
   ar.child_id,
   ar.start_time,
   ar.end_time,
-  eu.type <> 'CITIZEN' as staff_created
+  eu.type <> 'CITIZEN' as staff_created,
+  ar.created_at,
+  eu.id AS created_by_id,
+  eu.name AS created_by_name,
+  eu.type AS created_by_type
 FROM attendance_reservation ar
 JOIN evaka_user eu ON ar.created_by = eu.id
 WHERE ${predicate(where.forTable("ar"))}
@@ -180,6 +186,12 @@ WHERE ${predicate(where.forTable("ar"))}
                 column("child_id"),
                 Reservation.of(column("start_time"), column("end_time")),
                 column("staff_created"),
+                column("created_at"),
+                EvakaUser(
+                    column("created_by_id"),
+                    column("created_by_name"),
+                    column("created_by_type"),
+                ),
             )
         }
 
@@ -494,6 +506,8 @@ data class ConfirmedDayAbsenceInfo(val category: AbsenceCategory)
 data class ConfirmedDayReservationInfo(
     val start: LocalTime?,
     val end: LocalTime?,
+    val createdAt: HelsinkiDateTime,
+    val createdBy: EvakaUser,
     val staffCreated: Boolean,
 )
 
@@ -519,8 +533,20 @@ SELECT pcd.child_id,
         (SELECT coalesce(jsonb_agg(jsonb_build_object(
                'start', s.start_time,
                'end', s.end_time,
+               'createdAt', s.created_at,
+               'createdBy', jsonb_build_object(
+                   'id', s.created_by_id,
+                   'name', s.created_by_name,
+                   'type', s.created_by_type
+               ),
                'staffCreated', s.staff_created)), '[]'::jsonb)
-        FROM (select ar.start_time, ar.end_time, eu.type <> 'CITIZEN' as staff_created
+        FROM (select ar.start_time,
+                     ar.end_time,
+                     ar.created_at,
+                     eu.id AS created_by_id,
+                     eu.name AS created_by_name,
+                     eu.type AS created_by_type,
+                     eu.type <> 'CITIZEN' AS staff_created
                 FROM attendance_reservation ar
                 JOIN evaka_user eu ON ar.created_by = eu.id
               WHERE ar.child_id = pcd.child_id
