@@ -526,6 +526,7 @@ enum class VoucherValueDecisionDistinctiveParams {
     RETROACTIVE,
     NO_STARTING_PLACEMENTS,
     MAX_FEE_ACCEPTED,
+    NO_OPEN_INCOME_STATEMENTS,
 }
 
 data class SearchVoucherValueDecisionRequest(
