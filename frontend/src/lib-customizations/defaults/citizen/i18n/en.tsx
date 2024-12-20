@@ -2303,7 +2303,6 @@ const en: Translations = {
     outsideUnitOperationTime: 'Outside opening hours'
   },
   placement: {
-    // TODO i18n
     type: {
       CLUB: 'Club',
       DAYCARE: 'Early childhood education',
