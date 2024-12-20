@@ -60,7 +60,10 @@ export interface MessageBoxProps {
   thin?: boolean
   noMargin?: boolean
   'data-qa'?: string
+  role?: MessageAriaRole
 }
+
+type MessageAriaRole = 'alert' | 'status'
 
 export const MessageBox = React.memo(function MessageBox({
   title,
@@ -70,6 +73,7 @@ export const MessageBox = React.memo(function MessageBox({
   width,
   thin,
   noMargin,
+  role = 'status',
   ...props
 }: MessageBoxProps) {
   if (!title && !message) {
@@ -88,7 +92,7 @@ export const MessageBox = React.memo(function MessageBox({
         <div className="icon-wrapper">
           <FontAwesomeIcon icon={icon} size="1x" color={color} inverse />
         </div>
-        <div>
+        <div role={role}>
           {!!title && <span className="message-title">{title}</span>}
           {!!title && !!message && <Gap size={thin ? 'xxs' : 's'} />}
           {!!message &&
@@ -164,6 +168,7 @@ export const AlertBox = React.memo(function AlertBox({
       thin={thin}
       noMargin={noMargin}
       data-qa={props['data-qa']}
+      role="alert"
     />
   )
 })
