@@ -338,6 +338,9 @@ fun Database.Read.searchValueDecisions(
     val maxFeeAccepted =
         distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED)
 
+    val noOpenIncomeStatements =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS)
+
     val noStartingPlacementsQuery =
         """
 NOT EXISTS (            
@@ -377,6 +380,16 @@ NOT EXISTS (
             if (noStartingPlacements) noStartingPlacementsQuery else null,
             if (maxFeeAccepted)
                 "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
+            else null,
+            if (noOpenIncomeStatements)
+                """
+                NOT EXISTS (
+                    SELECT FROM income_statement
+                    WHERE person_id IN (decision.head_of_family_id, decision.partner_id, decision.child_id) AND
+                        daterange(start_date, end_date, '[]') && daterange((:now - interval '14 months')::date, :now::date, '[]') AND
+                        status = 'SENT'
+                    )
+                """
             else null,
         )
     val sql =

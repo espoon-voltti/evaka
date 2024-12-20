@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.invoicing.data
 
-import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.*
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.IncomeStatementStatus
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
@@ -15,32 +17,14 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPersonType
-import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.snDaycareFullDay35
-import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testAdult_4
-import fi.espoo.evaka.testAdult_5
-import fi.espoo.evaka.testAdult_6
-import fi.espoo.evaka.testAdult_7
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testChild_5
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.toValueDecisionServiceNeed
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -1001,7 +985,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `search with NO_STARTING_CHILDREN`() {
+    fun `search with NO_STARTING_PLACEMENTS`() {
         val now = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
         db.transaction { tx ->
@@ -1077,6 +1061,183 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     .data
                     .size,
             )
+        }
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS`() {
+        val clock = RealEvakaClock()
+
+        fun createTestDecision(headOfFamilyId: PersonId, childId: ChildId, partnerId: PersonId?) =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = clock.now().toLocalDate(),
+                validTo = clock.now().toLocalDate(),
+                headOfFamilyId = headOfFamilyId,
+                partnerId = partnerId,
+                childId = childId,
+                dateOfBirth = testChild_1.dateOfBirth,
+                unitId = testDaycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+
+        val decisionWithHandledStatement =
+            createTestDecision(testAdult_1.id, testChild_1.id, testAdult_2.id)
+        val decisionWithOpenAdultStatement =
+            createTestDecision(testAdult_3.id, testChild_2.id, testAdult_4.id)
+        val decisionWithFarAwayAndFutureOpenStatements =
+            createTestDecision(testAdult_5.id, testChild_3.id, testAdult_6.id)
+        val decisionWithOpenChildStatement =
+            createTestDecision(testAdult_7.id, testChild_4.id, null)
+
+        db.transaction { tx ->
+            tx.upsertValueDecisions(
+                listOf(
+                    decisionWithHandledStatement,
+                    decisionWithOpenAdultStatement,
+                    decisionWithFarAwayAndFutureOpenStatements,
+                    decisionWithOpenChildStatement,
+                )
+            )
+            tx.insert(testDecisionMaker_1)
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = testDecisionMaker_1.id,
+                )
+            )
+
+            // testAdult_2 statement not submitted
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_2.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.DRAFT,
+                    sentAt = null,
+                )
+            )
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_3.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = testDecisionMaker_1.id,
+                )
+            )
+
+            // testAdult_4 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_4.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+
+            // testAdult_5 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_5.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(20),
+                            clock.today().minusMonths(14).minusDays(1),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+
+            // testAdult_6 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_6.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusDays(1),
+                            clock.today().plusMonths(12),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_7.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = testDecisionMaker_1.id,
+                )
+            )
+
+            // testChild_4 statement not handled
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testChild_4.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().minusMonths(2),
+                            clock.today().minusMonths(1),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+
+            val result =
+                tx.searchValueDecisions(
+                    evakaClock = clock,
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    difference = emptySet(),
+                    financeDecisionHandlerId = null,
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+
+            assertThat(result.data.map { it.child.id })
+                .containsExactlyInAnyOrder(testChild_1.id, testChild_3.id)
         }
     }
 
