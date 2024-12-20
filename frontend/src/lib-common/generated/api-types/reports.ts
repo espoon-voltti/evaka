@@ -19,6 +19,8 @@ import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { DaycareAssistanceLevel } from './assistance'
 import { DaycareId } from './shared'
 import { DecisionType } from './decision'
+import { DocumentTemplateId } from './shared'
+import { DocumentType } from './document'
 import { GroupId } from './shared'
 import { JsonOf } from '../../json'
 import { MealType } from './mealintegration'
@@ -215,6 +217,15 @@ export interface ChildAttendanceReportRow {
   date: LocalDate
   nonbillableAbsence: AbsenceType | null
   reservations: TimeRange[]
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.ChildDocumentsReportTemplate
+*/
+export interface ChildDocumentsReportTemplate {
+  id: DocumentTemplateId
+  name: string
+  type: DocumentType
 }
 
 /**
@@ -439,6 +450,19 @@ export interface FuturePreschoolersReportRow {
   options: string[]
   unitId: DaycareId
   unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.GroupRow
+*/
+export interface GroupRow {
+  completed: number
+  drafts: number
+  groupId: GroupId
+  groupName: string
+  none: number
+  prepared: number
+  total: number
 }
 
 /**
@@ -809,6 +833,7 @@ export type Report =
   | 'ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD'
   | 'ATTENDANCE_RESERVATION'
   | 'CHILD_AGE_LANGUAGE'
+  | 'CHILD_DOCUMENTS'
   | 'CHILDREN_IN_DIFFERENT_ADDRESS'
   | 'CUSTOMER_FEES'
   | 'DECISIONS'
@@ -996,6 +1021,20 @@ export interface UnitData {
   areaName: string
   id: DaycareId
   name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.UnitRow
+*/
+export interface UnitRow {
+  completed: number
+  drafts: number
+  groups: GroupRow[]
+  none: number
+  prepared: number
+  total: number
+  unitId: DaycareId
+  unitName: string
 }
 
 /**
