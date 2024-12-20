@@ -48,7 +48,11 @@ import {
   DropDownLocalLink,
   LanguageMenu
 } from './shared-components'
-import { useChildrenWithOwnPage, useUnreadChildNotifications } from './utils'
+import {
+  isPersonalDetailsIncomplete,
+  useChildrenWithOwnPage,
+  useUnreadChildNotifications
+} from './utils'
 
 interface Props {
   unreadMessagesCount: number
@@ -323,7 +327,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
   const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
-  const showUserAttentionIndicator = !user.email
+  const showUserAttentionIndicator = isPersonalDetailsIncomplete(user)
   const weakAuth = user.authLevel !== 'STRONG'
   const maybeLockElem = weakAuth && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
@@ -346,7 +350,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
       >
         {t.header.nav.subNavigationMenu}
         <AttentionIndicator
-          toggled={showUserAttentionIndicator}
+          toggled={showUserAttentionIndicator || unreadDecisions > 0}
           position="bottom"
           data-qa="attention-indicator-sub-menu-desktop"
         >

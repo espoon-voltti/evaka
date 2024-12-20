@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import sumBy from 'lodash/sumBy'
 import React from 'react'
 import { useLocation } from 'react-router'
 import styled from 'styled-components'
@@ -12,9 +11,6 @@ import { desktopMin, desktopMinPx } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
-import { assistanceDecisionUnreadCountsQuery } from '../decisions/assistance-decision-page/queries'
-import { assistanceNeedPreschoolDecisionUnreadCountsQuery } from '../decisions/assistance-decision-page/queries-preschool'
-import { applicationNotificationsQuery } from '../decisions/queries'
 import { unreadMessagesCountQuery } from '../messages/queries'
 
 import CityLogo from './CityLogo'
@@ -22,6 +18,7 @@ import DesktopNav from './DesktopNav'
 import EvakaLogo from './EvakaLogo'
 import { headerHeightDesktop, headerHeightMobile } from './const'
 import { LanguageMenu } from './shared-components'
+import { useUnreadDecisions } from './utils'
 
 export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const loggedIn = useUser() !== undefined
@@ -30,20 +27,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
     enabled: loggedIn
   })
 
-  const { data: unreadAssistanceNeedDecisionCounts = [] } = useQuery(
-    assistanceDecisionUnreadCountsQuery(),
-    { enabled: loggedIn }
-  )
-
-  const { data: unreadAssistanceNeedPreschoolDecisionCounts = [] } = useQuery(
-    assistanceNeedPreschoolDecisionUnreadCountsQuery(),
-    { enabled: loggedIn }
-  )
-
-  const { data: waitingConfirmationCount = 0 } = useQuery(
-    applicationNotificationsQuery(),
-    { enabled: loggedIn }
-  )
+  const unreadDecisions = useUnreadDecisions()
 
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'
@@ -60,14 +44,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
         )}
         <DesktopNav
           unreadMessagesCount={unreadMessagesCount ?? 0}
-          unreadDecisions={
-            waitingConfirmationCount +
-            sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count) +
-            sumBy(
-              unreadAssistanceNeedPreschoolDecisionCounts,
-              ({ count }) => count
-            )
-          }
+          unreadDecisions={unreadDecisions}
           hideLoginButton={isLoginPage}
         />
       </HeaderContainer>

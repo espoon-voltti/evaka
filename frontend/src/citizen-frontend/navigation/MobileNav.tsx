@@ -33,7 +33,6 @@ import {
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
-import { applicationNotificationsQuery } from '../decisions/queries'
 import { langs, useLang, useTranslation } from '../localization'
 import { unreadMessagesCountQuery } from '../messages/queries'
 
@@ -45,7 +44,12 @@ import {
   DropDownLink,
   DropDownLocalLink
 } from './shared-components'
-import { useChildrenWithOwnPage, useUnreadChildNotifications } from './utils'
+import {
+  isPersonalDetailsIncomplete,
+  useChildrenWithOwnPage,
+  useUnreadChildNotifications,
+  useUnreadDecisions
+} from './utils'
 
 export default React.memo(function MobileNav() {
   const t = useTranslation()
@@ -57,10 +61,7 @@ export default React.memo(function MobileNav() {
       enabled: loggedIn
     }
   )
-  const { data: unreadDecisions = 0 } = useQuery(
-    applicationNotificationsQuery(),
-    { enabled: loggedIn }
-  )
+  const unreadDecisions = useUnreadDecisions()
 
   const [menuOpen, setMenuOpen] = useState<'children' | 'submenu'>()
   const toggleSubMenu = useCallback(
@@ -115,7 +116,7 @@ export default React.memo(function MobileNav() {
               >
                 <AttentionIndicator
                   toggled={
-                    showUserAttentionIndicator(user) || unreadDecisions > 0
+                    isPersonalDetailsIncomplete(user) || unreadDecisions > 0
                   }
                   position="top"
                   data-qa="attention-indicator-sub-menu-mobile"
@@ -142,8 +143,6 @@ export default React.memo(function MobileNav() {
     </UnwrapResult>
   )
 })
-
-const showUserAttentionIndicator = (user: User) => !user.email
 
 const BottomBar = styled.nav`
   z-index: 25;
@@ -398,7 +397,7 @@ const Menu = React.memo(function Menu({
           onClick={closeMenu}
         >
           {t.header.nav.personalDetails}
-          {showUserAttentionIndicator(user) && (
+          {isPersonalDetailsIncomplete(user) && (
             <CircledChar
               aria-label={t.header.attention}
               data-qa="personal-details-notification"
