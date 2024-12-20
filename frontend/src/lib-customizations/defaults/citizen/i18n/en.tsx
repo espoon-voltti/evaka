@@ -2303,28 +2303,31 @@ const en: Translations = {
     outsideUnitOperationTime: 'Outside opening hours'
   },
   placement: {
-    // TODO i18n
     type: {
-      CLUB: 'Kerho',
-      DAYCARE: 'Varhaiskasvatus',
-      FIVE_YEARS_OLD_DAYCARE: '5-vuotiaiden varhaiskasvatus',
-      PRESCHOOL_WITH_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
-      PREPARATORY_WITH_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
-      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
-      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      CLUB: 'Club',
+      DAYCARE: 'Early childhood education',
+      FIVE_YEARS_OLD_DAYCARE: '5-year old early childhood education',
+      PRESCHOOL_WITH_DAYCARE:
+        'Preschool education and early childhood education',
+      PREPARATORY_WITH_DAYCARE:
+        'Preparatory pre-school education and early childhood education',
+      DAYCARE_PART_TIME: 'Part time early childhood education',
+      DAYCARE_FIVE_YEAR_OLDS: '5-year old early childhood education',
       DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
-        '5-vuotiaiden osapäiväinen varhaiskasvatus',
-      PRESCHOOL: 'Esiopetus',
-      PREPARATORY: 'Valmistava opetus',
-      PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
-      PREPARATORY_DAYCARE_ONLY:
-        'Valmistavan opetuksen liittyvä varhaiskasvatus',
-      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
-      PRESCHOOL_DAYCARE_ONLY: 'Esiopetuksen liittyvä varhaiskasvatus',
-      PRESCHOOL_CLUB: 'Esiopetuksen kerho (en)',
-      TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
-      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
-      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
+        '5-year old part time early childhood education',
+      PRESCHOOL: 'Preschool education',
+      PREPARATORY: 'Preparatory pre-school education',
+      PREPARATORY_DAYCARE:
+        'Preparatory pre-school education and early childhood education',
+      PREPARATORY_DAYCARE_ONLY: 'Preparatory pre-school education',
+      PRESCHOOL_DAYCARE: 'Preschool education and early childhood education',
+      PRESCHOOL_DAYCARE_ONLY:
+        'Preschool education with only early childhood education',
+      PRESCHOOL_CLUB: 'Preschool club',
+      TEMPORARY_DAYCARE: 'Temporary early childhood education',
+      TEMPORARY_DAYCARE_PART_DAY:
+        'Temporary part-time early childhood education',
+      SCHOOL_SHIFT_CARE: 'School shift care'
     }
   },
   children: {
