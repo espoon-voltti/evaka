@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.invoicing.controller.IncomeController
 import fi.espoo.evaka.invoicing.data.insertIncome
@@ -37,8 +36,6 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired lateinit var mapper: JsonMapper
-
     @Autowired lateinit var incomeController: IncomeController
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
@@ -66,6 +63,8 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         validFrom = it.validFrom,
                         validTo = it.validTo,
                         notes = it.notes,
+                        createdAt = nullTime,
+                        createdBy = mockUser,
                         modifiedAt = nullTime,
                         modifiedBy = mockUser,
                         attachments = it.attachments,
@@ -77,7 +76,15 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
                 .toSet(),
             actual
-                .map { it.copy(id = nullId, modifiedAt = nullTime, modifiedBy = mockUser) }
+                .map {
+                    it.copy(
+                        id = nullId,
+                        createdAt = nullTime,
+                        createdBy = mockUser,
+                        modifiedAt = nullTime,
+                        modifiedBy = mockUser,
+                    )
+                }
                 .toSet(),
         )
     }
@@ -141,7 +148,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
         db.transaction { tx ->
-            incomeRequests.forEach { tx.insertIncome(clock, mapper, it, financeUser.evakaUserId) }
+            incomeRequests.forEach { tx.insertIncome(clock.now(), it, financeUser.evakaUserId) }
         }
 
         val incomes = getPersonIncomes(testAdult_1.id)
@@ -167,7 +174,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val firstIncome = testIncomeRequest().copy(validTo = null)
         val firstIncomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock, mapper, firstIncome, financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), firstIncome, financeUser.evakaUserId)
             }
 
         val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusMonths(1))
@@ -189,7 +196,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome throws with partly overlapping date range`() {
         db.transaction { tx ->
-            tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+            tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
         }
 
         val overlappingIncome =
@@ -202,7 +209,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome throws with identical date range`() {
         db.transaction { tx ->
-            tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+            tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
         }
         assertThrows<Conflict> { createIncome(testIncomeRequest()) }
     }
@@ -210,7 +217,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome throws with covering date range`() {
         db.transaction { tx ->
-            tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+            tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
         }
 
         val overlappingIncome =
@@ -231,6 +238,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val incomes = getPersonIncomes(testIncomeRequest().personId)
         assertEquals(1, incomes.size)
         with(incomes.first()) {
+            assertEquals(financeUserName, createdBy.name)
             assertEquals(financeUserName, modifiedBy.name)
             assertEquals(0, totalIncome)
             assertEquals(0, totalExpenses)
@@ -242,7 +250,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateIncome works with valid income`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
             }
 
         val updateRequest =
@@ -289,7 +297,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateIncome throws with invalid date rage`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
             }
 
         val updated = testIncomeRequest().copy(validTo = testIncomeRequest().validFrom.minusDays(1))
@@ -300,7 +308,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateIncome throws with overlapping date rage`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
             }
 
         val anotherIncome =
@@ -308,7 +316,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 this.copy(validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
             }
         db.transaction { tx ->
-            tx.insertIncome(clock, mapper, anotherIncome, financeUser.evakaUserId)
+            tx.insertIncome(clock.now(), anotherIncome, financeUser.evakaUserId)
         }
 
         val updated = testIncomeRequest().copy(validTo = anotherIncome.validTo)
@@ -319,7 +327,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateIncome removes data if effect is not INCOME`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
             }
 
         val updated =
@@ -340,7 +348,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `deleteIncome works with multiple incomes in DB`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
             }
         val anotherIncome =
             with(testIncomeRequest()) {
@@ -348,7 +356,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val incomeId2 =
             db.transaction { tx ->
-                tx.insertIncome(clock, mapper, anotherIncome, financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), anotherIncome, financeUser.evakaUserId)
             }
 
         deleteIncome(incomeId)

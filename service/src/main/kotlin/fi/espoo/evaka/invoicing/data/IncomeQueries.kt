@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.invoicing.data
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.calculateIncomeTotal
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.calculateTotalExpense
@@ -23,14 +21,14 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 
 fun Database.Transaction.insertIncome(
-    clock: EvakaClock,
-    mapper: JsonMapper,
+    now: HelsinkiDateTime,
     income: IncomeRequest,
-    modifiedBy: EvakaUserId,
+    createdBy: EvakaUserId,
 ): IncomeId {
     val update = createQuery {
         sql(
@@ -44,20 +42,24 @@ fun Database.Transaction.insertIncome(
             valid_from,
             valid_to,
             notes,
+            created_at,
+            created_by,
             modified_at,
             modified_by,
             application_id
         ) VALUES (
             ${bind(income.personId)},
             ${bind(income.effect)},
-            ${bind(mapper.writeValueAsString(income.data))}::jsonb,
+            ${bindJson(income.data)},
             ${bind(income.isEntrepreneur)},
             ${bind(income.worksAtECHA)},
             ${bind(income.validFrom)},
             ${bind(income.validTo)},
             ${bind(income.notes)},
-            ${bind(clock.now())},
-            ${bind(modifiedBy)},
+            ${bind(now)},
+            ${bind(createdBy)},
+            ${bind(now)},
+            ${bind(createdBy)},
             NULL
         )
         RETURNING id
@@ -70,7 +72,6 @@ fun Database.Transaction.insertIncome(
 
 fun Database.Transaction.updateIncome(
     clock: EvakaClock,
-    mapper: JsonMapper,
     id: IncomeId,
     income: IncomeRequest,
     modifiedBy: EvakaUserId,
@@ -81,7 +82,7 @@ fun Database.Transaction.updateIncome(
         UPDATE income
         SET
             effect = ${bind(income.effect)},
-            data = ${bind(mapper.writeValueAsString(income.data))}::jsonb,
+            data = ${bindJson(income.data)},
             is_entrepreneur = ${bind(income.isEntrepreneur)},
             works_at_echa = ${bind(income.worksAtECHA)},
             valid_from = ${bind(income.validFrom)},
@@ -99,7 +100,6 @@ fun Database.Transaction.updateIncome(
 }
 
 fun Database.Read.getIncome(
-    mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     id: IncomeId,
@@ -109,9 +109,12 @@ fun Database.Read.getIncome(
                 """
 SELECT 
     income.*,
-    e.id AS modified_by_id,
-    e.name AS modified_by_name,
-    e.type AS modified_by_type,
+    created_by.id AS created_by_id,
+    created_by.name AS created_by_name,
+    created_by.type AS created_by_type,
+    modified_by.id AS modified_by_id,
+    modified_by.name AS modified_by_name,
+    modified_by.type AS modified_by_type,
     (SELECT coalesce(jsonb_agg(jsonb_build_object(
         'id', id,
         'name', name,
@@ -124,18 +127,16 @@ FROM (
     ORDER BY a.created
 ) s) AS attachments
 FROM income
-JOIN evaka_user e ON income.modified_by = e.id
+JOIN evaka_user created_by ON income.created_by = created_by.id
+JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE income.id = ${bind(id)}
 """
             )
         }
-        .exactlyOneOrNull {
-            toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
-        }
+        .exactlyOneOrNull { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Read.getIncomesForPerson(
-    mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personId: PersonId,
@@ -146,9 +147,12 @@ fun Database.Read.getIncomesForPerson(
                 """
 SELECT
     income.*,
-    e.id AS modified_by_id,
-    e.name AS modified_by_name,
-    e.type AS modified_by_type,
+    created_by.id AS created_by_id,
+    created_by.name AS created_by_name,
+    created_by.type AS created_by_type,
+    modified_by.id AS modified_by_id,
+    modified_by.name AS modified_by_name,
+    modified_by.type AS modified_by_type,
     (SELECT coalesce(jsonb_agg(jsonb_build_object(
         'id', id,
         'name', name,
@@ -161,18 +165,18 @@ FROM (
     ORDER BY a.created
 ) s) AS attachments
 FROM income
-JOIN evaka_user e ON income.modified_by = e.id
+JOIN evaka_user created_by ON income.created_by = created_by.id
+JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE person_id = ${bind(personId)}
 AND (${bind(validAt)}::timestamp IS NULL OR tsrange(valid_from, valid_to) @> ${bind(validAt)}::timestamp)
 ORDER BY valid_from DESC
         """
             )
         }
-        .toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
+        .toList { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Read.getIncomesFrom(
-    mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personIds: List<PersonId>,
@@ -185,19 +189,23 @@ fun Database.Read.getIncomesFrom(
                 """
 SELECT
     income.*,
-    e.id AS modified_by_id,
-    e.name AS modified_by_name,
-    e.type AS modified_by_type,
+    created_by.id AS created_by_id,
+    created_by.name AS created_by_name,
+    created_by.type AS created_by_type,
+    modified_by.id AS modified_by_id,
+    modified_by.name AS modified_by_name,
+    modified_by.type AS modified_by_type,
     '[]' as attachments
 FROM income
-JOIN evaka_user e ON income.modified_by = e.id
+JOIN evaka_user created_by ON income.created_by = created_by.id
+JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE
     person_id = ANY(${bind(personIds)})
     AND (valid_to IS NULL OR valid_to >= ${bind(from)})
 """
             )
         }
-        .toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
+        .toList { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
@@ -207,7 +215,7 @@ fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
 }
 
 fun Database.Transaction.splitEarlierIncome(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     personId: PersonId,
     period: DateRange,
     modifiedBy: EvakaUserId,
@@ -217,7 +225,7 @@ fun Database.Transaction.splitEarlierIncome(
             """
             UPDATE income SET
                 valid_to = ${bind(period.start.minusDays(1))},
-                modified_at = ${bind(clock.now())},
+                modified_at = ${bind(now)},
                 modified_by = ${bind(modifiedBy)}
             WHERE
                 person_id = ${bind(personId)}
@@ -231,12 +239,10 @@ fun Database.Transaction.splitEarlierIncome(
 }
 
 fun Row.toIncome(
-    mapper: JsonMapper,
     incomeTypes: Map<String, IncomeType>,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Income {
-    val data =
-        parseIncomeDataJson(column("data"), mapper, incomeTypes, coefficientMultiplierProvider)
+    val data = parseIncomeDataJson(jsonColumn("data"), incomeTypes, coefficientMultiplierProvider)
     return Income(
         id = column<IncomeId>("id"),
         personId = column("person_id"),
@@ -247,6 +253,13 @@ fun Row.toIncome(
         validFrom = column("valid_from"),
         validTo = column("valid_to"),
         notes = column("notes"),
+        createdAt = column("created_at"),
+        createdBy =
+            EvakaUser(
+                column("created_by_id"),
+                column("created_by_name"),
+                column("created_by_type"),
+            ),
         modifiedAt = column("updated_at"),
         modifiedBy =
             EvakaUser(
@@ -263,12 +276,11 @@ fun Row.toIncome(
 }
 
 fun parseIncomeDataJson(
-    json: String,
-    jsonMapper: JsonMapper,
+    json: Map<String, IncomeValue>,
     incomeTypes: Map<String, IncomeType>,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Map<String, IncomeValue> {
-    return jsonMapper.readValue<Map<String, IncomeValue>>(json).mapValues { (type, value) ->
+    return json.mapValues { (type, value) ->
         value.copy(
             multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"),
             monthlyAmount =
