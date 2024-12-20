@@ -1061,22 +1061,6 @@ export async function getStartingPlacementsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.TitaniaErrorReport.clearTitaniaErrors
-*/
-export async function clearTitaniaErrors(
-  request: {
-    conflictId: TitaniaErrorsId
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/reports/titania-errors/${request.conflictId}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurvey
 */
 export async function getTampereRegionalSurvey(
@@ -1091,6 +1075,22 @@ export async function getTampereRegionalSurvey(
     url: uri`/employee/reports/tampere-regional-survey/monthly`.toString(),
     method: 'GET',
     params
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.TitaniaErrorReport.clearTitaniaErrors
+*/
+export async function clearTitaniaErrors(
+  request: {
+    conflictId: TitaniaErrorsId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/reports/titania-errors/${request.conflictId}`.toString(),
+    method: 'DELETE'
   })
   return json
 }

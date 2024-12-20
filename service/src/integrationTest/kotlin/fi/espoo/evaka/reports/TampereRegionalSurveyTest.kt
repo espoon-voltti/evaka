@@ -5,26 +5,18 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
-import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AssistanceActionOptionId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceActionOption
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
-import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareAssistance
@@ -43,7 +35,6 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -102,7 +93,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `Monthly municipal report results are correct`() {
+    fun `Monthly municipal age and part time report results are correct`() {
         val testUnitData = initTestUnitData(startDate)
         initTestPlacementData(startDate, testUnitData[0])
         val results =
@@ -570,93 +561,5 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 Pair(testChildFabio, emptyList()),
             )
         }
-    }
-
-    private fun addTestServiceNeed(
-        placement: DevPlacement,
-        shiftCareType: ShiftCareType,
-        optionId: ServiceNeedOptionId,
-    ) {
-        return db.transaction { tx ->
-            tx.insert(
-                DevServiceNeed(
-                    placementId = placement.id,
-                    startDate = placement.startDate,
-                    endDate = placement.endDate,
-                    shiftCare = shiftCareType,
-                    optionId = optionId,
-                    confirmedBy = adminLoginUser.evakaUserId,
-                )
-            )
-        }
-    }
-
-    private fun addTestBackupCare(
-        childId: PersonId,
-        targetDaycareId: DaycareId,
-        duration: FiniteDateRange,
-        targetGroupId: GroupId?,
-        placementEquivalent: DevPlacement?,
-    ) {
-        return db.transaction { tx ->
-            if (placementEquivalent != null) {
-                tx.insert(placementEquivalent)
-            }
-            tx.insert(
-                DevBackupCare(
-                    period = duration,
-                    childId = childId,
-                    unitId = targetDaycareId,
-                    groupId = targetGroupId,
-                )
-            )
-        }
-    }
-
-    private fun createOtherAbsence(
-        date: LocalDate,
-        childId: PersonId,
-        category: AbsenceCategory,
-        tx: Database.Transaction,
-    ) =
-        tx.insert(
-            DevAbsence(
-                id = AbsenceId(UUID.randomUUID()),
-                childId,
-                date,
-                AbsenceType.OTHER_ABSENCE,
-                HelsinkiDateTime.atStartOfDay(date),
-                admin.evakaUserId,
-                category,
-            )
-        )
-
-    private fun assertReportMonth(
-        expected: HolidayPeriodAttendanceReportRow,
-        actual: HolidayPeriodAttendanceReportRow,
-    ) {
-        assertEquals(expected.date, actual.date)
-        assertEquals(expected.absentCount, actual.absentCount, "${actual.date}: absentCount")
-        assertThat(actual.presentChildren)
-            .describedAs("${actual.date}: presentChildren")
-            .containsExactlyInAnyOrderElementsOf(expected.presentChildren)
-
-        assertThat(actual.assistanceChildren)
-            .describedAs("${actual.date}: assistanceChildren")
-            .containsExactlyInAnyOrderElementsOf(expected.assistanceChildren)
-
-        assertEquals(
-            expected.presentOccupancyCoefficient,
-            actual.presentOccupancyCoefficient,
-            "${actual.date}: coefficientSum",
-        )
-        assertEquals(
-            expected.requiredStaff,
-            actual.requiredStaff,
-            "${actual.date}: staffRequirement",
-        )
-        assertThat(actual.noResponseChildren)
-            .describedAs("${actual.date}: noResponseChildren")
-            .containsExactlyInAnyOrderElementsOf(expected.noResponseChildren)
     }
 }
