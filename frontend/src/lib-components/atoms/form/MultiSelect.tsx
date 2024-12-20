@@ -23,6 +23,7 @@ interface MultiSelectProps<T> {
   getOptionLabel: (value: T) => string
   getOptionSecondaryText?: (value: T) => string
   onChange: (selected: T[]) => void
+  onBlur?: (ev: React.FocusEvent) => void
   maxSelected?: number
   placeholder: string
   noOptionsMessage?: string
@@ -41,6 +42,7 @@ function MultiSelect<T>({
   getOptionLabel,
   getOptionSecondaryText,
   onChange,
+  onBlur,
   closeMenuOnSelect,
   noOptionsMessage,
   maxSelected,
@@ -112,6 +114,7 @@ function MultiSelect<T>({
             scrollIntoViewSoftKeyboard(parentContainer, 'start')
           }
         }}
+        onBlur={onBlur}
         options={[
           {
             options: value
