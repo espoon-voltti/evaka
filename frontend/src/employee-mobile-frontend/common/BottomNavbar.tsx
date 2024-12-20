@@ -140,26 +140,23 @@ export default function BottomNavbar({
               />
             </BottomText>
           </Button>
-          <Button data-qa="bottomnav-staff">
-            <BottomText
-              text={i18n.common.staff}
-              selected={selected === 'staff'}
-              onClick={() =>
-                selected !== 'staff' &&
-                navigate(
-                  (unit.features.includes('REALTIME_STAFF_ATTENDANCE')
-                    ? routes.staffAttendances(unitOrGroup, 'absent')
-                    : routes.staff(unitOrGroup)
-                  ).value
-                )
-              }
-            >
-              <CustomIcon
-                icon={selected === 'staff' ? fasUser : faUser}
+          {unit.features.includes('REALTIME_STAFF_ATTENDANCE') ? (
+            <Button data-qa="bottomnav-staff">
+              <BottomText
+                text={i18n.common.staff}
                 selected={selected === 'staff'}
-              />
-            </BottomText>
-          </Button>
+                onClick={() =>
+                  selected !== 'staff' &&
+                  navigate(routes.staffAttendances(unitOrGroup, 'absent').value)
+                }
+              >
+                <CustomIcon
+                  icon={selected === 'staff' ? fasUser : faUser}
+                  selected={selected === 'staff'}
+                />
+              </BottomText>
+            </Button>
+          ) : null}
           {unit.features.includes('MOBILE_MESSAGING') ? (
             <Button data-qa="bottomnav-messages">
               <BottomText
