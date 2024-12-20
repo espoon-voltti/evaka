@@ -161,7 +161,7 @@ sealed interface Action {
         ),
         CREATE_DOCUMENT_TEMPLATE(HasGlobalRole(ADMIN)),
         READ_DOCUMENT_TEMPLATE(
-            HasGlobalRole(ADMIN),
+            HasGlobalRole(ADMIN, DIRECTOR),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit(),
         ),
         FETCH_INCOME_STATEMENTS_AWAITING_HANDLER(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -2263,6 +2263,10 @@ sealed interface Action {
         READ_PRESCHOOL_ABSENCE_REPORT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
+        ),
+        READ_CHILD_DOCUMENTS_REPORT(
+            HasGlobalRole(ADMIN, DIRECTOR),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
         READ_PRESCHOOL_APPLICATION_REPORT,
         READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT(
