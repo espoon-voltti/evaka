@@ -520,7 +520,7 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.setStartTime('09:00', 0)
     await reservationModal.setEndTime('17:00', 0)
     await reservationModal.setStartTime('08:00', 1)
-    await reservationModal.setEndTime('16:00', 1)
+    await reservationModal.setEndTime('16:00*', 1)
     await reservationModal.save()
 
     await childReservations
