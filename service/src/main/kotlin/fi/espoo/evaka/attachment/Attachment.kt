@@ -54,4 +54,5 @@ data class MessageAttachment(val id: AttachmentId, val name: String, val content
 enum class AttachmentType {
     URGENCY,
     EXTENDED_CARE,
+    SERVICE_WORKER_ATTACHMENT,
 }
