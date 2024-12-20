@@ -41,6 +41,19 @@ WHERE (${predicate(idFilter.forTable("message_account"))})
         .toSet<MessageAccountId>()
 }
 
+private fun messageAccountName(
+    accountType: AccountType,
+    accountName: String?,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String,
+): String {
+    return when (accountType) {
+        AccountType.MUNICIPAL -> municipalAccountName
+        AccountType.SERVICE_WORKER -> serviceWorkerAccountName
+        else -> accountName!!
+    }
+}
+
 fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     idFilter: AccessControlFilter<MessageAccountId>,
     municipalAccountName: String,
@@ -51,11 +64,7 @@ fun Database.Read.getAuthorizedMessageAccountsForEmployee(
                 """
 SELECT DISTINCT ON (acc.id)
     acc.id AS account_id,
-    (CASE
-        WHEN acc.type = 'MUNICIPAL'::message_account_type THEN ${bind(municipalAccountName)}
-        WHEN acc.type = 'SERVICE_WORKER'::message_account_type THEN ${bind(serviceWorkerAccountName)}
-        ELSE name_view.name
-    END) AS account_name,
+    name_view.name AS account_name,
     acc.type AS account_type,
     dg.id AS group_id,
     dg.name AS group_name,
@@ -77,7 +86,33 @@ AND (
 """
             )
         }
-        .toList()
+        .toList {
+            AuthorizedMessageAccount(
+                account =
+                    column<AccountType>("account_type").let { accountType ->
+                        MessageAccount(
+                            id = column("account_id"),
+                            name =
+                                messageAccountName(
+                                    accountType,
+                                    column("account_name"),
+                                    municipalAccountName = municipalAccountName,
+                                    serviceWorkerAccountName = serviceWorkerAccountName,
+                                ),
+                            type = accountType,
+                        )
+                    },
+                daycareGroup =
+                    column<GroupId?>("group_id")?.let { groupId ->
+                        Group(
+                            id = groupId,
+                            name = column("group_name"),
+                            unitId = column("group_unitId"),
+                            unitName = column("group_unitName"),
+                        )
+                    },
+            )
+        }
 }
 
 fun Database.Read.getAccountNames(
@@ -95,6 +130,40 @@ WHERE mav.id = ANY(${bind(accountIds)})
             )
         }
         .toList<String>()
+}
+
+fun Database.Read.getMessageAccount(
+    accountId: MessageAccountId,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String,
+): MessageAccount {
+    return createQuery {
+            sql(
+                """
+SELECT
+    acc.id,
+    acc.name,
+    acc.type
+FROM message_account_view acc
+WHERE acc.id = ${bind(accountId)}
+"""
+            )
+        }
+        .exactlyOne {
+            column<AccountType>("type").let { accountType ->
+                MessageAccount(
+                    id = column("id"),
+                    name =
+                        messageAccountName(
+                            accountType,
+                            column("name"),
+                            municipalAccountName = municipalAccountName,
+                            serviceWorkerAccountName = serviceWorkerAccountName,
+                        ),
+                    type = accountType,
+                )
+            }
+        }
 }
 
 fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId {
