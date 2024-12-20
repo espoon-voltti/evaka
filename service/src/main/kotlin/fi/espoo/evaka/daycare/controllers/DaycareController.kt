@@ -35,6 +35,8 @@ import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
+import fi.espoo.evaka.daycare.updateUnitClosingDate
+import fi.espoo.evaka.daycare.validateUnitClosingDate
 import fi.espoo.evaka.occupancy.OccupancyPeriod
 import fi.espoo.evaka.occupancy.OccupancyPeriodGroupLevel
 import fi.espoo.evaka.occupancy.OccupancyResponse
@@ -438,12 +440,30 @@ class DaycareController(
                         Action.Unit.UPDATE,
                         daycareId,
                     )
-                    fields.validateClosingDate(tx, daycareId)
+                    fields.closingDate?.also { validateUnitClosingDate(tx, daycareId, it) }
                     tx.updateDaycareManager(daycareId, fields.unitManager)
                     tx.updateDaycare(daycareId, fields)
                 }
             }
             .also { Audit.UnitUpdate.log(targetId = AuditId(daycareId)) }
+    }
+
+    @PutMapping("/{unitId}/closing-date")
+    fun updateUnitClosingDate(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestParam closingDate: LocalDate,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(tx, user, clock, Action.Unit.UPDATE, unitId)
+                    validateUnitClosingDate(tx, unitId, closingDate)
+                    tx.updateUnitClosingDate(unitId, closingDate)
+                }
+            }
+            .also { Audit.UnitUpdate.log(targetId = AuditId(unitId)) }
     }
 
     @PostMapping

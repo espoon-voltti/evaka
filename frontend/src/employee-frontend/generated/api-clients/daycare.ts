@@ -387,6 +387,27 @@ export async function updateGroup(
 
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.updateUnitClosingDate
+*/
+export async function updateUnitClosingDate(
+  request: {
+    unitId: DaycareId,
+    closingDate: LocalDate
+  }
+): Promise<void> {
+  const params = createUrlSearchParams(
+    ['closingDate', request.closingDate.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/daycares/${request.unitId}/closing-date`.toString(),
+    method: 'PUT',
+    params
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.updateUnitFeatures
 */
 export async function updateUnitFeatures(

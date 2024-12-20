@@ -28,7 +28,8 @@ import {
   getUnitNotifications,
   getUnits,
   updateDaycare,
-  updateGroup
+  updateGroup,
+  updateUnitClosingDate
 } from '../../generated/api-clients/daycare'
 import {
   getOccupancyPeriodsSpeculated,
@@ -223,6 +224,11 @@ export const createUnitMutation = mutation({
 export const updateUnitMutation = mutation({
   api: updateDaycare,
   invalidateQueryKeys: ({ daycareId }) => [queryKeys.unit(daycareId)]
+})
+
+export const updateUnitClosingDateMutation = mutation({
+  api: updateUnitClosingDate,
+  invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
 })
 
 export const unitGroupDetailsQuery = query({
