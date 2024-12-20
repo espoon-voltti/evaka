@@ -549,8 +549,8 @@ class AttendanceReservationController(
                                                 startTime = it.start,
                                                 endTime = it.end,
                                                 date = examinationDate,
-                                                createdAt = it.createdAt,
-                                                createdBy = it.createdBy,
+                                                modifiedAt = it.createdAt,
+                                                modifiedBy = it.createdBy,
                                                 staffCreated = it.staffCreated,
                                             )
                                             .toReservationTimes()
@@ -963,20 +963,20 @@ private data class ReservationTimesForDate(
     val date: LocalDate,
     val startTime: LocalTime?,
     val endTime: LocalTime?,
-    val createdAt: HelsinkiDateTime,
-    val createdBy: EvakaUser, // TODO should these be modified_by instead?
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUser,
     val staffCreated: Boolean,
 ) {
     fun toReservationTimes() =
         when {
             startTime == null || endTime == null ->
-                ReservationResponse.NoTimes(staffCreated, createdAt, createdBy)
+                ReservationResponse.NoTimes(staffCreated, modifiedAt, modifiedBy)
             else ->
                 ReservationResponse.Times(
                     TimeRange(startTime, endTime),
                     staffCreated,
-                    createdAt,
-                    createdBy,
+                    modifiedAt,
+                    modifiedBy,
                 )
         }
 }
@@ -1017,8 +1017,8 @@ SELECT
             'date', ar.date,
             'startTime', ar.start_time,
             'endTime', ar.end_time,
-            'createdAt', ar.created_at,
-            'createdBy', jsonb_build_object(
+            'modifiedAt', ar.created_at,
+            'modifiedBy', jsonb_build_object(
                 'id', eu.id,
                 'name', eu.name,
                 'type', eu.type
