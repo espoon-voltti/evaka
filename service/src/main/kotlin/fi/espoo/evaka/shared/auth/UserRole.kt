@@ -21,26 +21,9 @@ enum class UserRole : DatabaseEnum {
     /** Varhaiskasvatussihteeri */
     EARLY_CHILDHOOD_EDUCATION_SECRETARY;
 
-    fun isGlobalRole(): Boolean =
-        when (this) {
-            ADMIN -> true
-            REPORT_VIEWER -> true
-            DIRECTOR -> true
-            FINANCE_ADMIN -> true
-            SERVICE_WORKER -> true
-            MESSAGING -> true
-            FINANCE_STAFF -> true
-            else -> false
-        }
+    fun isGlobalRole(): Boolean = GLOBAL_ROLES.contains(this)
 
-    fun isUnitScopedRole(): Boolean =
-        when (this) {
-            UNIT_SUPERVISOR -> true
-            STAFF -> true
-            SPECIAL_EDUCATION_TEACHER -> true
-            EARLY_CHILDHOOD_EDUCATION_SECRETARY -> true
-            else -> false
-        }
+    fun isUnitScopedRole(): Boolean = SCOPED_ROLES.contains(this)
 
     override val sqlType: String = "user_role"
 
@@ -52,5 +35,6 @@ enum class UserRole : DatabaseEnum {
                 SPECIAL_EDUCATION_TEACHER,
                 EARLY_CHILDHOOD_EDUCATION_SECRETARY,
             )
+        val GLOBAL_ROLES = entries.filter { !SCOPED_ROLES.contains(it) }.toSet()
     }
 }

@@ -4585,7 +4585,7 @@ export const fi = {
     activateConfirm: 'Haluatko palauttaa käyttäjän aktiiviseksi?',
     deactivate: 'Deaktivoi',
     deactivateConfirm: 'Haluatko deaktivoida käyttäjän?',
-    hideDeactivated: 'Näytä vain aktiiviset',
+    hideDeactivated: 'Näytä vain aktiiviset käyttäjät',
     editor: {
       globalRoles: 'Järjestelmäroolit',
       unitRoles: {

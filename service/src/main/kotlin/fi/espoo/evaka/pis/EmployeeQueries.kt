@@ -378,6 +378,7 @@ fun getEmployeesPaged(
     pageSize: Int,
     searchTerm: String = "",
     hideDeactivated: Boolean = false,
+    globalRoles: Set<UserRole>?,
 ): PagedEmployeesWithDaycareRoles {
     val (freeTextQuery, freeTextParams) =
         freeTextSearchQueryForColumns(
@@ -387,12 +388,17 @@ fun getEmployeesPaged(
         )
 
     val params =
-        listOf(Binding.of("offset", (page - 1) * pageSize), Binding.of("pageSize", pageSize))
+        listOfNotNull(
+            Binding.of("offset", (page - 1) * pageSize),
+            Binding.of("pageSize", pageSize),
+            if (globalRoles != null) Binding.of("roles", globalRoles) else null,
+        )
 
     val conditions =
         listOfNotNull(
             if (searchTerm.isNotBlank()) freeTextQuery else null,
             if (hideDeactivated) "employee.active = TRUE" else null,
+            if (globalRoles != null) "employee.roles && :roles" else null,
         )
 
     val whereClause = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ") ?: "TRUE"

@@ -648,6 +648,7 @@ export interface RestrictedDetails {
 * Generated from fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 */
 export interface SearchEmployeeRequest {
+  globalRoles: UserRole[] | null
   hideDeactivated: boolean | null
   page: number | null
   searchTerm: string | null
