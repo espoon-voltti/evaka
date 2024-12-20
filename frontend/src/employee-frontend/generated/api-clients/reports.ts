@@ -18,12 +18,14 @@ import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/r
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import { ChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
+import { ChildDocumentsReportTemplate } from 'lib-common/generated/api-types/reports'
 import { ChildPreschoolAbsenceRow } from 'lib-common/generated/api-types/reports'
 import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import { CustomerFeesReportRow } from 'lib-common/generated/api-types/reports'
 import { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
+import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import { ExceededServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
@@ -71,6 +73,7 @@ import { SourceUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import { TitaniaErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { TitaniaErrorsId } from 'lib-common/generated/api-types/shared'
+import { UnitRow } from 'lib-common/generated/api-types/reports'
 import { UnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { VardaChildErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { VardaUnitErrorReportRow } from 'lib-common/generated/api-types/reports'
@@ -283,6 +286,40 @@ export async function getChildAttendanceReport(
     params
   })
   return json.map(e => deserializeJsonChildAttendanceReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.getChildDocumentsReport
+*/
+export async function getChildDocumentsReport(
+  request: {
+    templateIds?: DocumentTemplateId[] | null,
+    unitIds?: DaycareId[] | null
+  }
+): Promise<UnitRow[]> {
+  const params = createUrlSearchParams(
+    ...(request.templateIds?.map((e): [string, string | null | undefined] => ['templateIds', e]) ?? []),
+    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? [])
+  )
+  const { data: json } = await client.request<JsonOf<UnitRow[]>>({
+    url: uri`/employee/reports/child-documents`.toString(),
+    method: 'GET',
+    params
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.getChildDocumentsReportTemplateOptions
+*/
+export async function getChildDocumentsReportTemplateOptions(): Promise<ChildDocumentsReportTemplate[]> {
+  const { data: json } = await client.request<JsonOf<ChildDocumentsReportTemplate[]>>({
+    url: uri`/employee/reports/child-documents/template-options`.toString(),
+    method: 'GET'
+  })
+  return json
 }
 
 

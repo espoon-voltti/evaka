@@ -12,6 +12,8 @@ import {
   getAssistanceNeedsAndActionsReportByChild,
   getAttendanceReservationReportByChild,
   getChildAttendanceReport,
+  getChildDocumentsReport,
+  getChildDocumentsReportTemplateOptions,
   getCustomerFeesReport,
   getExceededServiceNeedReportRows,
   getExceededServiceNeedReportUnits,
@@ -58,6 +60,13 @@ const queryKeys = createQueryKeys('reports', {
   childAttendance: (filters: Arg0<typeof getChildAttendanceReport>) => [
     'childAttendance',
     filters
+  ],
+  childDocumentsReport: (filters: Arg0<typeof getChildDocumentsReport>) => [
+    'childDocumentsReport',
+    filters
+  ],
+  childDocumentsReportTemplateOptions: () => [
+    'childDocumentsReportTemplateOptions'
   ],
   customerFees: (filters: Arg0<typeof getCustomerFeesReport>) => [
     'customerFees',
@@ -137,6 +146,16 @@ export const attendanceReservationReportByChildQuery = query({
 export const childAttendanceReportQuery = query({
   api: getChildAttendanceReport,
   queryKey: queryKeys.childAttendance
+})
+
+export const childDocumentsReportQuery = query({
+  api: getChildDocumentsReport,
+  queryKey: queryKeys.childDocumentsReport
+})
+
+export const childDocumentsReportTemplateOptionsQuery = query({
+  api: getChildDocumentsReportTemplateOptions,
+  queryKey: queryKeys.childDocumentsReportTemplateOptions
 })
 
 export const customerFeesReportQuery = query({
