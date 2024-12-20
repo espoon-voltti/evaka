@@ -669,51 +669,6 @@ jobs:
 
           aws s3 sync --exact-timestamps . s3://evaka-static/
 
-  old-frontend-s3:
-    if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
-    needs:
-      - frontend
-      - frontend-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE }}
-          role-duration-seconds: 1200
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          mask-password: 'true'
-
-      - name: Extract frontend files
-        run: |
-          rm -rf ./frontend-build/
-          docker create -ti --name frontend_instance "${{ needs.frontend.outputs.image }}" sh
-          docker cp frontend_instance:/static ./frontend-build
-          docker rm -f frontend_instance
-
-      - name: Configure AWS credentials
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_SST }}
-          role-duration-seconds: 1200
-
-      - name: Clean build from non-versioned files
-        run: |
-          cd ./frontend-build/
-          for filename in index.html service-worker.js service-worker.js.map; do
-            find . -name "$filename" -not -path "./maintenance-page/*" -type f -delete
-          done
-
-          aws s3 sync --exact-timestamps . s3://evaka-static-common/
-
   tag:
     if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
@@ -786,7 +741,6 @@ jobs:
     needs:
       - tag
       - frontend-s3
-      - old-frontend-s3
     steps:
       - uses: actions/github-script@v7
         with:
