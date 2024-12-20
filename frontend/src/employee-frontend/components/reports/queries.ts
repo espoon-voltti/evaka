@@ -34,6 +34,7 @@ import {
   getPreschoolApplicationReport,
   getServiceVoucherReportForAllUnits,
   getStartingPlacementsReport,
+  getTampereRegionalSurvey,
   getTitaniaErrorsReport,
   getUnitsReport,
   getVardaChildErrorsReport,
@@ -111,7 +112,10 @@ const queryKeys = createQueryKeys('reports', {
   incompleteIncomeReport: () => ['incompleteIncomes'],
   startingPlacementsReport: (
     filters: Arg0<typeof getStartingPlacementsReport>
-  ) => ['startingPlacementsReport', filters]
+  ) => ['startingPlacementsReport', filters],
+  tampereRegionalSurveyReport: (
+    filters: Arg0<typeof getTampereRegionalSurvey>
+  ) => ['tampereRegionalSurvey', filters]
 })
 
 export const permittedReportsQuery = query({
@@ -277,4 +281,9 @@ export const incompleteIncomeReportQuery = query({
 export const startingPlacementsReportQuery = query({
   api: getStartingPlacementsReport,
   queryKey: queryKeys.startingPlacementsReport
+})
+
+export const tampereRegionalSurveyReport = query({
+  api: getTampereRegionalSurvey,
+  queryKey: queryKeys.tampereRegionalSurveyReport
 })
