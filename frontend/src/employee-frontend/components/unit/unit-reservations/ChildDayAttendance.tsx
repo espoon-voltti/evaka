@@ -115,15 +115,10 @@ export default React.memo(function ChildDayAttendance({
       <Tooltip
         tooltip={
           attendance &&
-          (attendance?.staffModified
-            ? i18n.unit.attendanceReservations.lastModifiedStaff(
+            i18n.unit.attendanceReservations.lastModifiedStaff(
                 attendance.modifiedAt.format(),
                 attendance.modifiedBy.name
               )
-            : i18n.unit.attendanceReservations.lastModifiedOther(
-                attendance.modifiedAt.format(),
-                attendance.modifiedBy.name
-              ))
         }
       >
         {!inOtherUnit && !isInBackupGroup ? (
@@ -161,7 +156,6 @@ export default React.memo(function ChildDayAttendance({
                   {attendance?.interval?.end
                     ? attendance.interval.formatEnd()
                     : '-'}
-                  {attendance?.staffModified && '*'}
                 </AttendanceTime>
               </>
             )}
