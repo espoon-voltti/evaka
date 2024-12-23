@@ -270,6 +270,8 @@ class PlacementToolService(
                 nextPreschoolTerm,
             )
 
+            tx.syncApplicationOtherGuardians(applicationId, clock.today())
+
             if (desiredStatus >= ApplicationStatus.SENT) {
                 applicationStateService.sendPlacementToolApplication(tx, user, clock, application)
             }
