@@ -12,7 +12,7 @@ dependencies {
 
         // These constraints are needed for CVE fixes
         api("org.apache.tomcat.embed:tomcat-embed-core:10.1.34")
-        api("org.apache.tomcat.embed:tomcat-embed-el:10.1.34")
+        api("org.apache.tomcat.embed:tomcat-embed-el:11.0.2")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.34")
         api("org.apache.tomcat:tomcat-catalina:10.1.34")
 
