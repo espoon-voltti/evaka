@@ -135,7 +135,7 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.18.0",
     "webpack": "5.96.1",
-    "webpack-cli": "^5.1.4",
+    "webpack-cli": "^6.0.1",
     "webpack-pwa-manifest": "^4.3.0",
     "yargs": "^17.7.2"
   },
