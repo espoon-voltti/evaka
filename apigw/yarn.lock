@@ -425,10 +425,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/libdatadog@npm:^0.2.2":
-  version: 0.2.2
-  resolution: "@datadog/libdatadog@npm:0.2.2"
-  checksum: 10/fd812398db83dbc7316f039a64da8ab55db16d529d08a2951590dd36c99eb7ab68e7082afd78b4c887e9cbcdf8e66473541ac1f7ca69593b196fee587c060768
+"@datadog/libdatadog@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@datadog/libdatadog@npm:0.3.0"
+  checksum: 10/a170c62b882f16ab5fd2b9186ae45f7333e2315eb7178292770870b7a60f868e6ba885e40acdeb9cf48d429787ad11c44cb3151bdefbee7a803e9b196bd377ba
   languageName: node
   linkType: hard
 
@@ -442,13 +442,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-rewriter@npm:2.5.0":
-  version: 2.5.0
-  resolution: "@datadog/native-iast-rewriter@npm:2.5.0"
+"@datadog/native-iast-rewriter@npm:2.6.1":
+  version: 2.6.1
+  resolution: "@datadog/native-iast-rewriter@npm:2.6.1"
   dependencies:
     lru-cache: "npm:^7.14.0"
     node-gyp-build: "npm:^4.5.0"
-  checksum: 10/10ffd9b7dc019c07efcf4164a161ee25caa8c82a341701d961f080a4e2acdabf07d343f9eaf05453c2c7fb08496c47a3333bb13039f43ed9568b04fa2f4acbd2
+  checksum: 10/a854399bf5d4173050d76ce523784238064cb0ec88255441508e95de8275d1bdfa670e98549b386a1e45bd56cc96b2346565ab81273502f4741c5a5bbe528319
   languageName: node
   linkType: hard
 
@@ -462,14 +462,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-metrics@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "@datadog/native-metrics@npm:3.0.1"
+"@datadog/native-metrics@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@datadog/native-metrics@npm:3.1.0"
   dependencies:
     node-addon-api: "npm:^6.1.0"
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/c1bfd615e4e634f0bc7b36b2be0536ea0d3856007f59e80723234b1db9667dc2b7bedb43b8ce7d405346e84ced7472aac31081e2c41e5cfcaf86425ca4179779
+  checksum: 10/4ebc8bd8f80c305d69bbf0d823dcb9fe6dc1c08d4f26c15527303b8e18b81f3c34c0bcf2eb71b131489ec4519d15562e54e17589998183c94df6295145e22e56
   languageName: node
   linkType: hard
 
@@ -2633,15 +2633,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.28.0":
-  version: 5.28.0
-  resolution: "dd-trace@npm:5.28.0"
+"dd-trace@npm:^5.30.0":
+  version: 5.30.0
+  resolution: "dd-trace@npm:5.30.0"
   dependencies:
-    "@datadog/libdatadog": "npm:^0.2.2"
+    "@datadog/libdatadog": "npm:^0.3.0"
     "@datadog/native-appsec": "npm:8.3.0"
-    "@datadog/native-iast-rewriter": "npm:2.5.0"
+    "@datadog/native-iast-rewriter": "npm:2.6.1"
     "@datadog/native-iast-taint-tracking": "npm:3.2.0"
-    "@datadog/native-metrics": "npm:^3.0.1"
+    "@datadog/native-metrics": "npm:^3.1.0"
     "@datadog/pprof": "npm:5.4.1"
     "@datadog/sketches-js": "npm:^2.1.0"
     "@isaacs/ttlcache": "npm:^1.4.1"
@@ -2651,7 +2651,6 @@ __metadata:
     dc-polyfill: "npm:^0.1.4"
     ignore: "npm:^5.2.4"
     import-in-the-middle: "npm:1.11.2"
-    int64-buffer: "npm:^0.1.9"
     istanbul-lib-coverage: "npm:3.2.0"
     jest-docblock: "npm:^29.7.0"
     koalas: "npm:^1.0.2"
@@ -2659,17 +2658,17 @@ __metadata:
     lodash.sortby: "npm:^4.7.0"
     lru-cache: "npm:^7.14.0"
     module-details-from-path: "npm:^1.0.3"
-    msgpack-lite: "npm:^0.1.26"
     opentracing: "npm:>=0.12.1"
-    path-to-regexp: "npm:^0.1.10"
+    path-to-regexp: "npm:^0.1.12"
     pprof-format: "npm:^2.1.0"
     protobufjs: "npm:^7.2.5"
     retry: "npm:^0.13.1"
     rfdc: "npm:^1.3.1"
     semver: "npm:^7.5.4"
     shell-quote: "npm:^1.8.1"
+    source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
-  checksum: 10/9ea7082db0ba9b1657087521b2549003ae95b1a8b2cd6713bf4bdc780349f0a2cbc3d929b6bf4d557452fa29096713373b61acc133c7f8eebca2cde6d61b17d9
+  checksum: 10/11ce95d0adeea0a4a5987c8178c2efa19820b36aa6a3fda9eeccd312dbb09519c271acba344f65ad3479678ec3e09e71811f73f8ee005d27f16151b0df2675ff
   languageName: node
   linkType: hard
 
@@ -3325,7 +3324,7 @@ __metadata:
     connect-redis: "npm:^8.0.0"
     cookie-parser: "npm:^1.4.6"
     date-fns: "npm:^4.1.0"
-    dd-trace: "npm:^5.28.0"
+    dd-trace: "npm:^5.30.0"
     eslint: "npm:^9.17.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-import: "npm:^2.31.0"
@@ -3365,13 +3364,6 @@ __metadata:
     zod: "npm:^3.24.1"
   languageName: unknown
   linkType: soft
-
-"event-lite@npm:^0.1.1":
-  version: 0.1.3
-  resolution: "event-lite@npm:0.1.3"
-  checksum: 10/5185098b4f61285206cf145285079d7d99e7f54611d7ed15c3f867e0136e6b0d8c02d493775f8ac5844bb3eb7bf1ac6ce3a023ac421e0cc3d621399b3d814ea7
-  languageName: node
-  linkType: hard
 
 "execa@npm:^5.0.0":
   version: 5.1.1
@@ -4087,13 +4079,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ieee754@npm:^1.1.8":
-  version: 1.2.1
-  resolution: "ieee754@npm:1.2.1"
-  checksum: 10/d9f2557a59036f16c282aaeb107832dc957a93d73397d89bbad4eb1130560560eb695060145e8e6b3b498b15ab95510226649a0b8f52ae06583575419fe10fc4
-  languageName: node
-  linkType: hard
-
 "ignore-by-default@npm:^1.0.1":
   version: 1.0.1
   resolution: "ignore-by-default@npm:1.0.1"
@@ -4177,13 +4162,6 @@ __metadata:
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 10/cd45e923bee15186c07fa4c89db0aace24824c482fb887b528304694b2aa6ff8a898da8657046a5dcf3e46cd6db6c61629551f9215f208d7c3f157cf9b290521
-  languageName: node
-  linkType: hard
-
-"int64-buffer@npm:^0.1.9":
-  version: 0.1.10
-  resolution: "int64-buffer@npm:0.1.10"
-  checksum: 10/63c5a8fadb02fb2f7ceee8c5c491b4be8a82d9c2dc89c79d5bf48a0aa4b9015a5077b084be8fe7078e3bb3a335783db72d0f51b9c82f1fe6a79b4d7d051a055d
   languageName: node
   linkType: hard
 
@@ -4410,13 +4388,6 @@ __metadata:
   dependencies:
     call-bind: "npm:^1.0.2"
   checksum: 10/0023fd0e4bdf9c338438ffbe1eed7ebbbff7e7e18fb7cdc227caaf9d4bd024a2dcdf6a8c9f40c92192022eac8391243bb9e66cccebecbf6fe1d8a366108f8513
-  languageName: node
-  linkType: hard
-
-"isarray@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "isarray@npm:1.0.0"
-  checksum: 10/f032df8e02dce8ec565cf2eb605ea939bdccea528dbcf565cdf92bfa2da9110461159d86a537388ef1acef8815a330642d7885b29010e8f7eac967c9993b65ab
   languageName: node
   linkType: hard
 
@@ -5513,20 +5484,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msgpack-lite@npm:^0.1.26":
-  version: 0.1.26
-  resolution: "msgpack-lite@npm:0.1.26"
-  dependencies:
-    event-lite: "npm:^0.1.1"
-    ieee754: "npm:^1.1.8"
-    int64-buffer: "npm:^0.1.9"
-    isarray: "npm:^1.0.0"
-  bin:
-    msgpack: ./bin/msgpack
-  checksum: 10/3e283047204254a0adeb0497ee557a05cc7cfc346a60573a1c67d24425385b739b875231f6944d98bd0d6e72af854d40142957602abcc4ec38e91fc2367c8370
-  languageName: node
-  linkType: hard
-
 "natural-compare@npm:^1.4.0":
   version: 1.4.0
   resolution: "natural-compare@npm:1.4.0"
@@ -5938,10 +5895,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-to-regexp@npm:^0.1.10":
-  version: 0.1.11
-  resolution: "path-to-regexp@npm:0.1.11"
-  checksum: 10/62ac072788f81cb2e8e3c4fd8993a328adb4a2e78c8d8cca77f6cd4b635af91cfa50530e71cd56667a3dffbfa77c399ec15a320c21a90cc45aa2feb18a06d87e
+"path-to-regexp@npm:^0.1.12":
+  version: 0.1.12
+  resolution: "path-to-regexp@npm:0.1.12"
+  checksum: 10/2e30f6a0144679c1f95c98e166b96e6acd1e72be9417830fefc8de7ac1992147eb9a4c7acaa59119fb1b3c34eec393b2129ef27e24b2054a3906fc4fb0d1398e
   languageName: node
   linkType: hard
 
