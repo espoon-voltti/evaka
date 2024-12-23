@@ -9,6 +9,7 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { Result, wrapResult } from 'lib-common/api'
+import { swapElements } from 'lib-common/array'
 import DateRange from 'lib-common/date-range'
 import {
   Address,
@@ -730,15 +731,13 @@ export default React.memo(function ApplicationEditView({
                 <Button
                   appearance="inline"
                   icon={faArrowUp}
-                  text={i18n.documentTemplates.templateEditor.moveUp}
+                  text={i18n.application.preferences.moveUp}
                   onClick={() =>
                     setApplication(
-                      set('form.preferences.preferredUnits', [
-                        ...preferredUnits.slice(0, i - 1),
-                        unit,
-                        ...preferredUnits.slice(i - 1, i),
-                        ...preferredUnits.slice(i + 1)
-                      ])
+                      set(
+                        'form.preferences.preferredUnits',
+                        swapElements(preferredUnits, i, i - 1)
+                      )
                     )
                   }
                   disabled={i == 0}
@@ -747,15 +746,13 @@ export default React.memo(function ApplicationEditView({
                 <Button
                   appearance="inline"
                   icon={faArrowDown}
-                  text={i18n.documentTemplates.templateEditor.moveDown}
+                  text={i18n.application.preferences.moveDown}
                   onClick={() =>
                     setApplication(
-                      set('form.preferences.preferredUnits', [
-                        ...preferredUnits.slice(0, i),
-                        ...preferredUnits.slice(i + 1, i + 2),
-                        unit,
-                        ...preferredUnits.slice(i + 2)
-                      ])
+                      set(
+                        'form.preferences.preferredUnits',
+                        swapElements(preferredUnits, i, i + 1)
+                      )
                     )
                   }
                   disabled={i == preferredUnits.length - 1}

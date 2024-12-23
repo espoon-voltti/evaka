@@ -486,6 +486,8 @@ export const fi = {
     preferences: {
       title: 'Hakutoive',
       preferredUnits: 'Hakutoiveet',
+      moveUp: 'Siirrä ylös',
+      moveDown: 'Siirrä alas',
       missingPreferredUnits: 'Valitse vähintään yksi hakutoive',
       unitMismatch: 'Hakutoiveet eivät vastaa haettavia yksiköitä',
       unitsOnMap: 'Yksiköt kartalla',
