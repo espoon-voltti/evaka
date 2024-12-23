@@ -9,6 +9,7 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { Result, wrapResult } from 'lib-common/api'
+import { swapElements } from 'lib-common/array'
 import DateRange from 'lib-common/date-range'
 import {
   Address,
@@ -41,6 +42,8 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import {
+  faArrowDown,
+  faArrowUp,
   faChild,
   faExclamationTriangle,
   faFileAlt,
@@ -83,6 +86,11 @@ const FileUploadGridContainer = styled.div`
 const SubRadios = styled.div`
   margin-bottom: ${defaultMargins.s};
   margin-left: ${defaultMargins.XL};
+`
+const PreferredUnitGridContainer = styled.div`
+  display: inline-grid;
+  grid-column-gap: ${defaultMargins.s};
+  grid-template-columns: 1fr auto auto auto auto;
 `
 
 export default React.memo(function ApplicationEditView({
@@ -718,9 +726,38 @@ export default React.memo(function ApplicationEditView({
               <InputWarning text={i18n.application.preferences.unitMismatch} />
             ) : null}
             {preferredUnits.map((unit, i) => (
-              <HorizontalContainer key={unit.id}>
+              <PreferredUnitGridContainer key={unit.id}>
                 <Link to={`/units/${unit.id}`}>{`${i + 1}. ${unit.name}`}</Link>
-                <Gap size="s" horizontal />
+                <Button
+                  appearance="inline"
+                  icon={faArrowUp}
+                  text={i18n.application.preferences.moveUp}
+                  onClick={() =>
+                    setApplication(
+                      set(
+                        'form.preferences.preferredUnits',
+                        swapElements(preferredUnits, i, i - 1)
+                      )
+                    )
+                  }
+                  disabled={i == 0}
+                  data-qa="button-move-up-preferred-unit"
+                />
+                <Button
+                  appearance="inline"
+                  icon={faArrowDown}
+                  text={i18n.application.preferences.moveDown}
+                  onClick={() =>
+                    setApplication(
+                      set(
+                        'form.preferences.preferredUnits',
+                        swapElements(preferredUnits, i, i + 1)
+                      )
+                    )
+                  }
+                  disabled={i == preferredUnits.length - 1}
+                  data-qa="button-move-down-preferred-unit"
+                />
                 <Button
                   appearance="inline"
                   icon={faTimes}
@@ -737,7 +774,6 @@ export default React.memo(function ApplicationEditView({
                 />
                 {!preferencesInUnitsList.some(({ id }) => id === unit.id) ? (
                   <>
-                    <Gap size="s" horizontal />
                     <FontAwesomeIcon
                       size="sm"
                       icon={faExclamationTriangle}
@@ -745,7 +781,7 @@ export default React.memo(function ApplicationEditView({
                     />
                   </>
                 ) : null}
-              </HorizontalContainer>
+              </PreferredUnitGridContainer>
             ))}
           </VerticalContainer>
         </ListGrid>
