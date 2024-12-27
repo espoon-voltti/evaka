@@ -53,7 +53,7 @@ dependencies {
         api(libs.ktlint.cli.ruleset.core)
         api(libs.ktlint.rule.engine.core)
         api(libs.ktlint.test)
-        api("org.apache.santuario:xmlsec:4.0.0")
+        api("org.apache.santuario:xmlsec:3.0.5")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.18.2"))
