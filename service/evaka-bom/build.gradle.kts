@@ -64,7 +64,7 @@ dependencies {
     api(platform("com.fasterxml.jackson:jackson-bom:2.18.2"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.45.0"))
-    api(platform("org.apache.cxf:cxf-bom:4.0.3"))
+    api(platform("org.apache.cxf:cxf-bom:4.1.0"))
     // Spring Boot specifies a version constraint for Jetty, but we have other libraries relying
     // on an older version -> we enforce a specific Jetty BOM version and ignore Spring Boot
     api(enforcedPlatform("org.eclipse.jetty:jetty-bom:11.0.20"))
