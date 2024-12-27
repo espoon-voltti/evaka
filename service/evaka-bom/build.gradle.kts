@@ -8,7 +8,11 @@ javaPlatform { allowDependencies() }
 
 dependencies {
     constraints {
-        api("ch.qos.logback.access:tomcat:2.0.2")
+        api("ch.qos.logback.access:logback-access-tomcat:2.0.5")
+
+        // These constraints are needed for CVE fixes
+        api("ch.qos.logback:logback-classic:1.5.15")
+        api("ch.qos.logback:logback-core:1.5.15")
 
         // These constraints are needed for CVE fixes
         api("org.apache.tomcat.embed:tomcat-embed-core:10.1.34")
