@@ -28,4 +28,5 @@ data class EmployeeFeatures(
     val placementTool: Boolean,
     val replacementInvoices: Boolean,
     val openRangesHolidayQuestionnaire: Boolean,
+    val outOfOffice: Boolean,
 )

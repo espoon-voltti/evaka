@@ -325,7 +325,8 @@ sealed interface Action {
         READ_SYSTEM_NOTIFICATIONS(HasGlobalRole(ADMIN)),
         UPDATE_SYSTEM_NOTIFICATION(HasGlobalRole(ADMIN)),
         SEND_JAMIX_ORDERS(HasGlobalRole(ADMIN)),
-        PLACEMENT_TOOL(HasGlobalRole(ADMIN));
+        PLACEMENT_TOOL(HasGlobalRole(ADMIN)),
+        OUT_OF_OFFICE_PAGE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

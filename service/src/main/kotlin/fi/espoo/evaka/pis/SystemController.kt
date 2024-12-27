@@ -315,6 +315,8 @@ class SystemController(
                             openRangesHolidayQuestionnaire =
                                 featureConfig.holidayQuestionnaireType ==
                                     QuestionnaireType.OPEN_RANGES,
+                            outOfOffice =
+                                permittedGlobalActions.contains(Action.Global.OUT_OF_OFFICE_PAGE),
                         )
 
                     EmployeeUserResponse(

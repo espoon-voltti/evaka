@@ -127,6 +127,7 @@ export interface EmployeeFeatures {
   holidayAndTermPeriods: boolean
   messages: boolean
   openRangesHolidayQuestionnaire: boolean
+  outOfOffice: boolean
   personSearch: boolean
   personalMobileDevice: boolean
   pinCode: boolean
@@ -203,6 +204,8 @@ export const officialLanguages = [
 export type OfficialLanguage = typeof officialLanguages[number]
 
 export type OtherAssistanceMeasureId = Id<'OtherAssistanceMeasure'>
+
+export type OutOfOfficeId = Id<'OutOfOffice'>
 
 export type PairingId = Id<'Pairing'>
 
