@@ -5,7 +5,7 @@
 package fi.espoo.evaka.espoo.bi
 
 import com.google.common.io.ByteStreams
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class MockEspooBiClient : EspooBiClient {
     private val logger = KotlinLogging.logger {}

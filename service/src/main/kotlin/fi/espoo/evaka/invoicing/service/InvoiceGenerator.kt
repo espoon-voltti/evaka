@@ -46,7 +46,7 @@ import kotlin.math.abs
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Component
 
-private val logger = mu.KotlinLogging.logger {}
+private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
 
 @Component
 class InvoiceGenerator(
@@ -126,7 +126,7 @@ class InvoiceGenerator(
     ) {
         val replacementInvoicesStart = env.replacementInvoicesStart
         if (replacementInvoicesStart == null) {
-            logger.info("Replacement invoices are not enabled")
+            logger.info { "Replacement invoices are not enabled" }
             return
         }
 
@@ -143,7 +143,7 @@ class InvoiceGenerator(
             try {
                 dbc.transaction { tx -> fn(tx, month) }
             } catch (e: Exception) {
-                logger.error("Failed to create replacement draft invoices for $month", e)
+                logger.error(e) { "Failed to create replacement draft invoices for $month" }
             }
             month = month.plusMonths(1)
         }

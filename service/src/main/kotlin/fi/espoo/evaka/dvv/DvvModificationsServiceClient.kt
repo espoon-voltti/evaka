@@ -16,12 +16,12 @@ import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.VtjXroadEnv
 import fi.espoo.evaka.shared.trustAllCerts
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}

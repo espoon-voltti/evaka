@@ -6,7 +6,7 @@ package fi.espoo.evaka.reports.patu
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.reports.RawReportRow
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -17,9 +17,9 @@ interface PatuIntegrationClient {
 
     class MockPatuClient(private val jsonMapper: JsonMapper) : PatuIntegrationClient {
         override fun send(patuReport: List<RawReportRow>): Result {
-            logger.info(
+            logger.info {
                 "Mock patu client got report rows ${jsonMapper.writeValueAsString(patuReport)}"
-            )
+            }
             return Result(true)
         }
     }

@@ -11,8 +11,8 @@ import fi.espoo.voltti.logging.utils.getTestAppender
 import fi.espoo.voltti.logging.utils.getTestMessages
 import fi.espoo.voltti.logging.utils.setupTestAppender
 import kotlin.test.assertEquals
-import mu.KLogger
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
@@ -46,7 +46,7 @@ class AuditLoggerTest {
         logger.audit(emptyMap()) { message }
 
         logger.getTestAppender().getEvents().forEach { event ->
-            assertEquals(listOf(AUDIT_MARKER), event.markerList)
+            assertEquals(listOf(AUDIT_MARKER.getName()), event.markerList.map { it.name })
         }
     }
 

@@ -6,8 +6,8 @@ package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
-import mu.KotlinLogging
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.json.Json
 
@@ -196,5 +196,5 @@ fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {
 
     val runBefore = now.minusMonths(6)
     val oldCount = transaction { it.removeUncompletedJobs(runBefore = runBefore) }
-    logger.info("Removed $oldCount async jobs originally planned to be run before $runBefore")
+    logger.info { "Removed $oldCount async jobs originally planned to be run before $runBefore" }
 }

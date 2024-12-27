@@ -7,7 +7,7 @@ package fi.espoo.evaka.reports.patu
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -22,7 +22,7 @@ class PatuAsyncJobProcessor(
     }
 
     fun runSendPatuReport(dbc: Database.Connection, msg: AsyncJob.SendPatuReport) {
-        logger.info("Running patu report job ${msg.dateRange}")
+        logger.info { "Running patu report job ${msg.dateRange}" }
         patuReportingService.sendPatuReport(dbc, msg.dateRange)
     }
 }

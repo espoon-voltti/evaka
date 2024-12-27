@@ -9,6 +9,7 @@ import evaka.codegen.actionenum.generateActionEnumTypes
 import evaka.codegen.api.TsFile
 import evaka.codegen.api.TsProject
 import evaka.codegen.api.generateApiFiles
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
@@ -19,7 +20,6 @@ import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.io.path.writeText
 import kotlin.system.exitProcess
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -27,7 +27,7 @@ fun generate() {
     val srcPath = locateFrontendSrcDirectory()
     val generatedPath = srcPath / "lib-common" / "generated"
     if (!generatedPath.exists()) {
-        logger.error("Root path $generatedPath does not exist -> aborting")
+        logger.error { "Root path $generatedPath does not exist -> aborting" }
         exitProcess(1)
     }
 
@@ -66,9 +66,9 @@ fun check() {
         val currentContent = path.readText()
         val relativePath = path.relativeTo(srcPath)
         if (content == currentContent) {
-            logger.info("Generated api files up to date ($relativePath)")
+            logger.info { "Generated api files up to date ($relativePath)" }
         } else {
-            logger.error("Generated api files were not up to date ($relativePath)")
+            logger.error { "Generated api files were not up to date ($relativePath)" }
             exitProcess(1)
         }
     }

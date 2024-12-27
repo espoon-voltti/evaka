@@ -6,7 +6,7 @@ package fi.espoo.evaka.sficlient.rest
 
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.SfiEnv
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import software.amazon.awssdk.services.ssm.SsmClient
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest
 import software.amazon.awssdk.services.ssm.model.LabelParameterVersionRequest

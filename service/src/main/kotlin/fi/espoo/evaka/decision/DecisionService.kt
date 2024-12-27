@@ -43,7 +43,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
@@ -186,9 +186,9 @@ class DecisionService(
         if (currentGuardians.contains(applicationGuardian.id)) {
             deliverDecisionToGuardian(tx, clock, decision, applicationGuardian, documentLocation)
         } else {
-            logger.warn(
+            logger.warn {
                 "Skipping sending decision $decisionId to application guardian ${applicationGuardian.id} - not a current guardian or foster parent"
-            )
+            }
         }
 
         if (
@@ -210,9 +210,9 @@ class DecisionService(
                             documentLocation,
                         )
                     } else {
-                        logger.warn(
+                        logger.warn {
                             "Skipping sending decision $decisionId to application other guardian $guardianId - not a current guardian or foster parent"
-                        )
+                        }
                     }
                 }
             }
@@ -293,9 +293,9 @@ class DecisionService(
                 )
                 ?.also { emailClient.send(it) }
         } else {
-            logger.warn(
+            logger.warn {
                 "Skipping sending decision for application $applicationId guardian - not a current guardian or foster parent"
-            )
+            }
         }
     }
 

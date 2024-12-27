@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.integration
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -21,9 +21,9 @@ interface InvoiceIntegrationClient {
 
     class MockClient(private val jsonMapper: JsonMapper) : InvoiceIntegrationClient {
         override fun send(invoices: List<InvoiceDetailed>): SendResult {
-            logger.info(
+            logger.info {
                 "Mock invoice integration client got invoices ${jsonMapper.writeValueAsString(invoices)}"
-            )
+            }
             val (withSSN, withoutSSN) =
                 invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
             return SendResult(succeeded = withSSN, manuallySent = withoutSSN)

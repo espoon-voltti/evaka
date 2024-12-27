@@ -48,6 +48,7 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_3
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
@@ -55,7 +56,6 @@ import java.util.*
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach

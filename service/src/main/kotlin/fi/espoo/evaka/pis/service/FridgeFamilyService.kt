@@ -14,9 +14,9 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.Period
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -75,7 +75,7 @@ class FridgeFamilyService(
         clock: EvakaClock,
         personId: PersonId,
     ) {
-        logger.info("Refreshing $personId from VTJ")
+        logger.info { "Refreshing $personId from VTJ" }
         val targetPerson =
             db.transaction {
                 personService.getPersonWithChildren(
@@ -86,11 +86,11 @@ class FridgeFamilyService(
                 )
             }
         if (targetPerson != null) {
-            logger.info("Person to refresh has ${targetPerson.children.size} children")
+            logger.info { "Person to refresh has ${targetPerson.children.size} children" }
 
             val partner =
                 db.read { getPartnerId(it, clock, personId) }
-                    ?.also { logger.info("Person has fridge partner $it") }
+                    ?.also { logger.info { "Person has fridge partner $it" } }
                     ?.let { partnerId ->
                         db.transaction {
                             personService.getPersonWithChildren(
@@ -117,13 +117,13 @@ class FridgeFamilyService(
                 else targetPerson
 
             if (partner != null) {
-                logger.info(
+                logger.info {
                     "Partner lives in the same address and has ${partner.children.size} children"
-                )
+                }
                 if (head == partner) {
-                    logger.info(
+                    logger.info {
                         "Partner has a fridge family, so adding the new children to that family"
-                    )
+                    }
                 }
             }
 
@@ -169,9 +169,9 @@ class FridgeFamilyService(
                             Creator.DVV,
                         )
                     }
-                    logger.info("Child ${child.id} added to head of child ${head.id}")
+                    logger.info { "Child ${child.id} added to head of child ${head.id}" }
                 } catch (e: Exception) {
-                    logger.warn("Problem while adding a child to fridge family:", e)
+                    logger.warn(e) { "Problem while adding a child to fridge family:" }
                 }
             }
         }

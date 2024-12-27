@@ -18,8 +18,8 @@ import fi.espoo.evaka.vtjclient.soap.HenkiloTunnusKyselyResBody
 import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import fi.espoo.voltti.logging.loggers.auditVTJ
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.xml.bind.JAXBElement
-import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.ws.client.core.WebServiceMessageCallback

@@ -7,10 +7,10 @@ package fi.espoo.evaka.shared.config
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.api.trace.Tracer
 import java.time.Duration
-import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
@@ -52,13 +52,13 @@ class AsyncJobConfig {
         ApplicationListener<ApplicationReadyEvent> {
             val logger = KotlinLogging.logger {}
             if (evakaEnv.asyncJobRunnerDisabled) {
-                logger.info("Async job runners disabled")
+                logger.info { "Async job runners disabled" }
             } else {
                 asyncJobRunners.forEach {
                     it.registerMeters(meterRegistry)
                     it.enableAfterCommitHooks()
                     it.startBackgroundPolling()
-                    logger.info("Async job runner ${it.name} started")
+                    logger.info { "Async job runner ${it.name} started" }
                 }
             }
         }

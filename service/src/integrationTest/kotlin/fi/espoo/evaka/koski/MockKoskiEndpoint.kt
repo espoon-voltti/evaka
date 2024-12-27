@@ -7,10 +7,10 @@ package fi.espoo.evaka.koski
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.google.common.collect.Multimaps
 import com.google.common.collect.SetMultimap
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.random.Random
-import mu.KotlinLogging
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

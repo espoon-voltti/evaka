@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
@@ -61,7 +61,7 @@ class AttachmentService(
      * and/or the database.
      */
     fun deleteAttachment(dbc: Database.Connection, id: AttachmentId) {
-        logger.info("Deleting attachment $id")
+        logger.info { "Deleting attachment $id" }
         dbc.close() // avoid hogging the connection while we access S3
         // AWS S3 client seems to be idempotent, so deleting a non-existing file doesn't throw an
         // error
@@ -83,7 +83,7 @@ WHERE id = ${bind(id)}
 
     fun scheduleOrphanAttachmentDeletion(tx: Database.Transaction, clock: EvakaClock) {
         val ids = tx.getOrphanAttachments(olderThan = clock.now().minusDays(1))
-        logger.info("Scheduling deletion for ${ids.size} orphan attachments")
+        logger.info { "Scheduling deletion for ${ids.size} orphan attachments" }
         asyncJobRunner.plan(tx, ids.map { AsyncJob.DeleteAttachment(it) }, runAt = clock.now())
     }
 }

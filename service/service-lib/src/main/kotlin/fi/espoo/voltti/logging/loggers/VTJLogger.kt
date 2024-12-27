@@ -4,24 +4,27 @@
 
 package fi.espoo.voltti.logging.loggers
 
-import mu.KLogger
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KMarkerFactory
 import net.logstash.logback.argument.StructuredArguments
-import org.slf4j.MarkerFactory
 
-private val auditMarker = MarkerFactory.getMarker("VTJ_EVENT")
+private val auditMarker = KMarkerFactory.getMarker("VTJ_EVENT")
 
-fun KLogger.auditVTJ(m: () -> Any?) {
-    auditVTJ(emptyMap(), m)
-}
+fun KLogger.auditVTJ(m: () -> Any?) = auditVTJ(emptyMap(), m)
 
-fun KLogger.auditVTJ(args: Map<String, Any?>, m: () -> Any?) {
-    if (isWarnEnabled) warn(auditMarker, m.toStringSafe(), StructuredArguments.entries(args))
-}
+fun KLogger.auditVTJ(args: Map<String, Any?>, m: () -> Any?) =
+    atWarn(auditMarker) {
+        message = m.toStringSafe()
+        arguments = arrayOf(StructuredArguments.entries(args))
+    }
 
 fun KLogger.auditVTJ(t: Throwable, m: () -> Any?) {
     auditVTJ(emptyMap(), t, m)
 }
 
-fun KLogger.auditVTJ(args: Map<String, Any?>, t: Throwable, m: () -> Any?) {
-    if (isWarnEnabled) warn(auditMarker, m.toStringSafe(), t, StructuredArguments.entries(args))
-}
+fun KLogger.auditVTJ(args: Map<String, Any?>, t: Throwable, m: () -> Any?) =
+    atWarn(auditMarker) {
+        message = m.toStringSafe()
+        cause = t
+        arguments = arrayOf(StructuredArguments.entries(args))
+    }

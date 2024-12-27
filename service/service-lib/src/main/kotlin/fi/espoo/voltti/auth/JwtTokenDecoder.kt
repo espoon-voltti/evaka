@@ -11,7 +11,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpFilter
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 // RFC6750 - The OAuth 2.0 Authorization Framework: Bearer Token Usage
 // Authorization Request Header Field

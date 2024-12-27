@@ -22,13 +22,13 @@ import fi.espoo.evaka.sficlient.soap.Yhteyshenkilo
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.GregorianCalendar
 import javax.net.ssl.TrustManagerFactory
 import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
-import mu.KotlinLogging
 import org.apache.commons.text.StringEscapeUtils
 import org.apache.wss4j.common.crypto.Merlin
 import org.apache.wss4j.dom.WSConstants

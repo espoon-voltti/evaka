@@ -21,8 +21,8 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.error
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -118,9 +118,9 @@ class KoskiClient(
                         data.operation == KoskiOperation.VOID &&
                             errors?.any { it.isNotFound() } == true
                     ) {
-                        logger.warn(
+                        logger.warn {
                             "Koski upload ${msg.key} ${data.operation}: 404 not found -> assuming study right is already voided and nothing needs to be done"
-                        )
+                        }
                         null
                     } else {
                         val meta =

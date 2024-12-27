@@ -14,7 +14,7 @@ dependencies {
     testImplementation(platform(project(":evaka-bom")))
 
     implementation(project(":"))
-    implementation("io.github.microutils:kotlin-logging-jvm")
+    implementation("io.github.oshai:kotlin-logging-jvm")
 
     // Kotlin + core
     implementation(kotlin("stdlib"))

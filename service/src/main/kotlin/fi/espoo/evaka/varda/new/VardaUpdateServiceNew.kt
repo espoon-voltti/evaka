@@ -18,10 +18,10 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.updateUnits
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
-import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import org.springframework.stereotype.Service
 

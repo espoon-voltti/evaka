@@ -205,6 +205,7 @@ import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
 import fi.espoo.evaka.webpush.PushNotificationCategory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -212,7 +213,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import mu.KotlinLogging
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.jdbi.v3.json.Json

@@ -5,8 +5,8 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -18,9 +18,9 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
 
 private fun logResult(description: String, violations: Int) {
     if (violations > 0) {
-        logger.warn("Sanity check failed - $description: $violations instances")
+        logger.warn { "Sanity check failed - $description: $violations instances" }
     } else {
-        logger.info("Sanity check passed - $description")
+        logger.info { "Sanity check passed - $description" }
     }
 }
 

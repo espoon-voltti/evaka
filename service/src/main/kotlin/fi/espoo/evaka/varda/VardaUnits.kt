@@ -13,10 +13,10 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.new.VardaEntity
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
-import mu.KotlinLogging
 import org.jdbi.v3.core.result.UnableToProduceResultException
 
 private val logger = KotlinLogging.logger {}
@@ -87,7 +87,7 @@ fun updateUnits(
                 )
             }
         } catch (e: Exception) {
-            logger.error("Failed to update unit ${request.nimi}: $e", e)
+            logger.error(e) { "Failed to update unit ${request.nimi}: $e" }
             dbc.transaction {
                 setUnitUploadFailed(
                     tx = it,

@@ -6,8 +6,8 @@ package fi.espoo.evaka
 
 import fi.espoo.evaka.shared.Id
 import fi.espoo.voltti.logging.loggers.audit
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
-import mu.KotlinLogging
 
 sealed interface AuditId {
     val value: Any

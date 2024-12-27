@@ -19,8 +19,8 @@ import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -41,7 +41,7 @@ class PendingDecisionEmailService(
         clock: EvakaClock,
         msg: AsyncJob.SendPendingDecisionEmail,
     ) {
-        logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
+        logger.info { "Sending pending decision reminder email to guardian ${msg.guardianId}" }
         sendPendingDecisionEmail(db, clock, msg)
     }
 
@@ -80,15 +80,15 @@ GROUP BY application.guardian_id
                         tx.getPersonById(pendingDecision.guardianId).let { guardian ->
                             when {
                                 guardian == null -> {
-                                    logger.warn(
+                                    logger.warn {
                                         "Could not send pending decision email to guardian ${pendingDecision.guardianId}: guardian not found"
-                                    )
+                                    }
                                     count
                                 }
                                 guardian.email.isNullOrBlank() -> {
-                                    logger.warn(
+                                    logger.warn {
                                         "Could not send pending decision email to guardian ${guardian.id}: invalid email"
-                                    )
+                                    }
                                     count
                                 }
                                 else -> {
@@ -112,9 +112,9 @@ GROUP BY application.guardian_id
                         }
                     }
 
-                logger.info(
+                logger.info {
                     "PendingDecisionEmailService: Scheduled sending $createdJobCount pending decision emails"
-                )
+                }
                 createdJobCount
             }
 
@@ -126,7 +126,7 @@ GROUP BY application.guardian_id
         clock: EvakaClock,
         pendingDecision: AsyncJob.SendPendingDecisionEmail,
     ) {
-        logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
+        logger.info { "Sending pending decision email to guardian ${pendingDecision.guardianId}" }
         val lang = getLanguage(pendingDecision.language)
 
         Email.create(

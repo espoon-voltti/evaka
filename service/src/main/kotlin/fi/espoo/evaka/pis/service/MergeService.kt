@@ -16,8 +16,8 @@ import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
@@ -115,7 +115,7 @@ ON CONFLICT (thread_id, participant_id) DO UPDATE SET
                 }
                 .execute()
         } catch (e: Exception) {
-            logger.warn("Failed to merge persons $master and $duplicate", e)
+            logger.warn(e) { "Failed to merge persons $master and $duplicate" }
             throw mapPSQLException(e)
         }
 

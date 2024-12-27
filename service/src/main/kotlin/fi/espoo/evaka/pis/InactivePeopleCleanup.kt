@@ -7,9 +7,9 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

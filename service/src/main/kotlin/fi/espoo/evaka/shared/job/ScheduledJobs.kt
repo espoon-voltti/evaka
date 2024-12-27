@@ -38,8 +38,8 @@ import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.titania.cleanTitaniaErrors
 import fi.espoo.evaka.varda.new.VardaUpdateServiceNew
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalTime
-import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 enum class ScheduledJob(
@@ -400,28 +400,28 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     fun sendMissingReservationReminders(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx ->
             val count = missingReservationsReminders.scheduleReminders(tx, clock)
-            logger.info("Scheduled $count reminders about missing reservations")
+            logger.info { "Scheduled $count reminders about missing reservations" }
         }
     }
 
     fun sendMissingHolidayReservationReminders(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx ->
             val count = missingHolidayReservationsReminders.scheduleReminders(tx, clock)
-            logger.info("Scheduled $count reminders about missing holiday reservations")
+            logger.info { "Scheduled $count reminders about missing holiday reservations" }
         }
     }
 
     fun sendOutdatedIncomeNotifications(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx ->
             val count = outdatedIncomeNotifications.scheduleNotifications(tx, clock)
-            logger.info("Scheduled $count notifications about outdated income")
+            logger.info { "Scheduled $count notifications about outdated income" }
         }
     }
 
     fun sendNewCustomerIncomeNotifications(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx ->
             val count = newCustomerIncomeNotification.scheduleNotifications(tx, clock)
-            logger.info("Scheduled $count notifications for new customer about income")
+            logger.info { "Scheduled $count notifications for new customer about income" }
         }
     }
 

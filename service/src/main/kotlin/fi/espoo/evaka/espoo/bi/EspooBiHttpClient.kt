@@ -9,8 +9,8 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.requests.DefaultBody
 import fi.espoo.evaka.EspooBiEnv
 import fi.espoo.voltti.logging.loggers.error
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
-import mu.KotlinLogging
 
 class EspooBiHttpClient(private val env: EspooBiEnv) : EspooBiClient {
     private val fuel = FuelManager()
@@ -18,7 +18,7 @@ class EspooBiHttpClient(private val env: EspooBiEnv) : EspooBiClient {
     private val readTimeout = Duration.ofMinutes(5)
 
     override fun sendBiCsvFile(fileName: String, stream: EspooBiJob.CsvInputStream) {
-        logger.info("Sending BI CSV file $fileName")
+        logger.info { "Sending BI CSV file $fileName" }
         val (_, _, result) =
             fuel
                 .put("${env.url}/report", listOf("filename" to fileName))
@@ -29,7 +29,11 @@ class EspooBiHttpClient(private val env: EspooBiEnv) : EspooBiClient {
                 .body(DefaultBody({ stream }))
                 .responseString()
         result.fold(
-            { logger.info("Sent BI CSV file $fileName successfully (${stream.totalBytes} bytes)") },
+            {
+                logger.info {
+                    "Sent BI CSV file $fileName successfully (${stream.totalBytes} bytes)"
+                }
+            },
             { error ->
                 val meta = mapOf("errorMessage" to error.errorData.decodeToString())
                 logger.error(error, meta) {

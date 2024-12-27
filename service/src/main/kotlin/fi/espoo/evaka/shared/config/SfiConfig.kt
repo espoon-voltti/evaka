@@ -11,7 +11,7 @@ import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessagesSoapClient
 import fi.espoo.evaka.sficlient.rest.AwsSsmPasswordStore
 import fi.espoo.evaka.sficlient.rest.SfiMessagesRestClient
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

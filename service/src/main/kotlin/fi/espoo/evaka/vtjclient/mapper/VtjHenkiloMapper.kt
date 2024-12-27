@@ -12,10 +12,10 @@ import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -196,7 +196,7 @@ fun parseLocalDateFromString(date: String?): LocalDate? {
     return try {
         LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE)
     } catch (e: DateTimeParseException) {
-        logger.error("Error parsing $date as a date", e)
+        logger.error(e) { "Error parsing $date as a date" }
         null
     }
 }

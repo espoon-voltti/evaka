@@ -40,15 +40,15 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.specialdiet.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
-val loggerWarner: (String) -> Unit = { s -> logger.warn(s) }
+val loggerWarner: (String) -> Unit = { s -> logger.warn { s } }
 
 @Service
 class JamixService(
@@ -157,15 +157,15 @@ fun fetchAndUpdateJamixDiets(
     val dietsFromJamix = client.getDiets()
 
     val cleanedDietList = cleanupJamixDietList(dietsFromJamix)
-    logger.info(
+    logger.info {
         "Jamix returned ${dietsFromJamix.size} cleaned list contains: ${cleanedDietList.size} diets"
-    )
+    }
     if (cleanedDietList.isEmpty()) error("Refusing to sync empty diet list into database")
     return db.transaction { tx ->
         val nulledSpecialDiets =
             tx.resetSpecialDietsNotContainedWithin(now.toLocalDate(), cleanedDietList)
         val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
-        logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
+        logger.info { "Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}" }
 
         if (nulledSpecialDiets.isNotEmpty()) {
             val byUnit = nulledSpecialDiets.groupBy({ it.unitId }, { it.childId to it.specialDiet })
@@ -208,9 +208,9 @@ fun fetchAndUpdateJamixTextures(
                 "Jamix meal texture list update caused $nulledChildrenCount child meal texture to be set to null"
             )
         val deletedMealTexturesCount = tx.setMealTextures(texturesFromJamix)
-        logger.info(
+        logger.info {
             "Deleted: $deletedMealTexturesCount meal textures, inserted ${texturesFromJamix.size}"
-        )
+        }
     }
 }
 

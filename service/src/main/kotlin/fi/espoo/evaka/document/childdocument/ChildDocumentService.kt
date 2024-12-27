@@ -23,8 +23,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
@@ -86,7 +86,14 @@ class ChildDocumentService(
                 SELECT cd.id
                 FROM child_document cd 
                 JOIN document_template dt on dt.id = cd.template_id
-                WHERE dt.validity << ${bind(FiniteDateRange(now.toLocalDate(), now.toLocalDate()))} AND cd.status <> 'COMPLETED'
+                WHERE dt.validity << ${
+                        bind(
+                            FiniteDateRange(
+                                now.toLocalDate(),
+                                now.toLocalDate(),
+                            )
+                        )
+                    } AND cd.status <> 'COMPLETED'
             """
                             .trimIndent()
                     )
@@ -197,9 +204,9 @@ WHERE person.email IS NOT NULL AND person.email != ''
         clock: EvakaClock,
         msg: AsyncJob.SendChildDocumentNotificationEmail,
     ) {
-        logger.info(
+        logger.info {
             "Sending child document notification email for document ${msg.documentId} to person ${msg.recipientId}"
-        )
+        }
         Email.create(
                 dbc = db,
                 personId = msg.recipientId,

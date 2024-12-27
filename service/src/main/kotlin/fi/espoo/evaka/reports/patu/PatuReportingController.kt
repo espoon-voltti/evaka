@@ -14,8 +14,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -43,7 +43,7 @@ class PatuReportingController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Global.SEND_PATU_REPORT)
-                logger.info("Scheduling patu report $range")
+                logger.info { "Scheduling patu report $range" }
                 asyncJobRunner.plan(
                     tx,
                     payloads = listOf(AsyncJob.SendPatuReport(range)),

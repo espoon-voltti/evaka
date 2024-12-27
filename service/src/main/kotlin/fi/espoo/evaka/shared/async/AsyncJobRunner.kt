@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.api.trace.Tracer
 import java.time.Duration
@@ -21,7 +22,6 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.math.max
 import kotlin.reflect.KClass
-import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 
 private const val defaultRetryCount =

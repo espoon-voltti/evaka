@@ -21,7 +21,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -47,7 +47,7 @@ class CalendarEventNotificationService(
             val recipientEventTimes =
                 tx.getRecipientsForEventTimeRemindersAt(now.plusDays(2).toLocalDate())
 
-            logger.info("Scheduling ${recipientEventTimes.size} discussion time reminder mails")
+            logger.info { "Scheduling ${recipientEventTimes.size} discussion time reminder mails" }
             asyncJobRunner.plan(
                 tx,
                 payloads =
@@ -68,9 +68,9 @@ class CalendarEventNotificationService(
             val parentsWithDiscussionSurveys =
                 tx.getParentsWithNewDiscussionSurveysAfter(now.minusHours(24))
 
-            logger.info(
+            logger.info {
                 "Scheduling survey creation digests for ${parentsWithDiscussionSurveys.size} recipients"
-            )
+            }
             asyncJobRunner.plan(
                 tx,
                 payloads =

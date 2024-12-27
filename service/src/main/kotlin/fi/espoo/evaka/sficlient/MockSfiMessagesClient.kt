@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.sficlient
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
-import mu.KotlinLogging
 
 private typealias MessageId = String
 
@@ -15,7 +15,7 @@ class MockSfiMessagesClient : SfiMessagesClient {
     private val logger = KotlinLogging.logger {}
 
     override fun send(msg: SfiMessage) {
-        logger.info("Mock message client got $msg")
+        logger.info { "Mock message client got $msg" }
         lock.write { data[msg.messageId] = msg }
     }
 
