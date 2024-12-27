@@ -81,8 +81,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
     implementation("org.springframework.ws:spring-ws-security") {
-        exclude("org.bouncycastle", "bcpkix-jdk15on")
-        exclude("org.bouncycastle", "bcprov-jdk15on")
         exclude("org.opensaml")
     }
     implementation("org.springframework.ws:spring-ws-support") {
@@ -97,9 +95,7 @@ dependencies {
     implementation("org.postgresql:postgresql")
 
     // JDBI
-    implementation("org.jdbi:jdbi3-core") {
-        exclude("org.bouncycastle", "bcprov-jdk15on")
-    }
+    implementation("org.jdbi:jdbi3-core")
     implementation("org.jdbi:jdbi3-jackson2")
     implementation("org.jdbi:jdbi3-kotlin")
     implementation("org.jdbi:jdbi3-postgres")
@@ -168,8 +164,6 @@ dependencies {
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
     integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") {
-        exclude("org.bouncycastle", "bcpkix-jdk15on")
-        exclude("org.bouncycastle", "bcprov-jdk15on")
         exclude("org.opensaml")
     }
 
