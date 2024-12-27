@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.util.*
 import kotlin.test.Test
@@ -44,8 +45,36 @@ class OutOfOfficeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `get out of office periods`() {
-        val ranges = outOfOfficeController.getOutOfOfficePeriods(dbInstance(), employee, clock)
-        assertEquals(0, ranges.size)
+    fun `out of office periods`() {
+        val initialPeriods =
+            outOfOfficeController.getOutOfOfficePeriods(dbInstance(), employee, clock)
+        assertEquals(0, initialPeriods.size)
+
+        val period =
+            OutOfOfficePeriodUpsert(
+                id = null,
+                period =
+                    FiniteDateRange(
+                        start = clock.today().plusDays(1),
+                        end = clock.today().plusDays(2),
+                    ),
+            )
+        outOfOfficeController.upsertOutOfOfficePeriod(dbInstance(), employee, clock, period)
+        val addedPeriod = outOfOfficeController.getOutOfOfficePeriods(dbInstance(), employee, clock)
+        assertEquals(listOf(period.period), addedPeriod.map { it.period })
+
+        val updatedPeriod =
+            OutOfOfficePeriodUpsert(
+                id = addedPeriod.first().id,
+                period =
+                    FiniteDateRange(
+                        start = clock.today().plusDays(3),
+                        end = clock.today().plusDays(4),
+                    ),
+            )
+        outOfOfficeController.upsertOutOfOfficePeriod(dbInstance(), employee, clock, updatedPeriod)
+        val updatedPeriods =
+            outOfOfficeController.getOutOfOfficePeriods(dbInstance(), employee, clock)
+        assertEquals(listOf(updatedPeriod.period), updatedPeriods.map { it.period })
     }
 }
