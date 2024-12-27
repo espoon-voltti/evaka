@@ -14,11 +14,6 @@ dependencies {
         api("ch.qos.logback:logback-classic:1.5.15")
         api("ch.qos.logback:logback-core:1.5.15")
 
-        // These constraints are needed for CVE fixes
-        api("org.apache.tomcat.embed:tomcat-embed-core:11.0.2")
-        api("org.apache.tomcat.embed:tomcat-embed-el:11.0.2")
-        api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.2")
-
         api("com.auth0:java-jwt:4.4.0")
         api("com.github.kagkarlsson:db-scheduler:15.1.1")
         api(libs.fuel)
