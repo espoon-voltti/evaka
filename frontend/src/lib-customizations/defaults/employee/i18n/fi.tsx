@@ -5021,5 +5021,8 @@ export const fi = {
     preschoolTermWarning:
       'eVakasta puuttuu seuraavan esiopetuskauden määrittely. Esiopetuskausi tarvitaan hakemusten luontia varten.'
   },
+  outOfOffice: {
+    title: 'Poissaoloviesti'
+  },
   components
 }
