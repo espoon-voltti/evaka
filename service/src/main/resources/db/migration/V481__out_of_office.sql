@@ -1,6 +1,6 @@
 CREATE TABLE out_of_office
 (
-    id          UUID PRIMARY KEY,
+    id          UUID PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
     employee_id UUID NOT NULL,
     start_date  DATE NOT NULL,
     end_date    DATE NOT NULL
