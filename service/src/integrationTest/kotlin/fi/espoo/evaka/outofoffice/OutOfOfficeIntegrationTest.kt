@@ -76,5 +76,15 @@ class OutOfOfficeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val updatedPeriods =
             outOfOfficeController.getOutOfOfficePeriods(dbInstance(), employee, clock)
         assertEquals(listOf(updatedPeriod.period), updatedPeriods.map { it.period })
+
+        outOfOfficeController.deleteOutOfOfficePeriod(
+            dbInstance(),
+            employee,
+            clock,
+            updatedPeriod.id!!,
+        )
+        val deletedPeriods =
+            outOfOfficeController.getOutOfOfficePeriods(dbInstance(), employee, clock)
+        assertEquals(0, deletedPeriods.size)
     }
 }

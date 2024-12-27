@@ -56,3 +56,15 @@ WHERE id = ${bind(period.id)}
             .updateExactlyOne()
     }
 }
+
+fun Database.Transaction.deleteOutOfOfficePeriod(id: OutOfOfficeId) {
+    createUpdate {
+            sql(
+                """
+DELETE FROM out_of_office
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .updateExactlyOne()
+}
