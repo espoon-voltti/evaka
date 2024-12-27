@@ -136,6 +136,8 @@ sealed interface DatabaseTable {
 
     sealed class OtherAssistanceMeasure : DatabaseTable
 
+    sealed class OutOfOffice : DatabaseTable
+
     sealed class Pairing : DatabaseTable
 
     // Actually fridge_child
@@ -307,6 +309,8 @@ typealias MessageThreadId = Id<DatabaseTable.MessageThread>
 typealias MobileDeviceId = Id<DatabaseTable.MobileDevice>
 
 typealias OtherAssistanceMeasureId = Id<DatabaseTable.OtherAssistanceMeasure>
+
+typealias OutOfOfficeId = Id<DatabaseTable.OutOfOffice>
 
 typealias PairingId = Id<DatabaseTable.Pairing>
 

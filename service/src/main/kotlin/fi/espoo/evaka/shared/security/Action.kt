@@ -1441,6 +1441,16 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             IsMobile(false).isAssociatedWithEmployee(),
             IsEmployee.isInSameUnitWithEmployee(),
+        ),
+        READ_OUT_OF_OFFICE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
+            IsEmployee.self(),
+        ),
+        UPDATE_OUT_OF_OFFICE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
+            IsEmployee.self(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
