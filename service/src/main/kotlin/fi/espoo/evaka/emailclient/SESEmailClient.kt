@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.emailclient
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.unbescape.html.HtmlEscape
 import software.amazon.awssdk.services.ses.SesClient
 import software.amazon.awssdk.services.ses.model.AccountSendingPausedException

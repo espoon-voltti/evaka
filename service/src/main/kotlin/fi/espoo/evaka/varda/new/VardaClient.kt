@@ -10,10 +10,10 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.varda.VardaUnitClient
 import fi.espoo.evaka.varda.VardaUnitRequest
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.net.URLEncoder
 import java.time.LocalDate
-import mu.KotlinLogging
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -327,7 +327,7 @@ class VardaClient(
     override fun <T : VardaEntity> delete(data: T) = request<Unit>("DELETE", data.url)
 
     private inline fun <reified R> request(method: String, url: URI, body: Any? = null): R {
-        logger.info("requesting $method $url" + if (body == null) "" else " with body $body")
+        logger.info { "requesting $method $url" + if (body == null) "" else " with body $body" }
 
         val req =
             Request.Builder()

@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -74,7 +74,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         } catch (e: Exception) {
             val error = mapPSQLException(e)
             // monitor if there is issues with stale data or need for upsert
-            if (error is Conflict) logger.warn("User tried to create a duplicate note for child")
+            if (error is Conflict) logger.warn { "User tried to create a duplicate note for child" }
             throw error
         }
     }

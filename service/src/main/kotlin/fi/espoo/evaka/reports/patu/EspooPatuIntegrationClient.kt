@@ -12,7 +12,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import fi.espoo.evaka.EspooPatuIntegrationEnv
 import fi.espoo.evaka.reports.RawReportRow
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -23,7 +23,7 @@ class EspooPatuIntegrationClient(
     private val fuel = FuelManager()
 
     override fun send(patuReport: List<RawReportRow>): PatuIntegrationClient.Result {
-        logger.info("Sending patu report of ${patuReport.size} rows")
+        logger.info { "Sending patu report of ${patuReport.size} rows" }
         val payload = jsonMapper.writeValueAsString(patuReport)
         val (_, _, result) =
             fuel

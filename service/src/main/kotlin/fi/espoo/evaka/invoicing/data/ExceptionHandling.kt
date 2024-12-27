@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.postgresql.util.PSQLException
 
 // PostgreSQL error codes
@@ -26,12 +26,14 @@ fun <T> handlingExceptions(fn: () -> T): T {
                     when (this.sqlState) {
                         dataException,
                         checkViolation -> throw BadRequest("Invalid data", cause = e)
+
                         exclusionViolation ->
                             throw Conflict("Exclusion constraint violation in database", cause = e)
+
                         else -> {
-                            logger.warn(
+                            logger.warn {
                                 "Unmapped PSQLException sqlState error code ${this.sqlState}"
-                            )
+                            }
                             throw this
                         }
                     }

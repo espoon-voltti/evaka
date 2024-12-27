@@ -14,10 +14,10 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.withDetachedSpan
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.opentelemetry.api.trace.Tracer
 import java.time.Duration
 import javax.sql.DataSource
-import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 
 private const val SCHEDULER_THREADS = 1

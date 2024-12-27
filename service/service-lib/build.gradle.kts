@@ -21,7 +21,7 @@ dependencies {
     testImplementation(kotlin("test-junit5"))
 
     // Logging
-    implementation("io.github.microutils:kotlin-logging-jvm")
+    implementation("io.github.oshai:kotlin-logging-jvm")
     implementation("net.logstash.logback:logstash-logback-encoder")
 
     // Spring

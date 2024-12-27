@@ -22,9 +22,9 @@ import fi.espoo.evaka.webpush.WebPushNotification
 import fi.espoo.evaka.webpush.WebPushPayload
 import fi.espoo.evaka.webpush.deletePushSubscription
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
@@ -168,9 +168,9 @@ AND notification.device = ${bind(device)}
                 ),
             )
         } catch (e: WebPush.SubscriptionExpired) {
-            logger.warn(
+            logger.warn {
                 "Subscription expired for device $device (HTTP status ${e.status}) -> deleting"
-            )
+            }
             dbc.transaction { it.deletePushSubscription(device) }
         }
     }

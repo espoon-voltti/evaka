@@ -13,8 +13,8 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
-import mu.KotlinLogging
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient

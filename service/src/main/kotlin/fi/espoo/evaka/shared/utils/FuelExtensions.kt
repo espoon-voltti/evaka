@@ -11,8 +11,8 @@ import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.ResponseResultOf
 import com.github.kittinunf.fuel.core.extensions.AuthenticatedRequest
 import com.github.kittinunf.result.Result
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.TimeUnit
-import mu.KotlinLogging
 
 typealias ErrorResponseResultOf = Triple<Request, Response, Result.Failure<FuelError>>
 
@@ -102,9 +102,9 @@ fun Request.responseStringWithRetries(
                             )
 
                         if (retryAfter > retryWaitLoggingThresholdSeconds) {
-                            logger.warn(
+                            logger.warn {
                                 "Waiting for a large RETRY_AFTER as requested: $retryAfter seconds"
-                            )
+                            }
                         }
 
                         TimeUnit.SECONDS.sleep(retryAfter)

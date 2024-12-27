@@ -6,18 +6,18 @@ package evaka.codegen
 
 import fi.espoo.evaka.shared.domain.ISO_LANGUAGES_SUBSET
 import fi.espoo.evaka.shared.domain.IsoLanguage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.system.exitProcess
-import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 
 private val logger = KotlinLogging.logger {}
 
 fun generateLanguages(target: Path) {
     target.writeText(sequenceOf(fileHeader, languageFileBody()).joinToString("\n"))
-    logger.info("Generated $target")
+    logger.info { "Generated $target" }
 }
 
 private fun languageFileBody(): String {
@@ -42,7 +42,7 @@ private fun IsoLanguage.toTypescript(): String =
 
 fun checkLanguages(target: Path) {
     if (languageFileBody() != target.readText().skipFileHeader()) {
-        logger.error("File is not up to date: $target")
+        logger.error { "File is not up to date: $target" }
         exitProcess(1)
     }
 }

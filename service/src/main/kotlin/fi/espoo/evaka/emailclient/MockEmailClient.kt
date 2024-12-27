@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.emailclient
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

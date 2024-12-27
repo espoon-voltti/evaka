@@ -24,9 +24,9 @@ fun getSendAddress(
     lang: OfficialLanguage,
 ): DecisionSendAddress {
     val logMissingAddress = {
-        logger.warn(
+        logger.warn {
             "Cannot deliver daycare decision to guardian ${guardian.id} with incomplete address. Using default decision address."
-        )
+        }
     }
     return when {
         guardian.restrictedDetailsEnabled -> messageProvider.getDefaultDecisionAddress(lang)

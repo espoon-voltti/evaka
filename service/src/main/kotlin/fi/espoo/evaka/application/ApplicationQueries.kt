@@ -28,9 +28,9 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import fi.espoo.evaka.user.EvakaUser
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.util.UUID
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -1240,9 +1240,9 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
             .toList<ApplicationId>()
 
     if (applicationIds.isNotEmpty()) {
-        logger.info(
+        logger.info {
             "Cleaning up ${applicationIds.size} draft applications older than $thresholdDays days"
-        )
+        }
 
         execute {
             sql(

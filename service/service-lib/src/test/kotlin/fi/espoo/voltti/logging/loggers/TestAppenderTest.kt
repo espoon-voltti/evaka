@@ -8,10 +8,10 @@ import fi.espoo.voltti.logging.utils.clearTestMessages
 import fi.espoo.voltti.logging.utils.getJson
 import fi.espoo.voltti.logging.utils.getTestMessages
 import fi.espoo.voltti.logging.utils.setupTestAppender
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import mu.KLogger
-import mu.KotlinLogging
 import net.logstash.logback.argument.StructuredArguments
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -53,7 +53,10 @@ class TestAppenderTest {
 
     @Test
     fun `test rendering structured arguments to json`() {
-        logger.info("message", StructuredArguments.entries(mapOf("one" to "1", "two" to "2")))
+        logger.atInfo {
+            message = "message"
+            arguments = arrayOf(StructuredArguments.entries(mapOf("one" to "1", "two" to "2")))
+        }
         JSONAssert.assertEquals("""{ "one": "1", "two": "2"}""", logger.getJson(), true)
     }
 }

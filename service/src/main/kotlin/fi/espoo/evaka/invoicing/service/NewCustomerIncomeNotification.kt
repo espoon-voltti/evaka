@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -48,9 +48,9 @@ class NewCustomerIncomeNotification(
             runAt = clock.now(),
         )
 
-        logger.info(
+        logger.info {
             "NewCustomerIncomeNotification scheduled notification emails: ${guardiansForNotification.size}"
-        )
+        }
 
         return guardiansForNotification.size
     }
@@ -82,9 +82,9 @@ class NewCustomerIncomeNotification(
             db.read { tx -> tx.newCustomerIdsForIncomeNotifications(clock.today(), msg.guardianId) }
                 .contains(msg.guardianId)
         ) {
-            logger.info(
+            logger.info {
                 "NewCustomerIncomeNotification: sending notification email to ${msg.guardianId}"
-            )
+            }
 
             Email.create(
                     dbc = db,
@@ -104,9 +104,9 @@ class NewCustomerIncomeNotification(
                 it.createIncomeNotification(msg.guardianId, IncomeNotificationType.NEW_CUSTOMER)
             }
         } else {
-            logger.info(
+            logger.info {
                 "Skipping NewCustomerIncomeNotification: ${msg.guardianId} is no longer valid recipient"
-            )
+            }
         }
     }
 }

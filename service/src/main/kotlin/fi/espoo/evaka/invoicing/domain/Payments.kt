@@ -20,9 +20,9 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
-import mu.KotlinLogging
 import org.jdbi.v3.core.mapper.Nested
 
 val logger = KotlinLogging.logger {}
@@ -37,9 +37,9 @@ interface PaymentIntegrationClient {
 
     class MockClient(private val jsonMapper: JsonMapper) : PaymentIntegrationClient {
         override fun send(payments: List<Payment>, tx: Database.Read): SendResult {
-            logger.info(
+            logger.info {
                 "Mock payment integration client got payments ${jsonMapper.writeValueAsString(payments)}"
-            )
+            }
             return SendResult(succeeded = payments)
         }
     }

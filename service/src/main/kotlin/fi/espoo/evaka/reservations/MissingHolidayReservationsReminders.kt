@@ -20,8 +20,8 @@ import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
@@ -50,9 +50,9 @@ class MissingHolidayReservationsReminders(
         return tx.getHolidayPeriodsWithReservationDeadline(clock.today().plusDays(2))
             .firstOrNull()
             ?.let { holidayPeriod ->
-                logger.info(
+                logger.info {
                     "Holiday ${holidayPeriod.id} reservation deadline is due, sending missing reservation reminders"
-                )
+                }
 
                 val childrenWithMaybeMissingHolidayReservations =
                     holidayPeriod.period
@@ -68,9 +68,9 @@ class MissingHolidayReservationsReminders(
                         )
                         .toSet()
 
-                logger.info(
+                logger.info {
                     "Got ${childrenWithMaybeMissingHolidayReservations.size} children with maybe missing holiday reservations and will notify ${personsToBeNotified.size} persons for holiday ${holidayPeriod.period}"
-                )
+                }
 
                 asyncJobRunner.plan(
                     tx,
@@ -154,7 +154,7 @@ WHERE p.id = ANY(${bind(childIds)})
         val receiver = db.read { tx -> tx.getPersonById(msg.guardian) }
 
         if (receiver == null) {
-            logger.warn("Person ${msg.guardian} not found when sending email!")
+            logger.warn { "Person ${msg.guardian} not found when sending email!" }
             return
         }
 

@@ -16,8 +16,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobDefinition
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalTime
-import mu.KotlinLogging
 
 enum class EspooScheduledJob(
     val fn: (EspooScheduledJobs, Database.Connection, EvakaClock) -> Unit,
@@ -46,13 +46,13 @@ class EspooScheduledJobs(
 
     fun sendPatuReport(db: Database.Connection, clock: EvakaClock) {
         val fourtyDaysAgo = clock.today().minusDays(40)
-        logger.info("Sending patu report for $fourtyDaysAgo")
+        logger.info { "Sending patu report for $fourtyDaysAgo" }
         patuReportingService.sendPatuReport(db, DateRange(fourtyDaysAgo, fourtyDaysAgo))
     }
 
     fun planBiJobs(db: Database.Connection, clock: EvakaClock) {
         val tables = EspooBiTable.values()
-        logger.info("Planning BI jobs for ${tables.size} tables")
+        logger.info { "Planning BI jobs for ${tables.size} tables" }
         db.transaction { tx ->
             tx.removeUnclaimedJobs(setOf(AsyncJobType(EspooAsyncJob.SendBiTable::class)))
             espooAsyncJobRunner.plan(

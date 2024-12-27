@@ -16,8 +16,8 @@ import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -39,9 +39,9 @@ class EspooInvoiceIntegrationClient(
                         sendBatch(invoices, agreementType)
                     } else {
                         val areaIds = invoices.asSequence().map { it.areaId }.distinct().sorted()
-                        logger.error(
+                        logger.error {
                             "Failed to send ${invoices.size} invoices due to missing areaCode in the following areas: ${areaIds.joinToString()}"
-                        )
+                        }
                         false
                     }
                 success to invoices
@@ -65,7 +65,9 @@ class EspooInvoiceIntegrationClient(
         ) {
             "Sending invoice batch to integration"
         }
-        logger.debug("Sending invoice batch ${batch.batchNumber} to integration, payload: $payload")
+        logger.debug {
+            "Sending invoice batch ${batch.batchNumber} to integration, payload: $payload"
+        }
         val (_, _, result) =
             fuel
                 .post("${env.url}/invoice-batches")
@@ -171,9 +173,9 @@ class EspooInvoiceIntegrationClient(
 
             // some part of address does not fit string length limitations
             if (streetAddress.length > 36 || postalCode.length > 5 || postOffice.length > 40) {
-                logger.warn(
+                logger.warn {
                     "Invoice recipient address was non-empty, but some part of it was too long for invoice integration, streetAddress: '$streetAddress', postalCode: '$postalCode', postOffice: '$postOffice'"
-                )
+                }
                 return false
             }
 
@@ -235,6 +237,7 @@ class EspooInvoiceIntegrationClient(
                         invoiceAddress.second,
                         invoiceAddress.third,
                     ) -> invoiceAddress
+
                     addressIsValid(address.first, address.second, address.third) -> address
                     else -> Triple(fallbackStreetAddress, fallbackPostalCode, fallbackPostOffice)
                 }

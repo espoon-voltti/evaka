@@ -17,8 +17,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}

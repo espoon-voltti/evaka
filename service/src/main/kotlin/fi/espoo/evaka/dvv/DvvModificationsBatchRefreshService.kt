@@ -10,8 +10,8 @@ import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -30,11 +30,11 @@ class DvvModificationsBatchRefreshService(
         clock: EvakaClock,
         msg: AsyncJob.DvvModificationsRefresh,
     ) {
-        logger.info("DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns")
+        logger.info { "DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns" }
         val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, clock, msg.ssns)
-        logger.info(
+        logger.info {
             "DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns"
-        )
+        }
     }
 
     fun scheduleBatch(db: Database.Connection, clock: EvakaClock): Int {

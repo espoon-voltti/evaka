@@ -5,10 +5,10 @@
 package fi.espoo.voltti.logging.logback
 
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KMarkerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
-import mu.KLogger
-import mu.KMarkerFactory
-import mu.KotlinLogging
 import net.logstash.logback.argument.StructuredArguments
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -19,7 +19,10 @@ private val logger = KotlinLogging.logger {}
 private val auditMarker = KMarkerFactory.getMarker("AUDIT_EVENT")
 
 private fun KLogger.audit(msg: String, args: Map<String, Any>) =
-    info(auditMarker, msg, StructuredArguments.e(args))
+    atInfo(auditMarker) {
+        message = msg
+        arguments = arrayOf(StructuredArguments.e(args))
+    }
 
 class AppenderTest {
     private val meta = TestMeta.random()
@@ -55,12 +58,16 @@ class AppenderTest {
 
             val event1 = DefaultEvent(userIdHash)
             val exception = TestException()
-            logger.error(event1.message, StructuredArguments.e(mapOf("meta" to meta)), exception)
+            logger.atError {
+                message = event1.message
+                cause = exception
+                arguments = arrayOf(StructuredArguments.e(mapOf("meta" to meta)))
+            }
             it.assertDefault().containsExactly(event1.tuple())
             it.withLatestDefault { actual -> defaultErrorAssertions(actual, meta, exception) }
 
             val event2 = DefaultEvent(userIdHash)
-            logger.info(event2.message)
+            logger.info { event2.message }
             it.assertDefault().containsExactly(event1.tuple(), event2.tuple())
             it.withLatestDefault { actual -> defaultInfoAssertions(actual) }
 
@@ -75,7 +82,11 @@ class AppenderTest {
 
             val event1 = DefaultEvent(userIdHash)
             val exception = TestExceptionSensitive()
-            logger.error(event1.message, StructuredArguments.e(mapOf("meta" to meta)), exception)
+            logger.atError {
+                message = event1.message
+                cause = exception
+                arguments = arrayOf(StructuredArguments.e(mapOf("meta" to meta)))
+            }
             it.assertSanitized().containsExactly(event1.tuple())
             it.withLatestSanitized { actual ->
                 defaultErrorAssertions(actual, meta, exception)
@@ -84,7 +95,7 @@ class AppenderTest {
             }
 
             val event2 = DefaultEvent(userIdHash)
-            logger.info(event2.message)
+            logger.info { event2.message }
             it.assertSanitized().containsExactly(event1.tuple(), event2.tuple())
             it.withLatestSanitized { actual -> defaultInfoAssertions(actual) }
 

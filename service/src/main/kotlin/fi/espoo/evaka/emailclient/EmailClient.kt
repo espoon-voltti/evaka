@@ -9,7 +9,7 @@ import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})\$".toRegex()
 
@@ -35,14 +35,16 @@ private constructor(
                 dbc.read { tx -> tx.getEmailAddressAndDisabledTypes(personId) }
 
             if (toAddress == null) {
-                logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
+                logger.warn {
+                    "Will not send email due to missing email address: (traceId: $traceId)"
+                }
                 return null
             }
 
             if (!toAddress.matches(EMAIL_PATTERN)) {
-                logger.warn(
+                logger.warn {
                     "Will not send email due to invalid toAddress \"$toAddress\": (traceId: $traceId)"
-                )
+                }
                 return null
             }
 
@@ -66,14 +68,16 @@ private constructor(
             val employee = dbc.read { it.getEmployee(employeeId) } ?: return null
 
             if (employee.email == null) {
-                logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
+                logger.warn {
+                    "Will not send email due to missing email address: (traceId: $traceId)"
+                }
                 return null
             }
 
             if (!employee.email.matches(EMAIL_PATTERN)) {
-                logger.warn(
+                logger.warn {
                     "Will not send email due to invalid toAddress \"${employee.email}\": (traceId: $traceId)"
-                )
+                }
                 return null
             }
 

@@ -39,8 +39,8 @@ import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
 
@@ -613,7 +613,7 @@ private fun upsertVtjGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPerson
             .map { upsertVtjPerson(tx, it) }
             .filterNot { tx.isGuardianBlocked(it.id, child.id) }
     createOrReplaceChildRelationships(tx, childId = child.id, guardianIds = guardians.map { it.id })
-    logger.info("Created or replaced child ${child.id} guardians as ${guardians.map { it.id }}")
+    logger.info { "Created or replaced child ${child.id} guardians as ${guardians.map { it.id }}" }
     return child.toVtjPersonDTO().copy(guardians = guardians.map { it.toVtjPersonDTO() })
 }
 
@@ -628,7 +628,9 @@ private fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonD
         guardianId = guardian.id,
         childIds = children.map { it.id },
     )
-    logger.info("Created or replaced guardian ${guardian.id} children as ${children.map { it.id }}")
+    logger.info {
+        "Created or replaced guardian ${guardian.id} children as ${children.map { it.id }}"
+    }
 
     return guardian.toVtjPersonDTO().copy(children = children.map { it.toVtjPersonDTO() })
 }

@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
@@ -42,7 +42,7 @@ class UpdateFromVtjAsyncJobProcessor(
                 )
             }
             ?.let {
-                logger.info("Refreshing all VTJ information for person ${it.id}")
+                logger.info { "Refreshing all VTJ information for person ${it.id}" }
                 fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id), evakaClock)
             }
     }

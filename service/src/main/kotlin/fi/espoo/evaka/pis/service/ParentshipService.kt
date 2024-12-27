@@ -25,8 +25,8 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
@@ -126,7 +126,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         startDate: LocalDate,
         endDate: LocalDate,
     ) {
-        logger.info("Sending update family message with adult $adultId")
+        logger.info { "Sending update family message with adult $adultId" }
         asyncJobRunner.plan(
             this,
             listOf(

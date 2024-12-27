@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.withValue
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
@@ -30,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
-import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 
 class AsyncJobPool<T : AsyncJobPayload>(

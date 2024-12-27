@@ -66,8 +66,8 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 
@@ -332,7 +332,7 @@ class FeeDecisionService(
                 messageContent = messageProvider.getFeeDecisionContent(lang),
             )
 
-        logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
+        logger.info { "Sending fee decision as suomi.fi message ${message.documentId}" }
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
         asyncJobRunner.plan(

@@ -19,8 +19,8 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -48,46 +48,53 @@ class DvvModificationsService(
                                             personModifications.henkilotunnus,
                                             infoGroup,
                                         )
+
                                     is RestrictedInfoDvvInfoGroup ->
                                         handleRestrictedInfo(
                                             db,
                                             personModifications.henkilotunnus,
                                             infoGroup,
                                         )
+
                                     is SsnDvvInfoGroup ->
                                         handleSsnDvvInfoGroup(
                                             db,
                                             personModifications.henkilotunnus,
                                             infoGroup,
                                         )
+
                                     is CaretakerLimitedDvvInfoGroup -> {
                                         if (infoGroup.huoltaja.henkilotunnus != null) {
                                             ssnsToUpdateFromVtj.add(
                                                 infoGroup.huoltaja.henkilotunnus
                                             )
                                         } else {
-                                            logger.info(
+                                            logger.info {
                                                 "Dvv modification ignored for caretaker: ssn is null"
-                                            )
+                                            }
                                         }
                                     }
+
                                     is DefaultDvvInfoGroup ->
                                         ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+
                                     else -> {
-                                        logger.error(
-                                            "Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})"
-                                        )
+                                        logger.error {
+                                            "Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${
+                                                personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")
+                                            })"
+                                        }
                                         ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                                     }
                                 }
                             } catch (e: Throwable) {
                                 logger.error(e) {
                                     "Could not process dvv modification for ${
-                            personModifications.henkilotunnus.substring(
-                                0,
-                                6,
-                            )
-                            }: ${e.message}"
+                                        personModifications.henkilotunnus.substring(
+                                            0,
+                                            6,
+                                        )
+                                    }: ${e.message}"
                                 }
                                 throw e
                             }
@@ -95,9 +102,9 @@ class DvvModificationsService(
                     }
 
                     val personIds = db.read { it.getPersonIdsBySsns(ssnsToUpdateFromVtj.toList()) }
-                    logger.info(
+                    logger.info {
                         "Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ, of which existing persons are: $personIds"
-                    )
+                    }
 
                     db.transaction { tx ->
                         asyncJobRunner.plan(
@@ -135,7 +142,7 @@ class DvvModificationsService(
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let { person ->
                 val dateOfDeath = deathDvvInfoGroup.kuolinpv.asLocalDate()
-                logger.info("Dvv modification for ${person.id}: marking dead since $dateOfDeath")
+                logger.info { "Dvv modification for ${person.id}: marking dead since $dateOfDeath" }
                 tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
 
                 endFamilyRelations(tx, person.id, dateOfDeath, clock)
@@ -217,9 +224,9 @@ class DvvModificationsService(
     ) =
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
-                logger.info(
+                logger.info {
                     "Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.turvakieltoAktiivinen}"
-                )
+                }
                 tx.updatePersonFromVtj(
                     it.copy(
                         restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.turvakieltoAktiivinen,
@@ -249,12 +256,12 @@ class DvvModificationsService(
     ) =
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
-                logger.info("Dvv modification for ${it.id}: ssn change")
+                logger.info { "Dvv modification for ${it.id}: ssn change" }
 
                 if (!ssnDvvInfoGroup.aktiivinenHenkilotunnus.isNullOrEmpty()) {
                     tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
                 } else {
-                    logger.error("Dvv modification for ${it.id}: ssn is set to null or empty")
+                    logger.error { "Dvv modification for ${it.id}: ssn is set to null or empty" }
                 }
             }
         }
@@ -275,9 +282,9 @@ class DvvModificationsService(
         token: String,
         alreadyFoundDvvModifications: List<DvvModification>,
     ): DvvModificationsWithToken {
-        logger.debug(
+        logger.debug {
             "Fetching dvv modifications with $token, found modifications so far: ${alreadyFoundDvvModifications.size}"
-        )
+        }
         return dvvModificationsServiceClient.getModifications(token, ssns).let {
             dvvModificationsResponse ->
             val combinedModifications =

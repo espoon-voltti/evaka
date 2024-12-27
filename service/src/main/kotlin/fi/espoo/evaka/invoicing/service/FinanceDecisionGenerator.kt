@@ -15,8 +15,8 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}

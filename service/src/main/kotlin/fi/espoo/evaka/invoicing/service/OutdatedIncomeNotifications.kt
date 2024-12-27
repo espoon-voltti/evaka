@@ -23,7 +23,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -106,9 +106,9 @@ class OutdatedIncomeNotifications(
             runAt = clock.now(),
         )
 
-        logger.info(
-            "OutdatedIncomeNotification scheduled notification emails: ${guardiansForInitialNotification.size } initial, ${guardiansForReminderNotification.size} reminders and ${guardiansForExpirationNotification.size} expired"
-        )
+        logger.info {
+            "OutdatedIncomeNotification scheduled notification emails: ${guardiansForInitialNotification.size} initial, ${guardiansForReminderNotification.size} reminders and ${guardiansForExpirationNotification.size} expired"
+        }
 
         return guardiansForInitialNotification.size +
             guardiansForReminderNotification.size +
@@ -139,7 +139,9 @@ class OutdatedIncomeNotifications(
                     }
             } ?: return
 
-        logger.info("OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}")
+        logger.info {
+            "OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}"
+        }
 
         Email.create(
                 dbc = db,

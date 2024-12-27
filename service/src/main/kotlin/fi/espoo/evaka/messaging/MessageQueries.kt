@@ -17,8 +17,8 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.formatName
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.jdbi.v3.json.Json
 
 private val logger = KotlinLogging.logger {}
@@ -603,7 +603,7 @@ private fun combineThreadsAndMessages(
         threads.data.flatMap { thread ->
             val messages = messagesByThread[thread.id]
             if (messages == null) {
-                logger.warn("Thread ${thread.id} has no messages for account $accountId")
+                logger.warn { "Thread ${thread.id} has no messages for account $accountId" }
                 listOf()
             } else {
                 listOf(

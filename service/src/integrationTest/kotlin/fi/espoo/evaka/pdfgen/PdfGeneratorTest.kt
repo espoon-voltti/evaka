@@ -50,12 +50,12 @@ import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.test.validPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertNotNull
-import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

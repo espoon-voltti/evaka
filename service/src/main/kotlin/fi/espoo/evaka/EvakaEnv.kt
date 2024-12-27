@@ -9,13 +9,13 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.security.KeyStore
 import java.time.Duration
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.Locale
-import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import org.springframework.core.io.UrlResource
 

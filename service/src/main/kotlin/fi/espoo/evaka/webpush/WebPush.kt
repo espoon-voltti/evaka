@@ -15,11 +15,11 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.utils.writerFor
 import fi.espoo.voltti.logging.loggers.error
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
-import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 
 data class WebPushNotification(

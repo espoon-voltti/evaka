@@ -12,29 +12,32 @@ import fi.espoo.voltti.logging.utils.clearTestMessages
 import fi.espoo.voltti.logging.utils.getTestAppender
 import fi.espoo.voltti.logging.utils.getTestMessages
 import fi.espoo.voltti.logging.utils.setupTestAppender
+import io.github.oshai.kotlinlogging.DelegatingKLogger
 import kotlin.test.assertEquals
-import mu.KLogger
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 private val logger = KotlinLogging.logger {}.also(KLogger::setupTestAppender)
+private fun KLogger.underlyingLogger(): Logger =
+    (this as DelegatingKLogger<*>).underlyingLogger as Logger
 private const val message = "test message"
-private val initialLogLevel = (logger.underlyingLogger as Logger).level
+private val initialLogLevel = logger.underlyingLogger().level
 
 class AppMiscLoggersTest {
     @BeforeEach
     fun before() {
         // To avoid noise in other tests, just raise the log level for these tests that require
         // TRACE
-        (logger.underlyingLogger as Logger).level = Level.TRACE
+        (logger.underlyingLogger()).level = Level.TRACE
     }
 
     @AfterEach
     fun clear() {
         logger.clearTestMessages()
-        (logger.underlyingLogger as Logger).level = initialLogLevel
+        (logger.underlyingLogger()).level = initialLogLevel
     }
 
     @Test

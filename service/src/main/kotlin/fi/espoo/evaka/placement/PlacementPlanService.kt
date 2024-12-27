@@ -27,10 +27,10 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.Month
 import java.util.UUID
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}

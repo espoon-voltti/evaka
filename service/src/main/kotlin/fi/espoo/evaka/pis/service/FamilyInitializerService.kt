@@ -18,7 +18,7 @@ import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
@@ -240,11 +240,13 @@ class FamilyInitializerService(
                         (it.endDate.isAfter(startDate))
                 }
         if (alreadyExists) {
-            logger.debug("Similar parentship already exists between $headOfChildId and ${child.id}")
+            logger.debug {
+                "Similar parentship already exists between $headOfChildId and ${child.id}"
+            }
         } else {
             val endDate = child.dateOfBirth.plusYears(18).minusDays(1)
             if (startDate > endDate) {
-                logger.debug("Skipped adding a child that is at least 18 years old to a family")
+                logger.debug { "Skipped adding a child that is at least 18 years old to a family" }
                 return
             }
             try {
@@ -263,9 +265,9 @@ class FamilyInitializerService(
                     PSQLState.UNIQUE_VIOLATION.state,
                     PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
-                        logger.warn(
+                        logger.warn {
                             "Creating conflict parentship between $headOfChildId and ${child.id} (conflicting constraint is $constraint)"
-                        )
+                        }
                         tx.createParentship(
                             childId = child.id,
                             headOfChildId = headOfChildId,
@@ -275,6 +277,7 @@ class FamilyInitializerService(
                             conflict = true,
                         )
                     }
+
                     else -> throw e
                 }
             }
@@ -298,7 +301,7 @@ class FamilyInitializerService(
                     (partnership.endDate == null || partnership.endDate.isAfter(startDate))
             }
         if (alreadyExists) {
-            logger.debug("Similar partnership already exists between $personId1 and $personId2")
+            logger.debug { "Similar partnership already exists between $personId1 and $personId2" }
         } else {
             try {
                 tx.subTransaction {
@@ -317,9 +320,9 @@ class FamilyInitializerService(
                     PSQLState.UNIQUE_VIOLATION.state,
                     PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
-                        logger.warn(
+                        logger.warn {
                             "Creating conflict partnership between $personId1 and $personId2 (conflicting constraint is $constraint)"
-                        )
+                        }
                         tx.createPartnership(
                             personId1 = personId1,
                             personId2 = personId2,
@@ -330,6 +333,7 @@ class FamilyInitializerService(
                             evakaClock.now(),
                         )
                     }
+
                     else -> throw e
                 }
             }

@@ -97,12 +97,12 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.util.UUID
-import mu.KotlinLogging
 import org.jdbi.v3.json.Json
 import org.springframework.core.io.ClassPathResource
 
@@ -110,7 +110,7 @@ private val logger = KotlinLogging.logger {}
 
 fun Database.Transaction.runDevScript(devScriptName: String) {
     val path = "dev-data/$devScriptName"
-    logger.info("Running SQL script: $path")
+    logger.info { "Running SQL script: $path" }
     ClassPathResource(path).inputStream.use {
         it.bufferedReader().readText().let { content -> execute { sql(content) } }
     }

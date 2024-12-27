@@ -10,8 +10,8 @@ import fi.espoo.evaka.vtjclient.mapper.toServiceHeader
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.voltti.logging.MdcKey
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.xml.bind.helpers.DefaultValidationEventHandler
-import mu.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -74,14 +74,13 @@ class XroadSoapClientConfig {
         override fun resolveFault(message: WebServiceMessage) {
             when (message) {
                 is FaultAwareWebServiceMessage -> {
-                    logger.error(
-                        "Fault while doing X-Road request: ${message.faultCode}. Reason: ${message.faultReason}",
-                        message,
-                    )
+                    logger.error {
+                        "Fault while doing X-Road request: ${message.faultCode}. Reason: ${message.faultReason}"
+                    }
                     throw WebServiceFaultException(message)
                 }
                 else -> {
-                    logger.error("Unknown error while doing X-Road request: \"$message\".", message)
+                    logger.error { "Unknown error while doing X-Road request: \"$message\"." }
                     throw WebServiceFaultException("Message has unknown fault: $message")
                 }
             }
