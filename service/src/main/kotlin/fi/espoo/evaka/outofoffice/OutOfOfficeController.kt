@@ -1,13 +1,16 @@
 package fi.espoo.evaka.outofoffice
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.OutOfOfficeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -61,5 +64,27 @@ class OutOfOfficeController(private val accessControl: AccessControl) {
                 }
             }
             .also { Audit.OutOfOfficeUpdate.log(targetId = fi.espoo.evaka.AuditId(user.id)) }
+    }
+
+    @DeleteMapping("/employee/out-of-office/{id}")
+    fun deleteOutOfOfficePeriod(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: OutOfOfficeId,
+    ) {
+        return db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Employee.UPDATE_OUT_OF_OFFICE,
+                        user.id,
+                    )
+                    it.deleteOutOfOfficePeriod(id = id)
+                }
+            }
+            .also { Audit.OutOfOfficeDelete.log(targetId = fi.espoo.evaka.AuditId(user.id)) }
     }
 }
