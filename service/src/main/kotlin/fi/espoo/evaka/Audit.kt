@@ -389,6 +389,7 @@ enum class Audit(
     OtherAssistanceMeasureCreate,
     OtherAssistanceMeasureUpdate,
     OtherAssistanceMeasureDelete,
+    OutOfOfficeRead,
     PairingInit(securityEvent = true),
     PairingChallenge(securityEvent = true),
     PairingResponse(securityEvent = true, securityLevel = "high"),
