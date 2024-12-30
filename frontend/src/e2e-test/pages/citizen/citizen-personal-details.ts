@@ -23,14 +23,41 @@ export default class CitizenPersonalDetails {
 }
 
 export class CitizenPersonalDetailsSection extends Element {
-  #missingEmailOrPhoneBox = this.find('[data-qa="missing-email-or-phone-box"]')
-  #startEditing = this.find('[data-qa="start-editing"]')
-  #preferredName = this.find('[data-qa="preferred-name"]')
-  #phone = this.find('[data-qa="phone"]')
-  #backupPhone = this.find('[data-qa="backup-phone"]')
-  #email = this.find('[data-qa="email"]')
-  #noEmail = new Checkbox(this.find('[data-qa="no-email"]'))
-  #save = this.find('[data-qa="save"]')
+  #missingEmailOrPhoneBox: Element
+  #startEditing: Element
+  #preferredName: Element
+  #phone: Element
+  #backupPhone: Element
+  #email: Element
+  #noEmail: Checkbox
+  #save: Element
+  verifiedEmailStatus: Element
+  unverifiedEmailStatus: Element
+  sendVerificationCode: Element
+  verificationCodeField: TextInput
+  verifyEmail: Element
+
+  constructor(element: Element) {
+    super(element)
+
+    this.#missingEmailOrPhoneBox = element.find(
+      '[data-qa="missing-email-or-phone-box"]'
+    )
+    this.#startEditing = element.find('[data-qa="start-editing"]')
+    this.#preferredName = element.find('[data-qa="preferred-name"]')
+    this.#phone = element.find('[data-qa="phone"]')
+    this.#backupPhone = element.find('[data-qa="backup-phone"]')
+    this.#email = element.find('[data-qa="email"]')
+    this.#noEmail = new Checkbox(element.find('[data-qa="no-email"]'))
+    this.#save = element.find('[data-qa="save"]')
+    this.verifiedEmailStatus = element.findByDataQa('verified-email-status')
+    this.unverifiedEmailStatus = element.findByDataQa('unverified-email-status')
+    this.sendVerificationCode = element.findByDataQa('send-verification-code')
+    this.verificationCodeField = new TextInput(
+      element.findByDataQa('verification-code-field')
+    )
+    this.verifyEmail = element.findByDataQa('verify-email')
+  }
 
   async checkMissingEmailWarningIsShown() {
     await this.#missingEmailOrPhoneBox.waitUntilVisible()
