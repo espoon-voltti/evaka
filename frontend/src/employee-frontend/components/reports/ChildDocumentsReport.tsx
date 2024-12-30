@@ -182,6 +182,7 @@ const ChildDocumentsReportInner = React.memo(
               getOptionLabel={(o) => o.name}
               getOptionId={(o) => o.id}
               placeholder={i18n.common.select}
+              data-qa="unit-select"
             />
           </FlexGrow>
         </FilterRowWide>
@@ -194,6 +195,7 @@ const ChildDocumentsReportInner = React.memo(
               tree={templateTree}
               onChange={setTemplateTree}
               placeholder={i18n.common.select}
+              data-qa="template-select"
             />
           </FlexGrow>
         </FilterRowWide>
@@ -241,17 +243,17 @@ const ChildDocumentsReportTable = React.memo(
         <Tbody>
           {unitRows.map((row) => (
             <React.Fragment key={row.unitId}>
-              <Tr>
-                <Td>
+              <Tr data-qa={`unit-row-${row.unitId}`}>
+                <Td data-qa="name">
                   <Strong>{row.unitName}</Strong>
                 </Td>
-                <Td>{row.drafts}</Td>
-                <Td>{row.prepared}</Td>
-                <Td>{row.completed}</Td>
-                <Td>{row.none}</Td>
-                <Td>{row.total}</Td>
+                <Td data-qa="drafts-count">{row.drafts}</Td>
+                <Td data-qa="prepared-count">{row.prepared}</Td>
+                <Td data-qa="completed-count">{row.completed}</Td>
+                <Td data-qa="no-documents-count">{row.none}</Td>
+                <Td data-qa="total-count">{row.total}</Td>
               </Tr>
-              <GroupSection groupRows={row.groups} />
+              <GroupSection unitId={row.unitId} groupRows={row.groups} />
             </React.Fragment>
           ))}
         </Tbody>
@@ -265,8 +267,10 @@ const TdIndented = styled(Td)`
 `
 
 const GroupSection = React.memo(function GroupSection({
+  unitId,
   groupRows
 }: {
+  unitId: DaycareId
   groupRows: GroupRow[]
 }) {
   const { i18n } = useTranslation()
@@ -282,13 +286,13 @@ const GroupSection = React.memo(function GroupSection({
     <>
       {expanded &&
         orderedRows.map((row) => (
-          <Tr key={row.groupId}>
-            <TdIndented>{row.groupName}</TdIndented>
-            <TdIndented>{row.drafts}</TdIndented>
-            <TdIndented>{row.prepared}</TdIndented>
-            <TdIndented>{row.completed}</TdIndented>
-            <TdIndented>{row.none}</TdIndented>
-            <TdIndented>{row.total}</TdIndented>
+          <Tr key={row.groupId} data-qa={`group-row-${row.groupId}`}>
+            <TdIndented data-qa="name">{row.groupName}</TdIndented>
+            <TdIndented data-qa="drafts-count">{row.drafts}</TdIndented>
+            <TdIndented data-qa="prepared-count">{row.prepared}</TdIndented>
+            <TdIndented data-qa="completed-count">{row.completed}</TdIndented>
+            <TdIndented data-qa="no-documents-count">{row.none}</TdIndented>
+            <TdIndented data-qa="total-count">{row.total}</TdIndented>
           </Tr>
         ))}
       <Tr>
@@ -298,6 +302,7 @@ const GroupSection = React.memo(function GroupSection({
             text={expanded ? t.table.collapse : t.table.expand}
             icon={expanded ? faChevronUp : faChevronDown}
             onClick={toggleExpanded}
+            data-qa={`unit-${unitId}-toggle-groups`}
           />
         </Td>
       </Tr>

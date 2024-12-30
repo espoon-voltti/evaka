@@ -510,7 +510,7 @@ export class MultiSelect extends Element {
   }
 
   async close() {
-    await this.#input.click()
+    await this.locator.page().keyboard.press('Escape')
   }
 
   async selectFirst() {

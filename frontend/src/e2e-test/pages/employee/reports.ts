@@ -5,6 +5,7 @@
 import assert from 'assert'
 
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
@@ -20,7 +21,8 @@ import {
   StaticChip,
   TextInput,
   Element,
-  ElementCollection
+  ElementCollection,
+  TreeDropdown
 } from '../../utils/page'
 
 export default class ReportsPage {
@@ -776,6 +778,46 @@ export class ChildAttendanceReservationByChildReport {
           .assertTextEquals(data.attendanceReservationEnd)
       })
     )
+  }
+}
+
+export class ChildDocumentsReport {
+  unitSelector: MultiSelect
+  templateSelector: TreeDropdown
+
+  constructor(private page: Page) {
+    this.unitSelector = new MultiSelect(page.findByDataQa('unit-select'))
+    this.templateSelector = new TreeDropdown(
+      page.findByDataQa('template-select')
+    )
+  }
+
+  getUnitRow(id: DaycareId) {
+    const row = this.page.findByDataQa(`unit-row-${id}`)
+    return {
+      name: row.findByDataQa('name'),
+      drafts: row.findByDataQa('drafts-count'),
+      prepared: row.findByDataQa('prepared-count'),
+      completed: row.findByDataQa('completed-count'),
+      noDocuments: row.findByDataQa('no-documents-count'),
+      total: row.findByDataQa('total-count')
+    }
+  }
+
+  async toggleUnitRowGroups(id: DaycareId) {
+    await this.page.findByDataQa(`unit-${id}-toggle-groups`).click()
+  }
+
+  getGroupRow(id: GroupId) {
+    const row = this.page.findByDataQa(`group-row-${id}`)
+    return {
+      name: row.findByDataQa('name'),
+      drafts: row.findByDataQa('drafts-count'),
+      prepared: row.findByDataQa('prepared-count'),
+      completed: row.findByDataQa('completed-count'),
+      noDocuments: row.findByDataQa('no-documents-count'),
+      total: row.findByDataQa('total-count')
+    }
   }
 }
 
