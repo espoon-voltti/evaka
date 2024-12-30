@@ -66,6 +66,7 @@ import IncomeStatementsPage from './components/income-statements/IncomeStatement
 import InvoicePage from './components/invoice/InvoicePage'
 import InvoicesPage from './components/invoices/InvoicesPage'
 import MessagesPage from './components/messages/MessagesPage'
+import OutOfOfficePage from './components/out-of-office/OutOfOfficePage'
 import PaymentsPage from './components/payments/PaymentsPage'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
 import PlacementToolPage from './components/placement-tool/PlacementToolPage'
@@ -1045,6 +1046,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="placementTool">
               <PlacementToolPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/out-of-office',
+          element: (
+            <EmployeeRoute title="outOfOffice">
+              <OutOfOfficePage />
             </EmployeeRoute>
           )
         },
