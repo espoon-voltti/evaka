@@ -180,7 +180,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                 .content
                 .text
                 .startsWith(
-                    "Sinulle on saapunut uusi tiedote eVakaan otsikolla \"Juhannus/Midsommar/Midsummer\"."
+                    "Sinulle on saapunut uusi tiedote eVakaan lähettäjältä Espoon kaupunki - Esbo stad - City of Espoo otsikolla \"Juhannus/Midsommar/Midsummer\"."
                 )
         )
 

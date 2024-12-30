@@ -10,6 +10,7 @@ import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MessageThreadData
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -26,6 +27,7 @@ class MessageNotificationEmailService(
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
+    private val featureConfig: FeatureConfig,
 ) {
     init {
         asyncJobRunner.registerHandler(::sendMessageNotification)
@@ -87,7 +89,7 @@ WHERE m.id = ANY(${bind(messageIds)})
         msg: AsyncJob.SendMessageNotificationEmail,
     ) {
         val thread =
-            db.transaction { tx ->
+            db.read { tx ->
                 // The message has been undone and the recipient should no longer get an email
                 // notification
                 if (!tx.unreadMessageForRecipientExists(msg.messageId, msg.recipientId)) {
@@ -97,8 +99,15 @@ WHERE m.id = ANY(${bind(messageIds)})
                 }
             } ?: return
 
-        val isSenderMunicipalAccount =
-            db.transaction { tx -> tx.getMessageAccountType(msg.senderId) == AccountType.MUNICIPAL }
+        val sender =
+            db.read { tx ->
+                tx.getMessageAccount(
+                    msg.senderId,
+                    municipalAccountName = featureConfig.municipalMessageAccountName,
+                    serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                )
+            }
+        val isSenderMunicipalAccount = sender.type == AccountType.MUNICIPAL
 
         Email.create(
                 dbc = db,
@@ -121,6 +130,8 @@ WHERE m.id = ANY(${bind(messageIds)})
                             urgent = thread.urgent,
                             sensitive = thread.sensitive,
                             isCopy = thread.isCopy,
+                            senderName = HtmlSafe(sender.name),
+                            senderType = sender.type,
                         ),
                         isSenderMunicipalAccount,
                     ),
