@@ -209,6 +209,7 @@ sealed interface Action {
         ),
         SEARCH_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         CREATE_DRAFT_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        SEARCH_PAYMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_DRAFT_PAYMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_ASSISTANCE_ACTION_OPTIONS(
             HasGlobalRole(
