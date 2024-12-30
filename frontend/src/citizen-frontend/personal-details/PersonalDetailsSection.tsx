@@ -285,7 +285,7 @@ export default React.memo(function PersonalDetailsSection({
                       <span translate="no">{email}</span>
                       <Gap size="xs" />
                       {isEmailVerified ? (
-                        <div>
+                        <div data-qa="verified-email-status">
                           <FontAwesomeIcon
                             icon={faCheckCircle}
                             color={colors.status.success}
@@ -301,7 +301,7 @@ export default React.memo(function PersonalDetailsSection({
                         />
                       ) : (
                         <div>
-                          <div>
+                          <div data-qa="unverified-email-status">
                             <UnverifiedEmailWarning>
                               {t.personalDetails.detailsSection.emailUnverified}
                             </UnverifiedEmailWarning>
@@ -313,6 +313,7 @@ export default React.memo(function PersonalDetailsSection({
                           </div>
                           <Gap size="s" />
                           <MutateButton
+                            data-qa="send-verification-code"
                             appearance="inline"
                             text={
                               t.personalDetails.detailsSection
@@ -425,12 +426,14 @@ const EmailVerificationForm = React.memo(function EmailVerificationForm({
       </div>
       <LabelLike>{`${t.personalDetails.detailsSection.verificationForm}*`}</LabelLike>
       <InputFieldF
+        data-qa="verification-code-field"
         bind={verificationCode}
         width="L"
         hideErrorsBeforeTouched={true}
       />
       <Gap size="m" />
       <MutateButton
+        data-qa="verify-email"
         primary
         disabled={!form.isValid()}
         text={t.personalDetails.detailsSection.confirmVerification}
