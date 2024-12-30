@@ -436,7 +436,6 @@ export interface UnitStats {
   name: string
   presentChildren: number
   presentStaff: number
-  presentStaffOther: number
   totalChildren: number
   totalStaff: number
   utilization: number

@@ -78,7 +78,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         val attendanceDate = groupStartDate
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5),
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0),
         )
 
         val result =
@@ -91,28 +91,6 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
 
         assertEquals(1, result.attendances.size)
         assertEquals(1.0, result.attendances[attendanceDate]?.count)
-        assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
-    }
-
-    @Test
-    fun `creating an attendance with null countOther sets countOther to 0`() {
-        val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(
-            db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, null),
-        )
-
-        val result =
-            staffAttendanceService.getGroupAttendancesByMonth(
-                db,
-                attendanceDate.year,
-                attendanceDate.monthValue,
-                groupId,
-            )
-
-        assertEquals(1, result.attendances.size)
-        assertEquals(1.0, result.attendances[attendanceDate]?.count)
-        assertEquals(0.0, result.attendances[attendanceDate]?.countOther)
     }
 
     @Test
@@ -120,7 +98,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         val attendanceDate = groupStartDate
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5),
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0),
         )
 
         var result =
@@ -131,11 +109,10 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 groupId,
             )
         assertEquals(1.0, result.attendances[attendanceDate]?.count)
-        assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
 
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 2.5, 0.0),
+            StaffAttendanceUpdate(groupId, attendanceDate, 2.5),
         )
         result =
             staffAttendanceService.getGroupAttendancesByMonth(
@@ -145,40 +122,6 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 groupId,
             )
         assertEquals(2.5, result.attendances[attendanceDate]?.count)
-        assertEquals(0.0, result.attendances[attendanceDate]?.countOther)
-    }
-
-    @Test
-    fun `modifying attendance with null countOther doesn't change countOther`() {
-        val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(
-            db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5),
-        )
-
-        var result =
-            staffAttendanceService.getGroupAttendancesByMonth(
-                db,
-                attendanceDate.year,
-                attendanceDate.monthValue,
-                groupId,
-            )
-        assertEquals(1.0, result.attendances[attendanceDate]?.count)
-        assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
-
-        staffAttendanceService.upsertStaffAttendance(
-            db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 2.5, null),
-        )
-        result =
-            staffAttendanceService.getGroupAttendancesByMonth(
-                db,
-                attendanceDate.year,
-                attendanceDate.monthValue,
-                groupId,
-            )
-        assertEquals(2.5, result.attendances[attendanceDate]?.count)
-        assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
     }
 
     @Test
@@ -187,7 +130,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         assertThrows<BadRequest> {
             staffAttendanceService.upsertStaffAttendance(
                 db,
-                StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5),
+                StaffAttendanceUpdate(groupId, attendanceDate, 1.0),
             )
         }
 
@@ -206,23 +149,22 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         val firstDay = groupStartDate
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, firstDay, 1.0, 0.5),
+            StaffAttendanceUpdate(groupId, firstDay, 1.0),
         )
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId2, firstDay, 2.0, 1.5),
+            StaffAttendanceUpdate(groupId2, firstDay, 2.0),
         )
 
         val secondDay = groupStartDate.plusDays(5)
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, secondDay, 6.5, null),
+            StaffAttendanceUpdate(groupId, secondDay, 6.5),
         )
 
         val unitResult = staffAttendanceService.getUnitAttendancesForDate(db, daycareId, firstDay)
         assertEquals(firstDay, unitResult.date)
         assertEquals(3.0, unitResult.count)
-        assertEquals(2.0, unitResult.countOther)
         assertEquals(2, unitResult.groups.size)
         assertEquals(
             db.read {
@@ -238,14 +180,11 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
 
         val groupResult = unitResult.groups.find { it.groupId == groupId }!!
         assertEquals(1.0, groupResult.count)
-        assertEquals(0.5, groupResult.countOther)
         val group2Result = unitResult.groups.find { it.groupId == groupId2 }!!
         assertEquals(2.0, group2Result.count)
-        assertEquals(1.5, group2Result.countOther)
 
         val unitResult2 = staffAttendanceService.getUnitAttendancesForDate(db, daycareId, secondDay)
         assertEquals(secondDay, unitResult2.date)
         assertEquals(6.5, unitResult2.count)
-        assertEquals(0.0, unitResult2.countOther)
     }
 }

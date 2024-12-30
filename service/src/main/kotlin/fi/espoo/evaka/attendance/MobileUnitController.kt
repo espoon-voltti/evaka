@@ -280,7 +280,6 @@ data class UnitStats(
     val presentChildren: Int,
     val totalChildren: Int,
     val presentStaff: Double,
-    val presentStaffOther: Double,
     val totalStaff: Double,
     val utilization: Double,
 )
@@ -314,23 +313,23 @@ WITH present_children AS (
     WHERE unit_id = ANY(${bind(unitIds)})
     GROUP BY unit_id
 ), present_staff AS (
-    SELECT g.daycare_id AS unit_id, sum(sa.capacity) AS capacity, sum(sa.count) AS count, sum(sa.count_other) AS count_other
+    SELECT g.daycare_id AS unit_id, sum(sa.capacity) AS capacity, sum(sa.count) AS count
     FROM daycare_group g
     JOIN daycare ON g.daycare_id = daycare.id
     JOIN (
-        SELECT sa.group_id, 7 * sa.count as capacity, sa.count AS count, sa.count_other, FALSE AS realtime
+        SELECT sa.group_id, 7 * sa.count as capacity, sa.count AS count, FALSE AS realtime
         FROM staff_attendance sa
         WHERE sa.date = ${bind(date)}
 
         UNION ALL
 
-        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count, 0 AS count_other, TRUE AS realtime
+        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count, TRUE AS realtime
         FROM staff_attendance_realtime sa
         WHERE sa.departed IS NULL AND sa.occupancy_coefficient > 0
 
         UNION ALL
 
-        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count, 0 AS count_other, TRUE AS realtime
+        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count, TRUE AS realtime
         FROM staff_attendance_external sa
         WHERE sa.departed IS NULL AND sa.occupancy_coefficient > 0
     ) sa ON sa.group_id = g.id AND realtime = ('REALTIME_STAFF_ATTENDANCE' = ANY(daycare.enabled_pilot_features))
@@ -348,7 +347,6 @@ SELECT
     coalesce(pc.count, 0) AS present_children,
     coalesce(tc.count, 0) AS total_children,
     coalesce(ps.count, 0) AS present_staff,
-    coalesce(ps.count_other, 0) AS present_staff_other,
     coalesce(ts.count, 0) AS total_staff,
     CASE
         WHEN pc.capacity IS NULL OR pc.capacity = 0 THEN 0.0

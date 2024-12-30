@@ -9,8 +9,6 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.service.StaffAttendanceForDates
 import fi.espoo.evaka.daycare.service.StaffAttendanceService
 import fi.espoo.evaka.daycare.service.StaffAttendanceUpdate
-import fi.espoo.evaka.daycare.service.UnitStaffAttendance
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -29,28 +27,6 @@ class StaffAttendanceController(
     private val staffAttendanceService: StaffAttendanceService,
     private val accessControl: AccessControl,
 ) {
-    @GetMapping("/employee-mobile/staff-attendances/unit/{unitId}")
-    fun getAttendancesByUnit(
-        db: Database,
-        user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-    ): UnitStaffAttendance {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Unit.READ_STAFF_ATTENDANCES,
-                        unitId,
-                    )
-                }
-                staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today())
-            }
-            .also { Audit.UnitStaffAttendanceRead.log(targetId = AuditId(unitId)) }
-    }
-
     @GetMapping("/employee/staff-attendances/group/{groupId}")
     fun getStaffAttendancesByGroup(
         db: Database,
@@ -79,23 +55,6 @@ class StaffAttendanceController(
     fun upsertStaffAttendance(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @RequestBody staffAttendance: StaffAttendanceUpdate,
-        @PathVariable groupId: GroupId,
-    ) = upsertStaffAttendance(db, user as AuthenticatedUser, clock, staffAttendance, groupId)
-
-    @PostMapping("/employee-mobile/staff-attendances/group/{groupId}")
-    fun upsertStaffAttendance(
-        db: Database,
-        user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock,
-        @RequestBody staffAttendance: StaffAttendanceUpdate,
-        @PathVariable groupId: GroupId,
-    ) = upsertStaffAttendance(db, user as AuthenticatedUser, clock, staffAttendance, groupId)
-
-    private fun upsertStaffAttendance(
-        db: Database,
-        user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody staffAttendance: StaffAttendanceUpdate,
         @PathVariable groupId: GroupId,
