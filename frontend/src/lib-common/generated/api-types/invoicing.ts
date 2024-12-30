@@ -412,6 +412,8 @@ export interface GenerateDecisionsBody {
 export interface Income {
   applicationId: ApplicationId | null
   attachments: IncomeAttachment[]
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUser
   data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
   id: IncomeId
@@ -1290,6 +1292,7 @@ export function deserializeJsonFeeThresholdsWithId(json: JsonOf<FeeThresholdsWit
 export function deserializeJsonIncome(json: JsonOf<Income>): Income {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null

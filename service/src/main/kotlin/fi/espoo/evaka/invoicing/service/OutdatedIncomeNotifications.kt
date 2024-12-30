@@ -164,8 +164,7 @@ class OutdatedIncomeNotifications(
             val dayAfterExpiration = msg.incomeExpirationDate.plusDays(1)
             if (!it.personHasActiveIncomeOnDate(msg.guardianId, dayAfterExpiration)) {
                 it.insertIncome(
-                    clock = clock,
-                    mapper = mapper,
+                    now = clock.now(),
                     income =
                         IncomeRequest(
                             personId = msg.guardianId,
@@ -175,7 +174,7 @@ class OutdatedIncomeNotifications(
                             data = emptyMap(),
                             notes = "Created automatically because previous income expired",
                         ),
-                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
 
                 asyncJobRunner.plan(
