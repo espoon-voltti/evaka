@@ -1075,7 +1075,8 @@ export const voucherValueDecisionDistinctiveParams = [
   'EXTERNAL_CHILD',
   'RETROACTIVE',
   'NO_STARTING_PLACEMENTS',
-  'MAX_FEE_ACCEPTED'
+  'MAX_FEE_ACCEPTED',
+  'NO_OPEN_INCOME_STATEMENTS'
 ] as const
 
 export type VoucherValueDecisionDistinctiveParams = typeof voucherValueDecisionDistinctiveParams[number]
