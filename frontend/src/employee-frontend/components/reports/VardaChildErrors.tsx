@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
@@ -13,6 +13,7 @@ import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
@@ -24,7 +25,20 @@ import { resetVardaChildMutation, vardaChildErrorsQuery } from './queries'
 
 export default React.memo(function VardaChildErrors() {
   const { i18n } = useTranslation()
+  const [ma003, setMa003] = useState<'exclude' | 'include' | 'only'>('exclude')
   const vardaErrorsResult = useQueryResult(vardaChildErrorsQuery())
+
+  const filteredRows = useMemo(
+    () =>
+      ma003 === 'include'
+        ? vardaErrorsResult
+        : vardaErrorsResult.map((rows) =>
+            rows.filter(
+              (row) => row.error.includes('"MA003"') === (ma003 === 'only')
+            )
+          ),
+    [vardaErrorsResult, ma003]
+  )
 
   const ageInDays = (timestamp: HelsinkiDateTime): number =>
     LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
@@ -35,7 +49,16 @@ export default React.memo(function VardaChildErrors() {
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.vardaChildErrors.title}</Title>
         <Gap size="xxs" />
-        {renderResult(vardaErrorsResult, (rows) => (
+        <Select
+          items={['exclude', 'include', 'only'] as const}
+          getItemLabel={(item) => i18n.reports.vardaChildErrors.ma003[item]}
+          selectedItem={ma003}
+          onChange={(value) => {
+            if (value !== null) setMa003(value)
+          }}
+        />
+        <Gap size="s" />
+        {renderResult(filteredRows, (rows) => (
           <>
             <Table data-qa="varda-errors-table">
               <Thead>
