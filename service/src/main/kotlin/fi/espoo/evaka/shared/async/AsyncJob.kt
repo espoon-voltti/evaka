@@ -405,7 +405,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendEmailVerificationCodeEmail(val id: PersonEmailVerificationId) : AsyncJob {
+    data class SendConfirmationCodeEmail(val id: PersonEmailVerificationId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -460,7 +460,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendDiscussionSurveyReservationCancellationEmail::class,
                     SendDiscussionSurveyCreationNotificationEmail::class,
                     SendDiscussionReservationReminderEmail::class,
-                    SendEmailVerificationCodeEmail::class,
+                    SendConfirmationCodeEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingReservationsReminder::class,
                     SendMissingHolidayReservationsReminder::class,

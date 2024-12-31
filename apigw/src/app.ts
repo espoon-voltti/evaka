@@ -67,6 +67,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       )
     } else if (req.url === '/application/auth/status') {
       req.url = '/citizen/auth/status'
+    } else if (req.url === '/application/auth/weak-login') {
+      req.url = '/citizen/auth/weak-login'
     } else if (req.url.startsWith('/internal/employee/')) {
       req.url = req.url.replace('/internal/employee/', '/employee/')
     } else if (req.url.startsWith('/internal/employee-mobile/')) {

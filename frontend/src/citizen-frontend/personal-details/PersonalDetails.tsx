@@ -77,22 +77,25 @@ export default React.memo(function PersonalDetails() {
               />
             </>
           ))}
-          {renderResult(user, (user) =>
-            user ? (
-              <>
-                {(!!user.keycloakEmail || featureFlags.weakLogin) && (
-                  <>
-                    <HorizontalLine />
-                    <LoginDetailsSection
-                      user={user}
-                      reloadUser={refreshAuthStatus}
-                    />
-                  </>
-                )}
-              </>
-            ) : (
-              <Navigate replace to="/" />
-            )
+          {renderResult(
+            combine(user, emailVerificationStatus),
+            ([user, emailVerificationStatus]) =>
+              user ? (
+                <>
+                  {(!!user.keycloakEmail || featureFlags.weakLogin) && (
+                    <>
+                      <HorizontalLine />
+                      <LoginDetailsSection
+                        user={user}
+                        emailVerificationStatus={emailVerificationStatus}
+                        reloadUser={refreshAuthStatus}
+                      />
+                    </>
+                  )}
+                </>
+              ) : (
+                <Navigate replace to="/" />
+              )
           )}
         </ContentArea>
       </Container>

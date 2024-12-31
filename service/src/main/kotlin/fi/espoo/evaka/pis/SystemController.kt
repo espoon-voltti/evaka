@@ -28,10 +28,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.*
-import fi.espoo.evaka.user.getCitizenWeakLoginDetails
-import fi.espoo.evaka.user.updateLastStrongLogin
-import fi.espoo.evaka.user.updateLastWeakLogin
-import fi.espoo.evaka.user.updatePassword
+import fi.espoo.evaka.user.*
 import fi.espoo.evaka.webpush.WebPush
 import java.util.*
 import org.springframework.web.bind.annotation.*
@@ -114,8 +111,7 @@ class SystemController(
 
             dbc.transaction { tx ->
                     if (passwordService.needsRehashing(citizen.password)) {
-                        tx.updatePassword(
-                            clock = null, // avoid updating the password timestamp
+                        tx.updatePasswordWithoutTimestamp(
                             citizen.id,
                             passwordService.encode(request.password),
                         )

@@ -10,7 +10,7 @@ import { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
-import { UpdatePasswordRequest } from 'lib-common/generated/api-types/pis'
+import { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
 import { client } from '../../api-client'
 import { deserializeJsonEmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import { uri } from 'lib-common/uri'
@@ -70,23 +70,6 @@ export async function updateNotificationSettings(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.updatePassword
-*/
-export async function updatePassword(
-  request: {
-    body: UpdatePasswordRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/citizen/personal-data/password`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<UpdatePasswordRequest>
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.updatePersonalData
 */
 export async function updatePersonalData(
@@ -98,6 +81,23 @@ export async function updatePersonalData(
     url: uri`/citizen/personal-data`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PersonalDataUpdate>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.updateWeakLoginCredentials
+*/
+export async function updateWeakLoginCredentials(
+  request: {
+    body: UpdateWeakLoginCredentialsRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/personal-data/weak-login-credentials`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<UpdateWeakLoginCredentialsRequest>
   })
   return json
 }

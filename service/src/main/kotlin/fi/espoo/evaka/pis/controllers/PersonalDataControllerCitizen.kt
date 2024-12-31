@@ -24,7 +24,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
 import fi.espoo.evaka.shared.utils.PHONE_PATTERN
-import fi.espoo.evaka.user.updatePassword
+import fi.espoo.evaka.user.updateWeakLoginCredentials
 import java.security.SecureRandom
 import java.time.Duration
 import kotlin.random.asKotlinRandom
@@ -134,39 +134,49 @@ class PersonalDataControllerCitizen(
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
     }
 
-    data class UpdatePasswordRequest(val password: Sensitive<String>) {
+    data class UpdateWeakLoginCredentialsRequest(
+        val username: String?,
+        val password: Sensitive<String>?,
+    ) {
         init {
             if (
-                password.value.isEmpty() || password.value.length < 8 || password.value.length > 128
+                password != null &&
+                    (password.value.isEmpty() ||
+                        password.value.length < 8 ||
+                        password.value.length > 128)
             ) {
                 throw BadRequest("Invalid password")
             }
         }
     }
 
-    @PutMapping("/password")
-    fun updatePassword(
+    @PutMapping("/weak-login-credentials")
+    fun updateWeakLoginCredentials(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: UpdatePasswordRequest,
+        @RequestBody body: UpdateWeakLoginCredentialsRequest,
     ) {
         if (!env.newCitizenWeakLoginEnabled) throw BadRequest("New citizen weak login is disabled")
-        Audit.CitizenPasswordUpdateAttempt.log(targetId = AuditId(user.id))
-        val password = passwordService.encode(body.password)
+        Audit.CitizenCredentialsUpdateAttempt.log(targetId = AuditId(user.id))
+        val password = body.password?.let { passwordService.encode(it) }
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
                     tx,
                     user,
                     clock,
-                    Action.Citizen.Person.UPDATE_PASSWORD,
+                    Action.Citizen.Person.UPDATE_WEAK_LOGIN_CREDENTIALS,
                     user.id,
                 )
-                tx.updatePassword(clock, user.id, password)
+                val emails = tx.getPersonEmails(user.id)
+                if (body.username != null && emails.verifiedEmail != body.username) {
+                    throw BadRequest("Invalid username")
+                }
+                tx.updateWeakLoginCredentials(clock, user.id, body.username, password)
             }
         }
-        Audit.CitizenPasswordUpdate.log(targetId = AuditId(user.id))
+        Audit.CitizenCredentialsUpdate.log(targetId = AuditId(user.id))
     }
 
     data class EmailVerificationStatusResponse(
@@ -219,19 +229,19 @@ class PersonalDataControllerCitizen(
                 val emails = tx.getPersonEmails(user.id)
                 if (emails.email != null && emails.email != emails.verifiedEmail) {
                     val email = emails.email
-                    val verificationCode = generateEmailVerificationCode()
+                    val verificationCode = generateConfirmationCode()
                     val verification =
                         tx.upsertEmailVerification(
                             clock.now(),
                             EmailVerificationTarget(person = user.id, email = email),
                             NewEmailVerification(
                                 verificationCode = verificationCode,
-                                expiresAt = clock.now().plus(EMAIL_VERIFICATION_CODE_DURATION),
+                                expiresAt = clock.now().plus(CONFIRMATION_CODE_DURATION),
                             ),
                         )
                     asyncJobRunner.plan(
                         tx,
-                        sequenceOf(AsyncJob.SendEmailVerificationCodeEmail(id = verification.id)),
+                        sequenceOf(AsyncJob.SendConfirmationCodeEmail(id = verification.id)),
                         runAt = clock.now(),
                     )
                 }
@@ -260,16 +270,17 @@ class PersonalDataControllerCitizen(
                     user.id,
                 )
                 tx.verifyAndUpdateEmail(clock.now(), user.id, request.id, request.code)
+                tx.syncWeakLoginUsername(clock.now(), user.id)
             }
         }
         Audit.CitizenVerifyEmail.log(targetId = AuditId(request.id))
     }
 
-    private fun generateEmailVerificationCode(): String =
+    private fun generateConfirmationCode(): String =
         generateSequence { "0123456789".random(secureRandom.asKotlinRandom()) }
-            .take(EMAIL_VERIFICATION_CODE_LENGTH)
+            .take(CONFIRMATION_CODE_LENGTH)
             .joinToString(separator = "")
 }
 
-val EMAIL_VERIFICATION_CODE_DURATION: Duration = Duration.ofHours(2)
-const val EMAIL_VERIFICATION_CODE_LENGTH = 8
+val CONFIRMATION_CODE_DURATION: Duration = Duration.ofHours(2)
+const val CONFIRMATION_CODE_LENGTH = 8

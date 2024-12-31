@@ -703,10 +703,11 @@ export interface TemporaryEmployee {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.UpdatePasswordRequest
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest
 */
-export interface UpdatePasswordRequest {
-  password: string
+export interface UpdateWeakLoginCredentialsRequest {
+  password: string | null
+  username: string | null
 }
 
 /**
