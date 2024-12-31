@@ -278,6 +278,18 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
         label={i18n.incomeStatement.startOfEntrepreneurship}
         value={entrepreneur.startOfEntrepreneurship.format()}
       />
+      {entrepreneur.companyName !== '' && (
+        <Row
+          label={i18n.incomeStatement.companyName}
+          value={entrepreneur.companyName}
+        />
+      )}
+      {entrepreneur.businessId !== '' && (
+        <Row
+          label={i18n.incomeStatement.businessId}
+          value={entrepreneur.businessId}
+        />
+      )}
       <Row
         label={i18n.incomeStatement.spouseWorksInCompany}
         value={yesno(entrepreneur.spouseWorksInCompany)}

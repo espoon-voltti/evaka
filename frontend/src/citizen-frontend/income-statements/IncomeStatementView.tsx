@@ -216,6 +216,15 @@ const EntrepreneurIncome = React.memo(function EntrepreneurIncome({
         label={t.income.view.startOfEntrepreneurship}
         value={entrepreneur.startOfEntrepreneurship.format()}
       />
+      {entrepreneur.companyName !== '' && (
+        <Row
+          label={t.income.view.companyName}
+          value={entrepreneur.companyName}
+        />
+      )}
+      {entrepreneur.businessId !== '' && (
+        <Row label={t.income.view.businessId} value={entrepreneur.businessId} />
+      )}
       <Row
         label={t.income.view.spouseWorksInCompany}
         value={t.common.yesno(entrepreneur.spouseWorksInCompany)}
