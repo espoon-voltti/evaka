@@ -14,20 +14,13 @@ import Title from 'lib-components/atoms/Title'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import { TableScrollable } from './common'
 import { resetVardaChildMutation, vardaChildErrorsQuery } from './queries'
-
-const FlatList = styled.ul`
-  list-style: none;
-  padding-left: 0;
-  margin-top: 0;
-`
 
 export default React.memo(function VardaChildErrors() {
   const { i18n } = useTranslation()
@@ -44,7 +37,7 @@ export default React.memo(function VardaChildErrors() {
         <Gap size="xxs" />
         {renderResult(vardaErrorsResult, (rows) => (
           <>
-            <TableScrollable data-qa="varda-errors-table">
+            <Table data-qa="varda-errors-table">
               <Thead>
                 <Tr>
                   <Th>{i18n.reports.vardaChildErrors.age}</Th>
@@ -99,13 +92,19 @@ export default React.memo(function VardaChildErrors() {
                   </Tr>
                 ))}
               </Tbody>
-            </TableScrollable>
+            </Table>
           </>
         ))}
       </ContentArea>
     </Container>
   )
 })
+
+const FlatList = styled.ul`
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+`
 
 const BreakAll = styled.span`
   word-break: break-all;
