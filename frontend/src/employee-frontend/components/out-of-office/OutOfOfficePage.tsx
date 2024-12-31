@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Result } from 'lib-common/api'
+import { OutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
 import { useQueryResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -21,9 +22,27 @@ import { outOfOfficePeriodsQuery } from './queries'
 export default React.memo(function OutOfOfficePage() {
   const { i18n } = useTranslation()
   const [isEditing, setIsEditing] = useState(false)
+  const [selectedPeriod, setSelectedPeriod] =
+    useState<OutOfOfficePeriod | null>(null)
 
   const getPeriodsResult = useQueryResult(outOfOfficePeriodsQuery())
   const periods = getPeriodsResult.getOrElse([])
+
+  const startEdit = useMemo(
+    () => (period: OutOfOfficePeriod) => {
+      setSelectedPeriod(period)
+      setIsEditing(true)
+    },
+    []
+  )
+
+  const onCloseEditor = useMemo(
+    () => () => {
+      setSelectedPeriod(null)
+      setIsEditing(false)
+    },
+    []
+  )
 
   return (
     <Container>
@@ -33,7 +52,7 @@ export default React.memo(function OutOfOfficePage() {
         <Gap size="m" />
         <Label>{i18n.outOfOffice.header}</Label>
         <Gap size="s" />
-        {periods.length > 0 ? (
+        {!selectedPeriod && periods.length > 0 ? (
           <PeriodListContainer>
             {periods.map((period) => (
               <li key={period.id}>
@@ -43,6 +62,7 @@ export default React.memo(function OutOfOfficePage() {
                     text={i18n.common.edit}
                     appearance="inline"
                     icon={faPen}
+                    onClick={() => startEdit(period)}
                   />
                   <AsyncButton
                     text={i18n.common.remove}
@@ -59,9 +79,14 @@ export default React.memo(function OutOfOfficePage() {
               </li>
             ))}
           </PeriodListContainer>
-        ) : isEditing ? (
-          <OutOfOfficeEditor onClose={() => setIsEditing(false)} />
-        ) : (
+        ) : null}
+        {isEditing ? (
+          <OutOfOfficeEditor
+            onClose={onCloseEditor}
+            editedPeriod={selectedPeriod}
+          />
+        ) : null}
+        {periods.length === 0 && !isEditing ? (
           <Fragment>
             <div>{i18n.outOfOffice.noFutureOutOfOffice}</div>
             <Gap size="m" />
@@ -71,7 +96,7 @@ export default React.memo(function OutOfOfficePage() {
               onClick={() => setIsEditing(true)}
             />
           </Fragment>
-        )}
+        ) : null}
       </ContentArea>
     </Container>
   )
