@@ -9,11 +9,13 @@ import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.upsertStaffAttendance
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -266,18 +268,21 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 }
 
 fun Database.Transaction.insertRealtimeStaffAttendanceTestData(): List<EmployeeId> {
+    val now = HelsinkiDateTime.of(LocalDate.of(2023, 11, 1), LocalTime.of(16, 1))
     val areaId = insert(DevCareArea())
     val dayCareId = insert(DevDaycare(areaId = areaId))
     val groupId = insert(DevDaycareGroup(daycareId = dayCareId))
-    val employee1 = createEmployee(testEmployee)
-    val employee2 = createEmployee(testEmployee)
-    listOf(Pair(1, employee1.id), Pair(6, employee2.id), Pair(10, employee1.id)).forEach {
+    val employee1 = DevEmployee().also { insert(it) }
+    val employee2 = DevEmployee().also { insert(it) }
+    listOf(Pair(1, employee1), Pair(6, employee2), Pair(10, employee1)).forEach {
         addAttendance(
-            it.second,
+            it.second.id,
             groupId,
             LocalDate.of(2023, 11, it.first),
             LocalTime.of(8, 0),
             LocalTime.of(16, 0),
+            now,
+            it.second.evakaUserId,
         )
     }
     return listOf(employee1.id, employee2.id)
@@ -289,6 +294,8 @@ fun Database.Transaction.addAttendance(
     date: LocalDate,
     arrival: LocalTime,
     departure: LocalTime,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ) {
     upsertStaffAttendance(
         null,
@@ -298,6 +305,8 @@ fun Database.Transaction.addAttendance(
         HelsinkiDateTime.of(date, departure),
         BigDecimal(1.0),
         StaffAttendanceType.PRESENT,
+        modifiedAt = modifiedAt,
+        modifiedBy = modifiedBy,
     )
 }
 

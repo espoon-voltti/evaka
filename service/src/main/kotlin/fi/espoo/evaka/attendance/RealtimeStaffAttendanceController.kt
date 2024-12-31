@@ -103,6 +103,14 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.occupancyCoefficient,
                                                 att.type,
                                                 att.departedAutomatically,
+                                                att.arrivedAddedAt,
+                                                att.arrivedAddedBy,
+                                                att.arrivedModifiedAt,
+                                                att.arrivedModifiedBy,
+                                                att.departedAddedAt,
+                                                att.departedAddedBy,
+                                                att.departedModifiedAt,
+                                                att.departedModifiedBy,
                                             )
                                         },
                                 plannedAttendances = plannedAttendances[employeeId] ?: emptyList(),
@@ -130,6 +138,14 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.occupancyCoefficient,
                                                 att.type,
                                                 att.departedAutomatically,
+                                                att.arrivedAddedAt,
+                                                att.arrivedAddedBy,
+                                                att.arrivedModifiedAt,
+                                                att.arrivedModifiedBy,
+                                                att.departedAddedAt,
+                                                att.departedAddedBy,
+                                                att.departedModifiedAt,
+                                                att.departedModifiedBy,
                                             )
                                         },
                                     plannedAttendances = plannedAttendances[emp.id] ?: emptyList(),
@@ -227,6 +243,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             occupancyCoefficient,
                             entry.type,
                             false,
+                            clock.now(),
+                            user.evakaUserId,
                         )
                     }
                 }

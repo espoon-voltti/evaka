@@ -123,11 +123,31 @@ SELECT
     emp.first_name,
     emp.last_name,
     soc.coefficient AS currentOccupancyCoefficient,
-    sa.departed_automatically
+    sa.departed_automatically,
+    sa.arrived_added_at,
+    arrived_added_by.id AS arrived_added_by_id,
+    arrived_added_by.name AS arrived_added_by_name,
+    arrived_added_by.type AS arrived_added_by_type,
+    sa.arrived_modified_at,
+    arrived_modified_by.id AS arrived_modified_by_id,
+    arrived_modified_by.name AS arrived_modified_by_name,
+    arrived_modified_by.type AS arrived_modified_by_type,
+    sa.departed_added_at,
+    departed_added_by.id AS departed_added_by_id,
+    departed_added_by.name AS departed_added_by_name,
+    departed_added_by.type AS departed_added_by_type,
+    sa.departed_modified_at,
+    departed_modified_by.id AS departed_modified_by_id,
+    departed_modified_by.name AS departed_modified_by_name,
+    departed_modified_by.type AS departed_modified_by_type
 FROM staff_attendance_realtime sa
 LEFT JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
 LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND soc.employee_id = emp.id
+LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sa.arrived_added_by
+LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sa.arrived_modified_by
+LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_added_by
+LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
 WHERE ${predicate(employeeIdFilter.forTable("sa"))}
 AND ${predicate(daterangeFilter.forTable("sa"))}
         """

@@ -179,7 +179,14 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 mapOf(testDaycare.id to UserRole.STAFF),
                 mapOf(testDaycare.id to listOf(groupId)),
             )
-            tx.markStaffArrival(employee1.id, groupId, now.minusDays(1), BigDecimal(7.0))
+            tx.markStaffArrival(
+                employee1.id,
+                groupId,
+                now.minusDays(1),
+                BigDecimal(7.0),
+                now,
+                mobileUser.evakaUserId,
+            )
 
             val employee2 = DevEmployee(firstName = "Two", lastName = "in group 1")
             tx.insert(
@@ -187,7 +194,14 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 mapOf(testDaycare.id to UserRole.STAFF),
                 mapOf(testDaycare.id to listOf(groupId)),
             )
-            tx.markStaffArrival(employee2.id, groupId, now.minusDays(1), BigDecimal(7.0))
+            tx.markStaffArrival(
+                employee2.id,
+                groupId,
+                now.minusDays(1),
+                BigDecimal(7.0),
+                now,
+                mobileUser.evakaUserId,
+            )
 
             val employee3 = DevEmployee(firstName = "Three", lastName = "in group 2")
             tx.insert(
@@ -195,7 +209,14 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 mapOf(testDaycare.id to UserRole.STAFF),
                 mapOf(testDaycare.id to listOf(groupId2)),
             )
-            tx.markStaffArrival(employee3.id, groupId2, now.minusDays(1), BigDecimal(7.0))
+            tx.markStaffArrival(
+                employee3.id,
+                groupId2,
+                now.minusDays(1),
+                BigDecimal(7.0),
+                now,
+                mobileUser.evakaUserId,
+            )
         }
     }
 
