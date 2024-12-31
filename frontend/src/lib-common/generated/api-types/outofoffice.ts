@@ -16,8 +16,24 @@ export interface OutOfOfficePeriod {
   period: FiniteDateRange
 }
 
+/**
+* Generated from fi.espoo.evaka.outofoffice.OutOfOfficePeriodUpsert
+*/
+export interface OutOfOfficePeriodUpsert {
+  id: OutOfOfficeId | null
+  period: FiniteDateRange
+}
+
 
 export function deserializeJsonOutOfOfficePeriod(json: JsonOf<OutOfOfficePeriod>): OutOfOfficePeriod {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period)
+  }
+}
+
+
+export function deserializeJsonOutOfOfficePeriodUpsert(json: JsonOf<OutOfOfficePeriodUpsert>): OutOfOfficePeriodUpsert {
   return {
     ...json,
     period: FiniteDateRange.parseJson(json.period)
