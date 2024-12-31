@@ -33,15 +33,16 @@ import {
 
 export default React.memo(function FeeDecisionsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
-  const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<FeeDecisionSortParam>('HEAD_OF_FAMILY')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
 
   const {
-    feeDecisions: { searchFilters, debouncedSearchTerms }
+    feeDecisions: { confirmedSearchFilters: searchFilters, page }
   } = useContext(InvoicingUiContext)
 
   const searchParams: SearchFeeDecisionRequest | undefined = useMemo(() => {
+    if (searchFilters === undefined) return undefined
+
     const { startDate, endDate } = searchFilters
     if (startDate && endDate && startDate.isAfter(endDate)) {
       return undefined
@@ -55,14 +56,14 @@ export default React.memo(function FeeDecisionsPage() {
       area: searchFilters.area,
       unit: searchFilters.unit ?? null,
       distinctions: searchFilters.distinctiveDetails,
-      searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
+      searchTerms: searchFilters.searchTerms ? searchFilters.searchTerms : null,
       startDate: startDate ?? null,
       endDate: endDate ?? null,
       searchByStartDate: searchFilters.searchByStartDate,
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId ?? null,
       difference: searchFilters.difference
     }
-  }, [page, sortBy, sortDirection, searchFilters, debouncedSearchTerms])
+  }, [page, sortBy, sortDirection, searchFilters])
 
   const searchResult = useQueryResult(
     searchParams
@@ -109,7 +110,8 @@ export default React.memo(function FeeDecisionsPage() {
         <FeeDecisionFilters />
       </ContentArea>
       <Gap size="XL" />
-      {searchParams &&
+      {searchFilters &&
+        searchParams &&
         renderResult(searchResult, (result) => (
           <>
             <ContentArea opaque>
@@ -117,8 +119,6 @@ export default React.memo(function FeeDecisionsPage() {
                 decisions={result.data}
                 total={result.total}
                 pages={result.pages}
-                currentPage={page}
-                setPage={setPage}
                 sortBy={sortBy}
                 setSortBy={setSortBy}
                 sortDirection={sortDirection}
