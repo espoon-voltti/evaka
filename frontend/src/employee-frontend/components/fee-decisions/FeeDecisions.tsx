@@ -1,11 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import {
   FeeDecisionSortParam,
   FeeDecisionSummary,
@@ -14,7 +13,6 @@ import {
 import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
@@ -52,9 +50,9 @@ const SectionTitle = styled(Title)`
 `
 
 interface Props {
-  decisions?: Result<FeeDecisionSummary[]>
-  total?: number
-  pages?: number
+  decisions: FeeDecisionSummary[]
+  total: number
+  pages: number
   currentPage: number
   setPage: (page: number) => void
   sortBy: FeeDecisionSortParam
@@ -87,9 +85,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
   const { i18n } = useTranslation()
 
   const allChecked =
-    decisions
-      ?.map((ds) => ds.length > 0 && ds.every((it) => isChecked(it.id)))
-      .getOrElse(false) ?? false
+    decisions.length > 0 && decisions.every((it) => isChecked(it.id))
 
   const isSorted = (column: FeeDecisionSortParam) =>
     sortBy === column ? sortDirection : undefined
@@ -103,73 +99,69 @@ const FeeDecisions = React.memo(function FeeDecisions({
     }
   }
 
-  const rows = decisions?.isSuccess
-    ? decisions.value.map((item) => (
-        <Tr
-          key={item.id}
-          onClick={
-            item.annullingDecision
-              ? undefined
-              : () =>
-                  window.open(
-                    `${getEmployeeUrlPrefix()}/employee/finance/fee-decisions/${
-                      item.id
-                    }`,
-                    '_blank'
-                  )
-          }
-          data-qa="table-fee-decision-row"
-        >
-          <Td>
-            <NameWithSsn {...item.headOfFamily} i18n={i18n} />
-          </Td>
-          <Td>
-            <ChildrenCell people={item.children} />
-          </Td>
-          <Td>
-            {item.annullingDecision
-              ? `${i18n.feeDecisions.table.annullingDecision} `
-              : ''}
-            {item.validDuring.format()}
-          </Td>
-          <Td>{formatCents(item.finalPrice)}</Td>
-          <Td>{item.decisionNumber}</Td>
-          <Td>{item.created.toLocalDate().format()}</Td>
-          <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
-          <Td>
-            <FeeDecisionDifferenceIcons difference={item.difference} />
-          </Td>
-          <Td>{i18n.feeDecision.status[item.status]}</Td>
-          {showCheckboxes ? (
-            <Td onClick={(e) => e.stopPropagation()}>
-              <Checkbox
-                label={item.id}
-                hiddenLabel
-                checked={isChecked(item.id)}
-                onChange={() => toggleChecked(item.id)}
-                data-qa="toggle-decision"
-              />
-            </Td>
-          ) : null}
-        </Tr>
-      ))
-    : null
+  const rows = decisions.map((item) => (
+    <Tr
+      key={item.id}
+      onClick={
+        item.annullingDecision
+          ? undefined
+          : () =>
+              window.open(
+                `${getEmployeeUrlPrefix()}/employee/finance/fee-decisions/${
+                  item.id
+                }`,
+                '_blank'
+              )
+      }
+      data-qa="table-fee-decision-row"
+    >
+      <Td>
+        <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+      </Td>
+      <Td>
+        <ChildrenCell people={item.children} />
+      </Td>
+      <Td>
+        {item.annullingDecision
+          ? `${i18n.feeDecisions.table.annullingDecision} `
+          : ''}
+        {item.validDuring.format()}
+      </Td>
+      <Td>{formatCents(item.finalPrice)}</Td>
+      <Td>{item.decisionNumber}</Td>
+      <Td>{item.created.toLocalDate().format()}</Td>
+      <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
+      <Td>
+        <FeeDecisionDifferenceIcons difference={item.difference} />
+      </Td>
+      <Td>{i18n.feeDecision.status[item.status]}</Td>
+      {showCheckboxes ? (
+        <Td onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            label={item.id}
+            hiddenLabel
+            checked={isChecked(item.id)}
+            onChange={() => toggleChecked(item.id)}
+            data-qa="toggle-decision"
+          />
+        </Td>
+      ) : null}
+    </Tr>
+  ))
 
   return (
     <div className="fee-decisions">
       <TitleRowContainer>
         <SectionTitle size={1}>{i18n.feeDecisions.table.title}</SectionTitle>
-        {decisions?.isSuccess && (
-          <ResultsContainer>
-            <div>{total ? i18n.common.resultCount(total) : null}</div>
-            <Pagination
-              pages={pages}
-              currentPage={currentPage}
-              setPage={setPage}
-              label={i18n.common.page}
-            />
-          </ResultsContainer>
-        )}
+        <ResultsContainer>
+          <div>{total ? i18n.common.resultCount(total) : null}</div>
+          <Pagination
+            pages={pages}
+            currentPage={currentPage}
+            setPage={setPage}
+            label={i18n.common.page}
+          />
+        </ResultsContainer>
       </TitleRowContainer>
       <Table data-qa="table-of-decisions">
         <Thead>
@@ -222,7 +214,6 @@ const FeeDecisions = React.memo(function FeeDecisions({
                   hiddenLabel
                   checked={allChecked}
                   onChange={allChecked ? clearChecked : checkAll}
-                  disabled={decisions?.isSuccess !== true}
                   data-qa="toggle-all-decisions"
                 />
               </Td>
@@ -231,18 +222,14 @@ const FeeDecisions = React.memo(function FeeDecisions({
         </Thead>
         <Tbody>{rows}</Tbody>
       </Table>
-      {decisions?.isSuccess && (
-        <ResultsContainer>
-          <Pagination
-            pages={pages}
-            currentPage={currentPage}
-            setPage={setPage}
-            label={i18n.common.page}
-          />
-        </ResultsContainer>
-      )}
-      {decisions?.isLoading && <Loader />}
-      {decisions?.isFailure && <div>{i18n.common.error.unknown}</div>}
+      <ResultsContainer>
+        <Pagination
+          pages={pages}
+          currentPage={currentPage}
+          setPage={setPage}
+          label={i18n.common.page}
+        />
+      </ResultsContainer>
     </div>
   )
 })
