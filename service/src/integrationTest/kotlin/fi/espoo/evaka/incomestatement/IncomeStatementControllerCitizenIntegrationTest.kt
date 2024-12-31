@@ -106,6 +106,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     Entrepreneur(
                         fullTime = true,
                         startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                        companyName = "Acme Inc",
+                        businessId = "1234567-8",
                         spouseWorksInCompany = false,
                         startupGrant = true,
                         checkupConsent = true,
@@ -158,6 +160,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                         Entrepreneur(
                             fullTime = true,
                             startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                            companyName = "Acme Inc",
+                            businessId = "1234567-8",
                             spouseWorksInCompany = false,
                             startupGrant = true,
                             checkupConsent = true,
@@ -300,6 +304,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                         Entrepreneur(
                             fullTime = true,
                             startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                            companyName = "Acme Inc",
+                            businessId = "1234567-8",
                             spouseWorksInCompany = true,
                             startupGrant = true,
                             checkupConsent = true,
@@ -332,6 +338,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                         Entrepreneur(
                             fullTime = true,
                             startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                            companyName = "Acme Inc",
+                            businessId = "1234567-8",
                             spouseWorksInCompany = true,
                             startupGrant = true,
                             checkupConsent = true,
@@ -359,6 +367,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                         Entrepreneur(
                             fullTime = true,
                             startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                            companyName = "Acme Inc",
+                            businessId = "1234567-8",
                             spouseWorksInCompany = true,
                             startupGrant = true,
                             checkupConsent = true,
@@ -548,6 +558,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     Entrepreneur(
                         fullTime = true,
                         startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                        companyName = "Acme Inc",
+                        businessId = "1234567-8",
                         spouseWorksInCompany = false,
                         startupGrant = true,
                         checkupConsent = true,
@@ -593,6 +605,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     Entrepreneur(
                         fullTime = false,
                         startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
+                        companyName = "Acme Inc",
+                        businessId = "1234567-8",
                         spouseWorksInCompany = true,
                         startupGrant = false,
                         checkupConsent = false,
@@ -632,6 +646,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     Entrepreneur(
                         fullTime = false,
                         startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
+                        companyName = "Acme Inc",
+                        businessId = "1234567-8",
                         spouseWorksInCompany = true,
                         startupGrant = false,
                         checkupConsent = false,
@@ -795,6 +811,8 @@ WHERE id = ${bind(id)}
                     Entrepreneur(
                         fullTime = true,
                         startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                        companyName = "Acme Inc",
+                        businessId = "1234567-8",
                         spouseWorksInCompany = false,
                         startupGrant = true,
                         checkupConsent = true,

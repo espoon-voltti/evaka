@@ -48,7 +48,9 @@ export interface ChildBasicInfo {
 */
 export interface Entrepreneur {
   accountant: Accountant | null
+  businessId: string
   checkupConsent: boolean
+  companyName: string
   fullTime: boolean
   lightEntrepreneur: boolean
   limitedCompany: LimitedCompany | null

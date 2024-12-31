@@ -78,6 +78,8 @@ data class Accountant(val name: String, val address: String, val phone: String, 
 data class Entrepreneur(
     val fullTime: Boolean,
     val startOfEntrepreneurship: LocalDate,
+    val companyName: String,
+    val businessId: String,
     val spouseWorksInCompany: Boolean,
     val startupGrant: Boolean,
     val checkupConsent: Boolean,

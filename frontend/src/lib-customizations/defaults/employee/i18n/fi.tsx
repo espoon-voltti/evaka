@@ -2032,6 +2032,8 @@ export const fi = {
     fullTime: 'Päätoimista',
     partTime: 'Sivutoimista',
     startOfEntrepreneurship: 'Yrittäjyys alkanut',
+    companyName: 'Yrityksen / yritysten nimi',
+    businessId: 'Y-tunnus / Y-tunnukset',
     spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä',
     startupGrant: 'Starttiraha',
     companyInfoTitle: 'Yrityksen tiedot',
