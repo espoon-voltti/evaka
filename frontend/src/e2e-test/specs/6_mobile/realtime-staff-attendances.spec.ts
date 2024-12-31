@@ -29,6 +29,7 @@ import {
   DevEmployee,
   StaffAttendancePlanId
 } from '../../generated/api-types'
+import { UnitPage } from '../../pages/employee/units/unit'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import {
   StaffAttendanceEditPage,
@@ -36,6 +37,7 @@ import {
 } from '../../pages/mobile/staff-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
+import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let nav: MobileNav
@@ -125,7 +127,8 @@ const initPages = async (
 
 describe('Realtime staff attendance page', () => {
   test('Staff member can be marked as arrived and departed', async () => {
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0))
+    const date = LocalDate.of(2022, 5, 5)
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(6, 0)))
     const arrivalTime = '05:59'
     const departureTime = '12:45'
 
@@ -145,7 +148,7 @@ describe('Realtime staff attendance page', () => {
       `Paikalla ${arrivalTime}–`
     ])
 
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 13, 30))
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(13, 30)))
     await staffAttendancePage.assertPresentStaffCount(1)
 
     await staffAttendancePage.selectTab('present')
@@ -158,6 +161,33 @@ describe('Realtime staff attendance page', () => {
     ])
     await staffAttendancePage.goBackFromMemberPage()
     await staffAttendancePage.assertPresentStaffCount(0)
+
+    const desktopPage = await Page.open({
+      mockedTime: HelsinkiDateTime.fromLocal(date, LocalTime.of(13, 30))
+    })
+    await employeeLogin(desktopPage, staffFixture)
+    const unitPage = new UnitPage(desktopPage)
+    await unitPage.navigateToUnit(testDaycare2.id)
+    const calendarPage = await unitPage.openCalendarPage()
+    await calendarPage.selectGroup(testDaycareGroup.id)
+    const staffAttendances = calendarPage.staffAttendances
+
+    await staffAttendances.assertTableRow({
+      rowIx: 0,
+      nth: date.getIsoDayOfWeek() - 1,
+      name: `${staffFixture.lastName} ${staffFixture.firstName}`,
+      attendances: [[arrivalTime, departureTime]]
+    })
+    await staffAttendances.assertArrivalTimeTooltip(
+      0,
+      date,
+      'Merkintä luotu 05.05.2022 06:00, testMobileDevice'
+    )
+    await staffAttendances.assertDepartureTimeTooltip(
+      0,
+      date,
+      'Merkintä luotu 05.05.2022 13:30, testMobileDevice'
+    )
   })
 
   test('Occupancy effect can not be unchecked on arrival if it has been given permanently but can be edited', async () => {

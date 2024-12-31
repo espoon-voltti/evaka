@@ -1001,6 +1001,8 @@ export class Fixture {
       occupancyCoefficient: 7,
       type: 'PRESENT',
       departedAutomatically: false,
+      modifiedAt: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser.id,
       ...initial
     })
   }

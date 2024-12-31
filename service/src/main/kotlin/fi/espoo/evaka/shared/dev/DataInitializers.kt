@@ -868,8 +868,25 @@ fun Database.Transaction.insert(row: DevStaffAttendance): StaffAttendanceRealtim
     createUpdate {
             sql(
                 """
-INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically)
-VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.groupId)}, ${bind(row.arrived)}, ${bind(row.departed)}, ${bind(row.occupancyCoefficient)}, ${bind(row.type)}, ${bind(row.departedAutomatically)})
+INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by, departed_added_at, departed_added_by, departed_modified_at, departed_modified_by)
+VALUES (
+    ${bind(row.id)},
+    ${bind(row.employeeId)},
+    ${bind(row.groupId)},
+    ${bind(row.arrived)},
+    ${bind(row.departed)},
+    ${bind(row.occupancyCoefficient)},
+    ${bind(row.type)},
+    ${bind(row.departedAutomatically)},
+    ${bind(row.modifiedAt)},
+    ${bind(row.modifiedBy)},
+    ${bind(row.modifiedAt)},
+    ${bind(row.modifiedBy)},
+    ${bind(row.modifiedAt.takeIf { row.departed != null })},
+    ${bind(row.modifiedBy.takeIf { row.departed != null })},
+    ${bind(row.modifiedAt.takeIf { row.departed != null })},
+    ${bind(row.modifiedBy.takeIf { row.departed != null })}
+)
 RETURNING id
 """
             )

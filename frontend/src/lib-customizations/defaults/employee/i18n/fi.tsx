@@ -2675,6 +2675,8 @@ export const fi = {
         namePlaceholder: 'Sukunimi Etunimi',
         group: 'Ryhmä'
       },
+      addedAt: 'Merkintä luotu',
+      modifiedAt: 'Muokattu',
       departedAutomatically: 'Automaattikatkaistu',
       hasStaffOccupancyEffect: 'Kasvatusvastuullinen'
     },
