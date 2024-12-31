@@ -4120,18 +4120,12 @@ export const fi = {
     },
     vardaChildErrors: {
       title: 'Varda-lapsivirheet',
-      vardaUpdateButton: 'Aloita päivitys',
-      vardaResetButton: 'Aloita uudelleenvienti',
       description: 'Varda-lasten päivityksissä tapahtuneet virheet',
       updated: 'Päivitetty viimeksi',
       age: 'Ikä (päivää)',
       child: 'Lapsi',
-      serviceNeed: 'Palveluntarve',
       error: 'Virhe',
-      childLastReset: 'Uudelleenviety viimeksi',
-      childMarkedForRest: 'Lapsen tiedot nollataan seuraavalla ajolla',
-      resetChild: 'Uudelleenvie',
-      updating: 'Päivittää'
+      updateChild: 'Uudelleenvie'
     },
     vardaUnitErrors: {
       title: 'Varda-yksikkövirheet',

@@ -43,14 +43,13 @@ export default React.memo(function VardaChildErrors() {
                   <Th>{i18n.reports.vardaChildErrors.age}</Th>
                   <Th>{i18n.reports.vardaChildErrors.child}</Th>
                   <Th>{i18n.reports.vardaChildErrors.error}</Th>
-                  <Th>{i18n.reports.vardaChildErrors.serviceNeed}</Th>
                   <Th>{i18n.reports.vardaChildErrors.updated}</Th>
-                  <Th>{i18n.reports.vardaChildErrors.childLastReset}</Th>
+                  <Th />
                 </Tr>
               </Thead>
               <Tbody>
                 {rows.map((row: VardaChildErrorReportRow) => (
-                  <Tr data-qa="varda-error-row" key={row.serviceNeedId}>
+                  <Tr data-qa="varda-error-row" key={row.childId}>
                     <Td data-qa={`age-${row.childId}`}>
                       {ageInDays(row.created)}
                     </Td>
@@ -61,33 +60,19 @@ export default React.memo(function VardaChildErrors() {
                     </Td>
 
                     <Td data-qa={`errors-${row.childId}`}>
-                      <BreakAll>{row.errors.join('\n')}</BreakAll>
-                    </Td>
-                    <Td>
-                      <FlatList>
-                        <li>{row.serviceNeedOptionName}</li>
-                        <li>{row.serviceNeedValidity?.format()}</li>
-                        <li>{row.serviceNeedId}</li>
-                      </FlatList>
+                      <BreakAll>{row.error}</BreakAll>
                     </Td>
                     <Td data-qa={`updated-${row.childId}`}>
                       {row.updated.format()}
                     </Td>
                     <Td data-qa={`last-reset-${row.childId}`}>
-                      <>
-                        <span>
-                          {row.resetTimeStamp
-                            ? row.resetTimeStamp.format()
-                            : ''}
-                        </span>
-                        <MutateButton
-                          primary
-                          text={i18n.reports.vardaChildErrors.resetChild}
-                          mutation={resetVardaChildMutation}
-                          onClick={() => ({ childId: row.childId })}
-                          data-qa={`reset-button-${row.childId}`}
-                        />
-                      </>
+                      <MutateButton
+                        primary
+                        text={i18n.reports.vardaChildErrors.updateChild}
+                        mutation={resetVardaChildMutation}
+                        onClick={() => ({ childId: row.childId })}
+                        data-qa={`reset-button-${row.childId}`}
+                      />
                     </Td>
                   </Tr>
                 ))}
@@ -99,12 +84,6 @@ export default React.memo(function VardaChildErrors() {
     </Container>
   )
 })
-
-const FlatList = styled.ul`
-  list-style: none;
-  padding-left: 0;
-  margin-top: 0;
-`
 
 const BreakAll = styled.span`
   word-break: break-all;

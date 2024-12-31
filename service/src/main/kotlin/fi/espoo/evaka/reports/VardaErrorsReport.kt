@@ -7,11 +7,9 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -68,14 +66,10 @@ private fun Database.Read.getVardaChildErrors(): List<VardaChildErrorReportRow> 
             sql(
                 """
 SELECT
-    NULL AS service_need_id,
-    NULL AS service_need_validity,
-    NULL AS service_need_option_name,
     child_id,
     errored_at AS updated,
     coalesce(last_success_at, created_at) AS created,
-    ARRAY[error] AS errors,
-    NULL AS reset_timestamp
+    error
 FROM varda_state
 WHERE errored_at IS NOT NULL
 ORDER BY updated DESC
@@ -85,14 +79,10 @@ ORDER BY updated DESC
         .toList<VardaChildErrorReportRow>()
 
 data class VardaChildErrorReportRow(
-    val serviceNeedId: ServiceNeedId?,
-    val serviceNeedValidity: FiniteDateRange?,
-    val serviceNeedOptionName: String?,
     val childId: ChildId,
     val updated: HelsinkiDateTime,
     val created: HelsinkiDateTime,
-    val errors: List<String>,
-    val resetTimeStamp: HelsinkiDateTime?,
+    val error: String,
 )
 
 private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> =

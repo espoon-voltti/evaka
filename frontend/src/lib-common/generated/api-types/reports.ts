@@ -29,7 +29,6 @@ import { PlacementId } from './shared'
 import { PlacementType } from './placement'
 import { PreschoolAssistanceLevel } from './assistance'
 import { ProviderType } from './daycare'
-import { ServiceNeedId } from './shared'
 import { ServiceNeedOption } from './application'
 import { TitaniaErrorsId } from './shared'
 import { UUID } from '../../types'
@@ -1042,11 +1041,7 @@ export interface UnitsReportRow {
 export interface VardaChildErrorReportRow {
   childId: PersonId
   created: HelsinkiDateTime
-  errors: string[]
-  resetTimeStamp: HelsinkiDateTime | null
-  serviceNeedId: ServiceNeedId | null
-  serviceNeedOptionName: string | null
-  serviceNeedValidity: FiniteDateRange | null
+  error: string
   updated: HelsinkiDateTime
 }
 
@@ -1322,8 +1317,6 @@ export function deserializeJsonVardaChildErrorReportRow(json: JsonOf<VardaChildE
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
-    resetTimeStamp: (json.resetTimeStamp != null) ? HelsinkiDateTime.parseIso(json.resetTimeStamp) : null,
-    serviceNeedValidity: (json.serviceNeedValidity != null) ? FiniteDateRange.parseJson(json.serviceNeedValidity) : null,
     updated: HelsinkiDateTime.parseIso(json.updated)
   }
 }

@@ -8,7 +8,7 @@ import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { waitUntilEqual } from '../../utils'
 import {
   Checkbox,
   Combobox,
@@ -74,11 +74,6 @@ export default class ReportsPage {
   async openHolidayPeriodAttendanceReport() {
     await this.page.findByDataQa('report-holiday-period-attendance').click()
     return new HolidayPeriodAttendanceReport(this.page)
-  }
-
-  async openVardaErrorsReport() {
-    await this.page.findByDataQa('report-varda-child-errors').click()
-    return new VardaErrorsReport(this.page)
   }
 
   async openStartingPlacementsReport() {
@@ -415,35 +410,6 @@ export class ManualDuplicationReport {
           .assertTextEquals(data.preschoolUnitName)
       })
     )
-  }
-}
-
-export class VardaErrorsReport {
-  #errorsTable: Element
-  #errorRows: ElementCollection
-
-  constructor(private page: Page) {
-    this.#errorsTable = page.findByDataQa('varda-errors-table')
-    this.#errorRows = page.findAll('[data-qa="varda-error-row"]')
-  }
-
-  #errors = (childId: string) => this.page.findByDataQa(`errors-${childId}`)
-  #resetChild = (childId: string) =>
-    this.page.findByDataQa(`reset-button-${childId}`)
-
-  async assertErrorsContains(childId: string, expected: string) {
-    await waitUntilTrue(async () =>
-      ((await this.#errors(childId).text) || '').includes(expected)
-    )
-  }
-
-  async resetChild(childId: string) {
-    await this.#resetChild(childId).click()
-  }
-
-  async assertErrorRowCount(expected: number) {
-    await waitUntilTrue(() => this.#errorsTable.visible)
-    await waitUntilEqual(() => this.#errorRows.count(), expected)
   }
 }
 
