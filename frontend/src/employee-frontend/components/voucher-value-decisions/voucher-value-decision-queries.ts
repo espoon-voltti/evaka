@@ -4,10 +4,15 @@
 
 import { Queries } from 'lib-common/query'
 
+import { ignoreVoucherValueDecisionDrafts } from '../../generated/api-clients/invoicing'
 import { getVoucherValueDecisionMetadata } from '../../generated/api-clients/process'
 
 const q = new Queries()
 
 export const voucherValueDecisionMetadataQuery = q.query(
   getVoucherValueDecisionMetadata
+)
+
+export const ignoreVoucherValueDecisionDraftsMutation = q.mutation(
+  ignoreVoucherValueDecisionDrafts
 )

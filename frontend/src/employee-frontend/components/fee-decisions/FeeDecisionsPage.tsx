@@ -1,78 +1,53 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import { Result, wrapResult } from 'lib-common/api'
 import {
   FeeDecisionSortParam,
-  FeeDecisionSummary,
-  PagedFeeDecisionSummaries,
   SearchFeeDecisionRequest,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import {
+  constantQuery,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  confirmFeeDecisionDrafts,
-  searchFeeDecisions
-} from '../../generated/api-clients/invoicing'
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { renderResult } from '../async-rendering'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
 
 import Actions from './Actions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import FeeDecisions from './FeeDecisions'
-
-const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
-const searchFeeDecisionsResult = wrapResult(searchFeeDecisions)
-
-export type PagedFeeDecisions = Record<number, Result<FeeDecisionSummary[]>>
+import {
+  confirmFeeDecisionDraftsMutation,
+  searchFeeDecisionsQuery
+} from './fee-decision-queries'
 
 export default React.memo(function FeeDecisionsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<FeeDecisionSortParam>('HEAD_OF_FAMILY')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
-  const [totalDecisions, setTotalDecisions] = useState<number>()
-  const [totalPages, setTotalPages] = useState<number>()
-  const [decisions, setDecisions] = useState<PagedFeeDecisions>({})
-  const setDecisionsResult = useCallback(
-    (result: Result<PagedFeeDecisionSummaries>) => {
-      setDecisions((prev) => ({
-        ...prev,
-        [page]: result.map((r) => r.data)
-      }))
-      if (result.isSuccess) {
-        setTotalDecisions(result.value.total)
-        setTotalPages(result.value.pages)
-      }
-    },
-    [page, setTotalDecisions, setTotalPages, setDecisions]
-  )
-  const reloadDecisions = useRestApi(
-    searchFeeDecisionsResult,
-    setDecisionsResult
-  )
 
   const {
     feeDecisions: { searchFilters, debouncedSearchTerms }
   } = useContext(InvoicingUiContext)
 
-  const checkedState = useCheckedState<FeeDecisionId>()
-
-  const loadDecisions = useCallback(() => {
+  const searchParams: SearchFeeDecisionRequest | undefined = useMemo(() => {
     const { startDate, endDate } = searchFilters
     if (startDate && endDate && startDate.isAfter(endDate)) {
-      return
+      return undefined
     }
 
-    const params: SearchFeeDecisionRequest = {
+    return {
       page: page - 1,
       sortBy,
       sortDirection,
@@ -87,53 +62,41 @@ export default React.memo(function FeeDecisionsPage() {
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId ?? null,
       difference: searchFilters.difference
     }
-    void reloadDecisions({ body: params })
-  }, [
-    page,
-    sortBy,
-    sortDirection,
-    searchFilters,
-    debouncedSearchTerms,
-    reloadDecisions
-  ])
+  }, [page, sortBy, sortDirection, searchFilters, debouncedSearchTerms])
 
-  useEffect(() => {
-    loadDecisions()
-  }, [loadDecisions])
+  const searchResult = useQueryResult(
+    searchParams
+      ? searchFeeDecisionsQuery({ body: searchParams })
+      : constantQuery({ data: [], pages: 0, total: 0 })
+  )
 
-  useEffect(() => {
-    setPage(1)
-    setTotalDecisions(undefined)
-    setTotalPages(undefined)
-  }, [
-    setPage,
-    setTotalPages,
-    setTotalDecisions,
-    searchFilters,
-    debouncedSearchTerms
-  ])
+  const checkedState = useCheckedState<FeeDecisionId>()
 
   const checkAll = useCallback(() => {
-    const currentPage = decisions[page]
-    if (currentPage.isSuccess) {
-      checkedState.checkIds(currentPage.value.map((decision) => decision.id))
+    if (searchResult && searchResult.isSuccess) {
+      checkedState.checkIds(
+        searchResult.value.data.map((decision) => decision.id)
+      )
     }
-  }, [decisions, checkedState.checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchResult, checkedState.checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkedIds = checkedState.getCheckedIds()
+
+  const { mutateAsync: confirmFeeDecisionDrafts } = useMutationResult(
+    confirmFeeDecisionDraftsMutation
+  )
 
   return (
     <Container data-qa="fee-decisions-page">
       {showHandlerSelectModal && (
         <FinanceDecisionHandlerSelectModal
           onResolve={async (decisionHandlerId) => {
-            const result = await confirmFeeDecisionDraftsResult({
+            const result = await confirmFeeDecisionDrafts({
               decisionHandlerId,
               body: checkedIds
             })
             if (result.isSuccess) {
               checkedState.clearChecked()
-              loadDecisions()
               setShowHandlerSelectModal(false)
             }
             return result
@@ -146,34 +109,38 @@ export default React.memo(function FeeDecisionsPage() {
         <FeeDecisionFilters />
       </ContentArea>
       <Gap size="XL" />
-      <ContentArea opaque>
-        <FeeDecisions
-          decisions={decisions[page]}
-          total={totalDecisions}
-          pages={totalPages}
-          currentPage={page}
-          setPage={setPage}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          sortDirection={sortDirection}
-          setSortDirection={setSortDirection}
-          showCheckboxes={
-            searchFilters.statuses.length === 1 &&
-            ['DRAFT', 'IGNORED'].includes(searchFilters.statuses[0])
-          }
-          isChecked={checkedState.isChecked}
-          toggleChecked={checkedState.toggleChecked}
-          checkAll={checkAll}
-          clearChecked={checkedState.clearChecked}
-        />
-      </ContentArea>
-      <Actions
-        statuses={searchFilters.statuses}
-        checkedIds={checkedIds}
-        clearChecked={checkedState.clearChecked}
-        loadDecisions={loadDecisions}
-        onHandlerSelectModal={() => setShowHandlerSelectModal(true)}
-      />
+      {searchParams &&
+        renderResult(searchResult, (result) => (
+          <>
+            <ContentArea opaque>
+              <FeeDecisions
+                decisions={result.data}
+                total={result.total}
+                pages={result.pages}
+                currentPage={page}
+                setPage={setPage}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortDirection={sortDirection}
+                setSortDirection={setSortDirection}
+                showCheckboxes={
+                  searchFilters.statuses.length === 1 &&
+                  ['DRAFT', 'IGNORED'].includes(searchFilters.statuses[0])
+                }
+                isChecked={checkedState.isChecked}
+                toggleChecked={checkedState.toggleChecked}
+                checkAll={checkAll}
+                clearChecked={checkedState.clearChecked}
+              />
+            </ContentArea>
+            <Actions
+              statuses={searchFilters.statuses}
+              checkedIds={checkedIds}
+              clearChecked={checkedState.clearChecked}
+              onHandlerSelectModal={() => setShowHandlerSelectModal(true)}
+            />
+          </>
+        ))}
     </Container>
   )
 })

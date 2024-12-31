@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,7 +13,6 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { featureFlags } from 'lib-customizations/employee'
 
 import {
-  ignoreVoucherValueDecisionDrafts,
   sendVoucherValueDecisionDrafts,
   unignoreVoucherValueDecisionDrafts
 } from '../../generated/api-clients/invoicing'
@@ -22,11 +21,10 @@ import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import StickyActionBar from '../common/StickyActionBar'
 import { IgnoreDraftModal } from '../finance-decisions/IgnoreDraftModal'
 
+import { ignoreVoucherValueDecisionDraftsMutation } from './voucher-value-decision-queries'
+
 const sendVoucherValueDecisionDraftsResult = wrapResult(
   sendVoucherValueDecisionDrafts
-)
-const ignoreVoucherValueDecisionDraftsResult = wrapResult(
-  ignoreVoucherValueDecisionDrafts
 )
 const unignoreVoucherValueDecisionDraftsResult = wrapResult(
   unignoreVoucherValueDecisionDrafts
@@ -129,9 +127,8 @@ const Actions = React.memo(function Actions({
         </StickyActionBar>
         {showIgnoreModal && (
           <IgnoreDraftModal
-            onConfirm={() =>
-              ignoreVoucherValueDecisionDraftsResult({ body: checkedIds })
-            }
+            decisionIds={checkedIds}
+            mutation={ignoreVoucherValueDecisionDraftsMutation}
             onCancel={() => setShowIgnoreModal(false)}
             onSuccess={() => {
               setShowIgnoreModal(false)
