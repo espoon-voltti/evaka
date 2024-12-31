@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
 
 import {
@@ -27,6 +27,7 @@ import {
 
 import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 
@@ -53,8 +54,6 @@ interface Props {
   decisions: FeeDecisionSummary[]
   total: number
   pages: number
-  currentPage: number
-  setPage: (page: number) => void
   sortBy: FeeDecisionSortParam
   setSortBy: (v: FeeDecisionSortParam) => void
   sortDirection: SortDirection
@@ -70,8 +69,6 @@ const FeeDecisions = React.memo(function FeeDecisions({
   decisions,
   total,
   pages,
-  currentPage,
-  setPage,
   sortBy,
   setSortBy,
   sortDirection,
@@ -83,6 +80,10 @@ const FeeDecisions = React.memo(function FeeDecisions({
   clearChecked
 }: Props) {
   const { i18n } = useTranslation()
+
+  const {
+    feeDecisions: { page, setPage }
+  } = useContext(InvoicingUiContext)
 
   const allChecked =
     decisions.length > 0 && decisions.every((it) => isChecked(it.id))
@@ -157,7 +158,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
           <div>{total ? i18n.common.resultCount(total) : null}</div>
           <Pagination
             pages={pages}
-            currentPage={currentPage}
+            currentPage={page}
             setPage={setPage}
             label={i18n.common.page}
           />
@@ -225,7 +226,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
       <ResultsContainer>
         <Pagination
           pages={pages}
-          currentPage={currentPage}
+          currentPage={page}
           setPage={setPage}
           label={i18n.common.page}
         />
