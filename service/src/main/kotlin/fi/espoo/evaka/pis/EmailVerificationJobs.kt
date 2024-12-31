@@ -25,17 +25,17 @@ class EmailVerificationJobs(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
-        asyncJobRunner.registerHandler(::sendEmailVerificationEmail)
+        asyncJobRunner.registerHandler(::sendConfirmationCodeEmail)
     }
 
     private val logger = KotlinLogging.logger {}
 
-    fun sendEmailVerificationEmail(
+    fun sendConfirmationCodeEmail(
         dbc: Database.Connection,
         clock: EvakaClock,
-        job: AsyncJob.SendEmailVerificationCodeEmail,
+        job: AsyncJob.SendConfirmationCodeEmail,
     ) {
-        val (email, verificationCode) =
+        val (email, confirmationCode) =
             dbc.read {
                 it.createQuery {
                         sql(
@@ -54,7 +54,7 @@ AND expires_at > ${bind(clock.now())}
         Email.createForAddress(
                 toAddress = email,
                 fromAddress = emailEnv.sender(Language.fi),
-                emailMessageProvider.emailVerification(HtmlSafe(verificationCode)),
+                emailMessageProvider.confirmationCode(HtmlSafe(confirmationCode)),
                 "${clock.today()}:${job.id}",
             )
             ?.also { emailClient.send(it) }

@@ -94,6 +94,23 @@ WHERE id = ${bind(personId)}
     }
 }
 
+/**
+ * Updates a person's weak login username to be the same as their verified e-mail address, if it has
+ * been set.
+ */
+fun Database.Transaction.syncWeakLoginUsername(now: HelsinkiDateTime, personId: PersonId) {
+    execute {
+        sql(
+            """
+UPDATE citizen_user
+SET username = verified_email, username_updated_at = ${bind(now)}
+FROM (SELECT id, verified_email FROM person WHERE id = ${bind(personId)}) target
+WHERE citizen_user.id = target.id AND verified_email IS NOT NULL AND verified_email != username
+"""
+        )
+    }
+}
+
 fun Database.Transaction.markEmailVerificationSent(
     id: PersonEmailVerificationId,
     now: HelsinkiDateTime,

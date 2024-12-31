@@ -2048,24 +2048,60 @@ const sv: Translations = {
       noEmail: 'Jag har ingen e-postadress',
       emailInfo:
         'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.',
-      emailVerified: 'Verified',
-      emailUnverified: 'Email has not been verified',
-      sendVerificationCode: 'Verify email',
-      verificationSection: 'Email verification',
-      verificationCodeSent: (verification: EmailVerification): ReactNode =>
-        `A verification code has been sent to ${verification.email}. The code is valid until ${verification.expiresAt.toLocalTime().format()}.`,
-      verificationForm: 'Enter the verification code you received',
-      confirmVerification: 'Verify',
-      emailVerifiedToast: 'Sähköposti vahvistettu'
+      contactEmailInfo:
+        'Detta är den adress där du kan få alla dina meddelanden från eVaka',
+      emailVerified: 'Bekräftad',
+      emailUnverified: 'E-postadressen är inte bekräftad',
+      sendVerificationCode: 'Bekräfta e-postadress',
+      verifyEmail: {
+        section: 'Verifiering av e-post',
+        codeSent: (verification: EmailVerification): ReactNode =>
+          `Bekräftelsekoden har skickats till adress ${verification.email}. Koden är giltig till och med ${verification.expiresAt.toLocalTime().format()}.`,
+        toast: 'E-post bekräftad'
+      },
+      changeUsername: {
+        section: 'Ändra användarnamn',
+        codeSent: (verification: EmailVerification): ReactNode =>
+          `För att ändra ditt användarnamn, ange den bekräftelsekod som skickats till ${verification.email}. Koden är giltig till och med ${verification.expiresAt.toLocalTime().format()}.`,
+        toast: 'Användarnamnet har ändrats.'
+      },
+      codeNotReceived: 'Jag har inte fått koden.',
+      codeNotReceivedInfo:
+        'Kontrollera din skräppostmapp och att din e-postadress är rätt stavad.',
+      verificationForm: 'Ange den bekräftelsekod som du har fått',
+      confirmVerification: 'Bekräfta',
+      updateUsernameAlert: {
+        usernameMismatch:
+          'Användarnamnet du använder för att logga in är annorlunda än din e-postadress.',
+        suggestedAction: (newUsername: string): ReactNode => (
+          <>
+            Du kan ändra ditt användarnamn till <strong>{newUsername}</strong>{' '}
+            om du vill.
+          </>
+        )
+      },
+      updateUsername: (newUsername: string): string =>
+        `Uppdatera till användarnamn to ${newUsername}`
     },
     loginDetailsSection: {
       title: 'Inloggningsinformation',
+      weakLoginCredentials: 'Inloggning med e-post',
+      status: {
+        enabled: 'Tillåtet',
+        disabled: 'Inte tillåtet',
+        info: 'Genom att logga in med e-post kan du läsa inkommande meddelanden från eVaka och göra närvaroanmälningar utan stark autentisering.'
+      },
+      usernameInfo: 'Använd detta ID för att logga in på eVaka',
       weakLoginUsername: 'Användarnamn',
       password: 'Lösenord',
-      newPassword: 'Nytt lösenord',
-      repeatPassword: 'Bekräfta lösenordet',
-      setPassword: 'Ställ in lösenord',
-      updatePassword: 'Uppdatera lösenord'
+      unverifiedEmailWarning:
+        'Inloggning med e-post är endast tillåten om du har bekräftat din e-postadress',
+      updatePassword: 'Uppdatera lösenord',
+      activateCredentials: 'Salli sähköpostikirjautuminen',
+      activationSuccess: 'E-postinloggning aktiverad',
+      activationSuccessOk: 'Klart',
+      confirmPassword: 'Bekräfta lösenordet',
+      confirmActivateCredentials: 'Aktivera'
     },
     notificationsSection: {
       title: 'E-postmeddelanden',

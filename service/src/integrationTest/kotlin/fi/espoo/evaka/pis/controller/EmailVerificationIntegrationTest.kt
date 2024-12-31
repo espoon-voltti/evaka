@@ -6,8 +6,8 @@ package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.pis.controllers.EMAIL_VERIFICATION_CODE_DURATION
-import fi.espoo.evaka.pis.controllers.EMAIL_VERIFICATION_CODE_LENGTH
+import fi.espoo.evaka.pis.controllers.CONFIRMATION_CODE_DURATION
+import fi.espoo.evaka.pis.controllers.CONFIRMATION_CODE_LENGTH
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -95,7 +95,7 @@ class EmailVerificationIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val verification = assertNotNull(getStatus().latestVerification)
         val verificationCode = assertNotNull(getVerificationCodeFromEmail(email))
 
-        clock.tick(EMAIL_VERIFICATION_CODE_DURATION.plusMinutes(1))
+        clock.tick(CONFIRMATION_CODE_DURATION.plusMinutes(1))
         assertNull(getStatus().latestVerification)
         assertThrows<BadRequest> {
             verifyEmail(
@@ -115,7 +115,7 @@ class EmailVerificationIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun getVerificationCodeFromEmail(emailAddress: String) =
         MockEmailClient.getEmail(emailAddress)?.let { email ->
-            Regex("[0-9]{$EMAIL_VERIFICATION_CODE_LENGTH}").find(email.content.text)?.value
+            Regex("[0-9]{$CONFIRMATION_CODE_LENGTH}").find(email.content.text)?.value
         }
 
     private fun sendEmailVerificationCode() {
