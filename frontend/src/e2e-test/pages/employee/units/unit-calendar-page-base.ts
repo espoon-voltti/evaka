@@ -282,16 +282,31 @@ export class UnitStaffAttendancesTable extends Element {
     )
   }
 
-  async assertTooltip(
+  async assertArrivalTimeTooltip(
     row: number,
     date: LocalDate,
     expectedTooltipText: string
   ): Promise<void> {
     const cell = this.#attendanceCell(date, row)
-    await cell.hover()
+    const arrivalTime = cell.findByDataQa('arrival-time')
+    await arrivalTime.hover()
 
-    await cell
-      .findByDataQa('attendance-tooltip')
+    await arrivalTime
+      .findByDataQa('arrival-time-tooltip')
+      .assertTextEquals(expectedTooltipText)
+  }
+
+  async assertDepartureTimeTooltip(
+    row: number,
+    date: LocalDate,
+    expectedTooltipText: string
+  ): Promise<void> {
+    const cell = this.#attendanceCell(date, row)
+    const departureTime = cell.findByDataQa('departure-time')
+    await departureTime.hover()
+
+    await departureTime
+      .findByDataQa('departure-time-tooltip')
       .assertTextEquals(expectedTooltipText)
   }
 

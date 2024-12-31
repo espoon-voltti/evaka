@@ -302,7 +302,9 @@ describe('Realtime staff attendances', () => {
         type: 'OVERTIME',
         arrived: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
         departed: yesterday.toHelsinkiDateTime(LocalTime.of(20, 0)),
-        departedAutomatically: true
+        departedAutomatically: true,
+        modifiedAt: null,
+        modifiedBy: null
       }).save()
 
       await Fixture.realtimeStaffAttendance({
@@ -311,7 +313,9 @@ describe('Realtime staff attendances', () => {
         type: 'OVERTIME',
         arrived: yesterday.toHelsinkiDateTime(LocalTime.of(8, 0)),
         departed: yesterday.toHelsinkiDateTime(LocalTime.of(16, 0)),
-        departedAutomatically: false
+        departedAutomatically: false,
+        modifiedAt: null,
+        modifiedBy: null
       }).save()
 
       await Fixture.realtimeStaffAttendance({
@@ -320,7 +324,9 @@ describe('Realtime staff attendances', () => {
         type: 'OVERTIME',
         arrived: yesterday.subDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
         departed: yesterday.subDays(1).toHelsinkiDateTime(LocalTime.of(15, 0)),
-        departedAutomatically: false
+        departedAutomatically: false,
+        modifiedAt: null,
+        modifiedBy: null
       }).save()
 
       await Fixture.staffAttendancePlan({
@@ -348,7 +354,11 @@ describe('Realtime staff attendances', () => {
         attendances: [['07:00', '20:00*']]
       })
 
-      await staffAttendances.assertTooltip(0, yesterday, 'Automaattikatkaistu')
+      await staffAttendances.assertDepartureTimeTooltip(
+        0,
+        yesterday,
+        'Automaattikatkaistu'
+      )
 
       const modal = await staffAttendances.openDetails(0, yesterday)
       await modal.setDepartureTime(0, '15:00')
@@ -359,6 +369,11 @@ describe('Realtime staff attendances', () => {
         name: staffName(groupStaff),
         attendances: [['07:00', '15:00']]
       })
+      await staffAttendances.assertDepartureTimeTooltip(
+        0,
+        yesterday,
+        'Muokattu 30.03.2022 18:00, Esimies Essi'
+      )
     })
   })
   describe('Details modal', () => {

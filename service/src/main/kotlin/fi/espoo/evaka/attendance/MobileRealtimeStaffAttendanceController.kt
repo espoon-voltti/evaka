@@ -179,6 +179,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 occupancyCoefficient,
                                 attendance.type,
                                 false,
+                                clock.now(),
+                                user.evakaUserId,
                             )
                         }
                     }
@@ -244,6 +246,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             occupancyCoefficient,
                             attendance.type,
                             false,
+                            clock.now(),
+                            user.evakaUserId,
                         )
                     }
                 }
@@ -324,6 +328,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                     else occupancyCoefficientZero,
                                 type = attendance.type,
                                 departedAutomatically = false,
+                                modifiedAt = clock.now(),
+                                modifiedBy = user.evakaUserId,
                             )
                         }
 

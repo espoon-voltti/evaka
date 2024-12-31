@@ -918,6 +918,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 groupId = group1.id,
                 arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                 departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
+                modifiedAt = mockClock.now(),
+                modifiedBy = staff1.evakaUserId,
             )
         val staffAttendance2 =
             DevStaffAttendance(
@@ -926,6 +928,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
                 departed = null,
                 occupancyCoefficient = BigDecimal.ZERO,
+                modifiedAt = mockClock.now(),
+                modifiedBy = staff2.evakaUserId,
             )
         val staffAttendance3 =
             DevStaffAttendance(
@@ -933,6 +937,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 groupId = group2.id,
                 arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 30)),
                 departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
+                modifiedAt = mockClock.now(),
+                modifiedBy = staff3.evakaUserId,
             )
 
         db.transaction { tx ->

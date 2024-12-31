@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -108,6 +109,14 @@ data class Attendance(
     val occupancyCoefficient: BigDecimal,
     val type: StaffAttendanceType,
     val departedAutomatically: Boolean,
+    val arrivedAddedAt: HelsinkiDateTime?,
+    val arrivedAddedBy: EvakaUser?,
+    val arrivedModifiedAt: HelsinkiDateTime?,
+    val arrivedModifiedBy: EvakaUser?,
+    val departedAddedAt: HelsinkiDateTime?,
+    val departedAddedBy: EvakaUser?,
+    val departedModifiedAt: HelsinkiDateTime?,
+    val departedModifiedBy: EvakaUser?,
 )
 
 data class EmployeeAttendance(

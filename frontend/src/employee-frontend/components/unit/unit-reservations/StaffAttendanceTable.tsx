@@ -4,6 +4,7 @@
 
 import classNames from 'classnames'
 import groupBy from 'lodash/groupBy'
+import isEqual from 'lodash/isEqual'
 import mapValues from 'lodash/mapValues'
 import sortBy from 'lodash/sortBy'
 import uniq from 'lodash/uniq'
@@ -32,6 +33,7 @@ import {
   StaffAttendanceExternalId,
   StaffAttendanceRealtimeId
 } from 'lib-common/generated/api-types/shared'
+import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -43,7 +45,7 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { fontWeights } from 'lib-components/typography'
+import { fontWeights, Italic, P } from 'lib-components/typography'
 import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
@@ -202,7 +204,17 @@ export default React.memo(function StaffAttendanceTable({
               }
               name={row.name}
               operationalDays={operationalDays}
-              attendances={row.attendances}
+              attendances={row.attendances.map((attendance) => ({
+                ...attendance,
+                arrivedAddedAt: null,
+                arrivedAddedBy: null,
+                arrivedModifiedAt: null,
+                arrivedModifiedBy: null,
+                departedAddedAt: null,
+                departedAddedBy: null,
+                departedModifiedAt: null,
+                departedModifiedBy: null
+              }))}
               groupFilter={groupFilter}
               openDetails={(date: LocalDate) => {
                 setDetailsModalConfig({
@@ -497,6 +509,14 @@ interface AttendanceRowAttendance {
   groupId: GroupId | null
   departedAutomatically: boolean
   type: StaffAttendanceType
+  arrivedAddedAt: HelsinkiDateTime | null
+  arrivedAddedBy: EvakaUser | null
+  arrivedModifiedAt: HelsinkiDateTime | null
+  arrivedModifiedBy: EvakaUser | null
+  departedAddedAt: HelsinkiDateTime | null
+  departedAddedBy: EvakaUser | null
+  departedModifiedAt: HelsinkiDateTime | null
+  departedModifiedBy: EvakaUser | null
 }
 
 interface AttendanceRowProps extends BaseProps {
@@ -527,12 +547,63 @@ const AttendanceRow = React.memo(function AttendanceRow({
   const { i18n } = useTranslation()
   const today = LocalDate.todayInHelsinkiTz()
 
-  const attendanceTooltipText = (attendance: AttendanceRowAttendance) =>
-    attendance.departedAutomatically ? (
+  const timeTooltipText = ({
+    addedAt,
+    addedBy,
+    modifiedAt,
+    modifiedBy
+  }: {
+    addedAt: HelsinkiDateTime | null
+    addedBy: EvakaUser | null
+    modifiedAt: HelsinkiDateTime | null
+    modifiedBy: EvakaUser | null
+  }) => {
+    if (
+      addedAt === null &&
+      addedBy === null &&
+      modifiedAt === null &&
+      modifiedBy === null
+    ) {
+      return undefined
+    }
+    return (
+      <>
+        {addedAt !== null && addedBy !== null && (
+          <P>
+            {i18n.unit.staffAttendance.addedAt} {addedAt.format()},{' '}
+            <Italic>{addedBy.name}</Italic>
+          </P>
+        )}
+        {modifiedAt !== null &&
+          modifiedBy !== null &&
+          (addedAt === null ||
+            !addedAt.isEqual(modifiedAt) ||
+            !isEqual(addedBy, modifiedBy)) && (
+            <P>
+              {i18n.unit.staffAttendance.modifiedAt} {modifiedAt.format()},{' '}
+              <Italic>{modifiedBy.name}</Italic>
+            </P>
+          )}
+      </>
+    )
+  }
+  const departureTooltipText = (attendance: AttendanceRowAttendance) => {
+    const timeTooltip = timeTooltipText({
+      addedAt: attendance.departedAddedAt,
+      addedBy: attendance.departedAddedBy,
+      modifiedAt: attendance.departedModifiedAt,
+      modifiedBy: attendance.departedModifiedBy
+    })
+
+    return timeTooltip !== undefined || attendance.departedAutomatically ? (
       <div>
-        <div>{i18n.unit.staffAttendance.departedAutomatically}</div>
+        {timeTooltip !== undefined && timeTooltip}
+        {attendance.departedAutomatically && (
+          <P>{i18n.unit.staffAttendance.departedAutomatically}</P>
+        )}
       </div>
     ) : undefined
+  }
 
   return (
     <DayTr data-qa={`attendance-row-${rowIndex}`}>
@@ -621,23 +692,31 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 <AttendanceTimes data-qa="attendance-day">
                   {attendancesForToday.length > 0 ? (
                     attendancesForToday.map((attendance, i) => {
-                      const tooltip = attendanceTooltipText(attendance)
                       return (
-                        <Tooltip
-                          key={i}
-                          tooltip={tooltip}
-                          data-qa="attendance-tooltip"
-                        >
-                          <AttendanceCell>
-                            <AttendanceTime data-qa="arrival-time">
+                        <AttendanceCell key={i}>
+                          <AttendanceTime data-qa="arrival-time">
+                            <Tooltip
+                              tooltip={timeTooltipText({
+                                addedAt: attendance.arrivedAddedAt,
+                                addedBy: attendance.arrivedAddedBy,
+                                modifiedAt: attendance.arrivedModifiedAt,
+                                modifiedBy: attendance.arrivedModifiedBy
+                              })}
+                              data-qa="arrival-time-tooltip"
+                            >
                               {renderTime(attendance.arrived, date)}
-                            </AttendanceTime>
-                            <AttendanceTime data-qa="departure-time">
+                            </Tooltip>
+                          </AttendanceTime>
+                          <AttendanceTime data-qa="departure-time">
+                            <Tooltip
+                              tooltip={departureTooltipText(attendance)}
+                              data-qa="departure-time-tooltip"
+                            >
                               {renderTime(attendance.departed, date)}
-                              {tooltip ? `*` : ''}
-                            </AttendanceTime>
-                          </AttendanceCell>
-                        </Tooltip>
+                              {attendance.departedAutomatically ? `*` : ''}
+                            </Tooltip>
+                          </AttendanceTime>
+                        </AttendanceCell>
                       )
                     })
                   ) : (
