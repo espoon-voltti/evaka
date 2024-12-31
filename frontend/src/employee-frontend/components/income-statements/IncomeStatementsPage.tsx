@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,14 +8,11 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import {
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam
 } from 'lib-common/generated/api-types/incomestatement'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -164,49 +161,36 @@ const RowIcon = styled(FontAwesomeIcon)`
 export default React.memo(function IncomeStatementsPage() {
   const { i18n } = useTranslation()
 
-  const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<IncomeStatementSortParam>('SENT_AT')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
-  const [searchParams, setSearchParams] = useState<{
-    areas: string[] | null
-    unit: DaycareId | null
-    providerTypes: ProviderType[] | null
-    sentStartDate: LocalDate | null
-    sentEndDate: LocalDate | null
-    placementValidDate: LocalDate | null
-  }>()
 
   const {
-    incomeStatements: { searchFilters }
+    incomeStatements: { confirmedSearchFilters: searchFilters, page, setPage }
   } = useContext(InvoicingUiContext)
 
-  const { sentStartDate, sentEndDate } = searchFilters
   const incomeStatements = useQueryResult(
-    searchParams !== undefined
+    searchFilters !== undefined &&
+      (searchFilters.sentStartDate === undefined ||
+        searchFilters.sentEndDate === undefined ||
+        searchFilters.sentEndDate.isEqualOrAfter(searchFilters.sentStartDate))
       ? incomeStatementsAwaitingHandlerQuery({
-          body: { ...searchParams, page, sortBy, sortDirection }
+          body: {
+            areas: searchFilters.area.length > 0 ? searchFilters.area : null,
+            unit: searchFilters.unit ?? null,
+            providerTypes:
+              searchFilters.providerTypes.length > 0
+                ? searchFilters.providerTypes
+                : null,
+            sentStartDate: searchFilters.sentStartDate ?? null,
+            sentEndDate: searchFilters.sentEndDate ?? null,
+            placementValidDate: searchFilters.placementValidDate ?? null,
+            page,
+            sortBy,
+            sortDirection
+          }
         })
       : constantQuery({ data: [], pages: 0, total: 0 })
   )
-  const handleSearch = () => {
-    if (
-      sentStartDate === undefined ||
-      sentEndDate === undefined ||
-      !sentStartDate.isAfter(sentEndDate)
-    ) {
-      setSearchParams({
-        areas: searchFilters.area.length > 0 ? searchFilters.area : null,
-        unit: searchFilters.unit ?? null,
-        providerTypes:
-          searchFilters.providerTypes.length > 0
-            ? searchFilters.providerTypes
-            : null,
-        sentStartDate: searchFilters.sentStartDate ?? null,
-        sentEndDate: searchFilters.sentEndDate ?? null,
-        placementValidDate: searchFilters.placementValidDate ?? null
-      })
-    }
-  }
 
   return (
     <Container
@@ -215,32 +199,33 @@ export default React.memo(function IncomeStatementsPage() {
     >
       <ContentArea opaque>
         <H1>{i18n.incomeStatement.table.title}</H1>
-        <IncomeStatementFilters onSearch={handleSearch} />
+        <IncomeStatementFilters />
       </ContentArea>
       <Gap size="s" />
-      {renderResult(incomeStatements, ({ data, pages, total }) => (
-        <ContentArea opaque>
-          <FixedSpaceRow justifyContent="flex-end">
-            {i18n.common.resultCount(total)}
-          </FixedSpaceRow>
-          <IncomeStatementsList
-            data={data}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            sortDirection={sortDirection}
-            setSortDirection={setSortDirection}
-          />
-          <Gap size="s" />
-          {pages > 1 && (
-            <Pagination
-              pages={pages}
-              currentPage={page}
-              setPage={setPage}
-              label={i18n.common.page}
+      {searchFilters !== undefined &&
+        renderResult(incomeStatements, ({ data, pages, total }) => (
+          <ContentArea opaque>
+            <FixedSpaceRow justifyContent="flex-end">
+              {i18n.common.resultCount(total)}
+            </FixedSpaceRow>
+            <IncomeStatementsList
+              data={data}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              sortDirection={sortDirection}
+              setSortDirection={setSortDirection}
             />
-          )}
-        </ContentArea>
-      ))}
+            <Gap size="s" />
+            {pages > 1 && (
+              <Pagination
+                pages={pages}
+                currentPage={page}
+                setPage={setPage}
+                label={i18n.common.page}
+              />
+            )}
+          </ContentArea>
+        ))}
     </Container>
   )
 })
