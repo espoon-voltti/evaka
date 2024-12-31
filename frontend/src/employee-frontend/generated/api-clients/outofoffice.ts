@@ -4,9 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
+import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { OutOfOfficeId } from 'lib-common/generated/api-types/shared'
 import { OutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
+import { OutOfOfficePeriodUpsert } from 'lib-common/generated/api-types/outofoffice'
 import { client } from '../../api/client'
 import { deserializeJsonOutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
 import { uri } from 'lib-common/uri'
@@ -43,10 +45,15 @@ export async function getOutOfOfficePeriods(): Promise<OutOfOfficePeriod[]> {
 /**
 * Generated from fi.espoo.evaka.outofoffice.OutOfOfficeController.upsertOutOfOfficePeriod
 */
-export async function upsertOutOfOfficePeriod(): Promise<void> {
+export async function upsertOutOfOfficePeriod(
+  request: {
+    body: OutOfOfficePeriodUpsert
+  }
+): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/out-of-office`.toString(),
-    method: 'POST'
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<OutOfOfficePeriodUpsert>
   })
   return json
 }

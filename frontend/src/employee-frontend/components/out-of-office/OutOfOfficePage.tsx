@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React, { Fragment, useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
@@ -21,7 +25,7 @@ export default React.memo(function OutOfOfficePage() {
         <Label>{i18n.outOfOffice.header}</Label>
         <Gap size="s" />
         {isEditing ? (
-          <OutOfOfficeEditor onCancel={() => setIsEditing(false)} />
+          <OutOfOfficeEditor onClose={() => setIsEditing(false)} />
         ) : (
           <Fragment>
             <div>{i18n.outOfOffice.noFutureOutOfOffice}</div>
