@@ -9,8 +9,8 @@ import {
   getNotificationSettings,
   sendEmailVerificationCode,
   updateNotificationSettings,
-  updatePassword,
   updatePersonalData,
+  updateWeakLoginCredentials,
   verifyEmail
 } from '../generated/api-clients/pis'
 
@@ -22,7 +22,9 @@ export const updatePersonalDetailsMutation = q.mutation(updatePersonalData, [
   emailVerificationStatusQuery
 ])
 
-export const updatePasswordMutation = q.mutation(updatePassword)
+export const updateWeakLoginCredentialsMutation = q.mutation(
+  updateWeakLoginCredentials
+)
 
 export const notificationSettingsQuery = q.query(getNotificationSettings)
 

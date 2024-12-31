@@ -129,7 +129,7 @@ interface IEmailMessageProvider {
 
     fun serviceApplicationDecidedNotification(accepted: Boolean, startDate: LocalDate): EmailContent
 
-    fun emailVerification(verificationCode: HtmlSafe<String>): EmailContent
+    fun confirmationCode(confirmationCode: HtmlSafe<String>): EmailContent
 }
 
 data class MessageThreadData(
