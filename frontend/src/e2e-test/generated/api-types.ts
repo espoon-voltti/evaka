@@ -939,6 +939,8 @@ export interface DevStaffAttendance {
   employeeId: EmployeeId
   groupId: GroupId | null
   id: StaffAttendanceRealtimeId
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: EvakaUserId | null
   occupancyCoefficient: number
   type: StaffAttendanceType
 }
@@ -1573,7 +1575,8 @@ export function deserializeJsonDevStaffAttendance(json: JsonOf<DevStaffAttendanc
   return {
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
   }
 }
 
