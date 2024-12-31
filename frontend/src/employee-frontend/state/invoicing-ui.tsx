@@ -129,8 +129,12 @@ export interface IncomeStatementSearchFilters {
 }
 
 interface IncomeStatementSearchFilterState {
+  page: number
+  setPage: (p: number) => void
   searchFilters: IncomeStatementSearchFilters
   setSearchFilters: Dispatch<SetStateAction<IncomeStatementSearchFilters>>
+  confirmedSearchFilters: IncomeStatementSearchFilters | undefined
+  confirmSearchFilters: () => void
   clearSearchFilters: () => void
 }
 
@@ -221,6 +225,8 @@ const defaultState: UiState = {
     clearSearchFilters: () => undefined
   },
   incomeStatements: {
+    page: 1,
+    setPage: () => undefined,
     searchFilters: {
       area: [],
       unit: undefined,
@@ -230,7 +236,9 @@ const defaultState: UiState = {
       placementValidDate: undefined
     },
     setSearchFilters: () => undefined,
-    clearSearchFilters: () => undefined
+    confirmedSearchFilters: undefined,
+    clearSearchFilters: () => undefined,
+    confirmSearchFilters: () => undefined
   },
   shared: {
     units: Loading.of(),
@@ -308,17 +316,35 @@ export const InvoicingUIContextProvider = React.memo(
       []
     )
 
-    const [incomeStatementSearchFilters, setIncomeStatementSearchFilters] =
+    const [incomeStatementPage, setIncomeStatementPage] = useState<number>(
+      defaultState.incomeStatements.page
+    )
+    const [
+      confirmedIncomeStatementSearchFilters,
+      setConfirmedIncomeStatementSearchFilters
+    ] = useState<IncomeStatementSearchFilters | undefined>(
+      defaultState.incomeStatements.confirmedSearchFilters
+    )
+    const [incomeStatementSearchFilters, _setIncomeStatementSearchFilters] =
       useState<IncomeStatementSearchFilters>(
         defaultState.incomeStatements.searchFilters
       )
-    const clearIncomeStatementSearchFilters = useCallback(
-      () =>
-        setIncomeStatementSearchFilters(
-          defaultState.incomeStatements.searchFilters
-        ),
-      [setIncomeStatementSearchFilters]
+    const setIncomeStatementSearchFilters = useCallback(
+      (value: React.SetStateAction<IncomeStatementSearchFilters>) => {
+        _setIncomeStatementSearchFilters(value)
+        setConfirmedIncomeStatementSearchFilters(undefined)
+      },
+      []
     )
+    const confirmIncomeStatementSearchFilters = useCallback(() => {
+      setConfirmedIncomeStatementSearchFilters(incomeStatementSearchFilters)
+      setIncomeStatementPage(defaultState.incomeStatements.page)
+    }, [incomeStatementSearchFilters])
+    const clearIncomeStatementSearchFilters = useCallback(() => {
+      setIncomeStatementSearchFilters(
+        defaultState.incomeStatements.searchFilters
+      )
+    }, [setIncomeStatementSearchFilters])
 
     const [units, setUnits] = useState<Result<UnitStub[]>>(
       defaultState.shared.units
@@ -376,9 +402,13 @@ export const InvoicingUIContextProvider = React.memo(
           clearSearchFilters: clearPaymentSearchFilters
         },
         incomeStatements: {
+          page: incomeStatementPage,
+          setPage: setIncomeStatementPage,
           searchFilters: incomeStatementSearchFilters,
           setSearchFilters: setIncomeStatementSearchFilters,
-          clearSearchFilters: clearIncomeStatementSearchFilters
+          confirmedSearchFilters: confirmedIncomeStatementSearchFilters,
+          clearSearchFilters: clearIncomeStatementSearchFilters,
+          confirmSearchFilters: confirmIncomeStatementSearchFilters
         },
         shared: {
           units,
@@ -405,8 +435,12 @@ export const InvoicingUIContextProvider = React.memo(
         paymentFreeTextSearch,
         paymentDebouncedFreeText,
         clearPaymentSearchFilters,
+        incomeStatementPage,
         incomeStatementSearchFilters,
+        confirmedIncomeStatementSearchFilters,
+        setIncomeStatementSearchFilters,
         clearIncomeStatementSearchFilters,
+        confirmIncomeStatementSearchFilters,
         units,
         financeDecisionHandlers,
         availableAreas,
