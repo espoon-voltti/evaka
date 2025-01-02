@@ -63,7 +63,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 setOf(
                     DevPerson(
                         id = ChildId(UUID.randomUUID()),
-                        dateOfBirth = LocalDate.of(LocalDate.now().year - 5, 6, 1),
+                        dateOfBirth = LocalDate.of(2018, 6, 1),
                         ssn = "111111-999X",
                         firstName = "Just",
                         lastName = "Sopiva",
@@ -74,7 +74,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     ),
                     DevPerson(
                         id = ChildId(UUID.randomUUID()),
-                        dateOfBirth = LocalDate.of(LocalDate.now().year - 4, 7, 1),
+                        dateOfBirth = LocalDate.of(2019, 7, 1),
                         ssn = "222222-998Y",
                         firstName = "Turhan",
                         lastName = "Nuori",
@@ -85,7 +85,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     ),
                     DevPerson(
                         id = ChildId(UUID.randomUUID()),
-                        dateOfBirth = LocalDate.of(LocalDate.now().year - 6, 8, 1),
+                        dateOfBirth = LocalDate.of(2017, 8, 1),
                         ssn = "333333-997Z",
                         firstName = "Liian",
                         lastName = "Vanha",
