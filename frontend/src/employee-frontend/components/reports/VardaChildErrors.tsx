@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
@@ -13,25 +13,32 @@ import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import { TableScrollable } from './common'
 import { resetVardaChildMutation, vardaChildErrorsQuery } from './queries'
-
-const FlatList = styled.ul`
-  list-style: none;
-  padding-left: 0;
-  margin-top: 0;
-`
 
 export default React.memo(function VardaChildErrors() {
   const { i18n } = useTranslation()
+  const [ma003, setMa003] = useState<'exclude' | 'include' | 'only'>('exclude')
   const vardaErrorsResult = useQueryResult(vardaChildErrorsQuery())
+
+  const filteredRows = useMemo(
+    () =>
+      ma003 === 'include'
+        ? vardaErrorsResult
+        : vardaErrorsResult.map((rows) =>
+            rows.filter(
+              (row) => row.error.includes('"MA003"') === (ma003 === 'only')
+            )
+          ),
+    [vardaErrorsResult, ma003]
+  )
 
   const ageInDays = (timestamp: HelsinkiDateTime): number =>
     LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
@@ -42,22 +49,30 @@ export default React.memo(function VardaChildErrors() {
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.vardaChildErrors.title}</Title>
         <Gap size="xxs" />
-        {renderResult(vardaErrorsResult, (rows) => (
+        <Select
+          items={['exclude', 'include', 'only'] as const}
+          getItemLabel={(item) => i18n.reports.vardaChildErrors.ma003[item]}
+          selectedItem={ma003}
+          onChange={(value) => {
+            if (value !== null) setMa003(value)
+          }}
+        />
+        <Gap size="s" />
+        {renderResult(filteredRows, (rows) => (
           <>
-            <TableScrollable data-qa="varda-errors-table">
+            <Table data-qa="varda-errors-table">
               <Thead>
                 <Tr>
                   <Th>{i18n.reports.vardaChildErrors.age}</Th>
                   <Th>{i18n.reports.vardaChildErrors.child}</Th>
                   <Th>{i18n.reports.vardaChildErrors.error}</Th>
-                  <Th>{i18n.reports.vardaChildErrors.serviceNeed}</Th>
                   <Th>{i18n.reports.vardaChildErrors.updated}</Th>
-                  <Th>{i18n.reports.vardaChildErrors.childLastReset}</Th>
+                  <Th />
                 </Tr>
               </Thead>
               <Tbody>
                 {rows.map((row: VardaChildErrorReportRow) => (
-                  <Tr data-qa="varda-error-row" key={row.serviceNeedId}>
+                  <Tr data-qa="varda-error-row" key={row.childId}>
                     <Td data-qa={`age-${row.childId}`}>
                       {ageInDays(row.created)}
                     </Td>
@@ -68,38 +83,24 @@ export default React.memo(function VardaChildErrors() {
                     </Td>
 
                     <Td data-qa={`errors-${row.childId}`}>
-                      <BreakAll>{row.errors.join('\n')}</BreakAll>
-                    </Td>
-                    <Td>
-                      <FlatList>
-                        <li>{row.serviceNeedOptionName}</li>
-                        <li>{row.serviceNeedValidity?.format()}</li>
-                        <li>{row.serviceNeedId}</li>
-                      </FlatList>
+                      <BreakAll>{row.error}</BreakAll>
                     </Td>
                     <Td data-qa={`updated-${row.childId}`}>
                       {row.updated.format()}
                     </Td>
                     <Td data-qa={`last-reset-${row.childId}`}>
-                      <>
-                        <span>
-                          {row.resetTimeStamp
-                            ? row.resetTimeStamp.format()
-                            : ''}
-                        </span>
-                        <MutateButton
-                          primary
-                          text={i18n.reports.vardaChildErrors.resetChild}
-                          mutation={resetVardaChildMutation}
-                          onClick={() => ({ childId: row.childId })}
-                          data-qa={`reset-button-${row.childId}`}
-                        />
-                      </>
+                      <MutateButton
+                        primary
+                        text={i18n.reports.vardaChildErrors.updateChild}
+                        mutation={resetVardaChildMutation}
+                        onClick={() => ({ childId: row.childId })}
+                        data-qa={`reset-button-${row.childId}`}
+                      />
                     </Td>
                   </Tr>
                 ))}
               </Tbody>
-            </TableScrollable>
+            </Table>
           </>
         ))}
       </ContentArea>
