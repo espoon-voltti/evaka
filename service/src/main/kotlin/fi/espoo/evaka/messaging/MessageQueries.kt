@@ -742,8 +742,8 @@ WHERE m.id = ${bind(messageId)} AND m.sender_id = ${bind(senderId)}
 }
 
 data class MessageAccountAccess(
-    val newMessage: Set<MessageAccount>,
-    val reply: Set<MessageAccount>,
+    val newMessage: Set<MessageAccountWithPresence>,
+    val reply: Set<MessageAccountWithPresence>,
 )
 
 fun Database.Read.getCitizenReceivers(
@@ -756,6 +756,7 @@ fun Database.Read.getCitizenReceivers(
         val type: AccountType,
         val childId: ChildId,
         val replyOnly: Boolean,
+        val oooPeriod: FiniteDateRange?,
     )
 
     return createQuery {
@@ -800,11 +801,17 @@ relevant_placements AS (
     FROM backup_care_placements bc
 ),
 personal_accounts AS (
-    SELECT acc.id, acc_name.name, 'PERSONAL' AS type, p.child_id, acl.role != 'UNIT_SUPERVISOR' AS reply_only 
+    SELECT acc.id, acc_name.name, 'PERSONAL' AS type, p.child_id, acl.role != 'UNIT_SUPERVISOR' AS reply_only, ooo.period AS ooo_period
     FROM (SELECT DISTINCT unit_id, child_id FROM relevant_placements) p
     JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
     JOIN message_account acc ON acc.employee_id = acl.employee_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
+    LEFT JOIN LATERAL (
+        SELECT daterange(ooo.start_date, ooo.end_date, '[]') AS period
+        FROM out_of_office ooo
+        WHERE ooo.employee_id = acc.employee_id AND ${bind(today)} BETWEEN ooo.start_date AND ooo.end_date
+        LIMIT 1
+    ) ooo ON TRUE
     WHERE active IS TRUE
 ),
 group_accounts AS (
@@ -839,13 +846,13 @@ citizen_accounts AS (
     WHERE acc.id != ${bind(accountId)} AND NOT c.guardian_relationship
 ),
 mixed_accounts AS (
-    SELECT id, name, type, child_id, reply_only FROM personal_accounts
+    SELECT id, name, type, child_id, reply_only, ooo_period FROM personal_accounts
     UNION ALL
-    SELECT id, name, type, child_id, FALSE AS reply_only FROM group_accounts
+    SELECT id, name, type, child_id, FALSE AS reply_only, null as ooo_period FROM group_accounts
     UNION ALL
-    SELECT id, name, type, child_id, FALSE AS reply_only FROM citizen_accounts
+    SELECT id, name, type, child_id, FALSE AS reply_only, null as ooo_period FROM citizen_accounts
 )
-SELECT id, name, type, child_id, reply_only FROM mixed_accounts
+SELECT id, name, type, child_id, reply_only, ooo_period FROM mixed_accounts
 ORDER BY type, name  -- groups first
 """
             )
@@ -856,13 +863,24 @@ ORDER BY type, name  -- groups first
             val newMessage =
                 accounts
                     .filter { !it.replyOnly }
-                    .map { MessageAccount(id = it.id, name = it.name, type = it.type) }
-            val reply = accounts.map { MessageAccount(id = it.id, name = it.name, type = it.type) }
+                    .map {
+                        MessageAccountWithPresence(
+                            account = MessageAccount(id = it.id, name = it.name, type = it.type),
+                            outOfOffice = it.oooPeriod,
+                        )
+                    }
+            val reply =
+                accounts.map {
+                    MessageAccountWithPresence(
+                        account = MessageAccount(id = it.id, name = it.name, type = it.type),
+                        outOfOffice = it.oooPeriod,
+                    )
+                }
             MessageAccountAccess(newMessage.toSet(), reply.toSet())
         }
         .filterValues { accounts ->
             (accounts.newMessage + accounts.reply).any {
-                it.type.isPrimaryRecipientForCitizenMessage()
+                it.account.type.isPrimaryRecipientForCitizenMessage()
             }
         }
 }

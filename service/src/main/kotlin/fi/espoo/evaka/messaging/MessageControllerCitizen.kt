@@ -170,7 +170,7 @@ class MessageControllerCitizen(
     )
 
     class GetReceiversResponse(
-        val messageAccounts: Set<MessageAccount>,
+        val messageAccounts: Set<MessageAccountWithPresence>,
         val childrenToMessageAccounts: Map<ChildId, ChildMessageAccountAccess>,
     )
 
@@ -194,8 +194,8 @@ class MessageControllerCitizen(
                         childrenToMessageAccounts =
                             accountsPerChild.mapValues { entry ->
                                 ChildMessageAccountAccess(
-                                    entry.value.newMessage.map { it.id }.toSet(),
-                                    entry.value.reply.map { it.id }.toSet(),
+                                    entry.value.newMessage.map { it.account.id }.toSet(),
+                                    entry.value.reply.map { it.account.id }.toSet(),
                                 )
                             },
                     )
@@ -256,7 +256,7 @@ class MessageControllerCitizen(
                 val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val validRecipients =
                     dbc.read { it.getCitizenReceivers(today, senderId) }
-                        .mapValues { entry -> entry.value.newMessage.map { it.id }.toSet() }
+                        .mapValues { entry -> entry.value.newMessage.map { it.account.id }.toSet() }
                 val allRecipientsValid =
                     body.recipients.all { recipient ->
                         body.children.any { child ->

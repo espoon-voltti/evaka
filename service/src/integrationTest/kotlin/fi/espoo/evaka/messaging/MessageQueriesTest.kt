@@ -433,10 +433,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val expectedForNewMessage = setOf(group1Account, accounts.employee1)
 
-        assertEquals(expectedForNewMessage, receivers.flatMap { it.newMessage }.toSet())
+        assertEquals(
+            expectedForNewMessage,
+            receivers.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
+        )
         assertEquals(
             expectedForNewMessage + accounts.employee2,
-            receivers.flatMap { it.reply }.toSet(),
+            receivers.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
         )
     }
 
@@ -488,10 +491,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val receivers = db.read { it.getCitizenReceivers(today, accounts.person1.id).values }
 
         val expectedForNewMessage = setOf(group1Account, group2Account, accounts.employee1)
-        assertEquals(expectedForNewMessage, receivers.flatMap { it.newMessage }.toSet())
+        assertEquals(
+            expectedForNewMessage,
+            receivers.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
+        )
         assertEquals(
             expectedForNewMessage + accounts.employee2,
-            receivers.flatMap { it.reply }.toSet(),
+            receivers.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
         )
     }
 
@@ -588,10 +594,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val expectedForNewMessage =
             setOf(accounts.employee1, groupAccount, anotherUnitSupervisorAccount)
 
-        assertEquals(expectedForNewMessage, receivers.flatMap { it.newMessage }.toSet())
+        assertEquals(
+            expectedForNewMessage,
+            receivers.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
+        )
         assertEquals(
             expectedForNewMessage + accounts.employee2,
-            receivers.flatMap { it.reply }.toSet(),
+            receivers.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
         )
     }
 
@@ -659,17 +668,32 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         fun receiversOf(account: MessageAccount) =
             db.read { it.getCitizenReceivers(now.toLocalDate(), account.id) }
 
+        fun accountsToAccountSetWithPresence(vararg accounts: MessageAccount) =
+            accounts
+                .map { account ->
+                    MessageAccountWithPresence(account = account, outOfOffice = null)
+                }
+                .toSet()
+
         assertEquals(
             mapOf(
                 child1Id to
                     MessageAccountAccess(
-                        setOf(accounts.employee1, groupAccount, accounts.person2),
-                        setOf(accounts.employee1, groupAccount, accounts.person2),
+                        accountsToAccountSetWithPresence(
+                            accounts.employee1,
+                            groupAccount,
+                            accounts.person2,
+                        ),
+                        accountsToAccountSetWithPresence(
+                            accounts.employee1,
+                            groupAccount,
+                            accounts.person2,
+                        ),
                     ),
                 child2Id to
                     MessageAccountAccess(
-                        setOf(accounts.employee1, accounts.person2),
-                        setOf(accounts.employee1, accounts.person2),
+                        accountsToAccountSetWithPresence(accounts.employee1, accounts.person2),
+                        accountsToAccountSetWithPresence(accounts.employee1, accounts.person2),
                     ),
             ),
             receiversOf(accounts.person1),
@@ -679,8 +703,16 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             mapOf(
                 child1Id to
                     MessageAccountAccess(
-                        setOf(accounts.employee1, groupAccount, accounts.person2),
-                        setOf(accounts.employee1, groupAccount, accounts.person2),
+                        accountsToAccountSetWithPresence(
+                            accounts.employee1,
+                            groupAccount,
+                            accounts.person2,
+                        ),
+                        accountsToAccountSetWithPresence(
+                            accounts.employee1,
+                            groupAccount,
+                            accounts.person2,
+                        ),
                     )
             ),
             receiversOf(accounts.person1),
