@@ -32,8 +32,7 @@ export default React.memo(function InvoiceFilters() {
     invoices: {
       searchFilters,
       setSearchFilters,
-      searchTerms,
-      setSearchTerms,
+      confirmSearchFilters,
       clearSearchFilters
     },
     shared: { units, setUnits, availableAreas }
@@ -123,8 +122,11 @@ export default React.memo(function InvoiceFilters() {
   return (
     <Filters
       searchPlaceholder={i18n.filters.freeTextPlaceholder}
-      freeText={searchTerms}
-      setFreeText={setSearchTerms}
+      freeText={searchFilters.searchTerms}
+      setFreeText={(s) =>
+        setSearchFilters((prev) => ({ ...prev, searchTerms: s }))
+      }
+      onSearch={confirmSearchFilters}
       clearFilters={clearSearchFilters}
       column1={
         <>

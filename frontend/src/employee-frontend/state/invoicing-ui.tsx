@@ -87,6 +87,7 @@ interface ValueDecisionSearchFilterState {
 }
 
 export interface InvoiceSearchFilters {
+  searchTerms: string
   area: string[]
   unit?: DaycareId
   status: InvoiceStatus
@@ -97,11 +98,12 @@ export interface InvoiceSearchFilters {
 }
 
 interface InvoiceSearchFilterState {
+  page: number
+  setPage: (p: number) => void
   searchFilters: InvoiceSearchFilters
   setSearchFilters: Dispatch<SetStateAction<InvoiceSearchFilters>>
-  searchTerms: string
-  setSearchTerms: (s: string) => void
-  debouncedSearchTerms: string
+  confirmedSearchFilters: InvoiceSearchFilters | undefined
+  confirmSearchFilters: () => void
   clearSearchFilters: () => void
 }
 
@@ -203,7 +205,10 @@ const defaultState: UiState = {
     clearSearchFilters: () => undefined
   },
   invoices: {
+    page: 1,
+    setPage: () => undefined,
     searchFilters: {
+      searchTerms: '',
       distinctiveDetails: [],
       area: [],
       status: 'DRAFT',
@@ -212,9 +217,8 @@ const defaultState: UiState = {
       useCustomDatesForInvoiceSending: false
     },
     setSearchFilters: () => undefined,
-    searchTerms: '',
-    setSearchTerms: () => undefined,
-    debouncedSearchTerms: '',
+    confirmedSearchFilters: undefined,
+    confirmSearchFilters: () => undefined,
     clearSearchFilters: () => undefined
   },
   payments: {
@@ -329,15 +333,29 @@ export const InvoicingUIContextProvider = React.memo(
       [setValueDecisionSearchFilters]
     )
 
-    const [invoiceSearchFilters, setInvoiceSearchFilters] =
-      useState<InvoiceSearchFilters>(defaultState.invoices.searchFilters)
-    const [invoiceFreeTextSearch, setInvoiceFreeTextSearch] = useState(
-      defaultState.invoices.searchTerms
+    const [invoicePage, setInvoicePage] = useState<number>(
+      defaultState.invoices.page
     )
-    const invoiceDebouncedFreeText = useDebounce(invoiceFreeTextSearch, 500)
+    const [confirmedInvoiceSearchFilters, setConfirmedInvoiceSearchFilters] =
+      useState<InvoiceSearchFilters | undefined>(
+        defaultState.invoices.confirmedSearchFilters
+      )
+    const [invoiceSearchFilters, _setInvoiceSearchFilters] =
+      useState<InvoiceSearchFilters>(defaultState.invoices.searchFilters)
+    const setInvoiceSearchFilters = useCallback(
+      (value: React.SetStateAction<InvoiceSearchFilters>) => {
+        _setInvoiceSearchFilters(value)
+        setConfirmedInvoiceSearchFilters(undefined)
+      },
+      []
+    )
+    const confirmInvoiceSearchFilters = useCallback(() => {
+      setConfirmedInvoiceSearchFilters(invoiceSearchFilters)
+      setInvoicePage(defaultState.invoices.page)
+    }, [invoiceSearchFilters])
     const clearInvoiceSearchFilters = useCallback(
       () => setInvoiceSearchFilters(defaultState.invoices.searchFilters),
-      []
+      [setInvoiceSearchFilters]
     )
 
     const [paymentSearchFilters, setPaymentSearchFilters] =
@@ -423,11 +441,12 @@ export const InvoicingUIContextProvider = React.memo(
           clearSearchFilters: clearValueDecisionSearchFilters
         },
         invoices: {
+          page: invoicePage,
+          setPage: setInvoicePage,
           searchFilters: invoiceSearchFilters,
+          confirmedSearchFilters: confirmedInvoiceSearchFilters,
           setSearchFilters: setInvoiceSearchFilters,
-          searchTerms: invoiceFreeTextSearch,
-          setSearchTerms: setInvoiceFreeTextSearch,
-          debouncedSearchTerms: invoiceDebouncedFreeText,
+          confirmSearchFilters: confirmInvoiceSearchFilters,
           clearSearchFilters: clearInvoiceSearchFilters
         },
         payments: {
@@ -468,9 +487,11 @@ export const InvoicingUIContextProvider = React.memo(
         setValueDecisionSearchFilters,
         confirmValueDecisionSearchFilters,
         clearValueDecisionSearchFilters,
+        invoicePage,
         invoiceSearchFilters,
-        invoiceFreeTextSearch,
-        invoiceDebouncedFreeText,
+        confirmedInvoiceSearchFilters,
+        setInvoiceSearchFilters,
+        confirmInvoiceSearchFilters,
         clearInvoiceSearchFilters,
         paymentSearchFilters,
         paymentFreeTextSearch,
