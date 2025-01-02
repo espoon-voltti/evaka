@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import {
   SortDirection,
   VoucherValueDecisionSortParam,
@@ -28,7 +27,7 @@ import { H1 } from 'lib-components/typography'
 
 import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
-import { renderResult } from '../async-rendering'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 
@@ -48,11 +47,9 @@ const ResultsContainer = styled.div`
 `
 
 interface Props {
-  decisions?: Result<VoucherValueDecisionSummary[]>
-  total?: number
-  pages?: number
-  currentPage: number
-  setPage: (page: number) => void
+  decisions: VoucherValueDecisionSummary[]
+  total: number
+  pages: number
   sortBy: VoucherValueDecisionSortParam
   setSortBy: (v: VoucherValueDecisionSortParam) => void
   sortDirection: SortDirection
@@ -68,8 +65,6 @@ export default React.memo(function VoucherValueDecisions({
   decisions,
   total,
   pages,
-  currentPage,
-  setPage,
   sortBy,
   setSortBy,
   sortDirection,
@@ -82,10 +77,12 @@ export default React.memo(function VoucherValueDecisions({
 }: Props) {
   const { i18n } = useTranslation()
 
+  const {
+    valueDecisions: { page, setPage }
+  } = useContext(InvoicingUiContext)
+
   const allChecked =
-    decisions
-      ?.map((ds) => ds.length > 0 && ds.every((d) => isChecked(d.id)))
-      .getOrElse(false) ?? false
+    decisions.length > 0 && decisions.every((d) => isChecked(d.id))
 
   const isSorted = (column: VoucherValueDecisionSortParam) =>
     sortBy === column ? sortDirection : undefined
@@ -99,74 +96,70 @@ export default React.memo(function VoucherValueDecisions({
     }
   }
 
-  const rows = decisions?.isSuccess
-    ? decisions.value.map((item) => (
-        <Tr
-          key={item.id}
-          onClick={
-            item.annullingDecision
-              ? undefined
-              : () =>
-                  window.open(
-                    `${getEmployeeUrlPrefix()}/employee/finance/value-decisions/${
-                      item.id
-                    }`,
-                    '_blank'
-                  )
-          }
-          data-qa="table-value-decision-row"
-        >
-          <Td>
-            <NameWithSsn {...item.headOfFamily} i18n={i18n} />
-          </Td>
-          <Td>
-            <ChildrenCell people={[item.child]} />
-          </Td>
-          <Td>
-            {item.annullingDecision
-              ? `${i18n.valueDecisions.table.annullingDecision} `
-              : ''}
-            {`${item.validFrom.format()} - ${item.validTo?.format() ?? ''}`}
-          </Td>
-          <Td>{formatCents(item.voucherValue)}</Td>
-          <Td>{formatCents(item.finalCoPayment)}</Td>
-          <Td>{item.decisionNumber}</Td>
-          <Td>{item.created.toLocalDate().format()}</Td>
-          <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
-          <Td>
-            <VoucherValueDecisionDifferenceIcons difference={item.difference} />
-          </Td>
-          <Td>{i18n.valueDecision.status[item.status]}</Td>
-          {showCheckboxes ? (
-            <Td onClick={(e) => e.stopPropagation()}>
-              <Checkbox
-                label={item.id}
-                hiddenLabel
-                checked={isChecked(item.id)}
-                onChange={() => toggleChecked(item.id)}
-                data-qa="toggle-decision"
-              />
-            </Td>
-          ) : null}
-        </Tr>
-      ))
-    : null
+  const rows = decisions.map((item) => (
+    <Tr
+      key={item.id}
+      onClick={
+        item.annullingDecision
+          ? undefined
+          : () =>
+              window.open(
+                `${getEmployeeUrlPrefix()}/employee/finance/value-decisions/${
+                  item.id
+                }`,
+                '_blank'
+              )
+      }
+      data-qa="table-value-decision-row"
+    >
+      <Td>
+        <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+      </Td>
+      <Td>
+        <ChildrenCell people={[item.child]} />
+      </Td>
+      <Td>
+        {item.annullingDecision
+          ? `${i18n.valueDecisions.table.annullingDecision} `
+          : ''}
+        {`${item.validFrom.format()} - ${item.validTo?.format() ?? ''}`}
+      </Td>
+      <Td>{formatCents(item.voucherValue)}</Td>
+      <Td>{formatCents(item.finalCoPayment)}</Td>
+      <Td>{item.decisionNumber}</Td>
+      <Td>{item.created.toLocalDate().format()}</Td>
+      <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
+      <Td>
+        <VoucherValueDecisionDifferenceIcons difference={item.difference} />
+      </Td>
+      <Td>{i18n.valueDecision.status[item.status]}</Td>
+      {showCheckboxes ? (
+        <Td onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            label={item.id}
+            hiddenLabel
+            checked={isChecked(item.id)}
+            onChange={() => toggleChecked(item.id)}
+            data-qa="toggle-decision"
+          />
+        </Td>
+      ) : null}
+    </Tr>
+  ))
 
   return (
     <div className="value-decisions">
       <TitleRowContainer>
         <H1 noMargin>{i18n.valueDecisions.table.title}</H1>
-        {decisions?.isSuccess && (
-          <ResultsContainer>
-            <div>{total ? i18n.common.resultCount(total) : null}</div>
-            <Pagination
-              pages={pages}
-              currentPage={currentPage}
-              setPage={setPage}
-              label={i18n.common.page}
-            />
-          </ResultsContainer>
-        )}
+        <ResultsContainer>
+          <div>{total ? i18n.common.resultCount(total) : null}</div>
+          <Pagination
+            pages={pages}
+            currentPage={page}
+            setPage={setPage}
+            label={i18n.common.page}
+          />
+        </ResultsContainer>
       </TitleRowContainer>
       <Table data-qa="table-of-decisions">
         <Thead>
@@ -223,33 +216,29 @@ export default React.memo(function VoucherValueDecisions({
             >
               {i18n.valueDecisions.table.status}
             </SortableTh>
-            {showCheckboxes && (!decisions || decisions.isSuccess) ? (
+            {showCheckboxes && (
               <Td>
                 <Checkbox
                   label="all"
                   hiddenLabel
                   checked={allChecked}
                   onChange={allChecked ? clearChecked : checkAll}
-                  disabled={decisions?.isSuccess !== true}
                   data-qa="toggle-all-decisions"
                 />
               </Td>
-            ) : null}
+            )}
           </Tr>
         </Thead>
         <Tbody>{rows}</Tbody>
       </Table>
-      {decisions &&
-        renderResult(decisions, () => (
-          <ResultsContainer>
-            <Pagination
-              pages={pages}
-              currentPage={currentPage}
-              setPage={setPage}
-              label={i18n.common.page}
-            />
-          </ResultsContainer>
-        ))}
+      <ResultsContainer>
+        <Pagination
+          pages={pages}
+          currentPage={page}
+          setPage={setPage}
+          label={i18n.common.page}
+        />
+      </ResultsContainer>
     </div>
   )
 })

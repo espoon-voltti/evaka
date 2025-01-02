@@ -38,8 +38,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
     valueDecisions: {
       searchFilters,
       setSearchFilters,
-      searchTerms,
-      setSearchTerms,
+      confirmSearchFilters,
       clearSearchFilters
     },
     shared: {
@@ -180,8 +179,11 @@ export default React.memo(function VoucherValueDecisionFilters() {
   return (
     <Filters
       searchPlaceholder={i18n.filters.freeTextPlaceholder}
-      freeText={searchTerms}
-      setFreeText={setSearchTerms}
+      freeText={searchFilters.searchTerms}
+      setFreeText={(s) =>
+        setSearchFilters((prev) => ({ ...prev, searchTerms: s }))
+      }
+      onSearch={confirmSearchFilters}
       clearFilters={clearSearchFilters}
       column1={
         <>

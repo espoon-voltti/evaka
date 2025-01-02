@@ -5,30 +5,22 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { featureFlags } from 'lib-customizations/employee'
 
-import {
-  sendVoucherValueDecisionDrafts,
-  unignoreVoucherValueDecisionDrafts
-} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import StickyActionBar from '../common/StickyActionBar'
 import { IgnoreDraftModal } from '../finance-decisions/IgnoreDraftModal'
 
-import { ignoreVoucherValueDecisionDraftsMutation } from './voucher-value-decision-queries'
-
-const sendVoucherValueDecisionDraftsResult = wrapResult(
-  sendVoucherValueDecisionDrafts
-)
-const unignoreVoucherValueDecisionDraftsResult = wrapResult(
-  unignoreVoucherValueDecisionDrafts
-)
+import {
+  ignoreVoucherValueDecisionDraftsMutation,
+  sendVoucherValueDecisionDraftsMutation,
+  unignoreVoucherValueDecisionDraftsMutation
+} from './voucher-value-decision-queries'
 
 const ErrorMessage = styled.div`
   color: ${(p) => p.theme.colors.accents.a2orangeDark};
@@ -39,7 +31,6 @@ type Props = {
   statuses: VoucherValueDecisionStatus[]
   checkedIds: VoucherValueDecisionId[]
   clearChecked: () => void
-  loadDecisions: () => void
   onHandlerSelectModal: () => void
 }
 
@@ -47,7 +38,6 @@ const Actions = React.memo(function Actions({
   statuses,
   checkedIds,
   clearChecked,
-  loadDecisions,
   onHandlerSelectModal
 }: Props) {
   const { i18n } = useTranslation()
@@ -57,16 +47,14 @@ const Actions = React.memo(function Actions({
   if (statuses.length === 1 && statuses[0] === 'IGNORED') {
     return (
       <StickyActionBar align="right">
-        <AsyncButton
+        <MutateButton
           text={i18n.valueDecisions.buttons.unignoreDrafts(checkedIds.length)}
+          mutation={unignoreVoucherValueDecisionDraftsMutation}
           disabled={checkedIds.length === 0}
-          onClick={() =>
-            unignoreVoucherValueDecisionDraftsResult({ body: checkedIds })
-          }
+          onClick={() => ({ body: checkedIds })}
           onSuccess={() => {
             setError(undefined)
             clearChecked()
-            loadDecisions()
           }}
           data-qa="unignore-decisions"
         />
@@ -84,14 +72,14 @@ const Actions = React.memo(function Actions({
               {i18n.valueDecisions.buttons.checked(checkedIds.length)}
             </CheckedRowsInfo>
           ) : null}
-          <LegacyButton
+          <Button
             text={i18n.feeDecisions.buttons.ignoreDraft}
             disabled={checkedIds.length !== 1}
             onClick={() => setShowIgnoreModal(true)}
             data-qa="open-ignore-draft-modal"
           />
           {featureFlags.financeDecisionHandlerSelect ? (
-            <LegacyButton
+            <Button
               primary
               text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
               disabled={checkedIds.length === 0}
@@ -99,19 +87,17 @@ const Actions = React.memo(function Actions({
               data-qa="open-decision-handler-select-modal"
             />
           ) : (
-            <AsyncButton
+            <MutateButton
               primary
               text={i18n.valueDecisions.buttons.createDecision(
                 checkedIds.length
               )}
+              mutation={sendVoucherValueDecisionDraftsMutation}
               disabled={checkedIds.length === 0}
-              onClick={() =>
-                sendVoucherValueDecisionDraftsResult({ body: checkedIds })
-              }
+              onClick={() => ({ body: checkedIds })}
               onSuccess={() => {
                 setError(undefined)
                 clearChecked()
-                loadDecisions()
               }}
               onFailure={(result) => {
                 setError(
@@ -134,7 +120,6 @@ const Actions = React.memo(function Actions({
               setShowIgnoreModal(false)
               setError(undefined)
               clearChecked()
-              loadDecisions()
             }}
           />
         )}
