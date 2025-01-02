@@ -1676,6 +1676,7 @@ const sv: Translations = {
       jurisdiction: 'Befogenhet',
       jurisdictionText:
         'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta',
+      disclaimer: null,
       appealInstructionsTitle: 'Anvisning om begäran om omprövning',
       appealInstructions: (
         <>
