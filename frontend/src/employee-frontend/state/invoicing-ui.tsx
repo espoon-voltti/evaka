@@ -64,6 +64,7 @@ interface FeeDecisionSearchFilterState {
 }
 
 interface ValueDecisionSearchFilters {
+  searchTerms: string
   area: string[]
   unit?: DaycareId
   statuses: VoucherValueDecisionStatus[]
@@ -76,11 +77,12 @@ interface ValueDecisionSearchFilters {
 }
 
 interface ValueDecisionSearchFilterState {
+  page: number
+  setPage: (p: number) => void
   searchFilters: ValueDecisionSearchFilters
   setSearchFilters: Dispatch<SetStateAction<ValueDecisionSearchFilters>>
-  searchTerms: string
-  setSearchTerms: (s: string) => void
-  debouncedSearchTerms: string
+  confirmedSearchFilters: ValueDecisionSearchFilters | undefined
+  confirmSearchFilters: () => void
   clearSearchFilters: () => void
 }
 
@@ -183,7 +185,10 @@ const defaultState: UiState = {
     clearSearchFilters: () => undefined
   },
   valueDecisions: {
+    page: 1,
+    setPage: () => undefined,
     searchFilters: {
+      searchTerms: '',
       distinctiveDetails: [],
       statuses: ['DRAFT'],
       area: [],
@@ -193,9 +198,8 @@ const defaultState: UiState = {
       searchByStartDate: false
     },
     setSearchFilters: () => undefined,
-    searchTerms: '',
-    setSearchTerms: () => undefined,
-    debouncedSearchTerms: '',
+    confirmedSearchFilters: undefined,
+    confirmSearchFilters: () => undefined,
     clearSearchFilters: () => undefined
   },
   invoices: {
@@ -293,22 +297,36 @@ export const InvoicingUIContextProvider = React.memo(
       [setFeeDecisionSearchFilters]
     )
 
-    const [valueDecisionSearchFilters, setValueDecisionSearchFilters] =
+    const [valueDecisionPage, setValueDecisionPage] = useState<number>(
+      defaultState.valueDecisions.page
+    )
+    const [
+      confirmedValueDecisionSearchFilters,
+      setConfirmedValueDecisionSearchFilters
+    ] = useState<ValueDecisionSearchFilters | undefined>(
+      defaultState.valueDecisions.confirmedSearchFilters
+    )
+    const [valueDecisionSearchFilters, _setValueDecisionSearchFilters] =
       useState<ValueDecisionSearchFilters>(
         defaultState.valueDecisions.searchFilters
       )
-    const [valueDecisionFreeTextSearch, setValueDecisionFreeTextSearch] =
-      useState(defaultState.valueDecisions.searchTerms)
-    const valueDecisionDebouncedFreeText = useDebounce(
-      valueDecisionFreeTextSearch,
-      500
+    const setValueDecisionSearchFilters = useCallback(
+      (value: React.SetStateAction<ValueDecisionSearchFilters>) => {
+        _setValueDecisionSearchFilters(value)
+        setConfirmedValueDecisionSearchFilters(undefined)
+      },
+      []
     )
+    const confirmValueDecisionSearchFilters = useCallback(() => {
+      setConfirmedValueDecisionSearchFilters(valueDecisionSearchFilters)
+      setValueDecisionPage(defaultState.valueDecisions.page)
+    }, [valueDecisionSearchFilters])
     const clearValueDecisionSearchFilters = useCallback(
       () =>
         setValueDecisionSearchFilters(
           defaultState.valueDecisions.searchFilters
         ),
-      []
+      [setValueDecisionSearchFilters]
     )
 
     const [invoiceSearchFilters, setInvoiceSearchFilters] =
@@ -396,11 +414,12 @@ export const InvoicingUIContextProvider = React.memo(
           clearSearchFilters: clearFeeDecisionSearchFilters
         },
         valueDecisions: {
+          page: valueDecisionPage,
+          setPage: setValueDecisionPage,
           searchFilters: valueDecisionSearchFilters,
+          confirmedSearchFilters: confirmedValueDecisionSearchFilters,
           setSearchFilters: setValueDecisionSearchFilters,
-          searchTerms: valueDecisionFreeTextSearch,
-          setSearchTerms: setValueDecisionFreeTextSearch,
-          debouncedSearchTerms: valueDecisionDebouncedFreeText,
+          confirmSearchFilters: confirmValueDecisionSearchFilters,
           clearSearchFilters: clearValueDecisionSearchFilters
         },
         invoices: {
@@ -443,9 +462,11 @@ export const InvoicingUIContextProvider = React.memo(
         setFeeDecisionSearchFilters,
         confirmFeeDecisionSearchFilters,
         clearFeeDecisionSearchFilters,
+        valueDecisionPage,
         valueDecisionSearchFilters,
-        valueDecisionFreeTextSearch,
-        valueDecisionDebouncedFreeText,
+        confirmedValueDecisionSearchFilters,
+        setValueDecisionSearchFilters,
+        confirmValueDecisionSearchFilters,
         clearValueDecisionSearchFilters,
         invoiceSearchFilters,
         invoiceFreeTextSearch,
