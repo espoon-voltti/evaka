@@ -3,35 +3,26 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import { parametricMutation, query } from 'lib-common/query'
 
 import {
   getPedagogicalDocumentsForChild,
   getUnreadPedagogicalDocumentCount,
   markPedagogicalDocumentRead
 } from '../../../generated/api-clients/pedagogicaldocument'
-import { createQueryKeys } from '../../../query'
+import { queries } from '../../../query'
 
-const queryKeys = createQueryKeys('pedagogicalDocuments', {
-  forChild: (childId: ChildId) => ['documents', childId],
-  unreadCount: () => ['unreadCount']
-})
+const q = queries('pedagogicalDocuments')
 
-export const unreadPedagogicalDocumentsCountQuery = query({
-  api: getUnreadPedagogicalDocumentCount,
-  queryKey: queryKeys.unreadCount
-})
+export const unreadPedagogicalDocumentsCountQuery = q.query(
+  getUnreadPedagogicalDocumentCount
+)
 
-export const pedagogicalDocumentsQuery = query({
-  api: getPedagogicalDocumentsForChild,
-  queryKey: ({ childId }) => queryKeys.forChild(childId)
-})
+export const pedagogicalDocumentsQuery = q.query(
+  getPedagogicalDocumentsForChild
+)
 
 export const markPedagogicalDocumentAsReadMutation =
-  parametricMutation<ChildId>()({
-    api: markPedagogicalDocumentRead,
-    invalidateQueryKeys: (childId) => [
-      pedagogicalDocumentsQuery({ childId }).queryKey,
-      unreadPedagogicalDocumentsCountQuery().queryKey
-    ]
-  })
+  q.parametricMutation<ChildId>()(markPedagogicalDocumentRead, [
+    (childId) => pedagogicalDocumentsQuery({ childId }),
+    () => unreadPedagogicalDocumentsCountQuery()
+  ])

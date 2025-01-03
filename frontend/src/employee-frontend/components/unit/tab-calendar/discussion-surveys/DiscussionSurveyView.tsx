@@ -340,7 +340,7 @@ export default React.memo(function DiscussionReservationSurveyView({
             action: () => {
               deleteCalendarEvent({
                 data: { id: eventData.id },
-                extra: groupId
+                extra: { unitId, groupId }
               })
                 .catch(() => {
                   setErrorMessage({

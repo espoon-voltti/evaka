@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
-import { mutation, parametricMutation, query } from 'lib-common/query'
 
 import { getChildren } from '../generated/api-clients/children'
 import {
@@ -13,41 +11,24 @@ import {
   getChildServiceApplications,
   getChildServiceNeedOptions
 } from '../generated/api-clients/serviceneed'
-import { createQueryKeys } from '../query'
+import { queries } from '../query'
 
-const queryKeys = createQueryKeys('children', {
-  all: () => null,
-  serviceApplications: (childId: ChildId) => [childId, 'service-applications'],
-  serviceNeedOptions: (childId: ChildId, date: LocalDate) => [
-    childId,
-    'service-need-options',
-    date
-  ]
-})
+const q = queries('children')
 
-export const childrenQuery = query({
-  api: getChildren,
-  queryKey: queryKeys.all
-})
+export const childrenQuery = q.query(getChildren)
 
-export const childServiceApplicationsQuery = query({
-  api: getChildServiceApplications,
-  queryKey: (args) => queryKeys.serviceApplications(args.childId)
-})
+export const childServiceApplicationsQuery = q.query(
+  getChildServiceApplications
+)
 
-export const childServiceNeedOptionsQuery = query({
-  api: getChildServiceNeedOptions,
-  queryKey: (args) => queryKeys.serviceNeedOptions(args.childId, args.date)
-})
+export const childServiceNeedOptionsQuery = q.query(getChildServiceNeedOptions)
 
-export const createServiceApplicationsMutation = mutation({
-  api: createServiceApplication,
-  invalidateQueryKeys: (arg) => [
-    queryKeys.serviceApplications(arg.body.childId)
-  ]
-})
+export const createServiceApplicationsMutation = q.mutation(
+  createServiceApplication,
+  [({ body: { childId } }) => childServiceApplicationsQuery({ childId })]
+)
 
-export const deleteServiceApplicationsMutation = parametricMutation<ChildId>()({
-  api: deleteServiceApplication,
-  invalidateQueryKeys: (childId) => [queryKeys.serviceApplications(childId)]
-})
+export const deleteServiceApplicationsMutation =
+  q.parametricMutation<ChildId>()(deleteServiceApplication, [
+    (childId) => childServiceApplicationsQuery({ childId })
+  ])

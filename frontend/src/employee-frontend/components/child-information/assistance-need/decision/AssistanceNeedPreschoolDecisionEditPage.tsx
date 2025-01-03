@@ -35,6 +35,7 @@ import { Employee } from 'lib-common/generated/api-types/pis'
 import {
   AssistanceNeedPreschoolDecisionGuardianId,
   AssistanceNeedPreschoolDecisionId,
+  ChildId,
   DaycareId,
   EmployeeId,
   OfficialLanguage,
@@ -43,7 +44,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
+import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -73,9 +74,9 @@ import { getEmployeesQuery } from '../../../../queries'
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
+  assistanceNeedPreschoolDecisionBasicsQuery,
   assistanceNeedPreschoolDecisionMakerOptionsQuery,
   assistanceNeedPreschoolDecisionQuery,
-  queryKeys,
   unitsQuery,
   updateAssistanceNeedPreschoolDecisionMutation
 } from '../../queries'
@@ -1002,7 +1003,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 })
 
 export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
-  const { childId } = useRouteParams(['childId'])
+  const childId = useIdRouteParam<ChildId>('childId')
   const decisionId =
     useIdRouteParam<AssistanceNeedPreschoolDecisionId>('decisionId')
   const decisionResult = useQueryResult(
@@ -1024,11 +1025,13 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   useEffect(
     () => () => {
       void queryClient.invalidateQueries({
-        queryKey: queryKeys.assistanceNeedPreschoolDecision(decisionId),
+        queryKey: assistanceNeedPreschoolDecisionQuery({ id: decisionId })
+          .queryKey,
         type: 'all'
       })
       void queryClient.invalidateQueries({
-        queryKey: queryKeys.assistanceNeedPreschoolDecisionBasics(childId),
+        queryKey: assistanceNeedPreschoolDecisionBasicsQuery({ childId })
+          .queryKey,
         type: 'all'
       })
     },

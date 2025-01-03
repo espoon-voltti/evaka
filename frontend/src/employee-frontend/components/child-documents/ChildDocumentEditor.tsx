@@ -64,7 +64,6 @@ import {
   childDocumentWriteLockQuery,
   deleteChildDocumentMutation,
   publishChildDocumentMutation,
-  queryKeys,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
 import { FlexRow } from '../common/styled/containers'
@@ -200,7 +199,7 @@ const ChildDocumentEditViewInner = React.memo(
     useEffect(
       () => () => {
         void queryClient.invalidateQueries({
-          queryKey: queryKeys.childDocument(document.id),
+          queryKey: childDocumentQuery({ documentId: document.id }).queryKey,
           type: 'all'
         })
       },
