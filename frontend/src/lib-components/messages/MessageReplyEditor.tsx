@@ -5,6 +5,7 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { AccountType } from 'lib-common/generated/api-types/messaging'
 import { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { type cancelMutation, MutationDescription } from 'lib-common/query'
@@ -18,6 +19,7 @@ import ButtonContainer from '../layout/ButtonContainer'
 import { Label } from '../typography'
 import { defaultMargins } from '../white-space'
 
+import OutOfOfficeInfo from './OutOfOfficeInfo'
 import { ToggleableRecipient } from './ToggleableRecipient'
 
 const MultiRowTextArea = styled(TextArea)`
@@ -41,6 +43,7 @@ export interface SelectableAccount {
   selected: boolean
   toggleable: boolean
   type: AccountType
+  outOfOffice: FiniteDateRange | null
 }
 
 interface Props<T, R> {
@@ -90,6 +93,15 @@ function MessageReplyEditor<T, R>({
             labelAdd={i18n.common.add}
           />
         ))}
+        <OutOfOfficeInfo
+          selectedAccountIds={recipients
+            .filter((r) => r.selected)
+            .map((r) => r.id)}
+          accounts={recipients.map((r) => ({
+            account: { id: r.id, name: r.name, type: r.type },
+            outOfOffice: r.outOfOffice
+          }))}
+        />
       </EditorRow>
       <EditorRow>
         <Label>{i18n.messages.message}</Label>

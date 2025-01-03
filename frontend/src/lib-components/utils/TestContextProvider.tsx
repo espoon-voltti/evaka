@@ -101,6 +101,10 @@ export const testTranslations: Translations = {
     thread: {
       type: '',
       urgent: ''
+    },
+    outOfOffice: {
+      singleRecipient: () => '',
+      multipleRecipientsHeader: ''
     }
   },
   messageReplyEditor: {

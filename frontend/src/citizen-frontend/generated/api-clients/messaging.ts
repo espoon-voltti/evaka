@@ -16,6 +16,7 @@ import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
+import { deserializeJsonGetReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedCitizenMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonThreadReply } from 'lib-common/generated/api-types/messaging'
 import { uri } from 'lib-common/uri'
@@ -77,7 +78,7 @@ export async function getReceivers(): Promise<GetReceiversResponse> {
     url: uri`/citizen/messages/receivers`.toString(),
     method: 'GET'
   })
-  return json
+  return deserializeJsonGetReceiversResponse(json)
 }
 
 

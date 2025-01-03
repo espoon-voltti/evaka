@@ -32,6 +32,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap
 } from 'lib-components/layout/flex-helpers'
+import OutOfOfficeInfo from 'lib-components/messages/OutOfOfficeInfo'
 import { ToggleableRecipient } from 'lib-components/messages/ToggleableRecipient'
 import FileUpload, {
   initialUploadStatus,
@@ -160,16 +161,18 @@ export default React.memo(function MessageEditor({
   )
 
   const validAccounts = useMemo(() => {
-    const accounts = receiverOptions.messageAccounts.filter(
-      (account) =>
-        selectedChildrenInSameUnit &&
-        message.children.some(
-          (childId) =>
-            receiverOptions.childrenToMessageAccounts[
-              childId
-            ]?.newMessage.includes(account.id) ?? false
-        )
-    )
+    const accounts = receiverOptions.messageAccounts
+      .filter(
+        (account) =>
+          selectedChildrenInSameUnit &&
+          message.children.some(
+            (childId) =>
+              receiverOptions.childrenToMessageAccounts[
+                childId
+              ]?.newMessage.includes(account.account.id) ?? false
+          )
+      )
+      .map((withPresence) => withPresence.account)
     const [primary, secondary] = partition(accounts, isPrimaryRecipient)
     return { primary, secondary }
   }, [selectedChildrenInSameUnit, message.children, receiverOptions])
@@ -318,6 +321,11 @@ export default React.memo(function MessageEditor({
               />
             </label>
 
+            <OutOfOfficeInfo
+              selectedAccountIds={recipients.primary.map((a) => a.id)}
+              accounts={receiverOptions.messageAccounts}
+            />
+
             {showSecondaryRecipientSelection && (
               <>
                 <Gap size="xs" />
@@ -337,7 +345,8 @@ export default React.memo(function MessageEditor({
                           toggleable: true,
                           selected: recipients.secondary.some(
                             (acc) => acc.id === recipient.id
-                          )
+                          ),
+                          outOfOffice: null
                         }}
                         data-qa="secondary-recipient"
                         onToggleRecipient={(_, selected) =>
