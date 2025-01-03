@@ -159,24 +159,6 @@ export function query<Args extends unknown[], Data>(opts: {
   })
 }
 
-export const parametricQuery =
-  <QueryArg>() =>
-  <Args extends unknown[], Data>(opts: {
-    api: (...args: Args) => Promise<Data>
-    queryKey: (extra: QueryArg, ...args: Args) => QueryKey
-    options?: QueryOptions
-  }): ((extra: QueryArg, ...args: Args) => UseQueryOptions<Data, unknown>) => {
-    const { api, queryKey, options } = opts
-    return (
-      extra: QueryArg,
-      ...args: Args
-    ): UseQueryOptions<Data, unknown> => ({
-      queryFn: () => api(...args),
-      queryKey: queryKey(extra, ...args),
-      ...options
-    })
-  }
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyUseQueryOptions = UseQueryOptions<any, unknown>
 
