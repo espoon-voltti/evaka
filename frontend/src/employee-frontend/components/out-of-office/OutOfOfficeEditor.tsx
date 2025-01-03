@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment } from 'react'
+import React from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { localDateRange } from 'lib-common/form/fields'
@@ -63,7 +63,7 @@ export default React.memo(function OutOfOfficeEditor({
     })
 
   return (
-    <Fragment>
+    <div data-qa="out-of-office-editor">
       <DateRangePickerF
         bind={period}
         locale={lang}
@@ -78,6 +78,7 @@ export default React.memo(function OutOfOfficeEditor({
           disabled={!form.isValid()}
           onClick={onSubmit}
           onSuccess={onClose}
+          data-qa="save-out-of-office"
         />
         <Gap size="xs" horizontal />
         <Button
@@ -86,6 +87,6 @@ export default React.memo(function OutOfOfficeEditor({
           onClick={onClose}
         />
       </ButtonContainer>
-    </Fragment>
+    </div>
   )
 })

@@ -46,7 +46,7 @@ export default React.memo(function OutOfOfficePage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea opaque data-qa="out-of-office-page">
         <H1>{i18n.outOfOffice.title}</H1>
         <P>{i18n.outOfOffice.description}</P>
         <Gap size="m" />
@@ -63,6 +63,7 @@ export default React.memo(function OutOfOfficePage() {
                     appearance="inline"
                     icon={faPen}
                     onClick={() => startEdit(period)}
+                    data-qa="edit-out-of-office"
                   />
                   <AsyncButton
                     text={i18n.common.remove}
@@ -70,6 +71,7 @@ export default React.memo(function OutOfOfficePage() {
                     onSuccess={() => void {}}
                     appearance="inline"
                     icon={faTrash}
+                    data-qa="remove-out-of-office"
                   />
                 </PeriodItemContainer>
               </li>
@@ -90,6 +92,7 @@ export default React.memo(function OutOfOfficePage() {
               text={i18n.outOfOffice.addOutOfOffice}
               primary
               onClick={() => setIsEditing(true)}
+              data-qa="add-out-of-office"
             />
           </Fragment>
         ) : null}
