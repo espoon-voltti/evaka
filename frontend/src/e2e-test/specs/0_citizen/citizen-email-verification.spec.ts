@@ -5,14 +5,11 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { Fixture } from '../../dev-api/fixtures'
-import {
-  getSentEmails,
-  resetServiceState,
-  runJobs
-} from '../../generated/api-clients'
+import { resetServiceState, runJobs } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
+import { getVerificationCodeFromEmail } from '../../utils/email'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -78,15 +75,4 @@ async function openPersonalDetailsPage(citizen: DevPerson) {
   const header = new CitizenHeader(page)
   await header.selectTab('personal-details')
   return new CitizenPersonalDetailsPage(page)
-}
-
-async function getVerificationCodeFromEmail(): Promise<string | null> {
-  const emails = await getSentEmails()
-  if (emails.length === 0) return null
-  expect(emails.length).toBe(1)
-  const email = emails[0]
-
-  const verificationCodeRegex = /[0-9]{8}/
-  const matches = verificationCodeRegex.exec(email.content.text)
-  return matches ? matches[0] : null
 }
