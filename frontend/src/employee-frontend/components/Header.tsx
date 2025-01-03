@@ -432,7 +432,15 @@ export default React.memo(function Header() {
                   {i18n.pinCode.link}
                 </Link>
               )}
-
+              {user?.accessibleFeatures.outOfOffice && (
+                <Link
+                  to="/out-of-office"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-out-of-office"
+                >
+                  {i18n.outOfOffice.title}
+                </Link>
+              )}
               <Link
                 to="/preferred-first-name"
                 onClick={closeUserPopup}

@@ -19,7 +19,8 @@ import {
   ChildMessageAccountAccess,
   CitizenMessageThread,
   Message,
-  MessageAccount
+  MessageAccount,
+  MessageAccountWithPresence
 } from 'lib-common/generated/api-types/messaging'
 import {
   ChildId,
@@ -215,6 +216,7 @@ interface Props {
   accountId: MessageAccountId
   thread: CitizenMessageThread.Regular
   allowedAccounts: Partial<Record<ChildId, ChildMessageAccountAccess>>
+  accountDetails: MessageAccountWithPresence[]
   closeThread: () => void
   onThreadDeleted: () => void
 }
@@ -237,6 +239,7 @@ export default React.memo(
         children
       },
       allowedAccounts,
+      accountDetails,
       closeThread,
       onThreadDeleted
     }: Props,
@@ -246,7 +249,11 @@ export default React.memo(
     const { setReplyContent, getReplyContent } = useContext(MessageContext)
     const { addTimedNotification } = useContext(NotificationsContext)
 
-    const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
+    const { onToggleRecipient, recipients } = useRecipients(
+      messages,
+      accountId,
+      accountDetails
+    )
     const [replyEditorVisible, useReplyEditorVisible] = useBoolean(false)
     const [confirmDelete, setConfirmDelete] = useState(false)
 

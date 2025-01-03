@@ -27,6 +27,7 @@ export type QueryKeyPrefix =
   | 'placementTool'
   | 'feeDecisions'
   | 'voucherValueDecisions'
+  | 'outOfOffice'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

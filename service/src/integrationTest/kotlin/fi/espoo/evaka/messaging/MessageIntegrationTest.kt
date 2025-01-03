@@ -502,7 +502,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `guardian can send a message only to group and other guardian, not group staff`() {
-        fun getRecipients() = getCitizenReceivers(person1).messageAccounts.map { it.id }.toSet()
+        fun getRecipients() =
+            getCitizenReceivers(person1).messageAccounts.map { it.account.id }.toSet()
 
         assertEquals(setOf(group1Account, person2Account, employee1Account), getRecipients())
 

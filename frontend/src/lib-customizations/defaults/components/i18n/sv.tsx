@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { Translations } from 'lib-components/i18n'
 
 const components: Translations = {
@@ -110,6 +111,12 @@ const components: Translations = {
     thread: {
       type: 'Meddelandetyp',
       urgent: 'Akut'
+    },
+    outOfOffice: {
+      singleRecipient: (name: string, period: FiniteDateRange) =>
+        `${name} är inte tillgänglig ${period.toString()}.`,
+      multipleRecipientsHeader:
+        'Dessa mottagare kan inte svara på meddelanden under följande tider.'
     }
   },
   messageReplyEditor: {

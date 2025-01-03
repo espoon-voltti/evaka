@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { ApplicationId } from './shared'
 import { AttachmentId } from './shared'
@@ -120,7 +121,7 @@ export interface DraftContent {
 */
 export interface GetReceiversResponse {
   childrenToMessageAccounts: Partial<Record<PersonId, ChildMessageAccountAccess>>
-  messageAccounts: MessageAccount[]
+  messageAccounts: MessageAccountWithPresence[]
 }
 
 /**
@@ -155,6 +156,14 @@ export interface MessageAccount {
   id: MessageAccountId
   name: string
   type: AccountType
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageAccountWithPresence
+*/
+export interface MessageAccountWithPresence {
+  account: MessageAccount
+  outOfOffice: FiniteDateRange | null
 }
 
 /**
@@ -425,11 +434,27 @@ export function deserializeJsonDraftContent(json: JsonOf<DraftContent>): DraftCo
 }
 
 
+export function deserializeJsonGetReceiversResponse(json: JsonOf<GetReceiversResponse>): GetReceiversResponse {
+  return {
+    ...json,
+    messageAccounts: json.messageAccounts.map(e => deserializeJsonMessageAccountWithPresence(e))
+  }
+}
+
+
 export function deserializeJsonMessage(json: JsonOf<Message>): Message {
   return {
     ...json,
     readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt)
+  }
+}
+
+
+export function deserializeJsonMessageAccountWithPresence(json: JsonOf<MessageAccountWithPresence>): MessageAccountWithPresence {
+  return {
+    ...json,
+    outOfOffice: (json.outOfOffice != null) ? FiniteDateRange.parseJson(json.outOfOffice) : null
   }
 }
 
