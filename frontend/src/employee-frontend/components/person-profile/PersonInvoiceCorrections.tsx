@@ -359,8 +359,8 @@ const InvoiceCorrectionRowReadView = React.memo(
                     confirmLabel={i18n.common.remove}
                     mutation={deleteInvoiceCorrectionMutation}
                     onClick={() => ({
-                      id: correction.id,
-                      personId: correction.headOfFamilyId
+                      data: { id: correction.id },
+                      extra: correction.headOfFamilyId
                     })}
                     data-qa="delete-invoice-row-button"
                   />
@@ -617,7 +617,10 @@ const NoteQuickEditor = React.memo(function NoteQuickEditor({
     <MutateFormModal
       title={i18n.personProfile.invoiceCorrections.noteModalTitle}
       resolveMutation={updateInvoiceCorrectionNoteMutation}
-      resolveAction={() => ({ id: correctionId, personId, body: { note } })}
+      resolveAction={() => ({
+        data: { id: correctionId, body: { note } },
+        extra: personId
+      })}
       resolveLabel={i18n.common.save}
       onSuccess={closeNote}
       rejectAction={closeNote}

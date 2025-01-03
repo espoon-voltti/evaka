@@ -64,7 +64,6 @@ import {
   childDocumentWriteLockQuery,
   deleteChildDocumentMutation,
   publishChildDocumentMutation,
-  queryKeys,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
 import { FlexRow } from '../common/styled/containers'
@@ -200,7 +199,7 @@ const ChildDocumentEditViewInner = React.memo(
     useEffect(
       () => () => {
         void queryClient.invalidateQueries({
-          queryKey: queryKeys.childDocument(document.id),
+          queryKey: childDocumentQuery({ documentId: document.id }).queryKey,
           type: 'all'
         })
       },
@@ -488,8 +487,8 @@ const ChildDocumentReadViewInner = React.memo(
                       }
                       mutation={deleteChildDocumentMutation}
                       onClick={() => ({
-                        documentId: document.id,
-                        childId: document.child.id
+                        data: { documentId: document.id },
+                        extra: document.child.id
                       })}
                       onSuccess={goBack}
                       confirmationTitle={
@@ -507,11 +506,13 @@ const ChildDocumentReadViewInner = React.memo(
                       }
                       mutation={childDocumentPrevStatusMutation}
                       onClick={() => ({
-                        documentId: document.id,
-                        childId: document.child.id,
-                        body: {
-                          newStatus: prevStatus
-                        }
+                        data: {
+                          documentId: document.id,
+                          body: {
+                            newStatus: prevStatus
+                          }
+                        },
+                        extra: document.child.id
                       })}
                       confirmationTitle={
                         i18n.childInformation.childDocuments.editor
@@ -542,8 +543,8 @@ const ChildDocumentReadViewInner = React.memo(
                       }
                       mutation={publishChildDocumentMutation}
                       onClick={() => ({
-                        documentId: document.id,
-                        childId: document.child.id
+                        data: { documentId: document.id },
+                        extra: document.child.id
                       })}
                       confirmationTitle={
                         i18n.childInformation.childDocuments.editor
@@ -566,11 +567,11 @@ const ChildDocumentReadViewInner = React.memo(
                       primary
                       mutation={childDocumentNextStatusMutation}
                       onClick={() => ({
-                        documentId: document.id,
-                        childId: document.child.id,
-                        body: {
-                          newStatus: nextStatus
-                        }
+                        data: {
+                          documentId: document.id,
+                          body: { newStatus: nextStatus }
+                        },
+                        extra: document.child.id
                       })}
                       confirmationTitle={
                         i18n.childInformation.childDocuments.editor

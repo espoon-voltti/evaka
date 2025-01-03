@@ -348,7 +348,10 @@ export default React.memo(function AttendanceChildPage({
           resolve={{
             label: i18n.childInfo.image.modalMenu.deleteConfirm.resolve,
             action: () => {
-              void deleteChildImage({ unitId, childId }).finally(() => {
+              void deleteChildImage({
+                data: { childId },
+                extra: unitId
+              }).finally(() => {
                 setUiMode('default')
               })
             }

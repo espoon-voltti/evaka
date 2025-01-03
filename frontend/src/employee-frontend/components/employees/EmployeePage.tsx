@@ -231,10 +231,7 @@ const EmployeePage = React.memo(function EmployeePage({
                   buttonAltText={i18n.common.remove}
                   confirmationTitle={i18n.employees.editor.mobile.deleteConfirm}
                   mutation={deleteEmployeeMobileDeviceMutation}
-                  onClick={() => ({
-                    id: id,
-                    employeeId: employee.id
-                  })}
+                  onClick={() => ({ data: { id }, extra: employee.id })}
                   disabled={editingGlobalRoles}
                 />
               </Td>

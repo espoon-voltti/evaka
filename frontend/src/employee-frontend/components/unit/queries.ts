@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { mutation, query } from 'lib-common/query'
+import { mutation, parametricMutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
 import {
@@ -157,28 +158,25 @@ export const unitServiceApplicationsQuery = query({
   queryKey: ({ unitId }) => queryKeys.unitServiceApplications(unitId)
 })
 
-export const createGroupPlacementMutation = mutation({
-  api: (arg: Arg0<typeof createGroupPlacement> & { unitId: UUID }) =>
-    createGroupPlacement(arg),
-  invalidateQueryKeys: ({ unitId }) => [
+export const createGroupPlacementMutation = parametricMutation<DaycareId>()({
+  api: createGroupPlacement,
+  invalidateQueryKeys: (unitId) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
   ]
 })
 
-export const deleteGroupPlacementMutation = mutation({
-  api: (arg: Arg0<typeof deleteGroupPlacement> & { unitId: UUID }) =>
-    deleteGroupPlacement(arg),
-  invalidateQueryKeys: ({ unitId }) => [
+export const deleteGroupPlacementMutation = parametricMutation<DaycareId>()({
+  api: deleteGroupPlacement,
+  invalidateQueryKeys: (unitId) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
   ]
 })
 
-export const transferGroupMutation = mutation({
-  api: (arg: Arg0<typeof transferGroupPlacement> & { unitId: UUID }) =>
-    transferGroupPlacement(arg),
-  invalidateQueryKeys: ({ unitId }) => [
+export const transferGroupMutation = parametricMutation<DaycareId>()({
+  api: transferGroupPlacement,
+  invalidateQueryKeys: (unitId) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
   ]
@@ -246,10 +244,9 @@ export const createBackupCareMutation = mutation({
   api: createBackupCare
 })
 
-export const updateBackupCareMutation = mutation({
-  api: (arg: Arg0<typeof updateBackupCare> & { unitId: UUID }) =>
-    updateBackupCare(arg),
-  invalidateQueryKeys: ({ unitId }) => [
+export const updateBackupCareMutation = parametricMutation<DaycareId>()({
+  api: updateBackupCare,
+  invalidateQueryKeys: (unitId) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
   ]
@@ -278,14 +275,14 @@ export const acceptPlacementProposalMutation = mutation({
   ]
 })
 
-export const respondToPlacementProposalMutation = mutation({
-  api: (arg: Arg0<typeof respondToPlacementProposal> & { unitId: UUID }) =>
-    respondToPlacementProposal(arg),
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitApplications(unitId),
-    queryKeys.unitNotifications(unitId)
-  ]
-})
+export const respondToPlacementProposalMutation =
+  parametricMutation<DaycareId>()({
+    api: respondToPlacementProposal,
+    invalidateQueryKeys: (unitId) => [
+      queryKeys.unitApplications(unitId),
+      queryKeys.unitNotifications(unitId)
+    ]
+  })
 
 export const openAttendanceQuery = query({
   api: getOpenGroupAttendance,

@@ -23,6 +23,122 @@ import { Failure, Loading, Result, Success } from 'lib-common/api'
 
 import { useStableCallback } from './utils/useStableCallback'
 
+export interface QueriesQuery<Args extends unknown[], Data> {
+  (...args: Args): UseQueryOptions<Data, unknown>
+  all: QueryKey
+}
+
+export class Queries {
+  prefix: string[]
+  queryNames: Set<string>
+
+  constructor(prefix: string) {
+    this.prefix = [prefix]
+    this.queryNames = new Set()
+  }
+
+  query<Args extends unknown[], Data>(
+    api: (...args: Args) => Promise<Data>,
+    options?: QueryOptions
+  ): QueriesQuery<Args, Data> {
+    const queryName = this.getQueryName(api.name)
+    const queryKey = (...args: Args): QueryKey => [
+      this.prefix,
+      queryName,
+      ...args
+    ]
+    return Object.assign(
+      (...args: Args): UseQueryOptions<Data, unknown> => ({
+        queryFn: () => api(...args),
+        queryKey: queryKey(...args),
+        ...options
+      }),
+      { all: [this.prefix, queryName] }
+    )
+  }
+
+  mutation<Arg, Data>(
+    api: (arg: Arg) => Promise<Data>,
+    invalidations?: (((arg: Arg) => { queryKey: QueryKey }) | QueryKey)[]
+  ): MutationDescription<Arg, Data> {
+    if (invalidations === undefined) {
+      return { api }
+    } else {
+      const invalidationFns = invalidations.map((invalidation) =>
+        typeof invalidation === 'function'
+          ? (arg: Arg) => invalidation(arg).queryKey
+          : () => invalidation
+      )
+      return {
+        api,
+        invalidateQueryKeys: (arg: Arg) => invalidationFns.map((f) => f(arg))
+      }
+    }
+  }
+
+  parametricQuery<QueryArg>() {
+    return <Args extends unknown[], Data>(
+      api: (...args: Args) => Promise<Data>,
+      options?: QueryOptions
+    ) => {
+      const queryName = this.getQueryName(api.name)
+      const queryKey = (extra: QueryArg, ...args: Args): QueryKey => [
+        this.prefix,
+        queryName,
+        extra,
+        ...args
+      ]
+      return (
+        extra: QueryArg,
+        ...args: Args
+      ): UseQueryOptions<Data, unknown> => ({
+        queryFn: () => api(...args),
+        queryKey: queryKey(extra, ...args),
+        ...options
+      })
+    }
+  }
+
+  parametricMutation<MutationArg>() {
+    return <Arg, Data>(
+      api: (arg: Arg) => Promise<Data>,
+      invalidations?: (
+        | ((extra: MutationArg, arg: Arg) => { queryKey: QueryKey })
+        | QueryKey
+      )[]
+    ): MutationDescription<{ data: Arg; extra: MutationArg }, Data> => {
+      if (invalidations === undefined) {
+        return {
+          api: ({ data }) => api(data)
+        }
+      } else {
+        const invalidationFns = invalidations.map((invalidation) =>
+          typeof invalidation === 'function'
+            ? (extra: MutationArg, arg: Arg) =>
+                invalidation(extra, arg).queryKey
+            : (_extra: MutationArg, _arg: Arg) => invalidation
+        )
+        return {
+          api: ({ data }) => api(data),
+          invalidateQueryKeys: ({ data, extra }) =>
+            invalidationFns.map((fn) => fn(extra, data))
+        }
+      }
+    }
+  }
+
+  private getQueryName(name: string): string {
+    if (!name || name === 'anonymous') {
+      name = `queryfn-${Math.random().toString().substring(2)}`
+    }
+    if (this.queryNames.has(name)) {
+      throw new Error(`Query name ${name} is already in use`)
+    }
+    this.queryNames.add(name)
+    return name
+  }
+}
+
 export interface QueryOptions {
   enabled?: boolean
   refetchOnMount?: boolean | 'always'
@@ -211,6 +327,22 @@ export function mutation<Arg, Data>(
 ): MutationDescription<Arg, Data> {
   return description
 }
+
+export const parametricMutation =
+  <MutationArg>() =>
+  <Arg, Data>(description: {
+    api: (arg: Arg) => Promise<Data>
+    invalidateQueryKeys?: (extra: MutationArg, arg: Arg) => QueryKey[]
+  }): MutationDescription<{ data: Arg; extra: MutationArg }, Data> => {
+    const { api, invalidateQueryKeys } = description
+    return {
+      api: ({ data }) => api(data),
+      invalidateQueryKeys: invalidateQueryKeys
+        ? ({ data, extra }: { data: Arg; extra: MutationArg }) =>
+            invalidateQueryKeys(extra, data)
+        : undefined
+    }
+  }
 
 export async function invalidateDependencies<Arg>(
   queryClient: QueryClient,

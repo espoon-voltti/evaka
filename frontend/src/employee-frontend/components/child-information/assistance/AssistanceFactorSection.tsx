@@ -51,6 +51,7 @@ export const AssistanceFactorSection = React.memo(
     const t = i18n.childInformation.assistance
     const { permittedActions } = useContext<ChildState>(ChildContext)
     const refSectionTop = useRef(null)
+    const childId = props.childId
 
     const { mutateAsync: createAssistanceFactor } = useMutationResult(
       createAssistanceFactorMutation
@@ -63,7 +64,6 @@ export const AssistanceFactorSection = React.memo(
 
     const [infoOpen, { off: closeInfo, toggle: toggleInfo }] = useBoolean(false)
 
-    const childId = props.childId
     const rowsResult = useMemo(
       () =>
         props.rows.map((rows) =>
@@ -135,9 +135,8 @@ export const AssistanceFactorSection = React.memo(
                     allRows={rows}
                     onSubmit={(body) =>
                       updateAssistanceFactor({
-                        childId,
-                        id: row.data.id,
-                        body
+                        data: { id: row.data.id, body },
+                        extra: childId
                       })
                     }
                     onClose={clearMode}

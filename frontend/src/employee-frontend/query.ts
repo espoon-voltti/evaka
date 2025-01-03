@@ -4,7 +4,7 @@
 
 import { QueryClient } from '@tanstack/react-query'
 
-import { queryKeysNamespace } from 'lib-common/query'
+import { Queries, queryKeysNamespace } from 'lib-common/query'
 
 export type QueryKeyPrefix =
   | 'common'
@@ -41,3 +41,7 @@ export const queryClient = new QueryClient({
 export { QueryClientProvider } from '@tanstack/react-query'
 
 export const createQueryKeys = queryKeysNamespace<QueryKeyPrefix>()
+
+export function queries(prefix: QueryKeyPrefix): Queries {
+  return new Queries(prefix)
+}

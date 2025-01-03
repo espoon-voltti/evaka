@@ -4,10 +4,16 @@
 
 import {
   DaycareId,
-  MessageAccountId
+  MessageAccountId,
+  MessageThreadId
 } from 'lib-common/generated/api-types/shared'
-import { mutation, pagedInfiniteQuery, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import {
+  mutation,
+  pagedInfiniteQuery,
+  parametricMutation,
+  query
+} from 'lib-common/query'
+import { Arg0 } from 'lib-common/types'
 
 import {
   createMessage,
@@ -107,10 +113,9 @@ export const sendMessageMutation = mutation({
   ]
 })
 
-export const replyToThreadMutation = mutation({
-  api: (arg: Arg0<typeof replyToThread> & { threadId: UUID }) =>
-    replyToThread(arg),
-  invalidateQueryKeys: ({ accountId, threadId }) => [
+export const replyToThreadMutation = parametricMutation<MessageThreadId>()({
+  api: replyToThread,
+  invalidateQueryKeys: (threadId, { accountId }) => [
     queryKeys.receivedMessages(accountId),
     queryKeys.thread(accountId, threadId)
   ]

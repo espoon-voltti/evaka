@@ -418,7 +418,10 @@ const PedagogicalDocumentsContent = React.memo(
     )
 
     const onRead = (doc: PedagogicalDocumentCitizen) => {
-      markPedagogicalDocumentAsRead({ childId, documentId: doc.id })
+      markPedagogicalDocumentAsRead({
+        data: { documentId: doc.id },
+        extra: childId
+      })
     }
 
     return (

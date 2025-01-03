@@ -46,6 +46,7 @@ export const PreschoolAssistanceSection = React.memo(
     const t = i18n.childInformation.assistance
     const { permittedActions } = useContext<ChildState>(ChildContext)
     const refSectionTop = useRef(null)
+    const childId = props.childId
 
     const { mutateAsync: createPreschoolAssistance } = useMutationResult(
       createPreschoolAssistanceMutation
@@ -56,7 +57,6 @@ export const PreschoolAssistanceSection = React.memo(
     const [mode, setMode] = useState<Mode | undefined>(undefined)
     const clearMode = useCallback(() => setMode(undefined), [setMode])
 
-    const childId = props.childId
     const rowsResult = useMemo(
       () =>
         props.rows.map((rows) =>
@@ -112,9 +112,8 @@ export const PreschoolAssistanceSection = React.memo(
                     allRows={rows}
                     onSubmit={(body) =>
                       updatePreschoolAssistance({
-                        childId,
-                        id: row.data.id,
-                        body
+                        data: { id: row.data.id, body },
+                        extra: childId
                       })
                     }
                     onClose={clearMode}

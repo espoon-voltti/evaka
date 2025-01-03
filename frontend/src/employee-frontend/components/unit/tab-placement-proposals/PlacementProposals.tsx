@@ -114,13 +114,11 @@ export default React.memo(function PlacementProposals({
       }
     }))
     const result = await respondToPlacementProposal({
-      unitId,
-      applicationId,
-      body: {
-        status,
-        reason: null,
-        otherReason: null
-      }
+      data: {
+        applicationId,
+        body: { status, reason: null, otherReason: null }
+      },
+      extra: unitId
     })
     if (!isMounted.current) return
     if (result.isSuccess) {
@@ -189,13 +187,15 @@ export default React.memo(function PlacementProposals({
               }
             }))
             return {
-              unitId,
-              applicationId: currentApplicationId,
-              body: {
-                status: 'REJECTED_NOT_CONFIRMED' as const,
-                reason,
-                otherReason
-              }
+              data: {
+                applicationId: currentApplicationId,
+                body: {
+                  status: 'REJECTED_NOT_CONFIRMED' as const,
+                  reason,
+                  otherReason
+                }
+              },
+              extra: unitId
             }
           }}
           onSuccess={() => {

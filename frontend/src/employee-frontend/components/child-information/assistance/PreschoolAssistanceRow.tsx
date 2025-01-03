@@ -53,8 +53,8 @@ export const PreschoolAssistanceRow = React.memo(
               range={data.validDuring.asDateRange()}
               onSubmit={() =>
                 deletePreschoolAssistance({
-                  id: data.id,
-                  childId: data.childId
+                  data: { id: data.id },
+                  extra: data.childId
                 }).then(() => Success.of())
               }
             />

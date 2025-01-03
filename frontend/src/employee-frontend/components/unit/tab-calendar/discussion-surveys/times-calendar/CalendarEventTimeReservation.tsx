@@ -156,8 +156,8 @@ export const DiscussionReservationModal = React.memo(
 
     const deleteEventTime = useCallback(() => {
       deleteCalendarEventTime({
-        eventId: eventData.id,
-        id: eventTime.id
+        data: { id: eventTime.id },
+        extra: eventData.id
       })
         .then(() => onClose(true))
         .catch(() =>
@@ -281,8 +281,8 @@ export const DiscussionReservationModal = React.memo(
                   setDeleteConfirmModalVisible(true)
                 } else {
                   deleteCalendarEventTime({
-                    eventId: eventData.id,
-                    id: eventTime.id
+                    data: { id: eventTime.id },
+                    extra: eventData.id
                   })
                     .then(() => onClose(true))
                     .catch(() =>
@@ -306,16 +306,18 @@ export const DiscussionReservationModal = React.memo(
               />
               <MutateButton
                 primary
+                mutation={setCalendarEventTimeReservationMutation}
                 onClick={() => ({
-                  body: {
-                    calendarEventTimeId: eventTime.id,
-                    childId: reservationChild.value().childId
+                  data: {
+                    body: {
+                      calendarEventTimeId: eventTime.id,
+                      childId: reservationChild.value().childId
+                    }
                   },
-                  eventId: eventData.id
+                  extra: eventData.id
                 })}
                 onSuccess={() => onClose(true)}
                 text={i18n.unit.calendar.events.edit.saveChanges}
-                mutation={setCalendarEventTimeReservationMutation}
                 data-qa="submit-reservation-button"
                 disabled={reservationChild.state.childId === eventTime.childId}
               />

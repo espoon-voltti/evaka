@@ -5,8 +5,8 @@
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { mutation, parametricMutation, query } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 
 import { futureAbsencesOfChild } from '../generated/api-clients/absence'
 import {
@@ -170,8 +170,7 @@ export const uploadChildImageMutation = mutation({
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
-export const deleteChildImageMutation = mutation({
-  api: (arg: Arg0<typeof deleteImage> & { unitId: DaycareId }) =>
-    deleteImage(arg),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+export const deleteChildImageMutation = parametricMutation<DaycareId>()({
+  api: deleteImage,
+  invalidateQueryKeys: (unitId) => [childrenQuery(unitId).queryKey]
 })

@@ -179,12 +179,14 @@ const AcceptanceModal = React.memo(function AcceptanceModal({
       resolveDisabled={!form.isValid()}
       resolveMutation={acceptServiceApplicationsMutation}
       resolveAction={() => ({
-        id: application.id,
-        childId: application.childId,
-        body: {
-          shiftCareType: shiftCare.value(),
-          partWeek: partWeek.value()
-        }
+        data: {
+          id: application.id,
+          body: {
+            shiftCareType: shiftCare.value(),
+            partWeek: partWeek.value()
+          }
+        },
+        extra: application.childId
       })}
       rejectAction={onClose}
       onSuccess={() => {
@@ -298,9 +300,11 @@ const RejectionModal = React.memo(function RejectionModal({
       resolveDisabled={!form.isValid()}
       resolveMutation={rejectServiceApplicationsMutation}
       resolveAction={() => ({
-        id: application.id,
-        childId: application.childId,
-        body: { reason: reason.value().trim() }
+        data: {
+          id: application.id,
+          body: { reason: reason.value().trim() }
+        },
+        extra: application.childId
       })}
       rejectAction={onClose}
       onSuccess={onClose}

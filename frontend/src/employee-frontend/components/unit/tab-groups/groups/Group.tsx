@@ -19,7 +19,11 @@ import {
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
-import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  GroupId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
@@ -492,7 +496,7 @@ export default React.memo(function Group({
 
 interface GroupPlacementRowProps {
   placement: DaycareGroupPlacementDetailed | UnitBackupCare
-  unitId: UUID
+  unitId: DaycareId
   filters: UnitFilters
   mobileEnabled: boolean
   showServiceNeed: boolean
@@ -563,18 +567,17 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
       deleteGroupPlacementMutation,
       (placement) =>
         placement.id
-          ? { unitId, groupPlacementId: placement.id }
+          ? { data: { groupPlacementId: placement.id }, extra: unitId }
           : cancelMutation
     ],
     [
       updateBackupCareMutation,
       (placement) => ({
-        id: placement.id,
-        unitId,
-        body: {
-          period: placement.period,
-          groupId: null
-        }
+        data: {
+          id: placement.id,
+          body: { period: placement.period, groupId: null }
+        },
+        extra: unitId
       })
     ]
   )

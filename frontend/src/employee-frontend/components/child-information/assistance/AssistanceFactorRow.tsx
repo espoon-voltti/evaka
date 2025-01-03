@@ -71,7 +71,9 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
             title={t.assistanceFactor.removeConfirmation}
             range={validDuring.asDateRange()}
             onSubmit={() =>
-              deleteAssistanceFactor({ id, childId }).then(() => Success.of())
+              deleteAssistanceFactor({ data: { id }, extra: childId }).then(
+                () => Success.of()
+              )
             }
           />
         )}

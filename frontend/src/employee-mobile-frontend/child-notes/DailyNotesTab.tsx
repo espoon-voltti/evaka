@@ -154,9 +154,14 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
       return Promise.reject()
     }
     const body = childDailyNoteFormDataToRequestBody(dailyNote)
-    return dailyNoteId
-      ? updateDailyNote({ unitId, noteId: dailyNoteId, body })
-      : createDailyNote({ unitId, childId, body })
+    return (
+      dailyNoteId
+        ? updateDailyNote({
+            data: { noteId: dailyNoteId, body },
+            extra: unitId
+          })
+        : createDailyNote({ data: { childId, body }, extra: unitId })
+    ).then((result) => result.map(() => undefined))
   }, [
     updateDailyNote,
     createDailyNote,
@@ -181,7 +186,10 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
         resolve={{
           action: () => {
             if (dailyNoteId) {
-              void deleteDailyNote({ unitId, noteId: dailyNoteId }).then(() => {
+              void deleteDailyNote({
+                data: { noteId: dailyNoteId },
+                extra: unitId
+              }).then(() => {
                 void navigate(-1)
               })
             }

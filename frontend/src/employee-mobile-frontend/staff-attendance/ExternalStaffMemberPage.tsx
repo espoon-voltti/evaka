@@ -128,7 +128,10 @@ export default React.memo(function ExternalStaffMemberPage({
             mutation={externalStaffDepartureMutation}
             onClick={() =>
               parsedTime !== undefined
-                ? { unitId, body: { attendanceId, time: parsedTime } }
+                ? {
+                    data: { body: { attendanceId, time: parsedTime } },
+                    extra: unitId
+                  }
                 : cancelMutation
             }
             onSuccess={() => {

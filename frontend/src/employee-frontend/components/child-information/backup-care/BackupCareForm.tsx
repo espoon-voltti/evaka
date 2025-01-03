@@ -184,12 +184,14 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
     [
       updateBackupCareMutation,
       (backupCare) => ({
-        id: backupCare.id,
-        unitId: backupCare.unit.id,
-        body: {
-          groupId: null,
-          period: new FiniteDateRange(formState.startDate, formState.endDate)
-        }
+        data: {
+          id: backupCare.id,
+          body: {
+            groupId: null,
+            period: new FiniteDateRange(formState.startDate, formState.endDate)
+          }
+        },
+        extra: backupCare.unit.id
       })
     ]
   )
