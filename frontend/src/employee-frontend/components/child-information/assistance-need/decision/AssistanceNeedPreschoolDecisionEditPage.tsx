@@ -833,7 +833,11 @@ const DecisionEditor = React.memo(function DecisionEditor({
                 </P>
               )}
               <H3 noMargin>{t.jurisdiction}</H3>
-              <P noMargin>{t.jurisdictionText}</P>
+              {typeof t.jurisdictionText === 'string' ? (
+                <P noMargin>{t.jurisdictionText}</P>
+              ) : (
+                t.jurisdictionText
+              )}
             </SectionSpacer>
 
             <SectionSpacer>
