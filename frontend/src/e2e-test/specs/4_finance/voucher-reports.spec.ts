@@ -55,8 +55,8 @@ beforeEach(async () => {
   await createDefaultServiceNeedOptions()
   await createVoucherValues()
 
-  startDate = LocalDate.of(2020, 1, 1)
-  endDate = LocalDate.of(2020, 12, 31)
+  startDate = LocalDate.of(LocalDate.todayInHelsinkiTz().year - 3, 1, 1)
+  endDate = LocalDate.of(LocalDate.todayInHelsinkiTz().year - 3, 12, 31)
   child = testChild2
   otherChild = testChild
   guardian = testAdult
@@ -99,7 +99,7 @@ beforeEach(async () => {
 describe('Reporting - voucher reports', () => {
   test('voucher service providers are reported correctly, respecting the area filter', async () => {
     await report.selectMonth('Tammikuu')
-    await report.selectYear(2020)
+    await report.selectYear(LocalDate.todayInHelsinkiTz().year - 3)
     await report.selectArea('Superkeskus')
 
     await report.assertRowCount(1)
@@ -118,7 +118,7 @@ describe('Reporting - voucher reports', () => {
 
   test('voucher service provider unit report', async () => {
     await report.selectMonth('Tammikuu')
-    await report.selectYear(2020)
+    await report.selectYear(LocalDate.todayInHelsinkiTz().year - 3)
     await report.selectArea('Superkeskus')
 
     await report.assertRowCount(1)
