@@ -40,7 +40,7 @@ export default React.memo(function OutOfOfficeInfo({
   )
 
   return outOfOfficeAccounts.length > 0 ? (
-    <OutOfOfficeInfoArea>
+    <OutOfOfficeInfoArea data-qa="out-of-office-info">
       <RoundIcon content={faExclamation} color={colors.main.m2} size="s" />
       <div>
         {outOfOfficeAccounts.length === 1 ? (
