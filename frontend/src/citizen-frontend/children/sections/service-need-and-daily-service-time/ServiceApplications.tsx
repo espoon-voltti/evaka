@@ -178,8 +178,8 @@ const ServiceApplicationsTable = React.memo(function ServiceApplicationsTable({
                     appearance="inline"
                     mutation={deleteServiceApplicationsMutation}
                     onClick={() => ({
-                      id: application.id,
-                      childId: application.childId
+                      data: { id: application.id },
+                      extra: application.childId
                     })}
                     data-qa="cancel-application"
                   />
@@ -282,8 +282,8 @@ const ServiceApplicationsList = React.memo(function ServiceApplicationsList({
                 appearance="inline"
                 mutation={deleteServiceApplicationsMutation}
                 onClick={() => ({
-                  id: application.id,
-                  childId: application.childId
+                  data: { id: application.id },
+                  extra: application.childId
                 })}
                 data-qa="cancel-application"
               />

@@ -72,7 +72,10 @@ function BackupPickup({ childId }: BackupPickupProps) {
 
   const confirmRemoveModal = async () => {
     if (backupPickups.isSuccess && backupPickup) {
-      await deleteBackupPickup({ childId, id: backupPickup.id })
+      await deleteBackupPickup({
+        data: { id: backupPickup.id },
+        extra: childId
+      })
       setBackupPickup(undefined)
       clearUiMode()
     }
@@ -131,12 +134,14 @@ function BackupPickup({ childId }: BackupPickupProps) {
     async function saveBackupPickup() {
       if (backupPickup) {
         await updateBackupPickup({
-          childId,
-          id: backupPickup.id,
-          body: {
-            name: name !== '' ? name : backupPickup.name,
-            phone: phone !== '' ? phone : backupPickup.phone
-          }
+          data: {
+            id: backupPickup.id,
+            body: {
+              name: name !== '' ? name : backupPickup.name,
+              phone: phone !== '' ? phone : backupPickup.phone
+            }
+          },
+          extra: childId
         })
         setBackupPickup(undefined)
         clearUiMode()

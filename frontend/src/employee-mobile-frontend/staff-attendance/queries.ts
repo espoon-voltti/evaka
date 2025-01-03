@@ -4,7 +4,7 @@
 
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { mutation, query } from 'lib-common/query'
+import { mutation, parametricMutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
 import {
@@ -57,27 +57,24 @@ export const staffAttendancesByEmployeeQuery = query({
     queryKeys.unitEmployeeRange(arg.unitId, arg.employeeId, arg.from, arg.to)
 })
 
-export const staffArrivalMutation = mutation({
-  api: (arg: Arg0<typeof markArrival> & { unitId: UUID }) => markArrival(arg),
-  invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
+export const staffArrivalMutation = parametricMutation<DaycareId>()({
+  api: markArrival,
+  invalidateQueryKeys: (unitId) => [queryKeys.unit(unitId)]
 })
 
-export const staffDepartureMutation = mutation({
-  api: (arg: Arg0<typeof markDeparture> & { unitId: UUID }) =>
-    markDeparture(arg),
-  invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
+export const staffDepartureMutation = parametricMutation<DaycareId>()({
+  api: markDeparture,
+  invalidateQueryKeys: (unitId) => [queryKeys.unit(unitId)]
 })
 
-export const externalStaffArrivalMutation = mutation({
-  api: (arg: Arg0<typeof markExternalArrival> & { unitId: DaycareId }) =>
-    markExternalArrival(arg),
-  invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
+export const externalStaffArrivalMutation = parametricMutation<DaycareId>()({
+  api: markExternalArrival,
+  invalidateQueryKeys: (unitId) => [queryKeys.unit(unitId)]
 })
 
-export const externalStaffDepartureMutation = mutation({
-  api: (arg: Arg0<typeof markExternalDeparture> & { unitId: DaycareId }) =>
-    markExternalDeparture(arg),
-  invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
+export const externalStaffDepartureMutation = parametricMutation<DaycareId>()({
+  api: markExternalDeparture,
+  invalidateQueryKeys: (unitId) => [queryKeys.unit(unitId)]
 })
 
 export const staffAttendanceMutation = mutation({

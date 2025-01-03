@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { mutation, parametricMutation, query } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 
 import { childrenQuery } from '../child-attendance/queries'
 import {
@@ -38,50 +38,42 @@ export const createGroupNoteMutation = mutation({
   invalidateQueryKeys: ({ groupId }) => [groupNotesQuery({ groupId }).queryKey]
 })
 
-export const updateGroupNoteMutation = mutation({
-  api: (arg: Arg0<typeof updateGroupNote> & { groupId: GroupId }) =>
-    updateGroupNote(arg),
-  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery({ groupId }).queryKey]
+export const updateGroupNoteMutation = parametricMutation<GroupId>()({
+  api: updateGroupNote,
+  invalidateQueryKeys: (groupId) => [groupNotesQuery({ groupId }).queryKey]
 })
 
-export const deleteGroupNoteMutation = mutation({
-  api: (arg: Arg0<typeof deleteGroupNote> & { groupId: GroupId }) =>
-    deleteGroupNote(arg),
-  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery({ groupId }).queryKey]
+export const deleteGroupNoteMutation = parametricMutation<GroupId>()({
+  api: deleteGroupNote,
+  invalidateQueryKeys: (groupId) => [groupNotesQuery({ groupId }).queryKey]
 })
 
-export const createChildDailyNoteMutation = mutation({
-  api: (arg: Arg0<typeof createChildDailyNote> & { unitId: DaycareId }) =>
-    createChildDailyNote(arg),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+export const createChildDailyNoteMutation = parametricMutation<DaycareId>()({
+  api: createChildDailyNote,
+  invalidateQueryKeys: (unitId) => [childrenQuery(unitId).queryKey]
 })
 
-export const updateChildDailyNoteMutation = mutation({
-  api: (arg: Arg0<typeof updateChildDailyNote> & { unitId: DaycareId }) =>
-    updateChildDailyNote(arg).then(() => undefined),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+export const updateChildDailyNoteMutation = parametricMutation<DaycareId>()({
+  api: updateChildDailyNote,
+  invalidateQueryKeys: (unitId) => [childrenQuery(unitId).queryKey]
 })
 
-export const deleteChildDailyNoteMutation = mutation({
-  api: (arg: Arg0<typeof deleteChildDailyNote> & { unitId: DaycareId }) =>
-    deleteChildDailyNote(arg).then(() => undefined),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+export const deleteChildDailyNoteMutation = parametricMutation<DaycareId>()({
+  api: deleteChildDailyNote,
+  invalidateQueryKeys: (unitId) => [childrenQuery(unitId).queryKey]
 })
 
-export const createChildStickyNoteMutation = mutation({
-  api: (arg: Arg0<typeof createChildStickyNote> & { unitId: DaycareId }) =>
-    createChildStickyNote(arg),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+export const createChildStickyNoteMutation = parametricMutation<DaycareId>()({
+  api: createChildStickyNote,
+  invalidateQueryKeys: (unitId) => [childrenQuery(unitId).queryKey]
 })
 
-export const updateChildStickyNoteMutation = mutation({
-  api: (arg: Arg0<typeof updateChildStickyNote> & { unitId: DaycareId }) =>
-    updateChildStickyNote(arg),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+export const updateChildStickyNoteMutation = parametricMutation<DaycareId>()({
+  api: updateChildStickyNote,
+  invalidateQueryKeys: (unitId) => [childrenQuery(unitId).queryKey]
 })
 
-export const deleteChildStickyNoteMutation = mutation({
-  api: (arg: Arg0<typeof deleteChildStickyNote> & { unitId: DaycareId }) =>
-    deleteChildStickyNote(arg),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+export const deleteChildStickyNoteMutation = parametricMutation<DaycareId>()({
+  api: deleteChildStickyNote,
+  invalidateQueryKeys: (unitId) => [childrenQuery(unitId).queryKey]
 })

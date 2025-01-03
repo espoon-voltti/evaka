@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import { mutation, query } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import { parametricMutation, query } from 'lib-common/query'
 
 import {
   getPedagogicalDocumentsForChild,
@@ -28,11 +27,11 @@ export const pedagogicalDocumentsQuery = query({
   queryKey: ({ childId }) => queryKeys.forChild(childId)
 })
 
-export const markPedagogicalDocumentAsReadMutation = mutation({
-  api: (arg: Arg0<typeof markPedagogicalDocumentRead> & { childId: ChildId }) =>
-    markPedagogicalDocumentRead(arg),
-  invalidateQueryKeys: ({ childId }) => [
-    pedagogicalDocumentsQuery({ childId }).queryKey,
-    unreadPedagogicalDocumentsCountQuery().queryKey
-  ]
-})
+export const markPedagogicalDocumentAsReadMutation =
+  parametricMutation<ChildId>()({
+    api: markPedagogicalDocumentRead,
+    invalidateQueryKeys: (childId) => [
+      pedagogicalDocumentsQuery({ childId }).queryKey,
+      unreadPedagogicalDocumentsCountQuery().queryKey
+    ]
+  })

@@ -153,14 +153,16 @@ export default function MarkExternalStaffMemberArrivalPage({
                   onClick={() =>
                     form.group
                       ? {
-                          unitId,
-                          body: {
-                            arrived: LocalTime.parse(form.arrived),
-                            groupId: form.group.id,
-                            name: form.name.trim(),
-                            hasStaffOccupancyEffect:
-                              form.hasStaffOccupancyEffect
-                          }
+                          data: {
+                            body: {
+                              arrived: LocalTime.parse(form.arrived),
+                              groupId: form.group.id,
+                              name: form.name.trim(),
+                              hasStaffOccupancyEffect:
+                                form.hasStaffOccupancyEffect
+                            }
+                          },
+                          extra: unitId
                         }
                       : cancelMutation
                   }

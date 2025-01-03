@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import { mutation, parametricMutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
 import { deleteMobileDevice } from '../../generated/api-clients/pairing'
@@ -57,14 +58,14 @@ export const deleteEmployeeDaycareRolesMutation = mutation({
   ]
 })
 
-export const deleteEmployeeMobileDeviceMutation = mutation({
-  api: (args: Arg0<typeof deleteMobileDevice> & { employeeId: UUID }) =>
-    deleteMobileDevice(args),
-  invalidateQueryKeys: (args) => [
-    queryKeys.searchAll(),
-    queryKeys.byId(args.employeeId)
-  ]
-})
+export const deleteEmployeeMobileDeviceMutation =
+  parametricMutation<EmployeeId>()({
+    api: deleteMobileDevice,
+    invalidateQueryKeys: (employeeId) => [
+      queryKeys.searchAll(),
+      queryKeys.byId(employeeId)
+    ]
+  })
 
 export const activateEmployeeMutation = mutation({
   api: activateEmployee,

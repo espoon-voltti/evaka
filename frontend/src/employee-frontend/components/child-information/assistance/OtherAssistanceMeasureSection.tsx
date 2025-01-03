@@ -55,6 +55,7 @@ export const OtherAssistanceMeasureSection = React.memo(
     const t = i18n.childInformation.assistance
     const { permittedActions } = useContext<ChildState>(ChildContext)
     const refSectionTop = useRef(null)
+    const childId = props.childId
 
     const { mutateAsync: createOtherAssistanceMeasure } = useMutationResult(
       createOtherAssistanceMeasureMutation
@@ -68,7 +69,6 @@ export const OtherAssistanceMeasureSection = React.memo(
       undefined
     )
 
-    const childId = props.childId
     const rowsResult = useMemo(
       () =>
         props.rows.map((rows) =>
@@ -163,9 +163,8 @@ export const OtherAssistanceMeasureSection = React.memo(
                     allRows={rows}
                     onSubmit={(body) =>
                       updateOtherAssistanceMeasure({
-                        childId,
-                        id: row.data.id,
-                        body
+                        data: { id: row.data.id, body },
+                        extra: childId
                       })
                     }
                     onClose={clearMode}

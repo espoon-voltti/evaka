@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { mutation, parametricMutation, query } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 
 import {
   createNote,
@@ -42,18 +43,16 @@ export const createApplicationNote = mutation({
   ]
 })
 
-export const updateApplicationNote = mutation({
-  api: (arg: Arg0<typeof updateNote> & { applicationId: UUID }) =>
-    updateNote(arg),
-  invalidateQueryKeys: ({ applicationId }) => [
+export const updateApplicationNote = parametricMutation<ApplicationId>()({
+  api: updateNote,
+  invalidateQueryKeys: (applicationId) => [
     queryKeys.applicationNotes(applicationId)
   ]
 })
 
-export const deleteApplicationNote = mutation({
-  api: (arg: Arg0<typeof deleteNote> & { applicationId: UUID }) =>
-    deleteNote(arg),
-  invalidateQueryKeys: ({ applicationId }) => [
+export const deleteApplicationNote = parametricMutation<ApplicationId>()({
+  api: deleteNote,
+  invalidateQueryKeys: (applicationId) => [
     queryKeys.applicationNotes(applicationId)
   ]
 })

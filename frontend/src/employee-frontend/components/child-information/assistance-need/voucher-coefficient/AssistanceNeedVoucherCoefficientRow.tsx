@@ -9,8 +9,8 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { UIContext } from 'employee-frontend/state/ui'
 import { Action } from 'lib-common/generated/action'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -24,7 +24,7 @@ import { TimeBasedStatusChip } from '../../TimeBasedStatusChip'
 import AssistanceNeedVoucherCoefficientForm from './AssistanceNeedVoucherCoefficientForm'
 
 interface Props {
-  childId: UUID
+  childId: ChildId
   voucherCoefficient: AssistanceNeedVoucherCoefficient
   activeCoefficient?: AssistanceNeedVoucherCoefficient
   setActiveCoefficient: (

@@ -52,8 +52,8 @@ export const DaycareAssistanceRow = React.memo(function DaycareAssistanceRow({
             range={data.validDuring.asDateRange()}
             onSubmit={() =>
               deleteDaycareAssistance({
-                id: data.id,
-                childId: data.childId
+                data: { id: data.id },
+                extra: data.childId
               }).then(() => Success.of())
             }
           />

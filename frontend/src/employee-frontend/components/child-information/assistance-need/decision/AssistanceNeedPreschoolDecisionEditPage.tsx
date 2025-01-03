@@ -494,9 +494,8 @@ const DecisionEditor = React.memo(function DecisionEditor({
   )
 
   const decisionMakersResult = useQueryResult(
-    assistanceNeedPreschoolDecisionMakerOptionsQuery({
-      id: decision.id,
-      unitId: savedValue.selectedUnit
+    assistanceNeedPreschoolDecisionMakerOptionsQuery(savedValue.selectedUnit, {
+      id: decision.id
     })
   )
 

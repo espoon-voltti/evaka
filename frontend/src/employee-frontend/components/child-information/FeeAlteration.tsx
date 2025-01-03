@@ -115,7 +115,6 @@ export default React.memo(function FeeAlteration({
             cancel={clearUiMode}
             update={(data) =>
               updateFeeAlteration({
-                personId: childId,
                 feeAlterationId: data.id!,
                 body: data
               })
@@ -145,8 +144,8 @@ export default React.memo(function FeeAlteration({
               deleted &&
               deleted.id !== null &&
               deleteFeeAlteration({
-                personId: childId,
-                feeAlterationId: deleted.id
+                data: { feeAlterationId: deleted.id },
+                extra: childId
               }).then((res) => {
                 setDeleted(undefined)
                 if (!res.isSuccess) {

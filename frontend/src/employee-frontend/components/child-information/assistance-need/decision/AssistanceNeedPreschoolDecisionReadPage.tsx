@@ -121,8 +121,8 @@ const DecisionReadView = React.memo(function DecisionReadView({
                   }
                   onClick={() =>
                     revertSendForDecision({
-                      childId: decision.child.id,
-                      id: decision.id
+                      data: { id: decision.id },
+                      extra: decision.child.id
                     })
                   }
                   onSuccess={() => undefined}
@@ -142,8 +142,8 @@ const DecisionReadView = React.memo(function DecisionReadView({
                   disabled={!decision.isValid}
                   onClick={() =>
                     sendForDecision({
-                      childId: decision.child.id,
-                      id: decision.id
+                      data: { id: decision.id },
+                      extra: decision.child.id
                     })
                   }
                   onSuccess={() => undefined}

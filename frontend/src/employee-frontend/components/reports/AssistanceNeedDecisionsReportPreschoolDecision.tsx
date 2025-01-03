@@ -87,11 +87,11 @@ const AnnulModal = React.memo(function AnnulModal({
       resolveLabel={i18n.reports.assistanceNeedDecisions.annulModal.okBtn}
       resolveMutation={annulAssistanceNeedPreschoolDecisionMutation}
       resolveAction={() => ({
-        id: decision.id,
-        childId: decision.child.id,
-        body: {
-          reason: reason.value()
-        }
+        data: {
+          id: decision.id,
+          body: { reason: reason.value() }
+        },
+        extra: decision.child.id
       })}
       onSuccess={onClose}
       rejectLabel={i18n.common.cancel}
@@ -165,11 +165,11 @@ const DecisionView = React.memo(function DecisionView({
                 disabled={submitting || !isDecisionMaker}
                 onClick={() =>
                   decide({
-                    childId: decision.child.id,
-                    id: decision.id,
-                    body: {
-                      status: 'NEEDS_WORK'
-                    }
+                    data: {
+                      id: decision.id,
+                      body: { status: 'NEEDS_WORK' }
+                    },
+                    extra: decision.child.id
                   })
                 }
                 data-qa="return-for-edit-button"
@@ -201,11 +201,11 @@ const DecisionView = React.memo(function DecisionView({
           text={i18n.reports.assistanceNeedDecisions.rejectModal.text}
           resolveAction={() =>
             decide({
-              childId: decision.child.id,
-              id: decision.id,
-              body: {
-                status: 'REJECTED'
-              }
+              data: {
+                id: decision.id,
+                body: { status: 'REJECTED' }
+              },
+              extra: decision.child.id
             })
           }
           resolveLabel={i18n.reports.assistanceNeedDecisions.rejectModal.okBtn}
@@ -221,11 +221,11 @@ const DecisionView = React.memo(function DecisionView({
           text={i18n.reports.assistanceNeedDecisions.approveModal.text}
           resolveAction={() =>
             decide({
-              childId: decision.child.id,
-              id: decision.id,
-              body: {
-                status: 'ACCEPTED'
-              }
+              data: {
+                id: decision.id,
+                body: { status: 'ACCEPTED' }
+              },
+              extra: decision.child.id
             })
           }
           resolveLabel={i18n.reports.assistanceNeedDecisions.approveModal.okBtn}

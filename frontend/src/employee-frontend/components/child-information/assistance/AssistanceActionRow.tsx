@@ -64,8 +64,8 @@ export default React.memo(function AssistanceActionRow({
           }
           onSubmit={() =>
             deleteAssistanceAction({
-              id: assistanceAction.id,
-              childId: assistanceAction.childId
+              data: { id: assistanceAction.id },
+              extra: assistanceAction.childId
             })
           }
         />

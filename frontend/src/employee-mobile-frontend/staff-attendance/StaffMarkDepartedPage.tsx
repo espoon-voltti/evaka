@@ -291,14 +291,16 @@ export default React.memo(function StaffMarkDepartedPage({
 
                         if (groupId && time !== undefined) {
                           return {
-                            unitId,
-                            body: {
-                              employeeId,
-                              groupId,
-                              time,
-                              pinCode: pinCode.join(''),
-                              type: attendanceType ?? null
-                            }
+                            data: {
+                              body: {
+                                employeeId,
+                                groupId,
+                                time,
+                                pinCode: pinCode.join(''),
+                                type: attendanceType ?? null
+                              }
+                            },
+                            extra: unitId
                           }
                         } else {
                           return cancelMutation

@@ -4,8 +4,7 @@
 
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { mutation, query } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import { mutation, parametricMutation, query } from 'lib-common/query'
 
 import { getChildren } from '../generated/api-clients/children'
 import {
@@ -48,9 +47,7 @@ export const createServiceApplicationsMutation = mutation({
   ]
 })
 
-export const deleteServiceApplicationsMutation = mutation({
+export const deleteServiceApplicationsMutation = parametricMutation<ChildId>()({
   api: deleteServiceApplication,
-  invalidateQueryKeys: (
-    arg: Arg0<typeof deleteServiceApplication> & { childId: ChildId }
-  ) => [queryKeys.serviceApplications(arg.childId)]
+  invalidateQueryKeys: (childId) => [queryKeys.serviceApplications(childId)]
 })

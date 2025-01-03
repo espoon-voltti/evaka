@@ -167,15 +167,17 @@ const ReceivedThread = React.memo(function ReceivedThread({
           <MessageReplyEditor
             mutation={replyToThreadMutation}
             onSubmit={() => ({
-              accountId,
-              threadId,
-              messageId: messages.slice(-1)[0].id,
-              body: {
-                content: replyContent,
-                recipientAccountIds: recipients
-                  .filter((r) => r.selected)
-                  .map((r) => r.id)
-              }
+              data: {
+                accountId,
+                messageId: messages.slice(-1)[0].id,
+                body: {
+                  content: replyContent,
+                  recipientAccountIds: recipients
+                    .filter((r) => r.selected)
+                    .map((r) => r.id)
+                }
+              },
+              extra: threadId
             })}
             onUpdateContent={onUpdateContent}
             onDiscard={onDiscard}

@@ -309,15 +309,17 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
               if (selectedTimeIsWithin30MinsFromNow(getNow()))
                 if (time !== undefined && attendanceGroup) {
                   return {
-                    unitId,
-                    body: {
-                      employeeId,
-                      groupId: attendanceGroup,
-                      time,
-                      pinCode: pinCode.join(''),
-                      type: attendanceType ?? null,
-                      hasStaffOccupancyEffect: occupancyEffect
-                    }
+                    data: {
+                      body: {
+                        employeeId,
+                        groupId: attendanceGroup,
+                        time,
+                        pinCode: pinCode.join(''),
+                        type: attendanceType ?? null,
+                        hasStaffOccupancyEffect: occupancyEffect
+                      }
+                    },
+                    extra: unitId
                   }
                 } else {
                   return cancelMutation

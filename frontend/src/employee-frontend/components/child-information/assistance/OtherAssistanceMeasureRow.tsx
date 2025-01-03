@@ -53,8 +53,8 @@ export const OtherAssistanceMeasureRow = React.memo(
               range={data.validDuring.asDateRange()}
               onSubmit={() =>
                 deleteOtherAssistanceMeasure({
-                  id: data.id,
-                  childId: data.childId
+                  data: { id: data.id },
+                  extra: data.childId
                 }).then(() => Success.of())
               }
             />

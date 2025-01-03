@@ -14,8 +14,9 @@ import {
   setCalendarEventTimeReservation,
   updateCalendarEvent
 } from 'employee-frontend/generated/api-clients/calendarevent'
+import { CalendarEventId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { mutation, query } from 'lib-common/query'
+import { mutation, parametricMutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
 import { createQueryKeys } from '../../../query'
@@ -55,12 +56,9 @@ export const createCalendarEventMutation = mutation({
   invalidateQueryKeys: () => []
 })
 
-export const deleteCalendarEventMutation = mutation({
-  api: (arg: Arg0<typeof deleteCalendarEvent> & { groupId: UUID }) =>
-    deleteCalendarEvent(arg),
-  invalidateQueryKeys: ({ groupId }) => [
-    queryKeys.groupDiscussionSurveys(groupId)
-  ]
+export const deleteCalendarEventMutation = parametricMutation<GroupId>()({
+  api: deleteCalendarEvent,
+  invalidateQueryKeys: (groupId) => [queryKeys.groupDiscussionSurveys(groupId)]
 })
 
 export const updateCalendarEventMutation = mutation({
@@ -68,12 +66,11 @@ export const updateCalendarEventMutation = mutation({
   invalidateQueryKeys: ({ id }) => [queryKeys.discussionSurvey(id)]
 })
 
-export const setCalendarEventTimeReservationMutation = mutation({
-  api: (
-    arg: Arg0<typeof setCalendarEventTimeReservation> & { eventId: UUID }
-  ) => setCalendarEventTimeReservation(arg),
-  invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
-})
+export const setCalendarEventTimeReservationMutation =
+  parametricMutation<CalendarEventId>()({
+    api: setCalendarEventTimeReservation,
+    invalidateQueryKeys: (eventId) => [queryKeys.discussionSurvey(eventId)]
+  })
 
 export const clearChildCalendarEventTimeReservationsForSurveyMutation =
   mutation({
@@ -89,8 +86,8 @@ export const addCalendarEventTimeMutation = mutation({
   invalidateQueryKeys: ({ id }) => [queryKeys.discussionSurvey(id)]
 })
 
-export const deleteCalendarEventTimeMutation = mutation({
-  api: (arg: Arg0<typeof deleteCalendarEventTime> & { eventId: UUID }) =>
-    deleteCalendarEventTime(arg),
-  invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
-})
+export const deleteCalendarEventTimeMutation =
+  parametricMutation<CalendarEventId>()({
+    api: deleteCalendarEventTime,
+    invalidateQueryKeys: (eventId) => [queryKeys.discussionSurvey(eventId)]
+  })
