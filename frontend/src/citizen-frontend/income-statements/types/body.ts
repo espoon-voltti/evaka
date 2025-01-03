@@ -119,6 +119,8 @@ function validateEntrepreneur(formData: Form.Entrepreneur, draft: boolean) {
 
   const {
     fullTime,
+    companyName,
+    businessId,
     spouseWorksInCompany,
     startupGrant,
     partnership,
@@ -152,6 +154,8 @@ function validateEntrepreneur(formData: Form.Entrepreneur, draft: boolean) {
   return {
     fullTime,
     startOfEntrepreneurship,
+    companyName,
+    businessId,
     spouseWorksInCompany,
     startupGrant,
     checkupConsent,
