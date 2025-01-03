@@ -23,6 +23,162 @@ import { Failure, Loading, Result, Success } from 'lib-common/api'
 
 import { useStableCallback } from './utils/useStableCallback'
 
+export interface QueriesQuery<Args extends unknown[], Data> {
+  (...args: Args): UseQueryOptions<Data, unknown>
+
+  prefix: QueryKey
+}
+
+export interface QueriesCustomQuery<QueryArg, Args extends unknown[], Data> {
+  (...args: Args): UseQueryOptions<Data, unknown>
+
+  prefix: (arg: QueryArg) => { queryKey: QueryKey }
+}
+
+export class Queries {
+  commonPrefix: string
+  queryNames: Set<string>
+
+  constructor() {
+    this.commonPrefix = randomString('queries-')
+    this.queryNames = new Set()
+  }
+
+  /** Query key: `[commonPrefix, queryName, ...args]` */
+  query<Args extends unknown[], Data>(
+    api: (...args: Args) => Promise<Data>,
+    options?: QueryOptions
+  ): QueriesQuery<Args, Data> {
+    const queryName = this.getQueryName(api.name)
+    return Object.assign(
+      (...args: Args): UseQueryOptions<Data, unknown> => ({
+        queryFn: () => api(...args),
+        queryKey: [this.commonPrefix, queryName, ...args],
+        ...options
+      }),
+      { prefix: [this.commonPrefix, queryName] }
+    )
+  }
+
+  /** Query key: `[commonPrefix, queryName, prefix, ...args]`. `prefix` is computed from args */
+  prefixedQuery<Args extends unknown[], Data, QueryPrefix>(
+    api: (...args: Args) => Promise<Data>,
+    prefix: (...args: Args) => QueryPrefix,
+    options?: QueryOptions
+  ): QueriesCustomQuery<QueryPrefix, Args, Data> {
+    const queryName = this.getQueryName(api.name)
+    return Object.assign(
+      (...args: Args): UseQueryOptions<Data, unknown> => ({
+        queryFn: () => api(...args),
+        queryKey: [this.commonPrefix, queryName, prefix(...args), ...args],
+        ...options
+      }),
+      {
+        prefix: (prefix: QueryPrefix) => ({
+          queryKey: [this.commonPrefix, queryName, prefix]
+        })
+      }
+    )
+  }
+
+  /** Query key: `[commonPrefix, name, extraArg, ...args]`. `extraArg` is passed from the caller but not used in the api call */
+  parametricQuery<ExtraArg>() {
+    return <Args extends unknown[], Data>(
+      api: (...args: Args) => Promise<Data>,
+      options?: QueryOptions
+    ) => {
+      const queryName = this.getQueryName(api.name)
+      return (
+        extraArg: ExtraArg,
+        ...args: Args
+      ): UseQueryOptions<Data, unknown> => ({
+        queryFn: () => api(...args),
+        queryKey: [this.commonPrefix, queryName, extraArg, ...args],
+        ...options
+      })
+    }
+  }
+
+  /** Like `query` but for paged infinite queries */
+  pagedInfiniteQuery<Args extends unknown[], Data, Id>(
+    api: (...args: Args) => (pageParam: number) => Promise<Paged<Data>>,
+    id: (data: Data) => Id,
+    options?: QueryOptions
+  ): (...args: Args) => PagedInfiniteQueryDescription<Data, Id> {
+    const queryName = this.getQueryName(api.name)
+    return (...args: Args): PagedInfiniteQueryDescription<Data, Id> => ({
+      queryFn: ({ pageParam }) => api(...args)(pageParam),
+      queryKey: [this.commonPrefix, queryName, ...args],
+      id,
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, pages) => {
+        const nextPage = pages.length + 1
+        return nextPage <= lastPage.pages ? nextPage : undefined
+      },
+      ...options
+    })
+  }
+
+  mutation<Arg, Data>(
+    api: (arg: Arg) => Promise<Data>,
+    invalidations?: (((arg: Arg) => { queryKey: QueryKey }) | QueryKey)[]
+  ): MutationDescription<Arg, Data> {
+    if (invalidations === undefined) {
+      return { api }
+    } else {
+      const invalidationFns = invalidations.map((invalidation) =>
+        typeof invalidation === 'function'
+          ? (arg: Arg) => invalidation(arg).queryKey
+          : () => invalidation
+      )
+      return {
+        api,
+        invalidateQueryKeys: (arg: Arg) => invalidationFns.map((f) => f(arg))
+      }
+    }
+  }
+
+  /** Allows passing an additional argument to be used in invalidations but not in the api call (like `parametricQuery`) */
+  parametricMutation<MutationArg>() {
+    return <Arg, Data>(
+      api: (arg: Arg) => Promise<Data>,
+      invalidations?: (
+        | ((arg: Arg & MutationArg) => { queryKey: QueryKey })
+        | QueryKey
+      )[]
+    ): MutationDescription<Arg & MutationArg, Data> => {
+      if (invalidations === undefined) {
+        return { api }
+      } else {
+        const invalidationFns = invalidations.map((invalidation) =>
+          typeof invalidation === 'function'
+            ? (arg: Arg & MutationArg) => invalidation(arg).queryKey
+            : () => invalidation
+        )
+        return {
+          api,
+          invalidateQueryKeys: (arg) => invalidationFns.map((fn) => fn(arg))
+        }
+      }
+    }
+  }
+
+  private getQueryName(name: string): string {
+    if (!name || name === 'anonymous') {
+      name = randomString('query-')
+    }
+    if (this.queryNames.has(name)) {
+      throw new Error(`Query name ${name} is already in use`)
+    }
+    this.queryNames.add(name)
+    return name
+  }
+}
+
+function randomString(prefix = '') {
+  return prefix + Math.random().toString(36).substring(2)
+}
+
 export interface QueryOptions {
   enabled?: boolean
   refetchOnMount?: boolean | 'always'
