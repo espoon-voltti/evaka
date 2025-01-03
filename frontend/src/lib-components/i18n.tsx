@@ -4,6 +4,7 @@
 
 import React, { useContext, useMemo } from 'react'
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { DocumentStatus } from 'lib-common/generated/api-types/document'
 
 import { FileType } from './molecules/FileUpload'
@@ -90,6 +91,10 @@ export interface Translations {
     thread: {
       type: string
       urgent: string
+    }
+    outOfOffice: {
+      singleRecipient: (name: string, period: FiniteDateRange) => string
+      multipleRecipientsHeader: string
     }
   }
   messageReplyEditor: {

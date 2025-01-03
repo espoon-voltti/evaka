@@ -208,7 +208,11 @@ export function SingleThreadView({
     (content: string) => setReplyContent(threadId, content),
     [setReplyContent, threadId]
   )
-  const { recipients, onToggleRecipient } = useRecipients(messages, accountId)
+  const { recipients, onToggleRecipient } = useRecipients(
+    messages,
+    accountId,
+    null
+  )
 
   const autoScrollRef = useRef<HTMLSpanElement>(null)
   useEffect(() => {
