@@ -233,7 +233,7 @@ export class CitizenMessageEditor extends Element {
     for (const recipient of recipients) {
       await this.#recipientSelection.fillAndSelectFirst(recipient)
     }
-    await this.#recipientSelection.click()
+    await this.#recipientSelection.close()
   }
 
   async assertNoRecipients() {

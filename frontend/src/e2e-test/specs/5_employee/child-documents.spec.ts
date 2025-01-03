@@ -20,6 +20,7 @@ import {
   DocumentTemplatesListPage
 } from '../../pages/employee/documents/document-templates'
 import EmployeeNav from '../../pages/employee/employee-nav'
+import { ChildDocumentsReport } from '../../pages/employee/reports'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -235,5 +236,84 @@ describe('Employee - Child documents', () => {
     childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
     await childDocument.previewButton.click()
+  })
+
+  test('Child documents report shows document status', async () => {
+    const daycareGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
+    const template = await Fixture.documentTemplate({
+      type: 'VASU',
+      published: true,
+      name: 'Vasu 2022-2023',
+      placementTypes: ['DAYCARE']
+    }).save()
+
+    const child1 = await Fixture.person().saveChild()
+    const placement1 = await Fixture.placement({
+      childId: child1.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: now.toLocalDate().subYears(1),
+      endDate: now.toLocalDate().addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placement1.id,
+      startDate: now.toLocalDate().subYears(1),
+      endDate: now.toLocalDate().addYears(1)
+    }).save()
+
+    const child2 = await Fixture.person({
+      ssn: null
+    }).saveChild()
+    const placement2 = await Fixture.placement({
+      childId: child2.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: now.toLocalDate().subYears(1),
+      endDate: now.toLocalDate().addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placement2.id,
+      startDate: now.toLocalDate().subYears(1),
+      endDate: now.toLocalDate().addYears(1)
+    }).save()
+
+    await Fixture.childDocument({
+      childId: child1.id,
+      templateId: template.id,
+      status: 'DRAFT'
+    }).save()
+
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/reports/child-documents`)
+
+    const report = new ChildDocumentsReport(page)
+    await report.unitSelector.fillAndSelectFirst(testDaycare.name)
+    await report.unitSelector.close()
+    await report.templateSelector.open()
+    await report.templateSelector.expandAll()
+    await report.templateSelector.option(template.id).check()
+    await report.templateSelector.close()
+
+    const unitRow = report.getUnitRow(testDaycare.id)
+    await unitRow.name.assertTextEquals(testDaycare.name)
+    await unitRow.drafts.assertTextEquals('1')
+    await unitRow.prepared.assertTextEquals('0')
+    await unitRow.completed.assertTextEquals('0')
+    await unitRow.noDocuments.assertTextEquals('1')
+    await unitRow.total.assertTextEquals('2')
+
+    await report.toggleUnitRowGroups(testDaycare.id)
+    const groupRow = report.getGroupRow(daycareGroup.id)
+    await groupRow.name.assertTextEquals(daycareGroup.name)
+    await groupRow.drafts.assertTextEquals('1')
+    await groupRow.prepared.assertTextEquals('0')
+    await groupRow.completed.assertTextEquals('0')
+    await groupRow.noDocuments.assertTextEquals('1')
+    await groupRow.total.assertTextEquals('2')
   })
 })
