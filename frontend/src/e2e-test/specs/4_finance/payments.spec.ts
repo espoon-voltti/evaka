@@ -47,6 +47,8 @@ beforeEach(async () => {
 
 describe('Payments', () => {
   test('are toggled and sent', async () => {
+    await paymentsPage.searchButton.click()
+
     await paymentsPage.togglePayments(true)
     await paymentsPage.assertPaymentCount(1)
 
@@ -54,6 +56,7 @@ describe('Payments', () => {
     await paymentsPage.assertPaymentCount(0)
 
     await paymentsPage.setStatusFilter('CONFIRMED')
+    await paymentsPage.searchButton.click()
     await paymentsPage.assertPaymentCount(1)
 
     await paymentsPage.togglePayments(true)
@@ -61,10 +64,12 @@ describe('Payments', () => {
     await paymentsPage.assertPaymentCount(0)
 
     await paymentsPage.setStatusFilter('SENT')
+    await paymentsPage.searchButton.click()
     await paymentsPage.assertPaymentCount(1)
   })
 
   test('are deleted', async () => {
+    await paymentsPage.searchButton.click()
     await paymentsPage.togglePayments(true)
     await paymentsPage.assertPaymentCount(1)
     await paymentsPage.deletePayments()
@@ -72,6 +77,7 @@ describe('Payments', () => {
   })
 
   test('are reverted', async () => {
+    await paymentsPage.searchButton.click()
     await paymentsPage.togglePayments(true)
     await paymentsPage.assertPaymentCount(1)
 
@@ -79,6 +85,7 @@ describe('Payments', () => {
     await paymentsPage.assertPaymentCount(0)
 
     await paymentsPage.setStatusFilter('CONFIRMED')
+    await paymentsPage.searchButton.click()
     await paymentsPage.assertPaymentCount(1)
 
     await paymentsPage.togglePayments(true)
@@ -86,6 +93,7 @@ describe('Payments', () => {
     await paymentsPage.assertPaymentCount(0)
 
     await paymentsPage.setStatusFilter('DRAFT')
+    await paymentsPage.searchButton.click()
     await paymentsPage.assertPaymentCount(1)
   })
 })
