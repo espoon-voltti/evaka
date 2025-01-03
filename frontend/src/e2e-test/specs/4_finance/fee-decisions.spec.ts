@@ -96,6 +96,7 @@ describe('Fee decisions', () => {
       testChild2,
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
+    await feeDecisionsPage.searchButton.click()
     await waitUntilEqual(() => feeDecisionsPage.getFeeDecisionCount(), 1)
   })
 
@@ -105,6 +106,7 @@ describe('Fee decisions', () => {
       testChild2,
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
+    await feeDecisionsPage.searchButton.click()
     await feeDecisionsPage.openFirstFeeDecision()
   })
 
@@ -114,6 +116,7 @@ describe('Fee decisions', () => {
       testChild2,
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
+    await feeDecisionsPage.searchButton.click()
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     await feeDecisionsPage.sendFeeDecisions(HelsinkiDateTime.of(2023, 1, 1))
     await runPendingAsyncJobs(HelsinkiDateTime.now())
@@ -140,6 +143,7 @@ describe('Fee decisions', () => {
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
       partner
     )
+    await feeDecisionsPage.searchButton.click()
     const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
     await feeDecisionDetailsPage.assertPartnerName(
       `${partner.firstName} ${partner.lastName}`
@@ -162,6 +166,7 @@ describe('Fee decisions', () => {
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
       partner
     )
+    await feeDecisionsPage.searchButton.click()
     const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
     await feeDecisionDetailsPage.assertPartnerNameNotShown()
   })
@@ -187,6 +192,7 @@ describe('Fee decisions', () => {
       partner,
       DecisionIncomeFixture(54321)
     )
+    await feeDecisionsPage.searchButton.click()
     const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
     await feeDecisionDetailsPage.assertChildIncome(0, '543,21 €')
   })
@@ -219,6 +225,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       testChild2,
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
+    await feeDecisionsPage.searchButton.click()
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     const modal = await feeDecisionsPage.openDecisionHandlerModal()
     await modal.rejectDecisionHandlerModal(HelsinkiDateTime.of(2023, 1, 1))
@@ -231,6 +238,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       testChild2,
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
+    await feeDecisionsPage.searchButton.click()
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     const modal = await feeDecisionsPage.openDecisionHandlerModal()
     await modal.resolveDecisionHandlerModal(HelsinkiDateTime.of(2023, 5, 3))
@@ -246,6 +254,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       testChild2,
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
+    await feeDecisionsPage.searchButton.click()
     const otherFinanceAdmin = await Fixture.employee({
       email: 'laura.laskuttaja@evaka.test',
       firstName: 'Laura',
@@ -269,6 +278,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       testChild2,
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
+    await feeDecisionsPage.searchButton.click()
     const feeDecisionDetailsPageDraft =
       await feeDecisionsPage.openFirstFeeDecision()
     const modal = await feeDecisionDetailsPageDraft.openDecisionHandlerModal()
@@ -287,6 +297,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       testChild2,
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
+    await feeDecisionsPage.searchButton.click()
     const otherFinanceAdmin = await Fixture.employee({
       email: 'laura.laskuttaja@evaka.test',
       firstName: 'Laura',

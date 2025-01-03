@@ -24,15 +24,17 @@ import {
 } from '../common/Filters'
 import { unitFilterQuery } from '../unit/queries'
 
-export default React.memo(function IncomeStatementsFilters({
-  onSearch
-}: {
-  onSearch: () => void
-}) {
+export default React.memo(function IncomeStatementsFilters() {
   const {
-    incomeStatements: { searchFilters, setSearchFilters, clearSearchFilters },
+    incomeStatements: {
+      searchFilters,
+      setSearchFilters,
+      clearSearchFilters,
+      confirmSearchFilters
+    },
     shared: { availableAreas }
   } = useContext(InvoicingUiContext)
+
   const unitsResult = useQueryResult(
     unitFilterQuery({ areaIds: null, type: 'DAYCARE', from: null })
   )
@@ -92,7 +94,7 @@ export default React.memo(function IncomeStatementsFilters({
   return (
     <Filters
       clearFilters={clearSearchFilters}
-      onSearch={onSearch}
+      onSearch={confirmSearchFilters}
       column1={
         <>
           <AreaFilter

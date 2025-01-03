@@ -1,50 +1,71 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import React, { useCallback, useContext, useState } from 'react'
 
-import { Result } from 'lib-common/api'
-import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import {
+  PaymentSortParam,
+  PaymentStatus,
+  SortDirection
+} from 'lib-common/generated/api-types/invoicing'
 import { PaymentId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { getPaymentsDueDate } from 'lib-customizations/employee'
 
-import { useTranslation } from '../../state/i18n'
+import { useCheckedState } from '../../state/invoicing'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { renderResult } from '../async-rendering'
 
 import Actions from './Actions'
 import PaymentFilters from './PaymentFilters'
 import Payments from './Payments'
-import { PaymentsActions, usePaymentsState } from './payments-state'
+import { searchPaymentsQuery } from './queries'
 
 export const selectablePaymentStatuses: PaymentStatus[] = ['DRAFT', 'CONFIRMED']
 
 export default React.memo(function PaymentsPage() {
   const {
-    actions,
-    state: {
-      page,
-      pages,
-      total,
-      payments,
-      sortBy,
-      sortDirection,
-      checkedPayments,
-      showModal
-    },
-    searchFilters,
-    createPayments,
-    reloadPayments,
-    sendPayments,
-    onSendSuccess
-  } = usePaymentsState()
+    payments: { confirmedSearchFilters: searchFilters, page }
+  } = useContext(InvoicingUiContext)
+
+  const [sortBy, setSortBy] = useState<PaymentSortParam>('UNIT')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
+
+  const payments = useQueryResult(
+    searchFilters &&
+      (!searchFilters.paymentDateStart ||
+        !searchFilters.paymentDateEnd ||
+        searchFilters.paymentDateEnd.isEqualOrAfter(
+          searchFilters.paymentDateStart
+        ))
+      ? searchPaymentsQuery({
+          body: {
+            page,
+            sortBy,
+            sortDirection,
+            area: searchFilters.area,
+            distinctions: searchFilters.distinctions,
+            paymentDateStart: searchFilters.paymentDateStart ?? null,
+            paymentDateEnd: searchFilters.paymentDateEnd ?? null,
+            searchTerms: searchFilters.searchTerms,
+            status: searchFilters.status,
+            unit: searchFilters.unit ?? null
+          }
+        })
+      : constantQuery({ data: [], pages: 0, total: 0 })
+  )
+
+  const checkedState = useCheckedState<PaymentId>()
+
+  const checkAll = useCallback(() => {
+    if (payments && payments.isSuccess) {
+      checkedState.checkIds(payments.value.data.map((payment) => payment.id))
+    }
+  }, [payments, checkedState.checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const checkedIds = checkedState.getCheckedIds()
 
   return (
     <Container data-qa="payments-page">
@@ -52,94 +73,34 @@ export default React.memo(function PaymentsPage() {
         <PaymentFilters />
       </ContentArea>
       <Gap size="XL" />
-      <ContentArea opaque>
-        <Payments
-          actions={actions}
-          payments={payments}
-          createPayments={createPayments}
-          total={total}
-          pages={pages}
-          currentPage={page}
-          sortBy={sortBy}
-          sortDirection={sortDirection}
-          showCheckboxes={selectablePaymentStatuses.includes(
-            searchFilters.status
-          )}
-          checked={checkedPayments}
-        />
-      </ContentArea>
-      <Actions
-        actions={actions}
-        reloadPayments={reloadPayments}
-        status={searchFilters.status}
-        checkedIds={Object.keys(checkedPayments) as PaymentId[]}
-      />
-      {showModal ? (
-        <Modal
-          actions={actions}
-          onSendDone={onSendSuccess}
-          sendPayments={sendPayments}
-        />
-      ) : null}
+      {searchFilters &&
+        renderResult(payments, (payments) => (
+          <>
+            <ContentArea opaque>
+              <Payments
+                payments={payments.data}
+                total={payments.total}
+                pages={payments.pages}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortDirection={sortDirection}
+                setSortDirection={setSortDirection}
+                showCheckboxes={selectablePaymentStatuses.includes(
+                  searchFilters.status
+                )}
+                isChecked={checkedState.isChecked}
+                toggleChecked={checkedState.toggleChecked}
+                checkAll={checkAll}
+                clearChecked={checkedState.clearChecked}
+              />
+            </ContentArea>
+            <Actions
+              status={searchFilters.status}
+              checkedIds={checkedIds}
+              clearChecked={checkedState.clearChecked}
+            />
+          </>
+        ))}
     </Container>
   )
 })
-
-const Modal = React.memo(function Modal({
-  actions,
-  onSendDone,
-  sendPayments
-}: {
-  actions: PaymentsActions
-  onSendDone: () => void
-  sendPayments: (args: {
-    paymentDate: LocalDate
-    dueDate: LocalDate
-  }) => Promise<Result<void>>
-}) {
-  const { i18n } = useTranslation()
-  const [paymentDate, setPaymentDate] = useState(LocalDate.todayInHelsinkiTz())
-  const [dueDate, setDueDate] = useState(
-    getPaymentsDueDate ?? LocalDate.todayInHelsinkiTz().addBusinessDays(10)
-  )
-
-  return (
-    <AsyncFormModal
-      type="info"
-      title={i18n.payments.sendModal.title}
-      icon={faEnvelope}
-      resolveAction={() => sendPayments({ paymentDate, dueDate })}
-      resolveLabel={i18n.common.confirm}
-      onSuccess={onSendDone}
-      rejectAction={actions.closeModal}
-      rejectLabel={i18n.common.cancel}
-      data-qa="send-payments-modal"
-    >
-      <ModalContent>
-        <Label>{i18n.payments.sendModal.paymentDate}</Label>
-        <div>
-          <DatePickerDeprecated
-            date={paymentDate}
-            onChange={setPaymentDate}
-            type="full-width"
-          />
-        </div>
-        <Gap size="s" />
-        <Label>{i18n.payments.sendModal.dueDate}</Label>
-        <div>
-          <DatePickerDeprecated
-            date={dueDate}
-            onChange={setDueDate}
-            type="full-width"
-          />
-        </div>
-      </ModalContent>
-    </AsyncFormModal>
-  )
-})
-
-const ModalContent = styled.div`
-  align-self: flex-start;
-  margin-left: 4rem;
-  margin-right: 4rem;
-`
