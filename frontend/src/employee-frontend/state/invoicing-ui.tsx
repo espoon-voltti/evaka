@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -34,7 +34,6 @@ import { Employee } from 'lib-common/generated/api-types/pis'
 import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { useDebounce } from 'lib-common/utils/useDebounce'
 
 import { areaQuery } from '../components/unit/queries'
 
@@ -108,6 +107,7 @@ interface InvoiceSearchFilterState {
 }
 
 export interface PaymentSearchFilters {
+  searchTerms: string
   area: string[]
   unit: DaycareId | null
   distinctions: PaymentDistinctiveParams[]
@@ -117,11 +117,12 @@ export interface PaymentSearchFilters {
 }
 
 interface PaymentSearchFilterState {
+  page: number
+  setPage: (p: number) => void
   searchFilters: PaymentSearchFilters
   setSearchFilters: Dispatch<SetStateAction<PaymentSearchFilters>>
-  searchTerms: string
-  setSearchTerms: (s: string) => void
-  debouncedSearchTerms: string
+  confirmedSearchFilters: PaymentSearchFilters | undefined
+  confirmSearchFilters: () => void
   clearSearchFilters: () => void
 }
 
@@ -222,7 +223,10 @@ const defaultState: UiState = {
     clearSearchFilters: () => undefined
   },
   payments: {
+    page: 1,
+    setPage: () => undefined,
     searchFilters: {
+      searchTerms: '',
       area: [],
       unit: null,
       distinctions: [],
@@ -231,9 +235,8 @@ const defaultState: UiState = {
       paymentDateEnd: null
     },
     setSearchFilters: () => undefined,
-    searchTerms: '',
-    setSearchTerms: () => undefined,
-    debouncedSearchTerms: '',
+    confirmedSearchFilters: undefined,
+    confirmSearchFilters: () => undefined,
     clearSearchFilters: () => undefined
   },
   incomeStatements: {
@@ -358,15 +361,29 @@ export const InvoicingUIContextProvider = React.memo(
       [setInvoiceSearchFilters]
     )
 
-    const [paymentSearchFilters, setPaymentSearchFilters] =
-      useState<PaymentSearchFilters>(defaultState.payments.searchFilters)
-    const [paymentFreeTextSearch, setPaymentFreeTextSearch] = useState(
-      defaultState.payments.searchTerms
+    const [paymentPage, setPaymentPage] = useState<number>(
+      defaultState.payments.page
     )
-    const paymentDebouncedFreeText = useDebounce(paymentFreeTextSearch, 500)
+    const [confirmedPaymentSearchFilters, setConfirmedPaymentSearchFilters] =
+      useState<PaymentSearchFilters | undefined>(
+        defaultState.payments.confirmedSearchFilters
+      )
+    const [paymentSearchFilters, _setPaymentSearchFilters] =
+      useState<PaymentSearchFilters>(defaultState.payments.searchFilters)
+    const setPaymentSearchFilters = useCallback(
+      (value: React.SetStateAction<PaymentSearchFilters>) => {
+        _setPaymentSearchFilters(value)
+        setConfirmedPaymentSearchFilters(undefined)
+      },
+      []
+    )
+    const confirmPaymentSearchFilters = useCallback(() => {
+      setConfirmedPaymentSearchFilters(paymentSearchFilters)
+      setPaymentPage(defaultState.payments.page)
+    }, [paymentSearchFilters])
     const clearPaymentSearchFilters = useCallback(
       () => setPaymentSearchFilters(defaultState.payments.searchFilters),
-      []
+      [setPaymentSearchFilters]
     )
 
     const [incomeStatementPage, setIncomeStatementPage] = useState<number>(
@@ -450,11 +467,12 @@ export const InvoicingUIContextProvider = React.memo(
           clearSearchFilters: clearInvoiceSearchFilters
         },
         payments: {
+          page: paymentPage,
+          setPage: setPaymentPage,
           searchFilters: paymentSearchFilters,
+          confirmedSearchFilters: confirmedPaymentSearchFilters,
           setSearchFilters: setPaymentSearchFilters,
-          searchTerms: paymentFreeTextSearch,
-          setSearchTerms: setPaymentFreeTextSearch,
-          debouncedSearchTerms: paymentDebouncedFreeText,
+          confirmSearchFilters: confirmPaymentSearchFilters,
           clearSearchFilters: clearPaymentSearchFilters
         },
         incomeStatements: {
@@ -493,9 +511,11 @@ export const InvoicingUIContextProvider = React.memo(
         setInvoiceSearchFilters,
         confirmInvoiceSearchFilters,
         clearInvoiceSearchFilters,
+        paymentPage,
         paymentSearchFilters,
-        paymentFreeTextSearch,
-        paymentDebouncedFreeText,
+        confirmedPaymentSearchFilters,
+        setPaymentSearchFilters,
+        confirmPaymentSearchFilters,
         clearPaymentSearchFilters,
         incomeStatementPage,
         incomeStatementSearchFilters,
