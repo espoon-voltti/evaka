@@ -109,7 +109,8 @@ import {
   postReservations,
   postReservationsRaw,
   upsertStaffOccupancyCoefficient,
-  upsertVtjDataset
+  upsertVtjDataset,
+  upsertWeakCredentials
 } from '../generated/api-clients'
 import {
   Caretaker,
@@ -1288,10 +1289,21 @@ export class ClubTermBuilder extends FixtureBuilder<DevClubTerm> {
 }
 
 export class PersonBuilder extends FixtureBuilder<DevPerson> {
-  async saveAdult(opts: { updateMockVtjWithDependants?: DevPerson[] } = {}) {
+  async saveAdult(
+    opts: {
+      updateMockVtjWithDependants?: DevPerson[]
+      updateWeakCredentials?: { username: string; password: string }
+    } = {}
+  ) {
     await createPerson({ body: this.data, type: 'ADULT' })
     if (opts.updateMockVtjWithDependants !== undefined) {
       await this.updateMockVtj(opts.updateMockVtjWithDependants)
+    }
+    if (opts.updateWeakCredentials) {
+      await upsertWeakCredentials({
+        id: this.data.id,
+        body: opts.updateWeakCredentials
+      })
     }
     return this.data
   }

@@ -402,6 +402,7 @@ export default React.memo(function PersonalDetailsSection({
                 />
                 {canEdit ? (
                   <MutateButton
+                    data-qa="update-username"
                     text={t.personalDetails.detailsSection.updateUsername(
                       problem.email
                     )}
@@ -410,6 +411,7 @@ export default React.memo(function PersonalDetailsSection({
                   />
                 ) : (
                   <Button
+                    data-qa="update-username"
                     text={t.personalDetails.detailsSection.updateUsername(
                       problem.email
                     )}

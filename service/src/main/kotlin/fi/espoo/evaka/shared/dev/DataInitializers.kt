@@ -85,10 +85,7 @@ import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.auth.syncDaycareGroupAcl
+import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -1833,6 +1830,25 @@ fun Database.Transaction.insert(sn: ServiceNeedOption) {
             """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to, show_for_citizen)
 VALUES (${bind(sn.id)}, ${bind(sn.nameFi)}, ${bind(sn.nameSv)}, ${bind(sn.nameEn)}, ${bind(sn.validPlacementType)}, ${bind(sn.defaultOption)}, ${bind(sn.feeCoefficient)}, ${bind(sn.occupancyCoefficient)}, ${bind(sn.occupancyCoefficientUnder3y)}, ${bind(sn.realizedOccupancyCoefficient)}, ${bind(sn.realizedOccupancyCoefficientUnder3y)}, ${bind(sn.daycareHoursPerWeek)}, ${bind(sn.contractDaysPerMonth)}, ${bind(sn.daycareHoursPerMonth)}, ${bind(sn.partDay)}, ${bind(sn.partWeek)}, ${bind(sn.feeDescriptionFi)}, ${bind(sn.feeDescriptionSv)}, ${bind(sn.voucherValueDescriptionFi)}, ${bind(sn.voucherValueDescriptionSv)}, ${bind(sn.validFrom)}, ${bind(sn.validTo)}, ${bind(sn.showForCitizen)})
+"""
+        )
+    }
+}
+
+data class DevCitizenUser(
+    val id: PersonId,
+    val username: String,
+    val usernameUpdatedAt: HelsinkiDateTime,
+    val password: EncodedPassword,
+    val passwordUpdatedAt: HelsinkiDateTime,
+)
+
+fun Database.Transaction.insert(citizenUser: DevCitizenUser) {
+    execute {
+        sql(
+            """
+INSERT INTO citizen_user (id, username, username_updated_at, password, password_updated_at)
+VALUES (${bind(citizenUser.id)}, ${bind(citizenUser.username)}, ${bind(citizenUser.usernameUpdatedAt)}, ${bindJson(citizenUser.password)}, ${bind(citizenUser.passwordUpdatedAt)})
 """
         )
     }
