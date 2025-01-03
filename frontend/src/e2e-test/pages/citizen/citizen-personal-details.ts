@@ -36,6 +36,7 @@ export class CitizenPersonalDetailsSection extends Element {
   sendVerificationCode: Element
   verificationCodeField: TextInput
   verifyEmail: Element
+  updateUsername: Element
 
   constructor(element: Element) {
     super(element)
@@ -57,6 +58,7 @@ export class CitizenPersonalDetailsSection extends Element {
       element.findByDataQa('verification-code-field')
     )
     this.verifyEmail = element.findByDataQa('verify-email')
+    this.updateUsername = element.findByDataQa('update-username')
   }
 
   async checkMissingEmailWarningIsShown() {
@@ -133,7 +135,37 @@ export class CitizenPersonalDetailsSection extends Element {
 }
 
 export class LoginDetailsSection extends Element {
-  keycloakEmail = this.findByDataQa('keycloak-email')
+  keycloakEmail: Element
+  username: Element
+  activateCredentials: Element
+  weakLoginEnabled: Element
+  weakLoginDisabled: Element
+  updatePassword: Element
+
+  constructor(element: Element) {
+    super(element)
+    this.keycloakEmail = element.findByDataQa('keycloak-email')
+    this.username = element.findByDataQa('username')
+    this.activateCredentials = element.findByDataQa('activate-credentials')
+    this.weakLoginEnabled = element.findByDataQa('weak-login-enabled')
+    this.weakLoginDisabled = element.findByDataQa('weak-login-disabled')
+    this.updatePassword = element.findByDataQa('update-password')
+  }
+}
+
+export class WeakCredentialsModal extends Element {
+  username: Element
+  password: TextInput
+  confirmPassword: TextInput
+  ok: Element
+
+  constructor(page: Page) {
+    super(page.findByDataQa('weak-credentials-modal'))
+    this.username = this.findByDataQa('username')
+    this.password = new TextInput(this.findByDataQa('password'))
+    this.confirmPassword = new TextInput(this.findByDataQa('confirm-password'))
+    this.ok = this.findByDataQa('modal-okBtn')
+  }
 }
 
 export class CitizenNotificationSettingsSection extends Element {

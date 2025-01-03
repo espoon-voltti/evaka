@@ -88,7 +88,11 @@ export default React.memo(function LoginDetailsSection({
           <>
             <Label>{t.weakLoginCredentials}</Label>
             <div>
-              {user.weakLoginUsername ? t.status.enabled : t.status.disabled}
+              {user.weakLoginUsername ? (
+                <span data-qa="weak-login-enabled">{t.status.enabled}</span>
+              ) : (
+                <span data-qa="weak-login-disabled">{t.status.disabled}</span>
+              )}
               <InlineInfoButton
                 onClick={toggleInfo}
                 aria-label={i18n.common.openExpandingInfo}
@@ -103,7 +107,7 @@ export default React.memo(function LoginDetailsSection({
               <>
                 <Label>{t.weakLoginUsername}</Label>
                 <div>
-                  {user.weakLoginUsername}
+                  <span data-qa="username">{user.weakLoginUsername}</span>
                   <Gap horizontal size="xs" />
                   <InfoButton
                     onClick={toggleUsernameInfo}
@@ -122,6 +126,7 @@ export default React.memo(function LoginDetailsSection({
                 <div>
                   <div>********</div>
                   <Button
+                    data-qa="update-password"
                     appearance="inline"
                     text={t.updatePassword}
                     icon={canEdit ? undefined : faLockAlt}
@@ -135,6 +140,7 @@ export default React.memo(function LoginDetailsSection({
                   <AlertBox message={t.unverifiedEmailWarning} />
                 )}
                 <Button
+                  data-qa="activate-credentials"
                   disabled={!isEmailVerified}
                   text={t.activateCredentials}
                   icon={canEdit ? undefined : faLockAlt}
@@ -149,7 +155,7 @@ export default React.memo(function LoginDetailsSection({
         {!!emailVerificationStatus.verifiedEmail && (
           <>
             {modalOpen && (
-              <WeakLoginFormModal
+              <WeakCredentialsFormModal
                 hasCredentials={!!user.weakLoginUsername}
                 username={
                   user.weakLoginUsername ??
@@ -167,6 +173,7 @@ export default React.memo(function LoginDetailsSection({
             )}
             {activationSuccessModalOpen && (
               <BaseModal
+                data-qa="weak-credentials-modal"
                 type="success"
                 title={t.activationSuccess}
                 icon={faCheck}
@@ -175,6 +182,7 @@ export default React.memo(function LoginDetailsSection({
               >
                 <ModalButtons $justifyContent="center">
                   <Button
+                    data-qa="modal-okBtn"
                     primary
                     text={t.activationSuccessOk}
                     onClick={closeActivationSuccessModal}
@@ -215,7 +223,7 @@ const UsernameField = styled.input`
   border: none;
 `
 
-const WeakLoginFormModal = React.memo(function WeakLoginFormModal({
+const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
   hasCredentials,
   username,
   onSuccess,
@@ -238,6 +246,7 @@ const WeakLoginFormModal = React.memo(function WeakLoginFormModal({
   const pattern = `.{${minLength},${maxLength}}`
   return (
     <MutateFormModal
+      data-qa="weak-credentials-modal"
       title={t.weakLoginCredentials}
       resolveLabel={
         hasCredentials ? t.updatePassword : t.confirmActivateCredentials
@@ -258,6 +267,7 @@ const WeakLoginFormModal = React.memo(function WeakLoginFormModal({
         <FixedSpaceColumn spacing="xs">
           <Label htmlFor="username">{t.weakLoginUsername}</Label>
           <UsernameField
+            data-qa="username"
             id="username"
             name="username"
             type="email"
@@ -267,6 +277,7 @@ const WeakLoginFormModal = React.memo(function WeakLoginFormModal({
           />
           <Label htmlFor="password">{t.password}</Label>
           <InputFieldF
+            data-qa="password"
             id="password"
             name="password"
             autoComplete="new-password"
@@ -279,6 +290,7 @@ const WeakLoginFormModal = React.memo(function WeakLoginFormModal({
           />
           <Label htmlFor="confirm-password">{t.confirmPassword}</Label>
           <InputFieldF
+            data-qa="confirm-password"
             id="confirm-password"
             name="confirm-password"
             autoComplete="new-password"

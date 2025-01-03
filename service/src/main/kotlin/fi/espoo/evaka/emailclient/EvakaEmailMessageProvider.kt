@@ -780,7 +780,7 @@ $unsubscribeEn
 <hr>
 <p>This confirmation code has been sent from eVaka for editing your information. Enter the provided confirmation code in the requested field in eVaka.</p>
 <hr>
-<p>Vahvistuskoodi / bekräftelsekod / confirmation code: <strong>${confirmationCode}</strong></p>
+<p>Vahvistuskoodi / bekräftelsekod / confirmation code: <strong>$confirmationCode</strong></p>
 """,
         )
 }
