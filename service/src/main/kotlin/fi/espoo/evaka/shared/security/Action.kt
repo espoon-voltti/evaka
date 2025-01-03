@@ -279,6 +279,7 @@ sealed interface Action {
         READ_UNITS_REPORT(HasGlobalRole(ADMIN)),
         READ_TITANIA_ERRORS(HasGlobalRole(ADMIN)),
         READ_VARDA_REPORT(HasGlobalRole(ADMIN)),
+        READ_TAMPERE_REGIONAL_SURVEY_REPORT(HasGlobalRole(ADMIN)),
         UPDATE_SETTINGS(HasGlobalRole(ADMIN)),
         READ_SPECIAL_DIET_LIST(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
