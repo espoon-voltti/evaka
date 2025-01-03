@@ -68,6 +68,7 @@ export class FeeDecisionsPage {
   #sendFeeDecisionsButton: AsyncButton
   #openDecisionHandlerSelectModalButton: AsyncButton
   #firstFeeDecisionRow: Element
+  searchButton: Element
 
   constructor(private readonly page: Page) {
     this.#feeDecisionListPage = page.findByDataQa('fee-decisions-page')
@@ -84,6 +85,7 @@ export class FeeDecisionsPage {
     this.#firstFeeDecisionRow = page
       .findAll('[data-qa="table-fee-decision-row"]')
       .first()
+    this.searchButton = page.findByDataQa('search-button')
   }
 
   #statusFilter = (status: FeeDecisionStatus) =>
@@ -128,6 +130,7 @@ export class FeeDecisionsPage {
     await this.#statusFilter('DRAFT').click()
     await this.#statusFilter('SENT').click()
     await this.#statusFilter('SENT').waitUntilChecked()
+    await this.searchButton.click()
     await waitUntilEqual(
       () => this.page.findAll('[data-qa="table-fee-decision-row"]').count(),
       count
@@ -191,6 +194,7 @@ export class ValueDecisionsPage {
   #sendValueDecisionsButton: AsyncButton
   #openDecisionHandlerSelectModalButton: AsyncButton
   #firstValueDecisionRow: Element
+  searchButton: Element
 
   constructor(private readonly page: Page) {
     this.#fromDateInput = new DatePickerDeprecated(
@@ -214,6 +218,7 @@ export class ValueDecisionsPage {
     this.#firstValueDecisionRow = page
       .findAll('[data-qa="table-value-decision-row"]')
       .first()
+    this.searchButton = page.findByDataQa('search-button')
   }
 
   #statusFilter = (status: VoucherValueDecisionStatus) =>
@@ -262,6 +267,7 @@ export class ValueDecisionsPage {
     await this.#statusFilter('DRAFT').click()
     await this.#statusFilter('SENT').click()
     await this.#statusFilter('SENT').waitUntilChecked()
+    await this.searchButton.click()
     await waitUntilEqual(
       () => this.page.findAll('[data-qa="table-value-decision-row"]').count(),
       count
@@ -371,6 +377,7 @@ export class InvoicesPage {
   #markInvoiceSentButton: AsyncButton
   #invoices: Element
   #sendInvoicesButton: AsyncButton
+  #searchButton: Element
 
   constructor(private readonly page: Page) {
     this.#invoicesPage = page.findByDataQa('invoices-page')
@@ -395,10 +402,15 @@ export class InvoicesPage {
     this.#sendInvoicesButton = new AsyncButton(
       page.find('[data-qa="send-invoices-dialog"] [data-qa="modal-okBtn"]')
     )
+    this.#searchButton = page.findByDataQa('search-button')
   }
 
   async assertLoaded() {
     await this.#invoicesPage.waitUntilVisible()
+  }
+
+  async searchInvoices() {
+    await this.#searchButton.click()
     await this.#invoices.assertAttributeEquals('data-isloading', 'false')
   }
 
@@ -535,7 +547,11 @@ export class IncomeStatementsPage {
 }
 
 export class PaymentsPage {
-  constructor(private readonly page: Page) {}
+  searchButton: Element
+
+  constructor(private readonly page: Page) {
+    this.searchButton = page.findByDataQa('search-button')
+  }
 
   async setStatusFilter(status: PaymentStatus) {
     const radio = new Radio(this.page.findByDataQa(`status-filter-${status}`))
