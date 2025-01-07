@@ -438,7 +438,7 @@ export default React.memo(function Header() {
                   onClick={closeUserPopup}
                   data-qa="user-popup-out-of-office"
                 >
-                  {i18n.outOfOffice.title}
+                  {i18n.outOfOffice.menu}
                 </Link>
               )}
               <Link

@@ -5023,9 +5023,10 @@ export const fi = {
       'eVakasta puuttuu seuraavan esiopetuskauden määrittely. Esiopetuskausi tarvitaan hakemusten luontia varten.'
   },
   outOfOffice: {
-    title: 'Poissaolojaksot',
+    menu: 'Johtajan poissaolojakso',
+    title: 'Poissaolojakso',
     description:
-      'Voit lisätä tänne tiedon esimerkiksi lomistasi. Lasten huoltajat näkevät poissaollessasi ilmoituksen, että et ole paikalla.',
+      'Voit lisätä tänne tiedon esimerkiksi lomastasi. Lasten huoltajat näkevät poissaollessasi ilmoituksen, että et ole paikalla.',
     header: 'Poissaolojakso',
     noFutureOutOfOffice: 'Ei tulevia poissaoloja',
     addOutOfOffice: 'Lisää poissaolojakso'
