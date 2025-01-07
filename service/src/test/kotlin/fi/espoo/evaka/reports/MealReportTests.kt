@@ -16,11 +16,15 @@ import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.reservations.UnitAttendanceReservations
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.specialdiet.SpecialDiet
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
@@ -30,6 +34,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class MealReportTests {
+    val clock = MockEvakaClock(2024, 1, 3, 3, 7)
+
     @Test
     fun `mealReportData should return no meals for absent child`() {
         val testDate = LocalDate.of(2023, 4, 15)
@@ -736,6 +742,8 @@ class MealReportTests {
         val lunchTime = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20))
         val snackTime = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20))
 
+        val user = EvakaUser(EvakaUserId(UUID.randomUUID()), "Test Name", EvakaUserType.EMPLOYEE)
+
         val childData =
             mapOf(
                 childId1 to
@@ -757,6 +765,8 @@ class MealReportTests {
                                         ReservationResponse.Times(
                                             TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 20)),
                                             false,
+                                            clock.now(),
+                                            user,
                                         )
                                     )
                             ),
@@ -785,6 +795,8 @@ class MealReportTests {
                                         ReservationResponse.Times(
                                             TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 20)),
                                             false,
+                                            clock.now(),
+                                            user,
                                         )
                                     )
                             ),

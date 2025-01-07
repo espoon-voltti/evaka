@@ -598,7 +598,7 @@ describe('Unit group calendar for shift care unit', () => {
 
     await waitUntilEqual(
       () => childReservations.getAttendance(startDate, 0),
-      [arrived.format(), departed.format()]
+      ['08:30', '13:30']
     )
     await waitUntilEqual(
       () => childReservations.getAttendance(startDate, 1),

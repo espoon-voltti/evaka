@@ -59,6 +59,8 @@ import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareHours120
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
+import fi.espoo.evaka.toEvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import fi.espoo.evaka.withHolidays
 import java.time.LocalDate
 import java.time.LocalTime
@@ -96,6 +98,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     private val startTime = LocalTime.of(9, 0)
     private val endTime = LocalTime.of(17, 0)
 
+    private val now = HelsinkiDateTime.of(mockToday, LocalTime.of(13, 0))
+    private val employee = DevEmployee()
+
     @BeforeEach
     fun before() {
         reservationControllerCitizen =
@@ -118,7 +123,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val area = DevCareArea()
         val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
-        val employee = DevEmployee()
 
         val adult = DevPerson()
         val child1 = DevPerson(dateOfBirth = LocalDate.of(2015, 1, 1))
@@ -553,6 +557,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         date = monday,
                         startTime = LocalTime.of(9, 0),
                         endTime = LocalTime.of(16, 0),
+                        createdAt = now,
                         createdBy = adult.evakaUserId(),
                     ),
                     DevReservation(
@@ -560,6 +565,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         date = tuesday,
                         startTime = LocalTime.of(9, 0),
                         endTime = LocalTime.of(16, 0),
+                        createdAt = now,
                         createdBy = adult.evakaUserId(),
                     ),
                     // No reservation on Wednesday
@@ -613,6 +619,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         ReservationResponse.Times(
                                             TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
                                             false,
+                                            now,
+                                            adult.toEvakaUser(EvakaUserType.CITIZEN),
                                         )
                                     ),
                                 attendances =
@@ -641,6 +649,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         ReservationResponse.Times(
                                             TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
                                             false,
+                                            now,
+                                            adult.toEvakaUser(EvakaUserType.CITIZEN),
                                         )
                                     ),
                                 attendances =
@@ -1118,6 +1128,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     ),
                 )
             },
+            now,
         )
 
         val res =
@@ -1159,14 +1170,24 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             child1.id,
                             reservations =
                                 listOf(
-                                    ReservationResponse.Times(TimeRange(startTime, endTime), false)
+                                    ReservationResponse.Times(
+                                        TimeRange(startTime, endTime),
+                                        false,
+                                        now,
+                                        adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                    )
                                 ),
                         ),
                         dayChild(
                             child2.id,
                             reservations =
                                 listOf(
-                                    ReservationResponse.Times(TimeRange(startTime, endTime), false)
+                                    ReservationResponse.Times(
+                                        TimeRange(startTime, endTime),
+                                        false,
+                                        now,
+                                        adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                    )
                                 ),
                         ),
                     )
@@ -1183,14 +1204,24 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             child1.id,
                             reservations =
                                 listOf(
-                                    ReservationResponse.Times(TimeRange(startTime, endTime), false)
+                                    ReservationResponse.Times(
+                                        TimeRange(startTime, endTime),
+                                        false,
+                                        now,
+                                        adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                    )
                                 ),
                         ),
                         dayChild(
                             child2.id,
                             reservations =
                                 listOf(
-                                    ReservationResponse.Times(TimeRange(startTime, endTime), false)
+                                    ReservationResponse.Times(
+                                        TimeRange(startTime, endTime),
+                                        false,
+                                        now,
+                                        adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                    )
                                 ),
                         ),
                     )
@@ -1210,7 +1241,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val area = DevCareArea()
         val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
-        val employee = DevEmployee()
 
         val adult = DevPerson()
         val child = DevPerson()
@@ -1218,7 +1248,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
-            tx.insert(employee)
 
             tx.insert(adult, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
@@ -1245,6 +1274,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 ),
                 DailyReservationRequest.Absent(child.id, tuesday),
             ),
+            now,
         )
 
         val res =
@@ -1259,7 +1289,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     dayChild(
                         child.id,
                         reservations =
-                            listOf(ReservationResponse.Times(TimeRange(startTime, endTime), false)),
+                            listOf(
+                                ReservationResponse.Times(
+                                    TimeRange(startTime, endTime),
+                                    false,
+                                    now,
+                                    adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                )
+                            ),
                     )
                 ),
                 day.children,

@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
 import {
+  systemInternalUser,
   testCareArea,
   testDaycare,
   testDaycareGroup,
@@ -411,7 +413,9 @@ describe('Employee - Unit month calendar', () => {
               unitId: testDaycare.id,
               date,
               arrived: LocalTime.of(8, 15),
-              departed: LocalTime.of(16, 30)
+              departed: LocalTime.of(16, 30),
+              modifiedAt: HelsinkiDateTime.now(),
+              modifiedBy: systemInternalUser.id
             }))
       )
     })

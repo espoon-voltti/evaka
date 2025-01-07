@@ -68,6 +68,7 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.toEvakaUser
 import fi.espoo.evaka.withHolidays
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -105,6 +106,9 @@ class AttendanceReservationsControllerIntegrationTest :
 
     private val fullDay = TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
 
+    private val employee = DevEmployee(employeeId)
+    private val employee2 = DevEmployee(employeeId2)
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -120,9 +124,9 @@ class AttendanceReservationsControllerIntegrationTest :
             tx.insert(testGroup2)
             tx.insert(testGroupInDaycare2)
 
-            tx.insert(DevEmployee(employeeId))
+            tx.insert(employee)
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
-            tx.insert(DevEmployee(employeeId2))
+            tx.insert(employee2)
             tx.insertDaycareAclRow(testDaycare.id, employeeId2, UserRole.STAFF)
         }
     }
@@ -181,6 +185,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = mon,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
+                    createdAt = now,
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
@@ -189,12 +194,15 @@ class AttendanceReservationsControllerIntegrationTest :
                 unitId = testDaycare.id,
                 arrived = HelsinkiDateTime.of(mon, LocalTime.of(8, 15)),
                 departed = HelsinkiDateTime.of(mon, LocalTime.of(16, 5)),
+                modifiedAt = now,
+                modifiedBy = EvakaUserId(employeeId.raw),
             )
             it.insert(
                 DevAbsence(
                     childId = testChild_1.id,
                     date = tue,
                     absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedAt = now,
                     modifiedBy = EvakaUserId(employeeId.raw),
                     absenceCategory = AbsenceCategory.BILLABLE,
                 )
@@ -206,6 +214,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = wed,
                     startTime = null,
                     endTime = null,
+                    createdAt = now,
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
@@ -310,6 +319,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = thu,
                     startTime = LocalTime.of(9, 0),
                     endTime = LocalTime.of(15, 0),
+                    createdAt = now,
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
@@ -320,6 +330,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = fri,
                     startTime = LocalTime.of(7, 0),
                     endTime = LocalTime.of(17, 0),
+                    createdAt = now,
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
@@ -420,13 +431,21 @@ class AttendanceReservationsControllerIntegrationTest :
                                     ReservationResponse.Times(
                                         TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                                         true,
+                                        now,
+                                        employee.toEvakaUser(),
                                     )
                                 ),
                             attendances =
                                 listOf(
-                                    TimeInterval(
-                                        start = LocalTime.of(8, 15),
-                                        end = LocalTime.of(16, 5),
+                                    AttendanceTimesForDate(
+                                        date = mon, // TODO not sure
+                                        interval =
+                                            TimeInterval(
+                                                start = LocalTime.of(8, 15),
+                                                end = LocalTime.of(16, 5),
+                                            ),
+                                        modifiedAt = now,
+                                        modifiedBy = employee.toEvakaUser(),
                                     )
                                 ),
                             absenceBillable = null,
@@ -475,7 +494,8 @@ class AttendanceReservationsControllerIntegrationTest :
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
                         childId = testChild_1.id,
-                        reservations = listOf(ReservationResponse.NoTimes(true)),
+                        reservations =
+                            listOf(ReservationResponse.NoTimes(true, now, employee.toEvakaUser())),
                         attendances = emptyList(),
                         absenceBillable = null,
                         absenceNonbillable = null,
@@ -567,6 +587,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                 ReservationResponse.Times(
                                     TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0)),
                                     true,
+                                    now,
+                                    employee.toEvakaUser(),
                                 )
                             ),
                         attendances = emptyList(),
@@ -660,6 +682,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         date = mon,
                         startTime = LocalTime.of(19, 0),
                         endTime = LocalTime.of(23, 59),
+                        createdAt = now,
                         createdBy = EvakaUserId(employeeId.raw),
                     ),
                     DevReservation(
@@ -667,6 +690,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         date = tue,
                         startTime = LocalTime.of(0, 0),
                         endTime = LocalTime.of(8, 0),
+                        createdAt = now,
                         createdBy = EvakaUserId(employeeId.raw),
                     ),
                     DevReservation(
@@ -674,6 +698,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         date = tue,
                         startTime = LocalTime.of(17, 30),
                         endTime = LocalTime.of(23, 59),
+                        createdAt = now,
                         createdBy = EvakaUserId(employeeId.raw),
                     ),
                     DevReservation(
@@ -681,6 +706,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         date = wed,
                         startTime = LocalTime.of(0, 0),
                         endTime = LocalTime.of(9, 30),
+                        createdAt = now,
                         createdBy = EvakaUserId(employeeId.raw),
                     ),
                 )
@@ -703,6 +729,8 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = testDaycare.id,
                         arrived = it.first,
                         departed = it.second,
+                        modifiedAt = now,
+                        modifiedBy = EvakaUserId(employeeId.raw),
                     )
                 }
         }
@@ -718,9 +746,19 @@ class AttendanceReservationsControllerIntegrationTest :
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(19, 0), LocalTime.of(23, 59)),
                                 true,
+                                now,
+                                employee.toEvakaUser(),
                             )
                         ),
-                    attendances = listOf(TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59))),
+                    attendances =
+                        listOf(
+                            AttendanceTimesForDate(
+                                mon,
+                                TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59)),
+                                now,
+                                employee.toEvakaUser(),
+                            )
+                        ),
                     absenceBillable = null,
                     absenceNonbillable = null,
                     possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
@@ -743,16 +781,30 @@ class AttendanceReservationsControllerIntegrationTest :
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(0, 0), LocalTime.of(8, 0)),
                                 true,
+                                now,
+                                employee.toEvakaUser(),
                             ),
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(17, 30), LocalTime.of(23, 59)),
                                 true,
+                                now,
+                                employee.toEvakaUser(),
                             ),
                         ),
                     attendances =
                         listOf(
-                            TimeInterval(LocalTime.of(0, 0), LocalTime.of(10, 30)),
-                            TimeInterval(LocalTime.of(17, 0), null),
+                            AttendanceTimesForDate(
+                                tue,
+                                TimeInterval(LocalTime.of(0, 0), LocalTime.of(10, 30)),
+                                now,
+                                employee.toEvakaUser(),
+                            ),
+                            AttendanceTimesForDate(
+                                tue,
+                                TimeInterval(LocalTime.of(17, 0), null),
+                                now,
+                                employee.toEvakaUser(),
+                            ),
                         ),
                     absenceBillable = null,
                     absenceNonbillable = null,
@@ -776,6 +828,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(0, 0), LocalTime.of(9, 30)),
                                 true,
+                                now,
+                                employee.toEvakaUser(),
                             )
                         ),
                     attendances = emptyList(),
@@ -872,6 +926,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         startTime = LocalTime.of(9, 0),
                         endTime = LocalTime.of(11, 0),
                         createdBy = EvakaUserId(employeeId.raw),
+                        createdAt = clock.now(),
                     )
                 )
                 tx.insert(
@@ -900,6 +955,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
                                 true,
+                                modifiedBy = employee.toEvakaUser(),
+                                modifiedAt = clock.now(),
                             )
                         ),
                     absenceType = null,
@@ -975,13 +1032,25 @@ class AttendanceReservationsControllerIntegrationTest :
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0)),
                             true,
+                            testNow,
+                            employee.toEvakaUser(),
                         ),
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(22, 0), LocalTime.of(23, 59)),
                             true,
+                            testNow,
+                            employee.toEvakaUser(),
                         ),
                     ),
-                attendances = listOf(TimeInterval(start = LocalTime.of(12, 30), end = null)),
+                attendances =
+                    listOf(
+                        AttendanceTimesForDate(
+                            wed,
+                            TimeInterval(start = LocalTime.of(12, 30), end = null),
+                            testNow,
+                            employee.toEvakaUser(),
+                        )
+                    ),
                 absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
@@ -1025,14 +1094,25 @@ class AttendanceReservationsControllerIntegrationTest :
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0)),
                             true,
+                            testNow,
+                            employee.toEvakaUser(),
                         ),
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(21, 30), LocalTime.of(23, 59)),
                             true,
+                            testNow,
+                            employee2.toEvakaUser(),
                         ),
                     ),
                 attendances =
-                    listOf(TimeInterval(start = LocalTime.of(12, 30), end = LocalTime.of(17, 0))),
+                    listOf(
+                        AttendanceTimesForDate(
+                            wed,
+                            TimeInterval(start = LocalTime.of(12, 30), end = LocalTime.of(17, 0)),
+                            testNow,
+                            employee2.toEvakaUser(),
+                        )
+                    ),
                 absenceBillable = AbsenceTypeResponse(AbsenceType.FORCE_MAJEURE, true),
                 absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
@@ -1340,10 +1420,14 @@ class AttendanceReservationsControllerIntegrationTest :
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
                             true,
+                            now,
+                            employee.toEvakaUser(),
                         ),
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(13, 0), LocalTime.of(16, 0)),
                             true,
+                            now,
+                            employee.toEvakaUser(),
                         ),
                     ),
                 groupId = testGroup1.id,
@@ -1649,6 +1733,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = mon,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(12, 0),
+                    createdAt = now,
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
@@ -1658,6 +1743,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = mon,
                     startTime = LocalTime.of(13, 0),
                     endTime = LocalTime.of(16, 0),
+                    createdAt = now,
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
@@ -1666,6 +1752,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     date = tue,
                     absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedAt = now,
                     modifiedBy = EvakaUserId(employeeId.raw),
                     absenceCategory = AbsenceCategory.BILLABLE,
                 )
@@ -1675,6 +1762,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     date = tue,
                     absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedAt = now,
                     modifiedBy = EvakaUserId(employeeId.raw),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
                 )
@@ -1684,6 +1772,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     date = fri,
                     absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedAt = now,
                     modifiedBy = EvakaUserId(employeeId.raw),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
                 )
@@ -1693,6 +1782,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_2.id,
                     date = tue,
                     absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedAt = now,
                     modifiedBy = EvakaUserId(employeeId.raw),
                     absenceCategory = AbsenceCategory.BILLABLE,
                 )

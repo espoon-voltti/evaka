@@ -17,8 +17,10 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
+import org.jdbi.v3.core.mapper.Nested
 
 data class ContactInfo(
     val id: String,
@@ -61,10 +63,17 @@ data class ChildAttendanceRow(
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime?,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 ) {
     fun asTimeInterval(): TimeInterval = TimeInterval(startTime, endTime)
 }
 
-data class AttendanceTimes(val arrived: HelsinkiDateTime, val departed: HelsinkiDateTime?)
+data class AttendanceTimes(
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
+)
 
 data class ChildAbsence(val category: AbsenceCategory, val type: AbsenceType)
