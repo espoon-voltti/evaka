@@ -446,7 +446,6 @@ class AttendanceReservationsControllerIntegrationTest :
                                             ),
                                         modifiedAt = now,
                                         modifiedBy = employee.toEvakaUser(),
-                                        staffModified = true,
                                     )
                                 ),
                             absenceBillable = null,
@@ -758,7 +757,6 @@ class AttendanceReservationsControllerIntegrationTest :
                                 TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59)),
                                 now,
                                 employee.toEvakaUser(),
-                                true,
                             )
                         ),
                     absenceBillable = null,
@@ -800,14 +798,12 @@ class AttendanceReservationsControllerIntegrationTest :
                                 TimeInterval(LocalTime.of(0, 0), LocalTime.of(10, 30)),
                                 now,
                                 employee.toEvakaUser(),
-                                true,
                             ),
                             AttendanceTimesForDate(
                                 tue,
                                 TimeInterval(LocalTime.of(17, 0), null),
                                 now,
                                 employee.toEvakaUser(),
-                                true,
                             ),
                         ),
                     absenceBillable = null,
@@ -1053,7 +1049,6 @@ class AttendanceReservationsControllerIntegrationTest :
                             TimeInterval(start = LocalTime.of(12, 30), end = null),
                             testNow,
                             employee.toEvakaUser(),
-                            true,
                         )
                     ),
                 absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
@@ -1116,7 +1111,6 @@ class AttendanceReservationsControllerIntegrationTest :
                             TimeInterval(start = LocalTime.of(12, 30), end = LocalTime.of(17, 0)),
                             testNow,
                             employee2.toEvakaUser(),
-                            true,
                         )
                     ),
                 absenceBillable = AbsenceTypeResponse(AbsenceType.FORCE_MAJEURE, true),

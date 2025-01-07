@@ -59,7 +59,6 @@ export interface AttendanceTimesForDate {
   interval: TimeInterval
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
-  staffModified: boolean
 }
 
 /**
