@@ -475,6 +475,59 @@ ${child.ssn!!};${unit.id}
     }
 
     @Test
+    fun `create application from ssn for waiting decision works without existing child row`() {
+        whenever(featureConfig.placementToolApplicationStatus)
+            .thenReturn(ApplicationStatus.WAITING_DECISION)
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.RAW_ROW)
+            tx.insert(DevGuardian(adult.id, child.id))
+            tx.insert(
+                DevFridgeChild(
+                    childId = child.id,
+                    headOfChild = adult.id,
+                    startDate = child.dateOfBirth,
+                    endDate = child.dateOfBirth.plusYears(18),
+                )
+            )
+        }
+        MockPersonDetailsService.add(
+            MockVtjDataset(
+                persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
+                guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),
+            )
+        )
+        db.transaction { tx -> tx.insert(testFeeThresholds) }
+
+        controller.createPlacementToolApplications(
+            dbInstance(),
+            admin,
+            clock,
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.ssn!!};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            ),
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries =
+            db.read {
+                val person = it.getPersonBySSN(adult.ssn!!)
+                it.fetchApplicationSummariesForGuardian(person!!.id)
+            }
+        assertEquals(1, applicationSummaries.size)
+        val summary = applicationSummaries.first()
+        assertEquals(summary.preferredUnitId, unit.id)
+        val child = db.read { it.getPersonBySSN(child.ssn!!) }
+        assertEquals(summary.childId, child!!.id)
+    }
+
+    @Test
     fun `next preschool term is received correctly`() {
         val nextTerms = controller.getNextPreschoolTerm(dbInstance(), admin, clock)
         assertTrue(nextTerms.isNotEmpty())

@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.PreschoolTerm
-import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
@@ -174,8 +173,8 @@ class PlacementToolService(
         nextPreschoolTermId: PreschoolTermId,
     ) {
         dbc.transaction { tx ->
-            if (tx.getChild(data.childId) == null) {
-                throw Exception("Child id is null or child not found")
+            if (tx.getPersonById(data.childId) == null) {
+                throw Exception("No person found with id ${data.childId}")
             }
             val guardianIds =
                 tx.getChildGuardiansAndFosterParents(data.childId, clock.today()) -
