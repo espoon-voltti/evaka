@@ -14,11 +14,13 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class OutOfOfficeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -90,5 +92,46 @@ class OutOfOfficeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val deletedPeriods =
             outOfOfficeController.getOutOfOfficePeriods(dbInstance(), employee, clock)
         assertEquals(0, deletedPeriods.size)
+    }
+
+    @Test
+    fun `ordinary employees cannot see or create out of office periods`() {
+        val ordinaryEmployee =
+            AuthenticatedUser.Employee(
+                id = EmployeeId(UUID.randomUUID()),
+                roles = setOf(UserRole.STAFF),
+            )
+
+        db.transaction { tx ->
+            tx.insert(DevEmployee(id = ordinaryEmployee.id))
+            tx.insertDaycareAclRow(
+                daycareId = daycare.id,
+                employeeId = ordinaryEmployee.id,
+                UserRole.STAFF,
+            )
+        }
+
+        val period =
+            OutOfOfficePeriodUpsert(
+                id = null,
+                period =
+                    FiniteDateRange(
+                        start = clock.today().plusDays(1),
+                        end = clock.today().plusDays(2),
+                    ),
+            )
+
+        assertThrows<Forbidden> {
+            outOfOfficeController.getOutOfOfficePeriods(dbInstance(), ordinaryEmployee, clock)
+        }
+
+        assertThrows<Forbidden> {
+            outOfOfficeController.upsertOutOfOfficePeriod(
+                dbInstance(),
+                ordinaryEmployee,
+                clock,
+                period,
+            )
+        }
     }
 }
