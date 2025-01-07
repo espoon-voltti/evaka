@@ -14,7 +14,6 @@ import fi.espoo.evaka.messaging.getUnreadMessagesCounts
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -73,8 +72,6 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     final val employee =
         DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Test", lastName = "Employee")
     private val admin = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
-    val currentPlacementStart = LocalDate.of(2020, 11, 1)
-    val currentPlacementEnd = LocalDate.of(2021, 5, 31)
     val serviceNeedOption =
         ServiceNeedOption(
             ServiceNeedOptionId(UUID.randomUUID()),
@@ -82,14 +79,6 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             "Esiopetus ja liittyvä varhaiskasvatus",
             "Esiopetus ja liittyvä varhaiskasvatus",
             PlacementType.PRESCHOOL_DAYCARE,
-        )
-    val partTimeServiceNeedOption =
-        ServiceNeedOption(
-            ServiceNeedOptionId(UUID.randomUUID()),
-            "Esiopetus",
-            "Esiopetus",
-            "Esiopetus",
-            PlacementType.PRESCHOOL,
         )
     val preschoolTerm =
         PreschoolTerm(
@@ -160,32 +149,6 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(
                 fi.espoo.evaka.serviceneed.ServiceNeedOption(
                     id = serviceNeedOption.id,
-                    nameFi = "Esiopetus",
-                    nameSv = "Esiopetus",
-                    nameEn = "Esiopetus",
-                    validPlacementType = PlacementType.PRESCHOOL,
-                    defaultOption = true,
-                    feeCoefficient = BigDecimal("0.00"),
-                    occupancyCoefficient = BigDecimal("0.50"),
-                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
-                    realizedOccupancyCoefficient = BigDecimal("0.50"),
-                    realizedOccupancyCoefficientUnder3y = BigDecimal("1.75"),
-                    daycareHoursPerWeek = 0,
-                    contractDaysPerMonth = null,
-                    daycareHoursPerMonth = null,
-                    partDay = true,
-                    partWeek = true,
-                    feeDescriptionFi = "",
-                    feeDescriptionSv = "",
-                    voucherValueDescriptionFi = "",
-                    voucherValueDescriptionSv = "",
-                    validFrom = LocalDate.of(2000, 1, 1),
-                    validTo = null,
-                )
-            )
-            tx.insert(
-                fi.espoo.evaka.serviceneed.ServiceNeedOption(
-                    id = partTimeServiceNeedOption.id,
                     nameFi = "Esiopetus ja liittyvä varhaiskasvatus",
                     nameSv = "Esiopetus ja liittyvä varhaiskasvatus",
                     nameEn = "Esiopetus ja liittyvä varhaiskasvatus",
@@ -237,14 +200,6 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18),
                 )
-            )
-            tx.insertPlacement(
-                PlacementType.DAYCARE,
-                child.id,
-                unit.id,
-                currentPlacementStart,
-                currentPlacementEnd,
-                false,
             )
         }
     }
@@ -334,15 +289,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `create application with one guardian`() {
         insertPersonData()
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
-        service.createApplication(
-            db,
-            admin,
-            clock,
-            data,
-            partTimeServiceNeedOption.id,
-            serviceNeedOption.id,
-            preschoolTerm.id,
-        )
+        service.createApplication(db, admin, clock, data, serviceNeedOption.id, preschoolTerm.id)
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -396,15 +343,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             MockPersonDetailsService.addDependants(adult2, child)
         }
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
-        service.createApplication(
-            db,
-            admin,
-            clock,
-            data,
-            partTimeServiceNeedOption.id,
-            serviceNeedOption.id,
-            preschoolTerm.id,
-        )
+        service.createApplication(db, admin, clock, data, serviceNeedOption.id, preschoolTerm.id)
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -429,15 +368,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         whenever(featureConfig.placementToolApplicationStatus)
             .thenReturn(ApplicationStatus.WAITING_DECISION)
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
-        service.createApplication(
-            db,
-            admin,
-            clock,
-            data,
-            partTimeServiceNeedOption.id,
-            serviceNeedOption.id,
-            preschoolTerm.id,
-        )
+        service.createApplication(db, admin, clock, data, serviceNeedOption.id, preschoolTerm.id)
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -483,7 +414,6 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 admin,
                 clock,
                 data,
-                partTimeServiceNeedOption.id,
                 serviceNeedOption.id,
                 preschoolTerm.id,
             )
@@ -500,7 +430,6 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 admin,
                 clock,
                 data,
-                partTimeServiceNeedOption.id,
                 serviceNeedOption.id,
                 preschoolTerm.id,
             )
@@ -509,6 +438,47 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `create application from ssn`() {
+        MockPersonDetailsService.add(
+            MockVtjDataset(
+                persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
+                guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),
+            )
+        )
+        db.transaction { tx -> tx.insert(testFeeThresholds) }
+
+        controller.createPlacementToolApplications(
+            dbInstance(),
+            admin,
+            clock,
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.ssn!!};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            ),
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries =
+            db.read {
+                val person = it.getPersonBySSN(adult.ssn!!)
+                it.fetchApplicationSummariesForGuardian(person!!.id)
+            }
+        assertEquals(1, applicationSummaries.size)
+        val summary = applicationSummaries.first()
+        assertEquals(summary.preferredUnitId, unit.id)
+        val child = db.read { it.getPersonBySSN(child.ssn!!) }
+        assertEquals(summary.childId, child!!.id)
+    }
+
+    @Test
+    fun `create application from ssn for waiting decision works with incomplete family data`() {
+        whenever(featureConfig.placementToolApplicationStatus)
+            .thenReturn(ApplicationStatus.WAITING_DECISION)
+        db.transaction { tx -> tx.insert(child, DevPersonType.RAW_ROW) }
         MockPersonDetailsService.add(
             MockVtjDataset(
                 persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),

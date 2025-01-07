@@ -407,19 +407,19 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    @JsonIgnoreProperties("partTimeServiceNeedOption") // only present in old jobs
     data class PlacementTool(
         override val user: AuthenticatedUser,
         val data: PlacementToolData,
-        val partTimeServiceNeedOption: ServiceNeedOptionId,
         val defaultServiceNeedOption: ServiceNeedOptionId,
         val nextPreschoolTerm: PreschoolTermId,
     ) : AsyncJob
 
+    @JsonIgnoreProperties("partTimeServiceNeedOption") // only present in old jobs
     data class PlacementToolFromSSN(
         override val user: AuthenticatedUser,
         val ssn: String,
         val preschoolId: DaycareId,
-        val partTimeServiceNeedOption: ServiceNeedOptionId,
         val defaultServiceNeedOption: ServiceNeedOptionId,
         val nextPreschoolTerm: PreschoolTermId,
     ) : AsyncJob

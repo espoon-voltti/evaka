@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.PreschoolTerm
-import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
@@ -20,7 +19,6 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -71,7 +69,6 @@ class PlacementToolService(
             msg.user,
             clock,
             msg.data,
-            msg.partTimeServiceNeedOption,
             msg.defaultServiceNeedOption,
             msg.nextPreschoolTerm,
         )
@@ -84,15 +81,6 @@ class PlacementToolService(
         file: MultipartFile,
     ) {
         val serviceNeedOptions = tx.getServiceNeedOptions()
-        val partTimeServiceNeedOptionId =
-            serviceNeedOptions
-                .firstOrNull {
-                    it.validPlacementType == PlacementType.PRESCHOOL && it.defaultOption
-                }
-                ?.id
-        if (null == partTimeServiceNeedOptionId) {
-            throw NotFound("No part time service need option found")
-        }
         val defaultServiceNeedOptionId =
             serviceNeedOptions
                 .firstOrNull {
@@ -116,7 +104,6 @@ class PlacementToolService(
                                 user,
                                 childIdentifier,
                                 preschoolId,
-                                partTimeServiceNeedOptionId,
                                 defaultServiceNeedOptionId,
                                 nextPreschoolTermId,
                             )
@@ -127,7 +114,6 @@ class PlacementToolService(
                                     ChildId(UUID.fromString(childIdentifier)),
                                     preschoolId,
                                 ),
-                                partTimeServiceNeedOptionId,
                                 defaultServiceNeedOptionId,
                                 nextPreschoolTermId,
                             )
@@ -144,9 +130,10 @@ class PlacementToolService(
         clock: EvakaClock,
         msg: AsyncJob.PlacementToolFromSSN,
     ) {
+        val child = db.read { tx -> tx.getPersonBySSN(msg.ssn) }
         val childId =
-            db.read { tx -> tx.getPersonBySSN(msg.ssn)?.id }
-                ?: initFromVtj(db, msg.user, clock, msg.ssn)
+            if (child?.vtjGuardiansQueried == null) initFromVtj(db, msg.user, clock, msg.ssn)
+            else child.id
         db.transaction { tx ->
             asyncJobRunner.plan(
                 tx,
@@ -154,7 +141,6 @@ class PlacementToolService(
                     AsyncJob.PlacementTool(
                         msg.user,
                         PlacementToolData(childId, msg.preschoolId),
-                        msg.partTimeServiceNeedOption,
                         msg.defaultServiceNeedOption,
                         msg.nextPreschoolTerm,
                     )
@@ -184,13 +170,12 @@ class PlacementToolService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         data: PlacementToolData,
-        partTimeServiceNeedOptionId: ServiceNeedOptionId?,
         defaultServiceNeedOptionId: ServiceNeedOptionId?,
         nextPreschoolTermId: PreschoolTermId,
     ) {
         dbc.transaction { tx ->
-            if (tx.getChild(data.childId) == null) {
-                throw Exception("Child id is null or child not found")
+            if (tx.getPersonById(data.childId) == null) {
+                throw Exception("No person found with id ${data.childId}")
             }
             val guardianIds =
                 tx.getChildGuardiansAndFosterParents(data.childId, clock.today()) -
@@ -232,18 +217,6 @@ class PlacementToolService(
 
             val application = tx.fetchApplicationDetails(applicationId)!!
             val serviceNeedOptions = tx.getServiceNeedOptions()
-            val partTimeServiceNeedOption =
-                serviceNeedOptions
-                    .firstOrNull { it.id == partTimeServiceNeedOptionId }
-                    ?.let {
-                        ServiceNeedOption(
-                            it.id,
-                            it.nameFi,
-                            it.nameSv,
-                            it.nameEn,
-                            it.validPlacementType,
-                        )
-                    }
             val defaultServiceNeedOption =
                 serviceNeedOptions
                     .firstOrNull { it.id == defaultServiceNeedOptionId }
@@ -265,7 +238,6 @@ class PlacementToolService(
                 application,
                 data,
                 guardianIds,
-                partTimeServiceNeedOption!!,
                 defaultServiceNeedOption!!,
                 nextPreschoolTerm,
             )
@@ -307,17 +279,10 @@ class PlacementToolService(
         application: ApplicationDetails,
         data: PlacementToolData,
         guardianIds: List<PersonId>,
-        partTimeServiceNeedOption: ServiceNeedOption,
         defaultServiceNeedOption: ServiceNeedOption,
         preschoolTerm: PreschoolTerm,
     ) {
         val preferredUnit = tx.getDaycare(data.preschoolId)!!
-        val partTime =
-            tx.getPlacementsForChildDuring(data.childId, clock.today(), null).firstOrNull()?.type in
-                listOf(
-                    PlacementType.DAYCARE_PART_TIME,
-                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-                )
 
         // update preferences to application
         val updatedApplication =
@@ -335,9 +300,7 @@ class PlacementToolService(
                                         endTime = "",
                                         shiftCare = false,
                                         partTime = false,
-                                        serviceNeedOption =
-                                            if (partTime) partTimeServiceNeedOption
-                                            else defaultServiceNeedOption,
+                                        serviceNeedOption = defaultServiceNeedOption,
                                     ),
                                 urgent = false,
                             ),
