@@ -807,9 +807,9 @@ personal_accounts AS (
     JOIN message_account acc ON acc.employee_id = acl.employee_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
     LEFT JOIN LATERAL (
-        SELECT daterange(ooo.start_date, ooo.end_date, '[]') AS period
+        SELECT ooo.period
         FROM out_of_office ooo
-        WHERE ooo.employee_id = acc.employee_id AND ${bind(today)} BETWEEN ooo.start_date AND ooo.end_date
+        WHERE ooo.employee_id = acc.employee_id AND period && DATERANGE(${bind(today)}, NULL)
         LIMIT 1
     ) ooo ON TRUE
     WHERE active IS TRUE

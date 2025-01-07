@@ -22,10 +22,10 @@ fun Database.Read.getOutOfOfficePeriods(
         createQuery {
                 sql(
                     """
-SELECT id, daterange(start_date, end_date, '[]') AS period
+SELECT id, period
 FROM out_of_office
 WHERE employee_id = ${bind(employeeId)}
-AND end_date >= ${bind(today)}
+AND period && DATERANGE(${bind(today)}, NULL)
 """
                 )
             }
@@ -41,8 +41,8 @@ fun Database.Transaction.upsertOutOfOfficePeriod(
         createUpdate {
                 sql(
                     """
-INSERT INTO out_of_office (employee_id, start_date, end_date)
-VALUES (${bind(employeeId)}, ${bind(period.period.start)}, ${bind(period.period.end)})
+INSERT INTO out_of_office (employee_id, period)
+VALUES (${bind(employeeId)}, DATERANGE(${bind(period.period.start)}, ${bind(period.period.end)}, '[]'))
 """
                 )
             }
@@ -52,7 +52,7 @@ VALUES (${bind(employeeId)}, ${bind(period.period.start)}, ${bind(period.period.
                 sql(
                     """
 UPDATE out_of_office
-SET start_date = ${bind(period.period.start)}, end_date = ${bind(period.period.end)}
+SET period = DATERANGE(${bind(period.period.start)}, ${bind(period.period.end)}, '[]')
 WHERE id = ${bind(period.id)}
 """
                 )
