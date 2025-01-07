@@ -1000,7 +1000,10 @@ export const fi = {
         'Oppivelvollisuulaki 2 §',
       jurisdiction: 'Toimivalta',
       jurisdictionText:
-        'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta',
+        'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta' as
+          | string
+          | React.ReactNode,
+      disclaimer: null as string | null,
       appealInstructionsTitle: 'Oikaisuvaatimusohje',
       appealInstructions: (
         <>

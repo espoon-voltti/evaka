@@ -104,7 +104,8 @@ interface ViewTranslations {
   legalInstructionsText: string
   legalInstructionsTextExtendedCompulsoryEducation: string
   jurisdiction: string
-  jurisdictionText: string
+  jurisdictionText: string | React.ReactNode
+  disclaimer: string | null
   appealInstructionsTitle: string
   appealInstructions: React.JSX.Element
 }
@@ -346,7 +347,11 @@ export default React.memo(function DecisionFormReadView({
               </P>
             )}
             <H3 noMargin>{t.jurisdiction}</H3>
-            <P noMargin>{t.jurisdictionText}</P>
+            {typeof t.jurisdictionText === 'string' ? (
+              <P noMargin>{t.jurisdictionText}</P>
+            ) : (
+              t.jurisdictionText
+            )}
           </SectionSpacer>
 
           <SectionSpacer>
@@ -381,6 +386,12 @@ export default React.memo(function DecisionFormReadView({
               </span>
             </LabeledValue>
           </SectionSpacer>
+
+          {t.disclaimer !== null && (
+            <SectionSpacer>
+              <P noMargin>{t.disclaimer}</P>
+            </SectionSpacer>
+          )}
         </FixedSpaceColumn>
       </ContentArea>
 
