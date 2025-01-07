@@ -1021,7 +1021,8 @@ SELECT
                 'id', eu.id,
                 'name', eu.name,
                 'type', eu.type
-            )
+            ),
+            'staffCreated', eu.type <> 'CITIZEN'
         ) ORDER BY ar.date, ar.start_time)
         FROM attendance_reservation ar 
         JOIN evaka_user eu ON ar.created_by = eu.id
@@ -1039,8 +1040,7 @@ SELECT
                 'id', eu.id,
                 'name', eu.name,
                 'type', eu.type
-            ),
-            'staffModified', eu.type <> 'CITIZEN'
+            )
         ) ORDER BY att.date, att.start_time)
         FROM child_attendance att
         JOIN evaka_user eu ON att.modified_by = eu.id
