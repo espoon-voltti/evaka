@@ -153,7 +153,7 @@ export default React.memo(function ChildDayReservation({
                   />
                 </>
               )}
-              {reservation?.staffCreated && '*'}
+              {reservation.staffCreated && '*'}
             </TimeCell>
           </ReservationTooltip>
         ) : reservationIndex === 0 ? (
