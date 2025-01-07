@@ -130,9 +130,10 @@ class PlacementToolService(
         clock: EvakaClock,
         msg: AsyncJob.PlacementToolFromSSN,
     ) {
+        val child = db.read { tx -> tx.getPersonBySSN(msg.ssn) }
         val childId =
-            db.read { tx -> tx.getPersonBySSN(msg.ssn)?.id }
-                ?: initFromVtj(db, msg.user, clock, msg.ssn)
+            if (child?.vtjGuardiansQueried == null) initFromVtj(db, msg.user, clock, msg.ssn)
+            else child.id
         db.transaction { tx ->
             asyncJobRunner.plan(
                 tx,

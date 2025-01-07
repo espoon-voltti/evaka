@@ -475,22 +475,10 @@ ${child.ssn!!};${unit.id}
     }
 
     @Test
-    fun `create application from ssn for waiting decision works without existing child row`() {
+    fun `create application from ssn for waiting decision works with incomplete family data`() {
         whenever(featureConfig.placementToolApplicationStatus)
             .thenReturn(ApplicationStatus.WAITING_DECISION)
-        db.transaction { tx ->
-            tx.insert(adult, DevPersonType.ADULT)
-            tx.insert(child, DevPersonType.RAW_ROW)
-            tx.insert(DevGuardian(adult.id, child.id))
-            tx.insert(
-                DevFridgeChild(
-                    childId = child.id,
-                    headOfChild = adult.id,
-                    startDate = child.dateOfBirth,
-                    endDate = child.dateOfBirth.plusYears(18),
-                )
-            )
-        }
+        db.transaction { tx -> tx.insert(child, DevPersonType.RAW_ROW) }
         MockPersonDetailsService.add(
             MockVtjDataset(
                 persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
