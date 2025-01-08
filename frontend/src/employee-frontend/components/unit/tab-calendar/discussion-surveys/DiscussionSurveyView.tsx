@@ -338,7 +338,7 @@ export default React.memo(function DiscussionReservationSurveyView({
           }}
           resolve={{
             action: () => {
-              deleteCalendarEvent({ groupId: groupId, id: eventData.id })
+              deleteCalendarEvent({ id: eventData.id, unitId, groupId })
                 .catch(() => {
                   setErrorMessage({
                     title: t.discussionReservation.deleteConfirmation.error,

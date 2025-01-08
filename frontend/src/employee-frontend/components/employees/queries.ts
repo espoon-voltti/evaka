@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import { Queries } from 'lib-common/query'
 
 import { deleteMobileDevice } from '../../generated/api-clients/pairing'
 import {
@@ -15,63 +15,41 @@ import {
   updateEmployeeGlobalRoles,
   upsertEmployeeDaycareRoles
 } from '../../generated/api-clients/pis'
-import { createQueryKeys } from '../../query'
 
-export const queryKeys = createQueryKeys('employees', {
-  searchAll: () => ['search'],
-  search: (args: Arg0<typeof searchEmployees>) => ['search', args],
-  byId: (id: UUID) => ['id', id]
-})
+const q = new Queries()
 
-export const searchEmployeesQuery = query({
-  api: searchEmployees,
-  queryKey: queryKeys.search
-})
+export const searchEmployeesQuery = q.query(searchEmployees)
 
-export const employeeDetailsQuery = query({
-  api: getEmployeeDetails,
-  queryKey: ({ id }) => queryKeys.byId(id)
-})
+export const employeeDetailsQuery = q.query(getEmployeeDetails)
 
-export const updateEmployeeGlobalRolesMutation = mutation({
-  api: updateEmployeeGlobalRoles,
-  invalidateQueryKeys: (args) => [
-    queryKeys.searchAll(),
-    queryKeys.byId(args.id)
-  ]
-})
+export const updateEmployeeGlobalRolesMutation = q.mutation(
+  updateEmployeeGlobalRoles,
+  [searchEmployeesQuery.prefix, ({ id }) => employeeDetailsQuery({ id })]
+)
 
-export const upsertEmployeeDaycareRolesMutation = mutation({
-  api: upsertEmployeeDaycareRoles,
-  invalidateQueryKeys: (args) => [
-    queryKeys.searchAll(),
-    queryKeys.byId(args.id)
-  ]
-})
+export const upsertEmployeeDaycareRolesMutation = q.mutation(
+  upsertEmployeeDaycareRoles,
+  [searchEmployeesQuery.prefix, ({ id }) => employeeDetailsQuery({ id })]
+)
 
-export const deleteEmployeeDaycareRolesMutation = mutation({
-  api: deleteEmployeeDaycareRoles,
-  invalidateQueryKeys: (args) => [
-    queryKeys.searchAll(),
-    queryKeys.byId(args.id)
-  ]
-})
+export const deleteEmployeeDaycareRolesMutation = q.mutation(
+  deleteEmployeeDaycareRoles,
+  [searchEmployeesQuery.prefix, ({ id }) => employeeDetailsQuery({ id })]
+)
 
-export const deleteEmployeeMobileDeviceMutation = mutation({
-  api: (args: Arg0<typeof deleteMobileDevice> & { employeeId: UUID }) =>
-    deleteMobileDevice(args),
-  invalidateQueryKeys: (args) => [
-    queryKeys.searchAll(),
-    queryKeys.byId(args.employeeId)
-  ]
-})
+export const deleteEmployeeMobileDeviceMutation = q.parametricMutation<{
+  employeeId: EmployeeId
+}>()(deleteMobileDevice, [
+  searchEmployeesQuery.prefix,
+  ({ employeeId }) => employeeDetailsQuery({ id: employeeId })
+])
 
-export const activateEmployeeMutation = mutation({
-  api: activateEmployee,
-  invalidateQueryKeys: ({ id }) => [queryKeys.searchAll(), queryKeys.byId(id)]
-})
+export const activateEmployeeMutation = q.mutation(activateEmployee, [
+  searchEmployeesQuery.prefix,
+  ({ id }) => employeeDetailsQuery({ id })
+])
 
-export const deactivateEmployeeMutation = mutation({
-  api: deactivateEmployee,
-  invalidateQueryKeys: ({ id }) => [queryKeys.searchAll(), queryKeys.byId(id)]
-})
+export const deactivateEmployeeMutation = q.mutation(deactivateEmployee, [
+  searchEmployeesQuery.prefix,
+  ({ id }) => employeeDetailsQuery({ id })
+])

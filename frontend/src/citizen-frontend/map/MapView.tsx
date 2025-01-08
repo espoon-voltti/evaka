@@ -13,7 +13,11 @@ import {
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
-import { useQueryResult } from 'lib-common/query'
+import {
+  constantQuery,
+  useChainedQuery,
+  useQueryResult
+} from 'lib-common/query'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
@@ -84,10 +88,11 @@ export default React.memo(function MapView() {
     [allUnits, careType, languages, providerTypes, shiftCare]
   )
 
-  const unitsWithDistances = useQueryResult(
-    unitsWithDistancesQuery(
-      selectedAddress,
-      filteredUnits.isSuccess ? filteredUnits.value : []
+  const unitsWithDistances = useChainedQuery(
+    filteredUnits.map((filteredUnits) =>
+      selectedAddress && filteredUnits.length > 0
+        ? unitsWithDistancesQuery(selectedAddress, filteredUnits)
+        : constantQuery([])
     )
   )
 

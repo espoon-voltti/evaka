@@ -2,12 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ApplicationId, ChildId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
-import { mutation, query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   createApplication,
@@ -27,133 +22,46 @@ import {
   getPreschoolTerms
 } from '../generated/api-clients/daycare'
 import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
-import { createQueryKeys } from '../query'
 
-const queryKeys = createQueryKeys('applications', {
-  units: (
-    applicationType: ApplicationType,
-    preparatory: boolean,
-    preferredStartDate: LocalDate | null,
-    shiftCare: boolean | null
-  ) => [
-    'units',
-    {
-      applicationType,
-      preparatory,
-      preferredStartDate: preferredStartDate?.formatIso(),
-      shiftCare
-    }
-  ],
-  application: (applicationId: ApplicationId) => ['application', applicationId],
-  guardianApplications: () => ['guardianApplications'],
-  children: () => ['children'],
-  duplicates: (childId: ChildId) => ['duplicates', childId],
-  activePlacementsByApplicationType: (childId: ChildId) => [
-    'activePlacementsByApplicationType',
-    childId
-  ],
-  preschoolTerms: () => ['preschoolTerms'],
-  clubTerms: () => ['clubTerms'],
-  serviceNeedOptionPublicInfos: (placementTypes: PlacementType[]) => [
-    'serviceNeedOptionPublicInfos',
-    placementTypes
-  ]
-})
+const q = new Queries()
 
-export const applicationUnitsQuery = query({
-  api: (
-    applicationType: ApplicationType,
-    preparatory: boolean,
-    preferredStartDate: LocalDate | null,
-    shiftCare: boolean | null
-  ) => {
-    const unitType: ApplicationUnitType =
-      applicationType === 'CLUB'
-        ? 'CLUB'
-        : applicationType === 'DAYCARE'
-          ? 'DAYCARE'
-          : preparatory
-            ? 'PREPARATORY'
-            : 'PRESCHOOL'
-    return preferredStartDate
-      ? getApplicationUnits({
-          type: unitType,
-          date: preferredStartDate,
-          shiftCare
-        })
-      : Promise.resolve([])
-  },
-  queryKey: queryKeys.units
-})
+export const applicationUnitsQuery = q.query(getApplicationUnits)
 
-export const applicationQuery = query({
-  api: getApplication,
-  queryKey: ({ applicationId }) => queryKeys.application(applicationId)
-})
+export const applicationQuery = q.query(getApplication)
 
-export const guardianApplicationsQuery = query({
-  api: getGuardianApplications,
-  queryKey: queryKeys.guardianApplications
-})
+export const guardianApplicationsQuery = q.query(getGuardianApplications)
 
-export const applicationChildrenQuery = query({
-  api: getApplicationChildren,
-  queryKey: queryKeys.children
-})
+export const applicationChildrenQuery = q.query(getApplicationChildren)
 
-export const duplicateApplicationsQuery = query({
-  api: getChildDuplicateApplications,
-  queryKey: ({ childId }) => queryKeys.duplicates(childId)
-})
+export const duplicateApplicationsQuery = q.query(getChildDuplicateApplications)
 
-export const activePlacementsByApplicationTypeQuery = query({
-  api: getChildPlacementStatusByApplicationType,
-  queryKey: ({ childId }) =>
-    queryKeys.activePlacementsByApplicationType(childId)
-})
+export const activePlacementsByApplicationTypeQuery = q.query(
+  getChildPlacementStatusByApplicationType
+)
 
-export const preschoolTermsQuery = query({
-  api: getPreschoolTerms,
-  queryKey: queryKeys.preschoolTerms
-})
+export const preschoolTermsQuery = q.query(getPreschoolTerms)
 
-export const clubTermsQuery = query({
-  api: getClubTerms,
-  queryKey: queryKeys.clubTerms
-})
+export const clubTermsQuery = q.query(getClubTerms)
 
-export const serviceNeedOptionPublicInfosQuery = query({
-  api: getServiceNeedOptionPublicInfos,
-  queryKey: ({ placementTypes }) =>
-    queryKeys.serviceNeedOptionPublicInfos(placementTypes ?? [])
-})
+export const serviceNeedOptionPublicInfosQuery = q.query(
+  getServiceNeedOptionPublicInfos
+)
 
-export const createApplicationMutation = mutation({
-  api: createApplication
-})
+export const createApplicationMutation = q.mutation(createApplication)
 
-export const updateApplicationMutation = mutation({
-  api: updateApplication,
-  invalidateQueryKeys: ({ applicationId }) => [
-    applicationQuery({ applicationId }).queryKey
-  ]
-})
+export const updateApplicationMutation = q.mutation(updateApplication, [
+  ({ applicationId }) => applicationQuery({ applicationId })
+])
 
-export const saveApplicationDraftMutation = mutation({
-  api: saveApplicationAsDraft,
-  invalidateQueryKeys: ({ applicationId }) => [
-    applicationQuery({ applicationId }).queryKey
-  ]
-})
+export const saveApplicationDraftMutation = q.mutation(saveApplicationAsDraft, [
+  ({ applicationId }) => applicationQuery({ applicationId })
+])
 
-export const removeUnprocessableApplicationMutation = mutation({
-  api: deleteOrCancelUnprocessedApplication,
-  invalidateQueryKeys: () => [guardianApplicationsQuery().queryKey]
-})
+export const removeUnprocessableApplicationMutation = q.mutation(
+  deleteOrCancelUnprocessedApplication,
+  [() => guardianApplicationsQuery()]
+)
 
-export const sendApplicationMutation = mutation({
-  api: sendApplication,
-  invalidateQueryKeys: (applicationId) => [
-    applicationQuery(applicationId).queryKey
-  ]
-})
+export const sendApplicationMutation = q.mutation(sendApplication, [
+  (applicationId) => applicationQuery(applicationId)
+])

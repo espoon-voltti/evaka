@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   getNotificationSettings,
@@ -10,26 +10,16 @@ import {
   updatePassword,
   updatePersonalData
 } from '../generated/api-clients/pis'
-import { createQueryKeys } from '../query'
 
-const queryKeys = createQueryKeys('personalDetails', {
-  notificationSettings: () => ['notificationSettings']
-})
+const q = new Queries()
 
-export const updatePersonalDetailsMutation = mutation({
-  api: updatePersonalData
-})
+export const updatePersonalDetailsMutation = q.mutation(updatePersonalData)
 
-export const updatePasswordMutation = mutation({
-  api: updatePassword
-})
+export const updatePasswordMutation = q.mutation(updatePassword)
 
-export const notificationSettingsQuery = query({
-  api: getNotificationSettings,
-  queryKey: queryKeys.notificationSettings
-})
+export const notificationSettingsQuery = q.query(getNotificationSettings)
 
-export const updateNotificationSettingsMutation = mutation({
-  api: updateNotificationSettings,
-  invalidateQueryKeys: () => [queryKeys.notificationSettings()]
-})
+export const updateNotificationSettingsMutation = q.mutation(
+  updateNotificationSettings,
+  [() => notificationSettingsQuery()]
+)

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, pagedInfiniteQuery, query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   archiveThread,
@@ -14,52 +14,32 @@ import {
   newMessage,
   replyToThread
 } from '../generated/api-clients/messaging'
-import { createQueryKeys } from '../query'
 
-const queryKeys = createQueryKeys('messages', {
-  receivedMessages: () => ['receivedMessages'],
-  receivers: () => ['receivers'],
-  unreadMessagesCount: () => ['unreadMessagesCount'],
-  messageAccount: () => ['messageAccount']
-})
+const q = new Queries()
 
-export const receivedMessagesQuery = pagedInfiniteQuery({
-  api: () => (page: number) => getReceivedMessages({ page }),
-  queryKey: queryKeys.receivedMessages,
-  id: (thread) => thread.id
-})
+export const receivedMessagesQuery = q.pagedInfiniteQuery(
+  () => (page: number) => getReceivedMessages({ page }),
+  (thread) => thread.id
+)
 
-export const receiversQuery = query({
-  api: getReceivers,
-  queryKey: queryKeys.receivers
-})
+export const receiversQuery = q.query(getReceivers)
 
-export const messageAccountQuery = query({
-  api: getMyAccount,
-  queryKey: queryKeys.messageAccount
-})
+export const messageAccountQuery = q.query(getMyAccount)
 
-export const unreadMessagesCountQuery = query({
-  api: getUnreadMessages,
-  queryKey: queryKeys.unreadMessagesCount
-})
+export const unreadMessagesCountQuery = q.query(getUnreadMessages)
 
-export const markThreadReadMutation = mutation({
-  api: markThreadRead,
-  invalidateQueryKeys: () => [queryKeys.unreadMessagesCount()]
-})
+export const markThreadReadMutation = q.mutation(markThreadRead, [
+  () => unreadMessagesCountQuery()
+])
 
-export const sendMessageMutation = mutation({
-  api: newMessage,
-  invalidateQueryKeys: () => [queryKeys.receivedMessages()]
-})
+export const sendMessageMutation = q.mutation(newMessage, [
+  () => receivedMessagesQuery()
+])
 
-export const replyToThreadMutation = mutation({
-  api: replyToThread,
-  invalidateQueryKeys: () => [queryKeys.receivedMessages()]
-})
+export const replyToThreadMutation = q.mutation(replyToThread, [
+  () => receivedMessagesQuery()
+])
 
-export const archiveThreadMutation = mutation({
-  api: archiveThread,
-  invalidateQueryKeys: () => [queryKeys.receivedMessages()]
-})
+export const archiveThreadMutation = q.mutation(archiveThread, [
+  () => receivedMessagesQuery()
+])

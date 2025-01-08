@@ -4,17 +4,6 @@
 
 import { QueryClient } from '@tanstack/react-query'
 
-import { queryKeysNamespace } from 'lib-common/query'
-
-export type QueryKeyPrefix =
-  | 'childAttendance'
-  | 'messages'
-  | 'notes'
-  | 'settings'
-  | 'staffAttendance'
-  | 'topBar'
-  | 'units'
-
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -26,5 +15,3 @@ export const queryClient = new QueryClient({
   }
 })
 export { QueryClientProvider } from '@tanstack/react-query'
-
-export const createQueryKeys = queryKeysNamespace<QueryKeyPrefix>()

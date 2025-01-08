@@ -122,7 +122,7 @@ export default React.memo(function MessageEditorPageWrapper({
   const groupAccounts = useChainedQuery(
     user.map((u) =>
       u && u.pinLoginActive && u.employeeId
-        ? messagingAccountsQuery({ unitId, employeeId: u.employeeId })
+        ? messagingAccountsQuery(u.employeeId, { unitId })
         : constantQuery([])
     )
   )

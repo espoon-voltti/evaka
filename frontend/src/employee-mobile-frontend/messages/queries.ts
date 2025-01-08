@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  DaycareId,
-  MessageAccountId
+  EmployeeId,
+  MessageAccountId,
+  MessageThreadId
 } from 'lib-common/generated/api-types/shared'
-import { mutation, pagedInfiniteQuery, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import {
   createMessage,
@@ -25,113 +25,66 @@ import {
   replyToThread,
   updateDraftMessage
 } from '../generated/api-clients/messaging'
-import { createQueryKeys } from '../query'
 
-const queryKeys = createQueryKeys('messages', {
-  accounts: ({
-    unitId,
-    employeeId
-  }: {
-    unitId: string
-    employeeId: string | undefined
-  }) => ['accounts', unitId, employeeId],
-  receivedMessages: (accountId: string) => ['receivedMessages', accountId],
-  sentMessages: (accountId: string) => ['sentMessages', accountId],
-  draftMessages: (accountId: string) => ['draftMessages', accountId],
-  thread: (accountId: string, threadId: string) => [
-    'thread',
-    accountId,
-    threadId
-  ],
-  recipients: () => ['recipients'],
-  unreadCounts: () => ['unreadCounts'],
-  preflight: (arg: Arg0<typeof createMessagePreflightCheck>) => [
-    'preflight',
-    arg
-  ]
-})
+const q = new Queries()
 
-export const messagingAccountsQuery = query({
+export const messagingAccountsQuery = q.parametricQuery<
+  EmployeeId | undefined
+>()(
   // employeeId is not sent to api but is used to invalidate the query when it changes, so that there's no risk of
   // leaking account information from the previous logged-in employee
-  api: ({ unitId }: { unitId: DaycareId; employeeId: string | undefined }) =>
-    getAccountsByDevice({ unitId }),
-  queryKey: queryKeys.accounts
-})
+  getAccountsByDevice
+)
 
-export const receivedMessagesQuery = pagedInfiniteQuery({
-  api: (accountId: MessageAccountId) => (page: number) =>
+export const receivedMessagesQuery = q.pagedInfiniteQuery(
+  (accountId: MessageAccountId) => (page: number) =>
     getReceivedMessages({ accountId, page }),
-  id: (thread) => thread.id,
-  queryKey: queryKeys.receivedMessages
-})
+  (thread) => thread.id
+)
 
-export const sentMessagesQuery = pagedInfiniteQuery({
-  api: (accountId: MessageAccountId) => (page: number) =>
+export const sentMessagesQuery = q.pagedInfiniteQuery(
+  (accountId: MessageAccountId) => (page: number) =>
     getSentMessages({ accountId, page }),
-  id: (message) => message.contentId,
-  queryKey: queryKeys.sentMessages
-})
+  (message) => message.contentId
+)
 
-export const draftMessagesQuery = query({
-  api: getDraftMessages,
-  queryKey: ({ accountId }) => queryKeys.draftMessages(accountId)
-})
+export const draftMessagesQuery = q.query(getDraftMessages)
 
-export const threadQuery = query({
-  api: getThread,
-  queryKey: ({ accountId, threadId }) => queryKeys.thread(accountId, threadId)
-})
+export const threadQuery = q.query(getThread)
 
 // The results are dependent on the PIN-logged user
-export const recipientsQuery = query({
-  api: getReceiversForNewMessage,
-  queryKey: queryKeys.recipients
-})
+export const recipientsQuery = q.query(getReceiversForNewMessage)
 
-export const unreadCountsQuery = query({
-  api: getUnreadMessagesByUnit,
-  queryKey: queryKeys.unreadCounts
-})
+export const unreadCountsQuery = q.query(getUnreadMessagesByUnit)
 
-export const createMessagePreflightCheckQuery = query({
-  api: createMessagePreflightCheck,
-  queryKey: queryKeys.preflight
-})
+export const createMessagePreflightCheckQuery = q.query(
+  createMessagePreflightCheck
+)
 
-export const sendMessageMutation = mutation({
-  api: createMessage,
-  invalidateQueryKeys: ({ accountId }) => [
-    queryKeys.sentMessages(accountId),
-    queryKeys.draftMessages(accountId)
-  ]
-})
+export const sendMessageMutation = q.mutation(createMessage, [
+  ({ accountId }) => sentMessagesQuery(accountId),
+  ({ accountId }) => draftMessagesQuery({ accountId })
+])
 
-export const replyToThreadMutation = mutation({
-  api: (arg: Arg0<typeof replyToThread> & { threadId: UUID }) =>
-    replyToThread(arg),
-  invalidateQueryKeys: ({ accountId, threadId }) => [
-    queryKeys.receivedMessages(accountId),
-    queryKeys.thread(accountId, threadId)
-  ]
-})
+export const replyToThreadMutation = q.parametricMutation<{
+  threadId: MessageThreadId
+}>()(replyToThread, [
+  ({ accountId }) => receivedMessagesQuery(accountId),
+  ({ accountId, threadId }) => threadQuery({ accountId, threadId })
+])
 
-export const markThreadReadMutation = mutation({
-  api: markThreadRead,
-  invalidateQueryKeys: () => [queryKeys.unreadCounts()]
-})
+export const markThreadReadMutation = q.mutation(markThreadRead, [
+  unreadCountsQuery.prefix
+])
 
-export const initDraftMutation = mutation({
-  api: initDraftMessage,
-  invalidateQueryKeys: ({ accountId }) => [queryKeys.draftMessages(accountId)]
-})
+export const initDraftMutation = q.mutation(initDraftMessage, [
+  ({ accountId }) => draftMessagesQuery({ accountId })
+])
 
-export const saveDraftMutation = mutation({
-  api: updateDraftMessage,
-  invalidateQueryKeys: ({ accountId }) => [queryKeys.draftMessages(accountId)]
-})
+export const saveDraftMutation = q.mutation(updateDraftMessage, [
+  ({ accountId }) => draftMessagesQuery({ accountId })
+])
 
-export const deleteDraftMutation = mutation({
-  api: deleteDraftMessage,
-  invalidateQueryKeys: ({ accountId }) => [queryKeys.draftMessages(accountId)]
-})
+export const deleteDraftMutation = q.mutation(deleteDraftMessage, [
+  ({ accountId }) => draftMessagesQuery({ accountId })
+])

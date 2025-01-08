@@ -19,7 +19,7 @@ import {
 } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
 import { mockNow } from 'lib-common/utils/helpers'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
@@ -45,7 +45,7 @@ import { FlexRow } from '../common/styled/containers'
 import { areaQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-import { occupanciesReportQuery } from './queries'
+import { occupancyGroupReportQuery, occupancyUnitReportQuery } from './queries'
 
 type DisplayMode = 'UNITS' | 'GROUPS'
 export type OccupancyReportFilters =
@@ -380,7 +380,13 @@ export default React.memo(function Occupancies() {
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
   const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
-  const rows = useQueryResult(occupanciesReportQuery({ ...filters }))
+  const rows = useQueryResult(
+    filters.careAreaId === null
+      ? constantQuery([])
+      : filters.display === 'UNITS'
+        ? occupancyUnitReportQuery(filters)
+        : occupancyGroupReportQuery(filters)
+  )
 
   const dates = getDisplayDates(filters.year, filters.month, filters.type)
   const displayCells: DisplayCell[][] = rows

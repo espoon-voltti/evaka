@@ -7,7 +7,7 @@ import React, { createContext, useCallback, useMemo } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { MobileUser } from 'lib-common/api-types/employee-auth'
-import { query, useQueryResult } from 'lib-common/query'
+import { Queries, useQueryResult } from 'lib-common/query'
 
 import { renderResult } from '../async-rendering'
 
@@ -27,10 +27,8 @@ export const UserContext = createContext<UserState>({
   refreshAuthStatus: () => null
 })
 
-const authStatusQuery = query({
-  api: () => getAuthStatus(),
-  queryKey: () => ['auth-status']
-})
+const q = new Queries()
+const authStatusQuery = q.query(getAuthStatus)
 
 export const UserContextProvider = React.memo(function UserContextProvider({
   children

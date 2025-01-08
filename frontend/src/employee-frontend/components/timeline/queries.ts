@@ -2,17 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import { getTimeline } from '../../generated/api-clients/timeline'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('timeline', {
-  byAdult: (personId: UUID) => [personId]
-})
+const q = new Queries()
 
-export const timelineQuery = query({
-  api: getTimeline,
-  queryKey: (arg) => queryKeys.byAdult(arg.personId)
-})
+export const timelineQuery = q.query(getTimeline)

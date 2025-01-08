@@ -59,7 +59,10 @@ import {
   CalendarModalSection
 } from '../CalendarModal'
 import { WordBreakContainer } from '../DayView'
-import { addCalendarEventTimeReservationMutation, queryKeys } from '../queries'
+import {
+  addCalendarEventTimeReservationMutation,
+  calendarEventsQuery
+} from '../queries'
 
 import { DiscussionHeader } from './DiscussionSurveyModal'
 import { showModalEventTime } from './discussion-survey'
@@ -140,7 +143,7 @@ export default React.memo(function DiscussionReservationModal({
   const queryClient = useQueryClient()
   const invalidateEvents = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: queryKeys.allEvents()
+      queryKey: calendarEventsQuery.prefix
     })
   }, [queryClient])
 

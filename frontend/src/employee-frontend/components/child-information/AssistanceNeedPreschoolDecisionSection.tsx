@@ -12,7 +12,6 @@ import {
   ChildId
 } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -143,7 +142,7 @@ const DeleteDecisionModal = React.memo(function DeleteDecisionModal({
   decisionId,
   onClose
 }: {
-  childId: UUID
+  childId: ChildId
   decisionId: AssistanceNeedPreschoolDecisionId
   onClose: () => void
 }) {

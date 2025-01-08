@@ -2,19 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { query } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import { getVoucherValueDecisionMetadata } from '../../generated/api-clients/process'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('voucherValueDecisions', {
-  voucherValueDecisionMetadata: (
-    args: Arg0<typeof getVoucherValueDecisionMetadata>
-  ) => ['voucherValueDecisionMetadata', args]
-})
+const q = new Queries()
 
-export const voucherValueDecisionMetadataQuery = query({
-  api: getVoucherValueDecisionMetadata,
-  queryKey: queryKeys.voucherValueDecisionMetadata
-})
+export const voucherValueDecisionMetadataQuery = q.query(
+  getVoucherValueDecisionMetadata
+)

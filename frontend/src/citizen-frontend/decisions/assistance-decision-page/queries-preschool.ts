@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
-import { mutation, query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   getAssistanceNeedPreschoolDecision,
@@ -11,32 +10,22 @@ import {
   getAssistanceNeedPreschoolDecisionUnreadCount,
   markAssistanceNeedPreschoolDecisionAsRead
 } from '../../generated/api-clients/assistanceneed'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('assistancePreschoolDecisions', {
-  all: () => ['all'],
-  detail: (id: AssistanceNeedPreschoolDecisionId) => ['preschoolDecisions', id],
-  unreadCounts: () => ['unreadCounts']
-})
+const q = new Queries()
 
-export const assistanceNeedPreschoolDecisionsQuery = query({
-  api: getAssistanceNeedPreschoolDecisions,
-  queryKey: queryKeys.all
-})
+export const assistanceNeedPreschoolDecisionsQuery = q.query(
+  getAssistanceNeedPreschoolDecisions
+)
 
-export const assistanceNeedPreschoolDecisionQuery = query({
-  api: getAssistanceNeedPreschoolDecision,
-  queryKey: ({ id }) => queryKeys.detail(id)
-})
+export const assistanceNeedPreschoolDecisionQuery = q.query(
+  getAssistanceNeedPreschoolDecision
+)
 
-export const assistanceNeedPreschoolDecisionUnreadCountsQuery = query({
-  api: getAssistanceNeedPreschoolDecisionUnreadCount,
-  queryKey: queryKeys.unreadCounts
-})
+export const assistanceNeedPreschoolDecisionUnreadCountsQuery = q.query(
+  getAssistanceNeedPreschoolDecisionUnreadCount
+)
 
-export const markAssistanceNeedPreschoolDecisionAsReadMutation = mutation({
-  api: markAssistanceNeedPreschoolDecisionAsRead,
-  invalidateQueryKeys: () => [
-    assistanceNeedPreschoolDecisionUnreadCountsQuery().queryKey
-  ]
-})
+export const markAssistanceNeedPreschoolDecisionAsReadMutation = q.mutation(
+  markAssistanceNeedPreschoolDecisionAsRead,
+  [() => assistanceNeedPreschoolDecisionUnreadCountsQuery()]
+)

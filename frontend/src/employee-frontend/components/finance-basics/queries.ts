@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   createVoucherValue,
@@ -10,28 +10,19 @@ import {
   updateVoucherValue
 } from '../../generated/api-clients/invoicing'
 import { deleteVoucherValue } from '../../generated/api-clients/invoicing'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('financeBasics', {
-  voucherValues: () => ['voucherValues']
-})
+const q = new Queries()
 
-export const voucherValuesQuery = query({
-  api: getVoucherValues,
-  queryKey: queryKeys.voucherValues
-})
+export const voucherValuesQuery = q.query(getVoucherValues)
 
-export const createVoucherValueMutation = mutation({
-  api: createVoucherValue,
-  invalidateQueryKeys: () => [queryKeys.voucherValues()]
-})
+export const createVoucherValueMutation = q.mutation(createVoucherValue, [
+  () => voucherValuesQuery()
+])
 
-export const updateVoucherValueMutation = mutation({
-  api: updateVoucherValue,
-  invalidateQueryKeys: () => [queryKeys.voucherValues()]
-})
+export const updateVoucherValueMutation = q.mutation(updateVoucherValue, [
+  () => voucherValuesQuery()
+])
 
-export const deleteVoucherValueMutation = mutation({
-  api: deleteVoucherValue,
-  invalidateQueryKeys: () => [queryKeys.voucherValues()]
-})
+export const deleteVoucherValueMutation = q.mutation(deleteVoucherValue, [
+  () => voucherValuesQuery()
+])

@@ -6,8 +6,8 @@ import React, { useContext, useState } from 'react'
 
 import { UpdateStateFn } from 'lib-common/form-state'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -22,7 +22,7 @@ import { formatName } from '../../../../../utils'
 import { transferGroupMutation } from '../../../queries'
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   placement: DaycareGroupPlacementDetailed
   groups: DaycareGroup[]
 }

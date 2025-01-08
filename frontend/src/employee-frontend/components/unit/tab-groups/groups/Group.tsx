@@ -19,7 +19,11 @@ import {
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
-import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  GroupId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
@@ -492,7 +496,7 @@ export default React.memo(function Group({
 
 interface GroupPlacementRowProps {
   placement: DaycareGroupPlacementDetailed | UnitBackupCare
-  unitId: UUID
+  unitId: DaycareId
   filters: UnitFilters
   mobileEnabled: boolean
   showServiceNeed: boolean

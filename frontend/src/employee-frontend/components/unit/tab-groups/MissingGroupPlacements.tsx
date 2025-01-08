@@ -14,6 +14,7 @@ import {
   MissingBackupGroupPlacement,
   MissingGroupPlacement
 } from 'lib-common/generated/api-types/placement'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
@@ -154,7 +155,7 @@ const ServiceNeedTooltipLabel = ({
 }
 
 type Props = {
-  unitId: UUID
+  unitId: DaycareId
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
   missingBackupGroupPlacements: MissingBackupGroupPlacement[]

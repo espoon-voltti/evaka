@@ -2,16 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import { getCurrentSystemNotificationCitizen } from '../generated/api-clients/systemnotifications'
-import { createQueryKeys } from '../query'
 
-const queryKeys = createQueryKeys('login', {
-  systemNotifications: () => ['systemNotifications']
-})
+const q = new Queries()
 
-export const systemNotificationsQuery = query({
-  api: getCurrentSystemNotificationCitizen,
-  queryKey: queryKeys.systemNotifications
-})
+export const systemNotificationsQuery = q.query(
+  getCurrentSystemNotificationCitizen
+)
