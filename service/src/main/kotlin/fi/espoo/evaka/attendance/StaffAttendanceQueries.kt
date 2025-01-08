@@ -202,7 +202,7 @@ SET group_id = ${bind(groupId)},
     arrived_modified_at = CASE WHEN arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE arrived_modified_at END,
     arrived_modified_by = CASE WHEN arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE arrived_modified_by END,
     departed_added_at = CASE WHEN arrived_added_at IS NOT NULL AND departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(departed_added_at, ${bind(modifiedAt)}) ELSE departed_added_at END,
-    departed_added_by = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(departed_added_by, ${bind(modifiedBy)}) ELSE departed_added_by END,
+    departed_added_by = CASE WHEN arrived_added_by IS NOT NULL AND departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(departed_added_by, ${bind(modifiedBy)}) ELSE departed_added_by END,
     departed_modified_at = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE departed_modified_at END,
     departed_modified_by = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE departed_modified_by END
 WHERE id = ${bind(attendanceId)}
