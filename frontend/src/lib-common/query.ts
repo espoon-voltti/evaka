@@ -186,19 +186,6 @@ export interface QueryOptions {
   staleTime?: number
 }
 
-export function query<Args extends unknown[], Data>(opts: {
-  api: (...args: Args) => Promise<Data>
-  queryKey: (...args: Args) => QueryKey
-  options?: QueryOptions
-}): (...args: Args) => UseQueryOptions<Data, unknown> {
-  const { api, queryKey, options } = opts
-  return (...args: Args): UseQueryOptions<Data, unknown> => ({
-    queryFn: () => api(...args),
-    queryKey: queryKey(...args),
-    ...options
-  })
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyUseQueryOptions = UseQueryOptions<any, unknown>
 
@@ -271,26 +258,6 @@ type PagedInfiniteQueryDescription<Data, Id> = UseInfiniteQueryOptions<
   QueryKey,
   number
 > & { id: (data: Data) => Id }
-
-export function pagedInfiniteQuery<Args extends unknown[], Data, Id>(opts: {
-  api: (...args: Args) => (pageParam: number) => Promise<Paged<Data>>
-  queryKey: (...args: Args) => QueryKey
-  id: (data: Data) => Id
-  options?: QueryOptions
-}): (...args: Args) => PagedInfiniteQueryDescription<Data, Id> {
-  const { api, queryKey, id, options } = opts
-  return (...args: Args): PagedInfiniteQueryDescription<Data, Id> => ({
-    queryFn: ({ pageParam }) => api(...args)(pageParam),
-    queryKey: queryKey(...args),
-    id,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, pages) => {
-      const nextPage = pages.length + 1
-      return nextPage <= lastPage.pages ? nextPage : undefined
-    },
-    ...options
-  })
-}
 
 export interface PagedInfiniteQueryResult<Data> {
   data: Result<Data[]>
@@ -366,12 +333,6 @@ export interface MutationDescription<Arg, Data> {
   invalidateQueryKeys?: ((arg: Arg) => QueryKey[]) | undefined
 }
 
-export function mutation<Arg, Data>(
-  description: MutationDescription<Arg, Data>
-): MutationDescription<Arg, Data> {
-  return description
-}
-
 export async function invalidateDependencies<Arg>(
   queryClient: QueryClient,
   mutationDescription: MutationDescription<Arg, unknown>,
@@ -420,33 +381,6 @@ export function useMutationResult<Arg, Data>(
     [mutateAsync]
   )
   return { ...rest, mutateAsync: mutateAsyncResult }
-}
-
-type Parameters<F> = F extends (...args: infer Args) => unknown ? Args : never
-
-export function queryKeysNamespace<QueryKeyPrefix extends string>() {
-  /* eslint-disable */
-  return <
-    KeyFactories extends Record<string, (...args: any[]) => QueryKey | null>
-  >(
-    prefix: QueryKeyPrefix,
-    obj: KeyFactories
-  ): {
-    [K in keyof KeyFactories]: (
-      ...args: Parameters<KeyFactories[K]>
-    ) => QueryKey
-  } => {
-    return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [
-        key,
-        (...args: any[]) => {
-          const key = value(...args)
-          return key === null ? [prefix] : [prefix, ...key]
-        }
-      ])
-    ) as any
-  }
-  /* eslint-enable */
 }
 
 export function constantQuery<R>(result: R): UseQueryOptions<R, unknown> {
