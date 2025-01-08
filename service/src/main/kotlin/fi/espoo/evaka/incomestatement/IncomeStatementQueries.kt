@@ -56,6 +56,8 @@ SELECT
     gross_other_income_info,
     entrepreneur_full_time,
     start_of_entrepreneurship,
+    company_name,
+    business_id,
     spouse_works_in_company,
     checkup_consent,
     self_employed_attachments,
@@ -192,6 +194,8 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
                     Entrepreneur(
                         fullTime = fullTime,
                         startOfEntrepreneurship = column("start_of_entrepreneurship"),
+                        companyName = column("company_name"),
+                        businessId = column("business_id"),
                         spouseWorksInCompany = column("spouse_works_in_company"),
                         startupGrant = column("startup_grant"),
                         checkupConsent = column("checkup_consent"),
@@ -285,6 +289,8 @@ private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStateme
     this.bind("grossOtherIncomeInfo", "")
     bind("fullTime", null as Boolean?)
     bind("startOfEntrepreneurship", null as LocalDate?)
+    bind("companyName", "")
+    bind("businessId", "")
     bind("spouseWorksInCompany", null as Boolean?)
     bind("startupGrant", null as Boolean?)
     bind("checkupConsent", null as Boolean?)
@@ -331,6 +337,8 @@ private fun Database.SqlStatement<*>.bindEntrepreneur(entrepreneur: Entrepreneur
     if (entrepreneur.limitedCompany != null) bindLimitedCompany(entrepreneur.limitedCompany)
     this.bind("fullTime", entrepreneur.fullTime)
     this.bind("startOfEntrepreneurship", entrepreneur.startOfEntrepreneurship)
+    this.bind("companyName", entrepreneur.companyName)
+    this.bind("businessId", entrepreneur.businessId)
     this.bind("spouseWorksInCompany", entrepreneur.spouseWorksInCompany)
     this.bind("startupGrant", entrepreneur.startupGrant)
     this.bind("checkupConsent", entrepreneur.checkupConsent)
@@ -389,6 +397,8 @@ INSERT INTO income_statement (
     gross_other_income_info,
     entrepreneur_full_time,
     start_of_entrepreneurship,
+    company_name,
+    business_id, 
     spouse_works_in_company,
     startup_grant,
     checkup_consent,
@@ -423,6 +433,8 @@ INSERT INTO income_statement (
     :grossOtherIncomeInfo,
     :fullTime,
     :startOfEntrepreneurship,
+    :companyName,
+    :businessId,
     :spouseWorksInCompany,
     :startupGrant,
     :checkupConsent,
@@ -477,6 +489,8 @@ UPDATE income_statement SET
     gross_other_income_info = :grossOtherIncomeInfo,
     entrepreneur_full_time = :fullTime,
     start_of_entrepreneurship = :startOfEntrepreneurship,
+    company_name = :companyName,
+    business_id = :businessId,
     spouse_works_in_company = :spouseWorksInCompany,
     startup_grant = :startupGrant,
     checkup_consent = :checkupConsent,

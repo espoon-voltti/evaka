@@ -673,6 +673,8 @@ const EntrepreneurIncomeSelection = React.memo(
       onChange,
       'startOfEntrepreneurship'
     )
+    const onCompanyNameChange = useFieldDispatch(onChange, 'companyName')
+    const onBusinessIdChange = useFieldDispatch(onChange, 'businessId')
     const onSpouseWorksInCompanyChange = useFieldDispatch(
       onChange,
       'spouseWorksInCompany'
@@ -745,8 +747,9 @@ const EntrepreneurIncomeSelection = React.memo(
             <span>{formData.startOfEntrepreneurship?.format() ?? '-'}</span>
           ) : (
             <DatePicker
-              date={formData.startOfEntrepreneurship}
+              id="entrepreneur-start-date"
               data-qa="entrepreneur-start-date"
+              date={formData.startOfEntrepreneurship}
               onChange={onStartOfEntrepreneurshipChange}
               locale={lang}
               info={errorToInputInfo(
@@ -756,6 +759,36 @@ const EntrepreneurIncomeSelection = React.memo(
               hideErrorsBeforeTouched={!showFormErrors}
             />
           )}
+          <Gap size="L" />
+          <Label htmlFor="entrepreneur-company-name">
+            {t.income.entrepreneurIncome.companyName}
+          </Label>
+          <Gap size="s" />
+          <FixedSpaceRow>
+            <FixedSpaceColumn>
+              <InputField
+                id="entrepreneur-company-name"
+                value={formData.companyName}
+                onChange={onCompanyNameChange}
+                readonly={readOnly}
+              />
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+          <Gap size="L" />
+          <Label htmlFor="entrepreneur-business-id">
+            {t.income.entrepreneurIncome.businessId}
+          </Label>
+          <Gap size="s" />
+          <FixedSpaceRow>
+            <FixedSpaceColumn>
+              <InputField
+                id="entrepreneur-business-id"
+                value={formData.businessId}
+                onChange={onBusinessIdChange}
+                readonly={readOnly}
+              />
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
           <Gap size="L" />
           <LabelWithError
             label={`${t.income.entrepreneurIncome.spouseWorksInCompany} *`}

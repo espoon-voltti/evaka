@@ -36,6 +36,8 @@ export interface Entrepreneur {
   selected: boolean
   fullTime: boolean | null
   startOfEntrepreneurship: LocalDate | null
+  companyName: string
+  businessId: string
   spouseWorksInCompany: boolean | null
   startupGrant: boolean
   checkupConsent: boolean
@@ -83,6 +85,8 @@ export const emptyIncomeStatementForm: IncomeStatementForm = {
     selected: false,
     fullTime: null,
     startOfEntrepreneurship: null,
+    companyName: '',
+    businessId: '',
     spouseWorksInCompany: null,
     startupGrant: false,
     checkupConsent: false,
@@ -173,6 +177,8 @@ function mapEntrepreneur(
     selected: true,
     fullTime: entrepreneur.fullTime,
     startOfEntrepreneurship: entrepreneur.startOfEntrepreneurship,
+    companyName: entrepreneur.companyName,
+    businessId: entrepreneur.businessId,
     spouseWorksInCompany: entrepreneur.spouseWorksInCompany,
     startupGrant: entrepreneur.startupGrant,
     checkupConsent: entrepreneur.checkupConsent,
