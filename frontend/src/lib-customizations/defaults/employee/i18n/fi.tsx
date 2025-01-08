@@ -3922,6 +3922,33 @@ export const fi = {
       description:
         'Raportti listaa lasten määriä yksiköissä kielen ja iän mukaan. Vain vastaanotetut paikat otetaan huomioon.'
     },
+    childDocuments: {
+      title: 'Pedagogiset asiakirjat -raportti',
+      description:
+        'Raportti näyttää pedagogisten asiakirjojen tämänhetkisen tilanteen valitsemissasi yksiköissä.',
+      info: 'Luvut kertovat moneltako lapselta löytyy joku valituista dokumenteista kyseisessä tilassa.',
+      info2:
+        '"Ei asiakirjoja" ja "Lapsia yhteensä" sarakkeisiin lasketaan vain ne lapset, joille on mahdollista luoda joku valituista asiakirjoista.',
+      filters: {
+        units: 'Yksiköt',
+        templates: 'Asiakirjat'
+      },
+      table: {
+        unitOrGroup: 'Yksikkö/Ryhmä',
+        draft: 'Luonnos',
+        prepared: 'Laadittu',
+        completed: 'Valmis',
+        none: 'Ei asiakirjoja',
+        total: 'Lapsia yhteensä',
+        expand: 'Näytä ryhmät',
+        collapse: 'Piilota ryhmät'
+      },
+      categories: {
+        VASU: 'Vasu',
+        LEOPS_HOJKS: 'Leops/Hojks',
+        OTHER: 'Muut asiakirjat'
+      }
+    },
     assistanceNeedsAndActions: {
       title: 'Lasten tuen tarpeet ja tukitoimet',
       description:

@@ -688,6 +688,20 @@ export default React.memo(function Reports() {
                     />
                   )
                 }
+              : null,
+            reports.has('CHILD_DOCUMENTS')
+              ? {
+                  name: i18n.reports.childDocuments.title,
+                  item: (
+                    <Report
+                      data-qa="report-child-documents"
+                      path="/reports/child-documents"
+                      color={colors.main.m2}
+                      icon={faFileAlt}
+                      i18n={i18n.reports.childDocuments}
+                    />
+                  )
+                }
               : null
           ]
 

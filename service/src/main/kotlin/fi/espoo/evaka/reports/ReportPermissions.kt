@@ -19,6 +19,7 @@ enum class Report {
     ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD,
     ATTENDANCE_RESERVATION,
     CHILD_AGE_LANGUAGE,
+    CHILD_DOCUMENTS,
     CHILDREN_IN_DIFFERENT_ADDRESS,
     CUSTOMER_FEES,
     DECISIONS,
@@ -105,6 +106,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     Report.CHILD_AGE_LANGUAGE.takeIf {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_CHILD_AGE_AND_LANGUAGE_REPORT
+                        )
+                    },
+                    Report.CHILD_DOCUMENTS.takeIf {
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_CHILD_DOCUMENTS_REPORT
                         )
                     },
                     Report.CHILDREN_IN_DIFFERENT_ADDRESS.takeIf {
