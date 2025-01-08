@@ -82,13 +82,17 @@ export function useQueryResult<T extends AnyUseQueryOptions>(
   )
 }
 
+function foreverPending(): Promise<never> {
+  return new Promise(() => undefined)
+}
+
 export function useChainedQuery<T extends AnyUseQueryOptions>(
   query: Result<T>,
   options?: QueryOptions
 ): Result<DataOf<T>> {
   const result = useQueryResult(
-    // The result of `constantQuery(null)` is never returned to the caller, because the query is enabled only when the previous query is successful.
-    query.getOrElse(constantQuery(null)) as T,
+    // Use a promise that never resolves
+    query.getOrElse({ queryFn: foreverPending }) as T,
     {
       ...options,
       enabled: (options?.enabled ?? true) && query.isSuccess
