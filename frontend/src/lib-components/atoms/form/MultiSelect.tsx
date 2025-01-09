@@ -33,6 +33,7 @@ interface MultiSelectProps<T> {
   inputId?: Props<never>['inputId']
   'data-qa'?: string
   autoFocus?: boolean
+  required?: boolean
 }
 
 function MultiSelect<T>({
@@ -48,6 +49,7 @@ function MultiSelect<T>({
   maxSelected,
   showValuesInInput: showSelectedValues,
   autoFocus,
+  required,
   ...props
 }: MultiSelectProps<T>) {
   const { colors } = useTheme()
@@ -96,6 +98,7 @@ function MultiSelect<T>({
           })
         }}
         autoFocus={autoFocus}
+        required={required}
         isMulti
         isSearchable={true}
         hideSelectedOptions={false}

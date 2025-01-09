@@ -314,6 +314,7 @@ export default React.memo(function MessageEditor({
                     : name
                 }
                 data-qa="select-recipient"
+                required
               />
             </label>
 
@@ -373,6 +374,7 @@ export default React.memo(function MessageEditor({
                   setMessage((message) => ({ ...message, title: updated }))
                 }
                 data-qa="input-title"
+                required
               />
             </label>
 
@@ -390,6 +392,7 @@ export default React.memo(function MessageEditor({
                   }))
                 }
                 data-qa="input-content"
+                required
               />
             </TextAreaLabel>
 
