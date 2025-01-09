@@ -260,7 +260,7 @@ fun Row.toIncome(
                 column("created_by_name"),
                 column("created_by_type"),
             ),
-        modifiedAt = column("updated_at"),
+        modifiedAt = column("modified_at"),
         modifiedBy =
             EvakaUser(
                 column("modified_by_id"),
