@@ -27,10 +27,10 @@ export const applicationNotificationsQuery = q.query(
 
 export const acceptDecisionMutation = q.mutation(acceptDecision, [
   ({ applicationId }) => decisionsOfApplicationQuery({ applicationId }),
-  () => applicationNotificationsQuery()
+  applicationNotificationsQuery
 ])
 
 export const rejectDecisionMutation = q.mutation(rejectDecision, [
   ({ applicationId }) => decisionsOfApplicationQuery({ applicationId }),
-  () => applicationNotificationsQuery()
+  applicationNotificationsQuery
 ])

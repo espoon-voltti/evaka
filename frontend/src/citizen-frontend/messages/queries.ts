@@ -29,17 +29,17 @@ export const messageAccountQuery = q.query(getMyAccount)
 export const unreadMessagesCountQuery = q.query(getUnreadMessages)
 
 export const markThreadReadMutation = q.mutation(markThreadRead, [
-  () => unreadMessagesCountQuery()
+  unreadMessagesCountQuery
 ])
 
 export const sendMessageMutation = q.mutation(newMessage, [
-  () => receivedMessagesQuery()
+  receivedMessagesQuery
 ])
 
 export const replyToThreadMutation = q.mutation(replyToThread, [
-  () => receivedMessagesQuery()
+  receivedMessagesQuery
 ])
 
 export const archiveThreadMutation = q.mutation(archiveThread, [
-  () => receivedMessagesQuery()
+  receivedMessagesQuery
 ])

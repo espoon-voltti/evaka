@@ -40,56 +40,56 @@ export const questionnaireQuery = q.query(getQuestionnaire)
 export const preschoolTermsQuery = q.query(getPreschoolTerms)
 
 export const createPreschoolTermMutation = q.mutation(createPreschoolTerm, [
-  () => preschoolTermsQuery()
+  preschoolTermsQuery
 ])
 
 export const updatePreschoolTermMutation = q.mutation(updatePreschoolTerm, [
-  () => preschoolTermsQuery()
+  preschoolTermsQuery
 ])
 
 export const deletePreschoolTermMutation = q.mutation(deletePreschoolTerm, [
-  () => preschoolTermsQuery()
+  preschoolTermsQuery
 ])
 
 export const createHolidayPeriodMutation = q.mutation(createHolidayPeriod, [
-  () => holidayPeriodsQuery()
+  holidayPeriodsQuery
 ])
 
 export const updateHolidayPeriodMutation = q.mutation(updateHolidayPeriod, [
   ({ id }) => holidayPeriodQuery({ id }),
-  () => holidayPeriodsQuery()
+  holidayPeriodsQuery
 ])
 
 export const deleteHolidayPeriodMutation = q.mutation(deleteHolidayPeriod, [
   ({ id }) => holidayPeriodQuery({ id }),
-  () => holidayPeriodsQuery()
+  holidayPeriodsQuery
 ])
 
 export const createQuestionnaireMutation = q.mutation(
   createHolidayQuestionnaire,
-  [() => questionnairesQuery()]
+  [questionnairesQuery]
 )
 
 export const updateQuestionnaireMutation = q.mutation(
   updateHolidayQuestionnaire,
-  [() => questionnairesQuery(), ({ id }) => questionnaireQuery({ id })]
+  [questionnairesQuery, ({ id }) => questionnaireQuery({ id })]
 )
 
 export const deleteQuestionnaireMutation = q.mutation(
   deleteHolidayQuestionnaire,
-  [({ id }) => questionnaireQuery({ id }), () => questionnairesQuery()]
+  [({ id }) => questionnaireQuery({ id }), questionnairesQuery]
 )
 
 export const clubTermsQuery = q.query(getClubTerms)
 
 export const createClubTermMutation = q.mutation(createClubTerm, [
-  () => clubTermsQuery()
+  clubTermsQuery
 ])
 
 export const updateClubTermMutation = q.mutation(updateClubTerm, [
-  () => clubTermsQuery()
+  clubTermsQuery
 ])
 
 export const deleteClubTermMutation = q.mutation(deleteClubTerm, [
-  () => clubTermsQuery()
+  clubTermsQuery
 ])

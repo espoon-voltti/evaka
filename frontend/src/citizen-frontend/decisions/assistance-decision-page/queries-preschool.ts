@@ -27,5 +27,5 @@ export const assistanceNeedPreschoolDecisionUnreadCountsQuery = q.query(
 
 export const markAssistanceNeedPreschoolDecisionAsReadMutation = q.mutation(
   markAssistanceNeedPreschoolDecisionAsRead,
-  [() => assistanceNeedPreschoolDecisionUnreadCountsQuery()]
+  [assistanceNeedPreschoolDecisionUnreadCountsQuery]
 )

@@ -59,7 +59,7 @@ export const saveApplicationDraftMutation = q.mutation(saveApplicationAsDraft, [
 
 export const removeUnprocessableApplicationMutation = q.mutation(
   deleteOrCancelUnprocessedApplication,
-  [() => guardianApplicationsQuery()]
+  [guardianApplicationsQuery]
 )
 
 export const sendApplicationMutation = q.mutation(sendApplication, [

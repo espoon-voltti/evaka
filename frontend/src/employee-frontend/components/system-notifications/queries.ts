@@ -15,10 +15,10 @@ const q = new Queries()
 export const allSystemNotificationsQuery = q.query(getAllSystemNotifications)
 
 export const putSystemNotificationMutation = q.mutation(putSystemNotification, [
-  () => allSystemNotificationsQuery()
+  allSystemNotificationsQuery
 ])
 
 export const deleteSystemNotificationMutation = q.mutation(
   deleteSystemNotification,
-  [() => allSystemNotificationsQuery()]
+  [allSystemNotificationsQuery]
 )

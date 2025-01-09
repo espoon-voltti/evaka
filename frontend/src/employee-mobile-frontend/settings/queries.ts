@@ -14,5 +14,5 @@ const q = new Queries()
 export const pushSettingsQuery = q.query(getPushSettings)
 
 export const pushSettingsMutation = q.mutation(setPushSettings, [
-  () => pushSettingsQuery()
+  pushSettingsQuery
 ])

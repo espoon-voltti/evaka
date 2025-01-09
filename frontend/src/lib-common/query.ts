@@ -23,16 +23,27 @@ import { Failure, Loading, Result, Success } from 'lib-common/api'
 
 import { useStableCallback } from './utils/useStableCallback'
 
+const isQuery: unique symbol = Symbol('isQuery')
+
 export interface QueriesQuery<Args extends unknown[], Data> {
   (...args: Args): UseQueryOptions<Data, unknown>
 
   prefix: QueryKey
+  [isQuery]: true
 }
 
-export interface QueriesCustomQuery<QueryArg, Args extends unknown[], Data> {
+export interface PrefixedQueriesQuery<QueryArg, Args extends unknown[], Data> {
   (...args: Args): UseQueryOptions<Data, unknown>
 
   prefix: (arg: QueryArg) => { queryKey: QueryKey }
+  [isQuery]: true
+}
+
+export interface PagedInfiniteQueriesQuery<Args extends unknown[], Data, Id> {
+  (...args: Args): PagedInfiniteQueryDescription<Data, Id>
+
+  prefix: QueryKey
+  [isQuery]: true
 }
 
 export class Queries {
@@ -56,7 +67,7 @@ export class Queries {
         queryKey: [this.commonPrefix, queryName, ...args],
         ...options
       }),
-      { prefix: [this.commonPrefix, queryName] }
+      { prefix: [this.commonPrefix, queryName], [isQuery]: true as const }
     )
   }
 
@@ -65,7 +76,7 @@ export class Queries {
     api: (...args: Args) => Promise<Data>,
     prefix: (...args: Args) => QueryPrefix,
     options?: QueryOptions
-  ): QueriesCustomQuery<QueryPrefix, Args, Data> {
+  ): PrefixedQueriesQuery<QueryPrefix, Args, Data> {
     const queryName = this.getQueryName(api.name)
     return Object.assign(
       (...args: Args): UseQueryOptions<Data, unknown> => ({
@@ -76,7 +87,8 @@ export class Queries {
       {
         prefix: (prefix: QueryPrefix) => ({
           queryKey: [this.commonPrefix, queryName, prefix]
-        })
+        }),
+        [isQuery]: true as const
       }
     )
   }
@@ -86,16 +98,19 @@ export class Queries {
     return <Args extends unknown[], Data>(
       api: (...args: Args) => Promise<Data>,
       options?: QueryOptions
-    ) => {
+    ): QueriesQuery<[ExtraArg, ...Args], Data> => {
       const queryName = this.getQueryName(api.name)
-      return (
-        extraArg: ExtraArg,
-        ...args: Args
-      ): UseQueryOptions<Data, unknown> => ({
-        queryFn: () => api(...args),
-        queryKey: [this.commonPrefix, queryName, extraArg, ...args],
-        ...options
-      })
+      return Object.assign(
+        (
+          extraArg: ExtraArg,
+          ...args: Args
+        ): UseQueryOptions<Data, unknown> => ({
+          queryFn: () => api(...args),
+          queryKey: [this.commonPrefix, queryName, extraArg, ...args],
+          ...options
+        }),
+        { prefix: [this.commonPrefix, queryName], [isQuery]: true as const }
+      )
     }
   }
 
@@ -104,61 +119,40 @@ export class Queries {
     api: (...args: Args) => (pageParam: number) => Promise<Paged<Data>>,
     id: (data: Data) => Id,
     options?: QueryOptions
-  ): (...args: Args) => PagedInfiniteQueryDescription<Data, Id> {
+  ): PagedInfiniteQueriesQuery<Args, Data, Id> {
     const queryName = this.getQueryName(api.name)
-    return (...args: Args): PagedInfiniteQueryDescription<Data, Id> => ({
-      queryFn: ({ pageParam }) => api(...args)(pageParam),
-      queryKey: [this.commonPrefix, queryName, ...args],
-      id,
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, pages) => {
-        const nextPage = pages.length + 1
-        return nextPage <= lastPage.pages ? nextPage : undefined
-      },
-      ...options
-    })
+    return Object.assign(
+      (...args: Args): PagedInfiniteQueryDescription<Data, Id> => ({
+        queryFn: ({ pageParam }) => api(...args)(pageParam),
+        queryKey: [this.commonPrefix, queryName, ...args],
+        id,
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, pages) => {
+          const nextPage = pages.length + 1
+          return nextPage <= lastPage.pages ? nextPage : undefined
+        },
+        ...options
+      }),
+      { prefix: [this.commonPrefix, queryName], [isQuery]: true as const }
+    )
   }
 
   mutation<Arg, Data>(
     api: (arg: Arg) => Promise<Data>,
-    invalidations?: (((arg: Arg) => { queryKey: QueryKey }) | QueryKey)[]
+    invalidations?: Invalidations<Arg>
   ): MutationDescription<Arg, Data> {
-    if (invalidations === undefined) {
-      return { api }
-    } else {
-      const invalidationFns = invalidations.map((invalidation) =>
-        typeof invalidation === 'function'
-          ? (arg: Arg) => invalidation(arg).queryKey
-          : () => invalidation
-      )
-      return {
-        api,
-        invalidateQueryKeys: (arg: Arg) => invalidationFns.map((f) => f(arg))
-      }
-    }
+    return { api, invalidateQueryKeys: invalidateQueryKeysFn(invalidations) }
   }
 
   /** Allows passing an additional argument to be used in invalidations but not in the api call (like `parametricQuery`) */
   parametricMutation<MutationArg>() {
     return <Arg, Data>(
       api: (arg: Arg) => Promise<Data>,
-      invalidations?: (
-        | ((arg: Arg & MutationArg) => { queryKey: QueryKey })
-        | QueryKey
-      )[]
+      invalidations?: Invalidations<Arg & MutationArg>
     ): MutationDescription<Arg & MutationArg, Data> => {
-      if (invalidations === undefined) {
-        return { api }
-      } else {
-        const invalidationFns = invalidations.map((invalidation) =>
-          typeof invalidation === 'function'
-            ? (arg: Arg & MutationArg) => invalidation(arg).queryKey
-            : () => invalidation
-        )
-        return {
-          api,
-          invalidateQueryKeys: (arg) => invalidationFns.map((fn) => fn(arg))
-        }
+      return {
+        api,
+        invalidateQueryKeys: invalidateQueryKeysFn(invalidations)
       }
     }
   }
@@ -179,6 +173,34 @@ let counter = 0
 
 function uniqueString(prefix: string): string {
   return `${prefix}${counter++}`
+}
+
+type Invalidations<Arg> = (
+  | ((arg: Arg) => { queryKey: QueryKey })
+  | QueriesQuery<[], unknown>
+  | QueryKey
+)[]
+
+function invalidateQueryKeysFn<Arg>(
+  invalidations: Invalidations<Arg> | undefined
+): ((arg: Arg) => QueryKey[]) | undefined {
+  if (invalidations === undefined) {
+    return undefined
+  }
+
+  const invalidationFns = invalidations.map((invalidation) =>
+    isQuery in invalidation
+      ? // If the invalidation is a query, do not pass any arguments to it. Typings ensure that q query can be used as
+        // an invalidation only if it has no arguments. The arguments are added to the query key, so passing the
+        // *mutation's* argument would result in the wrong query key being computed.
+        () => invalidation().queryKey
+      : typeof invalidation === 'function'
+        ? // If the invalidation is some other function, it will compute the query key based on the mutation's argument.
+          (arg: Arg) => invalidation(arg).queryKey
+        : // Otherwise, the invalidation is already query key and we can just return it.
+          () => invalidation
+  )
+  return (arg: Arg) => invalidationFns.map((f) => f(arg))
 }
 
 export interface QueryOptions {

@@ -18,5 +18,5 @@ export const childDocumentDetailsQuery = q.query(getDocument)
 export const unreadChildDocumentsCountQuery = q.query(getUnreadDocumentsCount)
 
 export const childDocumentReadMutation = q.mutation(putDocumentRead, [
-  () => unreadChildDocumentsCountQuery()
+  unreadChildDocumentsCountQuery
 ])

@@ -25,5 +25,5 @@ export const markPedagogicalDocumentAsReadMutation = q.parametricMutation<{
   childId: ChildId
 }>()(markPedagogicalDocumentRead, [
   ({ childId }) => pedagogicalDocumentsQuery({ childId }),
-  () => unreadPedagogicalDocumentsCountQuery()
+  unreadPedagogicalDocumentsCountQuery
 ])

@@ -21,5 +21,5 @@ export const notificationSettingsQuery = q.query(getNotificationSettings)
 
 export const updateNotificationSettingsMutation = q.mutation(
   updateNotificationSettings,
-  [() => notificationSettingsQuery()]
+  [notificationSettingsQuery]
 )

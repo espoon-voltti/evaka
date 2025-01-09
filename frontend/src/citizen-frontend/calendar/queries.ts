@@ -63,12 +63,12 @@ export const activeQuestionnaireQuery = q.query(() =>
 
 export const answerFixedPeriodQuestionnaireMutation = q.mutation(
   answerFixedPeriodQuestionnaire,
-  [() => activeQuestionnaireQuery(), reservationsQuery.prefix]
+  [activeQuestionnaireQuery, reservationsQuery.prefix]
 )
 
 export const answerOpenRangesQuestionnaireMutation = q.mutation(
   answerOpenRangeQuestionnaire,
-  [() => activeQuestionnaireQuery(), reservationsQuery.prefix]
+  [activeQuestionnaireQuery, reservationsQuery.prefix]
 )
 
 export const incomeExpirationDatesQuery = q.query(() =>

@@ -16,13 +16,13 @@ const q = new Queries()
 export const voucherValuesQuery = q.query(getVoucherValues)
 
 export const createVoucherValueMutation = q.mutation(createVoucherValue, [
-  () => voucherValuesQuery()
+  voucherValuesQuery
 ])
 
 export const updateVoucherValueMutation = q.mutation(updateVoucherValue, [
-  () => voucherValuesQuery()
+  voucherValuesQuery
 ])
 
 export const deleteVoucherValueMutation = q.mutation(deleteVoucherValue, [
-  () => voucherValuesQuery()
+  voucherValuesQuery
 ])

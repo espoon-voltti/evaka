@@ -102,7 +102,7 @@ export const voucherServiceProvidersReportQuery = q.query(
 export const vardaChildErrorsQuery = q.query(getVardaChildErrorsReport)
 
 export const resetVardaChildMutation = q.mutation(markChildForVardaReset, [
-  () => vardaChildErrorsQuery()
+  vardaChildErrorsQuery
 ])
 
 export const vardaUnitErrorsQuery = q.query(getVardaUnitErrorsReport)
@@ -134,7 +134,7 @@ export const sendJamixOrdersMutation = q.mutation(sendJamixOrders)
 export const titaniaErrorsReportQuery = q.query(getTitaniaErrorsReport)
 
 export const clearTitaniaErrorMutation = q.mutation(clearTitaniaErrors, [
-  () => titaniaErrorsReportQuery()
+  titaniaErrorsReportQuery
 ])
 
 export const incompleteIncomeReportQuery = q.query(getIncompleteIncomeReport)
