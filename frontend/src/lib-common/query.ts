@@ -40,7 +40,7 @@ export class Queries {
   queryNames: Set<string>
 
   constructor() {
-    this.commonPrefix = randomString('queries-')
+    this.commonPrefix = uniqueString('queries-')
     this.queryNames = new Set()
   }
 
@@ -165,7 +165,7 @@ export class Queries {
 
   private getQueryName(name: string): string {
     if (!name || name === 'anonymous') {
-      name = randomString('query-')
+      name = uniqueString('query-')
     }
     if (this.queryNames.has(name)) {
       throw new Error(`Query name ${name} is already in use`)
@@ -175,8 +175,10 @@ export class Queries {
   }
 }
 
-function randomString(prefix = '') {
-  return prefix + Math.random().toString(36).substring(2)
+let counter = 0
+
+function uniqueString(prefix: string): string {
+  return `${prefix}${counter++}`
 }
 
 export interface QueryOptions {
