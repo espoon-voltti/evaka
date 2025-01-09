@@ -8,17 +8,17 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.pis.SystemController
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.auth.PasswordService
+import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.dev.DevCitizenUser
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -116,6 +116,50 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 SystemController.CitizenWeakLoginRequest(username = email, password = newPassword)
             )
         assertEquals(person.id, identity.id)
+    }
+
+    @Test
+    fun `a person can't use a password that does not match constraints`() {
+        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+        MockPersonDetailsService.addPersons(person)
+
+        citizenStrongLogin()
+        val password = Sensitive("nope")
+        val error =
+            assertThrows<BadRequest> {
+                updateWeakLoginCredentials(
+                    PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(
+                        username = email,
+                        password = password,
+                    )
+                )
+            }
+        assertEquals("PASSWORD_FORMAT", error.errorCode)
+    }
+
+    @Test
+    fun `a person can't use a password that is blacklisted`() {
+        val password = Sensitive("ValidButBlacklisted123!!")
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.upsertPasswordBlacklist(
+                PasswordBlacklistSource("test", clock.now()),
+                sequenceOf(password.value),
+            )
+        }
+        MockPersonDetailsService.addPersons(person)
+
+        citizenStrongLogin()
+        val error =
+            assertThrows<BadRequest> {
+                updateWeakLoginCredentials(
+                    PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(
+                        username = email,
+                        password = password,
+                    )
+                )
+            }
+        assertEquals("PASSWORD_UNACCEPTABLE", error.errorCode)
     }
 
     private fun updateWeakLoginCredentials(

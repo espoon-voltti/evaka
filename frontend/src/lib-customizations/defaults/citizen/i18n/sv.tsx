@@ -2101,7 +2101,24 @@ const sv: Translations = {
       activationSuccess: 'E-postinloggning aktiverad',
       activationSuccessOk: 'Klart',
       confirmPassword: 'Bekräfta lösenordet',
-      confirmActivateCredentials: 'Aktivera'
+      confirmActivateCredentials: 'Aktivera',
+      validationErrors: {
+        passwordFormat: 'Lösenordet uppfyller inte kraven',
+        passwordMismatch: 'Lösenorden stämmer inte överens'
+      },
+      passwordConstraints: {
+        label: 'Krav på lösenord',
+        length: (min: number, _max: number) =>
+          `längd minst ${min} tecken ${min}`,
+        minLowers: (v: number) =>
+          `minst ${v} ${v > 1 ? 'gemena bokstäver' : 'gemen bokstav'}`,
+        minUppers: (v: number) =>
+          `minst ${v} ${v > 1 ? 'stora bokstäver' : 'stor bokstav'}`,
+        minDigits: (v: number) => `${v} eller fler siffror`,
+        minSymbols: (v: number) =>
+          `${v} eller ${v > 1 ? 'flera specialtecken' : 'fler specialtecken'}`
+      },
+      unacceptablePassword: 'Lösenordet är för lätt att gissa'
     },
     notificationsSection: {
       title: 'E-postmeddelanden',

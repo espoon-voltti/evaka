@@ -156,14 +156,22 @@ export class LoginDetailsSection extends Element {
 export class WeakCredentialsModal extends Element {
   username: Element
   password: TextInput
+  passwordInfo: Element
   confirmPassword: TextInput
+  confirmPasswordInfo: Element
+  unacceptablePasswordAlert: Element
   ok: Element
 
   constructor(page: Page) {
     super(page.findByDataQa('weak-credentials-modal'))
     this.username = this.findByDataQa('username')
     this.password = new TextInput(this.findByDataQa('password'))
+    this.passwordInfo = this.findByDataQa('password-info')
     this.confirmPassword = new TextInput(this.findByDataQa('confirm-password'))
+    this.confirmPasswordInfo = this.findByDataQa('confirm-password-info')
+    this.unacceptablePasswordAlert = this.findByDataQa(
+      'unacceptable-password-alert'
+    )
     this.ok = this.findByDataQa('modal-okBtn')
   }
 }

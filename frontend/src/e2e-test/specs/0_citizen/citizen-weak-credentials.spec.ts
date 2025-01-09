@@ -5,7 +5,11 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState, runJobs } from '../../generated/api-clients'
+import {
+  resetServiceState,
+  runJobs,
+  upsertPasswordBlacklist
+} from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
@@ -163,6 +167,53 @@ describe('Citizen weak credentials', () => {
     await personalDetailsPage.loginDetailsSection.username.assertTextEquals(
       newEmail
     )
+  })
+  test('a new password must be valid and acceptable', async () => {
+    const email = 'test@example.com'
+    const validPassword = 'aifiefaeC3io?dee'
+    const invalidPassword = 'wrong2short'
+    const unacceptablePassword = 'TestPassword123!'
+    const citizen = await Fixture.person({
+      email,
+      verifiedEmail: email
+    }).saveAdult({
+      updateMockVtjWithDependants: [],
+      updateWeakCredentials: {
+        username: email,
+        password: validPassword
+      }
+    })
+    await upsertPasswordBlacklist({ body: [unacceptablePassword] })
+    page = await Page.open({ mockedTime })
+
+    const personalDetailsPage = await openPersonalDetailsPage(citizen)
+    await personalDetailsPage.personalDetailsSection.verifiedEmailStatus.waitUntilVisible()
+    const section = personalDetailsPage.loginDetailsSection
+    await section.weakLoginEnabled.waitUntilVisible()
+    await section.updatePassword.click()
+
+    const modal = new WeakCredentialsModal(page)
+    await modal.password.fill(invalidPassword)
+    await modal.password.blur()
+    await modal.passwordInfo.assertTextEquals('Salasana ei täytä vaatimuksia')
+    await modal.ok.assertDisabled(true)
+    await modal.password.fill(unacceptablePassword)
+    await modal.confirmPassword.fill(invalidPassword)
+    await modal.confirmPassword.blur()
+    await modal.confirmPasswordInfo.assertTextEquals('Salasanat eivät täsmää')
+    await modal.ok.assertDisabled(true)
+    await modal.confirmPassword.fill(unacceptablePassword)
+    await modal.ok.click()
+    await modal.unacceptablePasswordAlert.waitUntilVisible()
+
+    await modal.password.fill(validPassword)
+    await modal.confirmPassword.fill(validPassword)
+    await modal.confirmPassword.blur()
+    await modal.passwordInfo.waitUntilHidden()
+    await modal.confirmPasswordInfo.waitUntilHidden()
+    await modal.unacceptablePasswordAlert.waitUntilHidden()
+    await modal.ok.click()
+    await modal.waitUntilHidden()
   })
 })
 

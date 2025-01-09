@@ -1863,7 +1863,24 @@ const en: Translations = {
       activationSuccess: 'Email login has been enabled',
       activationSuccessOk: 'Okay',
       confirmPassword: 'Confirm password',
-      confirmActivateCredentials: 'Enable'
+      confirmActivateCredentials: 'Enable',
+      validationErrors: {
+        passwordFormat: 'The password does not meet the requirements',
+        passwordMismatch: 'The passwords do not match'
+      },
+      passwordConstraints: {
+        label: 'Password requirements',
+        length: (min: number, _max: number) =>
+          `length at least ${min} characters`,
+        minLowers: (v: number) =>
+          `at least ${v} ${v > 1 ? 'lowercase letters' : 'lowercase letter'}`,
+        minUppers: (v: number) =>
+          `at least ${v} ${v > 1 ? 'uppercase letters' : 'uppercase letter'}`,
+        minDigits: (v: number) => `at least ${v} ${v > 1 ? 'digits' : 'digit'}`,
+        minSymbols: (v: number) =>
+          `at least ${v} ${v > 1 ? 'special characters' : 'special character'}`
+      },
+      unacceptablePassword: 'The password is too easy to guess'
     },
     notificationsSection: {
       title: 'Email notifications',

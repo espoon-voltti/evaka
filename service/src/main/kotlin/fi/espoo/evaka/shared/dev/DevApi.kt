@@ -180,10 +180,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.auth.PasswordService
-import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
@@ -1644,6 +1641,22 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
             dbc.transaction { tx ->
                 tx.updateLastStrongLogin(clock, id)
                 tx.updateWeakLoginCredentials(clock, id, request.username, password)
+            }
+        }
+    }
+
+    @PutMapping("/password-blacklist")
+    fun upsertPasswordBlacklist(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody request: List<String>,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.upsertPasswordBlacklist(
+                    PasswordBlacklistSource("Dev API", clock.now()),
+                    request.asSequence(),
+                )
             }
         }
     }

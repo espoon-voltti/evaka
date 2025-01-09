@@ -7,11 +7,7 @@ package fi.espoo.evaka
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
-import fi.espoo.evaka.espoo.EspooActionRuleMapping
-import fi.espoo.evaka.espoo.EspooAsyncJob
-import fi.espoo.evaka.espoo.EspooAsyncJobRegistration
-import fi.espoo.evaka.espoo.EspooScheduledJob
-import fi.espoo.evaka.espoo.EspooScheduledJobs
+import fi.espoo.evaka.espoo.*
 import fi.espoo.evaka.espoo.bi.EspooBiClient
 import fi.espoo.evaka.espoo.bi.EspooBiHttpClient
 import fi.espoo.evaka.espoo.bi.EspooBiJob
@@ -39,6 +35,8 @@ import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.PasswordConstraints
+import fi.espoo.evaka.shared.auth.PasswordSpecification
 import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -253,6 +251,18 @@ class EspooConfig {
     ): EspooScheduledJobs = EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env)
 
     @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
+
+    @Bean
+    fun espooPasswordSpecification(): PasswordSpecification =
+        DefaultPasswordSpecification(
+            PasswordConstraints.UNCONSTRAINED.copy(
+                minLength = 15,
+                minLowers = 1,
+                minUppers = 1,
+                minDigits = 1,
+                minSymbols = 1,
+            )
+        )
 }
 
 data class EspooEnv(

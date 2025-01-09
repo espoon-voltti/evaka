@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
+import java.nio.file.Path
 import java.security.KeyStore
 import java.time.Duration
 import java.time.LocalDate
@@ -42,6 +43,7 @@ data class EvakaEnv(
     val personAddressEnvelopeWindowPosition: Rectangle,
     val replacementInvoicesStart: YearMonth?,
     val newCitizenWeakLoginEnabled: Boolean,
+    val passwordBlacklistDirectory: Path?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -79,6 +81,7 @@ data class EvakaEnv(
                     },
                 newCitizenWeakLoginEnabled =
                     env.lookup("evaka.new_citizen_weak_login.enabled") ?: false,
+                passwordBlacklistDirectory = env.lookup("evaka.password_blacklist_directory"),
             )
         }
     }
