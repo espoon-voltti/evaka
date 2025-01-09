@@ -18,10 +18,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.auth.PasswordService
-import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -440,7 +437,13 @@ class SystemController(
         val keycloakEmail: String?,
     )
 
-    data class CitizenWeakLoginRequest(val username: String, val password: Sensitive<String>)
+    data class CitizenWeakLoginRequest(val username: String, val password: Sensitive<String>) {
+        init {
+            if (password.value.length !in PasswordConstraints.SUPPORTED_LENGTH) {
+                throw BadRequest("Invalid password length")
+            }
+        }
+    }
 
     data class EmployeeUserResponse(
         val id: EmployeeId,

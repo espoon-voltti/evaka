@@ -2097,7 +2097,21 @@ export default {
       activationSuccess: 'Sähköpostilla kirjautuminen otettu käyttöön',
       activationSuccessOk: 'Selvä',
       confirmPassword: 'Vahvista salasana',
-      confirmActivateCredentials: 'Ota käyttöön'
+      confirmActivateCredentials: 'Ota käyttöön',
+      passwordMismatch: 'Salasanat eivät täsmää',
+      passwordConstraints: {
+        label: 'Salasanavaatimukset',
+        length: (min: number, max: number) => `${min}-${max} merkkiä`,
+        minLowers: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'pientä kirjainta' : 'pieni kirjain'}`,
+        minUppers: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'isoa kirjainta' : 'iso kirjain'}`,
+        minDigits: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'numeroa' : 'numero'}`,
+        minSymbols: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'erikoismerkkiä' : 'erikoismerkki'}`
+      },
+      unacceptablePassword: 'Salasana on liian helposti arvattava'
     },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',

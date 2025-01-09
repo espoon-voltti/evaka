@@ -7,6 +7,7 @@ import { Queries } from 'lib-common/query'
 import {
   getEmailVerificationStatus,
   getNotificationSettings,
+  getPasswordConstraints,
   sendEmailVerificationCode,
   updateNotificationSettings,
   updatePersonalData,
@@ -41,3 +42,5 @@ export const sendEmailVerificationCodeMutation = q.mutation(
 export const verifyEmailMutation = q.mutation(verifyEmail, [
   emailVerificationStatusQuery
 ])
+
+export const passwordConstraintsQuery = q.query(getPasswordConstraints)

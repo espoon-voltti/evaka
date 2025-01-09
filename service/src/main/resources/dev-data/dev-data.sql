@@ -40,3 +40,9 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80);
 
 UPDATE daycare SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS, VASU_AND_PEDADOC, MOBILE_MESSAGING}';
+
+WITH source AS (
+    INSERT INTO password_blacklist_source (name, imported_at) VALUES ('dev-data', now())
+    RETURNING id
+)
+INSERT INTO password_blacklist (password, source) VALUES ('TestPassword123!', (SELECT id FROM source));

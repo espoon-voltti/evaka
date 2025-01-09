@@ -2096,7 +2096,21 @@ const sv: Translations = {
       activationSuccess: 'E-postinloggning aktiverad',
       activationSuccessOk: 'Klart',
       confirmPassword: 'Bekräfta lösenordet',
-      confirmActivateCredentials: 'Aktivera'
+      confirmActivateCredentials: 'Aktivera',
+      passwordMismatch: 'Salasanat eivät täsmää',
+      passwordConstraints: {
+        label: 'Salasanavaatimukset',
+        length: (min: number, max: number) => `${min}-${max} merkkiä`,
+        minLowers: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'pientä kirjainta' : 'pieni kirjain'}`,
+        minUppers: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'isoa kirjainta' : 'iso kirjain'}`,
+        minDigits: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'numeroa' : 'numero'}`,
+        minSymbols: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'erikoismerkkiä' : 'erikoismerkki'}`
+      },
+      unacceptablePassword: 'Salasana on liian helposti arvattava'
     },
     notificationsSection: {
       title: 'E-postmeddelanden',

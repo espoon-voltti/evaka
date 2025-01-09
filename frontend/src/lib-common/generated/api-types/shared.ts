@@ -213,6 +213,18 @@ export type ParentshipId = Id<'Parentship'>
 
 export type PartnershipId = Id<'Partnership'>
 
+/**
+* Generated from fi.espoo.evaka.shared.auth.PasswordConstraints
+*/
+export interface PasswordConstraints {
+  maxLength: number
+  minDigits: number
+  minLength: number
+  minLowers: number
+  minSymbols: number
+  minUppers: number
+}
+
 export type PaymentId = Id<'Payment'>
 
 export type PedagogicalDocumentId = Id<'PedagogicalDocument'>

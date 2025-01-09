@@ -1858,7 +1858,21 @@ const en: Translations = {
       activationSuccess: 'Email login has been enabled',
       activationSuccessOk: 'Okay',
       confirmPassword: 'Confirm password',
-      confirmActivateCredentials: 'Enable'
+      confirmActivateCredentials: 'Enable',
+      passwordMismatch: 'Salasanat eivät täsmää',
+      passwordConstraints: {
+        label: 'Salasanavaatimukset',
+        length: (min: number, max: number) => `${min}-${max} merkkiä`,
+        minLowers: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'pientä kirjainta' : 'pieni kirjain'}`,
+        minUppers: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'isoa kirjainta' : 'iso kirjain'}`,
+        minDigits: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'numeroa' : 'numero'}`,
+        minSymbols: (v: number) =>
+          `vähintään ${v} ${v > 1 ? 'erikoismerkkiä' : 'erikoismerkki'}`
+      },
+      unacceptablePassword: 'Salasana on liian helposti arvattava'
     },
     notificationsSection: {
       title: 'Email notifications',
