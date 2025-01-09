@@ -37,7 +37,7 @@ export function getLoginUrl(type: 'ad' | 'keycloak' | 'sfi' = 'ad') {
 
 export async function getAuthStatus(): Promise<AuthStatus<User>> {
   return client
-    .get<JsonOf<AuthStatus<User | MobileUser>>>('/auth/status')
+    .get<JsonOf<AuthStatus<User | MobileUser>>>('/employee/auth/status')
     .then(({ data: { user, ...status } }) => {
       if (user?.userType === 'EMPLOYEE') {
         return {

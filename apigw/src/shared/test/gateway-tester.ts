@@ -114,7 +114,7 @@ export class GatewayTester {
             }
       this.nockScope.post('/system/employee-login').reply(200, user)
       await this.client.post(
-        '/api/internal/auth/saml/login/callback',
+        '/api/employee/auth/ad/login/callback',
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         new URLSearchParams(postData),
         {

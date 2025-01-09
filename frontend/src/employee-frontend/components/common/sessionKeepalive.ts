@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export const sessionKeepalive = async () => {
-  const response = await fetch('/api/internal/auth/status', {
+  const response = await fetch('/api/employee/auth/status', {
     method: 'GET',
     credentials: 'include',
     headers: {

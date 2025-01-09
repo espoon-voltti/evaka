@@ -254,7 +254,7 @@ export default React.memo(function AttendanceReservationByChild() {
 
         {featureFlags.aromiIntegration && roles.includes('ADMIN') && (
           <BackendReportDownload
-            href={`/api/internal/employee/aromi?${new URLSearchParams({
+            href={`/api/employee/aromi?${new URLSearchParams({
               start: range.start.formatIso(),
               end: range.end.formatIso(),
               groupIds: groupIds.join(',')

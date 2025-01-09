@@ -210,7 +210,7 @@ const envVariables = {
    * SAML service provider callback URL for AD authentication.
    *
    * This is the URL for our SAML authentication response endpoint
-   * (e.g. https://evaka.example.com/api/internal/auth/saml/login/callback)
+   * (e.g. https://evaka.example.com/api/employee/auth/ad/login/callback)
    */
   AD_SAML_CALLBACK_URL: unset<string>(),
   /**
@@ -305,7 +305,7 @@ const envVariables = {
    * SAML service provider callback URL for citizen Keycloak authentication.
    *
    * This is the URL for our SAML authentication response endpoint
-   * (e.g. https://evaka.example.com/api/internal/auth/evaka/login/callback)
+   * (e.g. https://evaka.example.com/api/employee/auth/ad/login/callback)
    */
   EVAKA_SAML_CALLBACK_URL: unset<string>(),
   /**
@@ -337,7 +337,7 @@ const envVariables = {
    * SAML service provider callback URL for citizen Keycloak authentication.
    *
    * This is the URL for our SAML authentication response endpoint
-   * (e.g. https://evaka.example.com/api/application/auth/evaka-customer/login/callback)
+   * (e.g. https://evaka.example.com/api/citizen/auth/keycloak/login/callback)
    */
   EVAKA_CUSTOMER_SAML_CALLBACK_URL: unset<string>(),
   /**
@@ -433,7 +433,7 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
         SFI_MODE: 'mock',
 
         EVAKA_SAML_CALLBACK_URL:
-          'http://localhost:9099/api/internal/auth/evaka/login/callback',
+          'http://localhost:9099/api/employee/auth/ad/login/callback',
         EVAKA_SAML_ENTRYPOINT:
           'http://localhost:8080/auth/realms/evaka/protocol/saml',
         EVAKA_SAML_ISSUER: 'evaka',
@@ -441,7 +441,7 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
         EVAKA_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem',
 
         EVAKA_CUSTOMER_SAML_CALLBACK_URL:
-          'http://localhost:9099/api/application/auth/evaka-customer/login/callback',
+          'http://localhost:9099/api/citizen/auth/keycloak/login/callback',
         EVAKA_CUSTOMER_SAML_ENTRYPOINT:
           'http://localhost:8080/auth/realms/evaka-customer/protocol/saml',
         EVAKA_CUSTOMER_SAML_ISSUER: 'evaka-customer',

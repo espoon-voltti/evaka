@@ -7,7 +7,7 @@ import axios, { AxiosError } from 'axios'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 
-export const API_URL = '/api/internal'
+export const API_URL = '/api'
 
 export const client = axios.create({
   baseURL: API_URL

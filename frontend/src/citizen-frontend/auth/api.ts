@@ -18,7 +18,7 @@ export type AuthStatus =
     }
 
 export async function getAuthStatus(): Promise<AuthStatus> {
-  return (await client.get<JsonOf<AuthStatus>>('/auth/status')).data
+  return (await client.get<JsonOf<AuthStatus>>('/citizen/auth/status')).data
 }
 
 interface WeakLoginRequest {
@@ -31,5 +31,5 @@ export async function authWeakLogin(
   password: string
 ): Promise<void> {
   const reqBody: WeakLoginRequest = { username, password }
-  await client.post('/auth/weak-login', reqBody)
+  await client.post('/citizen/auth/weak-login', reqBody)
 }
