@@ -38,7 +38,7 @@ describe('Mobile device pairing process', () => {
         longTermToken: token
       })
     await tester.client.post(
-      '/api/internal/auth/mobile',
+      '/api/employee-mobile/auth/finish-pairing',
       {
         id: pairingId,
         challengeKey: 'challenge',
@@ -57,9 +57,7 @@ describe('Mobile device pairing process', () => {
     await finishPairing()
 
     tester.nockScope.get('/employee-mobile/some-proxied-api').reply(200)
-    const res = await tester.client.get(
-      '/api/internal/employee-mobile/some-proxied-api'
-    )
+    const res = await tester.client.get('/api/employee-mobile/some-proxied-api')
     tester.nockScope.done()
     expect(res.status).toBe(200)
   })
@@ -73,7 +71,7 @@ describe('Mobile device pairing process', () => {
       .get(`/system/mobile-identity/${longTermToken}`)
       .reply(200, { id: mobileDeviceId, longTermToken })
     tester.nockScope.post(`/system/mobile-devices/${mobileDeviceId}`).reply(200)
-    const res = await tester.client.get('/api/internal/auth/status')
+    const res = await tester.client.get('/api/employee-mobile/auth/status')
     tester.nockScope.done()
     expect(res.status).toBe(200)
   })
@@ -81,7 +79,7 @@ describe('Mobile device pairing process', () => {
     const longTermToken = await finishPairing()
     await tester.expireSession()
     tester.nockScope.get(`/system/mobile-identity/${longTermToken}`).reply(404)
-    const res = await tester.client.get('/api/internal/auth/status')
+    const res = await tester.client.get('/api/employee-mobile/auth/status')
     tester.nockScope.done()
     expect(res.data).toStrictEqual({ loggedIn: false, apiVersion: appCommit })
     expect(await tester.getCookie(mobileLongTermCookieName)).toBeUndefined()
@@ -89,7 +87,7 @@ describe('Mobile device pairing process', () => {
   it("expires the session if /auth/status can't find the mobile device", async () => {
     await finishPairing()
     tester.nockScope.post(`/system/mobile-devices/${mobileDeviceId}`).reply(404)
-    const res = await tester.client.get('/api/internal/auth/status')
+    const res = await tester.client.get('/api/employee-mobile/auth/status')
     expect(res.data).toStrictEqual({ loggedIn: false, apiVersion: appCommit })
     expect(await tester.getCookie(sessionCookie('employee'))).toBeUndefined()
   })

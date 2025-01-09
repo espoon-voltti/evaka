@@ -17,7 +17,7 @@ import { client } from '../client'
 
 export async function getAuthStatus(): Promise<AuthStatus<MobileUser>> {
   return client
-    .get<JsonOf<AuthStatus<User | MobileUser>>>('/auth/status')
+    .get<JsonOf<AuthStatus<User | MobileUser>>>('/employee-mobile/auth/status')
     .then(({ data: { user, ...status } }) => {
       if (user?.userType === 'MOBILE') {
         return { user, ...status }
@@ -38,7 +38,7 @@ export function pinLogin(
   pin: string
 ): Promise<Result<PinLoginResponse>> {
   return client
-    .post<JsonOf<PinLoginResponse>>(`/auth/pin-login`, {
+    .post<JsonOf<PinLoginResponse>>(`/employee-mobile/auth/pin-login`, {
       employeeId,
       pin
     })
@@ -49,7 +49,7 @@ export function pinLogin(
 
 export function pinLogout(): Promise<Result<void>> {
   return client
-    .post(`/auth/pin-logout`)
+    .post(`/employee-mobile/auth/pin-logout`)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
@@ -73,7 +73,7 @@ export function authMobile(
   responseKey: string
 ): Promise<Result<void>> {
   return client
-    .post<JsonOf<void>>(`/auth/mobile`, {
+    .post<JsonOf<void>>(`/employee-mobile/auth/finish-pairing`, {
       id,
       challengeKey,
       responseKey

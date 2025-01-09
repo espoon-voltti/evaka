@@ -30,16 +30,16 @@ const mockUser: DevCitizen & CitizenUser = {
 }
 
 const SP_CALLBACK_URL =
-  'https://saml-sp.qwerty.local/api/application/auth/saml/logout/callback'
+  'https://saml-sp.qwerty.local/api/citizen/auth/sfi/logout/callback'
 const SP_DOMAIN = new URL(SP_CALLBACK_URL).origin
 const IDP_ENTRY_POINT_URL = 'https://identity-provider.asdf.local/idp'
 
 // Helper constants to ensure correct endpoints in all cases
-const SP_LOGIN_CALLBACK_ENDPOINT = '/api/application/auth/saml/login/callback'
-const SP_LOGOUT_CALLBACK_ENDPOINT = '/api/application/auth/saml/logout/callback'
+const SP_LOGIN_CALLBACK_ENDPOINT = '/api/citizen/auth/sfi/login/callback'
+const SP_LOGOUT_CALLBACK_ENDPOINT = '/api/citizen/auth/sfi/logout/callback'
 const SP_LOGIN_CALLBACK_URL = `${SP_DOMAIN}${SP_LOGIN_CALLBACK_ENDPOINT}`
 const SP_LOGOUT_CALLBACK_URL = `${SP_DOMAIN}${SP_LOGOUT_CALLBACK_ENDPOINT}`
-const SECURED_ENDPOINT = `/api/application/auth/status`
+const SECURED_ENDPOINT = `/api/citizen/auth/status`
 
 // Use test certificates to validate actual SAML message parsing while not using
 // any real certificates/domains.

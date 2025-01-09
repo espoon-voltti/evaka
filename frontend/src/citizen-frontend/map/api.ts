@@ -34,7 +34,7 @@ type AutocompleteResponse = {
 export const autocompleteAddress = async (
   text: string
 ): Promise<MapAddress[]> => {
-  const url = '/api/application/map-api/autocomplete'
+  const url = '/api/citizen/public/map-api/autocomplete'
 
   return axios
     .get<JsonOf<AutocompleteResponse>>(url, {
@@ -137,7 +137,7 @@ export async function fetchUnitsWithDistances(
 
   return axios
     .post<JsonOf<ItineraryResponse>>(
-      '/api/application/map-api/query',
+      '/api/citizen/public/map-api/query',
       {
         query
       },
@@ -203,7 +203,7 @@ export const fetchDistance = async (
 
   return axios
     .post<JsonOf<ItineraryResponse>>(
-      '/api/application/map-api/query',
+      '/api/citizen/public/map-api/query',
       {
         query
       },
