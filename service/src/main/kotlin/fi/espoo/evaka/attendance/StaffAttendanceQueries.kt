@@ -6,6 +6,7 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
@@ -13,9 +14,11 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.asHelsinkiDateTimeRange
+import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
+import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getStaffAttendances(
     unitId: DaycareId,
@@ -119,12 +122,14 @@ fun Database.Transaction.markStaffArrival(
     groupId: GroupId,
     arrivalTime: HelsinkiDateTime,
     occupancyCoefficient: BigDecimal,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ): StaffAttendanceRealtimeId =
     createUpdate {
             sql(
                 """
-INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, occupancy_coefficient) VALUES (
-    ${bind(employeeId)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(occupancyCoefficient)}
+INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, occupancy_coefficient, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by) VALUES (
+    ${bind(employeeId)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(occupancyCoefficient)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}
 )
 RETURNING id
 """
@@ -152,13 +157,31 @@ fun Database.Transaction.upsertStaffAttendance(
     occupancyCoefficient: BigDecimal?,
     type: StaffAttendanceType,
     departedAutomatically: Boolean = false,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ): StaffAttendanceRealtimeId =
     if (attendanceId == null) {
         createUpdate {
                 sql(
                     """
-INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically)
-VALUES (${bind(employeeId)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(departureTime)}, ${bind(occupancyCoefficient)}, ${bind(type)}, ${bind(departedAutomatically)})
+INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by, departed_added_at, departed_added_by, departed_modified_at, departed_modified_by)
+VALUES (
+    ${bind(employeeId)},
+    ${bind(groupId)},
+    ${bind(arrivalTime)},
+    ${bind(departureTime)},
+    ${bind(occupancyCoefficient)},
+    ${bind(type)},
+    ${bind(departedAutomatically)},
+    ${bind(modifiedAt)},
+    ${bind(modifiedBy)},
+    ${bind(modifiedAt)},
+    ${bind(modifiedBy)},
+    ${bind(modifiedAt.takeIf { departureTime != null })},
+    ${bind(modifiedBy.takeIf { departureTime != null })},
+    ${bind(modifiedAt.takeIf { departureTime != null })},
+    ${bind(modifiedBy.takeIf { departureTime != null })}
+)
 RETURNING id
 """
                 )
@@ -170,7 +193,18 @@ RETURNING id
                 sql(
                     """
 UPDATE staff_attendance_realtime
-SET group_id = ${bind(groupId)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, occupancy_coefficient = ${bind(occupancyCoefficient)}, type = ${bind(type)}, departed_automatically = ${bind(departedAutomatically)}
+SET group_id = ${bind(groupId)},
+    arrived = ${bind(arrivalTime)},
+    departed = ${bind(departureTime)},
+    occupancy_coefficient = ${bind(occupancyCoefficient)},
+    type = ${bind(type)},
+    departed_automatically = ${bind(departedAutomatically)},
+    arrived_modified_at = CASE WHEN arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE arrived_modified_at END,
+    arrived_modified_by = CASE WHEN arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE arrived_modified_by END,
+    departed_added_at = CASE WHEN arrived_added_at IS NOT NULL AND departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(departed_added_at, ${bind(modifiedAt)}) ELSE departed_added_at END,
+    departed_added_by = CASE WHEN arrived_added_by IS NOT NULL AND departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(departed_added_by, ${bind(modifiedBy)}) ELSE departed_added_by END,
+    departed_modified_at = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE departed_modified_at END,
+    departed_modified_by = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE departed_modified_by END
 WHERE id = ${bind(attendanceId)}
 """
                 )
@@ -194,12 +228,16 @@ WHERE id = ${bind(attendanceId)}
 fun Database.Transaction.markStaffDeparture(
     attendanceId: StaffAttendanceRealtimeId,
     departureTime: HelsinkiDateTime,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
 ) =
     createUpdate {
             sql(
                 """
 UPDATE staff_attendance_realtime 
-SET departed = ${bind(departureTime)}
+SET departed = ${bind(departureTime)},
+    departed_modified_at = ${bind(modifiedAt)},
+    departed_modified_by = ${bind(modifiedBy)}
 WHERE id = ${bind(attendanceId)} AND departed IS NULL AND arrived < ${bind(departureTime)}
 """
             )
@@ -306,6 +344,14 @@ data class RawAttendance(
     val firstName: String,
     val lastName: String,
     val departedAutomatically: Boolean,
+    val arrivedAddedAt: HelsinkiDateTime?,
+    @Nested("arrived_added_by") val arrivedAddedBy: EvakaUser?,
+    val arrivedModifiedAt: HelsinkiDateTime?,
+    @Nested("arrived_modified_by") val arrivedModifiedBy: EvakaUser?,
+    val departedAddedAt: HelsinkiDateTime?,
+    @Nested("departed_added_by") val departedAddedBy: EvakaUser?,
+    val departedModifiedAt: HelsinkiDateTime?,
+    @Nested("departed_modified_by") val departedModifiedBy: EvakaUser?,
 )
 
 fun Database.Read.getStaffAttendancesForDateRange(
@@ -328,11 +374,31 @@ SELECT
     emp.first_name,
     emp.last_name,
     soc.coefficient AS currentOccupancyCoefficient,
-    sa.departed_automatically
+    sa.departed_automatically,
+    sa.arrived_added_at,
+    arrived_added_by.id AS arrived_added_by_id,
+    arrived_added_by.name AS arrived_added_by_name,
+    arrived_added_by.type AS arrived_added_by_type,
+    sa.arrived_modified_at,
+    arrived_modified_by.id AS arrived_modified_by_id,
+    arrived_modified_by.name AS arrived_modified_by_name,
+    arrived_modified_by.type AS arrived_modified_by_type,
+    sa.departed_added_at,
+    departed_added_by.id AS departed_added_by_id,
+    departed_added_by.name AS departed_added_by_name,
+    departed_added_by.type AS departed_added_by_type,
+    sa.departed_modified_at,
+    departed_modified_by.id AS departed_modified_by_id,
+    departed_modified_by.name AS departed_modified_by_name,
+    departed_modified_by.type AS departed_modified_by_type
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
 LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND soc.employee_id = emp.id
+LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sa.arrived_added_by
+LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sa.arrived_modified_by
+LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_added_by
+LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
 WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
 """
             )
@@ -359,11 +425,31 @@ SELECT
     emp.first_name,
     emp.last_name,
     soc.coefficient AS currentOccupancyCoefficient,
-    sa.departed_automatically
+    sa.departed_automatically,
+    sa.arrived_added_at,
+    arrived_added_by.id AS arrived_added_by_id,
+    arrived_added_by.name AS arrived_added_by_name,
+    arrived_added_by.type AS arrived_added_by_type,
+    sa.arrived_modified_at,
+    arrived_modified_by.id AS arrived_modified_by_id,
+    arrived_modified_by.name AS arrived_modified_by_name,
+    arrived_modified_by.type AS arrived_modified_by_type,
+    sa.departed_added_at,
+    departed_added_by.id AS departed_added_by_id,
+    departed_added_by.name AS departed_added_by_name,
+    departed_added_by.type AS departed_added_by_type,
+    sa.departed_modified_at,
+    departed_modified_by.id AS departed_modified_by_id,
+    departed_modified_by.name AS departed_modified_by_name,
+    departed_modified_by.type AS departed_modified_by_type
 FROM staff_attendance_realtime sa
 LEFT JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
 LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND soc.employee_id = emp.id
+LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sa.arrived_added_by
+LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sa.arrived_modified_by
+LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_added_by
+LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
 WHERE (dg.daycare_id IS NULL OR dg.daycare_id = ${bind(unitId)}) 
     AND emp.id = ${bind(employeeId)} 
     AND between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, sa.arrived)
@@ -393,9 +479,29 @@ SELECT
     emp.first_name,
     emp.last_name,
     0 AS currentOccupancyCoefficient,
-    sa.departed_automatically
+    sa.departed_automatically,
+    sa.arrived_added_at,
+    arrived_added_by.id AS arrived_added_by_id,
+    arrived_added_by.name AS arrived_added_by_name,
+    arrived_added_by.type AS arrived_added_by_type,
+    sa.arrived_modified_at,
+    arrived_modified_by.id AS arrived_modified_by_id,
+    arrived_modified_by.name AS arrived_modified_by_name,
+    arrived_modified_by.type AS arrived_modified_by_type,
+    sa.departed_added_at,
+    departed_added_by.id AS departed_added_by_id,
+    departed_added_by.name AS departed_added_by_name,
+    departed_added_by.type AS departed_added_by_type,
+    sa.departed_modified_at,
+    departed_modified_by.id AS departed_modified_by_id,
+    departed_modified_by.name AS departed_modified_by_name,
+    departed_modified_by.type AS departed_modified_by_type
 FROM staff_attendance_realtime sa
 JOIN employee emp ON sa.employee_id = emp.id
+LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sa.arrived_added_by
+LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sa.arrived_modified_by
+LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_added_by
+LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
 WHERE sa.employee_id = ANY(${bind(employeeIds)}) AND sa.group_id IS NULL AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
 """
             )
@@ -464,7 +570,10 @@ GROUP BY employee_id
         }
         .toMap { columnPair("employee_id", "group_ids") }
 
-fun Database.Transaction.addMissingStaffAttendanceDepartures(now: HelsinkiDateTime) {
+fun Database.Transaction.addMissingStaffAttendanceDepartures(
+    now: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+) {
     execute {
         sql(
             """ 
@@ -479,7 +588,9 @@ WITH missing_planned_departures AS (
 )
 UPDATE staff_attendance_realtime realtime
 SET departed = missing_planned_departures.planned_departure,
-    departed_automatically = true
+    departed_automatically = true,
+    departed_modified_at = ${bind(now)},
+    departed_modified_by = ${bind(modifiedBy)}
 FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.id
 """
         )
@@ -490,7 +601,9 @@ FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.i
             """
 UPDATE staff_attendance_realtime a
 SET departed = a.arrived + interval '12 hours',
-    departed_automatically = true
+    departed_automatically = true,
+    departed_modified_at = ${bind(now)},
+    departed_modified_by = ${bind(modifiedBy)}
 WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
 """
         )
