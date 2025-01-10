@@ -136,6 +136,9 @@ export default React.memo(function MessagesPage() {
                     allowedAccounts={
                       receivers.getOrElse(null)?.childrenToMessageAccounts ?? {}
                     }
+                    accountDetails={
+                      receivers.getOrElse(null)?.messageAccounts ?? []
+                    }
                     onThreadDeleted={() => {
                       onSelectedThreadDeleted()
                       addTimedNotification({

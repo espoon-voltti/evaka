@@ -118,7 +118,11 @@ const ReceivedThread = React.memo(function ReceivedThread({
   const { i18n } = useTranslation()
   const { setReplyContent, getReplyContent } = useContext(MessageContext)
 
-  const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
+  const { onToggleRecipient, recipients } = useRecipients(
+    messages,
+    accountId,
+    null
+  )
   const [replyEditorVisible, setReplyEditorVisible] = useState(
     () => getReplyContent(threadId) !== ''
   )

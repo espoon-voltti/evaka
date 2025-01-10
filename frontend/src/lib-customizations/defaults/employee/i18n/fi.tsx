@@ -62,7 +62,8 @@ export const fi = {
     assistanceNeedPreschoolDecision: 'Päätös tuesta esiopetuksessa',
     clubTerm: 'Kerhon lukukausi',
     clubTerms: 'Kerhojen lukukaudet',
-    placementTool: 'Optimointityökalu'
+    placementTool: 'Optimointityökalu',
+    outOfOffice: 'Poissaoloviesti'
   },
   common: {
     yes: 'Kyllä',
@@ -5020,6 +5021,15 @@ export const fi = {
     preschoolTermNotification: 'Hakemukset luodaan seuravaan esiopetuskauteen:',
     preschoolTermWarning:
       'eVakasta puuttuu seuraavan esiopetuskauden määrittely. Esiopetuskausi tarvitaan hakemusten luontia varten.'
+  },
+  outOfOffice: {
+    menu: 'Johtajan poissaolojakso',
+    title: 'Poissaolojakso',
+    description:
+      'Voit lisätä tänne tiedon esimerkiksi lomastasi. Lasten huoltajat näkevät poissaollessasi ilmoituksen, että et ole paikalla.',
+    header: 'Poissaolojakso',
+    noFutureOutOfOffice: 'Ei tulevia poissaoloja',
+    addOutOfOffice: 'Lisää poissaolojakso'
   },
   components
 }

@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -186,6 +187,11 @@ enum class AccountType : DatabaseEnum {
 }
 
 data class MessageAccount(val id: MessageAccountId, val name: String, val type: AccountType)
+
+data class MessageAccountWithPresence(
+    val account: MessageAccount,
+    val outOfOffice: FiniteDateRange?,
+)
 
 data class Group(
     @PropagateNull val id: GroupId,

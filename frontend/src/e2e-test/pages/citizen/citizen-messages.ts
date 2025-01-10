@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
+
 import {
   Element,
   ElementCollection,
@@ -37,6 +39,7 @@ export default class CitizenMessagesPage {
   #threadUrgent: Element
   newMessageButton: Element
   fileUpload: Element
+  #threadOutOfOfficeInfo: Element
   constructor(private readonly page: Page) {
     this.messageReplyContent = new TextInput(
       page.findByDataQa('message-reply-content')
@@ -60,6 +63,9 @@ export default class CitizenMessagesPage {
       .findByDataQa('urgent')
     this.newMessageButton = page.findAllByDataQa('new-message-btn').first()
     this.fileUpload = page.findByDataQa('upload-message-attachment')
+    this.#threadOutOfOfficeInfo = page
+      .findByDataQa('thread-reader')
+      .findByDataQa('out-of-office-info')
   }
 
   replyButtonTag = 'message-reply-editor-btn'
@@ -201,6 +207,15 @@ export default class CitizenMessagesPage {
 
     await editor.sendMessage()
   }
+
+  async assertThreadOutOfOffice(ooo: {
+    name: string
+    period: FiniteDateRange
+  }) {
+    await this.#threadOutOfOfficeInfo.assertText(
+      (t) => t.includes(ooo.name) && t.includes(ooo.period.format())
+    )
+  }
 }
 
 export class CitizenMessageEditor extends Element {
@@ -210,6 +225,7 @@ export class CitizenMessageEditor extends Element {
   readonly title = new TextInput(this.findByDataQa('input-title'))
   readonly content = new TextInput(this.findByDataQa('input-content'))
   readonly #sendMessage = this.findByDataQa('send-message-btn')
+  readonly #outOfOfficeInfo = this.findByDataQa('out-of-office-info')
 
   secondaryRecipient(name: string) {
     return this.find(`[data-qa="secondary-recipient"]`, { hasText: name })
@@ -249,5 +265,15 @@ export class CitizenMessageEditor extends Element {
   async sendMessage() {
     await this.#sendMessage.click()
     await this.waitUntilHidden()
+  }
+
+  async assertOutOfOffice(ooo: { name: string; period: FiniteDateRange }) {
+    await this.#outOfOfficeInfo.assertText(
+      (t) => t.includes(ooo.name) && t.includes(ooo.period.format())
+    )
+  }
+
+  async assertNoOutOfOffice() {
+    await this.#outOfOfficeInfo.waitUntilHidden()
   }
 }
