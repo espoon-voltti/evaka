@@ -773,9 +773,8 @@ sealed interface Action {
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
-            IsEmployee.andIsDecisionMakerForAssistanceNeedDecision(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inSelectedUnitOfAssistanceNeedDecision(),
+                .inSelectedUnitOfAssistanceNeedDecision(ChildAclConfig(application = false)),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
         DOWNLOAD(HasGlobalRole(ADMIN)),
