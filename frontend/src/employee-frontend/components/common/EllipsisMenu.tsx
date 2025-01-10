@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
+import { useBoolean } from 'lib-common/form/hooks'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
@@ -29,8 +30,7 @@ export default React.memo(function EllipsisMenu({
   items,
   ['data-qa']: dataQa
 }: Props) {
-  const [showMenu, setShowMenu] = useState(false)
-  const closeMenu = () => setShowMenu(false)
+  const [isMenuOpen, { toggle: toggleMenu, off: closeMenu }] = useBoolean(false)
 
   const { i18n } = useTranslation()
 
@@ -42,13 +42,13 @@ export default React.memo(function EllipsisMenu({
             size="m"
             icon={faEllipsisVAlt}
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-              setShowMenu((value) => !value)
+              toggleMenu()
               e.stopPropagation()
             }}
             data-qa={dataQa}
-            aria-label={showMenu ? i18n.common.close : i18n.common.open}
+            aria-label={isMenuOpen ? i18n.common.close : i18n.common.open}
           />
-          {showMenu && <MenuList items={items} closeMenu={closeMenu} />}
+          {isMenuOpen && <MenuList items={items} closeMenu={closeMenu} />}
         </>
       )}
     </Container>

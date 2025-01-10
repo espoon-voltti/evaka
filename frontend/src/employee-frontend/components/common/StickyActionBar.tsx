@@ -10,14 +10,16 @@ import colors from 'lib-customizations/common'
 
 type Props = {
   align: 'center' | 'left' | 'right'
+  'data-qa'?: string
 }
 
 export default React.memo(function StickyActionBar({
   align,
+  ['data-qa']: dataQa,
   children
 }: Props & { children: React.ReactNode | React.ReactNodeArray }) {
   return (
-    <Bar>
+    <Bar data-qa={dataQa}>
       <Content align={align}>{children}</Content>
     </Bar>
   )

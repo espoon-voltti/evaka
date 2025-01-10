@@ -1,245 +1,203 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationSummary,
+  SimpleApplicationAction as SimpleApplicationActionType
+} from 'lib-common/generated/api-types/application'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { useMutation } from 'lib-common/query'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import ActionCheckbox from '../../components/applications/ActionCheckbox'
 import PrimaryAction from '../../components/applications/PrimaryAction'
-import {
-  cancelApplication,
-  simpleApplicationAction
-} from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
 import EllipsisMenu, { MenuItem } from '../common/EllipsisMenu'
-import { ApplicationSummaryStatusOptions } from '../common/Filters'
 
-export type Action = {
+import {
+  cancelApplicationMutation,
+  simpleApplicationActionMutation
+} from './queries'
+
+export type BaseAction = {
   id: string
   label: string
-  enabled: boolean
-  disabled?: boolean
-  onClick: () => undefined | void
-  primaryStatus?: ApplicationSummaryStatusOptions
+  primary?: boolean
 }
+
+export type SimpleApplicationMutationAction = BaseAction & {
+  actionType: SimpleApplicationActionType
+}
+
+export type OnClickAction = BaseAction & {
+  onClick: () => void
+}
+
+export function isSimpleApplicationMutationAction(
+  action: ApplicationAction
+): action is SimpleApplicationMutationAction {
+  return 'actionType' in action
+}
+
+export type ApplicationAction = SimpleApplicationMutationAction | OnClickAction
 
 type Props = {
   application: ApplicationSummary
-  reloadApplications: () => void
+  actionInProgress: boolean
+  onActionStarted: () => void
+  onActionEnded: () => void
 }
 
 export default React.memo(function ApplicationActions({
   application,
-  reloadApplications
+  actionInProgress,
+  onActionStarted,
+  onActionEnded
 }: Props) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const { setErrorMessage } = useContext(UIContext)
-  const [actionInFlight, setActionInFlight] = useState(false)
   const [confirmingApplicationCancel, setConfirmingApplicationCancel] =
     useState(false)
 
-  const handlePromise = (promise: Promise<void>) => {
-    void promise
-      .then(() => reloadApplications())
-      .catch(() =>
-        setErrorMessage({
-          type: 'error',
-          title: i18n.common.error.unknown,
-          resolveLabel: i18n.common.ok
-        })
-      )
-      .finally(() => {
-        setActionInFlight(false)
-        setConfirmingApplicationCancel(false)
-      })
-  }
-
-  const actions: Action[] = useMemo(
-    () => [
-      {
-        id: 'move-to-waiting-placement',
-        label: i18n.applications.actions.moveToWaitingPlacement,
-        enabled: application.status === 'SENT',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'MOVE_TO_WAITING_PLACEMENT'
-            })
-          )
-        }
-      },
-      {
-        id: 'return-to-sent',
-        label: i18n.applications.actions.returnToSent,
-        enabled:
-          application.status === 'WAITING_PLACEMENT' ||
-          application.status === 'CANCELLED',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'RETURN_TO_SENT'
-            })
-          )
-        }
-      },
-      {
-        id: 'cancel-application',
-        label: i18n.applications.actions.cancelApplication,
-        enabled:
-          application.status === 'SENT' ||
-          application.status === 'WAITING_PLACEMENT',
-        disabled: actionInFlight,
-        onClick: () => {
-          setConfirmingApplicationCancel(true)
-        }
-      },
-      {
-        id: application.checkedByAdmin ? 'create-placement-plan' : 'check',
-        label: application.checkedByAdmin
-          ? i18n.applications.actions.createPlacementPlan
-          : i18n.applications.actions.check,
-        enabled: application.status === 'WAITING_PLACEMENT',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          if (application.checkedByAdmin) {
-            void navigate(`/applications/${application.id}/placement`)
-          } else {
-            void navigate(`/applications/${application.id}`)
+  const actions: ApplicationAction[] = useMemo(() => {
+    switch (application.status) {
+      case 'CREATED':
+        return []
+      case 'SENT':
+        return [
+          {
+            id: 'move-to-waiting-placement',
+            label: i18n.applications.actions.moveToWaitingPlacement,
+            actionType: 'MOVE_TO_WAITING_PLACEMENT'
+          },
+          {
+            id: 'cancel-application',
+            label: i18n.applications.actions.cancelApplication,
+            onClick: () => setConfirmingApplicationCancel(true)
           }
-        },
-        primaryStatus: 'WAITING_PLACEMENT'
-      },
-      {
-        id: 'cancel-placement-plan',
-        label: i18n.applications.actions.cancelPlacementPlan,
-        enabled: application.status === 'WAITING_DECISION',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'CANCEL_PLACEMENT_PLAN'
-            })
-          )
-        }
-      },
-      {
-        id: 'edit-decisions',
-        label: i18n.applications.actions.editDecisions,
-        enabled: application.status === 'WAITING_DECISION',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          void navigate(`/applications/${application.id}/decisions`)
-        },
-        primaryStatus: 'WAITING_DECISION'
-      },
-      {
-        id: 'send-decisions-without-proposal',
-        label: i18n.applications.actions.sendDecisionsWithoutProposal,
-        enabled: application.status === 'WAITING_DECISION',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'SEND_DECISIONS_WITHOUT_PROPOSAL'
-            })
-          )
-        }
-      },
-      {
-        id: 'send-placement-proposal',
-        label: i18n.applications.actions.sendPlacementProposal,
-        enabled: application.status === 'WAITING_DECISION',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'SEND_PLACEMENT_PROPOSAL'
-            })
-          )
-        }
-      },
-      {
-        id: 'withdraw-placement-proposal',
-        label: i18n.applications.actions.withdrawPlacementProposal,
-        enabled: application.status === 'WAITING_UNIT_CONFIRMATION',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'WITHDRAW_PLACEMENT_PROPOSAL'
-            })
-          )
-        }
-      },
-      {
-        id: 'confirm-decision-mailed',
-        label: i18n.applications.actions.confirmDecisionMailed,
-        enabled: application.status === 'WAITING_MAILING',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'CONFIRM_DECISION_MAILED'
-            })
-          )
-        }
-      }
-    ],
-    [i18n, application] // eslint-disable-line react-hooks/exhaustive-deps
-  )
+        ]
+      case 'WAITING_PLACEMENT':
+        return [
+          {
+            id: 'return-to-sent',
+            label: i18n.applications.actions.returnToSent,
+            actionType: 'RETURN_TO_SENT'
+          },
+          {
+            id: 'cancel-application',
+            label: i18n.applications.actions.cancelApplication,
+            onClick: () => setConfirmingApplicationCancel(true)
+          },
+          {
+            id: application.checkedByAdmin ? 'create-placement-plan' : 'check',
+            label: application.checkedByAdmin
+              ? i18n.applications.actions.createPlacementPlan
+              : i18n.applications.actions.check,
+            onClick: () => {
+              if (application.checkedByAdmin) {
+                void navigate(`/applications/${application.id}/placement`)
+              } else {
+                void navigate(`/applications/${application.id}`)
+              }
+            },
+            primary: true
+          }
+        ]
+      case 'WAITING_DECISION':
+        return [
+          {
+            id: 'cancel-placement-plan',
+            label: i18n.applications.actions.cancelPlacementPlan,
+            actionType: 'CANCEL_PLACEMENT_PLAN'
+          },
+          {
+            id: 'edit-decisions',
+            label: i18n.applications.actions.editDecisions,
+            onClick: () => {
+              void navigate(`/applications/${application.id}/decisions`)
+            },
+            primary: true
+          },
+          {
+            id: 'send-decisions-without-proposal',
+            label: i18n.applications.actions.sendDecisionsWithoutProposal,
+            actionType: 'SEND_DECISIONS_WITHOUT_PROPOSAL'
+          },
+          {
+            id: 'send-placement-proposal',
+            label: i18n.applications.actions.sendPlacementProposal,
+            actionType: 'SEND_PLACEMENT_PROPOSAL'
+          }
+        ]
+      case 'WAITING_UNIT_CONFIRMATION':
+        return [
+          {
+            id: 'withdraw-placement-proposal',
+            label: i18n.applications.actions.withdrawPlacementProposal,
+            actionType: 'WITHDRAW_PLACEMENT_PROPOSAL'
+          }
+        ]
+      case 'WAITING_MAILING':
+        return [
+          {
+            id: 'confirm-decision-mailed',
+            label: i18n.applications.actions.confirmDecisionMailed,
+            actionType: 'CONFIRM_DECISION_MAILED'
+          }
+        ]
+      case 'WAITING_CONFIRMATION':
+        return []
+      case 'ACTIVE':
+        return []
+      case 'REJECTED':
+        return []
+      case 'CANCELLED':
+        return [
+          {
+            id: 'return-to-sent',
+            label: i18n.applications.actions.returnToSent,
+            actionType: 'RETURN_TO_SENT'
+          }
+        ]
+    }
+  }, [application, navigate, i18n.applications.actions])
 
-  const applicableActions = useMemo(
-    () => actions.filter(({ enabled }) => enabled),
-    [actions]
-  )
   const primaryAction = useMemo(
-    () => actions.find((action) => action.primaryStatus === application.status),
-    [application.status, actions]
+    () => actions.find((action) => action.primary),
+    [actions]
   )
 
   return (
     <>
       <ActionsContainer>
-        <PrimaryAction action={primaryAction} />
-        <ActionMenu actions={applicableActions} />
+        <PrimaryAction
+          applicationId={application.id}
+          action={primaryAction}
+          actionInProgress={actionInProgress}
+          onActionStarted={onActionStarted}
+          onActionEnded={onActionEnded}
+        />
+        <ActionMenu
+          applicationId={application.id}
+          actions={actions}
+          actionInProgress={actionInProgress}
+        />
         <ActionCheckbox applicationId={application.id} />
       </ActionsContainer>
       {confirmingApplicationCancel && (
         <ConfirmCancelApplicationModal
           application={application}
-          onSubmit={() => setActionInFlight(true)}
-          handlePromise={handlePromise}
           onClose={() => setConfirmingApplicationCancel(false)}
         />
       )}
@@ -250,38 +208,29 @@ export default React.memo(function ApplicationActions({
 const ConfirmCancelApplicationModal = React.memo(
   function ConfirmCancelApplicationModal({
     application,
-    onSubmit,
-    handlePromise,
     onClose
   }: {
     application: ApplicationSummary
-    onSubmit: () => void
-    handlePromise: (promise: Promise<void>) => void
     onClose: () => void
   }) {
     const { i18n } = useTranslation()
     const [confidential, setConfidential] = useState<boolean | null>(null)
     return (
-      <InfoModal
+      <MutateFormModal
         type="warning"
         title={i18n.applications.actions.cancelApplicationConfirm}
-        resolve={{
-          action: () => {
-            onSubmit()
-            handlePromise(
-              cancelApplication({
-                applicationId: application.id,
-                confidential
-              })
-            )
-          },
-          label: i18n.common.confirm,
-          disabled: application.confidential === null && confidential === null
-        }}
-        reject={{
-          action: onClose,
-          label: i18n.common.cancel
-        }}
+        resolveMutation={cancelApplicationMutation}
+        resolveAction={() => ({
+          applicationId: application.id,
+          confidential
+        })}
+        resolveLabel={i18n.common.confirm}
+        resolveDisabled={
+          application.confidential === null && confidential === null
+        }
+        rejectAction={onClose}
+        rejectLabel={i18n.common.cancel}
+        onSuccess={onClose}
       >
         {application.confidential === null && (
           <FixedSpaceColumn>
@@ -304,7 +253,7 @@ const ConfirmCancelApplicationModal = React.memo(
             </FixedSpaceRow>
           </FixedSpaceColumn>
         )}
-      </InfoModal>
+      </MutateFormModal>
     )
   }
 )
@@ -316,9 +265,26 @@ const ActionsContainer = styled.div`
 `
 
 const ActionMenu = React.memo(function ActionMenu({
-  actions
+  applicationId,
+  actions,
+  actionInProgress
 }: {
-  actions: MenuItem[]
+  applicationId: ApplicationId
+  actions: ApplicationAction[]
+  actionInProgress: boolean
 }) {
-  return <EllipsisMenu items={actions} data-qa="application-actions-menu" />
+  const { mutateAsync } = useMutation(simpleApplicationActionMutation)
+  const menuItems: MenuItem[] = useMemo(
+    () =>
+      actions.map((action) => ({
+        id: action.id,
+        label: action.label,
+        onClick: isSimpleApplicationMutationAction(action)
+          ? () => mutateAsync({ applicationId, action: action.actionType })
+          : action.onClick,
+        disabled: actionInProgress
+      })),
+    [applicationId, actions, actionInProgress, mutateAsync]
+  )
+  return <EllipsisMenu items={menuItems} data-qa="application-actions-menu" />
 })

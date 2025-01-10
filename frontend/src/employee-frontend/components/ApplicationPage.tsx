@@ -48,7 +48,7 @@ import { TitleContext, TitleState } from '../state/title'
 import { asUnitType } from '../types/daycare'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
-import { applicationMetadataQuery } from './application-page/applications-queries'
+import { applicationMetadataQuery } from './application-page/queries'
 import MetadataSection from './archive-metadata/MetadataSection'
 import { renderResult, UnwrapResult } from './async-rendering'
 

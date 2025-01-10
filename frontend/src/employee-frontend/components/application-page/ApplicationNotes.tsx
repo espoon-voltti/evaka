@@ -14,9 +14,8 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import ApplicationNoteBox from '../../components/application-page/ApplicationNoteBox'
 import { useTranslation } from '../../state/i18n'
+import { applicationNotesQuery } from '../application-page/queries'
 import { renderResult } from '../async-rendering'
-
-import { applicationNotesQuery } from './applications-queries'
 
 const Sticky = styled.div`
   position: sticky;
