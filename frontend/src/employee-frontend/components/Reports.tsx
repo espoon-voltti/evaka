@@ -705,17 +705,13 @@ export default React.memo(function Reports() {
               : null,
             reports.has('TAMPERE_REGIONAL_SURVEY')
               ? {
-                  name: 'Seutuselvitysraportti',
+                  name: i18n.reports.tampereRegionalSurvey.title,
                   item: (
                     <Report
-                      path="/reports/regional-survey/monthly"
+                      path="/reports/tampere-regional-survey"
                       color={colors.main.m2Active}
                       icon={faDatabase}
-                      i18n={{
-                        title: 'Seutuselvitysraportti',
-                        description:
-                          'Raportti tarjoaa Seutuselvitykseen liittyvät lukumäärätiedot'
-                      }}
+                      i18n={i18n.reports.tampereRegionalSurvey}
                       data-qa="report-holiday-period-attendance"
                     />
                   )

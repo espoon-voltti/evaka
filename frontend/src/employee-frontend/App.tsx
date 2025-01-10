@@ -907,7 +907,7 @@ export default createBrowserRouter(
         },
 
         {
-          path: '/reports/regional-survey/monthly',
+          path: '/reports/tampere-regional-survey',
           element: (
             <EmployeeRoute title="reports">
               <TampereRegionalSurvey />

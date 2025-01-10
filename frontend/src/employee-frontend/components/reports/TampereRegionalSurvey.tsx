@@ -93,7 +93,7 @@ export default React.memo(function Presences() {
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        <Title size={1}>Seutuselvityksen raportit</Title>
+        <Title size={1}>{t.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
