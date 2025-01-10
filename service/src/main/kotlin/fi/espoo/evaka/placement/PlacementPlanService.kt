@@ -268,7 +268,6 @@ class PlacementPlanService(
             unitId = unitId,
             placementTypePeriods = placementTypePeriods,
             serviceNeed = serviceNeed,
-            cancelPlacementsAfterClub = true,
             placeGuarantee = false,
             now,
             userId,

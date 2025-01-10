@@ -55,18 +55,14 @@ fun createPlacements(
     unitId: DaycareId,
     placementTypePeriods: List<Pair<FiniteDateRange, PlacementType>>,
     serviceNeed: ApplicationServiceNeed? = null,
-    cancelPlacementsAfterClub: Boolean? = false,
     placeGuarantee: Boolean,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
 ): List<Placement> {
     placementTypePeriods
         .sortedBy { it.first.start }
-        .forEach { (period, type) ->
+        .forEach { (period) ->
             tx.clearOldPlacements(childId, period.start, period.end, now = now, userId = userId)
-            if (cancelPlacementsAfterClub == true && type == PlacementType.CLUB) {
-                tx.clearFutureNonPreschoolRelatedPlacements(childId, period.end.plusDays(1))
-            }
         }
 
     val firstPlacementTypePeriod = placementTypePeriods.minOfOrNull { it.first.start }
@@ -370,47 +366,6 @@ private fun Database.Transaction.clearOldPlacements(
             }.exhaust()
         }
 }
-
-private fun Database.Transaction.clearFutureNonPreschoolRelatedPlacements(
-    childId: ChildId,
-    startingFrom: LocalDate,
-) {
-    val schoolYears = generateSchoolYearDateRanges(startingFrom)
-    val futurePlacements = getPlacementsForChildDuring(childId, startingFrom, null)
-    val futureSchoolYearsWithPreschoolPlacements =
-        futurePlacements
-            .filter {
-                listOf(
-                        PlacementType.PREPARATORY,
-                        PlacementType.PREPARATORY_DAYCARE,
-                        PlacementType.PRESCHOOL,
-                        PlacementType.PRESCHOOL_DAYCARE,
-                        PlacementType.PRESCHOOL_CLUB,
-                    )
-                    .contains(it.type)
-            }
-            .flatMap { placement ->
-                schoolYears.filter {
-                    it.overlaps(FiniteDateRange(placement.startDate, placement.endDate))
-                }
-            }
-    futurePlacements.forEach { placement ->
-        val dateRange = FiniteDateRange(placement.startDate, placement.endDate)
-        if (futureSchoolYearsWithPreschoolPlacements.none { it.overlaps(dateRange) }) {
-            cancelPlacement(placement.id)
-        }
-    }
-}
-
-fun generateSchoolYearDateRanges(startingFrom: LocalDate) =
-    (0..9)
-        .map { startingFrom.plusYears(it.toLong()) }
-        .map {
-            FiniteDateRange(
-                it.withMonth(8).withDayOfMonth(1),
-                it.plusYears(1).withMonth(7).withDayOfMonth(31),
-            )
-        }
 
 fun Database.Transaction.movePlacementStartDateLater(
     placement: Placement,
