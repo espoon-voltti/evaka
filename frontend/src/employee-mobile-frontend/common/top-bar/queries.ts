@@ -2,19 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import { getCurrentSystemNotificationEmployeeMobile } from '../../generated/api-clients/systemnotifications'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('topBar', {
-  currentSystemNotification: () => ['currentSystemNotification']
-})
+const q = new Queries()
 
-export const currentSystemNotificationQuery = query({
-  api: getCurrentSystemNotificationEmployeeMobile,
-  queryKey: queryKeys.currentSystemNotification,
-  options: {
+export const currentSystemNotificationQuery = q.query(
+  getCurrentSystemNotificationEmployeeMobile,
+  {
     staleTime: 5 * 60 * 1000
   }
-})
+)

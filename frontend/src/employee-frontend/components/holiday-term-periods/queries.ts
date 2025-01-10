@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   createPreschoolTerm,
@@ -26,129 +26,70 @@ import {
   updateHolidayPeriod,
   updateHolidayQuestionnaire
 } from '../../generated/api-clients/holidayperiod'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('holidayPeriods', {
-  holidayPeriods: () => ['holidayPeriods'],
-  holidayPeriod: (id: string) => ['holidayPeriod', id],
-  questionnaires: () => ['questionnaires'],
-  questionnaire: (id: string) => ['questionnaire', id],
-  preschoolTerms: () => ['preschoolTerms'],
-  preschoolTerm: (id: string) => ['preschoolTerm', id],
-  clubTerms: () => ['clubTerms'],
-  clubTerm: (id: string) => ['clubTerm', id]
-})
+const q = new Queries()
 
-export const holidayPeriodsQuery = query({
-  api: getHolidayPeriods,
-  queryKey: queryKeys.holidayPeriods
-})
+export const holidayPeriodsQuery = q.query(getHolidayPeriods)
 
-export const holidayPeriodQuery = query({
-  api: getHolidayPeriod,
-  queryKey: ({ id }) => queryKeys.holidayPeriod(id)
-})
+export const holidayPeriodQuery = q.query(getHolidayPeriod)
 
-export const questionnairesQuery = query({
-  api: getQuestionnaires,
-  queryKey: () => queryKeys.questionnaires()
-})
+export const questionnairesQuery = q.query(getQuestionnaires)
 
-export const questionnaireQuery = query({
-  api: getQuestionnaire,
-  queryKey: ({ id }) => queryKeys.questionnaire(id)
-})
+export const questionnaireQuery = q.query(getQuestionnaire)
 
-export const preschoolTermsQuery = query({
-  api: getPreschoolTerms,
-  queryKey: () => queryKeys.preschoolTerms()
-})
+export const preschoolTermsQuery = q.query(getPreschoolTerms)
 
-export const createPreschoolTermMutation = mutation({
-  api: createPreschoolTerm,
-  invalidateQueryKeys: () => [queryKeys.preschoolTerms()]
-})
+export const createPreschoolTermMutation = q.mutation(createPreschoolTerm, [
+  preschoolTermsQuery
+])
 
-export const updatePreschoolTermMutation = mutation({
-  api: updatePreschoolTerm,
-  invalidateQueryKeys: ({ id }) => [
-    queryKeys.preschoolTerms(),
-    queryKeys.preschoolTerm(id)
-  ]
-})
+export const updatePreschoolTermMutation = q.mutation(updatePreschoolTerm, [
+  preschoolTermsQuery
+])
 
-export const deletePreschoolTermMutation = mutation({
-  api: deletePreschoolTerm,
-  invalidateQueryKeys: ({ id }) => [
-    queryKeys.preschoolTerms(),
-    queryKeys.preschoolTerm(id)
-  ]
-})
+export const deletePreschoolTermMutation = q.mutation(deletePreschoolTerm, [
+  preschoolTermsQuery
+])
 
-export const createHolidayPeriodMutation = mutation({
-  api: createHolidayPeriod,
-  invalidateQueryKeys: () => [queryKeys.holidayPeriods()]
-})
+export const createHolidayPeriodMutation = q.mutation(createHolidayPeriod, [
+  holidayPeriodsQuery
+])
 
-export const updateHolidayPeriodMutation = mutation({
-  api: updateHolidayPeriod,
-  invalidateQueryKeys: ({ id }) => [
-    queryKeys.holidayPeriods(),
-    queryKeys.holidayPeriod(id)
-  ]
-})
+export const updateHolidayPeriodMutation = q.mutation(updateHolidayPeriod, [
+  ({ id }) => holidayPeriodQuery({ id }),
+  holidayPeriodsQuery
+])
 
-export const deleteHolidayPeriodMutation = mutation({
-  api: deleteHolidayPeriod,
-  invalidateQueryKeys: ({ id }) => [
-    queryKeys.holidayPeriods(),
-    queryKeys.holidayPeriod(id)
-  ]
-})
+export const deleteHolidayPeriodMutation = q.mutation(deleteHolidayPeriod, [
+  ({ id }) => holidayPeriodQuery({ id }),
+  holidayPeriodsQuery
+])
 
-export const createQuestionnaireMutation = mutation({
-  api: createHolidayQuestionnaire,
-  invalidateQueryKeys: () => [queryKeys.questionnaires()]
-})
+export const createQuestionnaireMutation = q.mutation(
+  createHolidayQuestionnaire,
+  [questionnairesQuery]
+)
 
-export const updateQuestionnaireMutation = mutation({
-  api: updateHolidayQuestionnaire,
-  invalidateQueryKeys: ({ id }) => [
-    queryKeys.questionnaires(),
-    queryKeys.questionnaire(id)
-  ]
-})
+export const updateQuestionnaireMutation = q.mutation(
+  updateHolidayQuestionnaire,
+  [questionnairesQuery, ({ id }) => questionnaireQuery({ id })]
+)
 
-export const deleteQuestionnaireMutation = mutation({
-  api: deleteHolidayQuestionnaire,
-  invalidateQueryKeys: ({ id }) => [
-    queryKeys.questionnaires(),
-    queryKeys.questionnaire(id)
-  ]
-})
+export const deleteQuestionnaireMutation = q.mutation(
+  deleteHolidayQuestionnaire,
+  [({ id }) => questionnaireQuery({ id }), questionnairesQuery]
+)
 
-export const clubTermsQuery = query({
-  api: getClubTerms,
-  queryKey: () => queryKeys.clubTerms()
-})
+export const clubTermsQuery = q.query(getClubTerms)
 
-export const createClubTermMutation = mutation({
-  api: createClubTerm,
-  invalidateQueryKeys: () => [queryKeys.clubTerms()]
-})
+export const createClubTermMutation = q.mutation(createClubTerm, [
+  clubTermsQuery
+])
 
-export const updateClubTermMutation = mutation({
-  api: updateClubTerm,
-  invalidateQueryKeys: ({ id }) => [
-    queryKeys.clubTerms(),
-    queryKeys.clubTerm(id)
-  ]
-})
+export const updateClubTermMutation = q.mutation(updateClubTerm, [
+  clubTermsQuery
+])
 
-export const deleteClubTermMutation = mutation({
-  api: deleteClubTerm,
-  invalidateQueryKeys: ({ id }) => [
-    queryKeys.clubTerms(),
-    queryKeys.clubTerm(id)
-  ]
-})
+export const deleteClubTermMutation = q.mutation(deleteClubTerm, [
+  clubTermsQuery
+])

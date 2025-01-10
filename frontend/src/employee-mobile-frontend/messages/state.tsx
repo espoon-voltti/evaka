@@ -57,7 +57,7 @@ export const MessageContextProvider = React.memo(
 
     const groupAccounts = useQueryResult(
       shouldFetch
-        ? messagingAccountsQuery({ unitId, employeeId: pinLoggedEmployeeId })
+        ? messagingAccountsQuery(pinLoggedEmployeeId, { unitId })
         : constantQuery([])
     )
 

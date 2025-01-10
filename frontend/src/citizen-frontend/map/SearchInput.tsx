@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { combine, Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
@@ -44,7 +44,9 @@ export default React.memo(function SearchInput({
   const debouncedInputString = useDebounce(inputString, 500)
 
   const addressOptions = useQueryResult(
-    addressOptionsQuery(debouncedInputString)
+    debouncedInputString.length > 0
+      ? addressOptionsQuery(debouncedInputString)
+      : constantQuery([])
   )
 
   const unitOptions = useMemo(

@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import {
   createInvoiceCorrection,
@@ -15,59 +14,33 @@ import {
   getPersonInvoiceCorrections,
   updateInvoiceCorrectionNote
 } from '../../generated/api-clients/invoicing'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('personProfile', {
-  incomeCoefficientMultipliers: () => ['incomeCoefficientMultipliers'],
-  invoiceCorrections: (args: Arg0<typeof getPersonInvoiceCorrections>) => [
-    'invoiceCorrections',
-    args
-  ],
-  headOfFamilyInvoices: (args: { id: UUID }) => ['headOfFamilyInvoices', args]
-})
+const q = new Queries()
 
-export const incomeCoefficientMultipliersQuery = query({
-  api: getIncomeMultipliers,
-  queryKey: queryKeys.incomeCoefficientMultipliers
-})
+export const incomeCoefficientMultipliersQuery = q.query(getIncomeMultipliers)
 
-export const invoiceCorrectionsQuery = query({
-  api: getPersonInvoiceCorrections,
-  queryKey: queryKeys.invoiceCorrections
-})
+export const invoiceCorrectionsQuery = q.query(getPersonInvoiceCorrections)
 
-export const createInvoiceCorrectionMutation = mutation({
-  api: createInvoiceCorrection,
-  invalidateQueryKeys: (args) => [
-    queryKeys.invoiceCorrections({ personId: args.body.headOfFamilyId })
-  ]
-})
+export const createInvoiceCorrectionMutation = q.mutation(
+  createInvoiceCorrection,
+  [({ body }) => invoiceCorrectionsQuery({ personId: body.headOfFamilyId })]
+)
 
-export const updateInvoiceCorrectionNoteMutation = mutation({
-  api: (
-    args: Arg0<typeof updateInvoiceCorrectionNote> & { personId: PersonId }
-  ) => updateInvoiceCorrectionNote(args),
-  invalidateQueryKeys: (args) => [
-    queryKeys.invoiceCorrections({ personId: args.personId })
-  ]
-})
+export const updateInvoiceCorrectionNoteMutation = q.parametricMutation<{
+  personId: PersonId
+}>()(updateInvoiceCorrectionNote, [
+  ({ personId }) => invoiceCorrectionsQuery({ personId })
+])
 
-export const deleteInvoiceCorrectionMutation = mutation({
-  api: (args: Arg0<typeof deleteInvoiceCorrection> & { personId: PersonId }) =>
-    deleteInvoiceCorrection(args),
-  invalidateQueryKeys: (args) => [
-    queryKeys.invoiceCorrections({ personId: args.personId })
-  ]
-})
+export const deleteInvoiceCorrectionMutation = q.parametricMutation<{
+  personId: PersonId
+}>()(deleteInvoiceCorrection, [
+  ({ personId }) => invoiceCorrectionsQuery({ personId })
+])
 
-export const headOfFamilyInvoicesQuery = query({
-  api: getHeadOfFamilyInvoices,
-  queryKey: queryKeys.headOfFamilyInvoices
-})
+export const headOfFamilyInvoicesQuery = q.query(getHeadOfFamilyInvoices)
 
-export const createReplacementDraftsForHeadOfFamilyMutation = mutation({
-  api: createReplacementDraftsForHeadOfFamily,
-  invalidateQueryKeys: (arg) => [
-    queryKeys.headOfFamilyInvoices({ id: arg.headOfFamilyId })
-  ]
-})
+export const createReplacementDraftsForHeadOfFamilyMutation = q.mutation(
+  createReplacementDraftsForHeadOfFamily,
+  [({ headOfFamilyId }) => headOfFamilyInvoicesQuery({ id: headOfFamilyId })]
+)

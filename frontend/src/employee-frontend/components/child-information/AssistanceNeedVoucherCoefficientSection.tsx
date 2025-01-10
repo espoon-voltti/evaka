@@ -14,7 +14,6 @@ import {
   ChildId
 } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
@@ -159,7 +158,7 @@ const DeleteAssistanceNeedVoucherCoefficientModal = React.memo(
     coefficientId,
     onClose
   }: {
-    childId: UUID
+    childId: ChildId
     coefficientId: AssistanceNeedVoucherCoefficientId
     onClose: () => void
   }) {

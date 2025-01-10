@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { useQuery } from 'lib-common/query'
+import { constantQuery, useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -42,12 +42,20 @@ export default React.memo(function UnitsSubSection({
   const [isUnitSelectionInvalid, setIsUnitSelectionInvalid] = useState(false)
 
   const { data: units = null } = useQuery(
-    applicationUnitsQuery(
-      applicationType,
-      preparatory,
-      preferredStartDate,
-      shiftCare
-    )
+    preferredStartDate
+      ? applicationUnitsQuery({
+          type:
+            applicationType === 'CLUB'
+              ? 'CLUB'
+              : applicationType === 'DAYCARE'
+                ? 'DAYCARE'
+                : preparatory
+                  ? 'PREPARATORY'
+                  : 'PRESCHOOL',
+          date: preferredStartDate,
+          shiftCare
+        })
+      : constantQuery([])
   )
   useEffect(() => {
     updateFormData((prev) => ({

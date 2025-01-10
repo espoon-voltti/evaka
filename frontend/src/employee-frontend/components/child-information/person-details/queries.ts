@@ -2,25 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   getDiets,
   getMealTextures
 } from '../../../generated/api-clients/specialdiet'
-import { createQueryKeys } from '../../../query'
 
-const queryKeys = createQueryKeys('personDetails', {
-  specialDiets: () => ['specialDiets'],
-  mealTextures: () => ['mealTextures']
-})
+const q = new Queries()
 
-export const specialDietsQuery = query({
-  api: getDiets,
-  queryKey: queryKeys.specialDiets
-})
+export const specialDietsQuery = q.query(getDiets)
 
-export const mealTexturesQuery = query({
-  api: getMealTextures,
-  queryKey: queryKeys.mealTextures
-})
+export const mealTexturesQuery = q.query(getMealTextures)

@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { Queries } from 'lib-common/query'
 
 import {
   acceptPlacementProposal,
@@ -49,245 +48,125 @@ import {
   postReservations
 } from '../../generated/api-clients/reservations'
 import { getUndecidedServiceApplications } from '../../generated/api-clients/serviceneed'
-import { createQueryKeys } from '../../query'
 
-export const queryKeys = createQueryKeys('unit', {
-  areas: () => ['areas'],
-  unitFilters: (arg: Arg0<typeof getUnits>) => ['unitFilters', arg],
-  units: (arg: Arg0<typeof getDaycares>) => ['units', arg],
-  unit: (unitId: UUID) => ['unit', unitId],
-  unitNotifications: (unitId: UUID) => ['unitNotifications', unitId],
-  unitOccupancies: (
-    unitId: UUID,
-    from: LocalDate,
-    to: LocalDate,
-    groupId: UUID | null
-  ) => ['unitOccupancies', unitId, { from, to }, groupId],
-  unitRealizedOccupanciesForDay: (
-    unitId: UUID,
-    date: LocalDate,
-    groupIds: UUID[] | null
-  ) => ['unitRealizedOccupanciesForDay', unitId, date, groupIds],
-  unitPlannedOccupanciesForDay: (
-    unitId: UUID,
-    date: LocalDate,
-    groupIds: UUID[] | null
-  ) => ['unitPlannedOccupanciesForDay', unitId, date, groupIds],
-  unitApplications: (unitId: UUID) => ['unitApplications', unitId],
-  unitServiceApplications: (unitId: UUID) => [
-    'unitServiceApplications',
-    unitId
-  ],
-  unitGroups: (unitId: UUID) => ['unitGroups', unitId],
-  unitSpeculatedOccupancyRates: (
-    params: Arg0<typeof getOccupancyPeriodsSpeculated>
-  ) => ['unitSpeculatedOccupancyRates', params],
-  unitGroupDetails: (unitId: UUID) => ['unitGroupDetails', unitId],
-  unitGroupDetailsRange: (unitId: UUID, from: LocalDate, to: LocalDate) => [
-    'unitGroupDetails',
-    unitId,
-    { from, to }
-  ],
+const q = new Queries()
 
-  unitAttendanceReservations: () => ['unitAttendanceReservations'],
-  unitAttendanceReservationsRange: (
-    arg: Arg0<typeof getAttendanceReservations>
-  ) => ['unitAttendanceReservations', arg],
+export const areaQuery = q.query(getAreas)
 
-  expectedAbsences: (arg: Arg0<typeof getExpectedAbsences>) => [
-    'expectedAbsences',
-    arg
-  ],
-  openGroupAttendance: (arg: Arg0<typeof getOpenGroupAttendance>) => [
-    'openGroupAttendance',
-    arg
+export const unitFilterQuery = q.query(getUnits)
+
+export const unitsQuery = q.query(getDaycares)
+
+export const unitQuery = q.query(getDaycare)
+
+export const unitNotificationsQuery = q.query(getUnitNotifications)
+
+export const unitOccupanciesQuery = q.query(getUnitOccupancies)
+
+export const unitRealizedOccupanciesForDayQuery = q.query(
+  getUnitRealizedOccupanciesForDay
+)
+
+export const unitPlannedOccupanciesForDayQuery = q.query(
+  getUnitPlannedOccupanciesForDay
+)
+
+export const unitApplicationsQuery = q.query(getUnitApplications)
+
+export const unitServiceApplicationsQuery = q.query(
+  getUndecidedServiceApplications
+)
+
+export const unitGroupDetailsQuery = q.query(getUnitGroupDetails)
+
+export const createGroupPlacementMutation = q.parametricMutation<{
+  unitId: DaycareId
+}>()(createGroupPlacement, [
+  unitGroupDetailsQuery.prefix,
+  ({ unitId }) => unitNotificationsQuery({ daycareId: unitId })
+])
+
+export const deleteGroupPlacementMutation = q.parametricMutation<{
+  unitId: DaycareId
+}>()(deleteGroupPlacement, [
+  ({ unitId }) => unitNotificationsQuery({ daycareId: unitId }),
+  unitGroupDetailsQuery.prefix
+])
+
+export const transferGroupMutation = q.parametricMutation<{
+  unitId: DaycareId
+}>()(transferGroupPlacement, [
+  ({ unitId }) => unitNotificationsQuery({ daycareId: unitId }),
+  unitGroupDetailsQuery.prefix
+])
+
+export const createGroupMutation = q.mutation(createGroup, [
+  ({ daycareId }) => unitNotificationsQuery({ daycareId })
+])
+
+export const unitGroupsQuery = q.query(getGroups)
+
+export const updateGroupMutation = q.mutation(updateGroup, [
+  ({ daycareId }) => unitNotificationsQuery({ daycareId }),
+  unitGroupDetailsQuery.prefix
+])
+
+export const deleteGroupMutation = q.mutation(deleteGroup, [
+  ({ daycareId }) => unitNotificationsQuery({ daycareId }),
+  unitGroupDetailsQuery.prefix
+])
+
+export const unitSpeculatedOccupancyRatesQuery = q.query(
+  getOccupancyPeriodsSpeculated
+)
+
+export const createUnitMutation = q.mutation(createDaycare)
+
+export const updateUnitMutation = q.mutation(updateDaycare, [
+  ({ daycareId }) => unitQuery({ daycareId })
+])
+
+export const updateUnitClosingDateMutation = q.mutation(updateUnitClosingDate, [
+  ({ unitId }) => unitQuery({ daycareId: unitId })
+])
+
+export const unitAttendanceReservationsQuery = q.query(
+  getAttendanceReservations
+)
+
+export const postReservationsMutation = q.mutation(postReservations, [
+  unitAttendanceReservationsQuery.prefix
+])
+
+export const createBackupCareMutation = q.mutation(createBackupCare)
+
+export const updateBackupCareMutation = q.parametricMutation<{
+  unitId: DaycareId
+}>()(updateBackupCare, [
+  ({ unitId }) => unitNotificationsQuery({ daycareId: unitId }),
+  unitGroupDetailsQuery.prefix
+])
+
+export const childDateExpectedAbsencesQuery = q.query(getExpectedAbsences)
+
+export const upsertChildDatePresenceMutation = q.mutation(
+  postChildDatePresence,
+  [unitAttendanceReservationsQuery.prefix]
+)
+
+export const acceptPlacementProposalMutation = q.mutation(
+  acceptPlacementProposal,
+  [
+    ({ unitId }) => unitNotificationsQuery({ daycareId: unitId }),
+    ({ unitId }) => unitApplicationsQuery({ unitId })
   ]
-})
+)
 
-export const areaQuery = query({
-  api: getAreas,
-  queryKey: queryKeys.areas
-})
+export const respondToPlacementProposalMutation = q.parametricMutation<{
+  unitId: DaycareId
+}>()(respondToPlacementProposal, [
+  ({ unitId }) => unitApplicationsQuery({ unitId }),
+  ({ unitId }) => unitNotificationsQuery({ daycareId: unitId })
+])
 
-export const unitFilterQuery = query({
-  api: getUnits,
-  queryKey: queryKeys.unitFilters
-})
-
-export const unitsQuery = query({
-  api: getDaycares,
-  queryKey: queryKeys.units
-})
-
-export const unitQuery = query({
-  api: getDaycare,
-  queryKey: ({ daycareId }) => queryKeys.unit(daycareId)
-})
-
-export const unitNotificationsQuery = query({
-  api: getUnitNotifications,
-  queryKey: ({ daycareId }) => queryKeys.unitNotifications(daycareId)
-})
-
-export const unitOccupanciesQuery = query({
-  api: getUnitOccupancies,
-  queryKey: ({ unitId, from, to, groupId }) =>
-    queryKeys.unitOccupancies(unitId, from, to, groupId ?? null)
-})
-
-export const unitRealizedOccupanciesForDayQuery = query({
-  api: getUnitRealizedOccupanciesForDay,
-  queryKey: ({ unitId, body }) =>
-    queryKeys.unitRealizedOccupanciesForDay(unitId, body.date, body.groupIds)
-})
-
-export const unitPlannedOccupanciesForDayQuery = query({
-  api: getUnitPlannedOccupanciesForDay,
-  queryKey: ({ unitId, body }) =>
-    queryKeys.unitPlannedOccupanciesForDay(unitId, body.date, body.groupIds)
-})
-
-export const unitApplicationsQuery = query({
-  api: getUnitApplications,
-  queryKey: ({ unitId }) => queryKeys.unitApplications(unitId)
-})
-
-export const unitServiceApplicationsQuery = query({
-  api: getUndecidedServiceApplications,
-  queryKey: ({ unitId }) => queryKeys.unitServiceApplications(unitId)
-})
-
-export const createGroupPlacementMutation = mutation({
-  api: (arg: Arg0<typeof createGroupPlacement> & { unitId: UUID }) =>
-    createGroupPlacement(arg),
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitGroupDetails(unitId),
-    queryKeys.unitNotifications(unitId)
-  ]
-})
-
-export const deleteGroupPlacementMutation = mutation({
-  api: (arg: Arg0<typeof deleteGroupPlacement> & { unitId: UUID }) =>
-    deleteGroupPlacement(arg),
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitGroupDetails(unitId),
-    queryKeys.unitNotifications(unitId)
-  ]
-})
-
-export const transferGroupMutation = mutation({
-  api: (arg: Arg0<typeof transferGroupPlacement> & { unitId: UUID }) =>
-    transferGroupPlacement(arg),
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitGroupDetails(unitId),
-    queryKeys.unitNotifications(unitId)
-  ]
-})
-
-export const createGroupMutation = mutation({
-  api: createGroup,
-  invalidateQueryKeys: ({ daycareId }) => [
-    queryKeys.unitNotifications(daycareId)
-  ]
-})
-
-export const unitGroupsQuery = query({
-  api: getGroups,
-  queryKey: ({ daycareId }) => queryKeys.unitGroups(daycareId)
-})
-
-export const updateGroupMutation = mutation({
-  api: updateGroup,
-  invalidateQueryKeys: ({ daycareId }) => [
-    queryKeys.unitGroupDetails(daycareId),
-    queryKeys.unitNotifications(daycareId)
-  ]
-})
-
-export const deleteGroupMutation = mutation({
-  api: deleteGroup,
-  invalidateQueryKeys: ({ daycareId }) => [
-    queryKeys.unitGroupDetails(daycareId),
-    queryKeys.unitNotifications(daycareId)
-  ]
-})
-
-export const unitSpeculatedOccupancyRatesQuery = query({
-  api: getOccupancyPeriodsSpeculated,
-  queryKey: queryKeys.unitSpeculatedOccupancyRates
-})
-
-export const createUnitMutation = mutation({
-  api: createDaycare
-})
-
-export const updateUnitMutation = mutation({
-  api: updateDaycare,
-  invalidateQueryKeys: ({ daycareId }) => [queryKeys.unit(daycareId)]
-})
-
-export const updateUnitClosingDateMutation = mutation({
-  api: updateUnitClosingDate,
-  invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
-})
-
-export const unitGroupDetailsQuery = query({
-  api: getUnitGroupDetails,
-  queryKey: ({ unitId, from, to }) =>
-    queryKeys.unitGroupDetailsRange(unitId, from, to)
-})
-
-export const postReservationsMutation = mutation({
-  api: postReservations,
-  invalidateQueryKeys: () => [queryKeys.unitAttendanceReservations()]
-})
-
-export const createBackupCareMutation = mutation({
-  api: createBackupCare
-})
-
-export const updateBackupCareMutation = mutation({
-  api: (arg: Arg0<typeof updateBackupCare> & { unitId: UUID }) =>
-    updateBackupCare(arg),
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitGroupDetails(unitId),
-    queryKeys.unitNotifications(unitId)
-  ]
-})
-
-export const unitAttendanceReservationsQuery = query({
-  api: getAttendanceReservations,
-  queryKey: queryKeys.unitAttendanceReservationsRange
-})
-
-export const childDateExpectedAbsencesQuery = query({
-  api: getExpectedAbsences,
-  queryKey: queryKeys.expectedAbsences
-})
-
-export const upsertChildDatePresenceMutation = mutation({
-  api: postChildDatePresence,
-  invalidateQueryKeys: () => [queryKeys.unitAttendanceReservations()]
-})
-
-export const acceptPlacementProposalMutation = mutation({
-  api: acceptPlacementProposal,
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitApplications(unitId),
-    queryKeys.unitNotifications(unitId)
-  ]
-})
-
-export const respondToPlacementProposalMutation = mutation({
-  api: (arg: Arg0<typeof respondToPlacementProposal> & { unitId: UUID }) =>
-    respondToPlacementProposal(arg),
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitApplications(unitId),
-    queryKeys.unitNotifications(unitId)
-  ]
-})
-
-export const openAttendanceQuery = query({
-  api: getOpenGroupAttendance,
-  queryKey: queryKeys.openGroupAttendance
-})
+export const openAttendanceQuery = q.query(getOpenGroupAttendance)

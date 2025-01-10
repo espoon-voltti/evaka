@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import {
   getDocument,
@@ -11,30 +10,13 @@ import {
   getUnreadDocumentsCount,
   putDocumentRead
 } from '../generated/api-clients/document'
-import { createQueryKeys } from '../query'
 
-const queryKeys = createQueryKeys('childDocuments', {
-  summaries: (args: Arg0<typeof getDocuments>) => ['summaries', args],
-  details: (args: Arg0<typeof getDocument>) => ['details', args],
-  unreadCount: () => ['unreadCount']
-})
+const q = new Queries()
 
-export const childDocumentSummariesQuery = query({
-  api: getDocuments,
-  queryKey: queryKeys.summaries
-})
+export const childDocumentSummariesQuery = q.query(getDocuments)
+export const childDocumentDetailsQuery = q.query(getDocument)
+export const unreadChildDocumentsCountQuery = q.query(getUnreadDocumentsCount)
 
-export const childDocumentDetailsQuery = query({
-  api: getDocument,
-  queryKey: queryKeys.details
-})
-
-export const unreadChildDocumentsCountQuery = query({
-  api: getUnreadDocumentsCount,
-  queryKey: queryKeys.unreadCount
-})
-
-export const childDocumentReadMutation = mutation({
-  api: putDocumentRead,
-  invalidateQueryKeys: () => [queryKeys.unreadCount()]
-})
+export const childDocumentReadMutation = q.mutation(putDocumentRead, [
+  unreadChildDocumentsCountQuery
+])

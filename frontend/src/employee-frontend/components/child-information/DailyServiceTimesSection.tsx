@@ -11,7 +11,6 @@ import {
   DailyServiceTimeId
 } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -151,7 +150,7 @@ const DeleteDailyServiceTimesModal = React.memo(
     dailyServiceTimesId,
     onClose
   }: {
-    childId: UUID
+    childId: ChildId
     dailyServiceTimesId: DailyServiceTimeId
     onClose: () => void
   }) {

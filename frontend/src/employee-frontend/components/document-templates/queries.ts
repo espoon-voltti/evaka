@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import {
   createTemplate,
@@ -19,88 +18,64 @@ import {
   updateDraftTemplateContent,
   updateTemplateValidity
 } from '../../generated/api-clients/document'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('documentTemplates', {
-  documentTemplateSummaries: () => ['documentTemplateSummaries'],
-  documentTemplate: (templateId: UUID) => ['documentTemplates', templateId],
-  activeDocumentTemplateSummaries: (childId: UUID) => [
-    'activeDocumentTemplateSummaries',
-    childId
+const q = new Queries()
+
+export const documentTemplateSummariesQuery = q.query(getTemplates)
+
+export const activeDocumentTemplateSummariesQuery = q.query(getActiveTemplates)
+
+export const documentTemplateQuery = q.query(getTemplate)
+
+export const createDocumentTemplateMutation = q.mutation(createTemplate, [
+  documentTemplateSummariesQuery
+])
+
+export const duplicateDocumentTemplateMutation = q.mutation(duplicateTemplate, [
+  documentTemplateSummariesQuery
+])
+
+export const importDocumentTemplateMutation = q.mutation(importTemplate, [
+  documentTemplateSummariesQuery
+])
+
+export const updateDocumentTemplateBasicsMutation = q.mutation(
+  updateDraftTemplateBasics,
+  [
+    documentTemplateSummariesQuery,
+    ({ templateId }) => documentTemplateQuery({ templateId })
   ]
-})
+)
 
-export const documentTemplateSummariesQuery = query({
-  api: getTemplates,
-  queryKey: queryKeys.documentTemplateSummaries
-})
-
-export const activeDocumentTemplateSummariesQuery = query({
-  api: getActiveTemplates,
-  queryKey: ({ childId }) => queryKeys.activeDocumentTemplateSummaries(childId)
-})
-
-export const documentTemplateQuery = query({
-  api: getTemplate,
-  queryKey: ({ templateId }) => queryKeys.documentTemplate(templateId)
-})
-
-export const createDocumentTemplateMutation = mutation({
-  api: createTemplate,
-  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
-})
-
-export const duplicateDocumentTemplateMutation = mutation({
-  api: duplicateTemplate,
-  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
-})
-
-export const importDocumentTemplateMutation = mutation({
-  api: importTemplate,
-  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
-})
-
-export const updateDocumentTemplateBasicsMutation = mutation({
-  api: updateDraftTemplateBasics,
-  invalidateQueryKeys: (arg) => [
-    queryKeys.documentTemplateSummaries(),
-    queryKeys.documentTemplate(arg.templateId)
+export const updateDocumentTemplateContentMutation = q.mutation(
+  updateDraftTemplateContent,
+  [
+    documentTemplateSummariesQuery,
+    ({ templateId }) => documentTemplateQuery({ templateId })
   ]
-})
+)
 
-export const updateDocumentTemplateContentMutation = mutation({
-  api: updateDraftTemplateContent,
-  invalidateQueryKeys: (arg) => [
-    queryKeys.documentTemplateSummaries(),
-    queryKeys.documentTemplate(arg.templateId)
+export const updateDocumentTemplateValidityMutation = q.mutation(
+  updateTemplateValidity,
+  [
+    documentTemplateSummariesQuery,
+    ({ templateId }) => documentTemplateQuery({ templateId })
   ]
-})
+)
 
-export const updateDocumentTemplateValidityMutation = mutation({
-  api: updateTemplateValidity,
-  invalidateQueryKeys: (arg) => [
-    queryKeys.documentTemplateSummaries(),
-    queryKeys.documentTemplate(arg.templateId)
+export const publishDocumentTemplateMutation = q.mutation(publishTemplate, [
+  documentTemplateSummariesQuery,
+  ({ templateId }) => documentTemplateQuery({ templateId })
+])
+
+export const forceUnpublishDocumentTemplateMutation = q.mutation(
+  forceUnpublishTemplate,
+  [
+    documentTemplateSummariesQuery,
+    ({ templateId }) => documentTemplateQuery({ templateId })
   ]
-})
+)
 
-export const publishDocumentTemplateMutation = mutation({
-  api: publishTemplate,
-  invalidateQueryKeys: (arg) => [
-    queryKeys.documentTemplateSummaries(),
-    queryKeys.documentTemplate(arg.templateId)
-  ]
-})
-
-export const forceUnpublishDocumentTemplateMutation = mutation({
-  api: forceUnpublishTemplate,
-  invalidateQueryKeys: (arg) => [
-    queryKeys.documentTemplateSummaries(),
-    queryKeys.documentTemplate(arg.templateId)
-  ]
-})
-
-export const deleteDocumentTemplateMutation = mutation({
-  api: deleteDraftTemplate,
-  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
-})
+export const deleteDocumentTemplateMutation = q.mutation(deleteDraftTemplate, [
+  documentTemplateSummariesQuery
+])

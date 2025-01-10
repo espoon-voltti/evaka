@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
-import { mutation, query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   acceptDecision,
@@ -13,47 +12,25 @@ import {
   getLiableCitizenFinanceDecisions,
   rejectDecision
 } from '../generated/api-clients/application'
-import { createQueryKeys } from '../query'
 
-const queryKeys = createQueryKeys('applicationDecisions', {
-  all: () => ['all'],
-  byApplication: (applicationId: ApplicationId) => ['decisions', applicationId],
-  notifications: () => ['notifications'],
-  financeDecisions: () => ['financeDecisions']
-})
+const q = new Queries()
 
-export const decisionsQuery = query({
-  api: getDecisions,
-  queryKey: queryKeys.all
-})
+export const decisionsQuery = q.query(getDecisions)
 
-export const financeDecisionsQuery = query({
-  api: getLiableCitizenFinanceDecisions,
-  queryKey: queryKeys.financeDecisions
-})
+export const financeDecisionsQuery = q.query(getLiableCitizenFinanceDecisions)
 
-export const decisionsOfApplicationQuery = query({
-  api: getApplicationDecisions,
-  queryKey: ({ applicationId }) => queryKeys.byApplication(applicationId)
-})
+export const decisionsOfApplicationQuery = q.query(getApplicationDecisions)
 
-export const applicationNotificationsQuery = query({
-  api: getGuardianApplicationNotifications,
-  queryKey: queryKeys.notifications
-})
+export const applicationNotificationsQuery = q.query(
+  getGuardianApplicationNotifications
+)
 
-export const acceptDecisionMutation = mutation({
-  api: acceptDecision,
-  invalidateQueryKeys: ({ applicationId }) => [
-    decisionsOfApplicationQuery({ applicationId }).queryKey,
-    applicationNotificationsQuery().queryKey
-  ]
-})
+export const acceptDecisionMutation = q.mutation(acceptDecision, [
+  ({ applicationId }) => decisionsOfApplicationQuery({ applicationId }),
+  applicationNotificationsQuery
+])
 
-export const rejectDecisionMutation = mutation({
-  api: rejectDecision,
-  invalidateQueryKeys: ({ applicationId }) => [
-    decisionsOfApplicationQuery({ applicationId }).queryKey,
-    applicationNotificationsQuery().queryKey
-  ]
-})
+export const rejectDecisionMutation = q.mutation(rejectDecision, [
+  ({ applicationId }) => decisionsOfApplicationQuery({ applicationId }),
+  applicationNotificationsQuery
+])

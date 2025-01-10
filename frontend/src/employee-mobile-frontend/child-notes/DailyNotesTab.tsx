@@ -154,9 +154,11 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
       return Promise.reject()
     }
     const body = childDailyNoteFormDataToRequestBody(dailyNote)
-    return dailyNoteId
-      ? updateDailyNote({ unitId, noteId: dailyNoteId, body })
-      : createDailyNote({ unitId, childId, body })
+    return (
+      dailyNoteId
+        ? updateDailyNote({ unitId, noteId: dailyNoteId, body })
+        : createDailyNote({ unitId, childId, body })
+    ).then((result) => result.map(() => undefined))
   }, [
     updateDailyNote,
     createDailyNote,

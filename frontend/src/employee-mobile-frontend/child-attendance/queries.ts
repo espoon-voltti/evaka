@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DaycareId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import { futureAbsencesOfChild } from '../generated/api-clients/absence'
 import {
@@ -27,151 +24,73 @@ import {
   setConfirmedRangeReservations
 } from '../generated/api-clients/reservations'
 import { getBasicInfo } from '../generated/api-clients/sensitive'
-import { createQueryKeys } from '../query'
 
 import { getUnitChildren, uploadChildImage } from './api'
 
-const queryKeys = createQueryKeys('childAttendance', {
-  children: (unitId: string) => ['children', unitId],
-  confirmedRangeReservations: (childId: string) => [
-    'confirmedRangeReservations',
-    childId
-  ],
-  futureAbsencesByChild: (childId: string) => [
-    'futureAbsencesByChild',
-    childId
-  ],
-  attendanceStatuses: (unitId: string) => ['attendanceStatuses', unitId],
-  childDepartures: ({
-    unitId,
-    childIds,
-    departed
-  }: {
-    unitId: UUID
-    childIds: UUID[]
-    departed: LocalTime
-  }) => ['childDepartures', unitId, childIds, departed],
-  confirmedDayReservations: (unitId: string, examinationDate: LocalDate) => [
-    'confirmedDayReservations',
-    unitId,
-    examinationDate
-  ],
-  confirmedDaysReservationStatistics: (unitId: string) => [
-    'confirmedDaysReservationStatistics',
-    unitId
-  ],
-  childBasicInfo: (childId: string) => ['childBasicInfo', childId]
+const q = new Queries()
+
+export const childrenQuery = q.query(getUnitChildren, {
+  staleTime: 5 * 60 * 1000
 })
 
-export const childrenQuery = query({
-  api: getUnitChildren,
-  queryKey: queryKeys.children,
-  options: {
-    staleTime: 5 * 60 * 1000
-  }
+export const childBasicInfoQuery = q.query(getBasicInfo, {
+  staleTime: 5 * 60 * 1000
 })
 
-export const childBasicInfoQuery = query({
-  api: getBasicInfo,
-  queryKey: ({ childId }) => queryKeys.childBasicInfo(childId),
-  options: {
-    staleTime: 5 * 60 * 1000
-  }
+export const attendanceStatusesQuery = q.query(getAttendanceStatuses, {
+  staleTime: 5 * 60 * 1000
 })
 
-export const attendanceStatusesQuery = query({
-  api: getAttendanceStatuses,
-  queryKey: ({ unitId }) => queryKeys.attendanceStatuses(unitId),
-  options: {
-    staleTime: 5 * 60 * 1000
-  }
-})
+export const expectedAbsencesOnDeparturesQuery = q.query(
+  getExpectedAbsencesOnDepartures
+)
 
-export const expectedAbsencesOnDeparturesQuery = query({
-  api: getExpectedAbsencesOnDepartures,
-  queryKey: ({ unitId, body: { departed, childIds } }) =>
-    queryKeys.childDepartures({ unitId, childIds, departed })
-})
+export const confirmedDayReservationsQuery = q.query(getChildReservationsForDay)
 
-export const confirmedDayReservationsQuery = query({
-  api: getChildReservationsForDay,
-  queryKey: ({ unitId, examinationDate }) =>
-    queryKeys.confirmedDayReservations(unitId, examinationDate)
-})
+export const confirmedDaysReservationsStatisticsQuery = q.query(
+  getReservationStatisticsForConfirmedDays
+)
 
-export const confirmedDaysReservationsStatisticsQuery = query({
-  api: getReservationStatisticsForConfirmedDays,
-  queryKey: ({ unitId }) => queryKeys.confirmedDaysReservationStatistics(unitId)
-})
+export const getConfirmedRangeQuery = q.query(getConfirmedRangeData)
 
-export const getConfirmedRangeQuery = query({
-  api: getConfirmedRangeData,
-  queryKey: ({ childId }) => queryKeys.confirmedRangeReservations(childId)
-})
+export const getFutureAbsencesByChildQuery = q.query(futureAbsencesOfChild)
 
-export const setConfirmedRangeMutation = mutation({
-  api: setConfirmedRangeReservations,
-  invalidateQueryKeys: ({ childId }) => [
-    queryKeys.confirmedRangeReservations(childId),
-    queryKeys.futureAbsencesByChild(childId)
+export const setConfirmedRangeMutation = q.mutation(
+  setConfirmedRangeReservations,
+  [
+    ({ childId }) => getConfirmedRangeQuery({ childId }),
+    ({ childId }) => getFutureAbsencesByChildQuery({ childId })
   ]
-})
+)
 
-export const getFutureAbsencesByChildQuery = query({
-  api: futureAbsencesOfChild,
-  queryKey: ({ childId }) => queryKeys.futureAbsencesByChild(childId)
-})
+export const createFullDayAbsenceMutation = q.mutation(postFullDayAbsence, [
+  ({ unitId }) => attendanceStatusesQuery({ unitId })
+])
 
-export const createFullDayAbsenceMutation = mutation({
-  api: postFullDayAbsence,
-  invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery({ unitId }).queryKey
-  ]
-})
+export const createArrivalMutation = q.mutation(postArrivals, [
+  ({ unitId }) => attendanceStatusesQuery({ unitId })
+])
 
-export const createArrivalMutation = mutation({
-  api: postArrivals,
-  invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery({ unitId }).queryKey
-  ]
-})
+export const createDeparturesMutation = q.mutation(postDepartures, [
+  ({ unitId }) => attendanceStatusesQuery({ unitId })
+])
 
-export const createDeparturesMutation = mutation({
-  api: postDepartures,
-  invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery({ unitId }).queryKey
-  ]
-})
+export const returnToPresentMutation = q.mutation(returnToPresent, [
+  ({ unitId }) => attendanceStatusesQuery({ unitId })
+])
 
-export const returnToPresentMutation = mutation({
-  api: returnToPresent,
-  invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery({ unitId }).queryKey
-  ]
-})
+export const returnToComingMutation = q.mutation(returnToComing, [
+  ({ unitId }) => attendanceStatusesQuery({ unitId })
+])
 
-export const returnToComingMutation = mutation({
-  api: returnToComing,
-  invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery({ unitId }).queryKey
-  ]
-})
+export const cancelAbsenceMutation = q.mutation(cancelFullDayAbsence, [
+  ({ unitId }) => attendanceStatusesQuery({ unitId })
+])
 
-export const cancelAbsenceMutation = mutation({
-  api: cancelFullDayAbsence,
-  invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery({ unitId }).queryKey
-  ]
-})
+export const uploadChildImageMutation = q.parametricMutation<{
+  unitId: DaycareId
+}>()(uploadChildImage, [({ unitId }) => childrenQuery(unitId)])
 
-export const uploadChildImageMutation = mutation({
-  api: ({ childId, file }: { unitId: DaycareId; childId: UUID; file: File }) =>
-    uploadChildImage({ childId, file }),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
-})
-
-export const deleteChildImageMutation = mutation({
-  api: (arg: Arg0<typeof deleteImage> & { unitId: DaycareId }) =>
-    deleteImage(arg),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
-})
+export const deleteChildImageMutation = q.parametricMutation<{
+  unitId: DaycareId
+}>()(deleteImage, [({ unitId }) => childrenQuery(unitId)])

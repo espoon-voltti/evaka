@@ -7,7 +7,7 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import { CareType, PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { mockNow } from 'lib-common/utils/helpers'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -39,8 +39,10 @@ export default React.memo(function UnitDetailsPanel({
   const t = useTranslation()
   const [lang] = useLang()
 
+  const start = selectedAddress?.coordinates
+  const end = unit.location
   const distance = useQueryResult(
-    distanceQuery(selectedAddress?.coordinates ?? null, unit.location)
+    start && end ? distanceQuery(start, end) : constantQuery(null)
   )
 
   const formatCareType = (type: CareType) => {

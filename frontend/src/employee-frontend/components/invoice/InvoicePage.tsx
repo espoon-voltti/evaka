@@ -32,7 +32,7 @@ export default React.memo(function InvoiceDetailsPage() {
   const id = useIdRouteParam<InvoiceId>('id')
   const { i18n } = useTranslation()
   const invoiceCodes = useQueryResult(invoiceCodesQuery())
-  const response = useQueryResult(invoiceDetailsQuery(id))
+  const response = useQueryResult(invoiceDetailsQuery({ id }))
   const { setTitle } = useContext<TitleState>(TitleContext)
 
   useEffect(() => {

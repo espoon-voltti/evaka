@@ -23,7 +23,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useMutationResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -318,7 +317,7 @@ export const DailyServiceTimesCreationForm = React.memo(
 
 export interface EditProps {
   onClose: (shouldRefresh: boolean) => void
-  childId: UUID
+  childId: ChildId
   id: DailyServiceTimeId
   initialData: DailyServiceTimesValue
 }

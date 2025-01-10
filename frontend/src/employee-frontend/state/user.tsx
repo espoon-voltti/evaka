@@ -11,7 +11,7 @@ import React, {
 } from 'react'
 
 import { AdRole, User } from 'lib-common/api-types/employee-auth'
-import { query, useQuery } from 'lib-common/query'
+import { Queries, useQuery } from 'lib-common/query'
 import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 
 import { getAuthStatus } from '../api/auth'
@@ -38,10 +38,8 @@ export const UserContext = createContext<UserState>({
   dismissUnauthorizedApiCallDetection: () => undefined
 })
 
-const authStatusQuery = query({
-  api: () => getAuthStatus(),
-  queryKey: () => ['auth-status']
-})
+const q = new Queries()
+const authStatusQuery = q.query(getAuthStatus)
 
 export const UserContextProvider = React.memo(function UserContextProvider({
   children

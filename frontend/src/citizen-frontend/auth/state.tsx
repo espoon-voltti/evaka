@@ -17,7 +17,7 @@ import {
   CitizenAuthLevel,
   CitizenFeatures
 } from 'lib-common/generated/api-types/shared'
-import { query, useQueryResult } from 'lib-common/query'
+import { Queries, useQueryResult } from 'lib-common/query'
 
 import { getAuthStatus } from './api'
 
@@ -40,10 +40,8 @@ const defaultState: AuthState = {
 
 export const AuthContext = createContext<AuthState>(defaultState)
 
-const authStatusQuery = query({
-  api: () => getAuthStatus(),
-  queryKey: () => ['auth-status']
-})
+const q = new Queries()
+const authStatusQuery = q.query(getAuthStatus)
 
 export const AuthContextProvider = React.memo(function AuthContextProvider({
   children

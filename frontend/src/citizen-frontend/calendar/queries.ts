@@ -4,8 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 
-import LocalDate from 'lib-common/local-date'
-import { mutation, query } from 'lib-common/query'
+import { Queries } from 'lib-common/query'
 
 import {
   addCalendarEventTimeReservation,
@@ -25,97 +24,57 @@ import {
   postAbsences,
   postReservations
 } from '../generated/api-clients/reservations'
-import { createQueryKeys } from '../query'
 
-export const queryKeys = createQueryKeys('calendar', {
-  allReservations: () => ['reservations'],
-  reservations: (from: LocalDate, to: LocalDate) => [
-    'reservations',
-    from.formatIso(),
-    to.formatIso()
-  ],
-  allEvents: () => ['calendarEvents'],
-  calendarEvents: (from: LocalDate, to: LocalDate) => [
-    'calendarEvents',
-    from.formatIso(),
-    to.formatIso()
-  ],
-  dailyServiceTimeNotifications: () => ['dailyServiceTimeNotifications'],
-  holidayPeriods: () => ['holidayPeriods'],
-  activeQuestionnaires: () => ['activeQuestionnaires'],
-  incomeExpirationDates: () => ['incomeExpirationDates']
-})
+const q = new Queries()
 
-export const reservationsQuery = query({
-  api: getReservations,
-  queryKey: ({ from, to }) => queryKeys.reservations(from, to)
-})
+export const reservationsQuery = q.query(getReservations)
 
-export const calendarEventsQuery = query({
-  api: getCitizenCalendarEvents,
-  queryKey: ({ start, end }) => queryKeys.calendarEvents(start, end)
-})
+export const calendarEventsQuery = q.query(getCitizenCalendarEvents)
 
-export const dailyServiceTimeNotificationsQuery = query({
-  api: getDailyServiceTimeNotifications,
-  queryKey: queryKeys.dailyServiceTimeNotifications
-})
+export const dailyServiceTimeNotificationsQuery = q.query(
+  getDailyServiceTimeNotifications
+)
 
-export const postReservationsMutation = mutation({
-  api: postReservations,
-  invalidateQueryKeys: () => [queryKeys.allReservations()]
-})
+export const postReservationsMutation = q.mutation(postReservations, [
+  reservationsQuery.prefix
+])
 
-export const postAbsencesMutation = mutation({
-  api: postAbsences,
-  invalidateQueryKeys: () => [queryKeys.allReservations()]
-})
+export const postAbsencesMutation = q.mutation(postAbsences, [
+  reservationsQuery.prefix
+])
 
-export const addCalendarEventTimeReservationMutation = mutation({
-  api: addCalendarEventTimeReservation,
-  invalidateQueryKeys: () => [queryKeys.allEvents()]
-})
+export const addCalendarEventTimeReservationMutation = q.mutation(
+  addCalendarEventTimeReservation,
+  [calendarEventsQuery.prefix]
+)
 
-export const deleteCalendarEventTimeReservationMutation = mutation({
-  api: deleteCalendarEventTimeReservation,
-  invalidateQueryKeys: () => [queryKeys.allEvents()]
-})
+export const deleteCalendarEventTimeReservationMutation = q.mutation(
+  deleteCalendarEventTimeReservation,
+  [calendarEventsQuery.prefix]
+)
 
-export const holidayPeriodsQuery = query({
-  api: getHolidayPeriods,
-  queryKey: queryKeys.holidayPeriods
-})
+export const holidayPeriodsQuery = q.query(getHolidayPeriods)
 
-export const activeQuestionnaireQuery = query({
-  api: () =>
-    getActiveQuestionnaires().then((questionnaires) =>
-      questionnaires.length > 0 ? questionnaires[0] : null
-    ),
-  queryKey: queryKeys.activeQuestionnaires
-})
+export const activeQuestionnaireQuery = q.query(() =>
+  getActiveQuestionnaires().then((questionnaires) =>
+    questionnaires.length > 0 ? questionnaires[0] : null
+  )
+)
 
-export const answerFixedPeriodQuestionnaireMutation = mutation({
-  api: answerFixedPeriodQuestionnaire,
-  invalidateQueryKeys: () => [
-    activeQuestionnaireQuery().queryKey,
-    queryKeys.allReservations()
-  ]
-})
+export const answerFixedPeriodQuestionnaireMutation = q.mutation(
+  answerFixedPeriodQuestionnaire,
+  [activeQuestionnaireQuery, reservationsQuery.prefix]
+)
 
-export const answerOpenRangesQuestionnaireMutation = mutation({
-  api: answerOpenRangeQuestionnaire,
-  invalidateQueryKeys: () => [
-    activeQuestionnaireQuery().queryKey,
-    queryKeys.allReservations()
-  ]
-})
+export const answerOpenRangesQuestionnaireMutation = q.mutation(
+  answerOpenRangeQuestionnaire,
+  [activeQuestionnaireQuery, reservationsQuery.prefix]
+)
 
-export const incomeExpirationDatesQuery = query({
-  api: () =>
-    getExpiringIncome().then((incomeExpirationDates) =>
-      incomeExpirationDates.length > 0
-        ? sortBy(incomeExpirationDates, (d) => d)[0]
-        : null
-    ),
-  queryKey: queryKeys.incomeExpirationDates
-})
+export const incomeExpirationDatesQuery = q.query(() =>
+  getExpiringIncome().then((incomeExpirationDates) =>
+    incomeExpirationDates.length > 0
+      ? sortBy(incomeExpirationDates, (d) => d)[0]
+      : null
+  )
+)

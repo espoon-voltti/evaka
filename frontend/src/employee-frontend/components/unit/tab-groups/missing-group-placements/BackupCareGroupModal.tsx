@@ -6,7 +6,7 @@ import React, { useContext, useState } from 'react'
 
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { UUID } from 'lib-common/types'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -18,7 +18,7 @@ import { formatName } from '../../../../utils'
 import { updateBackupCareMutation } from '../../queries'
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   backupCare: UnitBackupCare
   groups: DaycareGroup[]
 }

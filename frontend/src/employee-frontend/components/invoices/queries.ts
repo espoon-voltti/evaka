@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { InvoiceId } from 'lib-common/generated/api-types/shared'
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import {
   createDraftInvoices,
@@ -17,69 +15,40 @@ import {
   sendInvoicesByDate
 } from '../../generated/api-clients/invoicing'
 import { markReplacementDraftSent } from '../../generated/api-clients/invoicing'
-import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('invoices', {
-  invoiceCodes: () => ['invoiceCodes'],
-  invoiceDetails: (id: UUID) => ['invoiceDetails', id],
-  invoiceDetailsAll: () => ['invoiceDetails'],
-  invoices: (args: Arg0<typeof searchInvoices>) => ['invoices', args],
-  invoicesAll: () => ['invoices']
-})
+const q = new Queries()
 
-export const invoiceCodesQuery = query({
-  api: getInvoiceCodes,
-  queryKey: queryKeys.invoiceCodes
-})
+export const invoiceCodesQuery = q.query(getInvoiceCodes)
 
-export const invoicesQuery = query({
-  api: (args: Arg0<typeof searchInvoices>) => searchInvoices(args),
-  queryKey: queryKeys.invoices
-})
+export const invoicesQuery = q.query(searchInvoices)
 
-export const invoiceDetailsQuery = query({
-  api: (id: InvoiceId) => getInvoice({ id }),
-  queryKey: queryKeys.invoiceDetails
-})
+export const invoiceDetailsQuery = q.query(getInvoice)
 
-export const createDraftInvoicesMutation = mutation({
-  api: createDraftInvoices,
-  invalidateQueryKeys: () => [queryKeys.invoicesAll()]
-})
+export const createDraftInvoicesMutation = q.mutation(createDraftInvoices, [
+  invoicesQuery.prefix
+])
 
-export const sendInvoicesMutation = mutation({
-  api: sendInvoices,
-  invalidateQueryKeys: () => [
-    queryKeys.invoicesAll(),
-    queryKeys.invoiceDetailsAll()
-  ]
-})
+export const sendInvoicesMutation = q.mutation(sendInvoices, [
+  invoicesQuery.prefix,
+  invoiceDetailsQuery.prefix
+])
 
-export const sendInvoicesByDateMutation = mutation({
-  api: sendInvoicesByDate,
-  invalidateQueryKeys: () => [
-    queryKeys.invoicesAll(),
-    queryKeys.invoiceDetailsAll()
-  ]
-})
+export const sendInvoicesByDateMutation = q.mutation(sendInvoicesByDate, [
+  invoicesQuery.prefix,
+  invoiceDetailsQuery.prefix
+])
 
-export const markInvoicesSentMutation = mutation({
-  api: markInvoicesSent,
-  invalidateQueryKeys: () => [
-    queryKeys.invoicesAll(),
-    queryKeys.invoiceDetailsAll()
-  ]
-})
+export const markInvoicesSentMutation = q.mutation(markInvoicesSent, [
+  invoicesQuery.prefix,
+  invoiceDetailsQuery.prefix
+])
 
-export const deleteDraftInvoicesMutation = mutation({
-  api: deleteDraftInvoices,
-  invalidateQueryKeys: () => [
-    queryKeys.invoicesAll(),
-    queryKeys.invoiceDetailsAll()
-  ]
-})
+export const deleteDraftInvoicesMutation = q.mutation(deleteDraftInvoices, [
+  invoicesQuery.prefix,
+  invoiceDetailsQuery.prefix
+])
 
-export const markReplacementDraftSentMutation = mutation({
-  api: markReplacementDraftSent,
-  invalidateQueryKeys: (arg) => [queryKeys.invoiceDetails(arg.invoiceId)]
-})
+export const markReplacementDraftSentMutation = q.mutation(
+  markReplacementDraftSent,
+  [({ invoiceId }) => invoiceDetailsQuery({ id: invoiceId })]
+)

@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mutation, query } from 'lib-common/query'
-import { Arg0, UUID } from 'lib-common/types'
+import { Queries } from 'lib-common/query'
 
 import { sendJamixOrders } from '../../generated/api-clients/jamix'
 import {
@@ -42,258 +41,104 @@ import {
   getVardaUnitErrorsReport
 } from '../../generated/api-clients/reports'
 import { markChildForVardaReset } from '../../generated/api-clients/varda'
-import { createQueryKeys } from '../../query'
 
-import { OccupancyReportFilters } from './Occupancies'
+const q = new Queries()
 
-const queryKeys = createQueryKeys('reports', {
-  permittedReports: () => ['permittedReports'],
-  assistanceNeedsAndActions: (
-    filters: Arg0<typeof getAssistanceNeedsAndActionsReport>
-  ) => ['assistanceNeedsAndActions', filters],
-  assistanceNeedsAndActionsByChild: (
-    filters: Arg0<typeof getAssistanceNeedsAndActionsReportByChild>
-  ) => ['assistanceNeedsAndActionsByChild', filters],
-  attendanceReservationByChild: (
-    filters: Arg0<typeof getAttendanceReservationReportByChild>
-  ) => ['attendanceReservationByUnitAndChild', filters],
-  childAttendance: (filters: Arg0<typeof getChildAttendanceReport>) => [
-    'childAttendance',
-    filters
-  ],
-  childDocumentsReport: (filters: Arg0<typeof getChildDocumentsReport>) => [
-    'childDocumentsReport',
-    filters
-  ],
-  childDocumentsReportTemplateOptions: () => [
-    'childDocumentsReportTemplateOptions'
-  ],
-  customerFees: (filters: Arg0<typeof getCustomerFeesReport>) => [
-    'customerFees',
-    filters
-  ],
-  exceededServiceNeedsUnits: () => ['exceededServiceNeedsUnits'],
-  exceededServiceNeedsRows: (params: {
-    unitId: UUID
-    year: number
-    month: number
-  }) => ['exceededServiceNeedsReportRows', params],
-  familyContacts: (filters: Arg0<typeof getFamilyContactsReport>) => [
-    'familyContacts',
-    filters
-  ],
-  invoices: (filters: Arg0<typeof getInvoiceReport>) => ['invoices', filters],
-  missingHeadOfFamily: (filters: Arg0<typeof getMissingHeadOfFamilyReport>) => [
-    'missingHeadOfFamily',
-    filters
-  ],
-  occupancies: (filters: OccupancyReportFilters) => ['occupancies', filters],
-  placementGuarantee: (filters: Arg0<typeof getPlacementGuaranteeReport>) => [
-    'placementGuarantee',
-    filters
-  ],
-  placementSketching: (filters: Arg0<typeof getPlacementSketchingReport>) => [
-    'placementSketching',
-    filters
-  ],
-  voucherServiceProviders: (
-    filters: Arg0<typeof getServiceVoucherReportForAllUnits>
-  ) => ['voucherServiceProviders', filters],
-  vardaChildErrors: () => ['vardaChildErrors'],
-  vardaUnitErrors: () => ['vardaUnitErrors'],
-  futurePreschoolers: () => ['futurePreschoolers'],
-  futurePreschoolersUnits: () => ['futurePreschoolersUnits'],
-  units: () => ['units'],
-  mealReportByUnit: (filters: Arg0<typeof getMealReportByUnit>) => [
-    'mealReportByUnit',
-    filters
-  ],
-  preschoolAbsenceReport: (filters: Arg0<typeof getPreschoolAbsenceReport>) => [
-    'preschoolAbsenceReport',
-    filters
-  ],
-  preschoolApplicationReport: () => ['preschoolApplicationReport'],
-  holidayPeriodAttendanceReport: (
-    filters: Arg0<typeof getHolidayPeriodAttendanceReport>
-  ) => ['holidayPeriodPresenceReport', filters],
-  titaniaErrorsReport: () => ['titaniaErrors'],
-  incompleteIncomeReport: () => ['incompleteIncomes'],
-  startingPlacementsReport: (
-    filters: Arg0<typeof getStartingPlacementsReport>
-  ) => ['startingPlacementsReport', filters]
-})
+export const permittedReportsQuery = q.query(getPermittedReports)
 
-export const permittedReportsQuery = query({
-  api: getPermittedReports,
-  queryKey: queryKeys.permittedReports
-})
+export const assistanceNeedsAndActionsReportQuery = q.query(
+  getAssistanceNeedsAndActionsReport
+)
 
-export const assistanceNeedsAndActionsReportQuery = query({
-  api: getAssistanceNeedsAndActionsReport,
-  queryKey: queryKeys.assistanceNeedsAndActions
-})
+export const assistanceNeedsAndActionsReportByChildQuery = q.query(
+  getAssistanceNeedsAndActionsReportByChild
+)
 
-export const assistanceNeedsAndActionsReportByChildQuery = query({
-  api: getAssistanceNeedsAndActionsReportByChild,
-  queryKey: queryKeys.assistanceNeedsAndActionsByChild
-})
+export const attendanceReservationReportByChildQuery = q.query(
+  getAttendanceReservationReportByChild
+)
 
-export const attendanceReservationReportByChildQuery = query({
-  api: getAttendanceReservationReportByChild,
-  queryKey: queryKeys.attendanceReservationByChild
-})
+export const childAttendanceReportQuery = q.query(getChildAttendanceReport)
 
-export const childAttendanceReportQuery = query({
-  api: getChildAttendanceReport,
-  queryKey: queryKeys.childAttendance
-})
+export const customerFeesReportQuery = q.query(getCustomerFeesReport)
 
-export const childDocumentsReportQuery = query({
-  api: getChildDocumentsReport,
-  queryKey: queryKeys.childDocumentsReport
-})
+export const childDocumentsReportQuery = q.query(getChildDocumentsReport)
 
-export const childDocumentsReportTemplateOptionsQuery = query({
-  api: getChildDocumentsReportTemplateOptions,
-  queryKey: queryKeys.childDocumentsReportTemplateOptions
-})
+export const childDocumentsReportTemplateOptionsQuery = q.query(
+  getChildDocumentsReportTemplateOptions
+)
 
-export const customerFeesReportQuery = query({
-  api: getCustomerFeesReport,
-  queryKey: queryKeys.customerFees
-})
+export const exceededServiceNeedReportUnitsQuery = q.query(
+  getExceededServiceNeedReportUnits
+)
 
-export const exceededServiceNeedReportUnitsQuery = query({
-  api: getExceededServiceNeedReportUnits,
-  queryKey: queryKeys.exceededServiceNeedsUnits
-})
+export const exceededServiceNeedsReportRowsQuery = q.query(
+  getExceededServiceNeedReportRows
+)
 
-export const exceededServiceNeedsReportRowsQuery = query({
-  api: getExceededServiceNeedReportRows,
-  queryKey: queryKeys.exceededServiceNeedsRows
-})
+export const familyContactsReportQuery = q.query(getFamilyContactsReport)
 
-export const familyContactsReportQuery = query({
-  api: getFamilyContactsReport,
-  queryKey: queryKeys.familyContacts
-})
+export const invoicesReportQuery = q.query(getInvoiceReport)
 
-export const invoicesReportQuery = query({
-  api: getInvoiceReport,
-  queryKey: queryKeys.invoices
-})
+export const missingHeadOfFamilyReportQuery = q.query(
+  getMissingHeadOfFamilyReport
+)
 
-export const missingHeadOfFamilyReportQuery = query({
-  api: getMissingHeadOfFamilyReport,
-  queryKey: queryKeys.missingHeadOfFamily
-})
+export const nonSsnChildrenReportQuery = q.query(getNonSsnChildrenReportRows)
 
-export const nonSsnChildrenReportQuery = query({
-  api: getNonSsnChildrenReportRows,
-  queryKey: () => []
-})
+export const occupancyUnitReportQuery = q.query(getOccupancyUnitReport)
+export const occupancyGroupReportQuery = q.query(getOccupancyGroupReport)
 
-export const occupanciesReportQuery = query({
-  api: (filters: OccupancyReportFilters) =>
-    filters.careAreaId === null
-      ? Promise.resolve([])
-      : filters.display === 'UNITS'
-        ? getOccupancyUnitReport(filters)
-        : getOccupancyGroupReport(filters),
-  queryKey: queryKeys.occupancies
-})
+export const placementGuaranteeReportQuery = q.query(
+  getPlacementGuaranteeReport
+)
 
-export const placementGuaranteeReportQuery = query({
-  api: getPlacementGuaranteeReport,
-  queryKey: queryKeys.placementGuarantee
-})
+export const placementSketchingQuery = q.query(getPlacementSketchingReport)
 
-export const placementSketchingQuery = query({
-  api: getPlacementSketchingReport,
-  queryKey: queryKeys.placementSketching
-})
+export const voucherServiceProvidersReportQuery = q.query(
+  getServiceVoucherReportForAllUnits
+)
 
-export const voucherServiceProvidersReportQuery = query({
-  api: getServiceVoucherReportForAllUnits,
-  queryKey: queryKeys.voucherServiceProviders
-})
+export const vardaChildErrorsQuery = q.query(getVardaChildErrorsReport)
 
-export const vardaChildErrorsQuery = query({
-  api: getVardaChildErrorsReport,
-  queryKey: queryKeys.vardaChildErrors
-})
+export const resetVardaChildMutation = q.mutation(markChildForVardaReset, [
+  vardaChildErrorsQuery
+])
 
-export const resetVardaChildMutation = mutation({
-  api: markChildForVardaReset,
-  invalidateQueryKeys: () => [queryKeys.vardaChildErrors()]
-})
+export const vardaUnitErrorsQuery = q.query(getVardaUnitErrorsReport)
 
-export const vardaUnitErrorsQuery = query({
-  api: getVardaUnitErrorsReport,
-  queryKey: queryKeys.vardaUnitErrors
-})
+export const futurePreschoolersQuery = q.query(getFuturePreschoolersReport)
 
-export const futurePreschoolersQuery = query({
-  api: getFuturePreschoolersReport,
-  queryKey: queryKeys.futurePreschoolers
-})
+export const preschoolUnitsQuery = q.query(getFuturePreschoolersUnitsReport)
 
-export const preschoolUnitsQuery = query({
-  api: getFuturePreschoolersUnitsReport,
-  queryKey: queryKeys.futurePreschoolersUnits
-})
+export const preschoolSourceUnitsQuery = q.query(
+  getFuturePreschoolersSourceUnitsReport
+)
 
-export const preschoolSourceUnitsQuery = query({
-  api: getFuturePreschoolersSourceUnitsReport,
-  queryKey: queryKeys.futurePreschoolersUnits
-})
+export const unitsReportQuery = q.query(getUnitsReport)
 
-export const unitsReportQuery = query({
-  api: getUnitsReport,
-  queryKey: queryKeys.units
-})
+export const mealReportByUnitQuery = q.query(getMealReportByUnit)
 
-export const mealReportByUnitQuery = query({
-  api: getMealReportByUnit,
-  queryKey: queryKeys.mealReportByUnit
-})
+export const preschoolAbsenceReportQuery = q.query(getPreschoolAbsenceReport)
 
-export const preschoolAbsenceReportQuery = query({
-  api: getPreschoolAbsenceReport,
-  queryKey: queryKeys.preschoolAbsenceReport
-})
+export const preschoolApplicationReportQuery = q.query(
+  getPreschoolApplicationReport
+)
 
-export const preschoolApplicationReportQuery = query({
-  api: getPreschoolApplicationReport,
-  queryKey: queryKeys.preschoolApplicationReport
-})
+export const holidayPeriodAttendanceReportQuery = q.query(
+  getHolidayPeriodAttendanceReport
+)
 
-export const holidayPeriodAttendanceReportQuery = query({
-  api: getHolidayPeriodAttendanceReport,
-  queryKey: queryKeys.holidayPeriodAttendanceReport
-})
+export const sendJamixOrdersMutation = q.mutation(sendJamixOrders)
 
-export const sendJamixOrdersMutation = mutation({
-  api: sendJamixOrders,
-  invalidateQueryKeys: () => []
-})
+export const titaniaErrorsReportQuery = q.query(getTitaniaErrorsReport)
 
-export const titaniaErrorsReportQuery = query({
-  api: getTitaniaErrorsReport,
-  queryKey: queryKeys.titaniaErrorsReport
-})
+export const clearTitaniaErrorMutation = q.mutation(clearTitaniaErrors, [
+  titaniaErrorsReportQuery
+])
 
-export const clearTitaniaErrorMutation = mutation({
-  api: clearTitaniaErrors,
-  invalidateQueryKeys: () => [queryKeys.titaniaErrorsReport()]
-})
+export const incompleteIncomeReportQuery = q.query(getIncompleteIncomeReport)
 
-export const incompleteIncomeReportQuery = query({
-  api: getIncompleteIncomeReport,
-  queryKey: queryKeys.incompleteIncomeReport
-})
-
-export const startingPlacementsReportQuery = query({
-  api: getStartingPlacementsReport,
-  queryKey: queryKeys.startingPlacementsReport
-})
+export const startingPlacementsReportQuery = q.query(
+  getStartingPlacementsReport
+)

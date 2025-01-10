@@ -115,7 +115,6 @@ export default React.memo(function FeeAlteration({
             cancel={clearUiMode}
             update={(data) =>
               updateFeeAlteration({
-                personId: childId,
                 feeAlterationId: data.id!,
                 body: data
               })

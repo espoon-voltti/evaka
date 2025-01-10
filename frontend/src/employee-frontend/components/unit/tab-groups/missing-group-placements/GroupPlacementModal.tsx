@@ -8,10 +8,9 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { first, second, useSelectMutation } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -36,7 +35,7 @@ const FieldWrapper = styled.section`
 `
 
 interface Props {
-  unitId: UUID
+  unitId: DaycareId
   groups: DaycareGroup[]
   missingPlacement: MissingPlacement
 }
