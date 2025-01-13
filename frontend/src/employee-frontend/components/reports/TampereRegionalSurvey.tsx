@@ -33,7 +33,7 @@ interface ReportQueryParams {
   year: number
 }
 
-export default React.memo(function Presences() {
+export default React.memo(function TampereRegionalSurveyReport() {
   const { i18n } = useTranslation()
   const t = i18n.reports.tampereRegionalSurvey
   const today = LocalDate.todayInHelsinkiTz()
