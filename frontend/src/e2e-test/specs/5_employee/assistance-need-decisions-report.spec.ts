@@ -49,7 +49,7 @@ const mockedTime = LocalDate.of(2021, 8, 16)
 beforeEach(async () => {
   await resetServiceState()
 
-  decisionMaker = await Fixture.employee().admin().save()
+  decisionMaker = await Fixture.employee().director().save()
   director = await Fixture.employee().director().save()
 
   await Fixture.careArea(testCareArea).save()
@@ -109,11 +109,12 @@ describe('Assistance need decisions report', () => {
       sentForDecision: LocalDate.of(2020, 6, 8),
       selectedUnit: unitId
     }).save()
+    // This one should not be visible to 'regional director', as it's assigned to a different decision-maker
     await Fixture.assistanceNeedDecision({
       childId,
       decisionMaker: {
         employeeId: director.id,
-        title: 'director',
+        title: 'director of another region',
         name: null,
         phoneNumber: null
       },
@@ -138,7 +139,7 @@ describe('Assistance need decisions report', () => {
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
     const report = new AssistanceNeedDecisionsReport(page)
 
-    await report.rows.assertCount(4)
+    await report.rows.assertCount(3)
     await waitUntilEqual(() => report.row(0), {
       ...baseReportRow,
       sentForDecision: '06.01.2021',
@@ -150,11 +151,6 @@ describe('Assistance need decisions report', () => {
       isUnopened: true
     })
     await waitUntilEqual(() => report.row(2), {
-      ...baseReportRow,
-      sentForDecision: '01.01.2020',
-      isUnopened: false // different decision-maker's decision
-    })
-    await waitUntilEqual(() => report.row(3), {
       ...baseReportRow,
       status: 'ACCEPTED',
       sentForDecision: '06.09.2019',
