@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -66,6 +66,7 @@ describe('Employee searches applications', () => {
     const applicationListView = await openPage()
 
     await applicationListView.specialFilterItems.duplicate.click()
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationIsVisible(applicationFixtureId)
     await applicationListView.assertApplicationIsVisible(duplicateFixture.id)
     await applicationListView.assertApplicationCount(2)
@@ -93,13 +94,16 @@ describe('Employee searches applications', () => {
     await createApplications({ body: [app1, app2, app3] })
     const applicationListView = await openPage()
 
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(3)
 
     await applicationListView.toggleArea(careArea1.name)
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(1)
     await applicationListView.assertApplicationIsVisible(app1.id)
 
     await applicationListView.toggleArea(careArea2.name)
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(2)
     await applicationListView.assertApplicationIsVisible(app1.id)
     await applicationListView.assertApplicationIsVisible(app2.id)
@@ -123,9 +127,11 @@ describe('Employee searches applications', () => {
     await createApplications({ body: [app1, app2] })
     const applicationListView = await openPage()
 
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(2)
 
     await applicationListView.toggleUnit(daycare1.name)
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationIsVisible(app1.id)
     await applicationListView.assertApplicationCount(1)
   })
@@ -177,6 +183,7 @@ describe('Employee searches applications', () => {
       ]
     })
     const applicationListView = await openPage(specialEducationTeacher)
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(1)
   })
 
@@ -221,15 +228,18 @@ describe('Employee searches applications', () => {
     const applicationListView = await openPage()
 
     await applicationListView.voucherUnitFilter.noFilter.click()
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(3)
 
     await applicationListView.voucherUnitFilter.firstChoice.click()
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationIsVisible(
       applicationWithVoucherUnitFirst.id
     )
     await applicationListView.assertApplicationCount(1)
 
     await applicationListView.voucherUnitFilter.voucherOnly.click()
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationIsVisible(
       applicationWithVoucherUnitFirst.id
     )
@@ -239,6 +249,7 @@ describe('Employee searches applications', () => {
     await applicationListView.assertApplicationCount(2)
 
     await applicationListView.voucherUnitFilter.voucherHide.click()
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationIsVisible(
       applicationWithNoVoucherUnit.id
     )
@@ -287,17 +298,21 @@ describe('Employee searches applications', () => {
     const applicationListView = await openPage()
 
     await applicationListView.filterByApplicationType('ALL')
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(3)
 
     await applicationListView.filterByApplicationType('CLUB')
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(1)
     await applicationListView.assertApplicationIsVisible(clubApplication.id)
 
     await applicationListView.filterByApplicationType('DAYCARE')
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(1)
     await applicationListView.assertApplicationIsVisible(daycareApplication.id)
 
     await applicationListView.filterByApplicationType('PRESCHOOL')
+    await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(1)
     await applicationListView.assertApplicationIsVisible(
       preschoolApplication.id

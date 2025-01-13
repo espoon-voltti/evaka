@@ -29,15 +29,13 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import { DevApplicationWithForm, DevEmployee } from '../../generated/api-types'
-import ApplicationDetailsPage from '../../pages/admin/application-details-page'
-import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
+import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let applicationWorkbench: ApplicationWorkbenchPage
-let applicationDetailsPage: ApplicationDetailsPage
+let applicationListView: ApplicationListView
 let applicationReadView: ApplicationReadView
 
 let admin: DevEmployee
@@ -99,8 +97,7 @@ beforeEach(async () => {
   admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
-  applicationWorkbench = new ApplicationWorkbenchPage(page)
-  applicationDetailsPage = new ApplicationDetailsPage(page)
+  applicationListView = new ApplicationListView(page)
   applicationReadView = new ApplicationReadView(page)
 })
 
@@ -109,9 +106,10 @@ describe('Application details', () => {
     await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
-    const application = await applicationWorkbench.openApplicationById(
-      singleParentApplication.id
-    )
+    await applicationListView.searchButton.click()
+    const application = await applicationListView
+      .applicationRow(singleParentApplication.id)
+      .openApplication()
     await application.assertGuardianName(
       `${testAdult.lastName} ${testAdult.firstName}`
     )
@@ -121,20 +119,22 @@ describe('Application details', () => {
     await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
-    const application = await applicationWorkbench.openApplicationById(
-      singleParentApplication.id
-    )
-    await application.assertNoOtherVtjGuardian()
+    await applicationListView.searchButton.click()
+    const application = await applicationListView
+      .applicationRow(singleParentApplication.id)
+      .openApplication()
+    await application.assertOtherVtjGuardianMissing()
   })
 
   test('Other VTJ guardian in same address is shown', async () => {
     await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
-    const application = await applicationWorkbench.openApplicationById(
-      familyWithTwoGuardiansApplication.id
-    )
-    await application.assertVtjGuardianName(
+    await applicationListView.searchButton.click()
+    const application = await applicationListView
+      .applicationRow(familyWithTwoGuardiansApplication.id)
+      .openApplication()
+    await application.assertOtherVtjGuardianName(
       `${familyWithTwoGuardians.otherGuardian.lastName} ${familyWithTwoGuardians.otherGuardian.firstName}`
     )
     await application.assertOtherGuardianSameAddress(true)
@@ -144,10 +144,11 @@ describe('Application details', () => {
     await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
-    const application = await applicationWorkbench.openApplicationById(
-      separatedFamilyApplication.id
-    )
-    await application.assertVtjGuardianName(
+    await applicationListView.searchButton.click()
+    const application = await applicationListView
+      .applicationRow(separatedFamilyApplication.id)
+      .openApplication()
+    await application.assertOtherVtjGuardianName(
       `${familyWithSeparatedGuardians.otherGuardian.lastName} ${familyWithSeparatedGuardians.otherGuardian.firstName}`
     )
     await application.assertOtherGuardianSameAddress(false)
@@ -183,7 +184,7 @@ describe('Application details', () => {
     await applicationReadView.navigateToApplication(
       restrictedDetailsGuardianApplication.id
     )
-    await applicationDetailsPage.assertApplicationStatus(
+    await applicationReadView.assertApplicationStatus(
       'Vahvistettavana huoltajalla'
     )
 
@@ -226,11 +227,11 @@ describe('Application details', () => {
 
     await employeeLogin(page, unitSupervisor)
     await applicationReadView.navigateToApplication(singleParentApplication.id)
-    await applicationDetailsPage.assertApplicationStatus(
+    await applicationReadView.assertApplicationStatus(
       'Vahvistettavana huoltajalla'
     )
     await applicationReadView.acceptDecision('DAYCARE')
-    await applicationDetailsPage.assertApplicationStatus('Paikka vastaanotettu')
+    await applicationReadView.assertApplicationStatus('Paikka vastaanotettu')
   })
 
   test('Service worker can create, edit and delete application notes', async () => {
@@ -238,9 +239,10 @@ describe('Application details', () => {
     await employeeLogin(page, serviceWorker)
     await page.goto(config.employeeUrl)
 
-    const application = await applicationWorkbench.openApplicationById(
-      singleParentApplication.id
-    )
+    await applicationListView.searchButton.click()
+    const application = await applicationListView
+      .applicationRow(singleParentApplication.id)
+      .openApplication()
     const newNote = 'New note.'
     await application.addNote(newNote)
     await application.assertNote(0, newNote)
@@ -248,6 +250,6 @@ describe('Application details', () => {
     await application.editNote(0, editedNote)
     await application.assertNote(0, editedNote)
     await application.deleteNote(0)
-    await application.assertNoNote(0)
+    await application.assertNoNotes()
   })
 })
