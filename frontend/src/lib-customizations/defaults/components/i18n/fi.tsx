@@ -113,9 +113,9 @@ const components: Translations = {
     },
     outOfOffice: {
       singleRecipient: (name: string, period: FiniteDateRange) =>
-        `${name} ei pysty vastaamaan viesteihin aikavälillä ${period.format()}.`,
+        `${name} ei ole tavoitettavissa aikavälillä ${period.format()}.`,
       multipleRecipientsHeader:
-        'Nämä vastaanottajat eivät pysty vastaamaan viesteihin seuraavina ajankohtina.'
+        'Nämä vastaanottajat eivät ole tavoitettavissa seuraavina ajankohtina.'
     }
   },
   messageReplyEditor: {
