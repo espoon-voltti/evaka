@@ -1443,16 +1443,8 @@ sealed interface Action {
             IsMobile(false).isAssociatedWithEmployee(),
             IsEmployee.isInSameUnitWithEmployee(),
         ),
-        READ_OUT_OF_OFFICE(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
-            IsEmployee.self(),
-        ),
-        UPDATE_OUT_OF_OFFICE(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
-            IsEmployee.self(),
-        );
+        READ_OUT_OF_OFFICE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
+        UPDATE_OUT_OF_OFFICE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
