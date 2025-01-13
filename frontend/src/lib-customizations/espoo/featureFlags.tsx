@@ -110,7 +110,7 @@ const features: Features = {
     personDuplicate: false,
     citizenAttendanceSummary: false,
     voucherUnitPayments: false,
-    voucherValueSeparation: false,
+    voucherValueSeparation: true,
     intermittentShiftCare: false,
     noAbsenceType: false,
     discussionReservations: true,
