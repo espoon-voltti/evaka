@@ -507,7 +507,6 @@ const FormArea = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  position: relative;
 `
 
 const TextAreaLabel = styled.label`
