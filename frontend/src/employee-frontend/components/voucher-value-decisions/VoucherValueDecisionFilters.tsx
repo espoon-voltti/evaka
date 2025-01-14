@@ -1,8 +1,14 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useContext, useEffect } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 import { useMemo } from 'react'
 
 import { wrapResult } from 'lib-common/api'
@@ -18,7 +24,10 @@ import { Gap } from 'lib-components/white-space'
 import { getUnits } from '../../generated/api-clients/daycare'
 import { getFinanceDecisionHandlers } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import {
+  InvoicingUiContext,
+  ValueDecisionSearchFilters
+} from '../../state/invoicing-ui'
 import {
   AreaFilter,
   Filters,
@@ -33,14 +42,22 @@ import {
 const getUnitsResult = wrapResult(getUnits)
 const getFinanceDecisionHandlersResult = wrapResult(getFinanceDecisionHandlers)
 
+const emptyFilters: ValueDecisionSearchFilters = {
+  searchTerms: '',
+  distinctiveDetails: [],
+  statuses: ['DRAFT'],
+  area: [],
+  difference: [],
+  startDate: undefined,
+  endDate: LocalDate.todayInSystemTz(),
+  searchByStartDate: false
+}
+
 export default React.memo(function VoucherValueDecisionFilters() {
+  const { i18n } = useTranslation()
+
   const {
-    valueDecisions: {
-      searchFilters,
-      setSearchFilters,
-      confirmSearchFilters,
-      clearSearchFilters
-    },
+    valueDecisions: { setConfirmedSearchFilters },
     shared: {
       units,
       setUnits,
@@ -50,7 +67,23 @@ export default React.memo(function VoucherValueDecisionFilters() {
     }
   } = useContext(InvoicingUiContext)
 
-  const { i18n } = useTranslation()
+  const [searchFilters, _setSearchFilters] =
+    useState<ValueDecisionSearchFilters>(emptyFilters)
+  const setSearchFilters = useCallback(
+    (value: React.SetStateAction<ValueDecisionSearchFilters>) => {
+      _setSearchFilters(value)
+      setConfirmedSearchFilters(undefined)
+    },
+    [setConfirmedSearchFilters]
+  )
+  const clearSearchFilters = useCallback(() => {
+    _setSearchFilters(emptyFilters)
+    setConfirmedSearchFilters(undefined)
+  }, [setConfirmedSearchFilters])
+  const confirmSearchFilters = useCallback(
+    () => setConfirmedSearchFilters(searchFilters),
+    [searchFilters, setConfirmedSearchFilters]
+  )
 
   useEffect(() => {
     void getFinanceDecisionHandlersResult().then(setFinanceDecisionHandlers)

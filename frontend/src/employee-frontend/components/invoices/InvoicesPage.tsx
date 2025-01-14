@@ -29,7 +29,10 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import {
+  InvoiceSearchFilters,
+  InvoicingUiContext
+} from '../../state/invoicing-ui'
 import { renderResult } from '../async-rendering'
 
 import Actions from './Actions'
@@ -154,8 +157,9 @@ export default React.memo(function InvoicesPage() {
             />
           </>
         ))}
-      {showModal ? (
+      {showModal && searchFilters ? (
         <Modal
+          searchFilters={searchFilters}
           onClose={closeModal}
           onSendDone={() => {
             closeModal()
@@ -170,21 +174,19 @@ export default React.memo(function InvoicesPage() {
 })
 
 const Modal = React.memo(function Modal({
+  searchFilters,
   onClose,
   onSendDone,
   checkedInvoices,
   fullAreaSelection
 }: {
+  searchFilters: InvoiceSearchFilters
   onClose: () => void
   onSendDone: () => void
   checkedInvoices: Set<InvoiceId>
   fullAreaSelection: boolean
 }) {
   const { i18n } = useTranslation()
-  const {
-    invoices: { searchFilters }
-  } = useContext(InvoicingUiContext)
-
   const [invoiceDate, setInvoiceDate] = useState(LocalDate.todayInSystemTz())
   const [dueDate, setDueDate] = useState(
     LocalDate.todayInSystemTz().addBusinessDays(10)
