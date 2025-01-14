@@ -4,10 +4,35 @@
 
 import { Queries } from 'lib-common/query'
 
+import {
+  ignoreVoucherValueDecisionDrafts,
+  searchVoucherValueDecisions,
+  sendVoucherValueDecisionDrafts,
+  unignoreVoucherValueDecisionDrafts
+} from '../../generated/api-clients/invoicing'
 import { getVoucherValueDecisionMetadata } from '../../generated/api-clients/process'
 
 const q = new Queries()
 
+export const searchVoucherValueDecisionsQuery = q.query(
+  searchVoucherValueDecisions
+)
+
 export const voucherValueDecisionMetadataQuery = q.query(
   getVoucherValueDecisionMetadata
+)
+
+export const sendVoucherValueDecisionDraftsMutation = q.mutation(
+  sendVoucherValueDecisionDrafts,
+  [searchVoucherValueDecisionsQuery.prefix]
+)
+
+export const ignoreVoucherValueDecisionDraftsMutation = q.mutation(
+  ignoreVoucherValueDecisionDrafts,
+  [searchVoucherValueDecisionsQuery.prefix]
+)
+
+export const unignoreVoucherValueDecisionDraftsMutation = q.mutation(
+  unignoreVoucherValueDecisionDrafts,
+  [searchVoucherValueDecisionsQuery.prefix]
 )

@@ -1,8 +1,14 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useContext, useEffect } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 
 import { wrapResult } from 'lib-common/api'
 import {
@@ -15,7 +21,10 @@ import { Gap } from 'lib-components/white-space'
 
 import { getUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import {
+  InvoiceSearchFilters,
+  InvoicingUiContext
+} from '../../state/invoicing-ui'
 import {
   AreaFilter,
   Filters,
@@ -27,19 +36,41 @@ import {
 
 const getUnitsResult = wrapResult(getUnits)
 
+const emptyFilters: InvoiceSearchFilters = {
+  searchTerms: '',
+  distinctiveDetails: [],
+  area: [],
+  status: 'DRAFT',
+  startDate: undefined,
+  endDate: undefined,
+  useCustomDatesForInvoiceSending: false
+}
+
 export default React.memo(function InvoiceFilters() {
+  const { i18n } = useTranslation()
+
   const {
-    invoices: {
-      searchFilters,
-      setSearchFilters,
-      searchTerms,
-      setSearchTerms,
-      clearSearchFilters
-    },
+    invoices: { setConfirmedSearchFilters },
     shared: { units, setUnits, availableAreas }
   } = useContext(InvoicingUiContext)
 
-  const { i18n } = useTranslation()
+  const [searchFilters, _setSearchFilters] =
+    useState<InvoiceSearchFilters>(emptyFilters)
+  const setSearchFilters = useCallback(
+    (value: React.SetStateAction<InvoiceSearchFilters>) => {
+      _setSearchFilters(value)
+      setConfirmedSearchFilters(undefined)
+    },
+    [setConfirmedSearchFilters]
+  )
+  const clearSearchFilters = useCallback(() => {
+    _setSearchFilters(emptyFilters)
+    setConfirmedSearchFilters(undefined)
+  }, [setConfirmedSearchFilters])
+  const confirmSearchFilters = useCallback(
+    () => setConfirmedSearchFilters(searchFilters),
+    [searchFilters, setConfirmedSearchFilters]
+  )
 
   useEffect(() => {
     void getUnitsResult({ areaIds: null, type: 'DAYCARE', from: null }).then(
@@ -123,8 +154,11 @@ export default React.memo(function InvoiceFilters() {
   return (
     <Filters
       searchPlaceholder={i18n.filters.freeTextPlaceholder}
-      freeText={searchTerms}
-      setFreeText={setSearchTerms}
+      freeText={searchFilters.searchTerms}
+      setFreeText={(s) =>
+        setSearchFilters((prev) => ({ ...prev, searchTerms: s }))
+      }
+      onSearch={confirmSearchFilters}
       clearFilters={clearSearchFilters}
       column1={
         <>

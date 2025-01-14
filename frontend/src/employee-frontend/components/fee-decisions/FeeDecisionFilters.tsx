@@ -1,8 +1,14 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 import { useMemo } from 'react'
 
 import { wrapResult } from 'lib-common/api'
@@ -18,7 +24,10 @@ import { Gap } from 'lib-components/white-space'
 import { getUnits } from '../../generated/api-clients/daycare'
 import { getFinanceDecisionHandlers } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import {
+  FeeDecisionSearchFilters,
+  InvoicingUiContext
+} from '../../state/invoicing-ui'
 import {
   AreaFilter,
   FeeDecisionDifferenceFilter,
@@ -33,15 +42,23 @@ import {
 const getUnitsResult = wrapResult(getUnits)
 const getFinanceDecisionHandlersResult = wrapResult(getFinanceDecisionHandlers)
 
+const emptyFilters: FeeDecisionSearchFilters = {
+  searchTerms: '',
+  distinctiveDetails: [],
+  statuses: ['DRAFT'],
+  area: [],
+  startDate: undefined,
+  endDate: LocalDate.todayInSystemTz(),
+  searchByStartDate: false,
+  financeDecisionHandlerId: undefined,
+  difference: []
+}
+
 function FeeDecisionFilters() {
+  const { i18n } = useTranslation()
+
   const {
-    feeDecisions: {
-      searchFilters,
-      setSearchFilters,
-      searchTerms,
-      setSearchTerms,
-      clearSearchFilters
-    },
+    feeDecisions: { setConfirmedSearchFilters },
     shared: {
       units,
       setUnits,
@@ -51,7 +68,23 @@ function FeeDecisionFilters() {
     }
   } = useContext(InvoicingUiContext)
 
-  const { i18n } = useTranslation()
+  const [searchFilters, _setSearchFilters] =
+    useState<FeeDecisionSearchFilters>(emptyFilters)
+  const setSearchFilters = useCallback(
+    (value: React.SetStateAction<FeeDecisionSearchFilters>) => {
+      _setSearchFilters(value)
+      setConfirmedSearchFilters(undefined)
+    },
+    [setConfirmedSearchFilters]
+  )
+  const clearSearchFilters = useCallback(() => {
+    _setSearchFilters(emptyFilters)
+    setConfirmedSearchFilters(undefined)
+  }, [setConfirmedSearchFilters])
+  const confirmSearchFilters = useCallback(
+    () => setConfirmedSearchFilters(searchFilters),
+    [searchFilters, setConfirmedSearchFilters]
+  )
 
   useEffect(() => {
     void getUnitsResult({ areaIds: null, type: 'DAYCARE', from: null }).then(
@@ -175,8 +208,11 @@ function FeeDecisionFilters() {
   return (
     <Filters
       searchPlaceholder={i18n.filters.freeTextPlaceholder}
-      freeText={searchTerms}
-      setFreeText={setSearchTerms}
+      freeText={searchFilters.searchTerms}
+      setFreeText={(s) =>
+        setSearchFilters((prev) => ({ ...prev, searchTerms: s }))
+      }
+      onSearch={confirmSearchFilters}
       clearFilters={clearSearchFilters}
       column1={
         <>

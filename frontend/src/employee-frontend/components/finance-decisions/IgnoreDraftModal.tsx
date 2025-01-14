@@ -1,21 +1,30 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
 
+import {
+  FeeDecisionId,
+  VoucherValueDecisionId
+} from 'lib-common/generated/api-types/shared'
+import { MutationDescription } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 
-export const IgnoreDraftModal = React.memo(function IgnoreDraftModal({
-  onConfirm,
+function IgnoreDraftModal_<
+  DecisionId extends FeeDecisionId | VoucherValueDecisionId
+>({
+  decisionIds,
+  mutation,
   onCancel,
   onSuccess
 }: {
-  onConfirm: () => void
+  decisionIds: DecisionId[]
+  mutation: MutationDescription<{ body: DecisionId[] }, void>
   onCancel: () => void
   onSuccess: () => void
 }) {
@@ -23,9 +32,10 @@ export const IgnoreDraftModal = React.memo(function IgnoreDraftModal({
   const [confirm, setConfirm] = useState(false)
 
   return (
-    <AsyncFormModal
+    <MutateFormModal
       title={i18n.ignoreDraftModal.title}
-      resolveAction={onConfirm}
+      resolveMutation={mutation}
+      resolveAction={() => ({ body: decisionIds })}
       resolveLabel={i18n.common.confirm}
       onSuccess={onSuccess}
       rejectAction={onCancel}
@@ -40,6 +50,10 @@ export const IgnoreDraftModal = React.memo(function IgnoreDraftModal({
         onChange={setConfirm}
         data-qa="confirm-checkbox"
       />
-    </AsyncFormModal>
+    </MutateFormModal>
   )
-})
+}
+
+export const IgnoreDraftModal = React.memo(
+  IgnoreDraftModal_
+) as typeof IgnoreDraftModal_

@@ -122,6 +122,7 @@ describe('Invoices', () => {
 
     test('List of invoice drafts is empty intially and after creating new drafts the list has one invoice', async () => {
       const invoicesPage = await openInvoicesPage()
+      await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(0)
       await invoicesPage.createInvoiceDrafts()
       await invoicesPage.assertInvoiceCount(1)
@@ -129,6 +130,7 @@ describe('Invoices', () => {
 
     test('Invoice page has correct content', async () => {
       const invoicesPage = await openInvoicesPage()
+      await invoicesPage.searchInvoices()
       await invoicesPage.createInvoiceDrafts()
       const invoicePage = await invoicesPage.openFirstInvoice()
 
@@ -208,12 +210,13 @@ describe('Invoices', () => {
         })
         .save()
       const invoicesPage = await openInvoicesPage()
-
+      await invoicesPage.searchInvoices()
       await invoicesPage.toggleAllInvoices(true)
       await invoicesPage.assertInvoiceCount(2)
       await invoicesPage.sendInvoices()
       await invoicesPage.assertInvoiceCount(0)
       await invoicesPage.filterByStatus('SENT')
+      await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(2)
     })
 
@@ -238,16 +241,19 @@ describe('Invoices', () => {
 
       const invoicesPage = await openInvoicesPage()
       await invoicesPage.freeTextFilter(adultWithoutSSN.firstName)
+      await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(1)
       await invoicesPage.toggleAllInvoices(true)
       await invoicesPage.sendInvoices()
       await invoicesPage.assertInvoiceCount(0)
       await invoicesPage.filterByStatus('WAITING_FOR_SENDING')
+      await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(1)
       await invoicesPage.openFirstInvoice()
       await invoicesPage.markInvoiceSent()
       await invoicesPage.navigateBackToInvoices()
       await invoicesPage.filterByStatus('SENT')
+      await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(1)
     })
   })
@@ -278,6 +284,7 @@ describe('Invoices', () => {
       }).save()
 
       invoicesPage = await openInvoicesPage()
+      await invoicesPage.searchInvoices()
 
       await invoicesPage.createInvoiceDrafts()
       await invoicesPage.toggleAllInvoices(true)
@@ -295,6 +302,7 @@ describe('Invoices', () => {
       await generateReplacementDraftInvoices()
 
       await invoicesPage.filterByStatus('REPLACEMENT_DRAFT')
+      await invoicesPage.searchInvoices()
 
       const invoicePage = await invoicesPage.openFirstInvoice()
 
@@ -322,6 +330,7 @@ describe('Invoices', () => {
       await generateReplacementDraftInvoices()
 
       await invoicesPage.filterByStatus('REPLACEMENT_DRAFT')
+      await invoicesPage.searchInvoices()
 
       const invoicePage = await invoicesPage.openFirstInvoice()
 
@@ -355,6 +364,7 @@ describe('Invoices', () => {
       await generateReplacementDraftInvoices()
 
       await invoicesPage.filterByStatus('REPLACEMENT_DRAFT')
+      await invoicesPage.searchInvoices()
 
       const invoicePage = await invoicesPage.openFirstInvoice()
       const form = invoicePage.replacementDraftForm

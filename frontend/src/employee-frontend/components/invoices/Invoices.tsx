@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -38,6 +38,7 @@ import colors from 'lib-customizations/common'
 import { faExclamation, faSync } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 import { StatusIconContainer } from '../common/StatusIconContainer'
@@ -49,8 +50,6 @@ interface Props {
   pagedInvoices: PagedInvoiceSummaryResponses
   isLoading: boolean
 
-  currentPage: number
-  setCurrentPage: (p: number) => void
   sortBy: InvoiceSortParam
   setSortBy: (sb: InvoiceSortParam) => void
   sortDirection: SortDirection
@@ -72,8 +71,6 @@ export default React.memo(function Invoices({
   user,
   pagedInvoices,
   isLoading,
-  currentPage,
-  setCurrentPage,
   sortBy,
   setSortBy,
   sortDirection,
@@ -89,6 +86,10 @@ export default React.memo(function Invoices({
 }: Props) {
   const { i18n } = useTranslation()
   const { pages, data: invoices } = pagedInvoices
+
+  const {
+    invoices: { page, setPage }
+  } = useContext(InvoicingUiContext)
 
   const [
     draftCreationError,
@@ -124,8 +125,8 @@ export default React.memo(function Invoices({
           </div>
           <Pagination
             pages={pagedInvoices.pages}
-            currentPage={currentPage}
-            setPage={setCurrentPage}
+            currentPage={page}
+            setPage={setPage}
             label={i18n.common.page}
           />
         </ResultsContainer>
@@ -165,8 +166,8 @@ export default React.memo(function Invoices({
       <ResultsContainer>
         <Pagination
           pages={pages}
-          currentPage={currentPage}
-          setPage={setCurrentPage}
+          currentPage={page}
+          setPage={setPage}
           label={i18n.common.page}
         />
       </ResultsContainer>

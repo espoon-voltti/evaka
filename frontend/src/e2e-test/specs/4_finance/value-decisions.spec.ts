@@ -131,12 +131,14 @@ describe('Value decisions', () => {
       decision1DateFrom.subDays(1),
       decision2DateTo.addDays(1)
     )
+    await valueDecisionsPage.searchButton.click()
     await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
 
     await valueDecisionsPage.setDates(
       decision1DateTo.addDays(1),
       decision2DateTo.addDays(1)
     )
+    await valueDecisionsPage.searchButton.click()
     await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
   })
 
@@ -147,6 +149,7 @@ describe('Value decisions', () => {
       decision1DateTo.subDays(1),
       decision2DateTo.subDays(1)
     )
+    await valueDecisionsPage.searchButton.click()
     await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
   })
 
@@ -157,20 +160,22 @@ describe('Value decisions', () => {
       decision2DateFrom.subDays(1),
       decision2DateTo.subDays(1)
     )
+    await valueDecisionsPage.searchButton.click()
     await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
     await valueDecisionsPage.startDateWithinRange()
+    await valueDecisionsPage.searchButton.click()
     await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
   })
 
   test('Navigate to the decision details page', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-
+    await valueDecisionsPage.searchButton.click()
     await valueDecisionsPage.openFirstValueDecision()
   })
 
   test('Send value decision from details page', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-
+    await valueDecisionsPage.searchButton.click()
     const valueDecisionDetailsPage =
       await valueDecisionsPage.openFirstValueDecision()
     await valueDecisionDetailsPage.sendValueDecision()
@@ -180,6 +185,7 @@ describe('Value decisions', () => {
 
   test('Voucher value decisions are toggled and sent', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    await valueDecisionsPage.searchButton.click()
     await valueDecisionsPage.toggleAllValueDecisions()
     await valueDecisionsPage.sendValueDecisions(now)
     await valueDecisionsPage.assertSentDecisionsCount(2)
@@ -199,6 +205,7 @@ describe('Value decisions', () => {
       ]
     })
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
+    await valueDecisionsPage.searchButton.click()
 
     const valueDecisionDetailsPage =
       await valueDecisionsPage.openFirstValueDecision()
@@ -217,6 +224,7 @@ describe('Value decisions', () => {
       ]
     })
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
+    await valueDecisionsPage.searchButton.click()
 
     const valueDecisionDetailsPage =
       await valueDecisionsPage.openFirstValueDecision()
@@ -235,6 +243,7 @@ describe('Value decisions', () => {
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions(
       DecisionIncomeFixture(54321)
     )
+    await valueDecisionsPage.searchButton.click()
 
     const valueDecisionDetailsPage =
       await valueDecisionsPage.openFirstValueDecision()
@@ -266,6 +275,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decisions are toggled and cancelled', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    await valueDecisionsPage.searchButton.click()
     await valueDecisionsPage.toggleAllValueDecisions()
     const modal = await valueDecisionsPage.openDecisionHandlerModal()
     await modal.rejectDecisionHandlerModal(now)
@@ -274,6 +284,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decisions are toggled and sent without selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    await valueDecisionsPage.searchButton.click()
     await valueDecisionsPage.toggleAllValueDecisions()
     const modal = await valueDecisionsPage.openDecisionHandlerModal()
     await modal.resolveDecisionHandlerModal(now)
@@ -285,6 +296,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decisions are toggled and sent with selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    await valueDecisionsPage.searchButton.click()
     const otherFinanceAdmin = await Fixture.employee({
       email: 'laura.laskuttaja@evaka.test',
       firstName: 'Laura',
@@ -304,6 +316,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decision is sent without selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    await valueDecisionsPage.searchButton.click()
     const valueDecisionDetailsPageDraft =
       await valueDecisionsPage.openFirstValueDecision()
     const modal = await valueDecisionDetailsPageDraft.openDecisionHandlerModal()
@@ -319,6 +332,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decision is sent with selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    await valueDecisionsPage.searchButton.click()
     const otherFinanceAdmin = await Fixture.employee({
       email: 'laura.laskuttaja@evaka.test',
       firstName: 'Laura',

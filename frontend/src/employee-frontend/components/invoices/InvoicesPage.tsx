@@ -29,7 +29,10 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import {
+  InvoiceSearchFilters,
+  InvoicingUiContext
+} from '../../state/invoicing-ui'
 import { renderResult } from '../async-rendering'
 
 import Actions from './Actions'
@@ -44,30 +47,31 @@ import {
 export default React.memo(function InvoicesPage() {
   const { user } = useContext(UserContext)
   const {
-    invoices: { searchFilters, debouncedSearchTerms }
+    invoices: { confirmedSearchFilters: searchFilters, page }
   } = useContext(InvoicingUiContext)
 
-  const { startDate, endDate, area, unit, status, distinctiveDetails } =
-    searchFilters
-
-  const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<InvoiceSortParam>('HEAD_OF_FAMILY')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
 
   const invoices = useQueryResult(
-    !startDate || !endDate || startDate.isEqualOrBefore(endDate)
+    searchFilters &&
+      (!searchFilters.startDate ||
+        !searchFilters.endDate ||
+        searchFilters.startDate.isEqualOrBefore(searchFilters.endDate))
       ? invoicesQuery({
           body: {
             page,
             sortBy,
             sortDirection,
-            area,
-            unit: unit ?? null,
-            status,
-            distinctions: distinctiveDetails,
-            searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
-            periodStart: startDate ?? null,
-            periodEnd: endDate ?? null
+            area: searchFilters.area,
+            unit: searchFilters.unit ?? null,
+            status: searchFilters.status,
+            distinctions: searchFilters.distinctiveDetails,
+            searchTerms: searchFilters.searchTerms
+              ? searchFilters.searchTerms
+              : null,
+            periodStart: searchFilters.startDate ?? null,
+            periodEnd: searchFilters.endDate ?? null
           }
         })
       : constantQuery({ data: [], pages: 0, total: 0 })
@@ -115,45 +119,47 @@ export default React.memo(function InvoicesPage() {
         <InvoiceFilters />
       </ContentArea>
       <Gap size="XL" />
-      <ContentArea opaque>
-        {renderResult(invoices, (invoices, isReloading) => (
-          <Invoices
-            user={user}
-            pagedInvoices={invoices}
-            isLoading={isReloading}
-            currentPage={page}
-            setCurrentPage={setPage}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            sortDirection={sortDirection}
-            setSortDirection={setSortDirection}
-            showCheckboxes={
-              (searchFilters.status === 'DRAFT' ||
-                searchFilters.status === 'WAITING_FOR_SENDING') &&
-              (canSend || canDelete)
-            }
-            checked={checkedInvoices}
-            checkAll={checkAllOnPage}
-            clearChecked={clearChecked}
-            toggleChecked={toggleChecked}
-            fullAreaSelection={fullAreaSelection}
-            setFullAreaSelection={setFullAreaSelection}
-            fullAreaSelectionDisabled={searchFilters.area.length < 1}
-          />
+      {searchFilters &&
+        renderResult(invoices, (invoices, isReloading) => (
+          <>
+            <ContentArea opaque>
+              <Invoices
+                user={user}
+                pagedInvoices={invoices}
+                isLoading={isReloading}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortDirection={sortDirection}
+                setSortDirection={setSortDirection}
+                showCheckboxes={
+                  (searchFilters.status === 'DRAFT' ||
+                    searchFilters.status === 'WAITING_FOR_SENDING') &&
+                  (canSend || canDelete)
+                }
+                checked={checkedInvoices}
+                checkAll={checkAllOnPage}
+                clearChecked={clearChecked}
+                toggleChecked={toggleChecked}
+                fullAreaSelection={fullAreaSelection}
+                setFullAreaSelection={setFullAreaSelection}
+                fullAreaSelectionDisabled={searchFilters.area.length < 1}
+              />
+            </ContentArea>
+            <Actions
+              openModal={openModal}
+              status={searchFilters.status}
+              canSend={canSend}
+              canDelete={canDelete}
+              checkedInvoices={checkedInvoices}
+              clearCheckedInvoices={clearChecked}
+              checkedAreas={searchFilters.area}
+              fullAreaSelection={fullAreaSelection}
+            />
+          </>
         ))}
-      </ContentArea>
-      <Actions
-        openModal={openModal}
-        status={searchFilters.status}
-        canSend={canSend}
-        canDelete={canDelete}
-        checkedInvoices={checkedInvoices}
-        clearCheckedInvoices={clearChecked}
-        checkedAreas={searchFilters.area}
-        fullAreaSelection={fullAreaSelection}
-      />
-      {showModal ? (
+      {showModal && searchFilters ? (
         <Modal
+          searchFilters={searchFilters}
           onClose={closeModal}
           onSendDone={() => {
             closeModal()
@@ -168,21 +174,19 @@ export default React.memo(function InvoicesPage() {
 })
 
 const Modal = React.memo(function Modal({
+  searchFilters,
   onClose,
   onSendDone,
   checkedInvoices,
   fullAreaSelection
 }: {
+  searchFilters: InvoiceSearchFilters
   onClose: () => void
   onSendDone: () => void
   checkedInvoices: Set<InvoiceId>
   fullAreaSelection: boolean
 }) {
   const { i18n } = useTranslation()
-  const {
-    invoices: { searchFilters }
-  } = useContext(InvoicingUiContext)
-
   const [invoiceDate, setInvoiceDate] = useState(LocalDate.todayInSystemTz())
   const [dueDate, setDueDate] = useState(
     LocalDate.todayInSystemTz().addBusinessDays(10)

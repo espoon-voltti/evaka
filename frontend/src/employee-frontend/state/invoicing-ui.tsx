@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -34,13 +34,13 @@ import { Employee } from 'lib-common/generated/api-types/pis'
 import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { useDebounce } from 'lib-common/utils/useDebounce'
 
 import { areaQuery } from '../components/unit/queries'
 
 import { UserContext } from './user'
 
-interface FeeDecisionSearchFilters {
+export interface FeeDecisionSearchFilters {
+  searchTerms: string
   area: string[]
   unit?: DaycareId
   statuses: FeeDecisionStatus[]
@@ -53,15 +53,16 @@ interface FeeDecisionSearchFilters {
 }
 
 interface FeeDecisionSearchFilterState {
-  searchFilters: FeeDecisionSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<FeeDecisionSearchFilters>>
-  searchTerms: string
-  setSearchTerms: (s: string) => void
-  debouncedSearchTerms: string
-  clearSearchFilters: () => void
+  page: number
+  setPage: (p: number) => void
+  confirmedSearchFilters: FeeDecisionSearchFilters | undefined
+  setConfirmedSearchFilters: (
+    filters: FeeDecisionSearchFilters | undefined
+  ) => void
 }
 
-interface ValueDecisionSearchFilters {
+export interface ValueDecisionSearchFilters {
+  searchTerms: string
   area: string[]
   unit?: DaycareId
   statuses: VoucherValueDecisionStatus[]
@@ -74,15 +75,16 @@ interface ValueDecisionSearchFilters {
 }
 
 interface ValueDecisionSearchFilterState {
-  searchFilters: ValueDecisionSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<ValueDecisionSearchFilters>>
-  searchTerms: string
-  setSearchTerms: (s: string) => void
-  debouncedSearchTerms: string
-  clearSearchFilters: () => void
+  page: number
+  setPage: (p: number) => void
+  confirmedSearchFilters: ValueDecisionSearchFilters | undefined
+  setConfirmedSearchFilters: (
+    filters: ValueDecisionSearchFilters | undefined
+  ) => void
 }
 
 export interface InvoiceSearchFilters {
+  searchTerms: string
   area: string[]
   unit?: DaycareId
   status: InvoiceStatus
@@ -93,15 +95,14 @@ export interface InvoiceSearchFilters {
 }
 
 interface InvoiceSearchFilterState {
-  searchFilters: InvoiceSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<InvoiceSearchFilters>>
-  searchTerms: string
-  setSearchTerms: (s: string) => void
-  debouncedSearchTerms: string
-  clearSearchFilters: () => void
+  page: number
+  setPage: (p: number) => void
+  confirmedSearchFilters: InvoiceSearchFilters | undefined
+  setConfirmedSearchFilters: (filters: InvoiceSearchFilters | undefined) => void
 }
 
 export interface PaymentSearchFilters {
+  searchTerms: string
   area: string[]
   unit: DaycareId | null
   distinctions: PaymentDistinctiveParams[]
@@ -111,12 +112,10 @@ export interface PaymentSearchFilters {
 }
 
 interface PaymentSearchFilterState {
-  searchFilters: PaymentSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<PaymentSearchFilters>>
-  searchTerms: string
-  setSearchTerms: (s: string) => void
-  debouncedSearchTerms: string
-  clearSearchFilters: () => void
+  page: number
+  setPage: (p: number) => void
+  confirmedSearchFilters: PaymentSearchFilters | undefined
+  setConfirmedSearchFilters: (filters: PaymentSearchFilters | undefined) => void
 }
 
 export interface IncomeStatementSearchFilters {
@@ -129,9 +128,12 @@ export interface IncomeStatementSearchFilters {
 }
 
 interface IncomeStatementSearchFilterState {
-  searchFilters: IncomeStatementSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<IncomeStatementSearchFilters>>
-  clearSearchFilters: () => void
+  page: number
+  setPage: (p: number) => void
+  confirmedSearchFilters: IncomeStatementSearchFilters | undefined
+  setConfirmedSearchFilters: (
+    filters: IncomeStatementSearchFilters | undefined
+  ) => void
 }
 
 export interface FinanceDecisionHandlerOption {
@@ -158,79 +160,34 @@ interface UiState {
 
 const defaultState: UiState = {
   feeDecisions: {
-    searchFilters: {
-      distinctiveDetails: [],
-      statuses: ['DRAFT'],
-      area: [],
-      startDate: undefined,
-      endDate: LocalDate.todayInSystemTz(),
-      searchByStartDate: false,
-      financeDecisionHandlerId: undefined,
-      difference: []
-    },
-    setSearchFilters: () => undefined,
-    searchTerms: '',
-    setSearchTerms: () => undefined,
-    debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined
+    page: 1,
+    setPage: () => undefined,
+    confirmedSearchFilters: undefined,
+    setConfirmedSearchFilters: () => undefined
   },
   valueDecisions: {
-    searchFilters: {
-      distinctiveDetails: [],
-      statuses: ['DRAFT'],
-      area: [],
-      difference: [],
-      startDate: undefined,
-      endDate: LocalDate.todayInSystemTz(),
-      searchByStartDate: false
-    },
-    setSearchFilters: () => undefined,
-    searchTerms: '',
-    setSearchTerms: () => undefined,
-    debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined
+    page: 1,
+    setPage: () => undefined,
+    confirmedSearchFilters: undefined,
+    setConfirmedSearchFilters: () => undefined
   },
   invoices: {
-    searchFilters: {
-      distinctiveDetails: [],
-      area: [],
-      status: 'DRAFT',
-      startDate: undefined,
-      endDate: undefined,
-      useCustomDatesForInvoiceSending: false
-    },
-    setSearchFilters: () => undefined,
-    searchTerms: '',
-    setSearchTerms: () => undefined,
-    debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined
+    page: 1,
+    setPage: () => undefined,
+    confirmedSearchFilters: undefined,
+    setConfirmedSearchFilters: () => undefined
   },
   payments: {
-    searchFilters: {
-      area: [],
-      unit: null,
-      distinctions: [],
-      status: 'DRAFT',
-      paymentDateStart: null,
-      paymentDateEnd: null
-    },
-    setSearchFilters: () => undefined,
-    searchTerms: '',
-    setSearchTerms: () => undefined,
-    debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined
+    page: 1,
+    setPage: () => undefined,
+    confirmedSearchFilters: undefined,
+    setConfirmedSearchFilters: () => undefined
   },
   incomeStatements: {
-    searchFilters: {
-      area: [],
-      unit: undefined,
-      providerTypes: [],
-      sentStartDate: undefined,
-      sentEndDate: undefined,
-      placementValidDate: undefined
-    },
-    setSearchFilters: () => undefined,
-    clearSearchFilters: () => undefined
+    page: 1,
+    setPage: () => undefined,
+    confirmedSearchFilters: undefined,
+    setConfirmedSearchFilters: () => undefined
   },
   shared: {
     units: Loading.of(),
@@ -251,73 +208,50 @@ export const InvoicingUIContextProvider = React.memo(
   }) {
     const { loggedIn } = useContext(UserContext)
 
-    const [feeDecisionSearchFilters, setFeeDecisionSearchFilters] =
-      useState<FeeDecisionSearchFilters>(
-        defaultState.feeDecisions.searchFilters
+    const [feeDecisionPage, setFeeDecisionPage] = useState<number>(
+      defaultState.feeDecisions.page
+    )
+    const [
+      confirmedFeeDecisionSearchFilters,
+      setConfirmedFeeDecisionSearchFilters
+    ] = useState<FeeDecisionSearchFilters | undefined>(
+      defaultState.feeDecisions.confirmedSearchFilters
+    )
+
+    const [valueDecisionPage, setValueDecisionPage] = useState<number>(
+      defaultState.valueDecisions.page
+    )
+    const [
+      confirmedValueDecisionSearchFilters,
+      setConfirmedValueDecisionSearchFilters
+    ] = useState<ValueDecisionSearchFilters | undefined>(
+      defaultState.valueDecisions.confirmedSearchFilters
+    )
+
+    const [invoicePage, setInvoicePage] = useState<number>(
+      defaultState.invoices.page
+    )
+    const [confirmedInvoiceSearchFilters, setConfirmedInvoiceSearchFilters] =
+      useState<InvoiceSearchFilters | undefined>(
+        defaultState.invoices.confirmedSearchFilters
       )
-    const [feeDecisionFreeTextSearch, setFeeDecisionFreeTextSearch] = useState(
-      defaultState.feeDecisions.searchTerms
-    )
-    const feeDecisionDebouncedFreeText = useDebounce(
-      feeDecisionFreeTextSearch,
-      500
-    )
-    const clearFeeDecisionSearchFilters = useCallback(
-      () =>
-        setFeeDecisionSearchFilters(defaultState.feeDecisions.searchFilters),
-      []
-    )
 
-    const [valueDecisionSearchFilters, setValueDecisionSearchFilters] =
-      useState<ValueDecisionSearchFilters>(
-        defaultState.valueDecisions.searchFilters
+    const [paymentPage, setPaymentPage] = useState<number>(
+      defaultState.payments.page
+    )
+    const [confirmedPaymentSearchFilters, setConfirmedPaymentSearchFilters] =
+      useState<PaymentSearchFilters | undefined>(
+        defaultState.payments.confirmedSearchFilters
       )
-    const [valueDecisionFreeTextSearch, setValueDecisionFreeTextSearch] =
-      useState(defaultState.valueDecisions.searchTerms)
-    const valueDecisionDebouncedFreeText = useDebounce(
-      valueDecisionFreeTextSearch,
-      500
-    )
-    const clearValueDecisionSearchFilters = useCallback(
-      () =>
-        setValueDecisionSearchFilters(
-          defaultState.valueDecisions.searchFilters
-        ),
-      []
-    )
 
-    const [invoiceSearchFilters, setInvoiceSearchFilters] =
-      useState<InvoiceSearchFilters>(defaultState.invoices.searchFilters)
-    const [invoiceFreeTextSearch, setInvoiceFreeTextSearch] = useState(
-      defaultState.invoices.searchTerms
+    const [incomeStatementPage, setIncomeStatementPage] = useState<number>(
+      defaultState.incomeStatements.page
     )
-    const invoiceDebouncedFreeText = useDebounce(invoiceFreeTextSearch, 500)
-    const clearInvoiceSearchFilters = useCallback(
-      () => setInvoiceSearchFilters(defaultState.invoices.searchFilters),
-      []
-    )
-
-    const [paymentSearchFilters, setPaymentSearchFilters] =
-      useState<PaymentSearchFilters>(defaultState.payments.searchFilters)
-    const [paymentFreeTextSearch, setPaymentFreeTextSearch] = useState(
-      defaultState.payments.searchTerms
-    )
-    const paymentDebouncedFreeText = useDebounce(paymentFreeTextSearch, 500)
-    const clearPaymentSearchFilters = useCallback(
-      () => setPaymentSearchFilters(defaultState.payments.searchFilters),
-      []
-    )
-
-    const [incomeStatementSearchFilters, setIncomeStatementSearchFilters] =
-      useState<IncomeStatementSearchFilters>(
-        defaultState.incomeStatements.searchFilters
-      )
-    const clearIncomeStatementSearchFilters = useCallback(
-      () =>
-        setIncomeStatementSearchFilters(
-          defaultState.incomeStatements.searchFilters
-        ),
-      [setIncomeStatementSearchFilters]
+    const [
+      confirmedIncomeStatementSearchFilters,
+      setConfirmedIncomeStatementSearchFilters
+    ] = useState<IncomeStatementSearchFilters | undefined>(
+      defaultState.incomeStatements.confirmedSearchFilters
     )
 
     const [units, setUnits] = useState<Result<UnitStub[]>>(
@@ -344,41 +278,34 @@ export const InvoicingUIContextProvider = React.memo(
     const value = useMemo(
       () => ({
         feeDecisions: {
-          searchFilters: feeDecisionSearchFilters,
-          setSearchFilters: setFeeDecisionSearchFilters,
-          searchTerms: feeDecisionFreeTextSearch,
-          setSearchTerms: setFeeDecisionFreeTextSearch,
-          debouncedSearchTerms: feeDecisionDebouncedFreeText,
-          clearSearchFilters: clearFeeDecisionSearchFilters
+          page: feeDecisionPage,
+          setPage: setFeeDecisionPage,
+          confirmedSearchFilters: confirmedFeeDecisionSearchFilters,
+          setConfirmedSearchFilters: setConfirmedFeeDecisionSearchFilters
         },
         valueDecisions: {
-          searchFilters: valueDecisionSearchFilters,
-          setSearchFilters: setValueDecisionSearchFilters,
-          searchTerms: valueDecisionFreeTextSearch,
-          setSearchTerms: setValueDecisionFreeTextSearch,
-          debouncedSearchTerms: valueDecisionDebouncedFreeText,
-          clearSearchFilters: clearValueDecisionSearchFilters
+          page: valueDecisionPage,
+          setPage: setValueDecisionPage,
+          confirmedSearchFilters: confirmedValueDecisionSearchFilters,
+          setConfirmedSearchFilters: setConfirmedValueDecisionSearchFilters
         },
         invoices: {
-          searchFilters: invoiceSearchFilters,
-          setSearchFilters: setInvoiceSearchFilters,
-          searchTerms: invoiceFreeTextSearch,
-          setSearchTerms: setInvoiceFreeTextSearch,
-          debouncedSearchTerms: invoiceDebouncedFreeText,
-          clearSearchFilters: clearInvoiceSearchFilters
+          page: invoicePage,
+          setPage: setInvoicePage,
+          confirmedSearchFilters: confirmedInvoiceSearchFilters,
+          setConfirmedSearchFilters: setConfirmedInvoiceSearchFilters
         },
         payments: {
-          searchFilters: paymentSearchFilters,
-          setSearchFilters: setPaymentSearchFilters,
-          searchTerms: paymentFreeTextSearch,
-          setSearchTerms: setPaymentFreeTextSearch,
-          debouncedSearchTerms: paymentDebouncedFreeText,
-          clearSearchFilters: clearPaymentSearchFilters
+          page: paymentPage,
+          setPage: setPaymentPage,
+          confirmedSearchFilters: confirmedPaymentSearchFilters,
+          setConfirmedSearchFilters: setConfirmedPaymentSearchFilters
         },
         incomeStatements: {
-          searchFilters: incomeStatementSearchFilters,
-          setSearchFilters: setIncomeStatementSearchFilters,
-          clearSearchFilters: clearIncomeStatementSearchFilters
+          page: incomeStatementPage,
+          setPage: setIncomeStatementPage,
+          confirmedSearchFilters: confirmedIncomeStatementSearchFilters,
+          setConfirmedSearchFilters: setConfirmedIncomeStatementSearchFilters
         },
         shared: {
           units,
@@ -389,24 +316,16 @@ export const InvoicingUIContextProvider = React.memo(
         }
       }),
       [
-        feeDecisionSearchFilters,
-        feeDecisionFreeTextSearch,
-        feeDecisionDebouncedFreeText,
-        clearFeeDecisionSearchFilters,
-        valueDecisionSearchFilters,
-        valueDecisionFreeTextSearch,
-        valueDecisionDebouncedFreeText,
-        clearValueDecisionSearchFilters,
-        invoiceSearchFilters,
-        invoiceFreeTextSearch,
-        invoiceDebouncedFreeText,
-        clearInvoiceSearchFilters,
-        paymentSearchFilters,
-        paymentFreeTextSearch,
-        paymentDebouncedFreeText,
-        clearPaymentSearchFilters,
-        incomeStatementSearchFilters,
-        clearIncomeStatementSearchFilters,
+        feeDecisionPage,
+        confirmedFeeDecisionSearchFilters,
+        valueDecisionPage,
+        confirmedValueDecisionSearchFilters,
+        invoicePage,
+        confirmedInvoiceSearchFilters,
+        paymentPage,
+        confirmedPaymentSearchFilters,
+        incomeStatementPage,
+        confirmedIncomeStatementSearchFilters,
         units,
         financeDecisionHandlers,
         availableAreas,
