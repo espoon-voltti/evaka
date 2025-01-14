@@ -5029,7 +5029,10 @@ export const fi = {
       'Voit lisätä tänne tiedon esimerkiksi lomastasi. Lasten huoltajat näkevät poissaollessasi ilmoituksen, että et ole paikalla.',
     header: 'Poissaolojakso',
     noFutureOutOfOffice: 'Ei tulevia poissaoloja',
-    addOutOfOffice: 'Lisää poissaolojakso'
+    addOutOfOffice: 'Lisää poissaolojakso',
+    validationErrors: {
+      endBeforeToday: 'Ei voi päättyä menneisyydessä'
+    }
   },
   components
 }

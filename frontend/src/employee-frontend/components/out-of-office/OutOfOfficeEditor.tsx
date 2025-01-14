@@ -6,7 +6,7 @@ import React from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { localDateRange } from 'lib-common/form/fields'
-import { object, required } from 'lib-common/form/form'
+import { object, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { OutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
@@ -20,16 +20,24 @@ import { Gap } from 'lib-components/white-space'
 
 import { upsertOutOfOfficePeriodMutation } from './queries'
 
-const outOfOfficeForm = object({ period: required(localDateRange()) })
+const outOfOfficeForm = object({
+  period: validated(required(localDateRange()), (output) => {
+    if (output.end.isBefore(LocalDate.todayInSystemTz())) {
+      return {
+        end: 'endBeforeToday'
+      }
+    }
+    return undefined
+  })
+})
 
 function initialFormState(
   editedPeriod: OutOfOfficePeriod | null
 ): StateOf<typeof outOfOfficeForm> {
-  const rangeConfig = { minDate: LocalDate.todayInSystemTz() }
   return {
     period: editedPeriod
-      ? localDateRange.fromRange(editedPeriod.period, rangeConfig)
-      : localDateRange.empty(rangeConfig)
+      ? localDateRange.fromRange(editedPeriod.period)
+      : localDateRange.empty()
   }
 }
 
@@ -45,7 +53,8 @@ export default React.memo(function OutOfOfficeEditor({
   const { i18n, lang } = useTranslation()
 
   const form = useForm(outOfOfficeForm, () => initialFormState(editedPeriod), {
-    ...i18n.validationErrors
+    ...i18n.validationErrors,
+    ...i18n.outOfOffice.validationErrors
   })
 
   const { period } = useFormFields(form)

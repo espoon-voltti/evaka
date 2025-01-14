@@ -59,7 +59,7 @@ class OutOfOfficeController(private val accessControl: AccessControl) {
                         Action.Employee.UPDATE_OUT_OF_OFFICE,
                         user.id,
                     )
-                    if (body.period.start.isBefore(clock.today())) {
+                    if (body.period.end.isBefore(clock.today())) {
                         throw BadRequest("Cannot create out-of-office period in the past")
                     }
                     if (body.period.start.isAfter(body.period.end)) {
