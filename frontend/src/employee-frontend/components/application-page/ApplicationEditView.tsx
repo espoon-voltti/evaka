@@ -796,7 +796,8 @@ export default React.memo(function ApplicationEditView({
                 ? setApplication(
                     set('form.preferences.siblingBasis', {
                       siblingName: '',
-                      siblingSsn: ''
+                      siblingSsn: '',
+                      siblingUnit: ''
                     })
                   )
                 : setApplication(set('form.preferences.siblingBasis', null))
