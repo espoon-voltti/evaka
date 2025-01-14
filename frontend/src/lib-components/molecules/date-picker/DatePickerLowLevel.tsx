@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import { Modifiers } from 'react-day-picker'
 import styled from 'styled-components'
 
@@ -152,6 +158,7 @@ export default React.memo(function DatePickerLowLevel({
   const [showDatePicker, useShowDatePicker] = useBoolean(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
+  const [isDatePicked, setIsDatePicked] = useState(false)
 
   const showDatePickerOn = useShowDatePicker.on
   const showDatePickerOff = useShowDatePicker.off
@@ -179,6 +186,7 @@ export default React.memo(function DatePickerLowLevel({
       if (modifiers?.disabled) {
         return
       }
+      setIsDatePicked(true)
       showDatePickerOff()
       onChange(LocalDate.fromSystemTzDate(day).format())
     },
@@ -286,7 +294,7 @@ export default React.memo(function DatePickerLowLevel({
         required={required}
         locale={locale}
         useBrowserPicker={useBrowserPicker}
-        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+        hideErrorsBeforeTouched={!isDatePicked && hideErrorsBeforeTouched}
         minDate={minDate}
         maxDate={maxDate}
       />
