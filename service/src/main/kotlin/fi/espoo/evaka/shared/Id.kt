@@ -94,6 +94,8 @@ sealed interface DatabaseTable {
 
     sealed class FeeThresholds : DatabaseTable
 
+    sealed class FinanceNote : DatabaseTable
+
     sealed class FosterParent : DatabaseTable
 
     sealed class Group : DatabaseTable
@@ -263,6 +265,8 @@ typealias FeeAlterationId = Id<DatabaseTable.FeeAlteration>
 typealias FeeDecisionId = Id<DatabaseTable.FeeDecision>
 
 typealias FeeThresholdsId = Id<DatabaseTable.FeeThresholds>
+
+typealias FinanceNoteId = Id<DatabaseTable.FinanceNote>
 
 typealias FosterParentId = Id<DatabaseTable.FosterParent>
 
