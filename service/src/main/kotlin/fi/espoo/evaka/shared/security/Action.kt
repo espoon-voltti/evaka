@@ -774,6 +774,7 @@ sealed interface Action {
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
+            HasGlobalRole(DIRECTOR).andIsDecisionMakerForAssistanceNeedDecision(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inSelectedUnitOfAssistanceNeedDecision(ChildAclConfig(application = false)),
         ),
@@ -820,9 +821,11 @@ sealed interface Action {
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
-            IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision(),
+            HasGlobalRole(DIRECTOR).andIsDecisionMakerForPreschoolAssistanceNeedDecision(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inSelectedUnitOfAssistanceNeedPreschoolDecision(),
+                .inSelectedUnitOfAssistanceNeedPreschoolDecision(
+                    ChildAclConfig(application = false)
+                ),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
         DOWNLOAD(HasGlobalRole(ADMIN)),

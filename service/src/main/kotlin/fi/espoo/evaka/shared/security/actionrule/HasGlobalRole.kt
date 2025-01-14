@@ -131,6 +131,19 @@ AND sent_for_decision IS NOT NULL
             )
         }
 
+    fun andIsDecisionMakerForPreschoolAssistanceNeedDecision() =
+        rule<AssistanceNeedPreschoolDecisionId> { employee, _ ->
+            sql(
+                """
+SELECT id
+FROM assistance_need_preschool_decision
+WHERE decision_maker_employee_id = ${bind(employee.id)}
+AND sent_for_decision IS NOT NULL
+            """
+                    .trimIndent()
+            )
+        }
+
     fun andAssistanceNeedDecisionHasBeenSent() =
         rule<AssistanceNeedDecisionId> { _, _ ->
             sql(

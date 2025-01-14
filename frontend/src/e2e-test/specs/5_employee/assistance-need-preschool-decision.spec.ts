@@ -38,6 +38,7 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let serviceWorker: DevEmployee
+let director: DevEmployee
 let staff: DevEmployee
 let decisionPage: AssistanceNeedPreschoolDecisionPage
 let previewPage: AssistanceNeedPreschoolDecisionPreviewPage
@@ -50,6 +51,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   serviceWorker = await Fixture.employee().serviceWorker().save()
+  director = await Fixture.employee().director().save()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
@@ -162,11 +164,7 @@ describe('Assistance Need Decisions - Decision process', () => {
     })
       .withGuardian(familyWithTwoGuardians.guardian.id)
       .withGuardian(familyWithTwoGuardians.otherGuardian.id)
-      .withRequiredFieldsFilled(
-        testDaycare.id,
-        serviceWorker.id,
-        serviceWorker.id
-      )
+      .withRequiredFieldsFilled(testDaycare.id, serviceWorker.id, director.id)
       .save()
 
     page = await openPage()
@@ -182,25 +180,32 @@ describe('Assistance Need Decisions - Decision process', () => {
   })
 
   test('Sending for decision, returning, editing, resending, accepting and annulling', async () => {
+    /** Interactions as service worker */
     await decisionPage.sendDecisionButton.click()
     await waitUntilEqual(() => decisionPage.sendDecisionButton.visible, false)
     await decisionPage.editButton.assertDisabled(true)
 
-    await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions/`)
+    /** Interactions as decision maker */
+    const decisionMakerPage = await openPage()
+    await employeeLogin(decisionMakerPage, director)
+    await decisionMakerPage.goto(
+      `${config.employeeUrl}/reports/assistance-need-decisions/`
+    )
 
-    const reportListPage = new AssistanceNeedDecisionsReport(page)
+    const reportListPage = new AssistanceNeedDecisionsReport(decisionMakerPage)
     await reportListPage.rows.assertCount(1)
     await reportListPage.rows.nth(0).click()
-    await page.page.waitForURL(
+    await decisionMakerPage.page.waitForURL(
       `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${
         assistanceNeedDecision?.id ?? ''
       }`
     )
 
     const reportDecisionPage =
-      new AssistanceNeedPreschoolDecisionsReportDecision(page)
+      new AssistanceNeedPreschoolDecisionsReportDecision(decisionMakerPage)
     await reportDecisionPage.returnForEditBtn.click()
 
+    /** Interactions as service worker */
     await page.goto(
       `${
         config.employeeUrl
@@ -213,33 +218,43 @@ describe('Assistance Need Decisions - Decision process', () => {
     await decisionPage.previewButton.click()
     await decisionPage.sendDecisionButton.click()
 
-    await page.goto(
+    /** Interactions as decision maker */
+    await decisionMakerPage.goto(
       `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${
         assistanceNeedDecision?.id ?? ''
       }`
     )
-    await reportDecisionPage.approveBtn.click()
-    await reportDecisionPage.modalOkBtn.click()
-    await reportDecisionPage.status.assertTextEquals('Hyväksytty')
+    const reportDecisionPageAfterMoreInfo =
+      new AssistanceNeedPreschoolDecisionsReportDecision(decisionMakerPage)
 
-    await reportDecisionPage.annulBtn.click()
-    await reportDecisionPage.modalOkBtn.assertDisabled(true)
-    await reportDecisionPage.annulReasonInput.fill('Joku syy')
-    await reportDecisionPage.modalOkBtn.click()
-    await reportDecisionPage.status.assertTextEquals('Mitätöity')
-    await reportDecisionPage.annulmentReason.assertTextEquals('Joku syy')
+    await reportDecisionPageAfterMoreInfo.approveBtn.click()
+    await reportDecisionPageAfterMoreInfo.modalOkBtn.click()
+    await reportDecisionPageAfterMoreInfo.status.assertTextEquals('Hyväksytty')
+
+    await reportDecisionPageAfterMoreInfo.annulBtn.click()
+    await reportDecisionPageAfterMoreInfo.modalOkBtn.assertDisabled(true)
+    await reportDecisionPageAfterMoreInfo.annulReasonInput.fill('Joku syy')
+    await reportDecisionPageAfterMoreInfo.modalOkBtn.click()
+    await reportDecisionPageAfterMoreInfo.status.assertTextEquals('Mitätöity')
+    await reportDecisionPageAfterMoreInfo.annulmentReason.assertTextEquals(
+      'Joku syy'
+    )
   })
 
   test('Sending for decision and rejecting', async () => {
     await decisionPage.sendDecisionButton.click()
-    await page.goto(
+
+    /** Interactions as decision maker */
+    const decisionMakerPage = await openPage()
+    await employeeLogin(decisionMakerPage, director)
+    await decisionMakerPage.goto(
       `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${
         assistanceNeedDecision?.id ?? ''
       }`
     )
 
     const reportDecisionPage =
-      new AssistanceNeedPreschoolDecisionsReportDecision(page)
+      new AssistanceNeedPreschoolDecisionsReportDecision(decisionMakerPage)
     await reportDecisionPage.rejectBtn.click()
     await reportDecisionPage.modalOkBtn.click()
     await reportDecisionPage.status.assertTextEquals('Hylätty')
