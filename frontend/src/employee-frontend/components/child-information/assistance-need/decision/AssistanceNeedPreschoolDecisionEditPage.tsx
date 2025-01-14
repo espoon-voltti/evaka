@@ -562,7 +562,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   <Radio
                     key={opt.domValue}
                     label={opt.label}
-                    checked={type.value() == opt.value}
+                    checked={type.value() === opt.value}
                     onChange={() =>
                       type.update((prev) => ({
                         ...prev,

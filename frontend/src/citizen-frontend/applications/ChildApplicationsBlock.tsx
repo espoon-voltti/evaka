@@ -320,7 +320,7 @@ export default React.memo(function ChildApplicationsBlock({
                   )}
               </FixedSpaceFlexWrap>
 
-              {index != applicationSummaries.length - 1 && <LineBreak />}
+              {index !== applicationSummaries.length - 1 && <LineBreak />}
             </React.Fragment>
           )
         )}

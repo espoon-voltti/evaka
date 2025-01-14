@@ -75,7 +75,6 @@ describe('LocalTime', () => {
     expect(duplicate >= middle).toBeTruthy()
 
     // Unfortunately equals operators don't work
-    expect(duplicate == middle).toBeFalsy()
     expect(duplicate === middle).toBeFalsy()
   })
 })

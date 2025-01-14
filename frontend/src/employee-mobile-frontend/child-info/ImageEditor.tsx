@@ -222,7 +222,7 @@ function cropImage(image: HTMLImageElement, crop: Crop): Promise<File> {
     throw new Error('Could not get canvas context')
   }
   const cropInPx =
-    crop.unit == '%'
+    crop.unit === '%'
       ? convertToPixelCrop(crop, image.width, image.height)
       : crop
 

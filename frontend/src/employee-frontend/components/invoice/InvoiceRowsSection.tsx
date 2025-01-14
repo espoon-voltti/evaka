@@ -204,7 +204,7 @@ export default React.memo(function InvoiceRowsSection({
           )
         })}
       </CollapsibleSection>
-      {uiMode == 'invoices-absence-modal' && child !== undefined && (
+      {uiMode === 'invoices-absence-modal' && child !== undefined && (
         <AbsencesModal child={child} date={absenceModalDate} />
       )}
     </Fragment>

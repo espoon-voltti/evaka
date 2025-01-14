@@ -107,7 +107,7 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
         bcs
           .filter(
             (it) =>
-              backupCare == undefined || it.backupCare.id !== backupCare.id
+              backupCare === undefined || it.backupCare.id !== backupCare.id
           )
           .map(({ backupCare: { period } }) => ({
             startDate: period.start,

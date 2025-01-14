@@ -55,9 +55,9 @@ export default class LocalTime implements Ordered<LocalTime> {
   isEqual(other: LocalTime): boolean {
     return (
       this.hour === other.hour &&
-      this.minute == other.minute &&
-      this.second == other.second &&
-      this.nanosecond == other.nanosecond
+      this.minute === other.minute &&
+      this.second === other.second &&
+      this.nanosecond === other.nanosecond
     )
   }
   isEqualOrAfter(other: LocalTime): boolean {

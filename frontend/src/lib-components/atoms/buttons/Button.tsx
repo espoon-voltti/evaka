@@ -27,9 +27,9 @@ export const Button = React.memo(function Button({
   const handleOnClick = useThrottledEventHandler(onClick)
   return renderBaseButton(props, handleOnClick, ({ text, icon, order }) => (
     <>
-      {icon && order == 'icon-text' && <FontAwesomeIcon icon={icon} />}
+      {icon && order === 'icon-text' && <FontAwesomeIcon icon={icon} />}
       <span>{text}</span>
-      {icon && order == 'text-icon' && <FontAwesomeIcon icon={icon} />}
+      {icon && order === 'text-icon' && <FontAwesomeIcon icon={icon} />}
     </>
   ))
 })

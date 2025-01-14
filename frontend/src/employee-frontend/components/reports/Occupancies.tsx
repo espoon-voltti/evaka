@@ -629,7 +629,7 @@ export default React.memo(function Occupancies() {
                     filters.type,
                     filters.careAreaId === undefined
                       ? i18n.common.all
-                      : (areas.find((area) => area.id == filters.careAreaId)
+                      : (areas.find((area) => area.id === filters.careAreaId)
                           ?.name ?? '')
                   )}
                 />

@@ -740,7 +740,7 @@ export default React.memo(function ApplicationEditView({
                       )
                     )
                   }
-                  disabled={i == 0}
+                  disabled={i === 0}
                   data-qa="button-move-up-preferred-unit"
                 />
                 <Button
@@ -755,7 +755,7 @@ export default React.memo(function ApplicationEditView({
                       )
                     )
                   }
-                  disabled={i == preferredUnits.length - 1}
+                  disabled={i === preferredUnits.length - 1}
                   data-qa="button-move-down-preferred-unit"
                 />
                 <Button

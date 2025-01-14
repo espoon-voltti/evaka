@@ -74,7 +74,7 @@ export default React.memo(function GroupPlacementModal({
     if (form.groupId == null)
       errors.push(i18n.unit.placements.modal.errors.noGroup)
     else {
-      const group = openGroups.find((g) => g.id == form.groupId)
+      const group = openGroups.find((g) => g.id === form.groupId)
       if (group) {
         if (form.startDate.isBefore(group.startDate))
           errors.push(i18n.unit.placements.modal.errors.groupNotStarted)

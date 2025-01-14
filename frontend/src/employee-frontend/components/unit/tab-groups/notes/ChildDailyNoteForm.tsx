@@ -113,8 +113,8 @@ export default React.memo(function ChildDailyNoteForm({
     []
   )
   const toggleReminder = (reminder: ChildDailyNoteReminder) => {
-    const reminders = form.reminders.some((r) => r == reminder)
-      ? form.reminders.filter((r) => r != reminder)
+    const reminders = form.reminders.some((r) => r === reminder)
+      ? form.reminders.filter((r) => r !== reminder)
       : [...form.reminders, reminder]
     updateForm({ reminders })
   }

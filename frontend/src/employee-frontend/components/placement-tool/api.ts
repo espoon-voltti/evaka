@@ -22,7 +22,7 @@ export async function uploadPlacementFile(
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: ({ loaded, total }) =>
           onUploadProgress(
-            total !== undefined && total != 0
+            total !== undefined && total !== 0
               ? Math.round((loaded / total) * 100)
               : 0
           )

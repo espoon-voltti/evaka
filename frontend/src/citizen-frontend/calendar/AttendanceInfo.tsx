@@ -92,7 +92,7 @@ function AttendanceInfoWithServiceUsage({
   const usageFromMonthlyAverage = usedService.usedServiceRanges.length === 0
   const attendanceWarning = usageFromMonthlyAverage
     ? i18n.calendar.calculatedUsedServiceTime
-    : simpleExceedWarning != ''
+    : simpleExceedWarning !== ''
       ? simpleExceedWarning
       : i18n.calendar.exceedGeneric
   return (

@@ -33,7 +33,7 @@ export default React.memo(function CreatePersonInput({
 
   return (
     <>
-      {personType == 'NEW_NO_SSN' && (
+      {personType === 'NEW_NO_SSN' && (
         <ListGrid labelWidth="min-content">
           <Label>{i18n.personSearch.createNewPerson.form.firstName}*</Label>
           <InputField

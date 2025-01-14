@@ -49,7 +49,7 @@ export default React.memo(function VoucherValueEditor({
   const validationResult = validateForm(
     i18n,
     editorState,
-    existingVoucherValues.filter((voucherValue) => voucherValue.id != id),
+    existingVoucherValues.filter((voucherValue) => voucherValue.id !== id),
     latestVoucherValue
   )
 
@@ -118,7 +118,7 @@ export default React.memo(function VoucherValueEditor({
                 ...previousState,
                 baseValue,
                 value:
-                  baseValue == ''
+                  baseValue === ''
                     ? '0.00'
                     : (
                         parseFloat(baseValue) *
@@ -143,7 +143,7 @@ export default React.memo(function VoucherValueEditor({
                 ...previousState,
                 coefficient,
                 value:
-                  coefficient == ''
+                  coefficient === ''
                     ? '0.00'
                     : (
                         parseFloat(previousState.baseValue) *
@@ -186,7 +186,7 @@ export default React.memo(function VoucherValueEditor({
                 ...previousState,
                 baseValueUnder3y,
                 valueUnder3y:
-                  baseValueUnder3y == ''
+                  baseValueUnder3y === ''
                     ? '0.00'
                     : (
                         parseFloat(baseValueUnder3y) *
@@ -211,7 +211,7 @@ export default React.memo(function VoucherValueEditor({
                 ...previousState,
                 coefficientUnder3y,
                 valueUnder3y:
-                  coefficientUnder3y == ''
+                  coefficientUnder3y === ''
                     ? '0.00'
                     : (
                         parseFloat(previousState.baseValueUnder3y) *

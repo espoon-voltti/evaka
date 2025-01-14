@@ -46,7 +46,7 @@ export default React.memo(function PlacementTypeItem({
       {serviceNeedsList
         .filter(
           (value) =>
-            value.validPlacementType == placementType && value.defaultOption
+            value.validPlacementType === placementType && value.defaultOption
         )
         .map((serviceNeed) => (
           <ServiceNeedItem
@@ -62,7 +62,7 @@ export default React.memo(function PlacementTypeItem({
       {serviceNeedsList
         .filter(
           (value) =>
-            value.validPlacementType == placementType && !value.defaultOption
+            value.validPlacementType === placementType && !value.defaultOption
         )
         .map((serviceNeed, i) => (
           <ServiceNeedItem

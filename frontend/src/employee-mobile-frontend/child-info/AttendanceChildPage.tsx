@@ -340,7 +340,7 @@ export default React.memo(function AttendanceChildPage({
           />
         </>
       )}
-      {uiMode == 'img-delete' && (
+      {uiMode === 'img-delete' && (
         <InfoModal
           icon={faQuestion}
           type="warning"
@@ -359,7 +359,7 @@ export default React.memo(function AttendanceChildPage({
           }}
         />
       )}
-      {uiMode == 'attendance-change-cancel' && (
+      {uiMode === 'attendance-change-cancel' && (
         <InfoModal
           icon={faQuestion}
           type="warning"

@@ -34,7 +34,7 @@ export default React.memo(function ApplicationReadViewContents({
   const { user } = useContext(AuthContext)
 
   const userIsApplicationGuardian = user
-    .map((u) => u && u.id == application.guardianId)
+    .map((u) => u && u.id === application.guardianId)
     .getOrElse(false)
 
   return (

@@ -40,7 +40,8 @@ export default function MessageBox({
 }: MessageBoxProps) {
   const { i18n } = useTranslation()
   const { unreadCountsByAccount } = useContext(MessageContext)
-  const active = view == activeView?.view && account.id == activeView.account.id
+  const active =
+    view === activeView?.view && account.id === activeView.account.id
   const unreadCount = unreadCountsByAccount
     .map((unreadCounts) => {
       if (view === 'received') {

@@ -186,13 +186,13 @@ const filterAndSortUnits = (
     )
     .filter(
       (u) =>
-        languages.length == 0 ||
+        languages.length === 0 ||
         (!(u.language === 'fi' && !languages.includes('fi')) &&
           !(u.language === 'sv' && !languages.includes('sv')))
     )
     .filter(
       (u) =>
-        providerTypes.length == 0 ||
+        providerTypes.length === 0 ||
         (!(
           (u.providerType === 'MUNICIPAL' ||
             u.providerType === 'MUNICIPAL_SCHOOL') &&
