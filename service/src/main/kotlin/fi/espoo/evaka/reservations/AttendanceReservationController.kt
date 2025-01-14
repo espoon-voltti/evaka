@@ -11,6 +11,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
+import fi.espoo.evaka.assistance.getAssistanceFactorsForChildrenOverRange
 import fi.espoo.evaka.attendance.deleteAbsencesByDate
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
@@ -23,6 +24,7 @@ import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
+import fi.espoo.evaka.occupancy.AssistanceFactor
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -121,6 +123,8 @@ class AttendanceReservationController(
                     val childIds = placementInfo.keys
                     val serviceTimes = tx.getDailyServiceTimesForChildren(childIds)
                     val childData = tx.getChildData(unitId, childIds, period)
+                    val assistanceFactors =
+                        tx.getAssistanceFactorsForChildrenOverRange(childIds, period)
 
                     UnitAttendanceReservations(
                         unit = unit.name,
@@ -196,6 +200,14 @@ class AttendanceReservationController(
                                                     ),
                                             )
                                         }
+                                )
+                            },
+                        assistanceFactors =
+                            assistanceFactors.map {
+                                AssistanceFactor(
+                                    childId = it.childId,
+                                    capacityFactor = it.capacityFactor.toBigDecimal(),
+                                    period = it.validDuring,
                                 )
                             },
                     )
@@ -705,6 +717,7 @@ data class UnitAttendanceReservations(
     val groups: List<ReservationGroup>,
     val children: List<Child>,
     val days: List<OperationalDay>,
+    val assistanceFactors: List<AssistanceFactor>,
 ) {
     data class ReservationGroup(@PropagateNull val id: GroupId, val name: String)
 

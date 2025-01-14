@@ -59,6 +59,7 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDaycareGroup
 import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.user.EvakaUserType
+import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -198,6 +199,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     optionName = snDefaultDaycare.nameFi,
                                     hasContractDays = false,
                                     daycareHoursPerMonth = null,
+                                    occupancyCoefficient = BigDecimal("1.00"),
+                                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
                                 ),
                                 ChildServiceNeedInfo(
                                     childId = testChild_1.id,
@@ -208,6 +211,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     optionName = snDaycareContractDays15.nameFi,
                                     hasContractDays = true,
                                     daycareHoursPerMonth = null,
+                                    occupancyCoefficient = BigDecimal("1.00"),
+                                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
                                 ),
                             )
                     )
@@ -365,6 +370,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                 FiniteDateRange(placementStart, placementEnd),
                                             shiftCare = ShiftCareType.FULL,
                                             partWeek = false,
+                                            occupancyCoefficient = BigDecimal("1.00"),
+                                            occupancyCoefficientUnder3y = BigDecimal("1.75"),
                                         )
                                     )
                             ),
@@ -1944,6 +1951,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     validDuring = FiniteDateRange(placementStart, placementEnd),
                     shiftCare = ShiftCareType.NONE,
                     partWeek = false,
+                    occupancyCoefficient = BigDecimal("1.00"),
+                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
                 )
             ),
             result.children.find { it.id == testChild_1.id }?.actualServiceNeeds!!,

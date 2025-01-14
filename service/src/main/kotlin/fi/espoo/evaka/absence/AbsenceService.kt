@@ -553,6 +553,8 @@ data class ChildServiceNeedInfo(
     val validDuring: FiniteDateRange,
     val shiftCare: ShiftCareType,
     val partWeek: Boolean,
+    val occupancyCoefficient: BigDecimal,
+    val occupancyCoefficientUnder3y: BigDecimal,
 )
 
 data class AbsencePlacement(

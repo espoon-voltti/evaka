@@ -10,6 +10,7 @@ import React, { useMemo } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
+import { AssistanceFactor } from 'lib-common/generated/api-types/occupancy'
 import {
   Child,
   ChildRecordOfDay,
@@ -45,6 +46,7 @@ interface Props {
   unitId: UUID
   days: OperationalDay[]
   childBasics: Child[]
+  assistanceFactors: AssistanceFactor[]
   onMakeReservationForChild: (child: Child) => void
   onOpenEditForChildDate: (childId: UUID, date: LocalDate) => void
   selectedDate: LocalDate
@@ -105,9 +107,15 @@ const isFullyAbsent = (child: ChildRecordOfDay) =>
     }
   })
 
+const occupancyFormatter = new Intl.NumberFormat('fi-FI', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+})
+
 export default React.memo(function ChildReservationsTable({
   days,
   childBasics,
+  assistanceFactors,
   onMakeReservationForChild,
   onOpenEditForChildDate,
   selectedDate,
@@ -133,9 +141,9 @@ export default React.memo(function ChildReservationsTable({
 
   const childrenCounts = useMemo(
     () =>
-      days.map(
-        (day) =>
-          day.children.filter((child) => {
+      days.map((day) => {
+        const presentChildren = day.children
+          .filter((child) => {
             const shiftCare = childBasics
               .find((c) => c.id === child.childId)
               ?.serviceNeeds?.find((sn) =>
@@ -150,9 +158,32 @@ export default React.memo(function ChildReservationsTable({
               selectedGroup,
               shiftCareAllowedForChild
             )
-          }).length
-      ),
-    [days, selectedGroup, childBasics]
+          })
+          .map((child) => child.childId)
+        const occupancy = childBasics.reduce((occupancy, child) => {
+          if (!presentChildren.includes(child.id)) return occupancy
+          const coefficient = child.serviceNeeds.reduce((occupancy, sn) => {
+            if (!sn.validDuring.includes(day.date)) return occupancy
+            return occupancy * day.date.differenceInYears(child.dateOfBirth) < 3
+              ? sn.occupancyCoefficientUnder3y
+              : sn.occupancyCoefficient
+          }, 1)
+          const factor = assistanceFactors.reduce((factor, af) => {
+            if (
+              !presentChildren.includes(af.childId) ||
+              !af.period.includes(day.date)
+            )
+              return factor
+            return factor * af.capacityFactor
+          }, 1)
+          return occupancy + coefficient * factor
+        }, 0)
+        return {
+          headcount: presentChildren.length,
+          occupancy
+        }
+      }),
+    [days, childBasics, selectedGroup, assistanceFactors]
   )
 
   return (
@@ -183,7 +214,9 @@ export default React.memo(function ChildReservationsTable({
         <SumRow data-qa="totals-row">
           <Td>{i18n.unit.attendanceReservations.childCount}</Td>
           {childrenCounts.map((day, i) => (
-            <Td key={i}>{day}</Td>
+            <Td key={i}>
+              {day.headcount} ({occupancyFormatter.format(day.occupancy)})
+            </Td>
           ))}
           <Td />
         </SumRow>

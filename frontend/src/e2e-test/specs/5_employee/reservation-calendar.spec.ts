@@ -473,6 +473,149 @@ describe('Unit group calendar', () => {
       1
     )
   })
+
+  test('Totals row multiplies occupancy coefficients and capacity factors', async () => {
+    const serviceNeedOption1 = await Fixture.serviceNeedOption({
+      occupancyCoefficient: 1,
+      occupancyCoefficientUnder3y: 1.75
+    }).save()
+    const serviceNeedOption2 = await Fixture.serviceNeedOption({
+      occupancyCoefficient: 0.8,
+      occupancyCoefficientUnder3y: 1.4
+    }).save()
+    const area = await Fixture.careArea().save()
+    const daycare = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS']
+    }).save()
+    const group = await Fixture.daycareGroup({ daycareId: daycare.id }).save()
+    const employee = await Fixture.employee().unitSupervisor(daycare.id).save()
+    const placementRange = new FiniteDateRange(
+      LocalDate.of(2025, 1, 13),
+      LocalDate.of(2025, 1, 17)
+    )
+    const serviceNeedRange1 = placementRange.withEnd(LocalDate.of(2025, 1, 14))
+    const serviceNeedRange2 = placementRange.withStart(
+      LocalDate.of(2025, 1, 15)
+    )
+    const assistanceFactorRange = placementRange.withStart(
+      LocalDate.of(2025, 1, 16)
+    )
+    const child = await Fixture.person({
+      dateOfBirth: placementRange.end.withYear(2022),
+      ssn: null
+    }).saveChild()
+    const placement = await Fixture.placement({
+      childId: child.id,
+      unitId: daycare.id,
+      startDate: placementRange.start,
+      endDate: placementRange.end
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: group.id,
+      daycarePlacementId: placement.id,
+      startDate: placementRange.start,
+      endDate: placementRange.end
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: serviceNeedRange1.start,
+      endDate: serviceNeedRange1.end,
+      optionId: serviceNeedOption1.id,
+      confirmedBy: evakaUserId(employee.id)
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: serviceNeedRange2.start,
+      endDate: serviceNeedRange2.end,
+      optionId: serviceNeedOption2.id,
+      confirmedBy: evakaUserId(employee.id)
+    }).save()
+    await Fixture.assistanceFactor({
+      childId: child.id,
+      validDuring: assistanceFactorRange,
+      capacityFactor: 2
+    }).save()
+
+    page = await Page.open({
+      mockedTime: placementRange.end.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await employeeLogin(page, employee)
+    const unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(daycare.id)
+    await unitPage.openCalendarPage()
+    const weekCalendar = await unitPage.openWeekCalendar(group.id)
+    await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
+      '1 (1,75)', // serviceNeedOption1#occupancyCoefficientUnder3y
+      '1 (1,75)', // serviceNeedOption1#occupancyCoefficientUnder3y
+      '1 (1,40)', // serviceNeedOption2#occupancyCoefficientUnder3y
+      '1 (2,80)', // serviceNeedOption2#occupancyCoefficientUnder3y * assistanceFactor
+      '1 (1,60)' // serviceNeedOption2#occupancyCoefficient * assistanceFactor
+    ])
+  })
+
+  test('Totals row sums child rows', async () => {
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      occupancyCoefficient: 1,
+      occupancyCoefficientUnder3y: 1.75
+    }).save()
+    const area = await Fixture.careArea().save()
+    const daycare = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS']
+    }).save()
+    const group = await Fixture.daycareGroup({ daycareId: daycare.id }).save()
+    const employee = await Fixture.employee().unitSupervisor(daycare.id).save()
+    const placementRange = new FiniteDateRange(
+      LocalDate.of(2025, 1, 13),
+      LocalDate.of(2025, 1, 17)
+    )
+    const child1 = await Fixture.person({
+      dateOfBirth: placementRange.start.withYear(2022),
+      ssn: null
+    }).saveChild()
+    const child2 = await Fixture.person({
+      dateOfBirth: placementRange.end.withYear(2022),
+      ssn: null
+    }).saveChild()
+    for (const child of [child1, child2]) {
+      const placement = await Fixture.placement({
+        childId: child.id,
+        unitId: daycare.id,
+        startDate: placementRange.start,
+        endDate: placementRange.end
+      }).save()
+      await Fixture.groupPlacement({
+        daycareGroupId: group.id,
+        daycarePlacementId: placement.id,
+        startDate: placementRange.start,
+        endDate: placementRange.end
+      }).save()
+      await Fixture.serviceNeed({
+        placementId: placement.id,
+        startDate: placementRange.start,
+        endDate: placementRange.end,
+        optionId: serviceNeedOption.id,
+        confirmedBy: evakaUserId(employee.id)
+      }).save()
+    }
+
+    page = await Page.open({
+      mockedTime: placementRange.end.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await employeeLogin(page, employee)
+    const unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(daycare.id)
+    await unitPage.openCalendarPage()
+    const weekCalendar = await unitPage.openWeekCalendar(group.id)
+    await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
+      '2 (2,75)', // occupancyCoefficient + occupancyCoefficientUnder3y
+      '2 (2,75)', // occupancyCoefficient + occupancyCoefficientUnder3y
+      '2 (2,75)', // occupancyCoefficient + occupancyCoefficientUnder3y
+      '2 (2,75)', // occupancyCoefficient + occupancyCoefficientUnder3y
+      '2 (2,00)' // occupancyCoefficient + occupancyCoefficient
+    ])
+  })
 })
 
 describe('Unit group calendar for shift care unit', () => {
@@ -615,7 +758,10 @@ describe('Unit group calendar for shift care unit', () => {
   })
 
   test('Child with unknown presence on a holiday is counted into total if they have shift care', async () => {
-    const serviceNeedOption = await Fixture.serviceNeedOption().save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      occupancyCoefficient: 1,
+      occupancyCoefficientUnder3y: 1.75
+    }).save()
     const area = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare({
       areaId: area.id,
@@ -676,6 +822,14 @@ describe('Unit group calendar for shift care unit', () => {
     const weekCalendar = await unitPage.openWeekCalendar(group1.id)
     await weekCalendar.childReservations
       .getTotalCounts()
-      .assertTextsEqual(['2', '2', '2', '2', '1', '1', '1'])
+      .assertTextsEqual([
+        '2 (2,00)',
+        '2 (2,00)',
+        '2 (2,00)',
+        '2 (2,00)',
+        '1 (1,00)',
+        '1 (1,00)',
+        '1 (1,00)'
+      ])
   })
 })

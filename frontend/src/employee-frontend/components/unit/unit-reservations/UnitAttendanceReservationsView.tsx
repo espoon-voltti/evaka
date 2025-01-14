@@ -165,6 +165,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               unitId={unitId}
               days={childData.days}
               childBasics={childData.children}
+              assistanceFactors={childData.assistanceFactors}
               onMakeReservationForChild={setCreatingReservationChild}
               onOpenEditForChildDate={(childId, date) => {
                 const child = childData.children.find((c) => c.id === childId)

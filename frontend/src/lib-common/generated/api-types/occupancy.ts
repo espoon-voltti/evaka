@@ -13,6 +13,15 @@ import { JsonOf } from '../../json'
 import { PersonId } from './shared'
 
 /**
+* Generated from fi.espoo.evaka.occupancy.AssistanceFactor
+*/
+export interface AssistanceFactor {
+  capacityFactor: number
+  childId: PersonId
+  period: FiniteDateRange
+}
+
+/**
 * Generated from fi.espoo.evaka.occupancy.ChildCapacityPoint
 */
 export interface ChildCapacityPoint {
@@ -134,6 +143,14 @@ export interface UnitOccupancies {
   confirmed: OccupancyResponse
   planned: OccupancyResponse
   realized: OccupancyResponse
+}
+
+
+export function deserializeJsonAssistanceFactor(json: JsonOf<AssistanceFactor>): AssistanceFactor {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period)
+  }
 }
 
 

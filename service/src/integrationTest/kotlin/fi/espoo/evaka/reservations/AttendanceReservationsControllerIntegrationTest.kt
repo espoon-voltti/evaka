@@ -356,6 +356,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             validDuring = FiniteDateRange(mon, thu),
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
+                            occupancyCoefficient = BigDecimal("1.00"),
+                            occupancyCoefficientUnder3y = BigDecimal("1.75"),
                         ),
                         ChildServiceNeedInfo(
                             childId = testChild_1.id,
@@ -365,6 +367,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             validDuring = FiniteDateRange(fri, fri),
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
+                            occupancyCoefficient = BigDecimal("1.00"),
+                            occupancyCoefficientUnder3y = BigDecimal("1.75"),
                         ),
                     ),
                     child1.serviceNeeds,
@@ -386,6 +390,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             validDuring = monFri,
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
+                            occupancyCoefficient = BigDecimal("1.00"),
+                            occupancyCoefficientUnder3y = BigDecimal("1.75"),
                         )
                     ),
                     child5.serviceNeeds,

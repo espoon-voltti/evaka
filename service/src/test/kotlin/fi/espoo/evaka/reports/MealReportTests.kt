@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
@@ -1038,4 +1039,6 @@ private fun createServiceNeedInfo(childId: ChildId, shiftCare: ShiftCareType) =
         validDuring = FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2050, 1, 1)),
         shiftCare = shiftCare,
         partWeek = false,
+        occupancyCoefficient = BigDecimal("1.00"),
+        occupancyCoefficientUnder3y = BigDecimal("1.75"),
     )
