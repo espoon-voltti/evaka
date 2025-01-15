@@ -165,7 +165,8 @@ export default React.memo(function MessageEditor({
       .filter(
         (account) =>
           selectedChildrenInSameUnit &&
-          message.children.some(
+          message.children.length > 0 &&
+          message.children.every(
             (childId) =>
               receiverOptions.childrenToMessageAccounts[
                 childId
