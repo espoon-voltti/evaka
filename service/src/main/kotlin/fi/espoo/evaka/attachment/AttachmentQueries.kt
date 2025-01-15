@@ -149,7 +149,7 @@ fun Database.Read.getAttachment(id: AttachmentId): Pair<Attachment, AttachmentPa
             sql(
                 """
         SELECT
-            id, name, content_type, uploaded_by,
+            id, name, content_type,
             application_id,
             fee_alteration_id,
             income_id,
