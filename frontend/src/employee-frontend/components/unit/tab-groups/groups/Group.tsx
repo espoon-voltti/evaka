@@ -214,7 +214,7 @@ export default React.memo(function Group({
   const renderCaretakerCount = () => {
     if (!caretakers) return <span>0</span>
 
-    if (caretakers.minimum == caretakers.maximum)
+    if (caretakers.minimum === caretakers.maximum)
       return <span>{caretakers.minimum}</span>
     else
       return (

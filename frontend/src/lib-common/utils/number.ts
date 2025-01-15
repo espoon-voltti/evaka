@@ -7,7 +7,7 @@ export function formatDecimal(
   decimal: number | undefined | null
 ): string | undefined
 export function formatDecimal(decimal?: number | null): string | undefined {
-  if (decimal == null || decimal == undefined) return undefined
+  if (decimal === null || decimal === undefined) return undefined
   return decimal.toString().replace('.', ',')
 }
 

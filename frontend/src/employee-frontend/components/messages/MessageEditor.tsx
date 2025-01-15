@@ -132,7 +132,7 @@ const shouldSensitiveCheckboxBeEnabled = (
   senderAccountType: string | undefined
 ) => {
   const recipientValid =
-    selectedReceivers.length == 1 &&
+    selectedReceivers.length === 1 &&
     selectedReceivers[0].messageRecipient.type === 'CHILD'
   if (!recipientValid) {
     return false

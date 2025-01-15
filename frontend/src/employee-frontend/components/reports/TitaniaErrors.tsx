@@ -50,7 +50,7 @@ export default React.memo(function TitaniaErrors() {
                       <div key={employee.employeeName}>
                         <H3>
                           {employee.employeeName +
-                            (employee.employeeNumber == ''
+                            (employee.employeeNumber === ''
                               ? ''
                               : ' (' + employee.employeeNumber + ')')}
                         </H3>

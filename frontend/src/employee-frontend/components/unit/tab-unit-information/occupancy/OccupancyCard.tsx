@@ -80,11 +80,11 @@ export default React.memo(function OccupancyCard({
   const { i18n } = useTranslation()
 
   const color =
-    type == 'confirmed'
+    type === 'confirmed'
       ? colors.main.m1
-      : type == 'planned'
+      : type === 'planned'
         ? colors.accents.a6turquoise
-        : type == 'realized'
+        : type === 'realized'
           ? colors.status.success
           : colors.grayscale.g15
 
@@ -131,7 +131,7 @@ export default React.memo(function OccupancyCard({
         </DataContainer>
       ) : (
         <div data-qa={`occupancies-no-valid-values-${type}`}>
-          {type == 'realized'
+          {type === 'realized'
             ? i18n.unit.occupancy.noValidValuesRealized
             : i18n.unit.occupancy.noValidValues}
         </div>

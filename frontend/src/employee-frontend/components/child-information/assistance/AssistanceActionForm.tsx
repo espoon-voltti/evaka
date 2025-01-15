@@ -105,7 +105,7 @@ const noErrors: AssistanceActionFormErrors = {
 const getExistingAssistanceActionRanges = (props: Props): DateRange[] =>
   props.assistanceActions
     .filter(
-      ({ action }) => isCreate(props) || action.id != props.assistanceAction.id
+      ({ action }) => isCreate(props) || action.id !== props.assistanceAction.id
     )
     .map(({ action: { startDate, endDate } }) => ({ startDate, endDate }))
 
@@ -199,7 +199,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
       if (res.isSuccess) {
         clearUiMode()
       } else if (res.isFailure) {
-        if (res.statusCode == 409) {
+        if (res.statusCode === 409) {
           setFormErrors({
             ...formErrors,
             dateRange: {

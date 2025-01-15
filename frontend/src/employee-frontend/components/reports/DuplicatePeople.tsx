@@ -132,7 +132,7 @@ export default React.memo(function DuplicatePeople() {
               </Thead>
               <Tbody>
                 {rows.value.map((row: DuplicatePeopleReportRow) => (
-                  <StyledRow key={row.id} odd={row.groupIndex % 2 != 0}>
+                  <StyledRow key={row.id} odd={row.groupIndex % 2 !== 0}>
                     <NoWrapTd>
                       <Link
                         to={
@@ -149,8 +149,8 @@ export default React.memo(function DuplicatePeople() {
                     <NoWrapTd>{row.streetAddress}</NoWrapTd>
                     <NoWrapTd>
                       {duplicate ? (
-                        duplicate.group == row.groupIndex ? (
-                          duplicate.row == row.duplicateNumber ? (
+                        duplicate.group === row.groupIndex ? (
+                          duplicate.row === row.duplicateNumber ? (
                             <LegacyButton
                               className="inline"
                               onClick={() => setDuplicate(null)}
@@ -214,13 +214,13 @@ export default React.memo(function DuplicatePeople() {
                   action: () => {
                     const masterId = rows.value.find(
                       (row) =>
-                        row.groupIndex == master.group &&
-                        row.duplicateNumber == master.row
+                        row.groupIndex === master.group &&
+                        row.duplicateNumber === master.row
                     )?.id
                     const duplicateId = rows.value.find(
                       (row) =>
-                        row.groupIndex == duplicate.group &&
-                        row.duplicateNumber == duplicate.row
+                        row.groupIndex === duplicate.group &&
+                        row.duplicateNumber === duplicate.row
                     )?.id
 
                     setMaster(null)

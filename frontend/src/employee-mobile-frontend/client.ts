@@ -27,7 +27,7 @@ if (isAutomatedTest) {
 }
 
 client.interceptors.response.use(undefined, async (err: AxiosError) => {
-  if (err.response && err.response.status == 401) {
+  if (err.response && err.response.status === 401) {
     window.location.replace('/employee/mobile')
   }
 

@@ -67,7 +67,7 @@ function renderGroups(
   const groupsWithPlacements = groups.map((group) => ({
     ...group,
     placements: flatMapGroupPlacements(placements).filter(
-      (it) => it.groupId == group.id
+      (it) => it.groupId === group.id
     ),
     backupCares: backupCares.filter((it) => it.group?.id === group.id)
   }))

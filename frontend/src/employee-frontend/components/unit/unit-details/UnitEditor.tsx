@@ -313,7 +313,7 @@ function formatCoordinate(coordinate: Coordinate | null | undefined): string {
 
 function parseLocation(value: string): Coordinate | undefined {
   const parts = value.split(',').map((str) => str.trim())
-  if (parts.length != 2) return undefined
+  if (parts.length !== 2) return undefined
   const lat = parseFloat(parts[0])
   const lon = parseFloat(parts[1])
   // Rough coordinate limits for Finland

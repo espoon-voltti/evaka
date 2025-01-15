@@ -104,7 +104,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: DaycareId }) {
     Object.keys(openGroups)
       .reduce(
         (prev: string[], cur: string) =>
-          openGroups[cur] == true ? prev.concat(cur) : prev,
+          openGroups[cur] ? prev.concat(cur) : prev,
         []
       )
       .join(',')

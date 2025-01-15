@@ -56,7 +56,7 @@ export default React.memo(function AssistanceActionSection({
       !!uiMode && uiMode.startsWith('duplicate-assistance-action')
         ? assistanceActions
             .map((actions) =>
-              actions.find((an) => an.action.id == uiMode.split('_').pop())
+              actions.find((an) => an.action.id === uiMode.split('_').pop())
             )
             .getOrElse(undefined)
         : undefined,

@@ -219,7 +219,7 @@ export default React.memo(function PedagogicalDocuments({
                   modifiedAt={pedagogicalDocument.modifiedAt}
                   modifiedBy={pedagogicalDocument.modifiedBy}
                   initInEditMode={
-                    uiMode ==
+                    uiMode ===
                     `edit-pedagogical-document-${pedagogicalDocument.id}`
                   }
                   onReload={loadData}

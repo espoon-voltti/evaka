@@ -76,7 +76,7 @@ export function fromBody(
 
   if (
     gross === invalid ||
-    entrepreneur == invalid ||
+    entrepreneur === invalid ||
     (!gross && !entrepreneur)
   ) {
     return null

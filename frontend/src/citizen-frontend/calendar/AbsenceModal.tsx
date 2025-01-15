@@ -74,7 +74,7 @@ function initialFormState(
   maxDate: LocalDate
 ): StateOf<typeof absenceForm> {
   const selectedChildren =
-    availableChildren.length == 1 ? [availableChildren[0].id] : []
+    availableChildren.length === 1 ? [availableChildren[0].id] : []
   const range =
     initialDate !== undefined
       ? { startDate: initialDate, endDate: initialDate }

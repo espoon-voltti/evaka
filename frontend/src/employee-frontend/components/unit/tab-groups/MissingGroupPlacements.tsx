@@ -179,7 +179,7 @@ export default React.memo(function MissingGroupPlacements({
 
   const addPlacementToGroup = (missingPlacement: MissingPlacement) => {
     setActiveMissingPlacement(missingPlacement)
-    if (missingPlacement.type == 'backup') {
+    if (missingPlacement.type === 'backup') {
       toggleUiMode('backup-care-group')
     } else {
       toggleUiMode('group-placement')

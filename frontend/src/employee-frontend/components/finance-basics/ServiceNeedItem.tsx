@@ -165,7 +165,7 @@ export default React.memo(function ServiceNeedItem({
             </Tr>
           </Thead>
           <Tbody>
-            {editorState.editing == 'new' ? (
+            {editorState.editing === 'new' ? (
               <VoucherValueEditor
                 i18n={i18n}
                 id={undefined}

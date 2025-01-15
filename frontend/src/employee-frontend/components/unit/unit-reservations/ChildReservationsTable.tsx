@@ -231,7 +231,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
           key={`${childId}-${index}`}
           data-qa={`reservation-row-child-${childId}`}
         >
-          {index == 0 && (
+          {index === 0 && (
             <NameTd partialRow={false} rowIndex={0} rowSpan={rowsCount}>
               <NameWrapper>
                 <ChipWrapper spacing="xs">

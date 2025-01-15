@@ -63,7 +63,8 @@ export default [
       'no-console': ['error', { allow: ['warn', 'error'] }],
       'prefer-arrow-callback': ['error', { allowNamedFunctions: true }],
       'arrow-body-style': ['error', 'as-needed'],
-      'no-constant-binary-expression': ['error']
+      'no-constant-binary-expression': ['error'],
+      eqeqeq: ['error', 'smart']
     }
   },
   {

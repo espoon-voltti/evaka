@@ -35,7 +35,7 @@ export const HoursMinutes = ({ minutes }: { minutes: number }) => {
     return '-'
   }
   return `${hours > 0 ? `${hours} ${i18n.calendar.monthSummary.hours}` : ''}${
-    extraMinutes != 0
+    extraMinutes !== 0
       ? ` ${extraMinutes} ${i18n.calendar.monthSummary.minutes}`
       : ''
   }`

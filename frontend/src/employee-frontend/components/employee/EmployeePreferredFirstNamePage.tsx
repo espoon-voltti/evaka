@@ -59,7 +59,7 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
   const disableConfirm = () =>
     preferredFirstName.isSuccess
       ? preferredFirstName.value.preferredFirstName != null &&
-        preferredFirstName.value.preferredFirstName ==
+        preferredFirstName.value.preferredFirstName ===
           selectedPreferredFirstName
       : false
 

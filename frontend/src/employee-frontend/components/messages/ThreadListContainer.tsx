@@ -121,7 +121,7 @@ export default React.memo(function ThreadListContainer({
           ? thread.messages[0].recipientNames || getUniqueParticipants(thread)
           : getUniqueParticipants(thread),
       unread: thread.messages.some(
-        (m) => !m.readAt && m.sender.id != account.id
+        (m) => !m.readAt && m.sender.id !== account.id
       ),
       onClick: () => selectThread(thread),
       type: thread.type,

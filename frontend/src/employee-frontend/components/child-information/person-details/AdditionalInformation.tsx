@@ -111,7 +111,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     mealTexture: null
   })
 
-  const editing = uiMode == 'child-additional-details-editing'
+  const editing = uiMode === 'child-additional-details-editing'
 
   const startEdit = useCallback(() => {
     if (additionalInformation.isSuccess) {

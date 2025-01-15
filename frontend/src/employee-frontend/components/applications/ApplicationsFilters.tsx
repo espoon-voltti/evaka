@@ -94,7 +94,7 @@ export default React.memo(function ApplicationFilters() {
     setApplicationSearchFilters({
       ...applicationSearchFilters,
       basis: applicationSearchFilters.basis.includes(toggledBasis)
-        ? applicationSearchFilters.basis.filter((v) => v != toggledBasis)
+        ? applicationSearchFilters.basis.filter((v) => v !== toggledBasis)
         : [...applicationSearchFilters.basis, toggledBasis]
     })
   }

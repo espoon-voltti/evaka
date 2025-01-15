@@ -334,7 +334,7 @@ const getTableBody = (
   const components: React.ReactNode[] = []
   rowsByTime.forEach((rows, time) => {
     components.push(
-      <Tr key={time} ref={time == '05:30' ? autoScrollRef : undefined}>
+      <Tr key={time} ref={time === '05:30' ? autoScrollRef : undefined}>
         <Td sticky>{time}</Td>
         {rows.map((row) => {
           const isToday = row.dateTime.toLocalDate().isToday()

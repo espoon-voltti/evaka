@@ -28,7 +28,7 @@ if (isAutomatedTest) {
 }
 
 client.interceptors.response.use(undefined, async (err: AxiosError) => {
-  if (err.response && err.response.status == 401) {
+  if (err.response && err.response.status === 401) {
     const event = new LoginStatusChangeEvent(false)
     window.dispatchEvent(event)
 

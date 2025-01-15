@@ -8,7 +8,7 @@ export function formatParagraphs(text?: string) {
   return (
     text &&
     text.split(/\n/).map((line, index) => {
-      if (line.trim().length == 0) return <br key={index} />
+      if (line.trim().length === 0) return <br key={index} />
       else return <p key={index}>{line}</p>
     })
   )

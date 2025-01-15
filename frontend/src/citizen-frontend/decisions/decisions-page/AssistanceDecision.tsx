@@ -80,7 +80,7 @@ export default React.memo(function AssistanceDecision({
           {sortBy(assistanceLevels)
             .map((level, i) => {
               const text = t.decisions.assistanceDecisions.level[level]
-              return i == 0 ? text : text.toLocaleLowerCase()
+              return i === 0 ? text : text.toLocaleLowerCase()
             })
             .join(', ')}
         </span>
