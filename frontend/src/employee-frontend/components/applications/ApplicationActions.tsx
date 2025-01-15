@@ -99,20 +99,24 @@ export default React.memo(function ApplicationActions({
             label: i18n.applications.actions.cancelApplication,
             onClick: () => setConfirmingApplicationCancel(true)
           },
-          {
-            id: application.checkedByAdmin ? 'create-placement-plan' : 'check',
-            label: application.checkedByAdmin
-              ? i18n.applications.actions.createPlacementPlan
-              : i18n.applications.actions.check,
-            onClick: () => {
-              if (application.checkedByAdmin) {
-                void navigate(`/applications/${application.id}/placement`)
-              } else {
-                void navigate(`/applications/${application.id}`)
-              }
-            },
-            primary: true
-          }
+          ...(application.checkedByAdmin
+            ? [
+                {
+                  id: 'create-placement-plan',
+                  label: i18n.applications.actions.createPlacementPlan,
+                  onClick: () =>
+                    navigate(`/applications/${application.id}/placement`),
+                  primary: true
+                }
+              ]
+            : [
+                {
+                  id: 'check',
+                  label: i18n.applications.actions.check,
+                  onClick: () => navigate(`/applications/${application.id}`),
+                  primary: true
+                }
+              ])
         ]
       case 'WAITING_DECISION':
         return [
