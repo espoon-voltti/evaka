@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
@@ -6003,7 +6004,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     private fun Database.Read.getAllInvoices(): List<InvoiceDetailed> =
-        createQuery { sql("${subquery(invoiceDetailedQuery())} ORDER BY invoice.id") }
+        createQuery {
+                sql("${subquery(invoiceDetailedQuery(Predicate.alwaysTrue()))} ORDER BY invoice.id")
+            }
             .toList<InvoiceDetailed>()
             .shuffled() // randomize order to expose assumptions
 

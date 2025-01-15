@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -36,6 +37,8 @@ sealed class AttachmentParent {
         AttachmentParent()
 
     data class FeeAlteration(val feeAlterationId: FeeAlterationId) : AttachmentParent()
+
+    data class Invoice(val invoiceId: InvoiceId) : AttachmentParent()
 
     data object None : AttachmentParent()
 }

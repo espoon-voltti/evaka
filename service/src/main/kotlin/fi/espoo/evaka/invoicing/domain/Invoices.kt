@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.service.ProductKey
@@ -65,6 +66,7 @@ data class InvoiceDetailed(
     val replacedInvoiceId: InvoiceId?,
     val replacementReason: InvoiceReplacementReason?,
     val replacementNotes: String?,
+    @Json val attachments: List<Attachment>,
 ) {
     val account: Int = 3295
     val totalPrice

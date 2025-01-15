@@ -2820,6 +2820,7 @@ export const fi = {
           OTHER: 'Muu'
         },
         notes: 'Lisätiedot',
+        attachments: 'Liitteet',
         sendInfo:
           'Kun merkitset tämän laskun siirretyksi, korvattava lasku merkitään oikaistuksi!',
         send: 'Merkitse siirretyksi',

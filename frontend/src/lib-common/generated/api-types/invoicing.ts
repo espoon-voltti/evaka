@@ -579,6 +579,7 @@ export interface InvoiceDetailed {
   account: number
   agreementType: number | null
   areaId: AreaId
+  attachments: Attachment[]
   codebtor: PersonDetailed | null
   dueDate: LocalDate
   headOfFamily: PersonDetailed

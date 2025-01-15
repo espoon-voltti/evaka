@@ -908,6 +908,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             relatedFeeDecisions = emptyList(),
             replacementNotes = null,
             replacementReason = null,
+            attachments = emptyList(),
         )
 
     private fun toSummary(invoice: DevInvoice): InvoiceSummary =

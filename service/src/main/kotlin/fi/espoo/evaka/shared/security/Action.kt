@@ -870,6 +870,7 @@ sealed interface Action {
             IsCitizen(allowWeakLogin = false).uploaderOfAttachment(),
         ),
         READ_INCOME_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_INVOICE_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
@@ -891,6 +892,7 @@ sealed interface Action {
             IsCitizen(allowWeakLogin = false).uploaderOfAttachment(),
         ),
         DELETE_INCOME_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        DELETE_INVOICE_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         DELETE_MESSAGE_CONTENT_ATTACHMENT(HasGlobalRole(ADMIN)),
         DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
             HasGlobalRole(ADMIN),
@@ -1633,6 +1635,7 @@ sealed interface Action {
     enum class Invoice(override vararg val defaultRules: ScopedActionRule<in InvoiceId>) :
         ScopedAction<InvoiceId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
+        UPLOAD_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         MARK_SENT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
