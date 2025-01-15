@@ -589,42 +589,6 @@ export interface MissingServiceNeedReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.MonthlyAssistanceResult
-*/
-export interface MonthlyAssistanceResult {
-  assistanceCount: number
-  month: number
-}
-
-/**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.MonthlyFamilyDaycareResult
-*/
-export interface MonthlyFamilyDaycareResult {
-  familyOver3Count: number
-  familyUnder3Count: number
-  month: number
-}
-
-/**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.MonthlyMunicipalDaycareResult
-*/
-export interface MonthlyMunicipalDaycareResult {
-  month: number
-  municipalOver3FullTimeCount: number
-  municipalOver3PartTimeCount: number
-  municipalUnder3FullTimeCount: number
-  municipalUnder3PartTimeCount: number
-}
-
-/**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.MonthlyMunicipalShiftCareResult
-*/
-export interface MonthlyMunicipalShiftCareResult {
-  month: number
-  municipalShiftCareCount: number
-}
-
-/**
 * Generated from fi.espoo.evaka.reports.NonSsnChildrenReportRow
 */
 export interface NonSsnChildrenReportRow {
@@ -859,21 +823,25 @@ export interface ReferenceCount {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyMonthlyResults
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportMonthlyStatistics
 */
-export interface RegionalSurveyMonthlyResults {
-  assistanceResults: MonthlyAssistanceResult
-  familyDaycareResults: MonthlyFamilyDaycareResult
+export interface RegionalSurveyReportMonthlyStatistics {
+  assistanceCount: number
+  familyOver3Count: number
+  familyUnder3Count: number
   month: number
-  municipalDaycareResults: MonthlyMunicipalDaycareResult
-  municipalShiftCareResults: MonthlyMunicipalShiftCareResult
+  municipalOver3FullTimeCount: number
+  municipalOver3PartTimeCount: number
+  municipalShiftCareCount: number
+  municipalUnder3FullTimeCount: number
+  municipalUnder3PartTimeCount: number
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportResult
 */
 export interface RegionalSurveyReportResult {
-  monthlyCounts: RegionalSurveyMonthlyResults[]
+  monthlyCounts: RegionalSurveyReportMonthlyStatistics[]
   year: number
 }
 

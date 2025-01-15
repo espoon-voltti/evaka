@@ -125,7 +125,16 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     ),
                 )
 
-        val municipalDaycareResults = results.monthlyCounts.map { it.municipalDaycareResults }
+        val municipalDaycareResults =
+            results.monthlyCounts.map {
+                TampereRegionalSurvey.MonthlyMunicipalDaycareResult(
+                    month = it.month,
+                    municipalUnder3FullTimeCount = it.municipalUnder3FullTimeCount,
+                    municipalUnder3PartTimeCount = it.municipalUnder3PartTimeCount,
+                    municipalOver3FullTimeCount = it.municipalOver3FullTimeCount,
+                    municipalOver3PartTimeCount = it.municipalOver3PartTimeCount,
+                )
+            }
 
         assertThat(municipalDaycareResults).containsExactlyInAnyOrderElementsOf(expectedResults)
     }
@@ -183,7 +192,14 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     ),
                 )
 
-        val familyDaycareResults = results.monthlyCounts.map { it.familyDaycareResults }
+        val familyDaycareResults =
+            results.monthlyCounts.map {
+                TampereRegionalSurvey.MonthlyFamilyDaycareResult(
+                    month = it.month,
+                    familyUnder3Count = it.familyUnder3Count,
+                    familyOver3Count = it.familyOver3Count,
+                )
+            }
 
         assertThat(familyDaycareResults).containsExactlyInAnyOrderElementsOf(expectedResults)
     }
@@ -232,7 +248,13 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     ),
                 )
 
-        val shiftCareResults = results.monthlyCounts.map { it.municipalShiftCareResults }
+        val shiftCareResults =
+            results.monthlyCounts.map {
+                TampereRegionalSurvey.MonthlyMunicipalShiftCareResult(
+                    month = it.month,
+                    municipalShiftCareCount = it.municipalShiftCareCount,
+                )
+            }
 
         assertThat(shiftCareResults).containsExactlyInAnyOrderElementsOf(expectedResults)
     }
@@ -258,7 +280,13 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     TampereRegionalSurvey.MonthlyAssistanceResult(month = 10, assistanceCount = 2),
                 )
 
-        val assistanceResults = results.monthlyCounts.map { it.assistanceResults }
+        val assistanceResults =
+            results.monthlyCounts.map {
+                TampereRegionalSurvey.MonthlyAssistanceResult(
+                    month = it.month,
+                    assistanceCount = it.assistanceCount,
+                )
+            }
 
         assertThat(assistanceResults).containsExactlyInAnyOrderElementsOf(expectedResults)
     }

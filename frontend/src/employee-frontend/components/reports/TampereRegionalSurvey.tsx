@@ -76,15 +76,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
       reportResult.map((result) => {
         return {
           year: result.year,
-          monthlyCounts: orderBy(
-            result.monthlyCounts.map((mc) => ({
-              ...mc.municipalDaycareResults,
-              ...mc.familyDaycareResults,
-              ...mc.municipalShiftCareResults,
-              ...mc.assistanceResults
-            })),
-            [(i) => i.month]
-          )
+          monthlyCounts: orderBy(result.monthlyCounts, [(r) => r.month])
         }
       }),
     [reportResult]

@@ -58,19 +58,31 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
 
                     val monthlyResults =
                         (1..12).map {
-                            RegionalSurveyMonthlyResults(
+                            val familyDaycareRows =
+                                familyDaycareResults[it] ?: MonthlyFamilyDaycareResult(month = it)
+                            val municipalDaycareRows =
+                                municipalDaycareResults[it]
+                                    ?: MonthlyMunicipalDaycareResult(month = it)
+                            val municipalShiftCareRows =
+                                municipalShiftCareResults[it]
+                                    ?: MonthlyMunicipalShiftCareResult(month = it)
+                            val assistanceRows =
+                                assistanceResults[it] ?: MonthlyAssistanceResult(month = it)
+                            RegionalSurveyReportMonthlyStatistics(
                                 month = it,
-                                familyDaycareResults =
-                                    familyDaycareResults[it]
-                                        ?: MonthlyFamilyDaycareResult(month = it),
-                                municipalDaycareResults =
-                                    municipalDaycareResults[it]
-                                        ?: MonthlyMunicipalDaycareResult(month = it),
-                                municipalShiftCareResults =
-                                    municipalShiftCareResults[it]
-                                        ?: MonthlyMunicipalShiftCareResult(month = it),
-                                assistanceResults =
-                                    assistanceResults[it] ?: MonthlyAssistanceResult(month = it),
+                                familyOver3Count = familyDaycareRows.familyOver3Count,
+                                familyUnder3Count = familyDaycareRows.familyUnder3Count,
+                                municipalOver3FullTimeCount =
+                                    municipalDaycareRows.municipalOver3FullTimeCount,
+                                municipalUnder3FullTimeCount =
+                                    municipalDaycareRows.municipalUnder3FullTimeCount,
+                                municipalOver3PartTimeCount =
+                                    municipalDaycareRows.municipalOver3PartTimeCount,
+                                municipalUnder3PartTimeCount =
+                                    municipalDaycareRows.municipalUnder3PartTimeCount,
+                                assistanceCount = assistanceRows.assistanceCount,
+                                municipalShiftCareCount =
+                                    municipalShiftCareRows.municipalShiftCareCount,
                             )
                         }
 
@@ -88,14 +100,6 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
 
         return (1..12).map { month -> data[month] ?: MonthlyAssistanceResult(month = month) }
     }
-
-    data class RegionalSurveyMonthlyResults(
-        val month: Int,
-        val municipalDaycareResults: MonthlyMunicipalDaycareResult,
-        val familyDaycareResults: MonthlyFamilyDaycareResult,
-        val municipalShiftCareResults: MonthlyMunicipalShiftCareResult,
-        val assistanceResults: MonthlyAssistanceResult,
-    )
 
     data class MonthlyMunicipalDaycareResult(
         val month: Int,
@@ -120,7 +124,19 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
 
     data class RegionalSurveyReportResult(
         val year: Int,
-        val monthlyCounts: List<RegionalSurveyMonthlyResults>,
+        val monthlyCounts: List<RegionalSurveyReportMonthlyStatistics>,
+    )
+
+    data class RegionalSurveyReportMonthlyStatistics(
+        val month: Int,
+        val familyOver3Count: Int,
+        val familyUnder3Count: Int,
+        val municipalOver3PartTimeCount: Int,
+        val municipalUnder3PartTimeCount: Int,
+        val municipalOver3FullTimeCount: Int,
+        val municipalUnder3FullTimeCount: Int,
+        val municipalShiftCareCount: Int,
+        val assistanceCount: Int,
     )
 
     private fun Database.Read.getMonthlyMunicipalPlacementsByAgeAndPartTime(

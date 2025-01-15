@@ -20,7 +20,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
             Action.Global.SUBMIT_PATU_REPORT -> sequenceOf(HasGlobalRole(UserRole.ADMIN))
             Action.Global.READ_NON_SSN_CHILDREN_REPORT ->
                 sequenceOf(HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER))
-            Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT -> sequenceOf()
+            Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT -> emptySequence()
             else -> action.defaultRules.asSequence()
         }
 
