@@ -170,14 +170,14 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `createIncome splits earlier indefinite income`() {
+    fun `createIncome ends earlier income without end date`() {
         val firstIncome = testIncomeRequest().copy(validTo = null)
         val firstIncomeId =
             db.transaction { tx ->
                 tx.insertIncome(clock.now(), firstIncome, financeUser.evakaUserId)
             }
 
-        val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusMonths(1))
+        val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusDays(1))
         createIncome(secondIncome)
 
         val incomes = getPersonIncomes(testIncomeRequest().personId)
@@ -194,14 +194,42 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `createIncome throws with partly overlapping date range`() {
+    fun `createIncome ends earlier income with end date`() {
+        val firstIncome = testIncomeRequest()
+        val firstIncomeId =
+            db.transaction { tx ->
+                tx.insertIncome(clock.now(), firstIncome, financeUser.evakaUserId)
+            }
+
+        val secondIncome =
+            firstIncome.copy(
+                validFrom = firstIncome.validFrom.plusDays(1),
+                validTo = firstIncome.validTo!!.plusDays(10),
+            )
+        createIncome(secondIncome)
+
+        val incomes = getPersonIncomes(testIncomeRequest().personId)
+
+        assertEquals(2, incomes.size)
+
+        val firstIncomeResult = incomes.find { it.id == firstIncomeId }!!
+        assertEquals(firstIncome.validFrom, firstIncomeResult.validFrom)
+        assertEquals(secondIncome.validFrom.minusDays(1), firstIncomeResult.validTo)
+
+        val secondIncomeResult = incomes.find { it.id != firstIncomeId }!!
+        assertEquals(secondIncome.validFrom, secondIncomeResult.validFrom)
+        assertEquals(secondIncome.validTo, secondIncomeResult.validTo)
+    }
+
+    @Test
+    fun `createIncome throws if new range overlaps start of old range`() {
         db.transaction { tx ->
             tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
         }
 
         val overlappingIncome =
             testIncomeRequest().let {
-                it.copy(validFrom = it.validFrom.plusDays(10), validTo = null)
+                it.copy(validFrom = it.validFrom.minusDays(1), validTo = it.validTo!!.minusDays(1))
             }
         assertThrows<Conflict> { createIncome(overlappingIncome) }
     }

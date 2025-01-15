@@ -9,10 +9,10 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.invoicing.data.deleteIncome
+import fi.espoo.evaka.invoicing.data.endEarlierOverlappingIncome
 import fi.espoo.evaka.invoicing.data.getIncome
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
 import fi.espoo.evaka.invoicing.data.insertIncome
-import fi.espoo.evaka.invoicing.data.splitEarlierIncome
 import fi.espoo.evaka.invoicing.data.updateIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
@@ -129,7 +129,12 @@ class IncomeController(
                     val now = clock.now()
                     val incomeTypes = incomeTypesProvider.get()
                     val validIncome = validateIncome(income, incomeTypes)
-                    tx.splitEarlierIncome(now, validIncome.personId, period, user.evakaUserId)
+                    tx.endEarlierOverlappingIncome(
+                        now,
+                        validIncome.personId,
+                        period,
+                        user.evakaUserId,
+                    )
                     val id = tx.insertIncome(now, validIncome, user.evakaUserId)
                     tx.associateOrphanAttachments(
                         user.evakaUserId,

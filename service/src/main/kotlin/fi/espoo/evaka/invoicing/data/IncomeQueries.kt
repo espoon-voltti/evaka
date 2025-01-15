@@ -214,7 +214,7 @@ fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
     handlingExceptions { update.execute() }
 }
 
-fun Database.Transaction.splitEarlierIncome(
+fun Database.Transaction.endEarlierOverlappingIncome(
     now: HelsinkiDateTime,
     personId: PersonId,
     period: DateRange,
@@ -230,7 +230,7 @@ fun Database.Transaction.splitEarlierIncome(
             WHERE
                 person_id = ${bind(personId)}
                 AND valid_from < ${bind(period.start)}
-                AND valid_to IS NULL
+                AND (valid_to IS NULL OR valid_to >= ${bind(period.start)})
             """
         )
     }
