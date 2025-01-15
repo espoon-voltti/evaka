@@ -6,13 +6,13 @@ import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
 import {
   required,
   validate,
   validateIf,
   validInt
 } from 'lib-common/form-validation'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   IncomeStatementStatus,
   OtherIncome,

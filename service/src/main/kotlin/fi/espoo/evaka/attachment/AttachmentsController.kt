@@ -508,10 +508,10 @@ class AttachmentsController(
         val attachment =
             db.connect { dbc ->
                 dbc.read {
-                    val attachment =
+                    val (attachment, attachedTo) =
                         it.getAttachment(attachmentId)
                             ?: throw NotFound("Attachment $attachmentId not found")
-                    when (attachment.attachedTo) {
+                    when (attachedTo) {
                         is AttachmentParent.Application ->
                             accessControl.requirePermissionFor(
                                 it,
@@ -538,9 +538,7 @@ class AttachmentsController(
                             )
                         is AttachmentParent.MessageContent -> {
                             val accountIds =
-                                it.getMessageAccountIdsByContentId(
-                                    attachment.attachedTo.messageContentId
-                                )
+                                it.getMessageAccountIdsByContentId(attachedTo.messageContentId)
                             accessControl.requirePermissionForSomeTarget(
                                 it,
                                 user,
@@ -550,8 +548,7 @@ class AttachmentsController(
                             )
                         }
                         is AttachmentParent.MessageDraft -> {
-                            val accountId =
-                                it.findMessageAccountIdByDraftId(attachment.attachedTo.draftId)
+                            val accountId = it.findMessageAccountIdByDraftId(attachedTo.draftId)
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -622,10 +619,10 @@ class AttachmentsController(
     ) {
         db.connect { dbc ->
             dbc.read {
-                    val attachment =
+                    val (attachment, attachedTo) =
                         it.getAttachment(attachmentId)
                             ?: throw NotFound("Attachment $attachmentId not found")
-                    when (attachment.attachedTo) {
+                    when (attachedTo) {
                         is AttachmentParent.Application ->
                             accessControl.requirePermissionFor(
                                 it,
@@ -651,8 +648,7 @@ class AttachmentsController(
                                 attachment.id,
                             )
                         is AttachmentParent.MessageDraft -> {
-                            val accountId =
-                                it.findMessageAccountIdByDraftId(attachment.attachedTo.draftId)
+                            val accountId = it.findMessageAccountIdByDraftId(attachedTo.draftId)
                             accessControl.requirePermissionFor(
                                 it,
                                 user,

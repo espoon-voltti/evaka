@@ -110,7 +110,7 @@ RETURNING id
         .exactlyOne<AttachmentId>()
 }
 
-fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
+fun Database.Read.getAttachment(id: AttachmentId): Pair<Attachment, AttachmentParent>? =
     createQuery {
             check(AttachmentForeignKeys.idFieldCount == 7) {
                 "Unexpected AttachmentForeignKeys field count"
@@ -132,11 +132,13 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
             )
         }
         .exactlyOneOrNull {
-            Attachment(
-                id = column("id"),
-                name = column("name"),
-                contentType = column("content_type"),
-                attachedTo = row<AttachmentForeignKeys>().parent(),
+            Pair(
+                Attachment(
+                    id = column("id"),
+                    name = column("name"),
+                    contentType = column("content_type"),
+                ),
+                row<AttachmentForeignKeys>().parent(),
             )
         }
 

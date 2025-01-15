@@ -6,7 +6,7 @@ package fi.espoo.evaka.messaging
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
-import fi.espoo.evaka.attachment.MessageAttachment
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -33,7 +33,7 @@ data class Message(
     val sentAt: HelsinkiDateTime,
     val content: String,
     val readAt: HelsinkiDateTime? = null,
-    @Json val attachments: List<MessageAttachment>,
+    @Json val attachments: List<Attachment>,
     val recipientNames: Set<String>? = null,
 )
 
@@ -119,7 +119,7 @@ data class SentMessage(
     val urgent: Boolean,
     val sensitive: Boolean,
     val recipientNames: List<String>,
-    @Json val attachments: List<MessageAttachment>,
+    @Json val attachments: List<Attachment>,
 )
 
 enum class MessageType : DatabaseEnum {

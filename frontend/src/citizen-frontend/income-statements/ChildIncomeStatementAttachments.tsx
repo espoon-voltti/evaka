@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   AttachmentId,
   IncomeStatementId

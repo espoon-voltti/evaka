@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/api-types/attachment'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { AttachmentId } from 'lib-common/generated/api-types/shared'
 
 import { FixedSpaceRow } from '../layout/flex-helpers'

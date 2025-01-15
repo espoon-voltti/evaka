@@ -5,20 +5,11 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { AttachmentId } from './shared'
+import { Attachment } from './attachment'
 import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
 import { PedagogicalDocumentId } from './shared'
 import { PersonId } from './shared'
-
-/**
-* Generated from fi.espoo.evaka.pedagogicaldocument.Attachment
-*/
-export interface Attachment {
-  contentType: string
-  id: AttachmentId
-  name: string
-}
 
 /**
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocument

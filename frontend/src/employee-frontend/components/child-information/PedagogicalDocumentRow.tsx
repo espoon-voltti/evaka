@@ -6,10 +6,8 @@ import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
-import {
-  Attachment,
-  PedagogicalDocument
-} from 'lib-common/generated/api-types/pedagogicaldocument'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
+import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import {
   AttachmentId,
   ChildId,

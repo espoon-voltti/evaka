@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { getAttachmentUrl } from 'employee-frontend/api/attachments'
 import { Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   FeeAlteration,
   FeeAlterationWithPermittedActions

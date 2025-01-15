@@ -40,16 +40,7 @@ sealed class AttachmentParent {
     data object None : AttachmentParent()
 }
 
-data class Attachment(
-    val id: AttachmentId,
-    val name: String,
-    val contentType: String,
-    val attachedTo: AttachmentParent,
-)
-
-data class IncomeAttachment(val id: AttachmentId, val name: String, val contentType: String)
-
-data class MessageAttachment(val id: AttachmentId, val name: String, val contentType: String)
+data class Attachment(val id: AttachmentId, val name: String, val contentType: String)
 
 enum class AttachmentType {
     URGENCY,

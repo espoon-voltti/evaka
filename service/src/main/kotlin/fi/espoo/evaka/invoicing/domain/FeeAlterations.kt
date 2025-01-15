@@ -9,7 +9,7 @@ package fi.espoo.evaka.invoicing.domain
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.ConstList
-import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.db.DatabaseEnum
@@ -31,7 +31,7 @@ data class FeeAlteration(
     val notes: String,
     val modifiedAt: HelsinkiDateTime? = null,
     @Nested("modified_by") val modifiedBy: EvakaUser? = null,
-    @Json val attachments: List<FeeAlterationAttachment> = listOf(),
+    @Json val attachments: List<Attachment> = listOf(),
 )
 
 @ConstList("feeAlterationTypes")
@@ -42,5 +42,3 @@ enum class FeeAlterationType : DatabaseEnum {
 
     override val sqlType: String = "fee_alteration_type"
 }
-
-data class FeeAlterationAttachment(val id: AttachmentId, val name: String, val contentType: String)

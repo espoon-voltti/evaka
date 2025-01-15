@@ -10,10 +10,8 @@ import { getAttachmentUrl } from 'citizen-frontend/attachments'
 import { useUser } from 'citizen-frontend/auth/state'
 import CollapsibleOrWholePageContainer from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
-import {
-  Attachment,
-  PedagogicalDocumentCitizen
-} from 'lib-common/generated/api-types/pedagogicaldocument'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
+import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'

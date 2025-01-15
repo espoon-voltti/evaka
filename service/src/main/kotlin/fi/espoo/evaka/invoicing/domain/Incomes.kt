@@ -7,7 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.ConstList
-import fi.espoo.evaka.attachment.IncomeAttachment
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
@@ -34,7 +34,7 @@ data class Income(
     val modifiedBy: EvakaUser,
     // applicationId is no longer used, but left here for historical reasons
     val applicationId: ApplicationId? = null,
-    @Json val attachments: List<IncomeAttachment>,
+    @Json val attachments: List<Attachment>,
     val totalIncome: Int,
     val totalExpenses: Int,
     val total: Int,
@@ -49,7 +49,7 @@ data class IncomeRequest(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
-    val attachments: List<IncomeAttachment> = listOf(),
+    val attachments: List<Attachment> = listOf(),
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -7,12 +7,12 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { ApplicationId } from './shared'
+import { Attachment } from './attachment'
 import { AttachmentId } from './shared'
 import { DaycareId } from './shared'
 import { GroupId } from './shared'
 import { JsonOf } from '../../json'
 import { MessageAccountId } from './shared'
-import { MessageAttachment } from './attachment'
 import { MessageContentId } from './shared'
 import { MessageDraftId } from './shared'
 import { MessageId } from './shared'
@@ -104,7 +104,7 @@ export interface CreateMessageResponse {
 * Generated from fi.espoo.evaka.messaging.DraftContent
 */
 export interface DraftContent {
-  attachments: MessageAttachment[]
+  attachments: Attachment[]
   content: string
   createdAt: HelsinkiDateTime
   id: MessageDraftId
@@ -138,7 +138,7 @@ export interface Group {
 * Generated from fi.espoo.evaka.messaging.Message
 */
 export interface Message {
-  attachments: MessageAttachment[]
+  attachments: Attachment[]
   content: string
   id: MessageId
   readAt: HelsinkiDateTime | null
@@ -180,7 +180,7 @@ export interface MessageChild {
 * Generated from fi.espoo.evaka.messaging.MessageCopy
 */
 export interface MessageCopy {
-  attachments: MessageAttachment[]
+  attachments: Attachment[]
   content: string
   messageId: MessageId
   readAt: HelsinkiDateTime | null
@@ -344,7 +344,7 @@ export interface ReplyToMessageBody {
 * Generated from fi.espoo.evaka.messaging.SentMessage
 */
 export interface SentMessage {
-  attachments: MessageAttachment[]
+  attachments: Attachment[]
   content: string
   contentId: MessageContentId
   recipientNames: string[]

@@ -8,9 +8,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure, Result, wrapResult } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
 import { incomeEffects } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   Income,
   IncomeCoefficient,

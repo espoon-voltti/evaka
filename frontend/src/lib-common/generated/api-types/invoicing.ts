@@ -12,7 +12,7 @@ import YearMonth from '../../year-month'
 import { Action } from '../action'
 import { ApplicationId } from './shared'
 import { AreaId } from './shared'
-import { AttachmentId } from './shared'
+import { Attachment } from './attachment'
 import { CareType } from './daycare'
 import { DaycareId } from './shared'
 import { EmployeeId } from './shared'
@@ -21,7 +21,6 @@ import { EvakaUserId } from './shared'
 import { FeeAlterationId } from './shared'
 import { FeeDecisionId } from './shared'
 import { FeeThresholdsId } from './shared'
-import { IncomeAttachment } from './attachment'
 import { IncomeId } from './shared'
 import { InvoiceCorrectionId } from './shared'
 import { InvoiceId } from './shared'
@@ -91,7 +90,7 @@ export interface EmployeeWithName {
 */
 export interface FeeAlteration {
   amount: number
-  attachments: FeeAlterationAttachment[]
+  attachments: Attachment[]
   id: FeeAlterationId | null
   isAbsolute: boolean
   modifiedAt: HelsinkiDateTime | null
@@ -101,15 +100,6 @@ export interface FeeAlteration {
   type: FeeAlterationType
   validFrom: LocalDate
   validTo: LocalDate | null
-}
-
-/**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeAlterationAttachment
-*/
-export interface FeeAlterationAttachment {
-  contentType: string
-  id: AttachmentId
-  name: string
 }
 
 /**
@@ -411,7 +401,7 @@ export interface GenerateDecisionsBody {
 */
 export interface Income {
   applicationId: ApplicationId | null
-  attachments: IncomeAttachment[]
+  attachments: Attachment[]
   createdAt: HelsinkiDateTime
   createdBy: EvakaUser
   data: Partial<Record<string, IncomeValue>>
@@ -487,7 +477,7 @@ export interface IncomeOption {
 * Generated from fi.espoo.evaka.invoicing.domain.IncomeRequest
 */
 export interface IncomeRequest {
-  attachments: IncomeAttachment[]
+  attachments: Attachment[]
   data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
   isEntrepreneur: boolean

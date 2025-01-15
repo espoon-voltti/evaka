@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Attachment } from 'lib-common/api-types/attachment'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
 import {
   IncomeSource,

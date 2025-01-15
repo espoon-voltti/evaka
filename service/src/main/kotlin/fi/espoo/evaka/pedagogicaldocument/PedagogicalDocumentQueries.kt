@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pedagogicaldocument
 
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
