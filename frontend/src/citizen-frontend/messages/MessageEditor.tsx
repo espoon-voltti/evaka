@@ -195,6 +195,14 @@ export default React.memo(function MessageEditor({
 
   const chipGroupContainerRef = React.useRef<HTMLDivElement>(null)
 
+  const ChipContainer = styled(FixedSpaceFlexWrap)`
+    margin-bottom: -${defaultMargins.xxs};
+
+    > * {
+      margin-bottom: ${defaultMargins.xxs};
+    }
+  `
+
   return (
     <ModalAccessibilityWrapper>
       <FocusLock>
@@ -226,7 +234,7 @@ export default React.memo(function MessageEditor({
                 <label>
                   <Bold>{required(i18n.messages.messageEditor.children)}</Bold>
                   <FixedSpaceColumn>
-                    <FixedSpaceFlexWrap
+                    <ChipContainer
                       horizontalSpacing="xs"
                       ref={chipGroupContainerRef}
                     >
@@ -281,7 +289,7 @@ export default React.memo(function MessageEditor({
                             />
                           </div>
                         ))}
-                    </FixedSpaceFlexWrap>
+                    </ChipContainer>
                     {isChildSelectionTouched &&
                       message.children.length === 0 && (
                         <ErrorMessageBox
@@ -430,23 +438,23 @@ export default React.memo(function MessageEditor({
                 {i18n.messages.messageEditor.messageSendError}
               </ErrorMessage>
             )}
-            <BottomRow>
-              <LegacyButton
-                text={i18n.messages.messageEditor.discard}
-                onClick={onClose}
-              />
-              <span />
-              <AsyncButton
-                primary
-                text={i18n.messages.messageEditor.send}
-                disabled={!sendEnabled}
-                onClick={send}
-                onSuccess={onSuccess}
-                onFailure={onFailure}
-                data-qa="send-message-btn"
-              />
-            </BottomRow>
           </FormArea>
+          <BottomRow>
+            <LegacyButton
+              text={i18n.messages.messageEditor.discard}
+              onClick={onClose}
+            />
+            <span />
+            <AsyncButton
+              primary
+              text={i18n.messages.messageEditor.send}
+              disabled={!sendEnabled}
+              onClick={send}
+              onSuccess={onSuccess}
+              onFailure={onFailure}
+              data-qa="send-message-btn"
+            />
+          </BottomRow>
         </Container>
       </FocusLock>
     </ModalAccessibilityWrapper>
@@ -456,8 +464,8 @@ export default React.memo(function MessageEditor({
 const Container = styled.div`
   width: 100%;
   max-width: 680px;
-  height: 100%;
-  max-height: 700px;
+  height: calc(100% - 32px);
+  margin: ${defaultMargins.s};
   position: fixed;
   z-index: 100;
   right: 0;
@@ -475,6 +483,7 @@ const Container = styled.div`
     top: 0;
     left: 0;
     overflow-y: scroll;
+    margin: 0;
   }
 `
 
@@ -506,6 +515,7 @@ const FormArea = styled.div`
   padding: ${defaultMargins.m};
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 `
 
 const TextAreaLabel = styled.label`
@@ -518,7 +528,7 @@ const StyledTextArea = styled.textarea`
   width: 100%;
   resize: none;
   flex-grow: 1;
-  min-height: 100px;
+  min-height: 200px;
 `
 
 const BottomRow = styled.div`
@@ -526,6 +536,12 @@ const BottomRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: sticky;
+  bottom: 0;
+  background-color: ${colors.grayscale.g0};
+  padding: ${defaultMargins.m};
+  margin-top: auto;
+  border-top: 1px solid ${colors.grayscale.g35};
 `
 
 const SecondaryRecipients = styled.span`
