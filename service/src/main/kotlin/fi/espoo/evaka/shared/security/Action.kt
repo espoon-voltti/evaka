@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.FeeThresholdsId
+import fi.espoo.evaka.shared.FinanceNoteId
 import fi.espoo.evaka.shared.FosterParentId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
@@ -696,6 +697,14 @@ sealed interface Action {
     ) : ScopedAction<ApplicationNoteId> {
         UPDATE(HasGlobalRole(ADMIN, SERVICE_WORKER), IsEmployee.authorOfApplicationNote()),
         DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER), IsEmployee.authorOfApplicationNote());
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class FinanceNote(override vararg val defaultRules: ScopedActionRule<in FinanceNoteId>) :
+        ScopedAction<FinanceNoteId> {
+        UPDATE(HasGlobalRole(ADMIN, SERVICE_WORKER), IsEmployee.authorOfFinanceNote()),
+        DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER), IsEmployee.authorOfFinanceNote());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

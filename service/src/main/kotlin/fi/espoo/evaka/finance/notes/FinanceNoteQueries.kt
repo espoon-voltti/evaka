@@ -11,8 +11,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 fun Database.Read.getFinanceNotes(adultId: EvakaUserId): List<FinanceNote> =
     createQuery {
-        sql(
-            """
+            sql(
+                """
 SELECT
     n.id,
     n.content,
@@ -30,9 +30,9 @@ LEFT JOIN evaka_user meu ON n.modified_by = meu.id
 WHERE n.adult_id = ${bind(adultId)}
 ORDER BY n.created_at
 """
-        )
-    }
-    .toList()
+            )
+        }
+        .toList()
 
 fun Database.Transaction.createFinanceNote(
     content: String,
@@ -40,8 +40,8 @@ fun Database.Transaction.createFinanceNote(
     now: HelsinkiDateTime,
 ): FinanceNote =
     createQuery {
-        sql(
-            """
+            sql(
+                """
 WITH new_note AS (
     INSERT INTO finance_note (
         content,
@@ -71,10 +71,10 @@ SELECT
 FROM new_note n
 LEFT JOIN evaka_user eu ON n.created_by = eu.id
 """
-        )
-    }
-    .exactlyOne()
+            )
+        }
+        .exactlyOne()
 
 fun Database.Transaction.deleteFinanceNote(id: FinanceNoteId) = execute {
-    sql("DELETE FROM finance_note WHERE id = ${bind(id)}"
+    sql("DELETE FROM finance_note WHERE id = ${bind(id)}")
 }
