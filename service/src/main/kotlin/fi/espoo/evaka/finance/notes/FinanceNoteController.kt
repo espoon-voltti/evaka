@@ -24,18 +24,14 @@ data class FinanceNoteRequest(val content: String)
 class FinanceNoteController(private val accessControl: AccessControl) {
     // TODO get mapping
     //
-    // TODO POST mapping
-    //
     // TODO update? PUT?
-    //
-    // TODO delete
 
     @PostMapping("/")
     fun createNote(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody note: FinanceNoteRequest, // TODO create this type
+        @RequestBody note: FinanceNoteRequest,
     ): FinanceNote {
         return db.connect { dbc ->
             dbc.transaction {
@@ -69,7 +65,7 @@ class FinanceNoteController(private val accessControl: AccessControl) {
                     tx,
                     user,
                     clock,
-                    Action.FinanceNote.DELETE, // TODO import something?
+                    Action.FinanceNote.DELETE,
                     noteId,
                 )
                 tx.deleteFinanceNote(noteId)
