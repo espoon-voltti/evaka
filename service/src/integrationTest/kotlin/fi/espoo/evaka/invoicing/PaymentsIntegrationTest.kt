@@ -240,32 +240,49 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             value = 87000,
             coPayment = 28800,
         )
+        createVoucherDecision(
+            janFirst,
+            // Has payment details
+            unitId = testVoucherDaycare2.id,
+            headOfFamilyId = testAdult_3.id,
+            childId = testChild_3.id,
+            value = 35000,
+            coPayment = 28800,
+        )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
         }
         val paymentDraftIds = createPaymentDrafts(janLast)
 
-        confirmPaymentDrafts(janLast, paymentDraftIds)
+        val confirmedPayments1 = paymentDraftIds.subList(0, 2)
+        confirmPaymentDrafts(janLast, confirmedPayments1)
 
         val payments = db.read { it.readPayments() }
-        assertEquals(2, payments.size)
+        assertEquals(3, payments.size)
 
         // assert respective details
         payments.first().let { payment ->
             assertEquals(DateRange(janFirst, janLast), payment.period)
+            assertEquals(PaymentStatus.DRAFT, payment.status)
             assertEquals(testDaycare.id, payment.unit.id)
             assertEquals(testDaycare.name, payment.unit.name)
             assertEquals(134850 - 28800, payment.amount)
         }
-        payments.last().let { payment ->
+        payments[1].let { payment ->
+            assertEquals(PaymentStatus.CONFIRMED, payment.status)
             assertEquals(testVoucherDaycare.id, payment.unit.id)
             assertEquals(87000 - 28800, payment.amount)
             assertEquals(testVoucherDaycare.name, payment.unit.name)
         }
-
-        // assert that status is set and sending details remain unset
-        payments.forEach { payment ->
+        payments.last().let { payment ->
             assertEquals(PaymentStatus.CONFIRMED, payment.status)
+            assertEquals(testVoucherDaycare2.id, payment.unit.id)
+            assertEquals(35000 - 28800, payment.amount)
+            assertEquals(testVoucherDaycare2.name, payment.unit.name)
+        }
+
+        // assert that sending details remain unset
+        payments.forEach { payment ->
             assertEquals(null, payment.paymentDate)
             assertEquals(null, payment.dueDate)
             assertEquals(null, payment.number)
@@ -275,6 +292,20 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(null, payment.unit.iban)
             assertEquals(null, payment.unit.providerId)
         }
+
+        val confirmedPayments2 = createPaymentDrafts(janLast)
+        assertEquals(1, confirmedPayments2.size)
+
+        val paymentIds = db.read { it.readPayments() }.sortedBy { it.amount }.map { it.id }
+        assertEquals(confirmedPayments1 + confirmedPayments2, paymentIds)
+
+        confirmPaymentDrafts(janLast, confirmedPayments2)
+
+        db.transaction {
+            freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze)
+        }
+        val draftPaymentsFeb = createPaymentDrafts(febLast)
+        assertEquals(3, draftPaymentsFeb.size)
     }
 
     @Test

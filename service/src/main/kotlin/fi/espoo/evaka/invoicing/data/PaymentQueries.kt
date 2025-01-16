@@ -10,9 +10,11 @@ import fi.espoo.evaka.invoicing.controller.SearchPaymentsRequest
 import fi.espoo.evaka.invoicing.domain.Payment
 import fi.espoo.evaka.invoicing.domain.PaymentDraft
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 
@@ -68,6 +70,22 @@ ORDER BY period DESC, unit_name
         }
         .toList<Payment>()
 }
+
+fun Database.Read.readPaymentUnits(
+    period: FiniteDateRange,
+    status: List<PaymentStatus>,
+): List<DaycareId> =
+    createQuery {
+            sql(
+                """
+SELECT DISTINCT unit_id
+FROM payment
+WHERE period = ${bind(period)}
+  AND status = ANY (${bind(status)})
+    """
+            )
+        }
+        .toList<DaycareId>()
 
 data class PagedPayments(val data: List<Payment>, val total: Int, val pages: Int)
 

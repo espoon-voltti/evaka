@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.invoicing.data.deletePaymentDraftsByDateRange
 import fi.espoo.evaka.invoicing.data.insertPaymentDrafts
+import fi.espoo.evaka.invoicing.data.readPaymentUnits
 import fi.espoo.evaka.reports.REPORT_STATEMENT_TIMEOUT
 import fi.espoo.evaka.reports.getLastSnapshotMonth
 import fi.espoo.evaka.reports.getServiceVoucherReport
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -82,15 +84,26 @@ fun createPaymentDrafts(tx: Database.Transaction) {
         lastSnapshot.let {
             val start = LocalDate.of(it.year, it.month, 1)
             val end = start.with(TemporalAdjusters.lastDayOfMonth())
-            DateRange(start, end)
+            FiniteDateRange(start, end)
         }
 
+    val unitsAlreadyInProgress =
+        tx.readPaymentUnits(
+            period = period,
+            status = listOf(PaymentStatus.CONFIRMED, PaymentStatus.SENT),
+        )
     val payments =
-        report.rows.map {
-            PaymentDraft(unitId = it.unit.id, period = period, amount = it.monthlyPaymentSum)
-        }
+        report.rows
+            .filterNot { unitsAlreadyInProgress.contains(it.unit.id) }
+            .map {
+                PaymentDraft(
+                    unitId = it.unit.id,
+                    period = period.asDateRange(),
+                    amount = it.monthlyPaymentSum,
+                )
+            }
 
-    tx.deletePaymentDraftsByDateRange(period)
+    tx.deletePaymentDraftsByDateRange(period.asDateRange())
     tx.insertPaymentDrafts(payments)
 }
 
