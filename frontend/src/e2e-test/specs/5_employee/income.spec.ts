@@ -197,15 +197,15 @@ describe('Income', () => {
 
   it('Overlapping incomes error', async () => {
     await incomesSection.openNewIncomeForm()
-    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeStartDate('1.2.2020')
     await incomesSection.fillIncomeEndDate('31.3.2020')
     await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
     await incomesSection.openNewIncomeForm()
-    await incomesSection.fillIncomeStartDate('1.2.2020')
-    await incomesSection.fillIncomeEndDate('30.4.2020')
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('15.2.2020')
     await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.saveFailing()
@@ -214,6 +214,34 @@ describe('Income', () => {
     await errorModal.ensureText(
       'Ajanjaksolle on jo tallennettu tulotietoja! Tarkista tulotietojen voimassaoloajat.'
     )
+  })
+
+  it('Overlapping income may be automatically ended', async () => {
+    await incomesSection.openNewIncomeForm()
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.3.2020')
+    await incomesSection.confirmRetroactive.check()
+    await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
+    await incomesSection.save()
+
+    await incomesSection.openNewIncomeForm()
+    await incomesSection.fillIncomeStartDate('1.2.2020')
+    await incomesSection.fillIncomeEndDate('15.6.2020')
+    await incomesSection.confirmRetroactive.check()
+    await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
+    await incomesSection.save()
+
+    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 2)
+    await incomesSection.incomeListItems
+      .nth(0)
+      .assertText((s) =>
+        s.includes('Tulotiedot ajalle 01.02.2020 - 15.06.2020')
+      )
+    await incomesSection.incomeListItems
+      .nth(1)
+      .assertText((s) =>
+        s.includes('Tulotiedot ajalle 01.01.2020 - 31.01.2020')
+      )
   })
 
   it('Attachments can be added.', async () => {
