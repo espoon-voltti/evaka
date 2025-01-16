@@ -1687,6 +1687,9 @@ export const fi = {
     partnerInfo:
       'Samassa osoitteessa avio/avoliiton omaisessa suhteessa asuva toinen henkilö',
     partnerAdd: 'Lisää puoliso',
+    financeNotesAndMessages: {
+      title: 'Talouden muistiinpanot ja viestit'
+    },
     forceManualFeeDecisionsLabel: 'Maksupäätösten lähettäminen',
     forceManualFeeDecisionsChecked: 'Lähetetään aina manuaalisesti',
     forceManualFeeDecisionsUnchecked: 'Automaattisesti, jos mahdollista',

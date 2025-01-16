@@ -2,35 +2,56 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import styled from 'styled-components'
+
+import { FinanceNote } from 'lib-common/generated/api-types/finance'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2, H4 } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 
 interface Props {
+    open: boolean
+    notes: FinanceNote[] //TODO maybe fetch these here?
     // TODO
     //
 }
 
 export default React.memo(function PersonFinanceNotesAndMessages({
+  open,
+  notes
     // TODO
 }: Props) {
   const { i18n } = useTranslation()
+  const [isOpen, setIsOpen] = useState(open)
 
   return (
     <CollapsibleContentArea
       title={<H2>{i18n.personProfile.financeNotesAndMessages.title}</H2>}
       open={open}
-      //toggleOpen
+      toggleOpen={() => setIsOpen(!isOpen)}
       opaque
       paddingVertical="L"
       data-qa="person-finance-notes-and-messages-collapsible"
     >
       <H4>{i18n.personProfile.financeNotesAndMessages.title}</H4>
-
+      {notes.map(note => <FinanceNoteListItem note={note} />)}
     </CollapsibleContentArea>
   )
+})
+
+const FinanceNoteListItem = React.memo(function FinanceNoteListItem({
+  note
+}: {
+  note: FinanceNote
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+
+  return isEditing ? (
+    <FinanceNoteView note={note} edit={() => setIsEditing(true)} />
+  ) : <FinanceNoteEdit note={note} />
 })
 
 const StyledTextAreaView = styled.textarea`
@@ -38,15 +59,17 @@ const StyledTextAreaView = styled.textarea`
 `
 
 const FinanceNoteView = React.memo(function FinanceNoteView({
-  note
+  note,
+  edit
 }: {
   note: FinanceNote
+  edit: () => void
 }) {
   // TODO
 
   return (
     <>
-      <FinanceNoteHeader note={note} />
+      <FinanceNoteHeader note={note} edit={edit} />
       <StyledTextAreaView>{note.content}</StyledTextAreaView>
     </>
   )
@@ -86,13 +109,15 @@ const FinanceNoteEdit = React.memo(function FinanceNoteEdit({
 })
 
 const FinanceNoteHeader = React.memo(function FinanceNoteHeader({
-
+  note,
+  edit
 }: {
-
+  note: FinanceNote
+  edit?: () => void
 }) {
   // TODO
 
   return (
-
+    "TODO: FinanceNoteHeader"
   )
 })
