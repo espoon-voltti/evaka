@@ -128,6 +128,8 @@ interface IEmailMessageProvider {
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 
     fun serviceApplicationDecidedNotification(accepted: Boolean, startDate: LocalDate): EmailContent
+
+    fun confirmationCode(confirmationCode: HtmlSafe<String>): EmailContent
 }
 
 data class MessageThreadData(

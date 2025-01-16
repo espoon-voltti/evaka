@@ -832,6 +832,7 @@ export interface DevPerson {
   ssnAddingDisabled: boolean | null
   streetAddress: string
   updatedFromVtj: HelsinkiDateTime | null
+  verifiedEmail: string | null
 }
 
 /**

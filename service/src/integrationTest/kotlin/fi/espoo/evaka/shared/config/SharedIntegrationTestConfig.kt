@@ -13,6 +13,7 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.espoo.DefaultPasswordSpecification
 import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
@@ -27,6 +28,8 @@ import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.auth.PasswordConstraints
+import fi.espoo.evaka.shared.auth.PasswordSpecification
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -209,6 +212,12 @@ class SharedIntegrationTestConfig {
         }
 
     @Bean fun mealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
+
+    @Bean
+    fun passwordSpecification(): PasswordSpecification =
+        DefaultPasswordSpecification(
+            PasswordConstraints.UNCONSTRAINED.copy(minLength = 8, minDigits = 1)
+        )
 }
 
 val testFeatureConfig =

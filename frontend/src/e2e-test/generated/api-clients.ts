@@ -119,6 +119,7 @@ import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { StaffAttendancePlanId } from './api-types'
 import { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
+import { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
 import { VoucherValueDecision } from './api-types'
 import { VtjPersonSummary } from './api-types'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -2515,6 +2516,30 @@ export async function upsertVtjDataset(
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
       data: request.body satisfies JsonCompatible<MockVtjDataset>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertWeakCredentials
+*/
+export async function upsertWeakCredentials(
+  request: {
+    id: PersonId,
+    body: UpdateWeakLoginCredentialsRequest
+  },
+  options?: { mockedTime?: HelsinkiDateTime }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/citizen/${request.id}/weak-credentials`.toString(),
+      method: 'POST',
+      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
+      data: request.body satisfies JsonCompatible<UpdateWeakLoginCredentialsRequest>
     })
     return json
   } catch (e) {

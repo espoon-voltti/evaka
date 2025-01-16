@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
@@ -766,4 +767,20 @@ $unsubscribeEn
                         .trimIndent(),
         )
     }
+
+    override fun confirmationCode(confirmationCode: HtmlSafe<String>): EmailContent =
+        EmailContent.fromHtml(
+            subject =
+                "eVaka-vahvistuskoodi / eVakas verifieringskod innehåll / eVaka confirmation code",
+            html =
+                """
+<p>eVakasta on lähetetty tämä vahvistuskoodi tietojesi muokkaamista varten. Syötä oheinen vahvistuskoodi pyydettyyn kenttään eVakassa.</p>
+<hr>
+<p>Den här bekräftelsekoden har skickats från eVaka för redigering av dina uppgifter. Vänligen ange den bifogade bekräftelsekoden i det begärda fältet i eVaka.</p>
+<hr>
+<p>This confirmation code has been sent from eVaka for editing your information. Enter the provided confirmation code in the requested field in eVaka.</p>
+<hr>
+<p>Vahvistuskoodi / bekräftelsekod / confirmation code: <strong>$confirmationCode</strong></p>
+""",
+        )
 }
