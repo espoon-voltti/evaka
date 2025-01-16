@@ -5,13 +5,11 @@
 package evaka.codegen.api
 
 import evaka.codegen.fileHeader
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.utils.letIf
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.jvmName
-import kotlin.reflect.typeOf
 import org.springframework.web.util.UriComponentsBuilder
 
 private val logger = KotlinLogging.logger {}
@@ -68,15 +66,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val citizenApiClients =
         endpoints
-            .filter { it.path.startsWith("/citizen/") || it.path.startsWith("/public/") }
-            .filter {
-                when (it.authenticatedUserType) {
-                    typeOf<AuthenticatedUser.Citizen>(),
-                    typeOf<AuthenticatedUser>(),
-                    null -> true
-                    else -> false
-                }
-            }
+            .filter { it.path.startsWith("/citizen/") }
             .groupBy {
                 TsProject.CitizenFrontend /
                     "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
@@ -93,17 +83,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val employeeApiClients =
         endpoints
-            .filterNot {
-                it.path.startsWith("/citizen/") || it.path.startsWith("/employee-mobile/")
-            }
-            .filter {
-                when (it.authenticatedUserType) {
-                    typeOf<AuthenticatedUser.Employee>(),
-                    typeOf<AuthenticatedUser>(),
-                    null -> true
-                    else -> false
-                }
-            }
+            .filter { it.path.startsWith("/employee/") }
             .groupBy {
                 TsProject.EmployeeFrontend /
                     "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
@@ -120,15 +100,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val employeeMobileApiClients =
         endpoints
-            .filterNot { it.path.startsWith("/citizen/") || it.path.startsWith("/employee/") }
-            .filter {
-                when (it.authenticatedUserType) {
-                    typeOf<AuthenticatedUser.MobileDevice>(),
-                    typeOf<AuthenticatedUser>(),
-                    null -> true
-                    else -> false
-                }
-            }
+            .filter { it.path.startsWith("/employee-mobile/") }
             .groupBy {
                 TsProject.EmployeeMobileFrontend /
                     "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
