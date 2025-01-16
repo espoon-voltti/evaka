@@ -214,6 +214,7 @@ export interface Daycare {
   ophUnitOid: string | null
   phone: string | null
   preschoolApplyPeriod: DateRange | null
+  preschoolManager: UnitManager
   providerId: string
   providerType: ProviderType
   shiftCareOpenOnHolidays: boolean
@@ -280,6 +281,7 @@ export interface DaycareFields {
   ophUnitOid: string | null
   phone: string | null
   preschoolApplyPeriod: DateRange | null
+  preschoolManager: UnitManager
   providerId: string
   providerType: ProviderType
   shiftCareOpenOnHolidays: boolean

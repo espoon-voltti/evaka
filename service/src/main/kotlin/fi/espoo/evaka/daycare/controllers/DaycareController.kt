@@ -33,7 +33,6 @@ import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.daycare.updateDaycare
-import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
 import fi.espoo.evaka.daycare.updateUnitClosingDate
 import fi.espoo.evaka.daycare.validateUnitClosingDate
@@ -441,7 +440,6 @@ class DaycareController(
                         daycareId,
                     )
                     fields.closingDate?.also { validateUnitClosingDate(tx, daycareId, it) }
-                    tx.updateDaycareManager(daycareId, fields.unitManager)
                     tx.updateDaycare(daycareId, fields)
                 }
             }
@@ -484,7 +482,6 @@ class DaycareController(
                             Action.Global.CREATE_UNIT,
                         )
                         val id = it.createDaycare(fields.areaId, fields.name)
-                        it.updateDaycareManager(id, fields.unitManager)
                         it.updateDaycare(id, fields)
                         id
                     }

@@ -74,6 +74,12 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     email = "joh.taja@example.com",
                     phone = "000-0000000",
                 ),
+            preschoolManager =
+                UnitManager(
+                    name = "Essi Opetus",
+                    email = "essi.opetus@example.com",
+                    phone = "001-0000000",
+                ),
             decisionCustomization =
                 DaycareDecisionCustomization(
                     daycareName = "Uusi päiväkoti (vaka)",

@@ -796,6 +796,7 @@ private fun DaycareFields.Companion.fromDaycare(daycare: Daycare): DaycareFields
         location = daycare.location,
         mailingAddress = daycare.mailingAddress,
         unitManager = daycare.unitManager,
+        preschoolManager = daycare.preschoolManager,
         decisionCustomization = daycare.decisionCustomization,
         ophUnitOid = daycare.ophUnitOid,
         ophOrganizerOid = daycare.ophOrganizerOid,

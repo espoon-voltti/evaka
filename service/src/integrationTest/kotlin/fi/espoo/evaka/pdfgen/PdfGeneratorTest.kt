@@ -5,8 +5,8 @@
 package fi.espoo.evaka.pdfgen
 
 import fi.espoo.evaka.application.ServiceNeed
+import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
@@ -146,7 +146,7 @@ private val guardian =
         "",
     )
 private val manager =
-    DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
+    UnitManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
 
 @TestConfiguration
 class PdfGeneratorTestConfiguration {
@@ -440,6 +440,7 @@ class PdfGeneratorTest {
                 isTransferApplication,
                 serviceNeed,
                 lang,
+                manager,
                 manager,
             )
 

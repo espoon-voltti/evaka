@@ -69,8 +69,6 @@ class DaycareService {
     }
 }
 
-data class DaycareManager(val name: String, val email: String, val phone: String)
-
 data class DaycareGroup(
     val id: GroupId,
     val daycareId: DaycareId,
