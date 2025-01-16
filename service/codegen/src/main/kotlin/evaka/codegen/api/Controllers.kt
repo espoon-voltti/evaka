@@ -5,6 +5,7 @@
 package evaka.codegen.api
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.domain.EvakaClock
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
@@ -54,6 +55,7 @@ data class EndpointMetadata(
     val controllerMethod: KFunction<*>,
     val isJsonEndpoint: Boolean,
     val isDeprecated: Boolean,
+    val hasClockParameter: Boolean,
     val path: String,
     val httpMethod: RequestMethod,
     val pathVariables: List<NamedParameter>,
@@ -217,6 +219,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
             val producesJson =
                 info.producesCondition.isEmpty ||
                     info.producesCondition.producibleMediaTypes.contains(MediaType.APPLICATION_JSON)
+            val usesClock = kotlinMethod.parameters.any { it.type == typeOf<EvakaClock>() }
             paths
                 .flatMap { path -> methods.map { method -> Pair(path, method) } }
                 .map { (path, method) ->
@@ -226,6 +229,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                         isJsonEndpoint =
                             consumesJson && producesJson && responseBodyType != typeOf<Any>(),
                         isDeprecated = kotlinMethod.hasAnnotation<Deprecated>(),
+                        usesClock,
                         path = path,
                         httpMethod = method,
                         pathVariables = pathVariables,
