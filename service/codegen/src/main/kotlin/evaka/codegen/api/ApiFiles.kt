@@ -208,6 +208,7 @@ fun generateApiClients(
     endpoints: Collection<EndpointMetadata>,
     wrapBody: (body: TsCode) -> TsCode = { it },
 ): String {
+    val mockedTimeSupport = config.mockedTimeSupport && endpoints.any { it.hasClockParameter }
     val clients =
         endpoints
             .groupBy { Pair(it.controllerClass, it.controllerMethod) }
@@ -233,7 +234,7 @@ fun generateApiClients(
         clients
             .flatMap { it.imports }
             .toSet()
-            .letIf(config.mockedTimeSupport) { it + Imports.helsinkiDateTime }
+            .letIf(mockedTimeSupport) { it + Imports.helsinkiDateTime }
     val sections = listOf(generateImports(file, imports)) + clients.map { it.text }
     return """$fileHeader
 ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
@@ -247,6 +248,7 @@ fun generateApiClient(
     endpoint: EndpointMetadata,
     wrapBody: ((functionBody: TsCode) -> TsCode),
 ): TsCode {
+    val mockedTimeSupport = config.mockedTimeSupport && endpoint.hasClockParameter
     val argumentType =
         TsObjectLiteral(
                 (endpoint.pathVariables + endpoint.requestParameters).associate {
@@ -262,8 +264,7 @@ fun generateApiClient(
                     "request: ${inline(generator.tsType(argumentType, compact = false))}"
                         .prependIndent("  ")
                 else null,
-                if (config.mockedTimeSupport) "  options?: { mockedTime?: HelsinkiDateTime }"
-                else null,
+                if (mockedTimeSupport) "  options?: { mockedTime?: HelsinkiDateTime }" else null,
             )
             .let { params ->
                 if (params.isNotEmpty())
@@ -316,7 +317,7 @@ ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
         listOfNotNull(
             TsCode { "url: ${ref(Imports.uri)}`${inline(url)}`.toString()" },
             TsCode { "method: '${endpoint.httpMethod}'" },
-            if (config.mockedTimeSupport)
+            if (mockedTimeSupport)
                 TsCode { "headers: { EvakaMockedTime: options?.mockedTime?.formatIso() }" }
             else null,
             createQueryParameters?.let { TsCode { "params" } },
