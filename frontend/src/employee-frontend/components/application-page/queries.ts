@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -15,21 +15,21 @@ import { getApplicationMetadata } from '../../generated/api-clients/process'
 
 const q = new Queries()
 
-export const applicationNotesQuery = q.query(getNotes)
-
 export const applicationMetadataQuery = q.query(getApplicationMetadata)
 
-export const createApplicationNote = q.mutation(createNote, [
+export const applicationNotesQuery = q.query(getNotes)
+
+export const createApplicationNoteMutation = q.mutation(createNote, [
   ({ applicationId }) => applicationNotesQuery({ applicationId })
 ])
 
-export const updateApplicationNote = q.parametricMutation<{
+export const updateApplicationNoteMutation = q.parametricMutation<{
   applicationId: ApplicationId
 }>()(updateNote, [
   ({ applicationId }) => applicationNotesQuery({ applicationId })
 ])
 
-export const deleteApplicationNote = q.parametricMutation<{
+export const deleteApplicationNoteMutation = q.parametricMutation<{
   applicationId: ApplicationId
 }>()(deleteNote, [
   ({ applicationId }) => applicationNotesQuery({ applicationId })

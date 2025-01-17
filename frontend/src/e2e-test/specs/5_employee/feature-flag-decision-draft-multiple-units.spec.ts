@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,14 +28,13 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
-import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedTime = LocalDate.of(2021, 8, 16)
 let page: Page
-let applicationWorkbench: ApplicationWorkbenchPage
+let applicationListView: ApplicationListView
 
 let serviceWorker: DevEmployee
 
@@ -58,7 +57,7 @@ beforeEach(async () => {
       featureFlags: { decisionDraftMultipleUnits: true }
     }
   })
-  applicationWorkbench = new ApplicationWorkbenchPage(page)
+  applicationListView = new ApplicationListView(page)
 })
 
 describe('Application transitions', () => {
@@ -88,24 +87,25 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openPlacementQueue()
-    const placementDraftPage =
-      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
-
     await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openDecisionQueue()
-    const decisionEditorPage =
-      await applicationWorkbench.openDecisionEditorById(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+    const decisionEditorPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionEditDecisions()
     await decisionEditorPage.waitUntilLoaded()
-
     await decisionEditorPage.save()
-    await applicationWorkbench.waitUntilLoaded()
+
+    await applicationListView.searchButton.click()
 
     await execSimpleApplicationActions(
       applicationId,
@@ -150,25 +150,25 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openPlacementQueue()
-    const placementDraftPage =
-      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
-
     await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openDecisionQueue()
-    const decisionEditorPage =
-      await applicationWorkbench.openDecisionEditorById(applicationId)
-    await decisionEditorPage.waitUntilLoaded()
-
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+    const decisionEditorPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionEditDecisions()
     await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
     await decisionEditorPage.save()
-    await applicationWorkbench.waitUntilLoaded()
+
+    await applicationListView.searchButton.click()
 
     await execSimpleApplicationActions(
       applicationId,

@@ -13,7 +13,8 @@ import {
   Page,
   Radio,
   Element,
-  ElementCollection
+  ElementCollection,
+  TextInput
 } from '../../../utils/page'
 import MessagesPage from '../messages/messages-page'
 
@@ -21,6 +22,7 @@ import ApplicationEditView from './application-edit-view'
 
 export default class ApplicationReadView {
   #editButton: Element
+  #guardianName: Element
   #vtjGuardianName: Element
   #vtjGuardianPhone: Element
   #vtjGuardianEmail: Element
@@ -28,7 +30,6 @@ export default class ApplicationReadView {
   #giveOtherGuardianEmail: Element
   #applicationStatus: Element
   #sendMessageButton: Element
-  notesList: Element
   #title: Element
   confidentialRadioYes: Radio
   confidentialRadioNo: Radio
@@ -36,6 +37,7 @@ export default class ApplicationReadView {
   private notes: ElementCollection
   constructor(private page: Page) {
     this.#editButton = page.findByDataQa('edit-application')
+    this.#guardianName = page.findByDataQa('guardian-name')
     this.#vtjGuardianName = page.findByDataQa('vtj-guardian-name')
     this.#vtjGuardianPhone = page.findByDataQa('vtj-guardian-phone')
     this.#vtjGuardianEmail = page.findByDataQa('vtj-guardian-email')
@@ -43,9 +45,8 @@ export default class ApplicationReadView {
     this.#giveOtherGuardianEmail = page.findByDataQa('second-guardian-email')
     this.#applicationStatus = page.findByDataQa('application-status')
     this.#sendMessageButton = page.findByDataQa('send-message-button')
-    this.notesList = page.findByDataQa('application-notes-list')
     this.#title = this.page.findByDataQa('application-title').find('h1')
-    this.notes = this.notesList.findAllByDataQa('note-container')
+    this.notes = this.page.findAllByDataQa('note-container')
     this.confidentialRadioYes = new Radio(
       this.page.findByDataQa('confidential-yes')
     )
@@ -84,6 +85,14 @@ export default class ApplicationReadView {
     await this.#title.assertTextEquals(expectedTitle)
   }
 
+  async assertGuardianName(expectedName: string) {
+    await this.#guardianName.findText(expectedName).waitUntilVisible()
+  }
+
+  async assertOtherVtjGuardianName(expectedName: string) {
+    await this.#vtjGuardianName.assertTextEquals(expectedName)
+  }
+
   async assertOtherVtjGuardian(
     expectedName: string,
     expectedPhone: string,
@@ -95,7 +104,23 @@ export default class ApplicationReadView {
   }
 
   async assertOtherVtjGuardianMissing() {
+    await this.page.findByDataQa('no-other-vtj-guardian').waitUntilVisible()
     await this.#vtjGuardianName.waitUntilHidden()
+  }
+
+  async assertOtherGuardianSameAddress(status: boolean) {
+    await this.page
+      .findByDataQa('other-vtj-guardian-lives-in-same-address')
+      .findText(status ? 'Kyllä' : 'Ei')
+      .waitUntilVisible()
+  }
+
+  async assertOtherGuardianAgreementStatus(_status: false) {
+    const expectedText = 'Ei ole sovittu yhdessä'
+    await this.page
+      .findByDataQa('agreement-status')
+      .findText(expectedText)
+      .waitUntilVisible()
   }
 
   async assertGivenOtherGuardianInfo(
@@ -200,6 +225,25 @@ export default class ApplicationReadView {
     return new MessagesPage(popup)
   }
 
+  async addNote(note: string) {
+    await this.page.findByDataQa('add-note').click()
+    const noteTextArea = new TextInput(this.notes.nth(0).find('textarea'))
+    await noteTextArea.fill(note)
+    await this.page.findByDataQa('save-note').click()
+  }
+
+  async assertNote(index: number, note: string) {
+    await this.notes
+      .nth(index)
+      .findByDataQa('application-note-content')
+      .assertTextEquals(note)
+  }
+
+  async assertNoNotes() {
+    await this.page.findByDataQa('application-notes-list').waitUntilAttached()
+    await this.notes.nth(0).waitUntilHidden()
+  }
+
   async clickMessageThreadLinkInNote(index: number): Promise<MessagesPage> {
     const popup = await this.page.capturePopup(async () => {
       await this.notes
@@ -210,24 +254,25 @@ export default class ApplicationReadView {
     return new MessagesPage(popup)
   }
 
-  async assertNote(index: number, note: string) {
-    await this.notes
-      .nth(index)
-      .findByDataQa('application-note-content')
-      .assertTextEquals(note)
-  }
-
   async assertNoteNotEditable(index: number) {
     await this.notes.nth(index).findByDataQa('edit-note').waitUntilHidden()
+  }
+
+  async editNote(index: number, note: string) {
+    const noteContainer = this.notes.nth(index)
+    await noteContainer.findByDataQa('edit-note').click()
+    const input = new TextInput(noteContainer.find('textarea'))
+    await input.fill(note)
+    await noteContainer.findByDataQa('save-note').click()
   }
 
   async assertNoteNotDeletable(index: number) {
     await this.notes.nth(index).findByDataQa('delete-note').waitUntilHidden()
   }
 
-  async assertNoNotes() {
-    await this.notesList.waitUntilAttached()
-    await this.notes.nth(0).waitUntilHidden()
+  async deleteNote(index: number) {
+    await this.notes.nth(index).findByDataQa('delete-note').click()
+    await this.page.findByDataQa('modal-okBtn').click()
   }
 
   async reload() {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
+import { useBoolean } from 'lib-common/form/hooks'
 import {
   ApplicationSortColumn,
   ApplicationSummary,
@@ -34,7 +34,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, H1, Italic, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
@@ -50,7 +50,6 @@ import {
 import ActionBar from '../../components/applications/ActionBar'
 import ApplicationActions from '../../components/applications/ApplicationActions'
 import { getEmployeeUrlPrefix } from '../../constants'
-import { updateServiceWorkerNote } from '../../generated/api-clients/application'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
@@ -62,8 +61,7 @@ import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
 import { CircleIconGreen, CircleIconRed } from './CircleIcon'
-
-const updateServiceWorkerNoteResult = wrapResult(updateServiceWorkerNote)
+import { updateServiceWorkerNoteMutation } from './queries'
 
 const TitleRowContainer = styled.div`
   display: flex;
@@ -100,10 +98,6 @@ const SortableThWithBorder = styled(SortableTh)`
 `
 
 const ApplicationsTableContainer = styled.div`
-  table {
-    width: auto;
-  }
-
   @media screen and (min-width: 1024px) {
     table {
       max-width: 960px;
@@ -160,33 +154,29 @@ const ApplicationsTableContainer = styled.div`
 
 interface Props {
   applicationsResult: PagedApplicationSummaries
-  currentPage: number
-  setPage: (page: number) => void
   sortBy: ApplicationSortColumn
   setSortBy: (v: ApplicationSortColumn) => void
   sortDirection: SearchOrder
   setSortDirection: (v: SearchOrder) => void
-  reloadApplications: () => void
 }
 
 const ApplicationsList = React.memo(function Applications({
   applicationsResult,
-  currentPage,
-  setPage,
   sortBy,
   setSortBy,
   sortDirection,
-  setSortDirection,
-  reloadApplications
+  setSortDirection
 }: Props) {
   const { data: applications, pages, total } = applicationsResult
 
   const { i18n } = useTranslation()
   const {
+    page,
+    setPage,
     showCheckboxes,
     checkedIds,
     setCheckedIds,
-    applicationSearchFilters
+    confirmedSearchFilters: searchFilters
   } = useContext(ApplicationUIContext)
 
   const { roles } = useContext(UserContext)
@@ -194,6 +184,10 @@ const ApplicationsList = React.memo(function Applications({
     hasRole(roles, 'SERVICE_WORKER') ||
     hasRole(roles, 'FINANCE_ADMIN') ||
     hasRole(roles, 'ADMIN')
+
+  // used to disable all actions when one is in progress
+  const [actionInProgress, { on: actionStarted, off: actionEnded }] =
+    useBoolean(false)
 
   const [editedNote, setEditedNote] = useState<ApplicationId | null>(null)
   const [editedNoteText, setEditedNoteText] = useState<string>('')
@@ -535,7 +529,9 @@ const ApplicationsList = React.memo(function Applications({
           {enableApplicationActions && (
             <ApplicationActions
               application={application}
-              reloadApplications={reloadApplications}
+              actionInProgress={actionInProgress}
+              onActionStarted={actionStarted}
+              onActionEnded={actionEnded}
             />
           )}
         </Td>
@@ -543,13 +539,15 @@ const ApplicationsList = React.memo(function Applications({
     )
   })
 
+  if (!searchFilters) return null
+
   return (
     <div data-qa="applications-list">
       <TitleRowContainer>
         <H1 fitted noMargin>
-          {applicationSearchFilters.status === 'ALL'
+          {searchFilters.status === 'ALL'
             ? i18n.applications.list.title
-            : i18n.application.statuses[applicationSearchFilters.status]}
+            : i18n.application.statuses[searchFilters.status]}
         </H1>
         <PaginationWrapper>
           <div>
@@ -559,7 +557,7 @@ const ApplicationsList = React.memo(function Applications({
           </div>
           <Pagination
             pages={pages}
-            currentPage={currentPage}
+            currentPage={page}
             setPage={setPage}
             label={i18n.common.page}
           />
@@ -628,23 +626,23 @@ const ApplicationsList = React.memo(function Applications({
           </Thead>
           <Tbody>{rows}</Tbody>
         </Table>
-        <ActionBar reloadApplications={reloadApplications} fullWidth />
+        <ActionBar
+          actionInProgress={actionInProgress}
+          onActionStarted={actionStarted}
+          onActionEnded={actionEnded}
+        />
       </ApplicationsTableContainer>
 
       {!!editedNote && (
-        <AsyncFormModal
+        <MutateFormModal
           title={i18n.applications.list.serviceWorkerNote}
-          resolveAction={() =>
-            updateServiceWorkerNoteResult({
-              applicationId: editedNote,
-              body: { text: editedNoteText }
-            })
-          }
+          resolveMutation={updateServiceWorkerNoteMutation}
+          resolveAction={() => ({
+            applicationId: editedNote,
+            body: { text: editedNoteText }
+          })}
           resolveLabel={i18n.common.save}
-          onSuccess={() => {
-            setEditedNote(null)
-            reloadApplications()
-          }}
+          onSuccess={() => setEditedNote(null)}
           rejectAction={() => setEditedNote(null)}
           rejectLabel={i18n.common.cancel}
         >
@@ -659,7 +657,7 @@ const ApplicationsList = React.memo(function Applications({
           </AlignRight>
           <Gap />
           <TextArea value={editedNoteText} onChange={setEditedNoteText} />
-        </AsyncFormModal>
+        </MutateFormModal>
       )}
     </div>
   )

@@ -22,7 +22,7 @@ import {
   createApplications,
   resetServiceState
 } from '../../generated/api-clients'
-import ApplicationsPage from '../../pages/employee/applications'
+import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -30,7 +30,7 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let applicationsPage: ApplicationsPage
+let applicationListView: ApplicationListView
 
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
@@ -49,7 +49,7 @@ beforeEach(async () => {
   const serviceWorker = await Fixture.employee().serviceWorker().save()
 
   page = await Page.open()
-  applicationsPage = new ApplicationsPage(page)
+  applicationListView = new ApplicationListView(page)
 
   await employeeLogin(page, serviceWorker)
   await page.goto(config.employeeUrl)
@@ -57,7 +57,8 @@ beforeEach(async () => {
 })
 
 async function addAttachmentToApplication(applicationId: string) {
-  const applicationView = await applicationsPage
+  await applicationListView.searchButton.click()
+  const applicationView = await applicationListView
     .applicationRow(applicationId)
     .openApplication()
   const applicationEditView = await applicationView.startEditing()
@@ -69,7 +70,8 @@ async function addAttachmentToApplication(applicationId: string) {
 
 describe('Employee application attachments', () => {
   test('Employee can add and remove attachments', async () => {
-    let applicationView = await applicationsPage
+    await applicationListView.searchButton.click()
+    const applicationView = await applicationListView
       .applicationRow(applicationFixtureId)
       .openApplication()
     const applicationEditView = await applicationView.startEditing()
@@ -86,10 +88,13 @@ describe('Employee application attachments', () => {
     await applicationEditView.assertShiftCareAttachmentsDeleted()
     await applicationEditView.saveApplication()
 
-    applicationView = await applicationsPage
+    await applicationListView.searchButton.click()
+    const applicationView2 = await applicationListView
       .applicationRow(applicationFixtureId)
       .openApplication()
-    await applicationView.assertUrgencyAttachmentReceivedAtVisible(testFileName)
+    await applicationView2.assertUrgencyAttachmentReceivedAtVisible(
+      testFileName
+    )
   })
 
   test('Extended care attachment is visible to appropriate unit supervisor', async () => {

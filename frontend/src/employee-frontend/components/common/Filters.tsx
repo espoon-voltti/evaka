@@ -84,16 +84,12 @@ interface Props {
   clearMargin?: number
 }
 
-interface ClearOptionsProps {
-  clearMargin?: number
-}
-
-const ClearOptions = styled.div<ClearOptionsProps>`
+const ClearOptions = styled.div`
   align-self: flex-end;
 
   button {
-    margin-top: ${(p) => (p.clearMargin ? `${p.clearMargin}px` : '0px')};
-    display: ${(p) => (p.clearMargin ? 'block' : 'inline-block')};
+    margin-top: 0;
+    display: inline-block;
     padding: calc(0.375em - 1px) 0.75em;
     height: 40px;
   }
@@ -125,8 +121,7 @@ export function Filters({
   column1,
   column2,
   column3,
-  searchPlaceholder,
-  clearMargin
+  searchPlaceholder
 }: Props) {
   const { i18n } = useTranslation()
   return (
@@ -144,7 +139,7 @@ export function Filters({
         <Column>{column2}</Column>
         <Column>{column3}</Column>
       </FilterColumns>
-      <ClearOptions clearMargin={clearMargin}>
+      <ClearOptions>
         <Button
           appearance="inline"
           icon={faTrash}

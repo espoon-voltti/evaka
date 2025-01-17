@@ -1,175 +1,116 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useMemo } from 'react'
 
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import StickyActionBar from '../../components/common/StickyActionBar'
-import { simpleBatchAction } from '../../generated/api-clients/application'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 
-type Action = {
-  id: string
-  label: string
-  primary: boolean
-  enabled: boolean
-  disabled: boolean
-  onClick: () => void
-}
+import { SimpleApplicationMutationAction } from './ApplicationActions'
+import { simpleBatchActionMutation } from './queries'
 
-type Props = {
-  reloadApplications: () => void
-  fullWidth?: boolean
-}
-
-export default React.memo(function ActionBar({ reloadApplications }: Props) {
+export default React.memo(function ActionBar({
+  actionInProgress,
+  onActionStarted,
+  onActionEnded
+}: {
+  actionInProgress: boolean
+  onActionStarted: () => void
+  onActionEnded: () => void
+}) {
   const { i18n } = useTranslation()
 
-  const isMounted = useRef(true)
-  useEffect(
-    () => () => {
-      isMounted.current = false
-    },
-    []
-  )
+  const {
+    checkedIds,
+    setCheckedIds,
+    confirmedSearchFilters: searchFilters
+  } = useContext(ApplicationUIContext)
 
-  const { checkedIds, setCheckedIds, applicationSearchFilters } =
-    useContext(ApplicationUIContext)
-  const [actionInFlight, setActionInFlight] = useState(false)
-  const { setErrorMessage } = useContext(UIContext)
-  const clearApplicationList = () => {
-    setCheckedIds([])
-    reloadApplications()
-  }
+  const actions: SimpleApplicationMutationAction[] = useMemo(() => {
+    if (!searchFilters) return []
 
-  const disabled = actionInFlight || checkedIds.length === 0
-  const handlePromise = (promise: Promise<void>) => {
-    void promise
-      .then(() => {
-        if (!isMounted.current) return
-        clearApplicationList()
-      })
-      .catch(() => {
-        if (!isMounted.current) return
-        setErrorMessage({
-          type: 'error',
-          title: i18n.common.error.unknown,
-          resolveLabel: i18n.common.ok
-        })
-      })
-      .finally(() => {
-        if (!isMounted.current) return
-        setActionInFlight(false)
-      })
-  }
-
-  const actions: Action[] = [
-    {
-      id: 'moveToWaitingPlacement',
-      label: i18n.applications.actions.moveToWaitingPlacement,
-      primary: true,
-      enabled: applicationSearchFilters.status === 'SENT',
-      disabled,
-      onClick: () =>
-        handlePromise(
-          simpleBatchAction({
-            action: 'MOVE_TO_WAITING_PLACEMENT',
-            body: { applicationIds: checkedIds }
-          })
-        )
-    },
-    {
-      id: 'returnToSent',
-      label: i18n.applications.actions.returnToSent,
-      primary: false,
-      enabled: applicationSearchFilters.status === 'WAITING_PLACEMENT',
-      disabled,
-      onClick: () =>
-        handlePromise(
-          simpleBatchAction({
-            action: 'RETURN_TO_SENT',
-            body: { applicationIds: checkedIds }
-          })
-        )
-    },
-    {
-      id: 'cancelPlacementPlan',
-      label: i18n.applications.actions.cancelPlacementPlan,
-      primary: false,
-      enabled: applicationSearchFilters.status === 'WAITING_DECISION',
-      disabled,
-      onClick: () =>
-        handlePromise(
-          simpleBatchAction({
-            action: 'CANCEL_PLACEMENT_PLAN',
-            body: { applicationIds: checkedIds }
-          })
-        )
-    },
-    {
-      id: 'sendDecisionsWithoutProposal',
-      label: i18n.applications.actions.sendDecisionsWithoutProposal,
-      primary: false,
-      enabled: applicationSearchFilters.status === 'WAITING_DECISION',
-      disabled,
-      onClick: () =>
-        handlePromise(
-          simpleBatchAction({
-            action: 'SEND_DECISIONS_WITHOUT_PROPOSAL',
-            body: { applicationIds: checkedIds }
-          })
-        )
-    },
-    {
-      id: 'sendPlacementProposal',
-      label: i18n.applications.actions.sendPlacementProposal,
-      primary: true,
-      enabled: applicationSearchFilters.status === 'WAITING_DECISION',
-      disabled,
-      onClick: () =>
-        handlePromise(
-          simpleBatchAction({
-            action: 'SEND_PLACEMENT_PROPOSAL',
-            body: { applicationIds: checkedIds }
-          })
-        )
-    },
-    {
-      id: 'withdrawPlacementProposal',
-      label: i18n.applications.actions.withdrawPlacementProposal,
-      primary: false,
-      enabled: applicationSearchFilters.status === 'WAITING_UNIT_CONFIRMATION',
-      disabled,
-      onClick: () =>
-        handlePromise(
-          simpleBatchAction({
-            action: 'WITHDRAW_PLACEMENT_PROPOSAL',
-            body: { applicationIds: checkedIds }
-          })
-        )
+    switch (searchFilters.status) {
+      case 'ALL':
+        return []
+      case 'SENT':
+        return [
+          {
+            id: 'moveToWaitingPlacement',
+            label: i18n.applications.actions.moveToWaitingPlacement,
+            actionType: 'MOVE_TO_WAITING_PLACEMENT',
+            primary: true
+          }
+        ]
+      case 'WAITING_PLACEMENT':
+        return [
+          {
+            id: 'returnToSent',
+            label: i18n.applications.actions.returnToSent,
+            actionType: 'RETURN_TO_SENT'
+          }
+        ]
+      case 'WAITING_DECISION':
+        return [
+          {
+            id: 'cancelPlacementPlan',
+            label: i18n.applications.actions.cancelPlacementPlan,
+            actionType: 'CANCEL_PLACEMENT_PLAN'
+          },
+          {
+            id: 'sendDecisionsWithoutProposal',
+            label: i18n.applications.actions.sendDecisionsWithoutProposal,
+            actionType: 'SEND_DECISIONS_WITHOUT_PROPOSAL'
+          },
+          {
+            id: 'sendPlacementProposal',
+            label: i18n.applications.actions.sendPlacementProposal,
+            primary: true,
+            actionType: 'SEND_PLACEMENT_PROPOSAL'
+          }
+        ]
+      case 'WAITING_UNIT_CONFIRMATION':
+        return [
+          {
+            id: 'withdrawPlacementProposal',
+            label: i18n.applications.actions.withdrawPlacementProposal,
+            actionType: 'WITHDRAW_PLACEMENT_PROPOSAL'
+          }
+        ]
     }
-  ].filter(({ enabled }) => enabled)
+  }, [searchFilters, i18n.applications.actions])
 
   return actions.length > 0 ? (
-    <StickyActionBar align="right">
+    <StickyActionBar align="right" data-qa="action-bar">
       {checkedIds.length > 0 ? (
         <CheckedRowsInfo>
           {i18n.applications.actions.checked(checkedIds.length)}
         </CheckedRowsInfo>
       ) : null}
       <FixedSpaceRow>
-        {actions.map(({ id, label, disabled, onClick, primary }) => (
-          <LegacyButton
+        {actions.map(({ id, label, actionType, primary }) => (
+          <MutateButton
             key={id}
-            onClick={onClick}
+            mutation={simpleBatchActionMutation}
+            onClick={() => {
+              onActionStarted()
+              return {
+                action: actionType,
+                body: { applicationIds: checkedIds }
+              }
+            }}
+            disabled={actionInProgress || checkedIds.length === 0}
+            onSuccess={() => {
+              setCheckedIds([])
+              onActionEnded()
+            }}
+            onFailure={onActionEnded}
             text={label}
-            disabled={disabled}
             primary={primary}
             data-qa={`action-bar-${id}`}
           />

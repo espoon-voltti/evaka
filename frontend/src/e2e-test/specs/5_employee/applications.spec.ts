@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -17,13 +17,13 @@ import {
   createApplications,
   resetServiceState
 } from '../../generated/api-clients'
-import ApplicationsPage from '../../pages/employee/applications'
+import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let applicationsPage: ApplicationsPage
+let applicationsPage: ApplicationListView
 
 beforeEach(async () => {
   await resetServiceState()
@@ -33,7 +33,7 @@ beforeEach(async () => {
   const serviceWorker = await Fixture.employee().serviceWorker().save()
 
   page = await Page.open()
-  applicationsPage = new ApplicationsPage(page)
+  applicationsPage = new ApplicationListView(page)
 
   await employeeLogin(page, serviceWorker)
   await page.goto(config.employeeUrl)
@@ -59,7 +59,8 @@ describe('Applications', () => {
       HelsinkiDateTime.now() // TODO: use mock clock
     )
 
-    await applicationsPage.toggleApplicationStatusFilter('ALL')
+    await applicationsPage.filterByApplicationStatus('ALL')
+    await applicationsPage.searchButton.click()
     await applicationsPage
       .applicationRow(application.id)
       .status.assertTextEquals('Odottaa postitusta')
@@ -74,7 +75,8 @@ describe('Applications', () => {
     )
     await createApplications({ body: [application] })
 
-    await applicationsPage.toggleApplicationStatusFilter('ALL')
+    await applicationsPage.filterByApplicationStatus('ALL')
+    await applicationsPage.searchButton.click()
     const applicationDetails = await applicationsPage
       .applicationRow(application.id)
       .openApplication()

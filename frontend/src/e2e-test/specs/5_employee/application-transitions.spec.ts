@@ -36,7 +36,6 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import { DevApplicationWithForm, DevEmployee } from '../../generated/api-types'
-import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -45,7 +44,7 @@ import { employeeLogin } from '../../utils/user'
 
 const mockedTime = LocalDate.of(2021, 8, 16)
 let page: Page
-let applicationWorkbench: ApplicationWorkbenchPage
+let applicationListView: ApplicationListView
 let applicationReadView: ApplicationReadView
 
 let serviceWorker: DevEmployee
@@ -72,7 +71,7 @@ beforeEach(async () => {
   page = await Page.open({
     mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  applicationWorkbench = new ApplicationWorkbenchPage(page)
+  applicationListView = new ApplicationListView(page)
   applicationReadView = new ApplicationReadView(page)
 })
 
@@ -149,10 +148,11 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openDecisionQueue()
-    await applicationWorkbench.sendDecisionsWithoutProposal(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+    await applicationListView.applicationRow(applicationId).checkbox.check()
+    await applicationListView.actionBar.sendDecisionsWithoutProposal.click()
 
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
@@ -177,10 +177,15 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openDecisionQueue()
-    await applicationWorkbench.sendDecisionsWithoutProposal(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+    await applicationListView
+      .applicationRow(applicationId)
+      .actionsMenuButton.click()
+    await applicationListView
+      .applicationRow(applicationId)
+      .actionsMenuItems.sendDecisionsWithoutProposal.click()
 
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
@@ -216,19 +221,14 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
-    await applicationWorkbench.openPlacementQueue()
 
-    await applicationWorkbench
-      .getPrimaryActionCheck(applicationId)
-      .waitUntilVisible()
-    await applicationWorkbench
-      .getPrimaryActionCreatePlacementPlan(applicationId)
-      .waitUntilHidden()
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
 
-    await applicationWorkbench.getPrimaryActionCheck(applicationId).click()
+    const applicationReadView = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCheck()
 
-    const applicationReadView = new ApplicationReadView(page)
     await applicationReadView.setVerifiedButton.waitUntilVisible()
     // confidentiality has been set automatically
     await applicationReadView.confidentialRadioYes.waitUntilHidden()
@@ -237,15 +237,9 @@ describe('Application transitions', () => {
     await applicationReadView.setVerifiedButton.click()
     await page.goBack()
 
-    await applicationWorkbench
-      .getPrimaryActionCreatePlacementPlan(applicationId)
-      .waitUntilVisible()
-    await applicationWorkbench
-      .getPrimaryActionCheck(applicationId)
-      .waitUntilHidden()
-
-    const placementDraftPage =
-      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
   })
 
@@ -278,19 +272,14 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
-    await applicationWorkbench.openPlacementQueue()
 
-    await applicationWorkbench
-      .getPrimaryActionCheck(applicationId)
-      .waitUntilVisible()
-    await applicationWorkbench
-      .getPrimaryActionCreatePlacementPlan(applicationId)
-      .waitUntilHidden()
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
 
-    await applicationWorkbench.getPrimaryActionCheck(applicationId).click()
+    const applicationReadView = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCheck()
 
-    const applicationReadView = new ApplicationReadView(page)
     await applicationReadView.setVerifiedButton.waitUntilVisible()
     await applicationReadView.setVerifiedButton.assertDisabled(true)
 
@@ -301,15 +290,9 @@ describe('Application transitions', () => {
     await applicationReadView.setVerifiedButton.click()
     await page.goBack()
 
-    await applicationWorkbench
-      .getPrimaryActionCreatePlacementPlan(applicationId)
-      .waitUntilVisible()
-    await applicationWorkbench
-      .getPrimaryActionCheck(applicationId)
-      .waitUntilHidden()
-
-    const placementDraftPage =
-      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
   })
 
@@ -336,20 +319,26 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    const applicationList = new ApplicationListView(page)
-    await applicationList.actionsMenu(applicationId).click()
-    await applicationList.actionsMenuItems.cancelApplication.click()
+    await applicationListView.searchButton.click()
+    await applicationListView
+      .applicationRow(applicationId)
+      .actionsMenuButton.click()
+    await applicationListView
+      .applicationRow(applicationId)
+      .actionsMenuItems.cancelApplication.click()
 
-    await applicationList.cancelConfirmation.submitButton.assertDisabled(true)
-    await applicationList.cancelConfirmation.confidentialRadioYes.check()
-    await applicationList.cancelConfirmation.submitButton.click()
+    await applicationListView.cancelConfirmation.submitButton.assertDisabled(
+      true
+    )
+    await applicationListView.cancelConfirmation.confidentialRadioYes.check()
+    await applicationListView.cancelConfirmation.submitButton.click()
 
-    await applicationWorkbench.applicationsAll.click()
-    await applicationWorkbench
-      .getApplicationListItem(applicationId)
-      .assertText((text) => text.includes('Poistettu käsittelystä'))
+    await applicationListView.filterByApplicationStatus('ALL')
+    await applicationListView.searchButton.click()
+    await applicationListView
+      .applicationRow(applicationId)
+      .status.assertText((text) => text.includes('Poistettu käsittelystä'))
   })
 
   test('Placement dialog works', async () => {
@@ -411,11 +400,13 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openPlacementQueue()
-    const placementDraftPage =
-      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
+
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
 
     const planStartDate = preferredStartDate.addDays(1)
@@ -439,9 +430,11 @@ describe('Application transitions', () => {
     await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
 
-    await applicationWorkbench.waitUntilLoaded()
-    await applicationWorkbench.openDecisionQueue()
-    await applicationWorkbench.assertApplicationStartDate(0, planStartDate)
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+    await applicationListView
+      .applicationRow(applicationId)
+      .assertStartDate(planStartDate)
   })
 
   test('Placement dialog shows warning if guardian has restricted details', async () => {
@@ -467,12 +460,13 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openPlacementQueue()
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
 
-    const placementDraftPage =
-      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
     await placementDraftPage.assertRestrictedDetailsWarning()
   })
@@ -503,24 +497,27 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openPlacementQueue()
-    const placementDraftPage =
-      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
+
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
 
     await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openDecisionQueue()
-    const decisionEditorPage =
-      await applicationWorkbench.openDecisionEditorById(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+
+    const decisionEditorPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionEditDecisions()
     await decisionEditorPage.waitUntilLoaded()
-
     await decisionEditorPage.save()
-    await applicationWorkbench.waitUntilLoaded()
+    await applicationListView.searchButton.click()
 
     await execSimpleApplicationActions(
       applicationId,
@@ -565,25 +562,29 @@ describe('Application transitions', () => {
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openPlacementQueue()
-    const placementDraftPage =
-      await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
+
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
 
     await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
-    await applicationWorkbench.waitUntilLoaded()
 
-    await applicationWorkbench.openDecisionQueue()
-    const decisionEditorPage =
-      await applicationWorkbench.openDecisionEditorById(applicationId)
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+
+    const decisionEditorPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionEditDecisions()
     await decisionEditorPage.waitUntilLoaded()
 
     await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
     await decisionEditorPage.save()
-    await applicationWorkbench.waitUntilLoaded()
+    await applicationListView.searchButton.click()
 
     await execSimpleApplicationActions(
       applicationId,
@@ -646,51 +647,39 @@ describe('Application transitions', () => {
       .save()
     await employeeLogin(page2, unitSupervisor)
 
-    // unit supervisor
+    // unit supervisor accepts application1 proposal, does not respond to application2 proposal
     await unitPage.navigateToUnit(testDaycare.id)
-    let placementProposals = (await unitPage.openApplicationProcessTab())
+    const placementProposals = (await unitPage.openApplicationProcessTab())
       .placementProposals
-
     await placementProposals.assertAcceptButtonDisabled()
     await placementProposals.clickProposalAccept(applicationId)
-    await placementProposals.assertAcceptButtonEnabled()
-    await placementProposals.clickProposalAccept(applicationId2)
+    await placementProposals.clickAcceptButton()
 
-    await placementProposals.clickProposalReject(applicationId2)
-    await placementProposals.selectProposalRejectionReason(0)
-    await placementProposals.submitProposalRejectionReason()
-
-    // service worker
+    // service worker withdraws application2 proposal, mails application1 decision
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
-
-    await applicationWorkbench.openPlacementProposalQueue()
-    await applicationWorkbench.withdrawPlacementProposal(applicationId2)
-    await applicationWorkbench.assertWithdrawPlacementProposalsButtonDisabled()
-
-    // unit supervisor
-    await unitPage.navigateToUnit(testDaycare.id)
-    const applicationProcessPage = await unitPage.openApplicationProcessTab()
-    placementProposals = applicationProcessPage.placementProposals
-    await placementProposals.assertAcceptButtonEnabled()
-    await placementProposals.clickAcceptButton()
-    await placementProposals.assertPlacementProposalRowCount(0)
-    await applicationProcessPage.waitUntilLoaded()
-
+    await applicationListView.filterByApplicationStatus(
+      'WAITING_UNIT_CONFIRMATION'
+    )
+    await applicationListView.searchButton.click()
+    await applicationListView.applicationRow(applicationId2).checkbox.check()
+    await applicationListView.actionBar.withdrawPlacementProposal.click()
     await execSimpleApplicationActions(
       applicationId,
       ['CONFIRM_DECISION_MAILED'],
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
+    // unit supervisor sees application1 as waiting confirmation from guardian, no longer sees proposal for application2
     await unitPage.navigateToUnit(testDaycare.id)
-    const waitingConfirmation = (await unitPage.openApplicationProcessTab())
-      .waitingConfirmation
-    await waitingConfirmation.assertRowCount(1)
+    const applicationProcessPage = await unitPage.openApplicationProcessTab()
+    await applicationProcessPage.placementProposals.assertPlacementProposalRowCount(
+      0
+    )
+    await applicationProcessPage.waitingConfirmation.assertRowCount(1)
   })
 
-  test('Placement proposal rejection status', async () => {
+  test('Placement proposal rejection returns status to WAITING_PLACEMENT and reason is shown in note', async () => {
     const fixture1 = {
       ...applicationFixture(testChild, familyWithTwoGuardians.guardian),
       status: 'SENT' as const
@@ -731,10 +720,11 @@ describe('Application transitions', () => {
     // service worker
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
-    await applicationWorkbench.waitUntilLoaded()
-    await applicationWorkbench.openPlacementQueue()
-
-    await applicationWorkbench.assertServiceWorkerNoteMatches(0, 'TILARAJOITE')
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
+    await applicationListView
+      .applicationRow(applicationId)
+      .assertServiceWorkerNoteMatches('TILARAJOITE')
   })
 
   test('Decision cannot be accepted on behalf of guardian if application is in placement proposal state', async () => {

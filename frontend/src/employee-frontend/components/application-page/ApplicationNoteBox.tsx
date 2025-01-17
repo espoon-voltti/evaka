@@ -8,10 +8,10 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import {
-  createApplicationNote,
-  deleteApplicationNote,
-  updateApplicationNote
-} from 'employee-frontend/components/application-page/applications-queries'
+  createApplicationNoteMutation,
+  deleteApplicationNoteMutation,
+  updateApplicationNoteMutation
+} from 'employee-frontend/components/application-page/queries'
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
@@ -116,9 +116,9 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
     setText(isEdit(props) ? props.note.content : '')
   }, [props])
 
-  const { mutateAsync: updateNote } = useMutation(updateApplicationNote)
-  const { mutateAsync: createNote } = useMutation(createApplicationNote)
-  const { mutateAsync: deleteNote } = useMutation(deleteApplicationNote)
+  const { mutateAsync: updateNote } = useMutation(updateApplicationNoteMutation)
+  const { mutateAsync: createNote } = useMutation(createApplicationNoteMutation)
+  const { mutateAsync: deleteNote } = useMutation(deleteApplicationNoteMutation)
 
   const save = () => {
     if (!isInput(props)) return
