@@ -823,6 +823,29 @@ export interface ReferenceCount {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportMonthlyStatistics
+*/
+export interface RegionalSurveyReportMonthlyStatistics {
+  assistanceCount: number
+  familyOver3Count: number
+  familyUnder3Count: number
+  month: number
+  municipalOver3FullTimeCount: number
+  municipalOver3PartTimeCount: number
+  municipalShiftCareCount: number
+  municipalUnder3FullTimeCount: number
+  municipalUnder3PartTimeCount: number
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportResult
+*/
+export interface RegionalSurveyReportResult {
+  monthlyCounts: RegionalSurveyReportMonthlyStatistics[]
+  year: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.Report
 */
 export type Report =
@@ -867,6 +890,7 @@ export type Report =
   | 'VARDA_ERRORS'
   | 'FUTURE_PRESCHOOLERS'
   | 'MEALS'
+  | 'TAMPERE_REGIONAL_SURVEY'
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceNeedReportRow

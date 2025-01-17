@@ -702,6 +702,20 @@ export default React.memo(function Reports() {
                     />
                   )
                 }
+              : null,
+            reports.has('TAMPERE_REGIONAL_SURVEY')
+              ? {
+                  name: i18n.reports.tampereRegionalSurvey.title,
+                  item: (
+                    <Report
+                      path="/reports/tampere-regional-survey"
+                      color={colors.main.m2Active}
+                      icon={faDatabase}
+                      i18n={i18n.reports.tampereRegionalSurvey}
+                      data-qa="report-holiday-period-attendance"
+                    />
+                  )
+                }
               : null
           ]
 

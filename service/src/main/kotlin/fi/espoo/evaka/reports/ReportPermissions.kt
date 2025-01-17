@@ -54,6 +54,7 @@ enum class Report {
     VARDA_ERRORS,
     FUTURE_PRESCHOOLERS,
     MEALS,
+    TAMPERE_REGIONAL_SURVEY,
 }
 
 @RestController
@@ -245,6 +246,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     Report.HOLIDAY_PERIOD_ATTENDANCE.takeIf {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT
+                        )
+                    },
+                    Report.TAMPERE_REGIONAL_SURVEY.takeIf {
+                        permittedGlobalActions.contains(
+                            Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT
                         )
                     },
                 )
