@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useContext, useState } from 'react'
+import React, { Fragment, useCallback, useContext } from 'react'
 
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
@@ -13,10 +13,7 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import {
-  IncomeStatementSearchFilters,
-  InvoicingUiContext
-} from '../../state/invoicing-ui'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { renderResult } from '../async-rendering'
 import {
   AreaFilter,
@@ -27,44 +24,22 @@ import {
 } from '../common/Filters'
 import { unitFilterQuery } from '../unit/queries'
 
-const emptyFilters: IncomeStatementSearchFilters = {
-  area: [],
-  unit: undefined,
-  providerTypes: [],
-  sentStartDate: undefined,
-  sentEndDate: undefined,
-  placementValidDate: undefined
-}
-
 export default React.memo(function IncomeStatementsFilters() {
-  const { i18n } = useTranslation()
-
   const {
-    incomeStatements: { setConfirmedSearchFilters },
+    incomeStatements: {
+      searchFilters,
+      setSearchFilters,
+      clearSearchFilters,
+      confirmSearchFilters
+    },
     shared: { availableAreas }
   } = useContext(InvoicingUiContext)
-
-  const [searchFilters, _setSearchFilters] =
-    useState<IncomeStatementSearchFilters>(emptyFilters)
-  const setSearchFilters = useCallback(
-    (value: React.SetStateAction<IncomeStatementSearchFilters>) => {
-      _setSearchFilters(value)
-      setConfirmedSearchFilters(undefined)
-    },
-    [setConfirmedSearchFilters]
-  )
-  const clearSearchFilters = useCallback(() => {
-    _setSearchFilters(emptyFilters)
-    setConfirmedSearchFilters(undefined)
-  }, [setConfirmedSearchFilters])
-  const confirmSearchFilters = useCallback(
-    () => setConfirmedSearchFilters(searchFilters),
-    [searchFilters, setConfirmedSearchFilters]
-  )
 
   const unitsResult = useQueryResult(
     unitFilterQuery({ areaIds: null, type: 'DAYCARE', from: null })
   )
+
+  const { i18n } = useTranslation()
 
   const toggleArea = useCallback(
     (code: string) => () => {
