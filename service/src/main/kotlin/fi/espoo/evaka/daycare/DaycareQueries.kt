@@ -9,7 +9,6 @@ import fi.espoo.evaka.daycare.controllers.ApplicationUnitType
 import fi.espoo.evaka.daycare.controllers.PublicUnit
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -59,6 +58,7 @@ data class DaycareFields(
     val location: Coordinate?,
     val mailingAddress: MailingAddress,
     val unitManager: UnitManager,
+    val preschoolManager: UnitManager,
     val decisionCustomization: DaycareDecisionCustomization,
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
@@ -163,6 +163,7 @@ SELECT
   finance_decision_handler.last_name AS finance_decision_handler_last_name,
   finance_decision_handler.created AS finance_decision_handler_created,
   unit_manager_name, unit_manager_email, unit_manager_phone,
+  preschool_manager_name, preschool_manager_email, preschool_manager_phone,
   ca.name AS care_area_name, ca.short_name AS care_area_short_name,
   daycare.operation_times,
   daycare.shift_care_operation_times,
@@ -264,20 +265,6 @@ SELECT ${bind(name)}, ${bind(areaId)}
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
-fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
-    execute {
-        sql(
-            """
-UPDATE daycare
-SET
-  unit_manager_name = ${bind(manager.name)},
-  unit_manager_email = ${bind(manager.email)},
-  unit_manager_phone = ${bind(manager.phone)}
-WHERE id = ${bind(daycareId)}
-"""
-        )
-    }
-
 fun Database.Transaction.updateDaycare(id: DaycareId, fields: DaycareFields) = execute {
     sql(
         """
@@ -327,6 +314,12 @@ SET
   iban = ${bind(fields.iban)},
   provider_id = ${bind(fields.providerId)},
   operation_times = ${bind(fields.operationTimes)},
+  unit_manager_name = ${bind(fields.unitManager.name)},
+  unit_manager_phone = ${bind(fields.unitManager.phone)},
+  unit_manager_email = ${bind(fields.unitManager.email)},
+  preschool_manager_name = ${bind(fields.preschoolManager.name)},
+  preschool_manager_phone = ${bind(fields.preschoolManager.phone)},
+  preschool_manager_email = ${bind(fields.preschoolManager.email)},
   shift_care_operation_times = ${bind(fields.shiftCareOperationTimes)},
   shift_care_open_on_holidays = ${bind(fields.shiftCareOpenOnHolidays)},
   mealtime_breakfast = ${bind(fields.mealtimes.breakfast)},
@@ -427,18 +420,6 @@ ORDER BY name
         }
         .toList()
 }
-
-fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
-    createQuery {
-            sql(
-                """
-SELECT unit_manager_name AS name, unit_manager_phone AS phone, unit_manager_email AS email
-FROM daycare
-WHERE id = ${bind(unitId)}
-"""
-            )
-        }
-        .exactlyOneOrNull()
 
 fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> =
     createQuery {

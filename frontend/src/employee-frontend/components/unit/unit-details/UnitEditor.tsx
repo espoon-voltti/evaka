@@ -20,7 +20,8 @@ import {
   DaycareCareArea,
   DaycareFields,
   Language,
-  ProviderType
+  ProviderType,
+  UnitManager
 } from 'lib-common/generated/api-types/daycare'
 import {
   AreaId,
@@ -104,6 +105,7 @@ type FormData = {
   location: string
   mailingAddress: Address
   unitManager: UnitManager
+  preschoolManager: UnitManager
   decisionCustomization: UnitDecisionCustomization
   ophUnitOid: string
   ophOrganizerOid: string
@@ -121,12 +123,6 @@ interface UnitDecisionCustomization {
   preschoolName: string
   handler: string
   handlerAddress: string
-}
-
-interface UnitManager {
-  name: string
-  phone: string
-  email: string
 }
 
 interface Address {
@@ -409,6 +405,11 @@ function validateForm(
     name: form.unitManager.name.trim(),
     email: form.unitManager.email.trim(),
     phone: form.unitManager.phone.trim()
+  }
+  const preschoolManager = {
+    name: form.preschoolManager.name.trim(),
+    email: form.preschoolManager.email.trim(),
+    phone: form.preschoolManager.phone.trim()
   }
   const decisionCustomization = {
     daycareName: form.decisionCustomization.daycareName.trim(),
@@ -730,6 +731,7 @@ function validateForm(
         location,
         mailingAddress,
         unitManager,
+        preschoolManager,
         decisionCustomization: {
           daycareName: decisionCustomization.daycareName,
           preschoolName: decisionCustomization.preschoolName,
@@ -855,6 +857,11 @@ function toFormData(unit: Daycare | undefined): FormData {
       phone: unit?.unitManager?.phone ?? '',
       email: unit?.unitManager?.email ?? ''
     },
+    preschoolManager: {
+      name: unit?.preschoolManager?.name ?? '',
+      phone: unit?.preschoolManager?.phone ?? '',
+      email: unit?.preschoolManager?.email ?? ''
+    },
     providesShiftCare: !!unit?.shiftCareOperationTimes,
     operationTimes: (unit?.operationTimes ?? emptyOperationWeek).map((range) =>
       range ? { start: range.formatStart(), end: range.formatEnd() } : null
@@ -923,7 +930,8 @@ export default function UnitEditor(props: Props) {
     },
     formErrors: []
   })
-  const { careTypes, decisionCustomization, unitManager } = form
+  const { careTypes, decisionCustomization, unitManager, preschoolManager } =
+    form
 
   const canApplyTypes = [
     {
@@ -966,6 +974,8 @@ export default function UnitEditor(props: Props) {
     })
   const updateUnitManager: UpdateStateFn<UnitManager> = (updates) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
+  const updatePreschoolManager: UpdateStateFn<UnitManager> = (updates) =>
+    updateForm({ preschoolManager: { ...form.preschoolManager, ...updates } })
 
   const selectedFinanceDecisionManager = useMemo(
     () =>
@@ -1826,7 +1836,7 @@ export default function UnitEditor(props: Props) {
         {props.editable ? (
           <InputField
             id="unit-manager-name"
-            placeholder={i18n.unitEditor.placeholder.unitManager.name}
+            placeholder={i18n.unitEditor.placeholder.manager.name}
             value={unitManager.name}
             onChange={(value) => updateUnitManager({ name: value })}
             width="L"
@@ -1867,6 +1877,57 @@ export default function UnitEditor(props: Props) {
           />
         ) : (
           <div data-qa="unit-manager-email">{unitManager.email}</div>
+        )}
+      </FormPart>
+      <H3>{i18n.unitEditor.title.preschoolManager}</H3>
+      <FormPart>
+        <label htmlFor="preschool-manager-name">
+          {i18n.unitEditor.label.preschoolManager.name}
+        </label>
+        {props.editable ? (
+          <InputField
+            id="preschool-manager-name"
+            placeholder={i18n.unitEditor.placeholder.manager.name}
+            value={preschoolManager.name}
+            onChange={(value) => updatePreschoolManager({ name: value })}
+            width="L"
+            data-qa="preschool-manager-name-input"
+          />
+        ) : (
+          <div data-qa="preschool-manager-name">{preschoolManager.name}</div>
+        )}
+      </FormPart>
+      <FormPart>
+        <label htmlFor="preschool-manager-phone">
+          {i18n.unitEditor.label.preschoolManager.phone}
+        </label>
+        {props.editable ? (
+          <InputField
+            id="preschool-manager-phone"
+            placeholder={i18n.unitEditor.placeholder.phone}
+            value={preschoolManager.phone}
+            onChange={(value) => updatePreschoolManager({ phone: value })}
+            data-qa="qa-preschool-manager-phone-input-field"
+          />
+        ) : (
+          <div data-qa="preschool-manager-phone">{preschoolManager.phone}</div>
+        )}
+      </FormPart>
+      <FormPart>
+        <label htmlFor="preschool-manager-email">
+          {i18n.unitEditor.label.preschoolManager.email}
+        </label>
+        {props.editable ? (
+          <InputField
+            id="preschool-manager-email"
+            placeholder={i18n.unitEditor.placeholder.email}
+            value={preschoolManager.email}
+            onChange={(value) => updatePreschoolManager({ email: value })}
+            width="L"
+            data-qa="qa-preschool-manager-email-input-field"
+          />
+        ) : (
+          <div data-qa="preschool-manager-email">{preschoolManager.email}</div>
         )}
       </FormPart>
       <H3>{i18n.unitEditor.title.decisionCustomization}</H3>

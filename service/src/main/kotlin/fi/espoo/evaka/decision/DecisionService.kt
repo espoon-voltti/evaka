@@ -9,10 +9,10 @@ import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.getApplicationOtherGuardians
+import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.getUnitManager
-import fi.espoo.evaka.daycare.service.DaycareManager
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
@@ -89,9 +89,7 @@ class DecisionService(
         val child =
             tx.getPersonById(application.childId)
                 ?: error("Child not found with id: ${application.childId}")
-        val unitManager =
-            tx.getUnitManager(decision.unit.id)
-                ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
+        val unit = tx.getDaycare(decision.unit.id) ?: error("No unit with id: ${decision.unit.id}")
         val guardianDecisionLocation =
             createAndUploadDecision(
                 settings,
@@ -99,7 +97,8 @@ class DecisionService(
                 application,
                 child,
                 decisionLanguage,
-                unitManager,
+                unit.unitManager,
+                unit.preschoolManager,
             )
 
         tx.updateDecisionGuardianDocumentKey(decisionId, guardianDecisionLocation.key)
@@ -111,7 +110,8 @@ class DecisionService(
         application: ApplicationDetails,
         child: PersonDTO,
         decisionLanguage: OfficialLanguage,
-        unitManager: DaycareManager,
+        unitManager: UnitManager,
+        preschoolManager: UnitManager,
     ): DocumentLocation {
         val decisionBytes =
             createDecisionPdf(
@@ -124,6 +124,7 @@ class DecisionService(
                 application.form.preferences.serviceNeed,
                 decisionLanguage,
                 unitManager,
+                preschoolManager,
             )
 
         return uploadPdfToS3(
@@ -334,7 +335,8 @@ fun createDecisionPdf(
     isTransferApplication: Boolean,
     serviceNeed: ServiceNeed?,
     lang: OfficialLanguage,
-    unitManager: DaycareManager,
+    unitManager: UnitManager,
+    preschoolManager: UnitManager,
 ): ByteArray {
     val template = createTemplate(templateProvider, decision, isTransferApplication)
     val isPartTimeDecision: Boolean = decision.type == DecisionType.DAYCARE_PART_TIME
@@ -347,6 +349,7 @@ fun createDecisionPdf(
             decision,
             child,
             unitManager,
+            preschoolManager,
             isPartTimeDecision,
             serviceNeed,
         )
@@ -360,7 +363,8 @@ private fun generateDecisionPages(
     settings: Map<SettingType, String>,
     decision: Decision,
     child: PersonDTO,
-    manager: DaycareManager,
+    unitManager: UnitManager,
+    preschoolManager: UnitManager,
     isPartTimeDecision: Boolean,
     serviceNeed: ServiceNeed?,
 ): Page {
@@ -370,7 +374,17 @@ private fun generateDecisionPages(
             locale = lang.isoLanguage.toLocale()
             setVariable("decision", decision)
             setVariable("child", child)
-            setVariable("manager", manager)
+            setVariable(
+                "manager",
+                when (decision.type) {
+                    DecisionType.PRESCHOOL,
+                    DecisionType.PRESCHOOL_DAYCARE,
+                    DecisionType.PRESCHOOL_CLUB,
+                    DecisionType.PREPARATORY_EDUCATION ->
+                        preschoolManager.let { if (it.name.isBlank()) unitManager else it }
+                    else -> unitManager
+                },
+            )
             setVariable("isPartTimeDecision", isPartTimeDecision)
             setVariable("serviceNeed", serviceNeed)
             setVariable(

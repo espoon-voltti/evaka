@@ -4340,6 +4340,7 @@ export const fi = {
     title: {
       contact: 'Yksikön yhteystiedot',
       unitManager: 'Varhaiskasvatusyksikön johtajan yhteystiedot',
+      preschoolManager: 'Esiopetuksen johtajan yhteystiedot',
       decisionCustomization:
         'Yksikön nimi päätöksellä ja ilmoitus paikan vastaanottamisesta',
       mealOrderIntegration: 'Ruokatilausintegraatio',
@@ -4388,6 +4389,11 @@ export const fi = {
         name: 'Johtajan nimi',
         phone: 'Johtajan puhelinnumero',
         email: 'Johtajan sähköpostiosoite'
+      },
+      preschoolManager: {
+        name: 'Esiopetuksen johtajan nimi',
+        phone: 'Esiopetuksen johtajan puhelinnumero',
+        email: 'Esiopetuksen johtajan sähköpostiosoite'
       },
       decisionCustomization: {
         daycareName: 'Yksikön nimi varhaiskasvatuspäätöksellä',
@@ -4448,7 +4454,7 @@ export const fi = {
       postalCode: 'Postinumero',
       postOffice: 'Toimipaikka',
       location: 'esim. 60.223038, 24.692637',
-      unitManager: {
+      manager: {
         name: 'Etunimi Sukunimi'
       },
       decisionCustomization: {

@@ -480,3 +480,4 @@ V481__attendance_reservation_modification_metadata.sql
 V482__income_statement_company.sql
 V483__out_of_office.sql
 V484__invoice_attachment.sql
+V485__preschool_manager.sql

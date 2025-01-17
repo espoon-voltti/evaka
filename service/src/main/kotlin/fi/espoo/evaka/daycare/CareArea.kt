@@ -64,6 +64,7 @@ data class Daycare(
     val location: Coordinate?,
     @Nested("mailing_") val mailingAddress: MailingAddress,
     @Nested("unit_manager_") val unitManager: UnitManager,
+    @Nested("preschool_manager_") val preschoolManager: UnitManager,
     @Nested("decision_") val decisionCustomization: DaycareDecisionCustomization,
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
@@ -78,6 +79,8 @@ data class Daycare(
     val providerId: String,
     @Nested("mealtime_") override val mealTimes: DaycareMealtimes,
 ) : DaycareInfo
+
+data class UnitManager(val name: String, val email: String, val phone: String)
 
 interface DaycareInfo {
     val name: String
@@ -119,8 +122,6 @@ data class FinanceDecisionHandler(
     val firstName: String,
     val lastName: String,
 )
-
-data class UnitManager(val name: String, val email: String, val phone: String)
 
 data class DaycareDecisionCustomization(
     val daycareName: String,
