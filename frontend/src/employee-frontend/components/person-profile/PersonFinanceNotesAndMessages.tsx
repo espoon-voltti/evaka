@@ -6,26 +6,42 @@ import React, { useState } from 'react'
 
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { FinanceNote } from 'lib-common/generated/api-types/finance'
+import { EvakaUserId } from 'lib-common/generated/api-types/shared'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H4 } from 'lib-components/typography'
 
+import { getNotes } from '../../generated/api-clients/finance'
 import { useTranslation } from '../../state/i18n'
+
+import { renderResult } from '../async-rendering'
+
+const getNotesResult = wrapResult(getNotes)
 
 interface Props {
     open: boolean
-    notes: FinanceNote[] //TODO maybe fetch these here?
+    id: EvakaUserId
     // TODO
     //
 }
 
 export default React.memo(function PersonFinanceNotesAndMessages({
   open,
-  notes
+  id
     // TODO
 }: Props) {
   const { i18n } = useTranslation()
   const [isOpen, setIsOpen] = useState(open)
+
+  // TODO tämä ei ihan toimi vielä.
+  const notes = useApiState(
+    () => getNotesResult({ adultId: id }),
+    [id]
+  )
+
+  // TODO nootteja tulee hakea silloin, kun collapsible avataan.
 
   return (
     <CollapsibleContentArea
@@ -37,7 +53,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
       data-qa="person-finance-notes-and-messages-collapsible"
     >
       <H4>{i18n.personProfile.financeNotesAndMessages.title}</H4>
-      {notes.map(note => <FinanceNoteListItem note={note} />)}
+      {renderResult(notes, (notes) => notes.map(note => <FinanceNoteListItem note={note} />))}
     </CollapsibleContentArea>
   )
 })
@@ -89,7 +105,7 @@ const FinanceNoteEdit = React.memo(function FinanceNoteEdit({
   note: FinanceNote
 }) {
   const [content, setContent] = useState(note.content)
-  // TODO
+  // TODO Päivitä nootti kun oikea nappain painetaan
 
   return (
     <>
