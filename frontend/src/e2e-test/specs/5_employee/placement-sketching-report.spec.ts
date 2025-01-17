@@ -212,6 +212,7 @@ describe('Placement sketching report', () => {
       },
       sentDate: sentDate,
       status: 'ACTIVE',
+      confidential: true,
       id: randomId<ApplicationId>()
     }
 

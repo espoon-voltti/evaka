@@ -804,12 +804,14 @@ describe('Application transitions', () => {
     const application1: DevApplicationWithForm = {
       ...applicationFixture(testChild, testAdult),
       id: randomId<ApplicationId>(),
-      status: 'WAITING_CONFIRMATION'
+      status: 'WAITING_CONFIRMATION',
+      confidential: true
     }
     const application2: DevApplicationWithForm = {
       ...applicationFixture(testChild2, testAdult),
       id: randomId<ApplicationId>(),
-      status: 'WAITING_CONFIRMATION'
+      status: 'WAITING_CONFIRMATION',
+      confidential: true
     }
     const placementStartDate = LocalDate.of(2021, 8, 16)
 

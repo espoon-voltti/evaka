@@ -112,7 +112,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
             db.transaction { tx ->
                 tx.execute {
                     sql(
-                        "UPDATE application SET status = 'ACTIVE' WHERE id = ${bind(applicationId)}"
+                        "UPDATE application SET status = 'ACTIVE', confidential = TRUE WHERE id = ${bind(applicationId)}"
                     )
                 }
                 tx.insertTestPlacementPlan(applicationId, daycareId)

@@ -85,6 +85,17 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.insertTestApplication(
                 status = status,
+                confidential =
+                    if (
+                        status in
+                            listOf(
+                                ApplicationStatus.CREATED,
+                                ApplicationStatus.SENT,
+                                ApplicationStatus.WAITING_PLACEMENT,
+                            )
+                    )
+                        null
+                    else true,
                 childId = childId,
                 guardianId = guardianId,
                 type = ApplicationType.DAYCARE,

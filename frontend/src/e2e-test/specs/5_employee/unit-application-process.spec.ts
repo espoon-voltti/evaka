@@ -115,12 +115,14 @@ describe('Unit groups - placement plans / proposals', () => {
     const application1: DevApplicationWithForm = {
       ...applicationFixture(testChild, testAdult),
       id: randomId<ApplicationId>(),
-      status: 'WAITING_UNIT_CONFIRMATION'
+      status: 'WAITING_UNIT_CONFIRMATION',
+      confidential: true
     }
     const application2: DevApplicationWithForm = {
       ...applicationFixture(testChild2, testAdult),
       id: randomId<ApplicationId>(),
-      status: 'WAITING_UNIT_CONFIRMATION'
+      status: 'WAITING_UNIT_CONFIRMATION',
+      confidential: true
     }
 
     await createApplications({ body: [application1, application2] })

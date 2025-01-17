@@ -426,6 +426,7 @@ fun Database.Transaction.insertTestApplication(
     transferApplication: Boolean = false,
     allowOtherGuardianAccess: Boolean = true,
     document: DatabaseForm,
+    confidential: Boolean? = null,
     modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 ): ApplicationId {
@@ -433,7 +434,7 @@ fun Database.Transaction.insertTestApplication(
             sql(
                 """
 INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access, document, modified_at, modified_by, created_at, created_by, confidential)
-VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, NULL)
+VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, ${bind(confidential)})
 """
             )
         }
