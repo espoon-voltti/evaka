@@ -3,7 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useCallback, useContext, useMemo } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef
+} from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
@@ -124,8 +131,29 @@ export function Filters({
   searchPlaceholder
 }: Props) {
   const { i18n } = useTranslation()
+
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current || !onSearch) return
+
+    const element = containerRef.current
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        onSearch()
+      }
+    }
+
+    element.addEventListener('keypress', handleKeyPress, { passive: true })
+
+    return () => {
+      element.removeEventListener('keypress', handleKeyPress)
+    }
+  }, [containerRef, onSearch])
+
   return (
-    <FiltersContainer>
+    <FiltersContainer ref={containerRef}>
       {setFreeText && (
         <FreeTextSearch
           value={freeText || ''}
