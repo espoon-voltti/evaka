@@ -1,15 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, {
-  Fragment,
-  useCallback,
-  useContext,
-  useEffect,
-  useState
-} from 'react'
+import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
 import { wrapResult } from 'lib-common/api'
 import {
@@ -29,50 +23,24 @@ import { fasExclamationTriangle } from 'lib-icons'
 
 import { getUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
-import {
-  InvoicingUiContext,
-  PaymentSearchFilters
-} from '../../state/invoicing-ui'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { AreaFilter, Filters, UnitFilter } from '../common/Filters'
 import { FlexRow } from '../common/styled/containers'
 
 const getUnitsResult = wrapResult(getUnits)
 
-const emptyFilters: PaymentSearchFilters = {
-  searchTerms: '',
-  area: [],
-  unit: null,
-  distinctions: [],
-  status: 'DRAFT',
-  paymentDateStart: null,
-  paymentDateEnd: null
-}
-
 export default React.memo(function PaymentFilters() {
-  const { i18n } = useTranslation()
-
   const {
-    payments: { setConfirmedSearchFilters },
+    payments: {
+      searchFilters,
+      setSearchFilters,
+      confirmSearchFilters,
+      clearSearchFilters
+    },
     shared: { units, setUnits, availableAreas }
   } = useContext(InvoicingUiContext)
 
-  const [searchFilters, _setSearchFilters] =
-    useState<PaymentSearchFilters>(emptyFilters)
-  const setSearchFilters = useCallback(
-    (value: React.SetStateAction<PaymentSearchFilters>) => {
-      _setSearchFilters(value)
-      setConfirmedSearchFilters(undefined)
-    },
-    [setConfirmedSearchFilters]
-  )
-  const clearSearchFilters = useCallback(() => {
-    _setSearchFilters(emptyFilters)
-    setConfirmedSearchFilters(undefined)
-  }, [setConfirmedSearchFilters])
-  const confirmSearchFilters = useCallback(
-    () => setConfirmedSearchFilters(searchFilters),
-    [searchFilters, setConfirmedSearchFilters]
-  )
+  const { i18n } = useTranslation()
 
   useEffect(() => {
     void getUnitsResult({ areaIds: null, type: 'DAYCARE', from: null }).then(
