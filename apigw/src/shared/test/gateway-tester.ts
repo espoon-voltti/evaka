@@ -60,17 +60,11 @@ export class GatewayTester {
     return undefined
   }
 
-  public async setCookie(cookie: Cookie): Promise<Cookie> {
+  public async setCookie(cookie: Cookie): Promise<void> {
     // Cookie domain must be cleared before setting to avoid issue with "localhost"
     // being in the public suffix list (and therefore denied by setCookie())
     cookie.domain = null
-    const cookieString = cookie.cookieString()
-    return await this.cookies.setCookie(cookieString, this.baseUrl, {
-      http: cookie.httpOnly,
-      secure: cookie.secure,
-      now: cookie.creation ?? undefined,
-      sameSiteContext: cookie.sameSite
-    })
+    await this.cookies.setCookie(cookie, this.baseUrl)
   }
 
   public async getCookie(key: string): Promise<Cookie | undefined> {
