@@ -9,6 +9,11 @@ SET confidential = (
 )
 WHERE status NOT IN ('CREATED', 'SENT') AND confidential IS NULL;
 
+-- some ways of cancelling an application did not set confidentiality
+UPDATE application
+SET confidential = true
+WHERE status = 'CANCELLED' AND confidential IS NULL;
+
 ALTER TABLE application ADD CONSTRAINT check_confidentiality CHECK (
     CASE
         WHEN status IN ('CREATED', 'SENT') THEN true
