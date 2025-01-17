@@ -25,9 +25,11 @@ import {
   testChild,
   testDaycarePrivateVoucher,
   testDaycare,
-  testCareArea
+  testCareArea,
+  testChildRestricted
 } from '../../dev-api/fixtures'
 import {
+  addAclRoleForDaycare,
   createBackupCares,
   createDaycareGroups,
   createMessageAccounts,
@@ -83,7 +85,7 @@ beforeEach(async () => {
   await Fixture.daycare(testDaycarePrivateVoucher).save()
   await Fixture.family({
     guardian: testAdult,
-    children: [testChild, testChild2]
+    children: [testChild, testChild2, testChildRestricted]
   }).save()
   await Fixture.person(testAdult2).saveAdult({
     updateMockVtjWithDependants: [testChild]
@@ -583,6 +585,82 @@ describe('Sending and receiving messages', () => {
           0,
           '(Karhula Kaarina)'
         )
+      })
+
+      test('Recipients are visible and selectable only when they are available for all selected children and in the same unit', async () => {
+        // Child 2 is in a different group
+        const daycarePlacement2 = await Fixture.placement({
+          childId: testChild2.id,
+          unitId: testDaycare.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
+        const daycareGroup2 = await Fixture.daycareGroup({
+          daycareId: testDaycare.id,
+          name: 'Toinen ryhmä'
+        }).save()
+        await Fixture.groupPlacement({
+          daycarePlacementId: daycarePlacement2.id,
+          daycareGroupId: daycareGroup2.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
+
+        // Child 3 (testChildRestricted) is in a different unit
+        await addAclRoleForDaycare({
+          daycareId: testDaycare2.id,
+          body: {
+            externalId: unitSupervisor.externalId!,
+            role: 'UNIT_SUPERVISOR'
+          }
+        })
+        const daycarePlacementFixture3 = await Fixture.placement({
+          childId: testChildRestricted.id,
+          unitId: testDaycare2.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
+        const daycareGroup3 = await Fixture.daycareGroup({
+          daycareId: testDaycare2.id,
+          name: 'Kolmas ryhmä'
+        }).save()
+        await Fixture.groupPlacement({
+          daycarePlacementId: daycarePlacementFixture3.id,
+          daycareGroupId: daycareGroup3.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
+        await createMessageAccounts()
+
+        await openCitizen(mockedDateAt10)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const editor = await citizenMessagesPage.createNewMessage()
+        await editor.assertChildrenSelectable([
+          testChild.id,
+          testChild2.id,
+          testChildRestricted.id
+        ])
+
+        // No recipients available before selecting a child
+        await editor.assertNoRecipients()
+
+        // Selecting child 1 makes the supervisor and group selectable
+        await editor.selectChildren([testChild.id])
+        await editor.assertRecipients([
+          'Esimies Essi',
+          'Kosmiset vakiot (Henkilökunta)'
+        ])
+
+        // Selecting child 2 makes only the supervisor selectable
+        // because of different groups
+        await editor.selectChildren([testChild2.id])
+        await editor.assertRecipients(['Esimies Essi'])
+
+        // Selecting child 3 makes no recipients selectable
+        // because of different unit, even if the supervisor is the same
+        await editor.selectChildren([testChildRestricted.id])
+        await editor.assertNoRecipients()
       })
 
       test('Messages cannot be sent after placement(s) end', async () => {

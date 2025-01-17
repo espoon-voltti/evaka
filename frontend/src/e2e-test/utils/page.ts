@@ -527,6 +527,16 @@ export class MultiSelect extends Element {
   async assertNoOptions() {
     await this.findByDataQa('no-options').waitUntilVisible()
   }
+
+  async assertOptions(options: string[]) {
+    await waitUntilTrue(async () => {
+      const actualOptions = await this.findAllByDataQa('option').allTexts()
+      return (
+        actualOptions.length === options.length &&
+        options.every((option) => actualOptions.includes(option))
+      )
+    })
+  }
 }
 
 export class Collapsible extends Element {

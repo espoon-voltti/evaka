@@ -257,6 +257,11 @@ export class CitizenMessageEditor extends Element {
     await this.#recipientSelection.assertNoOptions()
   }
 
+  async assertRecipients(recipients: string[]) {
+    await this.#recipientSelection.click()
+    await this.#recipientSelection.assertOptions(recipients)
+  }
+
   async fillMessage(title: string, content: string) {
     await this.title.fill(title)
     await this.content.fill(content)
