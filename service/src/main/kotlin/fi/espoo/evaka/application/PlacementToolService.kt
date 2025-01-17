@@ -340,7 +340,7 @@ fun parsePlacementToolCsv(inputStream: InputStream): Map<String, DaycareId> {
         .setHeader()
         .apply { setIgnoreSurroundingSpaces(true) }
         .apply { setDelimiter(';') }
-        .build()
+        .get()
         .parse(bomStream.reader())
         .filter { row ->
             row.get(PlacementToolCsvField.CHILD_ID.fieldName).isNotBlank() &&

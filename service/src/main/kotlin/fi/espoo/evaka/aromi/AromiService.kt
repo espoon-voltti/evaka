@@ -62,7 +62,7 @@ class AromiService {
     }
 
     private fun printCsv(writer: Appendable, data: AromiMealOrderData) {
-        val format = CSVFormat.Builder.create(CSVFormat.DEFAULT).setDelimiter(';').build()
+        val format = CSVFormat.Builder.create(CSVFormat.DEFAULT).setDelimiter(';').get()
         CSVPrinter(writer, format).use { printer -> printRecords(printer, data) }
     }
 
