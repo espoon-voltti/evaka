@@ -9,6 +9,8 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.invoicing.data.getInvoice
+import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.messaging.findMessageAccountIdByDraftId
 import fi.espoo.evaka.messaging.getMessageAccountIdsByContentId
 import fi.espoo.evaka.messaging.messageAttachmentsAllowedForCitizen
@@ -22,6 +24,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -128,6 +131,43 @@ class AttachmentsController(
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
                     targetId = AuditId(incomeStatementId),
+                    objectId = AuditId(attachmentId),
+                    meta = mapOf("size" to file.size),
+                )
+            }
+    }
+
+    @PostMapping(
+        "/employee/attachments/invoices/{invoiceId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+    )
+    fun uploadInvoiceAttachmentEmployee(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable invoiceId: InvoiceId,
+        @RequestPart("file") file: MultipartFile,
+    ): AttachmentId {
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Invoice.UPLOAD_ATTACHMENT,
+                        invoiceId,
+                    )
+
+                    val invoice = it.getInvoice(invoiceId) ?: throw NotFound()
+                    if (invoice.status != InvoiceStatus.REPLACEMENT_DRAFT) {
+                        throw BadRequest("Wrong invoice status")
+                    }
+                }
+                handleFileUpload(dbc, user, clock, AttachmentParent.Invoice(invoiceId), file)
+            }
+            .also { attachmentId ->
+                Audit.AttachmentsUploadForInvoice.log(
+                    targetId = AuditId(invoiceId),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size),
                 )
@@ -400,6 +440,7 @@ class AttachmentsController(
                     is AttachmentParent.Application,
                     is AttachmentParent.IncomeStatement,
                     is AttachmentParent.Income,
+                    is AttachmentParent.Invoice,
                     is AttachmentParent.PedagogicalDocument ->
                         it.userAttachmentCount(user.evakaUserId, attachTo)
                     is AttachmentParent.MessageDraft,
@@ -508,10 +549,10 @@ class AttachmentsController(
         val attachment =
             db.connect { dbc ->
                 dbc.read {
-                    val attachment =
+                    val (attachment, attachedTo) =
                         it.getAttachment(attachmentId)
                             ?: throw NotFound("Attachment $attachmentId not found")
-                    when (attachment.attachedTo) {
+                    when (attachedTo) {
                         is AttachmentParent.Application ->
                             accessControl.requirePermissionFor(
                                 it,
@@ -536,11 +577,17 @@ class AttachmentsController(
                                 Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
                                 attachment.id,
                             )
+                        is AttachmentParent.Invoice ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.READ_INVOICE_ATTACHMENT,
+                                attachment.id,
+                            )
                         is AttachmentParent.MessageContent -> {
                             val accountIds =
-                                it.getMessageAccountIdsByContentId(
-                                    attachment.attachedTo.messageContentId
-                                )
+                                it.getMessageAccountIdsByContentId(attachedTo.messageContentId)
                             accessControl.requirePermissionForSomeTarget(
                                 it,
                                 user,
@@ -550,8 +597,7 @@ class AttachmentsController(
                             )
                         }
                         is AttachmentParent.MessageDraft -> {
-                            val accountId =
-                                it.findMessageAccountIdByDraftId(attachment.attachedTo.draftId)
+                            val accountId = it.findMessageAccountIdByDraftId(attachedTo.draftId)
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -622,10 +668,10 @@ class AttachmentsController(
     ) {
         db.connect { dbc ->
             dbc.read {
-                    val attachment =
+                    val (attachment, attachedTo) =
                         it.getAttachment(attachmentId)
                             ?: throw NotFound("Attachment $attachmentId not found")
-                    when (attachment.attachedTo) {
+                    when (attachedTo) {
                         is AttachmentParent.Application ->
                             accessControl.requirePermissionFor(
                                 it,
@@ -650,9 +696,16 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
                                 attachment.id,
                             )
+                        is AttachmentParent.Invoice ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_INVOICE_ATTACHMENT,
+                                attachment.id,
+                            )
                         is AttachmentParent.MessageDraft -> {
-                            val accountId =
-                                it.findMessageAccountIdByDraftId(attachment.attachedTo.draftId)
+                            val accountId = it.findMessageAccountIdByDraftId(attachedTo.draftId)
                             accessControl.requirePermissionFor(
                                 it,
                                 user,

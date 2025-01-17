@@ -5,7 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.application.getCitizenChildren
-import fi.espoo.evaka.attachment.MessageAttachment
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -640,7 +640,7 @@ data class MessageCopy(
     val recipientName: String,
     val recipientAccountType: AccountType,
     val recipientNames: List<String>,
-    @Json val attachments: List<MessageAttachment>,
+    @Json val attachments: List<Attachment>,
 )
 
 data class PagedMessageCopies(val data: List<MessageCopy>, val total: Int, val pages: Int)

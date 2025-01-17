@@ -5,6 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { string } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
@@ -21,11 +22,17 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import FileUpload from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 
+import { getAttachmentUrl, saveInvoiceAttachment } from '../../api/attachments'
+import { deleteAttachment } from '../../generated/api-clients/attachment'
 import { useTranslation } from '../../state/i18n'
 import { markReplacementDraftSentMutation } from '../invoices/queries'
+
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const replacementDraftForm = validated(
   object({
@@ -85,6 +92,25 @@ export function ReplacementDraftForm({
           </TextAreaWrapper>
         </FixedSpaceColumn>
       </FixedSpaceRow>
+      <FixedSpaceRow>
+        <FixedSpaceColumn>
+          <FileUpload
+            files={invoiceResponse.invoice.attachments}
+            onUpload={(file, onUploadProgress) =>
+              saveInvoiceAttachment(
+                invoiceResponse.invoice.id,
+                file,
+                onUploadProgress
+              )
+            }
+            onDelete={(attachmentId) =>
+              deleteAttachmentResult({ attachmentId })
+            }
+            getDownloadUrl={getAttachmentUrl}
+            data-qa="attachments"
+          />
+        </FixedSpaceColumn>
+      </FixedSpaceRow>
       <FixedSpaceRow justifyContent="flex-end">
         <InfoBox message={i18n.invoice.form.replacement.sendInfo} />
       </FixedSpaceRow>
@@ -118,7 +144,6 @@ export function ReplacementInfo({
   return (
     <FixedSpaceColumn data-qa="replacement-info">
       <H3>{i18n.invoice.form.replacement.title}</H3>
-      <P>{i18n.invoice.form.replacement.info}</P>
       <FixedSpaceRow spacing="L">
         <FixedSpaceColumn>
           <Label>{i18n.invoice.form.replacement.reason}</Label>
@@ -133,6 +158,28 @@ export function ReplacementInfo({
           </NotesWrapper>
         </FixedSpaceColumn>
       </FixedSpaceRow>
+      {invoice.attachments.length > 0 ? (
+        <>
+          <FixedSpaceRow>
+            <FixedSpaceColumn>
+              <Label>{i18n.invoice.form.replacement.attachments}</Label>
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+          <FixedSpaceRow>
+            <FixedSpaceColumn spacing="xs">
+              {invoice.attachments.map((attachment) => (
+                <FileDownloadButton
+                  key={attachment.id}
+                  file={attachment}
+                  getFileUrl={getAttachmentUrl}
+                  icon
+                  data-qa="attachment"
+                />
+              ))}
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+        </>
+      ) : null}
       <div>
         <Label>{i18n.invoice.form.replacement.markedAsSent}</Label>
         <div>

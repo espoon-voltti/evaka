@@ -8,7 +8,7 @@ import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'

@@ -4,7 +4,13 @@
 
 import { InvoiceReplacementReason } from 'lib-common/generated/api-types/invoicing'
 
-import { Page, Element, TextInput, Select } from '../../../utils/page'
+import {
+  Page,
+  Element,
+  TextInput,
+  Select,
+  FileUpload
+} from '../../../utils/page'
 
 export class InvoiceDetailsPage {
   headOfFamilySection: InvoiceHeadOfFamilySection
@@ -98,6 +104,7 @@ export class InvoiceRow extends Element {
 export class InvoiceReplacementDraftSection extends Element {
   reason = new Select(this.findByDataQa('replacement-reason'))
   notes = new TextInput(this.findByDataQa('replacement-notes'))
+  attachments = new FileUpload(this.findByDataQa('attachments'))
   markSentButton = this.findByDataQa('mark-sent')
 
   async selectReason(value: InvoiceReplacementReason) {
@@ -108,6 +115,7 @@ export class InvoiceReplacementDraftSection extends Element {
 export class InvoiceReplacementInfoSection extends Element {
   reason = this.findByDataQa('replacement-reason')
   notes = this.findByDataQa('replacement-notes')
+  attachments = this.findAllByDataQa('attachment')
   sentAt = this.findByDataQa('sent-at')
   sentBy = this.findByDataQa('sent-by')
 }

@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -26,6 +27,7 @@ data class AttachmentForeignKeys(
     val feeAlterationId: FeeAlterationId?,
     val incomeId: IncomeId?,
     val incomeStatementId: IncomeStatementId?,
+    val invoiceId: InvoiceId?,
     val messageContentId: MessageContentId?,
     val messageDraftId: MessageDraftId?,
     val pedagogicalDocumentId: PedagogicalDocumentId?,
@@ -37,6 +39,7 @@ data class AttachmentForeignKeys(
         feeAlterationId = (parent as? AttachmentParent.FeeAlteration)?.feeAlterationId,
         incomeId = (parent as? AttachmentParent.Income)?.incomeId,
         incomeStatementId = (parent as? AttachmentParent.IncomeStatement)?.incomeStatementId,
+        invoiceId = (parent as? AttachmentParent.Invoice)?.invoiceId,
         messageContentId = (parent as? AttachmentParent.MessageContent)?.messageContentId,
         messageDraftId = (parent as? AttachmentParent.MessageDraft)?.draftId,
         pedagogicalDocumentId =
@@ -53,6 +56,7 @@ data class AttachmentForeignKeys(
             feeAlterationId,
             incomeId,
             incomeStatementId,
+            invoiceId,
             messageContentId,
             messageDraftId,
             pedagogicalDocumentId,
@@ -64,6 +68,7 @@ data class AttachmentForeignKeys(
             feeAlterationId != null -> AttachmentParent.FeeAlteration(feeAlterationId)
             incomeId != null -> AttachmentParent.Income(incomeId)
             incomeStatementId != null -> AttachmentParent.IncomeStatement(incomeStatementId)
+            invoiceId != null -> AttachmentParent.Invoice(invoiceId)
             messageContentId != null -> AttachmentParent.MessageContent(messageContentId)
             messageDraftId != null -> AttachmentParent.MessageDraft(messageDraftId)
             pedagogicalDocumentId != null ->
@@ -91,7 +96,7 @@ fun Database.Transaction.insertAttachment(
     attachTo: AttachmentParent,
     type: AttachmentType?,
 ): AttachmentId {
-    check(AttachmentForeignKeys.idFieldCount == 7) {
+    check(AttachmentForeignKeys.idFieldCount == 8) {
         "Unexpected AttachmentForeignKeys field count"
     }
     require(attachTo !is AttachmentParent.MessageContent) { "attachments are saved via draft" }
@@ -100,8 +105,34 @@ fun Database.Transaction.insertAttachment(
     return this.createUpdate {
             sql(
                 """
-INSERT INTO attachment (created, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
-VALUES (${bind(now)}, ${bind(name)}, ${bind(contentType)}, ${bind(fk.applicationId)}, ${bind(fk.incomeStatementId)}, ${bind(fk.incomeId)}, ${bind(fk.messageDraftId)}, ${bind(fk.pedagogicalDocumentId)}, ${bind(fk.feeAlterationId)}, ${bind(user.evakaUserId)}, ${bind(type?.name ?: "")})
+INSERT INTO attachment (
+    created,
+    name,
+    content_type,
+    application_id,
+    fee_alteration_id,
+    income_id,
+    income_statement_id,
+    invoice_id,
+    message_draft_id,
+    pedagogical_document_id,
+    uploaded_by,
+    type
+)
+VALUES (
+    ${bind(now)},
+    ${bind(name)},
+    ${bind(contentType)},
+    ${bind(fk.applicationId)},
+    ${bind(fk.feeAlterationId)},
+    ${bind(fk.incomeId)},
+    ${bind(fk.incomeStatementId)},
+    ${bind(fk.invoiceId)},
+    ${bind(fk.messageDraftId)},
+    ${bind(fk.pedagogicalDocumentId)},
+    ${bind(user.evakaUserId)},
+    ${bind(type?.name ?: "")}
+)
 RETURNING id
 """
             )
@@ -110,19 +141,20 @@ RETURNING id
         .exactlyOne<AttachmentId>()
 }
 
-fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
+fun Database.Read.getAttachment(id: AttachmentId): Pair<Attachment, AttachmentParent>? =
     createQuery {
-            check(AttachmentForeignKeys.idFieldCount == 7) {
+            check(AttachmentForeignKeys.idFieldCount == 8) {
                 "Unexpected AttachmentForeignKeys field count"
             }
             sql(
                 """
         SELECT
-            id, name, content_type, uploaded_by,
+            id, name, content_type,
             application_id,
             fee_alteration_id,
             income_id,
             income_statement_id,
+            invoice_id,
             message_content_id,
             message_draft_id,
             pedagogical_document_id
@@ -132,11 +164,13 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
             )
         }
         .exactlyOneOrNull {
-            Attachment(
-                id = column("id"),
-                name = column("name"),
-                contentType = column("content_type"),
-                attachedTo = row<AttachmentForeignKeys>().parent(),
+            Pair(
+                Attachment(
+                    id = column("id"),
+                    name = column("name"),
+                    contentType = column("content_type"),
+                ),
+                row<AttachmentForeignKeys>().parent(),
             )
         }
 
@@ -166,7 +200,7 @@ private fun Database.Transaction.changeParent(
 ): Int =
     createUpdate {
             val fks = AttachmentForeignKeys(newParent)
-            check(AttachmentForeignKeys.idFieldCount == 7) {
+            check(AttachmentForeignKeys.idFieldCount == 8) {
                 "Unexpected AttachmentForeignKeys field count"
             }
             sql(
@@ -177,6 +211,7 @@ SET
     fee_alteration_id = ${bind(fks.feeAlterationId)},
     income_id = ${bind(fks.incomeId)},
     income_statement_id = ${bind(fks.incomeStatementId)},
+    invoice_id = ${bind(fks.invoiceId)},
     message_content_id = ${bind(fks.messageContentId)},
     message_draft_id = ${bind(fks.messageDraftId)},
     pedagogical_document_id = ${bind(fks.pedagogicalDocumentId)}
@@ -224,7 +259,7 @@ fun Database.Transaction.dissociateAttachmentsOfParent(
     )
 
 private fun AttachmentParent.toPredicate() = Predicate {
-    check(AttachmentForeignKeys.idFieldCount == 7) {
+    check(AttachmentForeignKeys.idFieldCount == 8) {
         "Unexpected AttachmentForeignKeys field count"
     }
     when (this@toPredicate) {
@@ -234,6 +269,7 @@ private fun AttachmentParent.toPredicate() = Predicate {
         is AttachmentParent.Income -> where("$it.income_id = ${bind(incomeId)}")
         is AttachmentParent.IncomeStatement ->
             where("$it.income_statement_id = ${bind(incomeStatementId)}")
+        is AttachmentParent.Invoice -> where("$it.invoice_id = ${bind(invoiceId)}")
         is AttachmentParent.MessageContent ->
             where("$it.message_content_id = ${bind(messageContentId)}")
         is AttachmentParent.MessageDraft -> where("$it.message_draft_id = ${bind(draftId)}")
@@ -246,10 +282,11 @@ $it.application_id IS NULL
 AND $it.fee_alteration_id IS NULL
 AND $it.income_id IS NULL
 AND $it.income_statement_id IS NULL
+AND $it.invoice_id IS NULL
 AND $it.message_content_id IS NULL
 AND $it.message_draft_id IS NULL
 AND $it.pedagogical_document_id IS NULL
-            """
+"""
             )
     }
 }

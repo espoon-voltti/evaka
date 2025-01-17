@@ -6,7 +6,7 @@ import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
 import {
   AttachmentId,

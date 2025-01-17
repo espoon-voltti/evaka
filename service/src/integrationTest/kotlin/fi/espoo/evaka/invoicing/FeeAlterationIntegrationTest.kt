@@ -5,13 +5,13 @@
 package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attachment.getAttachment
 import fi.espoo.evaka.invoicing.controller.FeeAlterationController
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
-import fi.espoo.evaka.invoicing.domain.FeeAlterationAttachment
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.FeeAlterationId
@@ -183,8 +183,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         assertEqualEnough(
             listOf(
                 testFeeAlteration.copy(
-                    attachments =
-                        listOf(FeeAlterationAttachment(attachmentId, "evaka-logo.png", "image/png"))
+                    attachments = listOf(Attachment(attachmentId, "evaka-logo.png", "image/png"))
                 )
             ),
             result.map { it.data },
@@ -200,8 +199,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         assertEqualEnough(
             listOf(
                 testFeeAlteration.copy(
-                    attachments =
-                        listOf(FeeAlterationAttachment(attachmentId, "evaka-logo.png", "image/png"))
+                    attachments = listOf(Attachment(attachmentId, "evaka-logo.png", "image/png"))
                 )
             ),
             result.map { it.data },
@@ -209,7 +207,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
         deleteFeeAlteration(testFeeAlterationId)
         val attachment = db.read { tx -> tx.getAttachment(attachmentId) }
-        assertEquals(AttachmentParent.None, attachment?.attachedTo)
+        assertEquals(AttachmentParent.None, attachment?.second)
     }
 
     private fun createFeeAlteration(body: FeeAlteration) {

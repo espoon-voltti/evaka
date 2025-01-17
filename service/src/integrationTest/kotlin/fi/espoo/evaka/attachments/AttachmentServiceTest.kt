@@ -116,7 +116,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
                 Pair(it.insertTestAttachment(clock, parent), parent)
             }
         assertThrows<Exception>(errorMessage) { attachmentService.deleteAttachment(db, attachment) }
-        assertEquals(parent, db.read { it.getAttachment(attachment) }?.attachedTo)
+        assertEquals(parent, db.read { it.getAttachment(attachment) }?.second)
     }
 
     @Test

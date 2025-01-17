@@ -30,7 +30,7 @@ import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 import java.time.YearMonth
 
-fun invoiceDetailedQuery(where: Predicate = Predicate.alwaysTrue()) = QuerySql {
+fun invoiceDetailedQuery(where: Predicate) = QuerySql {
     sql(
         """
     SELECT
@@ -129,8 +129,18 @@ fun invoiceDetailedQuery(where: Predicate = Predicate.alwaysTrue()) = QuerySql {
             FROM invoiced_fee_decision
             JOIN fee_decision fd ON invoiced_fee_decision.fee_decision_id = fd.id
             WHERE invoiced_fee_decision.invoice_id = invoice.id AND fd.decision_number IS NOT NULL
-        ), '[]'::jsonb) as related_fee_decisions
-        
+        ), '[]'::jsonb) as related_fee_decisions,
+
+        coalesce((
+            SELECT jsonb_agg(jsonb_build_object(
+                'id', id,
+                'name', name,
+                'contentType', content_type
+            ) ORDER BY a.created)
+            FROM attachment a
+            WHERE a.invoice_id = invoice.id
+        ), '[]'::jsonb) as attachments
+
     FROM invoice
     JOIN care_area ON invoice.area_id = care_area.id
     LEFT JOIN person as head ON invoice.head_of_family = head.id

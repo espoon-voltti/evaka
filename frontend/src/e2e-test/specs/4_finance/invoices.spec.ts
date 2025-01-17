@@ -371,11 +371,13 @@ describe('Invoices', () => {
 
       await form.selectReason('ABSENCE')
       await form.notes.fill('Unohtunut päiväkirjamerkintä')
+      await form.attachments.upload('src/e2e-test/assets/test_file.jpg')
       await form.markSentButton.click()
 
       const view = invoicePage.replacementInfo
       await view.reason.assertTextEquals('Päiväkirjamerkintä')
       await view.notes.assertTextEquals('Unohtunut päiväkirjamerkintä')
+      await view.attachments.assertCount(1)
       await view.sentAt.assertTextEquals(now.format())
       await view.sentBy.assertTextEquals(
         `${financeAdmin.lastName} ${financeAdmin.firstName}`

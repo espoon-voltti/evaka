@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -37,19 +38,12 @@ sealed class AttachmentParent {
 
     data class FeeAlteration(val feeAlterationId: FeeAlterationId) : AttachmentParent()
 
+    data class Invoice(val invoiceId: InvoiceId) : AttachmentParent()
+
     data object None : AttachmentParent()
 }
 
-data class Attachment(
-    val id: AttachmentId,
-    val name: String,
-    val contentType: String,
-    val attachedTo: AttachmentParent,
-)
-
-data class IncomeAttachment(val id: AttachmentId, val name: String, val contentType: String)
-
-data class MessageAttachment(val id: AttachmentId, val name: String, val contentType: String)
+data class Attachment(val id: AttachmentId, val name: String, val contentType: String)
 
 enum class AttachmentType {
     URGENCY,

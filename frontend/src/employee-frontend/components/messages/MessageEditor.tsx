@@ -8,9 +8,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
 import { useBoolean } from 'lib-common/form/hooks'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   AuthorizedMessageAccount,
   DraftContent,

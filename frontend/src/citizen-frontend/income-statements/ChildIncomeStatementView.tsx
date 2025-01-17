@@ -7,7 +7,7 @@ import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/api-types/attachment'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import {
   ChildId,

@@ -6,7 +6,7 @@ package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -142,12 +141,6 @@ class PedagogicalDocumentController(
         Audit.PedagogicalDocumentUpdate.log(targetId = AuditId(documentId))
     }
 }
-
-data class Attachment(
-    @PropagateNull val id: AttachmentId,
-    val name: String,
-    val contentType: String,
-)
 
 data class PedagogicalDocument(
     val id: PedagogicalDocumentId,

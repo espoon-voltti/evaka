@@ -147,5 +147,5 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
     private fun parentOf(attachment: AttachmentId): AttachmentParent? =
-        db.read { it.getAttachment(attachment) }?.attachedTo
+        db.read { it.getAttachment(attachment) }?.second
 }

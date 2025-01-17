@@ -10,8 +10,8 @@ import styled from 'styled-components'
 import { ErrorMessageBox } from 'citizen-frontend/calendar/ChildSelector'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Failure, Result, Success } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
 import { useBoolean } from 'lib-common/form/hooks'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import {
   AccountType,

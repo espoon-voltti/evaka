@@ -284,6 +284,7 @@ export class Element {
   get focused(): Promise<boolean> {
     return this.locator.evaluate((el) => el === document.activeElement)
   }
+
   async assertFocused(focused: boolean): Promise<void> {
     await waitUntilEqual(() => this.focused, focused)
   }
@@ -369,6 +370,23 @@ export class DatePickerDeprecated extends Element {
 export class FileInput extends Element {
   async setInputFiles(path: string | string[]) {
     await this.locator.setInputFiles(path)
+  }
+}
+
+export class FileUpload extends Element {
+  #input = new FileInput(this.findByDataQa('btn-upload-file'))
+  #uploadedFilesContainer = this.findByDataQa('uploaded-files')
+
+  async upload(path: string | string[]) {
+    const fileCountBefore = await this.#uploadedFilesContainer
+      .findAll('> * ')
+      .count()
+    await this.#input.setInputFiles(path)
+    await this.#uploadedFilesContainer
+      .find(
+        `:nth-child(${fileCountBefore + 1}) [data-qa="file-download-button"]`
+      )
+      .waitUntilVisible()
   }
 }
 

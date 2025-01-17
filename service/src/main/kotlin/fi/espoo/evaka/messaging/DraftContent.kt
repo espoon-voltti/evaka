@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
-import fi.espoo.evaka.attachment.MessageAttachment
+import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -20,7 +20,7 @@ data class DraftContent(
     val sensitive: Boolean,
     val recipientIds: Set<Id<*>>,
     val recipientNames: List<String>,
-    @Json val attachments: List<MessageAttachment>,
+    @Json val attachments: List<Attachment>,
 )
 
 data class UpdatableDraftContent(

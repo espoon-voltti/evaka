@@ -323,6 +323,7 @@ export type Invoice =
   | 'MARK_SENT'
   | 'READ'
   | 'SEND'
+  | 'UPLOAD_ATTACHMENT'
 
 export type InvoiceCorrection =
   | 'DELETE'
