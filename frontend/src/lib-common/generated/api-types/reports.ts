@@ -37,6 +37,24 @@ import { UUID } from '../../types'
 import { VoucherValueDecisionId } from './shared'
 
 /**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.AgeStatisticsResult
+*/
+export interface AgeStatisticsResult {
+  clubOver3Count: number
+  clubUnder3Count: number
+  effectiveCareDaysOver3Count: number
+  effectiveCareDaysUnder3Count: number
+  effectiveFamilyDaycareDaysOver3Count: number
+  effectiveFamilyDaycareDaysUnder3Count: number
+  nonNativeLanguageOver3Count: number
+  nonNativeLanguageUnder3Count: number
+  purchasedOver3Count: number
+  purchasedUnder3Count: number
+  voucherOver3Count: number
+  voucherUnder3Count: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.ApplicationsReportRow
 */
 export interface ApplicationsReportRow {
@@ -820,6 +838,14 @@ export interface ReferenceCount {
   column: string
   count: number
   table: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportAgeStatisticsResult
+*/
+export interface RegionalSurveyReportAgeStatisticsResult {
+  ageStatistics: AgeStatisticsResult[]
+  year: number
 }
 
 /**

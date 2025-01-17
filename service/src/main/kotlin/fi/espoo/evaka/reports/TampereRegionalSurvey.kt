@@ -7,8 +7,10 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -19,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class TampereRegionalSurvey(private val accessControl: AccessControl) {
-    @GetMapping("/employee/reports/tampere-regional-survey/monthly")
-    fun getTampereRegionalSurvey(
+    @GetMapping("/employee/reports/tampere-regional-survey/monthly-statistics")
+    fun getTampereRegionalSurveyMonthlyStatistics(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -92,6 +94,126 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
             .also { Audit.TampereRegionalSurveyMonthly.log(meta = mapOf("year" to year)) }
     }
 
+    @GetMapping("/employee/reports/tampere-regional-survey/age-statistics")
+    fun getTampereRegionalSurveyAgeStatistics(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam year: Int,
+    ): RegionalSurveyReportAgeStatisticsResult {
+        val yearlyStatDay = LocalDate.of(year, 12, 31)
+        val languageStatDay = LocalDate.of(year, 11, 30)
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT,
+                    )
+
+                    val voucherCounts =
+                        tx.getAgeDivisionCounts(
+                            statDay = yearlyStatDay,
+                            daycarePred =
+                                Predicate {
+                                    where(
+                                        "$it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}') AND $it.type && '{CENTRE}'"
+                                    )
+                                },
+                        )
+
+                    val purchasedCounts =
+                        tx.getAgeDivisionCounts(
+                            statDay = yearlyStatDay,
+                            daycarePred =
+                                Predicate {
+                                    where(
+                                        "$it.provider_type = ANY ('{PURCHASED,EXTERNAL_PURCHASED}') AND $it.type && '{CENTRE}'"
+                                    )
+                                },
+                        )
+
+                    val clubCounts =
+                        tx.getAgeDivisionCounts(
+                            statDay = yearlyStatDay,
+                            placementPred = Predicate { where("$it.type = 'CLUB'") },
+                        )
+
+                    val nonNativeLanguageCount =
+                        tx.getAgeDivisionCounts(
+                            statDay = languageStatDay,
+                            personPred =
+                                Predicate {
+                                    where(
+                                        """
+                                $it.language IS NOT NULL
+                                    AND $it.duplicate_of IS NULL
+                                    AND NOT ($it.language ilike ANY ('{FI,SV,RI,SE,VK}'))
+                                    """
+                                    )
+                                },
+                        )
+
+                    val yearlyRange =
+                        FiniteDateRange(LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31))
+
+                    val familyCareDayCounts =
+                        tx.getEffectiveCareDayCounts(
+                            range = yearlyRange,
+                            daycarePred =
+                                Predicate {
+                                    where(
+                                        """
+                               $it.provider_type = ANY ('{MUNICIPAL}')
+                                 AND $it.type && '{FAMILY}'
+                            """
+                                    )
+                                },
+                        )
+
+                    val daycareDayCounts =
+                        tx.getEffectiveCareDayCounts(
+                            range = yearlyRange,
+                            daycarePred =
+                                Predicate {
+                                    where(
+                                        """
+                               $it.provider_type = ANY ('{MUNICIPAL}')
+                                 AND $it.type && '{CENTRE}'
+                            """
+                                    )
+                                },
+                        )
+
+                    RegionalSurveyReportAgeStatisticsResult(
+                        year = year,
+                        ageStatistics =
+                            listOf(
+                                AgeStatisticsResult(
+                                    voucherUnder3Count = voucherCounts.under3Count,
+                                    voucherOver3Count = voucherCounts.over3Count,
+                                    purchasedUnder3Count = purchasedCounts.under3Count,
+                                    purchasedOver3Count = purchasedCounts.over3Count,
+                                    clubUnder3Count = clubCounts.under3Count,
+                                    clubOver3Count = clubCounts.over3Count,
+                                    nonNativeLanguageUnder3Count =
+                                        nonNativeLanguageCount.under3Count,
+                                    nonNativeLanguageOver3Count = nonNativeLanguageCount.over3Count,
+                                    effectiveCareDaysUnder3Count = daycareDayCounts.under3Count,
+                                    effectiveCareDaysOver3Count = daycareDayCounts.over3Count,
+                                    effectiveFamilyDaycareDaysUnder3Count =
+                                        familyCareDayCounts.under3Count,
+                                    effectiveFamilyDaycareDaysOver3Count =
+                                        familyCareDayCounts.over3Count,
+                                )
+                            ),
+                    )
+                }
+            }
+            .also { Audit.TampereRegionalSurveyMonthly.log(meta = mapOf("year" to year)) }
+    }
+
     private fun Database.Read.getMunicipalAssistanceMonthlyResults(
         reportingDays: List<LocalDate>
     ): List<MonthlyAssistanceResult> {
@@ -138,6 +260,28 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
         val municipalShiftCareCount: Int,
         val assistanceCount: Int,
     )
+
+    data class AgeStatisticsResult(
+        val voucherUnder3Count: Int,
+        val voucherOver3Count: Int,
+        val purchasedUnder3Count: Int,
+        val purchasedOver3Count: Int,
+        val clubUnder3Count: Int,
+        val clubOver3Count: Int,
+        val nonNativeLanguageUnder3Count: Int,
+        val nonNativeLanguageOver3Count: Int,
+        val effectiveCareDaysUnder3Count: Int,
+        val effectiveCareDaysOver3Count: Int,
+        val effectiveFamilyDaycareDaysUnder3Count: Int,
+        val effectiveFamilyDaycareDaysOver3Count: Int,
+    )
+
+    data class RegionalSurveyReportAgeStatisticsResult(
+        val year: Int,
+        val ageStatistics: List<AgeStatisticsResult>,
+    )
+
+    data class AgeDivisionCount(val under3Count: Int, val over3Count: Int)
 
     private fun Database.Read.getMonthlyMunicipalPlacementsByAgeAndPartTime(
         range: FiniteDateRange,
@@ -278,5 +422,105 @@ GROUP BY month
                 )
             }
             .toList<MonthlyFamilyDaycareResult>()
+    }
+
+    private fun Database.Read.getAgeDivisionCounts(
+        daycarePred: Predicate = Predicate.alwaysTrue(),
+        placementPred: Predicate = Predicate.alwaysTrue(),
+        personPred: Predicate = Predicate.alwaysTrue(),
+        statDay: LocalDate,
+    ): AgeDivisionCount {
+        return createQuery {
+                sql(
+                    """
+WITH child_rows AS (SELECT pl.child_id,
+                           date_part('year', age(${bind(statDay)}, p.date_of_birth)) as age
+                    FROM placement pl
+                             JOIN person p ON p.id = pl.child_id
+                             JOIN daycare d ON pl.unit_id = d.id
+                    WHERE ${predicate(placementPred.forTable("pl"))}
+                      AND ${predicate(daycarePred.forTable("d"))}
+                      AND ${predicate(personPred.forTable("p"))}
+                      AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)})
+SELECT count(row.child_id)
+       FILTER ( WHERE row.age < 3)  AS under_3_count,
+       count(row.child_id)
+       FILTER ( WHERE row.age >= 3) AS over_3_count
+FROM child_rows row
+                """
+                )
+            }
+            .exactlyOne<AgeDivisionCount>()
+    }
+
+    fun Database.Read.getEffectiveCareDayCounts(
+        range: FiniteDateRange,
+        daycarePred: Predicate = Predicate.alwaysTrue(),
+    ): AgeDivisionCount {
+        val holidays = getHolidays(range)
+        return createQuery {
+                sql(
+                    """
+WITH unit_operational_days AS (SELECT d.id AS unit_id, date
+                               FROM generate_series(${bind(range.start)}, ${bind(range.end)}, interval '1 day') date
+                                        JOIN daycare d ON extract(isodow from date) = ANY
+                                                          (coalesce(d.shift_care_operation_days, d.operation_days))
+                               WHERE ${predicate(daycarePred.forTable("d"))}),
+     effective_placements AS (SELECT od.date,
+                                     od.unit_id,
+                                     b.child_id,
+                                     pl.type                                          AS placement_type,
+                                     date_part('year', age(od.date, p.date_of_birth)) as age,
+                                     sn.shift_care = ANY ('{FULL,INTERMITTENT}')      AS has_shift_care
+                              FROM unit_operational_days od
+                                       JOIN backup_care b
+                                            ON b.unit_id = od.unit_id AND od.date BETWEEN b.start_date AND b.end_date
+                                       JOIN placement pl
+                                            ON pl.child_id = b.child_id
+                                                AND od.date BETWEEN pl.start_date AND pl.end_date
+                                                AND pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
+                                       JOIN person p ON pl.child_id = p.id
+                                       LEFT JOIN service_need sn ON sn.placement_id = p.id AND
+                                                                    od.date BETWEEN sn.start_date AND sn.end_date
+
+                              UNION ALL
+
+                              SELECT od.date,
+                                     od.unit_id,
+                                     pl.child_id,
+                                     pl.type                                          AS placement_type,
+                                     date_part('year', age(od.date, p.date_of_birth)) AS age,
+                                     sn.shift_care = ANY ('{FULL,INTERMITTENT}')      AS has_shift_care
+                              FROM unit_operational_days od
+                                       JOIN placement pl
+                                            ON pl.unit_id = od.unit_id
+                                                AND od.date BETWEEN pl.start_date AND pl.end_date
+                                                AND pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
+                                       JOIN person p ON pl.child_id = p.id
+                                       LEFT JOIN service_need sn ON sn.placement_id = pl.id AND
+                                                                    od.date BETWEEN sn.start_date AND sn.end_date
+                                  AND NOT EXISTS (SELECT 1
+                                                  FROM backup_care b
+                                                  WHERE b.child_id = pl.child_id
+                                                    AND od.date BETWEEN b.start_date AND b.end_date))
+SELECT count(ep.date) FILTER ( WHERE ep.age < 3 )  AS under_3_count,
+       count(ep.date) FILTER ( WHERE ep.age >= 3 ) AS over_3_count
+FROM effective_placements ep
+         JOIN daycare d ON ep.unit_id = d.id
+WHERE NOT EXISTS (SELECT 1
+                  FROM absence
+                  WHERE child_id = ep.child_id
+                    AND date = ep.date
+                  HAVING count(category) >= cardinality(absence_categories(ep.placement_type)))
+  AND (
+    ep.has_shift_care OR extract(isodow FROM ep.date) = ANY (d.operation_days)
+    )
+  AND (
+    (ep.has_shift_care AND d.shift_care_open_on_holidays) OR ep.date != ALL (${bind(holidays)})
+    )
+    """
+                )
+            }
+            .exactlyOne<AgeDivisionCount>()
     }
 }

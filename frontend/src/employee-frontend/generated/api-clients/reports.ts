@@ -64,6 +64,7 @@ import { PreschoolUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { RawReportRow } from 'lib-common/generated/api-types/reports'
+import { RegionalSurveyReportAgeStatisticsResult } from 'lib-common/generated/api-types/reports'
 import { RegionalSurveyReportResult } from 'lib-common/generated/api-types/reports'
 import { Report } from 'lib-common/generated/api-types/reports'
 import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
@@ -1061,9 +1062,29 @@ export async function getStartingPlacementsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurvey
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurveyAgeStatistics
 */
-export async function getTampereRegionalSurvey(
+export async function getTampereRegionalSurveyAgeStatistics(
+  request: {
+    year: number
+  }
+): Promise<RegionalSurveyReportAgeStatisticsResult> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<RegionalSurveyReportAgeStatisticsResult>>({
+    url: uri`/employee/reports/tampere-regional-survey/age-statistics`.toString(),
+    method: 'GET',
+    params
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurveyMonthlyStatistics
+*/
+export async function getTampereRegionalSurveyMonthlyStatistics(
   request: {
     year: number
   }
@@ -1072,7 +1093,7 @@ export async function getTampereRegionalSurvey(
     ['year', request.year.toString()]
   )
   const { data: json } = await client.request<JsonOf<RegionalSurveyReportResult>>({
-    url: uri`/employee/reports/tampere-regional-survey/monthly`.toString(),
+    url: uri`/employee/reports/tampere-regional-survey/monthly-statistics`.toString(),
     method: 'GET',
     params
   })
