@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import { EvakaUserId } from 'lib-common/generated/api-types/shared'
 import { FinanceNote } from 'lib-common/generated/api-types/finance'
 import { FinanceNoteId } from 'lib-common/generated/api-types/shared'
 import { FinanceNoteRequest } from 'lib-common/generated/api-types/finance'
@@ -44,4 +45,38 @@ export async function deleteNote(
     method: 'DELETE'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.finance.notes.FinanceNoteController.getNotes
+*/
+export async function getNotes(
+  request: {
+    adultId: EvakaUserId
+  }
+): Promise<FinanceNote[]> {
+  const { data: json } = await client.request<JsonOf<FinanceNote[]>>({
+    url: uri`/employee/note/finance/${request.adultId}`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonFinanceNote(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.finance.notes.FinanceNoteController.updateNote
+*/
+export async function updateNote(
+  request: {
+    noteId: FinanceNoteId,
+    body: FinanceNoteRequest
+  }
+): Promise<FinanceNote> {
+  const { data: json } = await client.request<JsonOf<FinanceNote>>({
+    url: uri`/employee/note/finance/${request.noteId}`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<FinanceNoteRequest>
+  })
+  return deserializeJsonFinanceNote(json)
 }

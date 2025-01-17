@@ -75,6 +75,42 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
         }
         .exactlyOne()
 
+fun Database.Transaction.updateFinanceNote(
+    id: FinanceNoteId,
+    content: String,
+    modifiedBy: EvakaUserId,
+    now: HelsinkiDateTime,
+): FinanceNote =
+    createQuery {
+            sql(
+                """
+WITH updated_note AS (
+    UPDATE finance_note SET
+        content = ${bind(content)},
+        modified_at = ${bind(now)},
+        modified_by = ${bind(modifiedBy)}
+    WHERE id = ${bind(id)}
+    RETURNING *
+)
+SELECT
+    n.id,
+    n.content,
+    n.created_at,
+    eu.id AS created_by_id,
+    eu.type AS created_by_type,
+    eu.name AS created_by_name,
+    n.modified_at,
+    eu.id AS modified_by_id,
+    eu.type AS modified_by_type,
+    eu.name AS modified_by_name
+FROM updated_note n
+LEFT JOIN evaka_user ceu ON n.created_by = ceu.id
+LEFT JOIN evaka_user meu ON n.modified_by = meu.id
+"""
+            )
+        }
+        .exactlyOne()
+
 fun Database.Transaction.deleteFinanceNote(id: FinanceNoteId) = execute {
     sql("DELETE FROM finance_note WHERE id = ${bind(id)}")
 }
