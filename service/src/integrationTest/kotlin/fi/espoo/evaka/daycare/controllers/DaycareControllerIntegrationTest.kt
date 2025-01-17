@@ -384,6 +384,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_5.id,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                     status = ApplicationStatus.ACTIVE,
+                    confidential = true,
                     transferApplication = true,
                 )
                 .also { applicationId ->
@@ -424,6 +425,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_6.id,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                     status = ApplicationStatus.ACTIVE,
+                    confidential = true,
                     transferApplication = true,
                 )
                 .also { applicationId ->
@@ -463,6 +465,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_7.id,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                     status = ApplicationStatus.ACTIVE,
+                    confidential = true,
                     transferApplication = true,
                     sentDate = today.minusMonths(2),
                 )

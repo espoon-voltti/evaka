@@ -89,6 +89,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insertTestApplication(
                 type = ApplicationType.PRESCHOOL,
                 status = ApplicationStatus.WAITING_UNIT_CONFIRMATION,
+                confidential = true,
                 guardianId = guardianId,
                 childId = childId1,
                 document =
@@ -113,6 +114,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insertTestApplication(
                 type = ApplicationType.PRESCHOOL,
                 status = ApplicationStatus.WAITING_UNIT_CONFIRMATION,
+                confidential = true,
                 guardianId = guardianId,
                 childId = childId2,
                 document =
@@ -137,6 +139,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insertTestApplication(
                 type = ApplicationType.PRESCHOOL,
                 status = ApplicationStatus.WAITING_UNIT_CONFIRMATION,
+                confidential = true,
                 guardianId = guardianId,
                 childId = childId3,
                 document =

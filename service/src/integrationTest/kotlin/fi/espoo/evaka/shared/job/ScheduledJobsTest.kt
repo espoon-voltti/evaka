@@ -501,6 +501,17 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         return db.transaction { tx ->
             tx.insertTestApplication(
                 status = status,
+                confidential =
+                    if (
+                        status in
+                            listOf(
+                                ApplicationStatus.CREATED,
+                                ApplicationStatus.SENT,
+                                ApplicationStatus.WAITING_PLACEMENT,
+                            )
+                    )
+                        null
+                    else true,
                 childId = childId,
                 guardianId = testAdult_1.id,
                 transferApplication = true,

@@ -1308,7 +1308,8 @@ UPDATE application SET
     status_modified_by = ${bind(evakaUserId)},
     status_modified_at = ${bind(clock.now())},
     modified_by = ${bind(evakaUserId)},
-    modified_at = ${bind(clock.now())}
+    modified_at = ${bind(clock.now())},
+    confidential = coalesce(confidential, true)
 WHERE transferapplication
 AND status = ANY('{SENT}')
 AND NOT EXISTS (
@@ -1362,7 +1363,8 @@ UPDATE application SET
     status_modified_by = ${bind(evakaUserId)},
     status_modified_at = ${bind(clock.now())},
     modified_by = ${bind(evakaUserId)},
-    modified_at = ${bind(clock.now())}
+    modified_at = ${bind(clock.now())},
+    confidential = coalesce(confidential, true)
 WHERE transferapplication
 AND child_id = ${bind(childId)}
 AND status = ANY(${bind(arrayOf(ApplicationStatus.SENT))}::application_status_type[])

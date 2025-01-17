@@ -427,6 +427,17 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insertTestApplication(
                 id = applicationId,
                 status = status,
+                confidential =
+                    if (
+                        status in
+                            listOf(
+                                ApplicationStatus.CREATED,
+                                ApplicationStatus.SENT,
+                                ApplicationStatus.WAITING_PLACEMENT,
+                            )
+                    )
+                        null
+                    else true,
                 guardianId = adult.id,
                 childId = child.id,
                 type = type.toApplicationType(),

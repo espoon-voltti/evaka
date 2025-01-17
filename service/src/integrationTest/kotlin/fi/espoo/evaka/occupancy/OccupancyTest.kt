@@ -948,6 +948,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     guardianId = guardian.id,
                     childId = child.id,
                     status = ApplicationStatus.WAITING_DECISION,
+                    confidential = true,
                     type = ApplicationType.DAYCARE,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
@@ -981,6 +982,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     guardianId = guardian.id,
                     childId = child.id,
                     status = ApplicationStatus.WAITING_DECISION,
+                    confidential = true,
                     type = ApplicationType.PRESCHOOL,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
@@ -1094,6 +1096,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
+                    confidential = true,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
                 .also { applicationId ->
@@ -1125,6 +1128,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
+                    confidential = true,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
                 .also { applicationId ->
@@ -1163,6 +1167,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
+                    confidential = true,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
                 .also { applicationId ->
@@ -1202,6 +1207,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
+                    confidential = true,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
                 .also { applicationId ->
@@ -1241,6 +1247,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     guardianId = guardian.id,
                     type = ApplicationType.PRESCHOOL,
                     status = ApplicationStatus.WAITING_DECISION,
+                    confidential = true,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
                 .also { applicationId ->

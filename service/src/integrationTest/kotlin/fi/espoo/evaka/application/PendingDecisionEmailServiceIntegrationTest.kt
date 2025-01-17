@@ -62,6 +62,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             tx.insertTestApplication(
                 id = applicationId,
                 status = ApplicationStatus.WAITING_CONFIRMATION,
+                confidential = true,
                 childId = childId,
                 guardianId = guardianId,
                 type = ApplicationType.DAYCARE,
