@@ -1,16 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, {
-  Fragment,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef
-} from 'react'
+import React, { Fragment, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
@@ -132,28 +125,12 @@ export function Filters({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!containerRef.current || !onSearch) return
-
-    const element = containerRef.current
-
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        onSearch()
-      }
-    }
-
-    element.addEventListener('keypress', handleKeyPress, { passive: true })
-
-    return () => {
-      element.removeEventListener('keypress', handleKeyPress)
-    }
-  }, [containerRef, onSearch])
-
   return (
-    <FiltersContainer ref={containerRef}>
+    <FiltersContainer
+      onKeyDown={() => {
+        if (onSearch) onSearch()
+      }}
+    >
       {setFreeText && (
         <FreeTextSearch
           value={freeText || ''}
