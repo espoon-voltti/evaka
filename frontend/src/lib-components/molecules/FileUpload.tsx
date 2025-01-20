@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result, Success } from 'lib-common/api'
+import { Failure, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
@@ -70,19 +70,24 @@ export interface UploadStatus {
   inProgress: number
   error: number
 }
+
 export const initialUploadStatus: UploadStatus = {
   success: 0,
   inProgress: 0,
   error: 0
 }
 
+export type UploadHandler = (
+  file: File,
+  onUploadProgress: (percentage: number) => void
+) => Promise<Result<AttachmentId>>
+
 interface FileUploadProps {
   files: Attachment[]
-  onUpload: (
-    file: File,
-    onUploadProgress: (percentage: number) => void
-  ) => Promise<Result<AttachmentId>>
+  onUpload: UploadHandler
+  onUploaded?: (attachment: Attachment) => void
   onDelete: (id: AttachmentId) => Promise<Result<void>>
+  onDeleted?: (id: AttachmentId) => void
   onStateChange?: (status: UploadStatus) => void
   getDownloadUrl: (id: AttachmentId, fileName: string) => string
   disabled?: boolean
@@ -301,7 +306,9 @@ const inProgress = (file: FileObject): boolean => !file.uploaded
 export default React.memo(function FileUpload({
   files,
   onUpload,
+  onUploaded,
   onDelete,
+  onDeleted,
   onStateChange,
   getDownloadUrl,
   slimSingleFile = false,
@@ -337,7 +344,7 @@ export default React.memo(function FileUpload({
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      void addAttachment(event.target.files[0], onUpload)
+      void addAttachment(event.target.files[0])
       if (event.target.value) event.target.value = ''
     }
   }
@@ -346,7 +353,7 @@ export default React.memo(function FileUpload({
     event.stopPropagation()
     event.preventDefault()
     if (event.dataTransfer && event.dataTransfer.files[0]) {
-      void addAttachment(event.dataTransfer.files[0], onUpload)
+      void addAttachment(event.dataTransfer.files[0])
     }
   }
 
@@ -364,10 +371,17 @@ export default React.memo(function FileUpload({
       )
     )
     try {
-      const { isSuccess } = file.error
-        ? Success.of(true)
-        : await onDelete(file.id)
-      if (isSuccess) {
+      let success = false
+      if (file.error === undefined) {
+        const result = await onDelete(file.id)
+        if (result.isSuccess) {
+          onDeleted?.(file.id)
+          success = true
+        }
+      } else {
+        success = true
+      }
+      if (success) {
         setUploadedFilesAndNotify(
           uploadedFiles.filter((item) => item.id !== file.id)
         )
@@ -392,13 +406,7 @@ export default React.memo(function FileUpload({
 
   const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25 MB
 
-  const addAttachment = async (
-    file: File,
-    onUpload: (
-      file: File,
-      onUploadProgress: (percentage: number) => void
-    ) => Promise<Result<AttachmentId>>
-  ) => {
+  const addAttachment = async (file: File) => {
     const error = file.size > MAX_ATTACHMENT_SIZE ? 'FILE_TOO_LARGE' : undefined
     const pseudoId = randomId<AttachmentId>()
     const fileObject: FileObject = {
@@ -425,12 +433,17 @@ export default React.memo(function FileUpload({
 
     try {
       const result = await onUpload(file, updateProgress)
-      if (result.isFailure)
+      if (result.isFailure) {
         updateUploadedFile({
           ...fileObject,
           error: getErrorCode(result)
         })
-      if (result.isSuccess)
+      } else if (result.isSuccess) {
+        onUploaded?.({
+          id: result.value,
+          name: file.name,
+          contentType: file.type
+        })
         updateUploadedFile(
           {
             ...fileObject,
@@ -440,6 +453,7 @@ export default React.memo(function FileUpload({
           },
           fileObject.id
         )
+      }
     } catch (e) {
       updateUploadedFile({ ...fileObject, error: 'SERVER_ERROR' })
     }
