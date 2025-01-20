@@ -60,7 +60,7 @@ SELECT EXISTS (
     JOIN message_recipients mr ON ma.id = mr.recipient_id
     JOIN message m ON mr.message_id = m.id
     JOIN application app ON p.id = app.guardian_id
-    WHERE app.status = 'SENT' AND p.id = ${bind(userId)} AND mr.id IS NOT NULL AND m.sent_at IS NOT NULL
+    WHERE p.id = ${bind(userId)} AND mr.id IS NOT NULL AND m.sent_at IS NOT NULL
 )
 """
                 )
