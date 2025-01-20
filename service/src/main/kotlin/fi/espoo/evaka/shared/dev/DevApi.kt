@@ -107,6 +107,7 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
+import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
@@ -181,6 +182,7 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.auth.PasswordService
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
@@ -202,6 +204,8 @@ import fi.espoo.evaka.specialdiet.resetSpecialDietsNotContainedWithin
 import fi.espoo.evaka.specialdiet.setSpecialDiets
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
+import fi.espoo.evaka.user.updateLastStrongLogin
+import fi.espoo.evaka.user.updateWeakLoginCredentials
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
@@ -253,6 +257,7 @@ class DevApi(
     private val emailMessageProvider: IEmailMessageProvider,
     private val invoiceGenerator: InvoiceGenerator,
     private val featureConfig: FeatureConfig,
+    private val passwordService: PasswordService,
 ) {
     private val digitransit = MockDigitransit()
 
@@ -1626,6 +1631,22 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
             invoiceGenerator.generateAllReplacementDraftInvoices(dbc, clock.today())
         }
     }
+
+    @PostMapping("/citizen/{id}/weak-credentials")
+    fun upsertWeakCredentials(
+        db: Database,
+        clock: EvakaClock,
+        @PathVariable id: PersonId,
+        @RequestBody request: PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest,
+    ) {
+        val password = request.password?.let { passwordService.encode(it) }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.updateLastStrongLogin(clock, id)
+                tx.updateWeakLoginCredentials(clock, id, request.username, password)
+            }
+        }
+    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1993,6 +2014,7 @@ data class DevPerson(
     val ssn: String? = null,
     val ssnAddingDisabled: Boolean? = null,
     val email: String? = null,
+    val verifiedEmail: String? = null,
     val phone: String = "",
     val backupPhone: String = "",
     val language: String? = null,

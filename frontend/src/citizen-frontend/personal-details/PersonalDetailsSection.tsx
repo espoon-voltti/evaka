@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useCallback, useContext } from 'react'
+import styled from 'styled-components'
 
 import { boolean, string } from 'lib-common/form/fields'
 import {
@@ -16,49 +18,73 @@ import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
 import { StateOf, ValidationSuccess } from 'lib-common/form/types'
 import {
   optionalPhoneNumber,
+  regexp,
   requiredEmail,
   requiredPhoneNumber
 } from 'lib-common/form/validators'
+import {
+  EmailVerification,
+  EmailVerificationStatusResponse
+} from 'lib-common/generated/api-types/pis'
+import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
-import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import {
   ExpandingInfoBox,
-  InfoButton
+  InfoButton,
+  InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { H2, Label } from 'lib-components/typography'
+import { H2, Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faLockAlt, faPen } from 'lib-icons'
+import colors from 'lib-customizations/common'
+import {
+  faCheckCircle,
+  faExclamationTriangle,
+  faLockAlt,
+  faPen
+} from 'lib-icons'
 
 import { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
-import { EditButtonRow, MandatoryValueMissingWarning } from './components'
-import { updatePersonalDetailsMutation } from './queries'
+import {
+  EditButtonRow,
+  FullRow,
+  Grid,
+  MandatoryValueMissingWarning
+} from './components'
+import {
+  sendEmailVerificationCodeMutation,
+  updatePersonalDetailsMutation,
+  verifyEmailMutation
+} from './queries'
 
 export interface Props {
   user: User
+  emailVerificationStatus: EmailVerificationStatusResponse
   reloadUser: () => void
 }
 
 export default React.memo(function PersonalDetailsSection({
   user,
+  emailVerificationStatus,
   reloadUser
 }: Props) {
   const t = useTranslation()
 
   const [editing, setEditing] = useBoolean(false)
-  const [emailInfo, setEmailInfo] = useBoolean(false)
+  const [emailEditInfo, setEmailEditInfo] = useBoolean(false)
+  const [emailInfo, { toggle: toggleEmailInfo, off: closeEmailInfo }] =
+    useBoolean(false)
   const form = useForm(
     personForm,
     () => initialFormState(user),
@@ -77,12 +103,24 @@ export default React.memo(function PersonalDetailsSection({
     []
   )
 
+  const problem:
+    | { type: 'mismatch' | 'unverified'; email: string }
+    | undefined = emailVerificationStatus.email
+    ? user.weakLoginUsername
+      ? user.weakLoginUsername !== emailVerificationStatus.email
+        ? { type: 'mismatch', email: emailVerificationStatus.email }
+        : undefined
+      : emailVerificationStatus.email !== emailVerificationStatus.verifiedEmail
+        ? { type: 'unverified', email: emailVerificationStatus.email }
+        : undefined
+    : undefined
+
   const formWrapper = (children: React.ReactNode) =>
     editing ? (
       <form>
         {children}
         <FixedSpaceRow justifyContent="flex-end">
-          <LegacyButton
+          <Button
             type="button"
             text={t.common.cancel}
             onClick={() => {
@@ -167,7 +205,7 @@ export default React.memo(function PersonalDetailsSection({
       </EditButtonRow>
       {formWrapper(
         <>
-          <ListGrid rowGap="s" columnGap="L" labelWidth="max-content">
+          <Grid>
             <H2 noMargin>{t.personalDetails.detailsSection.title}</H2>
             <div />
             <Label>{t.personalDetails.detailsSection.name}</Label>
@@ -247,28 +285,147 @@ export default React.memo(function PersonalDetailsSection({
                     data-qa="no-email"
                   />
                   <InfoButton
-                    onClick={setEmailInfo.toggle}
+                    onClick={setEmailEditInfo.toggle}
                     aria-label={t.common.openExpandingInfo}
                   />
                 </FixedSpaceRow>
               </FixedSpaceColumn>
             ) : (
-              <div data-qa="email">
-                {email ? (
-                  <span translate="no">{email}</span>
+              <>
+                <div data-qa="email">
+                  {email ? (
+                    <>
+                      <span translate="no">{email}</span>
+                      <Gap horizontal size="xs" />
+                      <InfoButton
+                        onClick={toggleEmailInfo}
+                        aria-label={t.common.openExpandingInfo}
+                      />
+                    </>
+                  ) : (
+                    <MandatoryValueMissingWarning
+                      text={t.personalDetails.detailsSection.emailMissing}
+                    />
+                  )}
+                </div>
+                {emailInfo && (
+                  <FullRow>
+                    <ExpandingInfoBox
+                      info={t.personalDetails.detailsSection.contactEmailInfo}
+                      close={closeEmailInfo}
+                    />
+                  </FullRow>
+                )}
+                <div />
+                {!!email && (
+                  <div>
+                    <Gap size="xs" />
+                    {emailVerificationStatus.latestVerification ? (
+                      <EmailVerificationForm
+                        reloadUser={reloadUser}
+                        usernameMismatch={problem?.type === 'mismatch'}
+                        verification={
+                          emailVerificationStatus.latestVerification
+                        }
+                      />
+                    ) : problem?.type === 'unverified' ? (
+                      <div>
+                        <div data-qa="unverified-email-status">
+                          <UnverifiedEmailWarning>
+                            {t.personalDetails.detailsSection.emailUnverified}
+                          </UnverifiedEmailWarning>
+                          <Gap horizontal size="xs" />
+                          <FontAwesomeIcon
+                            icon={faExclamationTriangle}
+                            color={colors.status.warning}
+                          />
+                        </div>
+                        <Gap size="s" />
+                        {canEdit ? (
+                          <MutateButton
+                            data-qa="send-verification-code"
+                            appearance="inline"
+                            text={
+                              t.personalDetails.detailsSection
+                                .sendVerificationCode
+                            }
+                            mutation={sendEmailVerificationCodeMutation}
+                            onClick={() => undefined}
+                          />
+                        ) : (
+                          <Button
+                            data-qa="send-verification-code"
+                            appearance="inline"
+                            text={
+                              t.personalDetails.detailsSection
+                                .sendVerificationCode
+                            }
+                            icon={faLockAlt}
+                            onClick={navigateToLogin}
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      !problem && (
+                        <div data-qa="verified-email-status">
+                          <FontAwesomeIcon
+                            icon={faCheckCircle}
+                            color={colors.status.success}
+                          />
+                          <Gap horizontal size="xs" />
+                          {t.personalDetails.detailsSection.emailVerified}
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </Grid>
+          {!editing &&
+            problem?.type === 'mismatch' &&
+            !emailVerificationStatus.latestVerification && (
+              <FullRow>
+                <AlertBox
+                  message={
+                    <>
+                      {
+                        t.personalDetails.detailsSection.updateUsernameAlert
+                          .usernameMismatch
+                      }
+                      <br />
+                      {t.personalDetails.detailsSection.updateUsernameAlert.suggestedAction(
+                        problem.email
+                      )}
+                    </>
+                  }
+                />
+                {canEdit ? (
+                  <MutateButton
+                    data-qa="update-username"
+                    text={t.personalDetails.detailsSection.updateUsername(
+                      problem.email
+                    )}
+                    mutation={sendEmailVerificationCodeMutation}
+                    onClick={() => undefined}
+                  />
                 ) : (
-                  <MandatoryValueMissingWarning
-                    text={t.personalDetails.detailsSection.emailMissing}
+                  <Button
+                    data-qa="update-username"
+                    text={t.personalDetails.detailsSection.updateUsername(
+                      problem.email
+                    )}
+                    icon={faLockAlt}
+                    onClick={navigateToLogin}
                   />
                 )}
-              </div>
+              </FullRow>
             )}
-          </ListGrid>
-          {emailInfo && (
+          {emailEditInfo && (
             <>
               <ExpandingInfoBox
                 info={t.personalDetails.detailsSection.emailInfo}
-                close={setEmailInfo.off}
+                close={setEmailEditInfo.off}
               />
               <Gap size="s" />
             </>
@@ -319,3 +476,93 @@ function initialFormState(user: User): StateOf<typeof personForm> {
     }
   }
 }
+
+const UnverifiedEmailWarning = styled.span`
+  color: ${({ theme }) => theme.colors.status.warning};
+`
+
+const emailVerificationForm = object({
+  verificationCode: validated(string(), regexp(/[0-9]{6}/, 'format'))
+})
+
+const EmailVerificationForm = React.memo(function EmailVerificationForm({
+  reloadUser,
+  verification,
+  usernameMismatch
+}: {
+  reloadUser: () => void
+  verification: EmailVerification
+  usernameMismatch: boolean
+}) {
+  const i18n = useTranslation()
+  const t = i18n.personalDetails.detailsSection
+
+  const { addTimedNotification } = useContext(NotificationsContext)
+  const [showInfo, { toggle: toggleInfo, off: closeInfo }] = useBoolean(false)
+
+  const form = useForm(
+    emailVerificationForm,
+    () => ({ verificationCode: '' }),
+    i18n.validationErrors
+  )
+  const verificationCode = useFormField(form, 'verificationCode')
+
+  return (
+    <FixedSpaceColumn>
+      <LabelLike>
+        {usernameMismatch ? t.changeUsername.section : t.verifyEmail.section}
+      </LabelLike>
+      <div>
+        <FontAwesomeIcon icon={faCheckCircle} color={colors.status.success} />
+        <Gap horizontal size="xs" />
+        {usernameMismatch
+          ? t.changeUsername.codeSent(verification)
+          : t.verifyEmail.codeSent(verification)}
+      </div>
+      <LabelLike>{`${t.verificationForm}*`}</LabelLike>
+      <FixedSpaceRow alignItems="center">
+        <InputFieldF
+          data-qa="verification-code-field"
+          bind={verificationCode}
+          width="L"
+          hideErrorsBeforeTouched={true}
+        />
+        <Gap horizontal size="xs" />
+        {t.codeNotReceived}
+        <InlineInfoButton
+          onClick={toggleInfo}
+          aria-label={i18n.common.openExpandingInfo}
+        />
+      </FixedSpaceRow>
+      {showInfo && (
+        <ExpandingInfoBox
+          width="full"
+          info={t.codeNotReceivedInfo}
+          close={closeInfo}
+        />
+      )}
+      <Gap size="m" />
+      <MutateButton
+        data-qa="verify-email"
+        primary
+        disabled={!form.isValid()}
+        text={t.confirmVerification}
+        mutation={verifyEmailMutation}
+        onClick={() => ({
+          body: {
+            id: verification.id,
+            code: form.value().verificationCode
+          }
+        })}
+        onSuccess={() => {
+          reloadUser()
+          addTimedNotification({
+            children: usernameMismatch
+              ? t.changeUsername.toast
+              : t.verifyEmail.toast
+          })
+        }}
+      />
+    </FixedSpaceColumn>
+  )
+})

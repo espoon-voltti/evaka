@@ -5,6 +5,7 @@
 import React, { useContext, useEffect, useRef } from 'react'
 import { Navigate } from 'react-router'
 
+import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -22,13 +23,17 @@ import { useTranslation } from '../localization'
 import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
 import PersonalDetailsSection from './PersonalDetailsSection'
-import { notificationSettingsQuery } from './queries'
+import {
+  emailVerificationStatusQuery,
+  notificationSettingsQuery
+} from './queries'
 
 export default React.memo(function PersonalDetails() {
   const t = useTranslation()
   const { user, refreshAuthStatus } = useContext(AuthContext)
   const notificationSettings = useQueryResult(notificationSettingsQuery())
   const notificationSettingsSection = useRef<HTMLDivElement>(null)
+  const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
 
   useEffect(() => {
     if (
@@ -48,17 +53,20 @@ export default React.memo(function PersonalDetails() {
           <H1 noMargin>{t.personalDetails.title}</H1>
           {t.personalDetails.description}
           <HorizontalLine />
-          {renderResult(user, (user) =>
-            user ? (
-              <>
-                <PersonalDetailsSection
-                  user={user}
-                  reloadUser={refreshAuthStatus}
-                />
-              </>
-            ) : (
-              <Navigate replace to="/" />
-            )
+          {renderResult(
+            combine(user, emailVerificationStatus),
+            ([user, emailVerificationStatus]) =>
+              user ? (
+                <>
+                  <PersonalDetailsSection
+                    user={user}
+                    emailVerificationStatus={emailVerificationStatus}
+                    reloadUser={refreshAuthStatus}
+                  />
+                </>
+              ) : (
+                <Navigate replace to="/" />
+              )
           )}
           {renderResult(notificationSettings, (notificationSettings) => (
             <>
@@ -69,22 +77,25 @@ export default React.memo(function PersonalDetails() {
               />
             </>
           ))}
-          {renderResult(user, (user) =>
-            user ? (
-              <>
-                {(!!user.keycloakEmail || featureFlags.weakLogin) && (
-                  <>
-                    <HorizontalLine />
-                    <LoginDetailsSection
-                      user={user}
-                      reloadUser={refreshAuthStatus}
-                    />
-                  </>
-                )}
-              </>
-            ) : (
-              <Navigate replace to="/" />
-            )
+          {renderResult(
+            combine(user, emailVerificationStatus),
+            ([user, emailVerificationStatus]) =>
+              user ? (
+                <>
+                  {(!!user.keycloakEmail || featureFlags.weakLogin) && (
+                    <>
+                      <HorizontalLine />
+                      <LoginDetailsSection
+                        user={user}
+                        emailVerificationStatus={emailVerificationStatus}
+                        reloadUser={refreshAuthStatus}
+                      />
+                    </>
+                  )}
+                </>
+              ) : (
+                <Navigate replace to="/" />
+              )
           )}
         </ContentArea>
       </Container>
