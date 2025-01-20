@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
+import fi.espoo.evaka.shared.data.DateTimeSet
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -65,16 +66,13 @@ data class StaffMember(
                 ?.takeIf { it.departed == null && it.type.presentInGroup() }
                 ?.groupId
 
-    val spanningPlan: HelsinkiDateTimeRange?
+    val spanningPlans: List<HelsinkiDateTimeRange>
         get() =
-            if (plannedAttendances.isEmpty()) {
-                null
-            } else {
-                HelsinkiDateTimeRange(
-                    plannedAttendances.minOf { it.start },
-                    plannedAttendances.maxOf { it.end },
-                )
-            }
+            plannedAttendances
+                .map { HelsinkiDateTimeRange(it.start, it.end) }
+                .let { DateTimeSet.of(it) } // merge adjacent
+                .ranges()
+                .toList()
 }
 
 data class StaffMemberAttendance(

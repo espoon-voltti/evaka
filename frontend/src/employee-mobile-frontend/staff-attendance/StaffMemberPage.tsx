@@ -10,6 +10,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -90,13 +91,23 @@ export default React.memo(function StaffMemberPage({
             <FixedSpaceColumn>
               {featureFlags.staffAttendanceTypes ? (
                 <>
-                  {staffMember.spanningPlan && (
+                  {staffMember.spanningPlans.length > 0 && (
                     <TimeInfo data-qa="shift-time">
-                      <span>
-                        {i18n.attendances.staff.plannedAttendance}{' '}
-                        {staffMember.spanningPlan.start.toLocalTime().format()}–
-                        {staffMember.spanningPlan.end.toLocalTime().format()}
-                      </span>
+                      <span>{i18n.attendances.staff.plannedAttendance}</span>
+                      <div>
+                        {staffMember.spanningPlans.map((range, i) => {
+                          const today = LocalDate.todayInHelsinkiTz()
+                          const start = range.start.toLocalDate().isEqual(today)
+                            ? range.start.toLocalTime().format()
+                            : range.start.format('d.M. HH:mm')
+                          const end = range.end.toLocalDate().isEqual(today)
+                            ? range.end.toLocalTime().format()
+                            : range.end.format('d.M. HH:mm')
+                          return (
+                            <div key={`plan-${i}`}>{`${start} – ${end}`}</div>
+                          )
+                        })}
+                      </div>
                     </TimeInfo>
                   )}
                   {staffMember.attendances.length > 0 &&

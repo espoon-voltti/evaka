@@ -136,13 +136,14 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
 
   const staffAttendanceDifferenceReasons: StaffAttendanceType[] =
     useMemo(() => {
-      if (time === undefined || !staffMember.spanningPlan) return []
+      if (time === undefined || staffMember.spanningPlans.length === 0)
+        return []
       const arrived = HelsinkiDateTime.fromLocal(
         LocalDate.todayInHelsinkiTz(),
         time
       )
       return getAttendanceArrivalDifferenceReasons(
-        staffMember.spanningPlan.start,
+        staffMember.spanningPlans.map((plan) => plan.start),
         arrived
       )
     }, [staffMember, time])

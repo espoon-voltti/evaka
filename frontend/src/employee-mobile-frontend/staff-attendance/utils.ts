@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
+
 import {
   ExternalStaffMember,
   StaffAttendanceType,
@@ -40,15 +42,21 @@ export function toStaff(staff: StaffMember | ExternalStaffMember): Staff {
 }
 
 export function getAttendanceArrivalDifferenceReasons(
-  plannedStart: HelsinkiDateTime,
+  plannedStarts: HelsinkiDateTime[],
   arrival: HelsinkiDateTime
 ): StaffAttendanceType[] {
+  if (plannedStarts.length === 0) return []
+
+  const closestStart = orderBy(plannedStarts, (start) =>
+    Math.abs(start.timestamp - arrival.timestamp)
+  )[0]
+
   const ARRIVAL_THRESHOLD_MINUTES = 5
   const arrivedBeforeMinThreshold = arrival.isBefore(
-    plannedStart.subMinutes(ARRIVAL_THRESHOLD_MINUTES)
+    closestStart.subMinutes(ARRIVAL_THRESHOLD_MINUTES)
   )
   const arrivedAfterMaxThreshold = arrival.isAfter(
-    plannedStart.addMinutes(ARRIVAL_THRESHOLD_MINUTES)
+    closestStart.addMinutes(ARRIVAL_THRESHOLD_MINUTES)
   )
 
   if (arrivedBeforeMinThreshold) {
@@ -61,18 +69,24 @@ export function getAttendanceArrivalDifferenceReasons(
 }
 
 export function getAttendanceDepartureDifferenceReasons(
-  plannedEnd: HelsinkiDateTime,
+  plannedEnds: HelsinkiDateTime[],
   departure: HelsinkiDateTime
 ): StaffAttendanceType[] {
+  if (plannedEnds.length === 0) return []
+
+  const closestEnd = orderBy(plannedEnds, (start) =>
+    Math.abs(start.timestamp - departure.timestamp)
+  )[0]
+
   const departedBeforeMinThreshold = departure.isBefore(
-    plannedEnd.subMinutes(5)
+    closestEnd.subMinutes(5)
   )
-  const depratedAfterMaxThreshold = departure.isAfter(plannedEnd.addMinutes(5))
+  const departedAfterMaxThreshold = departure.isAfter(closestEnd.addMinutes(5))
 
   if (departedBeforeMinThreshold) {
     return ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']
   }
-  if (depratedAfterMaxThreshold) {
+  if (departedAfterMaxThreshold) {
     return ['OVERTIME', 'JUSTIFIED_CHANGE']
   }
   return []
