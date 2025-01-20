@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -124,8 +124,13 @@ export function Filters({
   searchPlaceholder
 }: Props) {
   const { i18n } = useTranslation()
+
   return (
-    <FiltersContainer>
+    <FiltersContainer
+      onKeyDown={() => {
+        if (onSearch) onSearch()
+      }}
+    >
       {setFreeText && (
         <FreeTextSearch
           value={freeText || ''}
