@@ -1517,6 +1517,11 @@ const sv: Translations = {
         title: 'Ändringar i ansökan har sparats.',
         text: 'Om du vill kan du göra ändringar i ansökan så länge ansökan inte har behandlats.',
         ok: 'Klart!'
+      },
+      unitChangeWarning: {
+        title: 'Vänligen kontrollera dina sökningar',
+        text: 'Vissa av de sökningar du angav har tagits bort eftersom de inte erbjuder den valda tjänsten.',
+        ok: 'Klart!'
       }
     }
   },

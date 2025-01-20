@@ -1513,6 +1513,11 @@ export default {
         title: 'Muutokset hakemukseen on tallennettu',
         text: 'Halutessasi voit tehdä lisää muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
         ok: 'Selvä!'
+      },
+      unitChangeWarning: {
+        title: 'Tarkista hakutoiveet',
+        text: 'Osa merkitsemistäsi hakutoiveista poistettiin, koska ne eivät tarjoa valittua palvelua.',
+        ok: 'Selvä!'
       }
     }
   },
