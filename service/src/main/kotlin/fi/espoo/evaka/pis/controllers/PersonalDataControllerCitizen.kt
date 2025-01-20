@@ -283,4 +283,4 @@ class PersonalDataControllerCitizen(
 }
 
 val CONFIRMATION_CODE_DURATION: Duration = Duration.ofHours(2)
-const val CONFIRMATION_CODE_LENGTH = 8
+const val CONFIRMATION_CODE_LENGTH = 6

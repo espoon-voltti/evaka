@@ -482,7 +482,7 @@ const UnverifiedEmailWarning = styled.span`
 `
 
 const emailVerificationForm = object({
-  verificationCode: validated(string(), regexp(/[0-9]{8}/, 'format'))
+  verificationCode: validated(string(), regexp(/[0-9]{6}/, 'format'))
 })
 
 const EmailVerificationForm = React.memo(function EmailVerificationForm({
