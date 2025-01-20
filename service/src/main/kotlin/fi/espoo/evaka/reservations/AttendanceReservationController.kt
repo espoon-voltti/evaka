@@ -31,6 +31,7 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getChildServiceNeedInfos
+import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -129,6 +130,10 @@ class AttendanceReservationController(
                     val childIds = placementInfo.keys
                     val serviceTimes = tx.getDailyServiceTimesForChildren(childIds)
                     val childData = tx.getChildData(unitId, childIds, period)
+                    val defaultServiceNeedOptions =
+                        tx.getServiceNeedOptions()
+                            .filter { it.defaultOption }
+                            .associateBy { it.validPlacementType }
                     val assistanceFactors =
                         tx.getAssistanceFactorsForChildrenOverRange(childIds, period)
 
@@ -166,16 +171,24 @@ class AttendanceReservationController(
                                                 if (familyUnitPlacement)
                                                     BigDecimal(familyUnitPlacementCoefficient)
                                                 else
-                                                    childData.child.serviceNeeds.fold(
-                                                        BigDecimal.ONE
-                                                    ) { coefficient, sn ->
-                                                        if (sn.validDuring.includes(date))
-                                                            coefficient *
-                                                                if (age < 3)
-                                                                    sn.occupancyCoefficientUnder3y
-                                                                else sn.occupancyCoefficient
-                                                        else coefficient
-                                                    }
+                                                    childData.child.serviceNeeds
+                                                        .find { sn ->
+                                                            sn.validDuring.includes(date)
+                                                        }
+                                                        ?.let { sn ->
+                                                            if (age < 3)
+                                                                sn.occupancyCoefficientUnder3y
+                                                            else sn.occupancyCoefficient
+                                                        }
+                                                        ?: run {
+                                                            val option =
+                                                                defaultServiceNeedOptions[
+                                                                    placementStatus.placementType]
+                                                            if (age < 3)
+                                                                option?.occupancyCoefficientUnder3y
+                                                            else option?.occupancyCoefficient
+                                                        }
+                                                        ?: BigDecimal.ONE
                                             val factor =
                                                 assistanceFactors.fold(BigDecimal.ONE) { factor, af
                                                     ->

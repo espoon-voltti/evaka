@@ -530,7 +530,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         backupGroupId = null,
                         inOtherUnit = false,
                         scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                        occupancy = BigDecimal.ONE,
+                        occupancy = BigDecimal("1.75"),
                     ),
                     wedChildren.first { it.childId == testChild_4.id },
                 )
@@ -547,7 +547,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         backupGroupId = null,
                         inOtherUnit = false,
                         scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                        occupancy = BigDecimal.ONE,
+                        occupancy = BigDecimal("1.75"),
                     ),
                     wedChildren.first { it.childId == testChild_6.id },
                 )
@@ -588,7 +588,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         backupGroupId = null,
                         inOtherUnit = false,
                         scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                        occupancy = BigDecimal.ONE,
+                        occupancy = BigDecimal("1.75"),
                     ),
                     thuChildren.first { it.childId == testChild_4.id },
                 )
@@ -613,7 +613,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         backupGroupId = testGroup2.id,
                         inOtherUnit = false,
                         scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                        occupancy = BigDecimal.ONE,
+                        occupancy = BigDecimal("1.75"),
                     ),
                     thuChildren.first { it.childId == testChild_6.id },
                 )
@@ -675,7 +675,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         backupGroupId = null,
                         inOtherUnit = true,
                         scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                        occupancy = BigDecimal.ONE,
+                        occupancy = BigDecimal("1.75"),
                     ),
                     friChildren.first { it.childId == testChild_6.id },
                 )
@@ -784,7 +784,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     backupGroupId = null,
                     inOtherUnit = false,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                    occupancy = BigDecimal.ONE,
+                    occupancy = BigDecimal("1.00"),
                 )
             ),
             response.days.first { it.date == mon }.children,
@@ -832,7 +832,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     backupGroupId = null,
                     inOtherUnit = false,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                    occupancy = BigDecimal.ONE,
+                    occupancy = BigDecimal("1.00"),
                 )
             ),
             response.days.first { it.date == tue }.children,
@@ -860,7 +860,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     backupGroupId = null,
                     inOtherUnit = false,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                    occupancy = BigDecimal.ONE,
+                    occupancy = BigDecimal("1.00"),
                 )
             ),
             response.days.first { it.date == wed }.children,
@@ -1080,7 +1080,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 backupGroupId = null,
                 inOtherUnit = false,
                 scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                occupancy = BigDecimal.ONE,
+                occupancy = BigDecimal("1.00"),
             ),
             getAttendanceReservations(testClock).days[2].children.first(),
         )
@@ -1143,7 +1143,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 backupGroupId = null,
                 inOtherUnit = false,
                 scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                occupancy = BigDecimal.ONE,
+                occupancy = BigDecimal("1.00"),
             ),
             getAttendanceReservations(testClock).days[2].children.first(),
         )
@@ -1189,7 +1189,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 backupGroupId = null,
                 inOtherUnit = false,
                 scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                occupancy = BigDecimal.ONE,
+                occupancy = BigDecimal("1.00"),
             ),
             getAttendanceReservations(testClock).days[2].children.first(),
         )
