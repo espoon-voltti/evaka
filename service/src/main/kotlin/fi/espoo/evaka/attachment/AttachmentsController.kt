@@ -467,13 +467,13 @@ class AttachmentsController(
             }
             .last()
 
-    private fun handleFileUpload(
+    private fun <T : Enum<T>> handleFileUpload(
         dbc: Database.Connection,
         user: AuthenticatedUser,
         clock: EvakaClock,
         attachTo: AttachmentParent,
         file: MultipartFile,
-        type: AttachmentType? = null,
+        type: T? = null,
         onSuccess: ((tx: Database.Transaction) -> Unit)? = null,
     ): AttachmentId {
         if (user is AuthenticatedUser.Citizen) {

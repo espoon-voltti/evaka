@@ -89,13 +89,13 @@ data class AttachmentForeignKeys(
     }
 }
 
-fun Database.Transaction.insertAttachment(
+fun <T : Enum<T>> Database.Transaction.insertAttachment(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     name: String,
     contentType: String,
     attachTo: AttachmentParent,
-    type: AttachmentType?,
+    type: T?,
 ): AttachmentId {
     check(AttachmentForeignKeys.idFieldCount == 8) {
         "Unexpected AttachmentForeignKeys field count"
