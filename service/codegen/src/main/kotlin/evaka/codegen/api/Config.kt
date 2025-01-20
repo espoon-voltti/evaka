@@ -68,6 +68,7 @@ object Imports {
     val jsonOf = TsImport.Named(LibCommon / "json.d.ts", "JsonOf")
     val jsonCompatible = TsImport.Named(LibCommon / "json.d.ts", "JsonCompatible")
     val uri = TsImport.Named(LibCommon / "uri.ts", "uri")
+    val uriType = TsImport.Named(LibCommon / "uri.ts", "Uri")
     val createUrlSearchParams = TsImport.Named(LibCommon / "api.ts", "createUrlSearchParams")
     val devApiError = TsImport.Named(E2ETest / "dev-api", "DevApiError")
 }

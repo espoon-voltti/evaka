@@ -20,7 +20,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val endpoints =
         allEndpoints
-            .filter { it.isJsonEndpoint }
+            .filter { it.type == EndpointType.Json || it.type == EndpointType.PlainGet }
             .filterNot {
                 it.isDeprecated ||
                     it.path.startsWith("/integration/") ||
@@ -36,7 +36,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val devEndpoints =
         scanEndpoints("fi.espoo.evaka", profiles = listOf("enable_dev_api")).filter {
-            it.isJsonEndpoint && it.path.startsWith("/dev-api/")
+            it.type == EndpointType.Json && it.path.startsWith("/dev-api/")
         }
     val devMetadata =
         discoverMetadata(
@@ -220,9 +220,17 @@ fun generateApiClients(
                 duplicates.single()
             }
             .sortedWith(compareBy({ it.controllerClass.jvmName }, { it.controllerMethod.name }))
-            .map {
+            .mapNotNull {
                 try {
-                    generateApiClient(config, generator, axiosClient, it, wrapBody)
+                    if (it.type == EndpointType.Json)
+                        generateJsonApiClient(config, generator, axiosClient, it, wrapBody)
+                    else if (it.type == EndpointType.PlainGet)
+                        generatePlainGetApiFunction(
+                            generator,
+                            TsCode { "${ref(axiosClient)}.defaults.baseURL ?? ''" },
+                            it,
+                        )
+                    else null
                 } catch (e: Exception) {
                     throw RuntimeException(
                         "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod.name}",
@@ -241,7 +249,67 @@ ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
 """
 }
 
-fun generateApiClient(
+/**
+ * Generates TS code that returns a Uri object built from the endpoint path with all path variables
+ * inserted.
+ */
+private fun TsCodeGenerator.tsBuildUri(
+    pathPrefix: TsCode?,
+    endpoint: EndpointMetadata,
+    // Function must return a TS expression that evaluates to the value of the given path variable
+    tsPathVariableValue: (pathVariable: String) -> TsCode,
+): TsTypedExpression {
+    val tsPathVariables =
+        endpoint.pathVariables.associate {
+            it.name to
+                serializePathVariable(
+                    type = it.toOptionalType(),
+                    valueExpression = tsPathVariableValue(it.name),
+                )
+        }
+    val uriTemplateString =
+        TsCode(
+            // Use Spring to replace path variables with TS expressions
+            // For example, /employees/:id/delete might become /employees/${request.id}/delete
+            UriComponentsBuilder.fromPath(endpoint.path)
+                .buildAndExpand(tsPathVariables.mapValues { "\${${it.value.text}}" })
+                .toUriString(),
+            imports = tsPathVariables.flatMap { it.value.imports }.toSet(),
+        )
+    // Example of returned code: uri`/employees/${request.id}/delete`
+    return TsTypedExpression(
+        type = TsCode { ref(Imports.uriType) },
+        value =
+            TsCode {
+                "${ref(Imports.uri)}`${if (pathPrefix != null) "\${${inline(pathPrefix)}}" else ""}${inline(uriTemplateString)}`"
+            },
+    )
+}
+
+/** Generates TS code that returns a URLSearchParams object built from all query parameter values */
+private fun TsCodeGenerator.tsBuildQueryParams(
+    parameters: Collection<NamedParameter>,
+    // Function must return a TS expression that evaluates to the value of the given query parameter
+    tsQueryParamValue: (queryParam: String) -> TsCode,
+): TsTypedExpression {
+    val nameValuePairs =
+        parameters.map { param ->
+            toRequestParamPairs(param.toOptionalType(), param.name, tsQueryParamValue(param.name))
+        }
+    return TsTypedExpression(
+        type = TsCode("URLSearchParams"),
+        value =
+            TsCode {
+                """
+${ref(Imports.createUrlSearchParams)}(
+${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
+)"""
+                    .removePrefix("\n")
+            },
+    )
+}
+
+fun generateJsonApiClient(
     config: ApiClientConfig,
     generator: TsCodeGenerator,
     axiosClient: TsImport,
@@ -273,49 +341,21 @@ fun generateApiClient(
             }
     }
 
-    val pathVariables =
-        if (endpoint.pathVariables.isNotEmpty())
-            endpoint.pathVariables.associate {
-                it.name to
-                    generator
-                        .serializePathVariable(it.toOptionalType(), TsCode("request.${it.name}"))
-                        .let { TsCode { "\${${inline(it)}}" } }
-            }
-        else emptyMap()
-
+    val getRequestProperty = { name: String -> TsCode { "request.$name" } }
+    val url = generator.tsBuildUri(pathPrefix = null, endpoint, getRequestProperty)
     val createQueryParameters =
-        if (endpoint.requestParameters.isNotEmpty()) {
-            val nameValuePairs =
-                endpoint.requestParameters.map { param ->
-                    generator.toRequestParamPairs(
-                        param.toOptionalType(),
-                        param.name,
-                        TsCode("request.${param.name}"),
-                    )
-                }
+        if (endpoint.requestParameters.isNotEmpty())
             TsCode {
-                """
-const params = ${ref(Imports.createUrlSearchParams)}(
-${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
-)"""
-                    .removePrefix("\n")
+                "const params = ${inline(generator.tsBuildQueryParams(endpoint.requestParameters, getRequestProperty).value)}"
             }
-        } else null
-
-    val url =
-        TsCode(
-            UriComponentsBuilder.fromPath(endpoint.path)
-                .buildAndExpand(pathVariables.mapValues { it.value.text })
-                .toUriString(),
-            imports = pathVariables.flatMap { it.value.imports }.toSet(),
-        )
+        else null
 
     val tsRequestType =
         endpoint.requestBodyType?.let { generator.tsType(it, compact = true) } ?: TsCode("void")
 
     val axiosArguments =
         listOfNotNull(
-            TsCode { "url: ${ref(Imports.uri)}`${inline(url)}`.toString()" },
+            TsCode { "url: ${inline(url.value)}.toString()" },
             TsCode { "method: '${endpoint.httpMethod}'" },
             if (mockedTimeSupport)
                 TsCode { "headers: { EvakaMockedTime: options?.mockedTime?.formatIso() }" }
@@ -357,6 +397,68 @@ ${join(axiosArguments, ",\n").prependIndent("  ")}
 */
 export async function ${endpoint.controllerMethod.name}(${inline(tsArgument)}): Promise<${inline(tsResponseType)}> {
 ${inline(wrapBody(functionBody).prependIndent("  "))}
+}"""
+    }
+}
+
+fun generatePlainGetApiFunction(
+    generator: TsCodeGenerator,
+    pathPrefix: TsCode,
+    endpoint: EndpointMetadata,
+): TsCode {
+    val argumentType =
+        TsObjectLiteral(
+                (endpoint.pathVariables + endpoint.requestParameters).associate {
+                    it.name to TsProperty(it.toOptionalType())
+                }
+            )
+            .takeIf { it.properties.isNotEmpty() }
+            ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }
+
+    val tsArgument = TsCode {
+        listOfNotNull(
+                if (argumentType != null)
+                    "request: ${inline(generator.tsType(argumentType, compact = false))}"
+                        .prependIndent("  ")
+                else null
+            )
+            .let { params ->
+                if (params.isNotEmpty())
+                    params.joinToString(separator = ",\n", prefix = "\n", postfix = "\n")
+                else ""
+            }
+    }
+
+    val getRequestProperty = { name: String -> TsCode { "request.$name" } }
+    val url = generator.tsBuildUri(pathPrefix, endpoint, getRequestProperty)
+    val createQueryParameters =
+        if (endpoint.requestParameters.isNotEmpty())
+            TsCode {
+                "const params = ${inline(generator.tsBuildQueryParams(endpoint.requestParameters, getRequestProperty).value)}"
+            }
+        else null
+
+    val functionBody =
+        TsCode.join(
+            listOfNotNull(
+                createQueryParameters,
+                TsCode {
+                    """
+return {
+  url: ${inline(url.value)}${if (createQueryParameters != null) ".appendQuery(params)" else ""}
+}"""
+                        .removePrefix("\n")
+                },
+            ),
+            separator = "\n",
+        )
+    return TsCode {
+        """
+/**
+* Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
+*/
+export function ${endpoint.controllerMethod.name}(${inline(tsArgument)}): { url: ${inline(url.type)} } {
+${inline(functionBody.prependIndent("  "))}
 }"""
     }
 }
