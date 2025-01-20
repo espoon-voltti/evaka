@@ -69,7 +69,7 @@ export default React.memo(function UnitPreferenceSection(
           date: preferredStartDate,
           shiftCare
         })
-      : constantQuery([])
+      : constantQuery(null)
   )
 
   useEffect(() => {
