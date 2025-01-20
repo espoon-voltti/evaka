@@ -114,9 +114,9 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                         .filter {
                             isPlacementTypeChangeAllowed(placement.type, it.validPlacementType) &&
                                 !it.defaultOption &&
+                                it.showForCitizen &&
                                 DateRange(it.validFrom, it.validTo).includes(date)
                         }
-                        .filter { it.showForCitizen }
                         .map {
                             ServiceNeedOptionBasics(
                                 id = it.id,
