@@ -88,7 +88,6 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
   if (process.env.SENTRY_PUBLISH_ENABLED === 'true') {
     plugins.push(
       sentryWebpackPlugin({
-        debug: true,
         org: process.env.SENTRY_ORG || undefined,
         release: {
           name: process.env.APP_COMMIT,
