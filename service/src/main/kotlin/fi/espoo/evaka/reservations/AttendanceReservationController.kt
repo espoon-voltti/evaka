@@ -190,15 +190,13 @@ class AttendanceReservationController(
                                                         }
                                                         ?: BigDecimal.ONE
                                             val factor =
-                                                assistanceFactors.fold(BigDecimal.ONE) { factor, af
-                                                    ->
-                                                    if (
-                                                        af.childId == childId &&
-                                                            af.validDuring.includes(date)
-                                                    )
-                                                        factor * af.capacityFactor.toBigDecimal()
-                                                    else factor
-                                                }
+                                                assistanceFactors
+                                                    .find {
+                                                        it.childId == childId &&
+                                                            it.validDuring.includes(date)
+                                                    }
+                                                    ?.capacityFactor
+                                                    ?.toBigDecimal() ?: BigDecimal.ONE
 
                                             UnitAttendanceReservations.ChildRecordOfDay(
                                                 childId = childData.child.id,
