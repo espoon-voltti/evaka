@@ -131,6 +131,7 @@ data class ServiceNeedOption(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val updated: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val showForCitizen: Boolean,
 ) {
     fun daycareMinutesPerMonth(): Long? = daycareHoursPerMonth?.let { it * 60L }
 }

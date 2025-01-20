@@ -41,6 +41,7 @@ import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycarePartDay25
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -472,6 +473,46 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             assertEquals(it.shiftCare, ShiftCareType.NONE)
             assertFalse(it.partWeek)
         }
+    }
+
+    @Test
+    fun `citizen can only see service need options with showForCitizen enabled`() {
+        db.transaction { tx -> tx.insert(DevGuardian(guardianId = adult.id, childId = child.id)) }
+        val countBefore =
+            citizenController
+                .getChildServiceNeedOptions(
+                    dbInstance(),
+                    adult.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    child.id,
+                    startDate,
+                )
+                .size
+
+        db.transaction { tx ->
+            tx.insert(
+                snDaycareFullDay35.copy(
+                    ServiceNeedOptionId(UUID.randomUUID()),
+                    nameFi = "Ei kansalaiselle",
+                    nameSv = "Ei kansalaiselle",
+                    nameEn = "Ei kansalaiselle",
+                    showForCitizen = false,
+                )
+            )
+        }
+
+        val countAfter =
+            citizenController
+                .getChildServiceNeedOptions(
+                    dbInstance(),
+                    adult.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    child.id,
+                    startDate,
+                )
+                .size
+
+        assertEquals(countBefore, countAfter)
     }
 
     private fun createServiceApplication(

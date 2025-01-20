@@ -40,6 +40,7 @@ val snDefaultDaycare =
         voucherValueDescriptionSv = "Kokopäiväinen",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultPartDayDaycare =
@@ -66,6 +67,7 @@ val snDefaultPartDayDaycare =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultFiveYearOldsDaycare =
@@ -92,6 +94,7 @@ val snDefaultFiveYearOldsDaycare =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultFiveYearOldsPartDayDaycare =
@@ -118,6 +121,7 @@ val snDefaultFiveYearOldsPartDayDaycare =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultPreschool =
@@ -144,6 +148,7 @@ val snDefaultPreschool =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultPreschoolDaycare =
@@ -170,6 +175,7 @@ val snDefaultPreschoolDaycare =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultPreparatory =
@@ -196,6 +202,7 @@ val snDefaultPreparatory =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultPreparatoryDaycare =
@@ -222,6 +229,7 @@ val snDefaultPreparatoryDaycare =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultClub =
@@ -248,6 +256,7 @@ val snDefaultClub =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultTemporaryDaycare =
@@ -274,6 +283,7 @@ val snDefaultTemporaryDaycare =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultTemporaryPartDayDaycare =
@@ -300,6 +310,7 @@ val snDefaultTemporaryPartDayDaycare =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDaycareFullDay35 =
@@ -326,6 +337,7 @@ val snDaycareFullDay35 =
         voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDaycareFullDay25to35 =
@@ -352,6 +364,7 @@ val snDaycareFullDay25to35 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDaycareFullDayPartWeek25 =
@@ -378,6 +391,7 @@ val snDaycareFullDayPartWeek25 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDaycarePartDay25 =
@@ -404,6 +418,7 @@ val snDaycarePartDay25 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snPreschoolDaycare45 =
@@ -430,6 +445,7 @@ val snPreschoolDaycare45 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snPreschoolDaycarePartDay35to45 =
@@ -456,6 +472,7 @@ val snPreschoolDaycarePartDay35to45 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snPreschoolDaycarePartDay35 =
@@ -482,6 +499,7 @@ val snPreschoolDaycarePartDay35 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snPreschoolClub45 =
@@ -508,6 +526,7 @@ val snPreschoolClub45 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snPreparatoryDaycare50 =
@@ -534,6 +553,7 @@ val snPreparatoryDaycare50 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snPreparatoryDaycarePartDay40to50 =
@@ -560,6 +580,7 @@ val snPreparatoryDaycarePartDay40to50 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snPreparatoryDaycarePartDay40 =
@@ -586,6 +607,7 @@ val snPreparatoryDaycarePartDay40 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDaycareFiveYearOldsFullDayPartWeek25 =
@@ -612,6 +634,7 @@ val snDaycareFiveYearOldsFullDayPartWeek25 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDaycareContractDays15 =
@@ -638,6 +661,7 @@ val snDaycareContractDays15 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snPreschoolDaycareContractDays13 =
@@ -664,6 +688,7 @@ val snPreschoolDaycareContractDays13 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDaycareContractDays10 =
@@ -690,6 +715,7 @@ val snDaycareContractDays10 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDaycareHours120 =
@@ -716,6 +742,7 @@ val snDaycareHours120 =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val snDefaultSchoolShiftcare =
@@ -742,6 +769,7 @@ val snDefaultSchoolShiftcare =
         voucherValueDescriptionSv = "",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 val serviceNeedTestFixtures =
