@@ -477,6 +477,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     voucherValueDescriptionSv = "",
                     validFrom = LocalDate.of(2000, 1, 1),
                     validTo = null,
+                    showForCitizen = true,
                 )
             )
         }

@@ -116,6 +116,7 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                                 !it.defaultOption &&
                                 DateRange(it.validFrom, it.validTo).includes(date)
                         }
+                        .filter { it.showForCitizen }
                         .map {
                             ServiceNeedOptionBasics(
                                 id = it.id,
