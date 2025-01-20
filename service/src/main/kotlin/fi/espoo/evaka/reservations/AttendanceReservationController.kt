@@ -16,6 +16,7 @@ import fi.espoo.evaka.attendance.deleteAbsencesByDate
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
+import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
@@ -24,6 +25,7 @@ import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
+import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -98,6 +100,10 @@ class AttendanceReservationController(
                     val preschoolTerms = tx.getPreschoolTerms()
 
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
+                    val familyUnitPlacement =
+                        unit.type.any {
+                            listOf(CareType.FAMILY, CareType.GROUP_FAMILY).contains(it)
+                        }
                     val groups =
                         tx.getDaycareGroupSummaries(unitId)
                             .filter { it.endDate == null || it.endDate.isAfter(clock.today()) }
@@ -157,16 +163,19 @@ class AttendanceReservationController(
                                                     date,
                                                 )
                                             val coefficient =
-                                                childData.child.serviceNeeds.fold(BigDecimal.ONE) {
-                                                    coefficient,
-                                                    sn ->
-                                                    if (sn.validDuring.includes(date))
-                                                        coefficient *
-                                                            if (age < 3)
-                                                                sn.occupancyCoefficientUnder3y
-                                                            else sn.occupancyCoefficient
-                                                    else coefficient
-                                                }
+                                                if (familyUnitPlacement)
+                                                    BigDecimal(familyUnitPlacementCoefficient)
+                                                else
+                                                    childData.child.serviceNeeds.fold(
+                                                        BigDecimal.ONE
+                                                    ) { coefficient, sn ->
+                                                        if (sn.validDuring.includes(date))
+                                                            coefficient *
+                                                                if (age < 3)
+                                                                    sn.occupancyCoefficientUnder3y
+                                                                else sn.occupancyCoefficient
+                                                        else coefficient
+                                                    }
                                             val factor =
                                                 assistanceFactors.fold(BigDecimal.ONE) { factor, af
                                                     ->

@@ -616,6 +616,64 @@ describe('Unit group calendar', () => {
       '2 (2,00)' // occupancyCoefficient + occupancyCoefficient
     ])
   })
+
+  test('Totals row uses family unit placement coefficients', async () => {
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      occupancyCoefficient: 2.0,
+      occupancyCoefficientUnder3y: 3.0
+    }).save()
+    const area = await Fixture.careArea().save()
+    const daycare = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS'],
+      type: ['FAMILY']
+    }).save()
+    const group = await Fixture.daycareGroup({ daycareId: daycare.id }).save()
+    const employee = await Fixture.employee().unitSupervisor(daycare.id).save()
+    const placementRange = new FiniteDateRange(
+      LocalDate.of(2025, 1, 13),
+      LocalDate.of(2025, 1, 17)
+    )
+    const child = await Fixture.person({
+      dateOfBirth: placementRange.end.withYear(2022),
+      ssn: null
+    }).saveChild()
+    const placement = await Fixture.placement({
+      childId: child.id,
+      unitId: daycare.id,
+      startDate: placementRange.start,
+      endDate: placementRange.end
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: group.id,
+      daycarePlacementId: placement.id,
+      startDate: placementRange.start,
+      endDate: placementRange.end
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placementRange.start,
+      endDate: placementRange.end,
+      optionId: serviceNeedOption.id,
+      confirmedBy: evakaUserId(employee.id)
+    }).save()
+
+    page = await Page.open({
+      mockedTime: placementRange.end.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await employeeLogin(page, employee)
+    const unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(daycare.id)
+    await unitPage.openCalendarPage()
+    const weekCalendar = await unitPage.openWeekCalendar(group.id)
+    await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
+      '1 (1,75)', // family unit placement coefficient under 3y
+      '1 (1,75)', // family unit placement coefficient under 3y
+      '1 (1,75)', // family unit placement coefficient under 3y
+      '1 (1,75)', // family unit placement coefficient under 3y
+      '1 (1,75)' // family unit placement coefficient
+    ])
+  })
 })
 
 describe('Unit group calendar for shift care unit', () => {
