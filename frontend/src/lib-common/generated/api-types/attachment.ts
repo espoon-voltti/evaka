@@ -14,11 +14,3 @@ export interface Attachment {
   id: AttachmentId
   name: string
 }
-
-/**
-* Generated from fi.espoo.evaka.attachment.AttachmentType
-*/
-export type AttachmentType =
-  | 'URGENCY'
-  | 'EXTENDED_CARE'
-  | 'SERVICE_WORKER_ATTACHMENT'

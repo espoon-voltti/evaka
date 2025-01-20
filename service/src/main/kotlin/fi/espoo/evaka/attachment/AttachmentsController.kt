@@ -7,6 +7,7 @@ package fi.espoo.evaka.attachment
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.invoicing.data.getInvoice
@@ -66,7 +67,7 @@ class AttachmentsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestParam type: AttachmentType,
+        @RequestParam type: ApplicationAttachmentType,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
@@ -298,7 +299,7 @@ class AttachmentsController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestParam type: AttachmentType,
+        @RequestParam type: ApplicationAttachmentType,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         val attachTo = AttachmentParent.Application(applicationId)

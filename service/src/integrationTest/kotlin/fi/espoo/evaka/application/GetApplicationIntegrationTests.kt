@@ -7,7 +7,6 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.daycare.OtherPerson
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -399,8 +398,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
             }
-        uploadAttachment(applicationId, citizen, AttachmentType.URGENCY)
-        uploadAttachment(applicationId, citizen, AttachmentType.EXTENDED_CARE)
+        uploadAttachment(applicationId, citizen, ApplicationAttachmentType.URGENCY)
+        uploadAttachment(applicationId, citizen, ApplicationAttachmentType.EXTENDED_CARE)
         val today = LocalDate.of(2021, 1, 1)
         val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
         db.transaction { tx ->

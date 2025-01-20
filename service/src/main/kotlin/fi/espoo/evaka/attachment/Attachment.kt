@@ -44,9 +44,3 @@ sealed class AttachmentParent {
 }
 
 data class Attachment(val id: AttachmentId, val name: String, val contentType: String)
-
-enum class AttachmentType {
-    URGENCY,
-    EXTENDED_CARE,
-    SERVICE_WORKER_ATTACHMENT,
-}

@@ -12,7 +12,6 @@ import { ApplicationId } from './shared'
 import { ApplicationNoteId } from './shared'
 import { AreaId } from './shared'
 import { AttachmentId } from './shared'
-import { AttachmentType } from './attachment'
 import { CreatePersonBody } from './pis'
 import { DaycareId } from './shared'
 import { Decision } from './decision'
@@ -74,11 +73,19 @@ export interface ApplicationAttachment {
   id: AttachmentId
   name: string
   receivedAt: HelsinkiDateTime
-  type: AttachmentType
+  type: ApplicationAttachmentType
   updated: HelsinkiDateTime
   uploadedByEmployee: EmployeeId | null
   uploadedByPerson: PersonId | null
 }
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationAttachmentType
+*/
+export type ApplicationAttachmentType =
+  | 'URGENCY'
+  | 'EXTENDED_CARE'
+  | 'SERVICE_WORKER_ATTACHMENT'
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationBasis

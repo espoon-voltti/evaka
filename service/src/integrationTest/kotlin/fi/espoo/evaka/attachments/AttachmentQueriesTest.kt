@@ -5,10 +5,10 @@
 package fi.espoo.evaka.attachments
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentParent
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.attachment.dissociateAttachmentsOfParent
 import fi.espoo.evaka.attachment.getAttachment
@@ -143,7 +143,9 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             "dummy-name",
             "text/plain",
             parent,
-            type = if (parent is AttachmentParent.Application) AttachmentType.URGENCY else null,
+            type =
+                if (parent is AttachmentParent.Application) ApplicationAttachmentType.URGENCY
+                else null,
         )
 
     private fun parentOf(attachment: AttachmentId): AttachmentParent? =

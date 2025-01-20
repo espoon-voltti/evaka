@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Success, wrapResult } from 'lib-common/api'
-import { AttachmentType } from 'lib-common/generated/api-types/attachment'
+import { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
 import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
@@ -49,7 +49,7 @@ const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export function applicationAttachment(
   applicationId: UUID,
-  type: AttachmentType
+  type: ApplicationAttachmentType
 ): UploadHandler {
   return uploadHandler({
     path: `/employee/attachments/applications/${applicationId}`,

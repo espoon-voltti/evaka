@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Success, wrapResult } from 'lib-common/api'
-import { AttachmentType } from 'lib-common/generated/api-types/attachment'
+import { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
 import {
   ApplicationId,
   AttachmentId,
@@ -55,7 +55,7 @@ export const messageAttachment = uploadHandler('/citizen/attachments/messages')
 
 export function applicationAttachment(
   applicationId: ApplicationId,
-  attachmentType: AttachmentType
+  attachmentType: ApplicationAttachmentType
 ): UploadHandler {
   return uploadHandler(
     `/citizen/attachments/applications/${applicationId}?type=${attachmentType}`
