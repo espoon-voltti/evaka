@@ -485,6 +485,7 @@ export class Fixture {
       voucherValueDescriptionSv: `Test service need option ${id}`,
       validFrom: LocalDate.of(2000, 1, 1),
       validTo: null,
+      showForCitizen: true,
       ...initial
     })
   }
