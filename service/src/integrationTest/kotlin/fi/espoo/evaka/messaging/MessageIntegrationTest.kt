@@ -331,6 +331,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageThread.title,
                     messageThread.sensitive,
                     messageThread.isCopy,
+                    messageThread.applicationStatus,
                     messageThread.messages,
                 )
             },
@@ -617,6 +618,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageThread.title,
                     messageThread.sensitive,
                     messageThread.isCopy,
+                    messageThread.applicationStatus,
                     messageThread.messages,
                 )
             },
