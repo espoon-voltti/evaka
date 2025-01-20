@@ -237,7 +237,8 @@ export default React.memo(
         messageType,
         urgent,
         sensitive,
-        children
+        children,
+        applicationStatus
       },
       allowedAccounts,
       accountDetails,
@@ -298,14 +299,15 @@ export default React.memo(
       recipients.some((r) => r.selected && isPrimaryRecipient(r))
 
     const allowReply = useMemo(() => {
-      // applications don't have children, enable reply for them
-      if (children.length === 0) return true
+      if (applicationStatus) {
+        return !['REJECTED', 'ACTIVE', 'CANCELLED'].includes(applicationStatus)
+      }
 
       const allowedReplyAccounts = new Set(
         children.flatMap((c) => allowedAccounts[c.childId]?.reply ?? [])
       )
       return recipients.every((r) => allowedReplyAccounts.has(r.id))
-    }, [allowedAccounts, children, recipients])
+    }, [allowedAccounts, applicationStatus, children, recipients])
 
     return (
       <ThreadContainer data-qa="thread-reader">

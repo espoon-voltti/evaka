@@ -488,6 +488,7 @@ export const MessageContextProvider = React.memo(
                   sensitive: message.sensitive,
                   isCopy: false,
                   participants: message.recipientNames,
+                  applicationStatus: null,
                   children: [],
                   messages: [
                     {
@@ -516,6 +517,7 @@ export const MessageContextProvider = React.memo(
             ...message,
             id: message.threadId,
             isCopy: true,
+            applicationStatus: null,
             participants: [message.recipientName],
             children: [],
             messages: [

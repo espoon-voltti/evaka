@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.*
@@ -364,6 +365,7 @@ private data class ReceivedThread(
     val urgent: Boolean,
     val sensitive: Boolean,
     val isCopy: Boolean,
+    val applicationStatus: ApplicationStatus?,
     @Json val children: List<MessageChild>,
 )
 
@@ -404,6 +406,7 @@ SELECT
     t.urgent, 
     t.sensitive, 
     t.is_copy,
+    a.status as application_status,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
             'childId', mtc.child_id,
@@ -417,6 +420,7 @@ SELECT
     ), '[]'::jsonb) AS children
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
+LEFT JOIN application a ON t.application_id = a.id
 WHERE tp.participant_id = ${bind(accountId)} AND tp.folder_id IS NULL
 AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 ORDER BY tp.last_message_timestamp DESC
@@ -614,6 +618,7 @@ private fun combineThreadsAndMessages(
                         urgent = thread.urgent,
                         sensitive = thread.sensitive,
                         isCopy = thread.isCopy,
+                        applicationStatus = thread.applicationStatus,
                         children = thread.children,
                         messages = messages,
                     )
@@ -953,6 +958,7 @@ data class ThreadWithParticipants(
     val senders: Set<MessageAccountId>,
     val recipients: Set<MessageAccountId>,
     val applicationId: ApplicationId?,
+    val applicationStatus: ApplicationStatus?,
     val children: Set<ChildId>,
 )
 
@@ -965,6 +971,7 @@ SELECT
     t.message_type AS type,
     t.is_copy,
     t.application_id,
+    a.status AS application_status,
     (SELECT array_agg(m2.sender_id)) as senders,
     (SELECT array_agg(rec.recipient_id)) as recipients,
     (SELECT coalesce(array_agg(mtc.child_id) FILTER (WHERE mtc.child_id IS NOT NULL), '{}')) as children
@@ -973,8 +980,9 @@ SELECT
     JOIN message m2 ON m2.thread_id = t.id
     JOIN message_recipients rec ON rec.message_id = m2.id
     LEFT JOIN message_thread_children mtc ON mtc.thread_id = t.id
+    LEFT JOIN application a ON t.application_id = a.id
     WHERE m.id = ${bind(messageId)}
-    GROUP BY t.id, t.message_type
+    GROUP BY t.id, t.message_type, a.status
 """
             )
         }
