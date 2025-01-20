@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.children.getChildrenByParent
 import fi.espoo.evaka.shared.ApplicationId
@@ -236,7 +237,15 @@ class MessageService(
         user: AuthenticatedUser,
     ): ThreadReply {
         val today = now.toLocalDate()
-        val (threadId, type, isCopy, previousSenders, previousRecipients, applicationId, children) =
+        val (
+            threadId,
+            type,
+            isCopy,
+            previousSenders,
+            previousRecipients,
+            applicationId,
+            applicationStatus,
+            children) =
             db.read { it.getThreadByMessageId(replyToMessageId) }
                 ?: throw NotFound("Message not found")
 
@@ -251,6 +260,15 @@ class MessageService(
             throw Forbidden("Not authorized to widen the audience")
         if (user is AuthenticatedUser.Citizen) {
             val isApplication = applicationId != null
+            if (
+                applicationStatus in
+                    setOf(
+                        ApplicationStatus.REJECTED,
+                        ApplicationStatus.ACTIVE,
+                        ApplicationStatus.CANCELLED,
+                    )
+            )
+                throw Forbidden("Cannot reply to application message in status $applicationStatus")
             val validRecipients =
                 db.read { it.getCitizenReceivers(today, senderAccount) }
                     .mapValues { entry -> entry.value.reply.map { it.account.id }.toSet() }

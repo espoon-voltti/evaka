@@ -7,6 +7,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { ApplicationId } from './shared'
+import { ApplicationStatus } from './application'
 import { Attachment } from './attachment'
 import { AttachmentId } from './shared'
 import { DaycareId } from './shared'
@@ -76,6 +77,7 @@ export namespace CitizenMessageThread {
   */
   export interface Regular {
     type: 'Regular'
+    applicationStatus: ApplicationStatus | null
     children: MessageChild[]
     id: MessageThreadId
     isCopy: boolean
@@ -229,6 +231,7 @@ export type MessageRecipientType =
 * Generated from fi.espoo.evaka.messaging.MessageThread
 */
 export interface MessageThread {
+  applicationStatus: ApplicationStatus | null
   children: MessageChild[]
   id: MessageThreadId
   isCopy: boolean
