@@ -107,6 +107,7 @@ const SenderName = styled.div`
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
   white-space: pre-line;
+  word-break: break-word;
 `
 
 const ActionRow = styled(FixedSpaceRow)`
