@@ -121,8 +121,8 @@ data class BiGroupCaretakerAllocation(
 
 data class BiApplication(
     val id: UUID,
-    val createdAt: HelsinkiDateTime,
-    val updatedAt: HelsinkiDateTime,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
     val type: ApplicationType,
     val transferApplication: Boolean,
     val origin: ApplicationOrigin,
@@ -215,8 +215,8 @@ data class BiVoucherValueDecision(
 
 data class BiPedagogicalDocument(
     val id: UUID,
-    val createdAt: HelsinkiDateTime,
-    val updatedAt: HelsinkiDateTime,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
     val child: UUID,
 )
 
