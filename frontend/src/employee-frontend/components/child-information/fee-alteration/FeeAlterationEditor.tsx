@@ -207,21 +207,6 @@ function FeeAlterationAttachments({
 }) {
   const { i18n } = useTranslation()
 
-  const handleUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      (
-        await saveFeeAlterationAttachment(
-          feeAlterationId,
-          file,
-          onUploadProgress
-        )
-      ).map((id) => {
-        onUploaded({ id, name: file.name, contentType: file.type })
-        return id
-      }),
-    [feeAlterationId, onUploaded]
-  )
-
   const handleDelete = useCallback(
     async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
@@ -241,7 +226,8 @@ function FeeAlterationAttachments({
       <FileUpload
         data-qa="fee-alteration-attachment-upload"
         files={attachments}
-        onUpload={handleUpload}
+        onUpload={saveFeeAlterationAttachment(feeAlterationId)}
+        onUploaded={onUploaded}
         onDelete={handleDelete}
         getDownloadUrl={getAttachmentUrl}
       />

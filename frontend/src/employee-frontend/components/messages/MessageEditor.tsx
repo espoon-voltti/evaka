@@ -7,7 +7,7 @@ import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -58,6 +58,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import FileUpload, {
   initialUploadStatus,
+  UploadHandler,
   UploadStatus
 } from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
@@ -193,11 +194,7 @@ interface Props {
   onDiscard: (accountId: MessageAccountId, draftId: MessageDraftId) => void
   onSend: (accountId: MessageAccountId, msg: PostMessageBody) => void
   saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
-  saveMessageAttachment: (
-    draftId: UUID,
-    file: File,
-    onUploadProgress: (percentage: number) => void
-  ) => Promise<Result<AttachmentId>>
+  saveMessageAttachment: (draftId: UUID) => UploadHandler
   sending: boolean
   defaultTitle?: string
 }
@@ -414,24 +411,6 @@ export default React.memo(function MessageEditor({
       filters: filters
     })
   }, [onSend, message, selectedReceivers, draftId, filters])
-
-  const handleAttachmentUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      draftId
-        ? (await saveMessageAttachment(draftId, file, onUploadProgress)).map(
-            (id) => {
-              updateMessage({
-                attachments: [
-                  ...message.attachments,
-                  { id, name: file.name, contentType: file.type }
-                ]
-              })
-              return id
-            }
-          )
-        : Failure.of<AttachmentId>({ message: 'Should not happen' }),
-    [draftId, message.attachments, saveMessageAttachment, updateMessage]
-  )
 
   const handleAttachmentDelete = useCallback(
     async (id: AttachmentId) =>
@@ -817,14 +796,19 @@ export default React.memo(function MessageEditor({
               onChange={(e) => updateMessage({ content: e.target.value })}
               data-qa="input-content"
             />
-            {!simpleMode && (
+            {!simpleMode && draftId !== null && (
               <FileUpload
                 slim
                 disabled={!draftId}
                 data-qa="upload-message-attachment"
                 files={message.attachments}
                 getDownloadUrl={getAttachmentUrl}
-                onUpload={handleAttachmentUpload}
+                onUpload={saveMessageAttachment(draftId)}
+                onUploaded={(attachment) =>
+                  updateMessage({
+                    attachments: [...message.attachments, attachment]
+                  })
+                }
                 onDelete={handleAttachmentDelete}
                 onStateChange={setUploadStatus}
               />

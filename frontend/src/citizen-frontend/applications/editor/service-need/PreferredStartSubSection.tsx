@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { Result, wrapResult } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
 import {
   ApplicationId,
   AttachmentId
@@ -51,36 +51,6 @@ export default React.memo(function PreferredStartSubSection({
   const t = useTranslation()
   const [lang] = useLang()
   const labelId = useUniqueId()
-
-  const uploadUrgencyAttachment = (
-    file: File,
-    onUploadProgress: (percentage: number) => void
-  ): Promise<Result<AttachmentId>> =>
-    saveApplicationAttachment(
-      applicationId,
-      file,
-      'URGENCY',
-      onUploadProgress
-    ).then((result) => {
-      if (result.isSuccess) {
-        updateFormData({
-          urgencyAttachments: [
-            ...formData.urgencyAttachments,
-            {
-              id: result.value,
-              name: file.name,
-              contentType: file.type,
-              updated: HelsinkiDateTime.now(),
-              receivedAt: HelsinkiDateTime.now(),
-              type: 'URGENCY',
-              uploadedByEmployee: null,
-              uploadedByPerson: null
-            }
-          ]
-        })
-      }
-      return result
-    })
 
   const deleteUrgencyAttachment = (id: AttachmentId) =>
     deleteAttachmentResult({ attachmentId: id }).then((result) => {
@@ -190,7 +160,22 @@ export default React.memo(function PreferredStartSubSection({
 
                 <FileUpload
                   files={formData.urgencyAttachments}
-                  onUpload={uploadUrgencyAttachment}
+                  onUpload={saveApplicationAttachment(applicationId, 'URGENCY')}
+                  onUploaded={(attachment) =>
+                    updateFormData({
+                      urgencyAttachments: [
+                        ...formData.urgencyAttachments,
+                        {
+                          ...attachment,
+                          updated: HelsinkiDateTime.now(),
+                          receivedAt: HelsinkiDateTime.now(),
+                          type: 'URGENCY',
+                          uploadedByEmployee: null,
+                          uploadedByPerson: null
+                        }
+                      ]
+                    })
+                  }
                   onDelete={deleteUrgencyAttachment}
                   getDownloadUrl={getAttachmentUrl}
                   data-qa="urgent-file-upload"

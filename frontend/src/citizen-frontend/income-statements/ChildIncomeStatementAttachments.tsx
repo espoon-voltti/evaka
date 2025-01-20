@@ -29,25 +29,6 @@ export default React.memo(function Attachments({
   onUploaded: (attachment: Attachment) => void
   onDeleted: (attachmentId: AttachmentId) => void
 }) {
-  const handleUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      (
-        await saveIncomeStatementAttachment(
-          incomeStatementId,
-          file,
-          onUploadProgress
-        )
-      ).map((id) => {
-        onUploaded({
-          id,
-          name: file.name,
-          contentType: file.type
-        })
-        return id
-      }),
-    [incomeStatementId, onUploaded]
-  )
-
   const handleDelete = useCallback(
     async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
@@ -60,7 +41,8 @@ export default React.memo(function Attachments({
     <FixedSpaceColumn spacing="zero">
       <FileUpload
         files={attachments}
-        onUpload={handleUpload}
+        onUpload={saveIncomeStatementAttachment(incomeStatementId)}
+        onUploaded={onUploaded}
         onDelete={handleDelete}
         getDownloadUrl={getAttachmentUrl}
       />

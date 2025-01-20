@@ -5,7 +5,7 @@
 import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Result, wrapResult } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import {
   ApplicationId,
@@ -118,36 +118,6 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
       serviceNeedOption
     })
   }
-
-  const uploadExtendedCareAttachment = (
-    file: File,
-    onUploadProgress: (percentage: number) => void
-  ): Promise<Result<AttachmentId>> =>
-    saveApplicationAttachment(
-      applicationId,
-      file,
-      'EXTENDED_CARE',
-      onUploadProgress
-    ).then((result) => {
-      if (result.isSuccess) {
-        updateFormData({
-          shiftCareAttachments: [
-            ...formData.shiftCareAttachments,
-            {
-              id: result.value,
-              name: file.name,
-              contentType: file.type,
-              updated: HelsinkiDateTime.now(),
-              receivedAt: HelsinkiDateTime.now(),
-              type: 'EXTENDED_CARE',
-              uploadedByEmployee: null,
-              uploadedByPerson: null
-            }
-          ]
-        })
-      }
-      return result
-    })
 
   const deleteExtendedCareAttachment = (id: AttachmentId) =>
     deleteAttachmentResult({ attachmentId: id }).then((result) => {
@@ -356,7 +326,22 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
           <FileUpload
             files={formData.shiftCareAttachments}
-            onUpload={uploadExtendedCareAttachment}
+            onUpload={saveApplicationAttachment(applicationId, 'EXTENDED_CARE')}
+            onUploaded={(attachment) =>
+              updateFormData({
+                shiftCareAttachments: [
+                  ...formData.shiftCareAttachments,
+                  {
+                    ...attachment,
+                    updated: HelsinkiDateTime.now(),
+                    receivedAt: HelsinkiDateTime.now(),
+                    type: 'EXTENDED_CARE',
+                    uploadedByEmployee: null,
+                    uploadedByPerson: null
+                  }
+                ]
+              })
+            }
             onDelete={deleteExtendedCareAttachment}
             getDownloadUrl={getAttachmentUrl}
           />

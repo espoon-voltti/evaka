@@ -2,75 +2,59 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import {
   ApplicationId,
   AttachmentId,
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
+import { UploadHandler } from 'lib-components/molecules/FileUpload'
 
 import { API_URL, client } from './api-client'
 
-async function doSaveAttachment(
-  url: string,
-  file: File,
-  onUploadProgress: (percentage: number) => void
-): Promise<Result<AttachmentId>> {
-  const formData = new FormData()
-  formData.append('file', file)
+function uploadHandler(url: string): UploadHandler {
+  return async (file, onUploadProgress) => {
+    const formData = new FormData()
+    formData.append('file', file)
 
-  try {
-    const { data } = await client.post<AttachmentId>(url, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: ({ loaded, total }) =>
-        onUploadProgress(
-          total !== undefined && total !== 0
-            ? Math.round((loaded / total) * 100)
-            : 0
-        )
-    })
-    return Success.of(data)
-  } catch (e) {
-    return Failure.fromError(e)
+    try {
+      const { data } = await client.post<AttachmentId>(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: ({ loaded, total }) =>
+          onUploadProgress(
+            total !== undefined && total !== 0
+              ? Math.round((loaded / total) * 100)
+              : 0
+          )
+      })
+      return Success.of(data)
+    } catch (e) {
+      return Failure.fromError(e)
+    }
   }
 }
 
-export async function saveIncomeStatementAttachment(
-  incomeStatementId: IncomeStatementId | undefined,
-  file: File,
-  onUploadProgress: (percentage: number) => void
-): Promise<Result<AttachmentId>> {
-  return doSaveAttachment(
+export function saveIncomeStatementAttachment(
+  incomeStatementId: IncomeStatementId | undefined
+): UploadHandler {
+  return uploadHandler(
     incomeStatementId
       ? `/citizen/attachments/income-statements/${incomeStatementId}`
-      : '/citizen/attachments/income-statements',
-    file,
-    onUploadProgress
+      : '/citizen/attachments/income-statements'
   )
 }
 
-export async function saveMessageAttachment(
-  file: File,
-  onUploadProgress: (percentage: number) => void
-): Promise<Result<AttachmentId>> {
-  return doSaveAttachment(
-    '/citizen/attachments/messages',
-    file,
-    onUploadProgress
-  )
-}
+export const saveMessageAttachment = uploadHandler(
+  '/citizen/attachments/messages'
+)
 
-export async function saveApplicationAttachment(
+export function saveApplicationAttachment(
   applicationId: ApplicationId,
-  file: File,
-  attachmentType: AttachmentType,
-  onUploadProgress: (percentage: number) => void
-): Promise<Result<AttachmentId>> {
-  return doSaveAttachment(
-    `/citizen/attachments/applications/${applicationId}?type=${attachmentType}`,
-    file,
-    onUploadProgress
+  attachmentType: AttachmentType
+): UploadHandler {
+  return uploadHandler(
+    `/citizen/attachments/applications/${applicationId}?type=${attachmentType}`
   )
 }
 

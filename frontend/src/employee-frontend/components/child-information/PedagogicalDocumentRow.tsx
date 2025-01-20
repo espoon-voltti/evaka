@@ -111,20 +111,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
     })
   }, [endEdit, i18n, id, onReload, pedagogicalDocument, setErrorMessage])
 
-  const handleAttachmentUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) => {
-      setSubmitting(true)
-      return (
-        await savePedagogicalDocumentAttachment(id, file, onUploadProgress)
-      ).map((id) => {
-        setSubmitting(false)
-        onReload()
-        return id
-      })
-    },
-    [id, onReload]
-  )
-
   const handleAttachmentDelete = useCallback(
     async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() =>
@@ -174,7 +160,11 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             data-qa="upload-pedagogical-document-attachment-new"
             files={attachments}
             getDownloadUrl={getAttachmentUrl}
-            onUpload={handleAttachmentUpload}
+            onUpload={savePedagogicalDocumentAttachment(id)}
+            onUploaded={() => {
+              setSubmitting(false)
+              onReload()
+            }}
             onDelete={handleAttachmentDelete}
             allowedFileTypes={['image', 'document', 'audio', 'video']}
           />

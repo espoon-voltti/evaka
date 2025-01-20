@@ -463,21 +463,6 @@ function EmployeeAttachments({
 }) {
   const { i18n } = useTranslation()
 
-  const handleUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      (
-        await saveIncomeStatementAttachment(
-          incomeStatementId,
-          file,
-          onUploadProgress
-        )
-      ).map((id) => {
-        onUploaded({ id, name: file.name, contentType: file.type })
-        return id
-      }),
-    [incomeStatementId, onUploaded]
-  )
-
   const handleDelete = useCallback(
     async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
@@ -492,7 +477,8 @@ function EmployeeAttachments({
       <P>{i18n.incomeStatement.employeeAttachments.description}</P>
       <FileUpload
         files={attachments}
-        onUpload={handleUpload}
+        onUpload={saveIncomeStatementAttachment(incomeStatementId)}
+        onUploaded={onUploaded}
         onDelete={handleDelete}
         getDownloadUrl={getAttachmentUrl}
       />

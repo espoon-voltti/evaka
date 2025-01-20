@@ -109,18 +109,6 @@ export default React.memo(function MessageEditor({
 
   const [isChildSelectionTouched, setChildSelectionTouched] = useBoolean(false)
 
-  const handleAttachmentUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      (await saveMessageAttachment(file, onUploadProgress)).map((id) => {
-        setAttachments((prev) => [
-          ...prev,
-          { id, name: file.name, contentType: file.type }
-        ])
-        return id
-      }),
-    []
-  )
-
   const handleAttachmentDelete = useCallback(
     async (id: AttachmentId) =>
       deleteAttachment({ attachmentId: id })
@@ -420,7 +408,10 @@ export default React.memo(function MessageEditor({
                 <FileUpload
                   slimSingleFile
                   files={attachments}
-                  onUpload={handleAttachmentUpload}
+                  onUpload={saveMessageAttachment}
+                  onUploaded={(attachment) =>
+                    setAttachments((prev) => [...prev, attachment])
+                  }
                   onDelete={handleAttachmentDelete}
                   onStateChange={setUploadStatus}
                   getDownloadUrl={getAttachmentUrl}

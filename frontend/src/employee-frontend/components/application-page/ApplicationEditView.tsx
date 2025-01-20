@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { flow, set } from 'lodash/fp'
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
@@ -17,7 +17,10 @@ import {
   FutureAddress,
   PersonBasics
 } from 'lib-common/generated/api-types/application'
-import { AttachmentType } from 'lib-common/generated/api-types/attachment'
+import {
+  Attachment,
+  AttachmentType
+} from 'lib-common/generated/api-types/attachment'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -186,41 +189,27 @@ export default React.memo(function ApplicationEditView({
   const formatAddress = (a: Address) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
-  const onUploadAttachment =
-    (type: AttachmentType) =>
-    (
-      file: File,
-      onUploadProgress: (percentage: number) => void
-    ): Promise<Result<AttachmentId>> =>
-      saveApplicationAttachment(
-        application.id,
-        file,
-        type,
-        onUploadProgress
-      ).then((res) => {
-        if (res.isSuccess) {
-          setApplication(
-            (prev) =>
-              prev && {
-                ...prev,
-                attachments: [
-                  ...prev.attachments,
-                  {
-                    contentType: file.type,
-                    id: res.value,
-                    name: file.name,
-                    type,
-                    updated: HelsinkiDateTime.now(),
-                    receivedAt: HelsinkiDateTime.now(),
-                    uploadedByEmployee: null,
-                    uploadedByPerson: null
-                  }
-                ]
+  const onAttachmentUploaded = useCallback(
+    (type: AttachmentType) => (attachment: Attachment) =>
+      setApplication(
+        (prev) =>
+          prev && {
+            ...prev,
+            attachments: [
+              ...prev.attachments,
+              {
+                ...attachment,
+                type,
+                updated: HelsinkiDateTime.now(),
+                receivedAt: HelsinkiDateTime.now(),
+                uploadedByEmployee: null,
+                uploadedByPerson: null
               }
-          )
-        }
-        return res
-      })
+            ]
+          }
+      ),
+    [setApplication]
+  )
 
   const onDeleteAttachment = (id: AttachmentId) =>
     deleteAttachmentResult({ attachmentId: id }).then((res) => {
@@ -308,7 +297,11 @@ export default React.memo(function ApplicationEditView({
               {urgent && featureFlags.urgencyAttachments && (
                 <FileUploadGridContainer>
                   <FileUpload
-                    onUpload={onUploadAttachment('URGENCY')}
+                    onUpload={saveApplicationAttachment(
+                      application.id,
+                      'URGENCY'
+                    )}
+                    onUploaded={onAttachmentUploaded('URGENCY')}
                     onDelete={onDeleteAttachment}
                     getDownloadUrl={getAttachmentUrl}
                     files={attachments.filter((a) => a.type === 'URGENCY')}
@@ -605,7 +598,11 @@ export default React.memo(function ApplicationEditView({
               {serviceNeed.shiftCare && (
                 <FileUploadGridContainer>
                   <FileUpload
-                    onUpload={onUploadAttachment('EXTENDED_CARE')}
+                    onUpload={saveApplicationAttachment(
+                      application.id,
+                      'EXTENDED_CARE'
+                    )}
+                    onUploaded={onAttachmentUploaded('EXTENDED_CARE')}
                     onDelete={onDeleteAttachment}
                     getDownloadUrl={getAttachmentUrl}
                     files={attachments.filter(
@@ -1335,7 +1332,11 @@ export default React.memo(function ApplicationEditView({
 
           <FileUploadGridContainer>
             <FileUpload
-              onUpload={onUploadAttachment('SERVICE_WORKER_ATTACHMENT')}
+              onUpload={saveApplicationAttachment(
+                application.id,
+                'SERVICE_WORKER_ATTACHMENT'
+              )}
+              onUploaded={onAttachmentUploaded('SERVICE_WORKER_ATTACHMENT')}
               onDelete={onDeleteAttachment}
               getDownloadUrl={getAttachmentUrl}
               files={attachments.filter(

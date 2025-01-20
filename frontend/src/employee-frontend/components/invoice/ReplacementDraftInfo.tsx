@@ -96,13 +96,7 @@ export function ReplacementDraftForm({
         <FixedSpaceColumn>
           <FileUpload
             files={invoiceResponse.invoice.attachments}
-            onUpload={(file, onUploadProgress) =>
-              saveInvoiceAttachment(
-                invoiceResponse.invoice.id,
-                file,
-                onUploadProgress
-              )
-            }
+            onUpload={saveInvoiceAttachment(invoiceResponse.invoice.id)}
             onDelete={(attachmentId) =>
               deleteAttachmentResult({ attachmentId })
             }

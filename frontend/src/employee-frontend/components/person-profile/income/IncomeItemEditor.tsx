@@ -448,17 +448,6 @@ function IncomeAttachments({
 }) {
   const { i18n } = useTranslation()
 
-  const handleUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      (await saveIncomeAttachment(incomeId, file, onUploadProgress)).map(
-        (id) => {
-          onUploaded({ id, name: file.name, contentType: file.type })
-          return id
-        }
-      ),
-    [incomeId, onUploaded]
-  )
-
   const handleDelete = useCallback(
     async (id: AttachmentId) =>
       (await deleteAttachmentResult({ attachmentId: id })).map(() => {
@@ -474,7 +463,8 @@ function IncomeAttachments({
       <FileUpload
         data-qa="income-attachment-upload"
         files={attachments}
-        onUpload={handleUpload}
+        onUpload={saveIncomeAttachment(incomeId)}
+        onUploaded={onUploaded}
         onDelete={handleDelete}
         getDownloadUrl={getAttachmentUrl}
       />
