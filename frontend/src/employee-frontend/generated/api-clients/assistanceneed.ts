@@ -28,6 +28,7 @@ import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { UpdateDecisionMakerForAssistanceNeedDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
+import { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { deserializeJsonAssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { deserializeJsonAssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
@@ -140,6 +141,20 @@ export async function getAssistanceNeedDecision(
     method: 'GET'
   })
   return deserializeJsonAssistanceNeedDecisionResponse(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.getAssistanceNeedDecisionPdf
+*/
+export function getAssistanceNeedDecisionPdf(
+  request: {
+    id: AssistanceNeedDecisionId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/employee/assistance-need-decision/${request.id}/pdf`
+  }
 }
 
 
@@ -324,6 +339,20 @@ export async function getAssistanceNeedPreschoolDecision(
     method: 'GET'
   })
   return deserializeJsonAssistanceNeedPreschoolDecisionResponse(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.getAssistanceNeedPreschoolDecisionPdf
+*/
+export function getAssistanceNeedPreschoolDecisionPdf(
+  request: {
+    id: AssistanceNeedPreschoolDecisionId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/employee/assistance-need-preschool-decisions/${request.id}/pdf`
+  }
 }
 
 

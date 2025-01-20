@@ -9,11 +9,26 @@ import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/docu
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
+import { Uri } from 'lib-common/uri'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import { deserializeJsonChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
 import { uri } from 'lib-common/uri'
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.downloadChildDocument
+*/
+export function downloadChildDocument(
+  request: {
+    documentId: ChildDocumentId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/citizen/child-documents/${request.documentId}/pdf`
+  }
+}
 
 
 /**

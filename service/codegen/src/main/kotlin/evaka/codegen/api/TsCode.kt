@@ -116,3 +116,10 @@ data class TsCode(val text: String, val imports: Set<TsImport>) {
         fun toTsCode(text: String): TsCode = TsCode(text, imports.toSet())
     }
 }
+
+/**
+ * A fragment of TS code, including TS expressions for both a value and its type.
+ *
+ * Example: type = "number", value = "1 + 1"
+ */
+data class TsTypedExpression(val value: TsCode, val type: TsCode)

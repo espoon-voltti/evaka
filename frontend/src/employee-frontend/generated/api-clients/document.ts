@@ -21,6 +21,7 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { StatusChangeRequest } from 'lib-common/generated/api-types/document'
+import { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
@@ -280,6 +281,20 @@ export async function deleteDraftDocument(
     method: 'DELETE'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.downloadChildDocument
+*/
+export function downloadChildDocument(
+  request: {
+    documentId: ChildDocumentId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/employee/child-documents/${request.documentId}/pdf`
+  }
 }
 
 

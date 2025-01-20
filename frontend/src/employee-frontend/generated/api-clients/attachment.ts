@@ -6,6 +6,7 @@
 
 import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
+import { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 
@@ -23,4 +24,19 @@ export async function deleteAttachment(
     method: 'DELETE'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.attachment.AttachmentsController.getAttachment
+*/
+export function getAttachment(
+  request: {
+    attachmentId: AttachmentId,
+    requestedFilename: string
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/employee/attachments/${request.attachmentId}/download/${request.requestedFilename}`
+  }
 }

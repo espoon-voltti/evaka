@@ -52,6 +52,7 @@ import { PinCode } from 'lib-common/generated/api-types/pis'
 import { SearchEmployeeRequest } from 'lib-common/generated/api-types/pis'
 import { SearchPersonBody } from 'lib-common/generated/api-types/pis'
 import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
+import { Uri } from 'lib-common/uri'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -802,6 +803,20 @@ export async function duplicatePerson(
     method: 'POST'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.getAddressPagePdf
+*/
+export function getAddressPagePdf(
+  request: {
+    guardianId: PersonId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/employee/person/${request.guardianId}/address-page/download`
+  }
 }
 
 

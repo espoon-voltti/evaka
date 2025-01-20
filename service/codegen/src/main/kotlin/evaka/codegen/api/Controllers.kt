@@ -23,10 +23,12 @@ import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.context.support.StaticWebApplicationContext
 import org.springframework.web.method.annotation.RequestParamMethodArgumentResolver
 import org.springframework.web.servlet.mvc.method.annotation.PathVariableMethodArgumentResolver
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+import org.springframework.web.servlet.mvc.method.annotation.RequestPartMethodArgumentResolver
 import org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor
 
 /** Scans all REST endpoints using Spring, returning metadata about all of them */
@@ -53,7 +55,7 @@ fun ApplicationContext.getEndpointMetadata(): List<EndpointMetadata> =
 data class EndpointMetadata(
     val controllerClass: KClass<*>,
     val controllerMethod: KFunction<*>,
-    val isJsonEndpoint: Boolean,
+    val type: EndpointType,
     val isDeprecated: Boolean,
     val hasClockParameter: Boolean,
     val path: String,
@@ -67,7 +69,10 @@ data class EndpointMetadata(
     fun types(): Sequence<KType> =
         pathVariables.asSequence().map { it.type } +
             requestParameters.asSequence().map { it.type } +
-            listOfNotNull(requestBodyType, responseBodyType)
+            listOfNotNull(
+                requestBodyType,
+                responseBodyType?.takeIf { this.type != EndpointType.PlainGet },
+            )
 
     fun validate() {
         fun fail(reason: String): Nothing =
@@ -83,11 +88,19 @@ data class EndpointMetadata(
             fail("It must not have a nullable response body")
         }
 
+        if (type == EndpointType.PlainGet && httpMethod != RequestMethod.GET) {
+            fail("It should use HTTP GET")
+        }
+
         when (httpMethod) {
             RequestMethod.GET,
             RequestMethod.HEAD,
             RequestMethod.DELETE -> {
-                if (isJsonEndpoint && httpMethod == RequestMethod.GET && responseBodyType == null) {
+                if (
+                    type !is EndpointType.PlainGet &&
+                        httpMethod == RequestMethod.GET &&
+                        responseBodyType == null
+                ) {
                     fail("It should have a response body")
                 }
                 if (requestBodyType != null) {
@@ -133,6 +146,14 @@ data class EndpointMetadata(
     }
 }
 
+sealed interface EndpointType {
+    data object Json : EndpointType
+
+    data class Multipart(val requestParts: List<NamedParameter>) : EndpointType
+
+    data object PlainGet : EndpointType
+}
+
 data class NamedParameter(val name: String, val type: KType, val isOptional: Boolean) {
     /**
      * Returns a type that represents both the nullability and optionality of the parameter type.
@@ -170,6 +191,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
     val pathSupport = PathVariableMethodArgumentResolver()
     val paramSupport = RequestParamMethodArgumentResolver(false)
     val bodySupport = RequestResponseBodyMethodProcessor(listOf(StringHttpMessageConverter()))
+    val partSupport = RequestPartMethodArgumentResolver(listOf(StringHttpMessageConverter()))
     return handlerMethods
         .asSequence()
         .flatMap { (info, method) ->
@@ -205,6 +227,17 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                 method.methodParameters
                     .firstOrNull { bodySupport.supportsParameter(it) }
                     ?.let { kotlinMethod.find(it).type }
+            val requestParts =
+                method.methodParameters
+                    .filter { partSupport.supportsParameter(it) }
+                    .mapNotNull { param ->
+                        kotlinMethod.findAnnotatedParameter(
+                            RequestPart::class,
+                            { it.name },
+                            { it.required },
+                            param,
+                        )
+                    }
             val responseBodyType =
                 if (!method.isVoid && bodySupport.supportsReturnType(method.returnType)) {
                     if (kotlinMethod.returnType.classifier == ResponseEntity::class) {
@@ -226,8 +259,11 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                     EndpointMetadata(
                         controllerClass = controllerClass,
                         controllerMethod = kotlinMethod,
-                        isJsonEndpoint =
-                            consumesJson && producesJson && responseBodyType != typeOf<Any>(),
+                        type =
+                            if (consumesJson && producesJson && responseBodyType != typeOf<Any>())
+                                EndpointType.Json
+                            else if (requestParts.isNotEmpty()) EndpointType.Multipart(requestParts)
+                            else EndpointType.PlainGet,
                         isDeprecated = kotlinMethod.hasAnnotation<Deprecated>(),
                         usesClock,
                         path = path,

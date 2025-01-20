@@ -4,14 +4,30 @@
 
 // GENERATED FILE: no manual modifications
 
+import { DecisionId } from 'lib-common/generated/api-types/shared'
 import { DecisionListResponse } from 'lib-common/generated/api-types/decision'
 import { DecisionUnit } from 'lib-common/generated/api-types/decision'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
+import { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDecisionListResponse } from 'lib-common/generated/api-types/decision'
 import { uri } from 'lib-common/uri'
+
+
+/**
+* Generated from fi.espoo.evaka.decision.DecisionController.downloadDecisionPdf
+*/
+export function downloadDecisionPdf(
+  request: {
+    id: DecisionId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/employee/decisions/${request.id}/download`
+  }
+}
 
 
 /**
