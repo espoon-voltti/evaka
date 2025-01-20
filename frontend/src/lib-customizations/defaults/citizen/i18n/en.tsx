@@ -1569,6 +1569,11 @@ const en: Translations = {
         title: 'Modifications saved',
         text: 'If you wish, you can make further changes as long as the application has not been processed.',
         ok: 'Ok!'
+      },
+      unitChangeWarning: {
+        title: 'Check the unit preferences',
+        text: 'Some of the preferred units you selected were removed, because they do not offer the selected service.',
+        ok: 'Ok!'
       }
     }
   },

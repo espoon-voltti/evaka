@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { constantQuery, useQuery } from 'lib-common/query'
+import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -22,9 +22,12 @@ import colors from 'lib-customizations/common'
 
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
 import { useTranslation } from '../../../localization'
-import { applicationUnitsQuery } from '../../queries'
 
 import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
+
+interface Props extends UnitPreferenceSectionProps {
+  units: PublicUnit[] | null
+}
 
 export default React.memo(function UnitsSubSection({
   formData,
@@ -32,40 +35,13 @@ export default React.memo(function UnitsSubSection({
   errors,
   verificationRequested,
   applicationType,
-  preparatory,
   preferredStartDate,
-  shiftCare
-}: UnitPreferenceSectionProps) {
+  units
+}: Props) {
   const t = useTranslation()
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
   const [isUnitSelectionInvalid, setIsUnitSelectionInvalid] = useState(false)
-
-  const { data: units = null } = useQuery(
-    preferredStartDate
-      ? applicationUnitsQuery({
-          type:
-            applicationType === 'CLUB'
-              ? 'CLUB'
-              : applicationType === 'DAYCARE'
-                ? 'DAYCARE'
-                : preparatory
-                  ? 'PREPARATORY'
-                  : 'PRESCHOOL',
-          date: preferredStartDate,
-          shiftCare
-        })
-      : constantQuery([])
-  )
-  useEffect(() => {
-    updateFormData((prev) => ({
-      preferredUnits: units
-        ? prev.preferredUnits.filter(({ id }) =>
-            units.some((unit) => unit.id === id)
-          )
-        : prev.preferredUnits
-    }))
-  }, [units, updateFormData])
 
   const maxUnits = getMaxPreferredUnits(applicationType)
 
