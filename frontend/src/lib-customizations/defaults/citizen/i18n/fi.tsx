@@ -2063,7 +2063,7 @@ export default {
       },
       codeNotReceived: 'En ole saanut koodia.',
       codeNotReceivedInfo:
-        'Tarkista roskapostikansio, ja että sähköpostiosoite on kirjoitettu oikein.',
+        'Tarkista roskapostikansio ja varmista, että sähköpostiosoite on kirjoitettu oikein.',
       verificationForm: 'Syötä saamasi vahvistuskoodi',
       confirmVerification: 'Vahvista',
       updateUsernameAlert: {
