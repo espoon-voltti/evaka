@@ -11,7 +11,6 @@ import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
 import { AbsenceCategory } from './absence'
 import { AbsenceType } from './absence'
-import { AssistanceFactor } from './occupancy'
 import { ChildImageId } from './shared'
 import { ChildServiceNeedInfo } from './absence'
 import { DailyServiceTimesValue } from './dailyservicetimes'
@@ -23,7 +22,6 @@ import { JsonOf } from '../../json'
 import { PersonId } from './shared'
 import { PlacementType } from './placement'
 import { ScheduleType } from './placement'
-import { deserializeJsonAssistanceFactor } from './occupancy'
 import { deserializeJsonChildServiceNeedInfo } from './absence'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
 import { deserializeJsonHolidayPeriodEffect } from './holidayperiod'
@@ -107,6 +105,7 @@ export interface ChildRecordOfDay {
   dailyServiceTimes: DailyServiceTimesValue | null
   groupId: GroupId | null
   inOtherUnit: boolean
+  occupancy: number
   possibleAbsenceCategories: AbsenceCategory[]
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
@@ -412,7 +411,6 @@ export interface ReservationsResponse {
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations
 */
 export interface UnitAttendanceReservations {
-  assistanceFactors: AssistanceFactor[]
   children: Child[]
   days: OperationalDay[]
   groups: ReservationGroup[]
@@ -705,7 +703,6 @@ export function deserializeJsonReservationsResponse(json: JsonOf<ReservationsRes
 export function deserializeJsonUnitAttendanceReservations(json: JsonOf<UnitAttendanceReservations>): UnitAttendanceReservations {
   return {
     ...json,
-    assistanceFactors: json.assistanceFactors.map(e => deserializeJsonAssistanceFactor(e)),
     children: json.children.map(e => deserializeJsonChild(e)),
     days: json.days.map(e => deserializeJsonOperationalDay(e))
   }

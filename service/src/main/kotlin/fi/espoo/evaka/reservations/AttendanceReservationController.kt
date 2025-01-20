@@ -24,7 +24,6 @@ import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
-import fi.espoo.evaka.occupancy.AssistanceFactor
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -55,6 +54,7 @@ import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -151,6 +151,32 @@ class AttendanceReservationController(
                                             val placementStatus =
                                                 placementInfo[childId]?.getValue(date)
                                                     ?: return@mapNotNull null
+                                            val age =
+                                                ChronoUnit.YEARS.between(
+                                                    childData.child.dateOfBirth,
+                                                    date,
+                                                )
+                                            val coefficient =
+                                                childData.child.serviceNeeds.fold(BigDecimal.ONE) {
+                                                    coefficient,
+                                                    sn ->
+                                                    if (sn.validDuring.includes(date))
+                                                        coefficient *
+                                                            if (age < 3)
+                                                                sn.occupancyCoefficientUnder3y
+                                                            else sn.occupancyCoefficient
+                                                    else coefficient
+                                                }
+                                            val factor =
+                                                assistanceFactors.fold(BigDecimal.ONE) { factor, af
+                                                    ->
+                                                    if (
+                                                        af.childId == childId &&
+                                                            af.validDuring.includes(date)
+                                                    )
+                                                        factor * af.capacityFactor.toBigDecimal()
+                                                    else factor
+                                                }
 
                                             UnitAttendanceReservations.ChildRecordOfDay(
                                                 childId = childData.child.id,
@@ -198,16 +224,9 @@ class AttendanceReservationController(
                                                         clubTerms,
                                                         preschoolTerms,
                                                     ),
+                                                occupancy = coefficient * factor,
                                             )
                                         }
-                                )
-                            },
-                        assistanceFactors =
-                            assistanceFactors.map {
-                                AssistanceFactor(
-                                    childId = it.childId,
-                                    capacityFactor = it.capacityFactor.toBigDecimal(),
-                                    period = it.validDuring,
                                 )
                             },
                     )
@@ -717,7 +736,6 @@ data class UnitAttendanceReservations(
     val groups: List<ReservationGroup>,
     val children: List<Child>,
     val days: List<OperationalDay>,
-    val assistanceFactors: List<AssistanceFactor>,
 ) {
     data class ReservationGroup(@PropagateNull val id: GroupId, val name: String)
 
@@ -747,6 +765,7 @@ data class UnitAttendanceReservations(
         val backupGroupId: GroupId?,
         val inOtherUnit: Boolean,
         val scheduleType: ScheduleType,
+        val occupancy: BigDecimal,
     )
 
     data class Child(

@@ -10,7 +10,6 @@ import React, { useMemo } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { AssistanceFactor } from 'lib-common/generated/api-types/occupancy'
 import {
   Child,
   ChildRecordOfDay,
@@ -46,7 +45,6 @@ interface Props {
   unitId: UUID
   days: OperationalDay[]
   childBasics: Child[]
-  assistanceFactors: AssistanceFactor[]
   onMakeReservationForChild: (child: Child) => void
   onOpenEditForChildDate: (childId: UUID, date: LocalDate) => void
   selectedDate: LocalDate
@@ -115,7 +113,6 @@ const occupancyFormatter = new Intl.NumberFormat('fi-FI', {
 export default React.memo(function ChildReservationsTable({
   days,
   childBasics,
-  assistanceFactors,
   onMakeReservationForChild,
   onOpenEditForChildDate,
   selectedDate,
@@ -160,30 +157,19 @@ export default React.memo(function ChildReservationsTable({
             )
           })
           .map((child) => child.childId)
-        const occupancy = childBasics.reduce((occupancy, child) => {
-          if (!presentChildren.includes(child.id)) return occupancy
-          const coefficient = child.serviceNeeds.reduce((occupancy, sn) => {
-            if (!sn.validDuring.includes(day.date)) return occupancy
-            return occupancy * day.date.differenceInYears(child.dateOfBirth) < 3
-              ? sn.occupancyCoefficientUnder3y
-              : sn.occupancyCoefficient
-          }, 1)
-          const factor = assistanceFactors.reduce((factor, af) => {
-            if (
-              !presentChildren.includes(af.childId) ||
-              !af.period.includes(day.date)
-            )
-              return factor
-            return factor * af.capacityFactor
-          }, 1)
-          return occupancy + coefficient * factor
-        }, 0)
+        const occupancy = day.children.reduce(
+          (occupancy, child) =>
+            presentChildren.includes(child.childId)
+              ? occupancy + child.occupancy
+              : occupancy,
+          0
+        )
         return {
           headcount: presentChildren.length,
           occupancy
         }
       }),
-    [days, childBasics, selectedGroup, assistanceFactors]
+    [days, childBasics, selectedGroup]
   )
 
   return (
