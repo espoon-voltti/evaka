@@ -138,13 +138,14 @@ export default React.memo(function StaffMarkDepartedPage({
     () =>
       staffMember
         .map((staff) => {
-          if (time === undefined || !staff?.spanningPlan) return []
+          if (time === undefined || !staff || staff.spanningPlans.length === 0)
+            return []
           const departed = HelsinkiDateTime.fromLocal(
             LocalDate.todayInHelsinkiTz(),
             time
           )
           return getAttendanceDepartureDifferenceReasons(
-            staff.spanningPlan.end,
+            staff.spanningPlans.map((plan) => plan.end),
             departed
           )
         })

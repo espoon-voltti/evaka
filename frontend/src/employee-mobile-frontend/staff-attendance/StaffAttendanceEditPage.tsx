@@ -378,18 +378,25 @@ const StaffAttendancesEditor = ({
         <H4 primary>{toStaff(staffMember).name}</H4>
         <H2 primary>{date.format('EEEEEE d.M.yyyy', lang)}</H2>
         <H3>{i18n.attendances.staff.summary}</H3>
-        {staffMember.spanningPlan && (
+        {staffMember.spanningPlans.length > 0 && (
           <div>
             <Label>{i18n.attendances.staff.plan}</Label>{' '}
-            <>
-              {staffMember.spanningPlan.start.toLocalTime().format()}–
-              {staffMember.spanningPlan.end.toLocalTime().format()}
-            </>
+            <div>
+              {staffMember.spanningPlans.map((range, i) => {
+                const start = range.start.toLocalDate().isEqual(date)
+                  ? range.start.toLocalTime().format()
+                  : range.start.format('d.M. HH:mm')
+                const end = range.end.toLocalDate().isEqual(date)
+                  ? range.end.toLocalTime().format()
+                  : range.end.format('d.M. HH:mm')
+                return <div key={`plan-${i}`}>{`${start} – ${end}`}</div>
+              })}
+            </div>
           </div>
         )}
         <div>
-          <Label>{i18n.attendances.staff.realization}</Label>{' '}
-          <span>
+          <Label>{i18n.attendances.staff.realization}</Label>
+          <div>
             {staffMember.attendances
               .map(
                 ({ arrived, departed }) =>
@@ -398,7 +405,7 @@ const StaffAttendancesEditor = ({
                   }`
               )
               .join(', ')}
-          </span>
+          </div>
         </div>
         <H3>{i18n.attendances.staff.rows}</H3>
 
