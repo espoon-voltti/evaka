@@ -115,7 +115,7 @@ FROM daycare_caretaker
             sql(
                 """
 SELECT
-    id, created_at, updated_at, type, transferapplication, origin, status, additionaldaycareapplication, sentdate, duedate,
+    id, created_at AS created, updated_at AS updated, type, transferapplication, origin, status, additionaldaycareapplication, sentdate, duedate,
     (
       SELECT array_agg(e::UUID)
       FROM jsonb_array_elements_text(document -> 'apply' -> 'preferredUnits') e
@@ -206,7 +206,7 @@ WHERE status NOT IN ('DRAFT', 'IGNORED')
             sql(
                 """
 SELECT
-    id, created_at, updated_at, child_id AS child
+    id, created_at AS created, updated_at AS updated, child_id AS child
 FROM pedagogical_document
 """
             )
