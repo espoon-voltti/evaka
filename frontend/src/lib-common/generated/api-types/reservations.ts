@@ -105,6 +105,7 @@ export interface ChildRecordOfDay {
   dailyServiceTimes: DailyServiceTimesValue | null
   groupId: GroupId | null
   inOtherUnit: boolean
+  occupancy: number
   possibleAbsenceCategories: AbsenceCategory[]
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
