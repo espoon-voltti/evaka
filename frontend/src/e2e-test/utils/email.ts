@@ -11,7 +11,7 @@ export async function getVerificationCodeFromEmail(): Promise<string | null> {
   expect(emails.length).toBe(1)
   const email = emails[0]
 
-  const verificationCodeRegex = /[0-9]{8}/
+  const verificationCodeRegex = /[0-9]{6}/
   const matches = verificationCodeRegex.exec(email.content.text)
   return matches ? matches[0] : null
 }
