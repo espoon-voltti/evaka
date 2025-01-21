@@ -269,6 +269,7 @@ const FosterChildCreationModal = React.memo(function FosterChildCreationModal({
       <DbPersonSearch
         onResult={(person) => setForm({ ...form, childId: person?.id ?? null })}
         ageLessThan={18}
+        excludePeople={[parentId]}
         data-qa="person-search"
       />
       <Label>{i18n.personProfile.fosterChildren.validDuringLabel}</Label>
