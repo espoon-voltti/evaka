@@ -12,11 +12,7 @@ import {
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveIncomeStatementAttachment
-} from '../attachments'
+import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
 
 export default React.memo(function Attachments({
   incomeStatementId,
@@ -33,9 +29,8 @@ export default React.memo(function Attachments({
     <FixedSpaceColumn spacing="zero">
       <FileUpload
         files={attachments}
-        onUpload={saveIncomeStatementAttachment(incomeStatementId)}
+        uploadHandler={incomeStatementAttachment(incomeStatementId)}
         onUploaded={onUploaded}
-        onDelete={deleteAttachment}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />

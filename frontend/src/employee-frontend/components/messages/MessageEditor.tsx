@@ -76,7 +76,6 @@ import {
   faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
 
-import { deleteAttachment } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 
 import { createMessagePreflightCheckQuery } from './queries'
@@ -788,13 +787,12 @@ export default React.memo(function MessageEditor({
                 data-qa="upload-message-attachment"
                 files={message.attachments}
                 getDownloadUrl={getAttachmentUrl}
-                onUpload={saveMessageAttachment(draftId)}
+                uploadHandler={saveMessageAttachment(draftId)}
                 onUploaded={(attachment) =>
                   updateMessage({
                     attachments: [...message.attachments, attachment]
                   })
                 }
-                onDelete={deleteAttachment}
                 onDeleted={(id) =>
                   setMessage(({ attachments, ...rest }) => ({
                     ...rest,

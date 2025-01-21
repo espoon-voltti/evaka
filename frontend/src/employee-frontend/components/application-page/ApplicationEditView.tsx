@@ -57,11 +57,7 @@ import {
   faUsers
 } from 'lib-icons'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveApplicationAttachment
-} from '../../api/attachments'
+import { getAttachmentUrl, applicationAttachment } from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
@@ -293,12 +289,11 @@ export default React.memo(function ApplicationEditView({
               {urgent && featureFlags.urgencyAttachments && (
                 <FileUploadGridContainer>
                   <FileUpload
-                    onUpload={saveApplicationAttachment(
+                    uploadHandler={applicationAttachment(
                       application.id,
                       'URGENCY'
                     )}
                     onUploaded={onAttachmentUploaded('URGENCY')}
-                    onDelete={deleteAttachment}
                     onDeleted={handleAttachmentDeleted}
                     getDownloadUrl={getAttachmentUrl}
                     files={attachments.filter((a) => a.type === 'URGENCY')}
@@ -595,12 +590,11 @@ export default React.memo(function ApplicationEditView({
               {serviceNeed.shiftCare && (
                 <FileUploadGridContainer>
                   <FileUpload
-                    onUpload={saveApplicationAttachment(
+                    uploadHandler={applicationAttachment(
                       application.id,
                       'EXTENDED_CARE'
                     )}
                     onUploaded={onAttachmentUploaded('EXTENDED_CARE')}
-                    onDelete={deleteAttachment}
                     onDeleted={handleAttachmentDeleted}
                     getDownloadUrl={getAttachmentUrl}
                     files={attachments.filter(
@@ -1330,12 +1324,11 @@ export default React.memo(function ApplicationEditView({
 
           <FileUploadGridContainer>
             <FileUpload
-              onUpload={saveApplicationAttachment(
+              uploadHandler={applicationAttachment(
                 application.id,
                 'SERVICE_WORKER_ATTACHMENT'
               )}
               onUploaded={onAttachmentUploaded('SERVICE_WORKER_ATTACHMENT')}
-              onDelete={deleteAttachment}
               onDeleted={handleAttachmentDeleted}
               getDownloadUrl={getAttachmentUrl}
               files={attachments.filter(

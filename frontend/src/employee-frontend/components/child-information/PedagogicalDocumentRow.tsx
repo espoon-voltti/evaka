@@ -24,9 +24,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
-  savePedagogicalDocumentAttachment
+  pedagogicalDocumentAttachment
 } from '../../api/attachments'
 import { updatePedagogicalDocument } from '../../generated/api-clients/pedagogicaldocument'
 import { useTranslation } from '../../state/i18n'
@@ -147,12 +146,11 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             data-qa="upload-pedagogical-document-attachment-new"
             files={attachments}
             getDownloadUrl={getAttachmentUrl}
-            onUpload={savePedagogicalDocumentAttachment(id)}
+            uploadHandler={pedagogicalDocumentAttachment(id)}
             onUploaded={() => {
               setSubmitting(false)
               onReload()
             }}
-            onDelete={deleteAttachment}
             onDeleted={() =>
               setPedagogicalDocument(({ ...rest }) => ({
                 ...rest,

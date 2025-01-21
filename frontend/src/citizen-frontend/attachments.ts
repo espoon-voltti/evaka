@@ -12,31 +12,36 @@ import {
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
 
 import { API_URL, client } from './api-client'
-import { deleteAttachment as deleteAttachmentPromise } from './generated/api-clients/attachment'
+import { deleteAttachment } from './generated/api-clients/attachment'
 
 function uploadHandler(url: string): UploadHandler {
-  return async (file, onUploadProgress) => {
-    const formData = new FormData()
-    formData.append('file', file)
+  return {
+    upload: async (file, onUploadProgress) => {
+      const formData = new FormData()
+      formData.append('file', file)
 
-    try {
-      const { data } = await client.post<AttachmentId>(url, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: ({ loaded, total }) =>
-          onUploadProgress(
-            total !== undefined && total !== 0
-              ? Math.round((loaded / total) * 100)
-              : 0
-          )
-      })
-      return Success.of(data)
-    } catch (e) {
-      return Failure.fromError(e)
-    }
+      try {
+        const { data } = await client.post<AttachmentId>(url, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: ({ loaded, total }) =>
+            onUploadProgress(
+              total !== undefined && total !== 0
+                ? Math.round((loaded / total) * 100)
+                : 0
+            )
+        })
+        return Success.of(data)
+      } catch (e) {
+        return Failure.fromError(e)
+      }
+    },
+    delete: deleteAttachmentResult
   }
 }
 
-export function saveIncomeStatementAttachment(
+const deleteAttachmentResult = wrapResult(deleteAttachment)
+
+export function incomeStatementAttachment(
   incomeStatementId: IncomeStatementId | undefined
 ): UploadHandler {
   return uploadHandler(
@@ -46,11 +51,9 @@ export function saveIncomeStatementAttachment(
   )
 }
 
-export const saveMessageAttachment = uploadHandler(
-  '/citizen/attachments/messages'
-)
+export const messageAttachment = uploadHandler('/citizen/attachments/messages')
 
-export function saveApplicationAttachment(
+export function applicationAttachment(
   applicationId: ApplicationId,
   attachmentType: AttachmentType
 ): UploadHandler {
@@ -66,5 +69,3 @@ export function getAttachmentUrl(
   const encodedFilename = encodeURIComponent(requestedFilename)
   return `${API_URL}/citizen/attachments/${attachmentId}/download/${encodedFilename}`
 }
-
-export const deleteAttachment = wrapResult(deleteAttachmentPromise)

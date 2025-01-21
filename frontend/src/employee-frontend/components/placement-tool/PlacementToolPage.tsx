@@ -13,7 +13,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
 
-import { deletePlacementFile, uploadPlacementFile } from './api'
+import { placementFile } from './api'
 import { nextPreschoolTermQuery } from './queries'
 
 export default React.memo(function PlacementToolPage() {
@@ -41,8 +41,7 @@ export default React.memo(function PlacementToolPage() {
                 <FileUpload
                   disabled={term === null}
                   files={[]}
-                  onUpload={uploadPlacementFile}
-                  onDelete={deletePlacementFile}
+                  uploadHandler={placementFile}
                   getDownloadUrl={() => ''}
                   allowedFileTypes={['csv']}
                 />

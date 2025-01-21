@@ -18,11 +18,7 @@ import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveApplicationAttachment
-} from '../../../attachments'
+import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
@@ -142,7 +138,10 @@ export default React.memo(function PreferredStartSubSection({
 
                 <FileUpload
                   files={formData.urgencyAttachments}
-                  onUpload={saveApplicationAttachment(applicationId, 'URGENCY')}
+                  uploadHandler={applicationAttachment(
+                    applicationId,
+                    'URGENCY'
+                  )}
                   onUploaded={(attachment) =>
                     updateFormData({
                       urgencyAttachments: [
@@ -158,7 +157,6 @@ export default React.memo(function PreferredStartSubSection({
                       ]
                     })
                   }
-                  onDelete={deleteAttachment}
                   onDeleted={(id) =>
                     updateFormData({
                       urgencyAttachments: formData.urgencyAttachments.filter(

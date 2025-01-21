@@ -8,7 +8,7 @@ import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
 
-import { deleteAttachment as deleteAttachmentPromise } from '../generated/api-clients/attachment'
+import { deleteAttachment } from '../generated/api-clients/attachment'
 
 import { API_URL, client } from './client'
 
@@ -16,29 +16,38 @@ function uploadHandler(config: {
   path: string
   params?: unknown
 }): UploadHandler {
-  return async (file, onUploadProgress) => {
-    const formData = new FormData()
-    formData.append('file', file)
+  return {
+    upload: async (file, onUploadProgress) => {
+      const formData = new FormData()
+      formData.append('file', file)
 
-    try {
-      const { data } = await client.post<AttachmentId>(config.path, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        params: config.params,
-        onUploadProgress: ({ loaded, total }) =>
-          onUploadProgress(
-            total !== undefined && total !== 0
-              ? Math.round((loaded * 100) / total)
-              : 0
-          )
-      })
-      return Success.of(data)
-    } catch (e) {
-      return Failure.fromError(e)
-    }
+      try {
+        const { data } = await client.post<AttachmentId>(
+          config.path,
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            params: config.params,
+            onUploadProgress: ({ loaded, total }) =>
+              onUploadProgress(
+                total !== undefined && total !== 0
+                  ? Math.round((loaded * 100) / total)
+                  : 0
+              )
+          }
+        )
+        return Success.of(data)
+      } catch (e) {
+        return Failure.fromError(e)
+      }
+    },
+    delete: deleteAttachmentResult
   }
 }
 
-export function saveApplicationAttachment(
+const deleteAttachmentResult = wrapResult(deleteAttachment)
+
+export function applicationAttachment(
   applicationId: UUID,
   type: AttachmentType
 ): UploadHandler {
@@ -48,7 +57,7 @@ export function saveApplicationAttachment(
   })
 }
 
-export function saveIncomeStatementAttachment(
+export function incomeStatementAttachment(
   incomeStatementId: UUID
 ): UploadHandler {
   return uploadHandler({
@@ -56,7 +65,7 @@ export function saveIncomeStatementAttachment(
   })
 }
 
-export function saveIncomeAttachment(incomeId: UUID | null): UploadHandler {
+export function incomeAttachment(incomeId: UUID | null): UploadHandler {
   return uploadHandler({
     path: incomeId
       ? `/employee/attachments/income/${incomeId}`
@@ -64,11 +73,11 @@ export function saveIncomeAttachment(incomeId: UUID | null): UploadHandler {
   })
 }
 
-export function saveInvoiceAttachment(invoiceId: UUID): UploadHandler {
+export function invoiceAttachment(invoiceId: UUID): UploadHandler {
   return uploadHandler({ path: `/employee/attachments/invoices/${invoiceId}` })
 }
 
-export function saveFeeAlterationAttachment(
+export function feeAlterationAttachment(
   feeAlterationId: UUID | null
 ): UploadHandler {
   return uploadHandler({
@@ -78,13 +87,11 @@ export function saveFeeAlterationAttachment(
   })
 }
 
-export function saveMessageAttachment(draftId: UUID): UploadHandler {
+export function messageAttachment(draftId: UUID): UploadHandler {
   return uploadHandler({ path: `/employee/attachments/messages/${draftId}` })
 }
 
-export function savePedagogicalDocumentAttachment(
-  documentId: UUID
-): UploadHandler {
+export function pedagogicalDocumentAttachment(documentId: UUID): UploadHandler {
   return uploadHandler({
     path: `/employee/attachments/pedagogical-documents/${documentId}`
   })
@@ -97,5 +104,3 @@ export function getAttachmentUrl(
   const encodedFilename = encodeURIComponent(requestedFilename)
   return `${API_URL}/employee/attachments/${attachmentId}/download/${encodedFilename}`
 }
-
-export const deleteAttachment = wrapResult(deleteAttachmentPromise)

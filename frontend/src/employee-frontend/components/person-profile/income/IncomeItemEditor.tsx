@@ -39,11 +39,7 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveIncomeAttachment
-} from '../../../api/attachments'
+import { getAttachmentUrl, incomeAttachment } from '../../../api/attachments'
 import { useTranslation } from '../../../state/i18n'
 import { IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
@@ -453,9 +449,8 @@ function IncomeAttachments({
       <FileUpload
         data-qa="income-attachment-upload"
         files={attachments}
-        onUpload={saveIncomeAttachment(incomeId)}
+        uploadHandler={incomeAttachment(incomeId)}
         onUploaded={onUploaded}
-        onDelete={deleteAttachment}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />

@@ -26,11 +26,7 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveInvoiceAttachment
-} from '../../api/attachments'
+import { getAttachmentUrl, invoiceAttachment } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { markReplacementDraftSentMutation } from '../invoices/queries'
 
@@ -96,8 +92,7 @@ export function ReplacementDraftForm({
         <FixedSpaceColumn>
           <FileUpload
             files={invoiceResponse.invoice.attachments}
-            onUpload={saveInvoiceAttachment(invoiceResponse.invoice.id)}
-            onDelete={deleteAttachment}
+            uploadHandler={invoiceAttachment(invoiceResponse.invoice.id)}
             getDownloadUrl={getAttachmentUrl}
             data-qa="attachments"
           />

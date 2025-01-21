@@ -44,11 +44,7 @@ import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveMessageAttachment
-} from '../attachments'
+import { getAttachmentUrl, messageAttachment } from '../attachments'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
@@ -399,11 +395,10 @@ export default React.memo(function MessageEditor({
                 <FileUpload
                   slimSingleFile
                   files={attachments}
-                  onUpload={saveMessageAttachment}
+                  uploadHandler={messageAttachment}
                   onUploaded={(attachment) =>
                     setAttachments((prev) => [...prev, attachment])
                   }
-                  onDelete={deleteAttachment}
                   onDeleted={(id) =>
                     setAttachments((prev) => prev.filter((a) => a.id !== id))
                   }

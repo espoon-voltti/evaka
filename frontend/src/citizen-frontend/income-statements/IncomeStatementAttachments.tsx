@@ -16,11 +16,7 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 import { H3, H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveIncomeStatementAttachment
-} from '../attachments'
+import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
 import { useTranslation } from '../localization'
 
 import { AttachmentType } from './types/common'
@@ -63,9 +59,8 @@ export default React.memo(function Attachments({
         )}
         <FileUpload
           files={attachments}
-          onUpload={saveIncomeStatementAttachment(incomeStatementId)}
+          uploadHandler={incomeStatementAttachment(incomeStatementId)}
           onUploaded={onUploaded}
-          onDelete={deleteAttachment}
           onDeleted={onDeleted}
           getDownloadUrl={getAttachmentUrl}
         />

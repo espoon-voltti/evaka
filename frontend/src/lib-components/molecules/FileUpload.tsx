@@ -77,16 +77,18 @@ export const initialUploadStatus: UploadStatus = {
   error: 0
 }
 
-export type UploadHandler = (
-  file: File,
-  onUploadProgress: (percentage: number) => void
-) => Promise<Result<AttachmentId>>
+export type UploadHandler = {
+  upload: (
+    file: File,
+    onUploadProgress: (percentage: number) => void
+  ) => Promise<Result<AttachmentId>>
+  delete: (request: { attachmentId: AttachmentId }) => Promise<Result<void>>
+}
 
 interface FileUploadProps {
   files: Attachment[]
-  onUpload: UploadHandler
+  uploadHandler: UploadHandler
   onUploaded?: (attachment: Attachment) => void
-  onDelete: (request: { attachmentId: AttachmentId }) => Promise<Result<void>>
   onDeleted?: (id: AttachmentId) => void
   onStateChange?: (status: UploadStatus) => void
   getDownloadUrl: (id: AttachmentId, fileName: string) => string
@@ -305,9 +307,8 @@ const inProgress = (file: FileObject): boolean => !file.uploaded
 
 export default React.memo(function FileUpload({
   files,
-  onUpload,
+  uploadHandler,
   onUploaded,
-  onDelete,
   onDeleted,
   onStateChange,
   getDownloadUrl,
@@ -373,7 +374,7 @@ export default React.memo(function FileUpload({
     try {
       let success = false
       if (file.error === undefined) {
-        const result = await onDelete({ attachmentId: file.id })
+        const result = await uploadHandler.delete({ attachmentId: file.id })
         if (result.isSuccess) {
           onDeleted?.(file.id)
           success = true
@@ -432,7 +433,7 @@ export default React.memo(function FileUpload({
     }
 
     try {
-      const result = await onUpload(file, updateProgress)
+      const result = await uploadHandler.upload(file, updateProgress)
       if (result.isFailure) {
         updateUploadedFile({
           ...fileObject,

@@ -24,11 +24,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { placementTypes } from 'lib-customizations/employee'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveApplicationAttachment
-} from '../../../attachments'
+import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 
@@ -308,7 +304,10 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
           <FileUpload
             files={formData.shiftCareAttachments}
-            onUpload={saveApplicationAttachment(applicationId, 'EXTENDED_CARE')}
+            uploadHandler={applicationAttachment(
+              applicationId,
+              'EXTENDED_CARE'
+            )}
             onUploaded={(attachment) =>
               updateFormData({
                 shiftCareAttachments: [
@@ -324,7 +323,6 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                 ]
               })
             }
-            onDelete={deleteAttachment}
             onDeleted={(id) =>
               updateFormData({
                 shiftCareAttachments: formData.shiftCareAttachments.filter(

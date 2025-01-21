@@ -38,11 +38,7 @@ import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveIncomeStatementAttachment
-} from '../api/attachments'
+import { getAttachmentUrl, incomeStatementAttachment } from '../api/attachments'
 import {
   getIncomeStatement,
   setIncomeStatementHandled
@@ -467,9 +463,8 @@ function EmployeeAttachments({
       <P>{i18n.incomeStatement.employeeAttachments.description}</P>
       <FileUpload
         files={attachments}
-        onUpload={saveIncomeStatementAttachment(incomeStatementId)}
+        uploadHandler={incomeStatementAttachment(incomeStatementId)}
         onUploaded={onUploaded}
-        onDelete={deleteAttachment}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />

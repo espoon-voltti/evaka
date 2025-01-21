@@ -28,11 +28,7 @@ import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveApplicationAttachment
-} from '../../../attachments'
+import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
@@ -339,7 +335,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
               <FileUpload
                 files={formData.shiftCareAttachments}
-                onUpload={saveApplicationAttachment(
+                uploadHandler={applicationAttachment(
                   applicationId,
                   'EXTENDED_CARE'
                 )}
@@ -358,7 +354,6 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                     ]
                   })
                 }
-                onDelete={deleteAttachment}
                 onDeleted={(id) =>
                   updateFormData({
                     shiftCareAttachments: formData.shiftCareAttachments.filter(

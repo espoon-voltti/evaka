@@ -5,9 +5,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
-  saveFeeAlterationAttachment
+  feeAlterationAttachment
 } from 'employee-frontend/api/attachments'
 import { Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -215,9 +214,8 @@ function FeeAlterationAttachments({
       <FileUpload
         data-qa="fee-alteration-attachment-upload"
         files={attachments}
-        onUpload={saveFeeAlterationAttachment(feeAlterationId)}
+        uploadHandler={feeAlterationAttachment(feeAlterationId)}
         onUploaded={onUploaded}
-        onDelete={deleteAttachment}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />

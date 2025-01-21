@@ -26,7 +26,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { getAttachmentUrl, saveMessageAttachment } from '../../api/attachments'
+import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
 import {
   initDraftMessage,
   updateDraftMessage,
@@ -252,7 +252,7 @@ export default React.memo(function MessagesPage({
                   body: params.content
                 })
               }
-              saveMessageAttachment={saveMessageAttachment}
+              saveMessageAttachment={messageAttachment}
               sending={sending}
               defaultTitle={prefilledTitle ?? undefined}
             />
