@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 
 import {
   testDaycareGroup,
@@ -98,6 +99,7 @@ describe('Employee - paper application', () => {
     }).saveChild({ updateMockVtj: true })
     await Fixture.person({
       ssn,
+      dateOfBirth: LocalDate.of(1972, 3, 27),
       firstName: 'Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
       lastName: 'Korhonen-Hämäläinen',
       streetAddress: 'Kamreerintie 2',
