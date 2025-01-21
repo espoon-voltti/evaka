@@ -83,7 +83,6 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
 
   return (
     <InfoModal
-      data-qa="backup-care-group-modal"
       title={i18n.absences.modal.absenceSummaryTitle}
       icon={faAbacus}
       close={() => clearUiMode()}
@@ -141,7 +140,7 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
                         'BILLABLE',
                         lang
                       )}
-                      position="right"
+                      position="left"
                     >
                       {calculateAbsences(
                         absences,
@@ -192,5 +191,15 @@ function createTooltipText(
         abs.absenceType === absenceType && abs.category === category
     )
     .map(({ date }) => date.format('EEEEEE dd.MM.yyyy', lang))
-  return absencesList.join('<br />')
+
+  return (
+    <div>
+      {absencesList.map((date, index) => (
+        <React.Fragment key={index}>
+          {date}
+          {index < absencesList.length - 1 && <br />}
+        </React.Fragment>
+      ))}
+    </div>
+  )
 }
