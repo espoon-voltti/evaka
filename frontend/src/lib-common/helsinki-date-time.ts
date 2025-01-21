@@ -71,8 +71,8 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
     )
   }
 
-  format(): string {
-    return formatInTimeZone(this.timestamp, EUROPE_HELSINKI, 'dd.MM.yyyy HH:mm')
+  format(pattern = 'dd.MM.yyyy HH:mm'): string {
+    return formatInTimeZone(this.timestamp, EUROPE_HELSINKI, pattern)
   }
   formatIso(): string {
     return formatInTimeZone(

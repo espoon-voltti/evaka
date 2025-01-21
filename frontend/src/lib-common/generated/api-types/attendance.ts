@@ -409,7 +409,7 @@ export interface StaffMember {
   occupancyEffect: boolean
   plannedAttendances: PlannedStaffAttendance[]
   present: GroupId | null
-  spanningPlan: HelsinkiDateTimeRange | null
+  spanningPlans: HelsinkiDateTimeRange[]
 }
 
 /**
@@ -681,7 +681,7 @@ export function deserializeJsonStaffMember(json: JsonOf<StaffMember>): StaffMemb
     attendances: json.attendances.map(e => deserializeJsonStaffMemberAttendance(e)),
     latestCurrentDayAttendance: (json.latestCurrentDayAttendance != null) ? deserializeJsonStaffMemberAttendance(json.latestCurrentDayAttendance) : null,
     plannedAttendances: json.plannedAttendances.map(e => deserializeJsonPlannedStaffAttendance(e)),
-    spanningPlan: (json.spanningPlan != null) ? deserializeJsonHelsinkiDateTimeRange(json.spanningPlan) : null
+    spanningPlans: json.spanningPlans.map(e => deserializeJsonHelsinkiDateTimeRange(e))
   }
 }
 

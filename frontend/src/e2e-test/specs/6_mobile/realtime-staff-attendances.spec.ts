@@ -612,7 +612,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickMarkDepartedButton()
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertShiftTimeTextShown(
-      'Työvuoro tänään 08:00–16:00'
+      'Työvuoro tänään\n08:00 – 16:00'
     )
     await staffAttendancePage.assertAttendanceTimeTextShown(
       'Paikalla 08:02–14:02,Työasia 14:02–'
@@ -653,7 +653,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickMarkDepartedButton()
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertShiftTimeTextShown(
-      'Työvuoro tänään 08:00–16:00'
+      'Työvuoro tänään\n08:00 – 16:00'
     )
     await staffAttendancePage.assertAttendanceTimeTextShown(
       'Paikalla 08:02–14:02'
@@ -698,7 +698,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.selectAttendanceType('TRAINING')
     await staffAttendancePage.clickDoneButton()
     await staffAttendancePage.assertShiftTimeTextShown(
-      'Työvuoro tänään 08:00–16:00'
+      'Työvuoro tänään\n08:00 – 16:00'
     )
     await staffAttendancePage.assertAttendanceTimeTextShown(
       'Koulutus 08:00–12:04,Paikalla 12:04–'
@@ -718,7 +718,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickMarkDepartedButton()
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertShiftTimeTextShown(
-      'Työvuoro tänään 08:00–16:00'
+      'Työvuoro tänään\n08:00 – 16:00'
     )
     await staffAttendancePage.assertAttendanceTimeTextShown(
       'Koulutus 08:00–12:04,Paikalla 12:04–14:02,Työasia 14:02–'
