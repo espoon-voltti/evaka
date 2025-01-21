@@ -13,8 +13,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 /**
  * Gets the latest email verification for the current non-verified e-mail address for a person.
  *
- * The person may have multiple verifications, but this function returns only the one that matches
- * the current non-verified e-mail address.
+ * This function returns only a verification if one matches the current non-verified e-mail address.
  */
 fun Database.Read.getLatestEmailVerification(person: PersonId): EmailVerification? =
     createQuery {
@@ -30,25 +29,27 @@ WHERE p.id = ${bind(person)}
         .exactlyOneOrNull()
 
 /**
- * Upserts a new email verification based on a (person_id, email) target.
+ * Upserts a new email verification
  * - if a row doesn't exist, a new row inserted
- * - if a row exists, but it has expired, it's updated
- * - if a row exists and is still valid, nothing is changed
+ * - if a row exists, but it has expired or has a different email address, it's updated
+ * - if a row exists, is still valid and has the same email address, nothing is changed
  */
 fun Database.Transaction.upsertEmailVerification(
     now: HelsinkiDateTime,
-    target: EmailVerificationTarget,
+    person: PersonId,
+    email: String,
     verification: NewEmailVerification,
 ): EmailVerification =
     createUpdate {
             sql(
                 """
 INSERT INTO person_email_verification AS pev (person_id, email, verification_code, expires_at)
-VALUES (${bind(target.person)}, ${bind(target.email)}, ${bind(verification.verificationCode)}, ${bind(verification.expiresAt)})
-ON CONFLICT (person_id, email) DO UPDATE SET
-    expires_at = CASE WHEN pev.expires_at < ${bind(now)} THEN excluded.expires_at ELSE pev.expires_at END,
-    verification_code = CASE WHEN pev.expires_at < ${bind(now)} THEN excluded.verification_code ELSE pev.verification_code END,
-    sent_at = CASE WHEN pev.expires_at < ${bind(now)} THEN NULL ELSE pev.sent_at END
+VALUES (${bind(person)}, ${bind(email)}, ${bind(verification.verificationCode)}, ${bind(verification.expiresAt)})
+ON CONFLICT (person_id) DO UPDATE SET
+    email = excluded.email,
+    expires_at = CASE WHEN pev.expires_at < ${bind(now)} OR pev.email != excluded.email THEN excluded.expires_at ELSE pev.expires_at END,
+    verification_code = CASE WHEN pev.expires_at < ${bind(now)} OR pev.email != excluded.email THEN excluded.verification_code ELSE pev.verification_code END,
+    sent_at = CASE WHEN pev.expires_at < ${bind(now)} OR pev.email != excluded.email THEN NULL ELSE pev.sent_at END
 RETURNING id, email, expires_at, sent_at
 """
             )

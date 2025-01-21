@@ -13,5 +13,5 @@ CREATE TABLE person_email_verification (
 
 ALTER TABLE person_email_verification
     ADD CONSTRAINT fk$person FOREIGN KEY (person_id) REFERENCES person (id) ON DELETE CASCADE,
-    ADD CONSTRAINT uniq$person_email_verification_person_email UNIQUE (person_id, email)
+    ADD CONSTRAINT uniq$person_email_verification_person UNIQUE (person_id)
 ;

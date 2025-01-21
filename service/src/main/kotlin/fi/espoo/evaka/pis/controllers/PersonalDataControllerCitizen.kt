@@ -10,7 +10,6 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.pis.*
 import fi.espoo.evaka.pis.EmailVerification
-import fi.espoo.evaka.pis.EmailVerificationTarget
 import fi.espoo.evaka.pis.NewEmailVerification
 import fi.espoo.evaka.shared.PersonEmailVerificationId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -233,7 +232,8 @@ class PersonalDataControllerCitizen(
                     val verification =
                         tx.upsertEmailVerification(
                             clock.now(),
-                            EmailVerificationTarget(person = user.id, email = email),
+                            user.id,
+                            email,
                             NewEmailVerification(
                                 verificationCode = verificationCode,
                                 expiresAt = clock.now().plus(CONFIRMATION_CODE_DURATION),
