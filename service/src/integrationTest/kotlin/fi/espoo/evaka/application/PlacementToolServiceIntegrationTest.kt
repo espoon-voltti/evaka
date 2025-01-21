@@ -170,6 +170,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     voucherValueDescriptionSv = "",
                     validFrom = LocalDate.of(2000, 1, 1),
                     validTo = null,
+                    showForCitizen = true,
                 )
             )
             tx.insert(

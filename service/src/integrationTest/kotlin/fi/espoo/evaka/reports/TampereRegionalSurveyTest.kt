@@ -74,6 +74,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             voucherValueDescriptionSv = "Kokopäiväinen (seutu)",
             validFrom = LocalDate.of(2000, 1, 1),
             validTo = null,
+            showForCitizen = true,
         )
 
     @Test
@@ -390,6 +391,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 voucherValueDescriptionSv = "Osa-aikainen (seutu)",
                 validFrom = LocalDate.of(2000, 1, 1),
                 validTo = null,
+                showForCitizen = true,
             )
 
         val dailyPartTimeSno =
@@ -416,6 +418,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 voucherValueDescriptionSv = "Kokopäiväinen (seutu)",
                 validFrom = LocalDate.of(2000, 1, 1),
                 validTo = null,
+                showForCitizen = true,
             )
 
         val default =

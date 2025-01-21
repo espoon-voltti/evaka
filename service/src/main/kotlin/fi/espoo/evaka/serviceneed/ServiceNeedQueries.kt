@@ -219,7 +219,8 @@ SELECT
     voucher_value_description_sv,
     valid_from,
     valid_to,
-    updated
+    updated,
+    show_for_citizen
 FROM service_need_option
 ORDER BY display_order, daycare_hours_per_week DESC, part_day, part_week, name_fi
         """
@@ -255,7 +256,8 @@ SELECT
     voucher_value_description_sv,
     valid_from,
     valid_to,
-    updated
+    updated,
+    show_for_citizen
 FROM service_need_option
 WHERE id = ${bind(id)}
         """

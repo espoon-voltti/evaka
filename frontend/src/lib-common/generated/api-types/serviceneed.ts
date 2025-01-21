@@ -162,6 +162,7 @@ export interface ServiceNeedOption {
   partWeek: boolean | null
   realizedOccupancyCoefficient: number
   realizedOccupancyCoefficientUnder3y: number
+  showForCitizen: boolean
   updated: HelsinkiDateTime
   validFrom: LocalDate
   validPlacementType: PlacementType

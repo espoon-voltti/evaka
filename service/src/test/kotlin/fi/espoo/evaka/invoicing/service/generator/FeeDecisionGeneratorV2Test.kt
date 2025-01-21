@@ -262,6 +262,7 @@ private val snDaycareFullDay35 =
         voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
         validFrom = LocalDate.of(2000, 1, 1),
         validTo = null,
+        showForCitizen = true,
     )
 
 private val feeThresholds =
