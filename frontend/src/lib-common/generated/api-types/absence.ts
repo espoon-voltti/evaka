@@ -87,8 +87,6 @@ export interface ChildServiceNeedInfo {
   childId: PersonId
   daycareHoursPerMonth: number | null
   hasContractDays: boolean
-  occupancyCoefficient: number
-  occupancyCoefficientUnder3y: number
   optionName: string
   partWeek: boolean
   shiftCare: ShiftCareType

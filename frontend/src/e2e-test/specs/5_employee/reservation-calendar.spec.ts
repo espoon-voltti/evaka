@@ -476,12 +476,12 @@ describe('Unit group calendar', () => {
 
   test('Totals row multiplies occupancy coefficients and capacity factors', async () => {
     const serviceNeedOption1 = await Fixture.serviceNeedOption({
-      occupancyCoefficient: 1,
-      occupancyCoefficientUnder3y: 1.75
+      realizedOccupancyCoefficient: 1,
+      realizedOccupancyCoefficientUnder3y: 1.75
     }).save()
     const serviceNeedOption2 = await Fixture.serviceNeedOption({
-      occupancyCoefficient: 0.8,
-      occupancyCoefficientUnder3y: 1.4
+      realizedOccupancyCoefficient: 0.8,
+      realizedOccupancyCoefficientUnder3y: 1.4
     }).save()
     const area = await Fixture.careArea().save()
     const daycare = await Fixture.daycare({
@@ -546,18 +546,18 @@ describe('Unit group calendar', () => {
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
     await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
-      '1 (1,75)', // serviceNeedOption1#occupancyCoefficientUnder3y
-      '1 (1,75)', // serviceNeedOption1#occupancyCoefficientUnder3y
-      '1 (1,40)', // serviceNeedOption2#occupancyCoefficientUnder3y
-      '1 (2,80)', // serviceNeedOption2#occupancyCoefficientUnder3y * assistanceFactor
-      '1 (1,60)' // serviceNeedOption2#occupancyCoefficient * assistanceFactor
+      '1 (1,75)', // serviceNeedOption1#realizedOccupancyCoefficientUnder3y
+      '1 (1,75)', // serviceNeedOption1#realizedOccupancyCoefficientUnder3y
+      '1 (1,40)', // serviceNeedOption2#realizedOccupancyCoefficientUnder3y
+      '1 (2,80)', // serviceNeedOption2#realizedOccupancyCoefficientUnder3y * assistanceFactor
+      '1 (1,60)' // serviceNeedOption2#realizedOccupancyCoefficient * assistanceFactor
     ])
   })
 
   test('Totals row sums child rows', async () => {
     const serviceNeedOption = await Fixture.serviceNeedOption({
-      occupancyCoefficient: 1,
-      occupancyCoefficientUnder3y: 1.75
+      realizedOccupancyCoefficient: 1,
+      realizedOccupancyCoefficientUnder3y: 1.75
     }).save()
     const area = await Fixture.careArea().save()
     const daycare = await Fixture.daycare({
@@ -609,18 +609,18 @@ describe('Unit group calendar', () => {
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
     await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
-      '2 (2,75)', // occupancyCoefficient + occupancyCoefficientUnder3y
-      '2 (2,75)', // occupancyCoefficient + occupancyCoefficientUnder3y
-      '2 (2,75)', // occupancyCoefficient + occupancyCoefficientUnder3y
-      '2 (2,75)', // occupancyCoefficient + occupancyCoefficientUnder3y
-      '2 (2,00)' // occupancyCoefficient + occupancyCoefficient
+      '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
+      '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
+      '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
+      '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
+      '2 (2,00)' // realizedOccupancyCoefficient + realizedOccupancyCoefficient
     ])
   })
 
   test('Totals row uses family unit placement coefficients', async () => {
     const serviceNeedOption = await Fixture.serviceNeedOption({
-      occupancyCoefficient: 2.0,
-      occupancyCoefficientUnder3y: 3.0
+      realizedOccupancyCoefficient: 2.0,
+      realizedOccupancyCoefficientUnder3y: 3.0
     }).save()
     const area = await Fixture.careArea().save()
     const daycare = await Fixture.daycare({
@@ -679,8 +679,8 @@ describe('Unit group calendar', () => {
     await Fixture.serviceNeedOption({
       validPlacementType: 'DAYCARE',
       defaultOption: true,
-      occupancyCoefficient: 2.0,
-      occupancyCoefficientUnder3y: 3.0
+      realizedOccupancyCoefficient: 2.0,
+      realizedOccupancyCoefficientUnder3y: 3.0
     }).save()
     const area = await Fixture.careArea().save()
     const daycare = await Fixture.daycare({
@@ -720,11 +720,11 @@ describe('Unit group calendar', () => {
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
     await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
-      '1 (3,00)', // default service need option#occupancyCoefficientUnder3y
-      '1 (3,00)', // default service need option#occupancyCoefficientUnder3y
-      '1 (3,00)', // default service need option#occupancyCoefficientUnder3y
-      '1 (3,00)', // default service need option#occupancyCoefficientUnder3y
-      '1 (2,00)' // default service need option#occupancyCoefficient
+      '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
+      '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
+      '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
+      '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
+      '1 (2,00)' // default service need option#realizedOccupancyCoefficient
     ])
   })
 })
@@ -870,8 +870,8 @@ describe('Unit group calendar for shift care unit', () => {
 
   test('Child with unknown presence on a holiday is counted into total if they have shift care', async () => {
     const serviceNeedOption = await Fixture.serviceNeedOption({
-      occupancyCoefficient: 1,
-      occupancyCoefficientUnder3y: 1.75
+      realizedOccupancyCoefficient: 1,
+      realizedOccupancyCoefficientUnder3y: 1.75
     }).save()
     const area = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare({

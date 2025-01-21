@@ -350,25 +350,23 @@ class AttendanceReservationsControllerIntegrationTest :
                     listOf(
                         ChildServiceNeedInfo(
                             childId = testChild_1.id,
+                            optionId = snDaycareContractDays15.id,
                             hasContractDays = true,
                             daycareHoursPerMonth = null,
                             optionName = snDaycareContractDays15.nameFi,
                             validDuring = FiniteDateRange(mon, thu),
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
-                            occupancyCoefficient = BigDecimal("1.00"),
-                            occupancyCoefficientUnder3y = BigDecimal("1.75"),
                         ),
                         ChildServiceNeedInfo(
                             childId = testChild_1.id,
+                            optionId = snDaycareFullDay35.id,
                             hasContractDays = false,
                             daycareHoursPerMonth = null,
                             optionName = snDaycareFullDay35.nameFi,
                             validDuring = FiniteDateRange(fri, fri),
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
-                            occupancyCoefficient = BigDecimal("1.00"),
-                            occupancyCoefficientUnder3y = BigDecimal("1.75"),
                         ),
                     ),
                     child1.serviceNeeds,
@@ -384,14 +382,13 @@ class AttendanceReservationsControllerIntegrationTest :
                     listOf(
                         ChildServiceNeedInfo(
                             childId = testChild_5.id,
+                            optionId = snDaycareContractDays15.id,
                             hasContractDays = true,
                             daycareHoursPerMonth = null,
                             optionName = snDaycareContractDays15.nameFi,
                             validDuring = monFri,
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
-                            occupancyCoefficient = BigDecimal("1.00"),
-                            occupancyCoefficientUnder3y = BigDecimal("1.75"),
                         )
                     ),
                     child5.serviceNeeds,

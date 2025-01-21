@@ -130,8 +130,9 @@ class AttendanceReservationController(
                     val childIds = placementInfo.keys
                     val serviceTimes = tx.getDailyServiceTimesForChildren(childIds)
                     val childData = tx.getChildData(unitId, childIds, period)
+                    val serviceNeedOptions = tx.getServiceNeedOptions().associateBy { it.id }
                     val defaultServiceNeedOptions =
-                        tx.getServiceNeedOptions()
+                        serviceNeedOptions.values
                             .filter { it.defaultOption }
                             .associateBy { it.validPlacementType }
                     val assistanceFactors =
@@ -176,17 +177,23 @@ class AttendanceReservationController(
                                                             sn.validDuring.includes(date)
                                                         }
                                                         ?.let { sn ->
+                                                            val option =
+                                                                serviceNeedOptions[sn.optionId]
                                                             if (age < 3)
-                                                                sn.occupancyCoefficientUnder3y
-                                                            else sn.occupancyCoefficient
+                                                                option
+                                                                    ?.realizedOccupancyCoefficientUnder3y
+                                                            else
+                                                                option?.realizedOccupancyCoefficient
                                                         }
                                                         ?: run {
                                                             val option =
                                                                 defaultServiceNeedOptions[
                                                                     placementStatus.placementType]
                                                             if (age < 3)
-                                                                option?.occupancyCoefficientUnder3y
-                                                            else option?.occupancyCoefficient
+                                                                option
+                                                                    ?.realizedOccupancyCoefficientUnder3y
+                                                            else
+                                                                option?.realizedOccupancyCoefficient
                                                         }
                                                         ?: BigDecimal.ONE
                                             val factor =

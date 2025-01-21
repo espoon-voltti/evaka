@@ -59,7 +59,6 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDaycareGroup
 import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.user.EvakaUserType
-import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -189,6 +188,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             listOf(
                                 ChildServiceNeedInfo(
                                     childId = testChild_1.id,
+                                    optionId = snDefaultDaycare.id,
                                     validDuring =
                                         FiniteDateRange(
                                             placementStart,
@@ -199,11 +199,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     optionName = snDefaultDaycare.nameFi,
                                     hasContractDays = false,
                                     daycareHoursPerMonth = null,
-                                    occupancyCoefficient = BigDecimal("1.00"),
-                                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
                                 ),
                                 ChildServiceNeedInfo(
                                     childId = testChild_1.id,
+                                    optionId = snDaycareContractDays15.id,
                                     validDuring =
                                         FiniteDateRange(placementStart.plusWeeks(2), placementEnd),
                                     shiftCare = ShiftCareType.NONE,
@@ -211,8 +210,6 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     optionName = snDaycareContractDays15.nameFi,
                                     hasContractDays = true,
                                     daycareHoursPerMonth = null,
-                                    occupancyCoefficient = BigDecimal("1.00"),
-                                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
                                 ),
                             )
                     )
@@ -363,6 +360,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     listOf(
                                         ChildServiceNeedInfo(
                                             childId = testChild_3.id,
+                                            optionId = snDaycareFullDay35.id,
                                             hasContractDays = false,
                                             daycareHoursPerMonth = null,
                                             optionName = snDaycareFullDay35.nameFi,
@@ -370,8 +368,6 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                 FiniteDateRange(placementStart, placementEnd),
                                             shiftCare = ShiftCareType.FULL,
                                             partWeek = false,
-                                            occupancyCoefficient = BigDecimal("1.00"),
-                                            occupancyCoefficientUnder3y = BigDecimal("1.75"),
                                         )
                                     )
                             ),
@@ -1945,14 +1941,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             listOf(
                 ChildServiceNeedInfo(
                     childId = testChild_1.id,
+                    optionId = snDaycareContractDays15.id,
                     hasContractDays = true,
                     daycareHoursPerMonth = null,
                     optionName = snDaycareContractDays15.nameFi,
                     validDuring = FiniteDateRange(placementStart, placementEnd),
                     shiftCare = ShiftCareType.NONE,
                     partWeek = false,
-                    occupancyCoefficient = BigDecimal("1.00"),
-                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
                 )
             ),
             result.children.find { it.id == testChild_1.id }?.actualServiceNeeds!!,

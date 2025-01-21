@@ -293,14 +293,13 @@ fun Database.Read.getChildServiceNeedInfos(
             sql(
                 """
     SELECT p.child_id,
+           sno.id AS option_id,
            sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
            sno.daycare_hours_per_month,
            sno.name_fi                                 AS option_name,
            daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
            sn.shift_care,
-           sn.part_week,
-           sno.occupancy_coefficient,
-           sno.occupancy_coefficient_under_3y
+           sn.part_week
     FROM placement p
     JOIN service_need sn ON sn.placement_id = p.id
     JOIN service_need_option sno ON sn.option_id = sno.id
@@ -309,14 +308,13 @@ fun Database.Read.getChildServiceNeedInfos(
     UNION ALL
     
     SELECT bc.child_id,
+           sno.id AS option_id,
            sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
            sno.daycare_hours_per_month,
            sno.name_fi                                 AS option_name,
            daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
            sn.shift_care,
-           sn.part_week,
-           sno.occupancy_coefficient,
-           sno.occupancy_coefficient_under_3y
+           sn.part_week
     FROM backup_care bc
     JOIN placement p ON bc.child_id = p.child_id 
         AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
@@ -341,14 +339,13 @@ fun Database.Read.getActualServiceNeedInfosByRangeAndGroup(
                 """
 SELECT
     p.child_id,
+    sno.id AS option_id,
     sno.contract_days_per_month IS NOT NULL AS has_contract_days,
     sno.daycare_hours_per_month,
     sno.name_fi AS option_name,
     daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
     sn.shift_care,
-    sn.part_week,
-    sno.occupancy_coefficient,
-    sno.occupancy_coefficient_under_3y
+    sn.part_week
 FROM daycare_group_placement AS gp
 JOIN placement p ON gp.daycare_placement_id = p.id AND daterange(p.start_date, p.end_date, '[]') && daterange(gp.start_date, gp.end_date, '[]')
 JOIN service_need sn ON sn.placement_id = p.id
@@ -362,14 +359,13 @@ UNION ALL
 
 SELECT
     bc.child_id,
+    sno.id AS option_id,
     sno.contract_days_per_month IS NOT NULL AS has_contract_days,
     sno.daycare_hours_per_month,
     sno.name_fi AS option_name,
     daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
     sn.shift_care,
-    sn.part_week,
-    sno.occupancy_coefficient,
-    sno.occupancy_coefficient_under_3y
+    sn.part_week
 FROM backup_care bc
 JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
 JOIN service_need sn ON sn.placement_id = p.id
