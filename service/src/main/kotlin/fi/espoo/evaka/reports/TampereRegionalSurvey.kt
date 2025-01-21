@@ -211,7 +211,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.TampereRegionalSurveyMonthly.log(meta = mapOf("year" to year)) }
+            .also { Audit.TampereRegionalSurveyAgeStatistics.log(meta = mapOf("year" to year)) }
     }
 
     private fun Database.Read.getMunicipalAssistanceMonthlyResults(
@@ -497,14 +497,15 @@ WITH unit_operational_days AS (SELECT d.id AS unit_id, date
                                                 AND od.date BETWEEN pl.start_date AND pl.end_date
                                                 AND pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
                                        JOIN person p ON pl.child_id = p.id
-                                       LEFT JOIN service_need sn ON sn.placement_id = pl.id AND
-                                                                    od.date BETWEEN sn.start_date AND sn.end_date
-                                  AND NOT EXISTS (SELECT 1
-                                                  FROM backup_care b
-                                                  WHERE b.child_id = pl.child_id
-                                                    AND od.date BETWEEN b.start_date AND b.end_date))
-SELECT count(ep.date) FILTER ( WHERE ep.age < 3 )  AS under_3_count,
-       count(ep.date) FILTER ( WHERE ep.age >= 3 ) AS over_3_count
+                                       LEFT JOIN service_need sn 
+                                           ON sn.placement_id = pl.id 
+                                               AND od.date BETWEEN sn.start_date AND sn.end_date
+                                       LEFT JOIN backup_care b
+                                           ON b.child_id = pl.child_id
+                                               AND od.date BETWEEN b.start_date AND b.end_date
+                              WHERE b.child_id IS NULL)
+SELECT count(CASE WHEN ep.age < 3 THEN 1 END )  AS under_3_count,
+       count(CASE WHEN ep.age >= 3 THEN 1 END ) AS over_3_count
 FROM effective_placements ep
          JOIN daycare d ON ep.unit_id = d.id
 WHERE NOT EXISTS (SELECT 1

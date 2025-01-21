@@ -4,7 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import range from 'lodash/range'
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import {
@@ -18,7 +19,10 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -34,6 +38,16 @@ import {
 
 interface ReportQueryParams {
   year: number
+}
+
+interface ReportSelection {
+  monthlyStatistics: boolean
+  ageStatistics: boolean
+}
+
+const emptyReportSelection = {
+  monthlyStatistics: false,
+  ageStatistics: false
 }
 
 export default React.memo(function TampereRegionalSurveyReport() {
@@ -65,25 +79,44 @@ export default React.memo(function TampereRegionalSurveyReport() {
     year: 0
   }
 
+  const [reportSelection, setReportSelection] =
+    useState<ReportSelection>(emptyReportSelection)
+
   const monthlyStatisticsResult = useQueryResult(
-    activeParams
+    activeParams && reportSelection.monthlyStatistics
       ? tampereRegionalSurveyMonthlyReport(activeParams)
       : constantQuery(emptyMonthlyValue)
   )
 
   const ageStatisticsResult = useQueryResult(
-    activeParams
+    activeParams && reportSelection.ageStatistics
       ? tampereRegionalSurveyAgeReport(activeParams)
       : constantQuery(emptyAgeValue)
   )
 
-  const fetchResults = () => {
+  const fetchMonthlyResults = useCallback(() => {
     if (selectedYear) {
-      setActiveParams({
-        year: selectedYear
-      })
+      setReportSelection({ ...reportSelection, monthlyStatistics: true })
+      setActiveParams({ year: selectedYear })
     }
-  }
+  }, [selectedYear, reportSelection])
+
+  const fetchAgeResults = useCallback(() => {
+    if (selectedYear) {
+      setReportSelection({ ...reportSelection, ageStatistics: true })
+      setActiveParams({ year: selectedYear })
+    }
+  }, [selectedYear, reportSelection])
+
+  const changeYear = useCallback(
+    (newYear: number | null) => {
+      if (selectedYear !== newYear) {
+        setSelectedYear(newYear)
+        setReportSelection(emptyReportSelection)
+      }
+    },
+    [selectedYear]
+  )
 
   const sortedMonthlyReportResult = useMemo(
     () =>
@@ -108,142 +141,154 @@ export default React.memo(function TampereRegionalSurveyReport() {
               fullWidth
               items={yearOptions}
               selectedItem={selectedYear}
-              onChange={setSelectedYear}
+              onChange={changeYear}
               placeholder={i18n.common.year}
             />
           </FlexRow>
         </FilterRow>
-        <Gap />
-        <FilterRow>
-          <Button
-            primary
-            disabled={!selectedYear}
-            text={i18n.common.search}
-            onClick={fetchResults}
-            data-qa="send-button"
-          />
-        </FilterRow>
         <Gap size="m" />
-        {activeParams && <H2>{`${t.reportLabel} ${activeParams.year}`}</H2>}
-        <Gap size="m" />
-        {renderResult(sortedMonthlyReportResult, (result) => {
-          return result.monthlyCounts.length > 0 &&
-            result.year === selectedYear ? (
-            <FixedSpaceRow spacing="L">
-              <Label>{t.monthlyReport}</Label>
-              <ReportDownload
-                data={result.monthlyCounts.map((row) => ({
-                  ...row,
-                  month: i18n.common.datetime.months[row.month - 1] ?? ''
-                }))}
-                headers={[
-                  { label: t.monthlyColumns.month, key: 'month' },
-                  {
-                    label: t.monthlyColumns.municipalOver3FullTimeCount,
-                    key: 'municipalOver3FullTimeCount'
-                  },
-                  {
-                    label: t.monthlyColumns.municipalOver3PartTimeCount,
-                    key: 'municipalOver3PartTimeCount'
-                  },
-                  {
-                    label: t.monthlyColumns.municipalUnder3FullTimeCount,
-                    key: 'municipalUnder3FullTimeCount'
-                  },
-                  {
-                    label: t.monthlyColumns.municipalUnder3PartTimeCount,
-                    key: 'municipalUnder3PartTimeCount'
-                  },
-                  {
-                    label: t.monthlyColumns.familyOver3Count,
-                    key: 'familyOver3Count'
-                  },
-                  {
-                    label: t.monthlyColumns.familyUnder3Count,
-                    key: 'familyUnder3Count'
-                  },
-                  {
-                    label: t.monthlyColumns.municipalShiftCareCount,
-                    key: 'municipalShiftCareCount'
-                  },
-                  {
-                    label: t.monthlyColumns.assistanceCount,
-                    key: 'assistanceCount'
-                  }
-                ]}
-                filename={`${t.reportLabel} ${selectedYear} - ${t.monthlyReport}.csv`}
-              />
-            </FixedSpaceRow>
-          ) : null
-        })}
-
-        {renderResult(ageStatisticsResult, (result) => {
-          return result.ageStatistics.length > 0 &&
-            result.year === selectedYear ? (
-            <FixedSpaceRow spacing="L">
-              <Label>{t.ageStatisticsReport}</Label>
-              <ReportDownload
-                data={result.ageStatistics}
-                headers={[
-                  {
-                    label: t.ageStatisticColumns.voucherUnder3Count,
-                    key: 'voucherUnder3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.voucherOver3Count,
-                    key: 'voucherOver3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.purchasedUnder3Count,
-                    key: 'purchasedUnder3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.purchasedOver3Count,
-                    key: 'purchasedOver3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.clubUnder3Count,
-                    key: 'clubUnder3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.clubOver3Count,
-                    key: 'clubOver3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.nonNativeLanguageUnder3Count,
-                    key: 'nonNativeLanguageUnder3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.nonNativeLanguageOver3Count,
-                    key: 'nonNativeLanguageOver3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.effectiveCareDaysUnder3Count,
-                    key: 'effectiveCareDaysUnder3Count'
-                  },
-                  {
-                    label: t.ageStatisticColumns.effectiveCareDaysOver3Count,
-                    key: 'effectiveCareDaysOver3Count'
-                  },
-                  {
-                    label:
-                      t.ageStatisticColumns
-                        .effectiveFamilyDaycareDaysUnder3Count,
-                    key: 'effectiveFamilyDaycareDaysUnder3Count'
-                  },
-                  {
-                    label:
-                      t.ageStatisticColumns
-                        .effectiveFamilyDaycareDaysOver3Count,
-                    key: 'effectiveFamilyDaycareDaysOver3Count'
-                  }
-                ]}
-                filename={`${t.reportLabel} ${selectedYear} - ${t.ageStatisticsReport}.csv`}
-              />
-            </FixedSpaceRow>
-          ) : null
-        })}
+        <FixedSpaceColumn spacing="xs">
+          {!!selectedYear && <H2>{`${t.reportLabel} ${selectedYear}`}</H2>}
+          <ReportRow spacing="L" alignItems="center" fullWidth>
+            <ReportLabel>{t.monthlyReport}</ReportLabel>
+            <Button
+              primary
+              disabled={!selectedYear}
+              text={i18n.common.search}
+              onClick={fetchMonthlyResults}
+              data-qa="fetch-monthly-button"
+            />
+            {renderResult(sortedMonthlyReportResult, (result) => {
+              return result.monthlyCounts.length > 0 &&
+                result.year === selectedYear ? (
+                <ReportDownload
+                  data={result.monthlyCounts.map((row) => ({
+                    ...row,
+                    month: i18n.common.datetime.months[row.month - 1] ?? ''
+                  }))}
+                  headers={[
+                    { label: t.monthlyColumns.month, key: 'month' },
+                    {
+                      label: t.monthlyColumns.municipalOver3FullTimeCount,
+                      key: 'municipalOver3FullTimeCount'
+                    },
+                    {
+                      label: t.monthlyColumns.municipalOver3PartTimeCount,
+                      key: 'municipalOver3PartTimeCount'
+                    },
+                    {
+                      label: t.monthlyColumns.municipalUnder3FullTimeCount,
+                      key: 'municipalUnder3FullTimeCount'
+                    },
+                    {
+                      label: t.monthlyColumns.municipalUnder3PartTimeCount,
+                      key: 'municipalUnder3PartTimeCount'
+                    },
+                    {
+                      label: t.monthlyColumns.familyOver3Count,
+                      key: 'familyOver3Count'
+                    },
+                    {
+                      label: t.monthlyColumns.familyUnder3Count,
+                      key: 'familyUnder3Count'
+                    },
+                    {
+                      label: t.monthlyColumns.municipalShiftCareCount,
+                      key: 'municipalShiftCareCount'
+                    },
+                    {
+                      label: t.monthlyColumns.assistanceCount,
+                      key: 'assistanceCount'
+                    }
+                  ]}
+                  filename={`${t.reportLabel} ${selectedYear} - ${t.monthlyReport}.csv`}
+                />
+              ) : null
+            })}
+          </ReportRow>
+          <ReportRow spacing="L" alignItems="center" fullWidth>
+            <ReportLabel>{t.ageStatisticsReport}</ReportLabel>
+            <Button
+              primary
+              disabled={!selectedYear}
+              text={i18n.common.search}
+              onClick={fetchAgeResults}
+              data-qa="fetch-age-button"
+            />
+            {renderResult(ageStatisticsResult, (result) => {
+              return result.ageStatistics.length > 0 &&
+                result.year === selectedYear ? (
+                <ReportDownload
+                  data={result.ageStatistics}
+                  headers={[
+                    {
+                      label: t.ageStatisticColumns.voucherUnder3Count,
+                      key: 'voucherUnder3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.voucherOver3Count,
+                      key: 'voucherOver3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.purchasedUnder3Count,
+                      key: 'purchasedUnder3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.purchasedOver3Count,
+                      key: 'purchasedOver3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.clubUnder3Count,
+                      key: 'clubUnder3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.clubOver3Count,
+                      key: 'clubOver3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.nonNativeLanguageUnder3Count,
+                      key: 'nonNativeLanguageUnder3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.nonNativeLanguageOver3Count,
+                      key: 'nonNativeLanguageOver3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.effectiveCareDaysUnder3Count,
+                      key: 'effectiveCareDaysUnder3Count'
+                    },
+                    {
+                      label: t.ageStatisticColumns.effectiveCareDaysOver3Count,
+                      key: 'effectiveCareDaysOver3Count'
+                    },
+                    {
+                      label:
+                        t.ageStatisticColumns
+                          .effectiveFamilyDaycareDaysUnder3Count,
+                      key: 'effectiveFamilyDaycareDaysUnder3Count'
+                    },
+                    {
+                      label:
+                        t.ageStatisticColumns
+                          .effectiveFamilyDaycareDaysOver3Count,
+                      key: 'effectiveFamilyDaycareDaysOver3Count'
+                    }
+                  ]}
+                  filename={`${t.reportLabel} ${selectedYear} - ${t.ageStatisticsReport}.csv`}
+                />
+              ) : null
+            })}
+          </ReportRow>
+        </FixedSpaceColumn>
       </ContentArea>
     </Container>
   )
 })
+
+const ReportLabel = styled(Label)`
+  width: 200px;
+`
+
+const ReportRow = styled(FixedSpaceRow)`
+  min-height: 105px;
+`

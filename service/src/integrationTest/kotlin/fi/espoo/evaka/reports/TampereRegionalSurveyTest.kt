@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceActionOption
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareAssistance
@@ -614,6 +615,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     endDate = defaultPlacementRange.end.plusMonths(2),
                     unitId = testUnitData[1],
                 )
+
             tx.insert(shiftCarePlacement)
 
             tx.insert(
@@ -624,6 +626,21 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = shiftCarePlacement.startDate,
                     endDate = shiftCarePlacement.endDate,
                     confirmedBy = admin.evakaUserId,
+                )
+            )
+
+            // add a backup care to see that it is not counted twice
+            val aapoFirstPlacement = testPlacementData[0].second.first()
+
+            tx.insert(
+                DevBackupCare(
+                    childId = aapo.id,
+                    unitId = testUnitData[1],
+                    period =
+                        FiniteDateRange(
+                            aapoFirstPlacement.startDate.plusDays(1),
+                            aapoFirstPlacement.startDate.plusDays(2),
+                        ),
                 )
             )
         }
