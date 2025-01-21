@@ -3,16 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
+import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faListTimeline } from 'lib-icons'
 
@@ -214,6 +219,7 @@ const PersonProfile = React.memo(function PersonProfile({
   id: PersonId
 }) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
 
   const { roles } = useContext(UserContext)
   const { person, permittedActions } = useContext(PersonContext)
@@ -251,17 +257,28 @@ const PersonProfile = React.memo(function PersonProfile({
                     )}
                   </InfoLabelContainer>
                 )}
-              {permittedActions.has('READ_TIMELINE') && (
-                <a href={`/employee/profile/${id}/timeline`}>
-                  <Button
-                    appearance="inline"
-                    text={i18n.personProfile.timeline}
-                    onClick={() => undefined}
-                    icon={faListTimeline}
-                    data-qa="timeline-button"
-                  />
-                </a>
-              )}
+              <FixedSpaceRow spacing="L">
+                {person.isSuccess &&
+                  getAge(person.value.dateOfBirth) >= 10 &&
+                  getAge(person.value.dateOfBirth) < 18 && (
+                    <Button
+                      appearance="inline"
+                      text={i18n.personProfile.asChild}
+                      onClick={() => navigate(`/child-information/${id}`)}
+                    />
+                  )}
+                {permittedActions.has('READ_TIMELINE') && (
+                  <a href={`/employee/profile/${id}/timeline`}>
+                    <Button
+                      appearance="inline"
+                      text={i18n.personProfile.timeline}
+                      onClick={() => undefined}
+                      icon={faListTimeline}
+                      data-qa="timeline-button"
+                    />
+                  </a>
+                )}
+              </FixedSpaceRow>
             </FixedSpaceColumn>
           </HeaderRow>
         </ContentArea>

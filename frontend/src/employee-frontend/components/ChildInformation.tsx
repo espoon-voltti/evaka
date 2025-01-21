@@ -5,7 +5,7 @@
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useMemo } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
@@ -13,9 +13,14 @@ import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/p
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
+import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faUsers } from 'lib-icons'
@@ -286,6 +291,7 @@ const ChildInformation = React.memo(function ChildInformation({
   id: ChildId
 }) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
   const { roles } = useContext(UserContext)
   const { person, parentships } = useContext<ChildState>(ChildContext)
 
@@ -330,24 +336,35 @@ const ChildInformation = React.memo(function ChildInformation({
               {person.isSuccess && person.value.restrictedDetailsEnabled && (
                 <WarningLabel text={i18n.childInformation.restrictedDetails} />
               )}
-              {currentHeadOfChildId ? (
-                <HeadOfFamilyLink
-                  to={`/profile/${currentHeadOfChildId}`}
-                  className="person-details-family-link"
-                >
-                  <span className="fa-layers fa-fw link-icon">
-                    <FontAwesomeIcon className="dark-blue" icon={faCircle} />
-                    <FontAwesomeIcon
-                      icon={faUsers}
-                      inverse
-                      transform="shrink-6"
+              <FixedSpaceRow spacing="L">
+                {person.isSuccess &&
+                  getAge(person.value.dateOfBirth) >= 10 &&
+                  getAge(person.value.dateOfBirth) < 18 && (
+                    <Button
+                      appearance="inline"
+                      text={i18n.childInformation.asAdult}
+                      onClick={() => navigate(`/profile/${id}`)}
                     />
-                  </span>
-                  <div className="link-text">
-                    {i18n.childInformation.personDetails.familyLink}
-                  </div>
-                </HeadOfFamilyLink>
-              ) : null}
+                  )}
+                {currentHeadOfChildId && (
+                  <HeadOfFamilyLink
+                    to={`/profile/${currentHeadOfChildId}`}
+                    className="person-details-family-link"
+                  >
+                    <span className="fa-layers fa-fw link-icon">
+                      <FontAwesomeIcon className="dark-blue" icon={faCircle} />
+                      <FontAwesomeIcon
+                        icon={faUsers}
+                        inverse
+                        transform="shrink-6"
+                      />
+                    </span>
+                    <div className="link-text">
+                      {i18n.childInformation.personDetails.familyLink}
+                    </div>
+                  </HeadOfFamilyLink>
+                )}
+              </FixedSpaceRow>
             </div>
           </HeaderRow>
         </ContentArea>
