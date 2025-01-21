@@ -378,8 +378,6 @@ private fun generateDecisionPages(
                 "manager",
                 when (decision.type) {
                     DecisionType.PRESCHOOL,
-                    DecisionType.PRESCHOOL_DAYCARE,
-                    DecisionType.PRESCHOOL_CLUB,
                     DecisionType.PREPARATORY_EDUCATION ->
                         preschoolManager.let { if (it.name.isBlank()) unitManager else it }
                     else -> unitManager
