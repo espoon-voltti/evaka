@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.lang.Appendable
 import java.nio.charset.StandardCharsets
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -92,7 +93,7 @@ class AromiService {
             null, // Huone, ei käytössä
             item.childLastName, // Sukunimi
             item.childFirstName, // Etunimi
-            null, // Henkilötunnus
+            item.childDateOfBirth.ssnLike(), // Henkilötunnus tai syntymäaika
             age.format(), // Ikä
             item.childId, // Ruokailijatunnus
             null, // Projekti, ei käytössä
@@ -110,6 +111,17 @@ private data class AromiMealOrderData(
     val report: List<AttendanceReservationReportByChildGroup>,
     val unitName: String,
 )
+
+private fun LocalDate.ssnLike(): String {
+    val centuryMarker =
+        when (val centuryPart = this.year / 100) {
+            18 -> '+'
+            19 -> '-'
+            20 -> 'A'
+            else -> throw Error("Unsupported century part $centuryPart")
+        }
+    return this.format(DateTimeFormatter.ofPattern("ddMMyy")) + centuryMarker
+}
 
 private fun Period.format(): String {
     val yearsStr = years.toString().padStart(3, '0')
