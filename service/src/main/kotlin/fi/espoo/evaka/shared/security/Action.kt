@@ -148,17 +148,19 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR)
                 .withUnitProviderTypes(ProviderType.MUNICIPAL, ProviderType.MUNICIPAL_SCHOOL)
+                .withUnitFeatures(PilotFeature.MOBILE)
                 .inAnyUnit(),
             IsEmployee.ownerOfAnyMobileDevice(),
         ),
         PIN_CODE_PAGE(
-            HasGlobalRole(ADMIN, REPORT_VIEWER, DIRECTOR, SERVICE_WORKER),
+            HasGlobalRole(ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
+                .withUnitFeatures(PilotFeature.MOBILE)
                 .inAnyUnit(),
         ),
         CREATE_DOCUMENT_TEMPLATE(HasGlobalRole(ADMIN)),
