@@ -24,7 +24,7 @@ import { faSearch } from 'lib-icons'
 
 import AddVTJPersonModal from '../components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '../components/person-search/CreatePersonModal'
-import { CHILD_AGE } from '../constants'
+import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../constants'
 import { CustomersContext } from '../state/customers'
 import { useTranslation } from '../state/i18n'
 import { formatName } from '../utils'
@@ -151,7 +151,8 @@ export default React.memo(function Search() {
                       <Td align="left">
                         <Link
                           to={
-                            getAge(person.dateOfBirth) >= CHILD_AGE
+                            getAge(person.dateOfBirth) >=
+                            PROFILE_AGE_THRESHOLD_DEFAULT
                               ? `/profile/${person.id}`
                               : `/child-information/${person.id}`
                           }

@@ -132,7 +132,7 @@ function CreateApplicationModal({
       case 'GUARDIAN':
         return !!guardian
       case 'DB_SEARCH':
-        return !!personId
+        return !!personId && personId !== child.id
       case 'VTJ':
         return !!newVtjPersonSsn
       case 'NEW_NO_SSN':

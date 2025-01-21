@@ -18,7 +18,6 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { CHILD_AGE } from '../../constants'
 import { createPerson } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 
@@ -67,7 +66,7 @@ export default React.memo(function CreatePersonModal({
     }
   }
 
-  const isAdult = (dateOfBirth: LocalDate) => getAge(dateOfBirth) >= CHILD_AGE
+  const isAdult = (dateOfBirth: LocalDate) => getAge(dateOfBirth) >= 18
 
   return (
     <FormModal
@@ -215,7 +214,7 @@ function validateForm(form: Form): CreatePersonBody | undefined {
     !form.streetAddress ||
     !form.postalCode ||
     !form.postOffice ||
-    (getAge(parsedDateOfBirth) >= CHILD_AGE && !form.phone)
+    (getAge(parsedDateOfBirth) >= 18 && !form.phone)
   ) {
     return undefined
   }
