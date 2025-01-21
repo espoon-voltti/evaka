@@ -9,8 +9,6 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.pis.*
-import fi.espoo.evaka.pis.EmailVerification
-import fi.espoo.evaka.pis.NewEmailVerification
 import fi.espoo.evaka.shared.PersonEmailVerificationId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -23,6 +21,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
 import fi.espoo.evaka.shared.utils.PHONE_PATTERN
+import fi.espoo.evaka.user.hasWeakCredentials
 import fi.espoo.evaka.user.updateWeakLoginCredentials
 import java.security.SecureRandom
 import java.time.Duration
@@ -85,6 +84,9 @@ class PersonalDataControllerCitizen(
                     throw BadRequest(validationErrors.joinToString(", "))
 
                 tx.updatePersonalDetails(user.id, body)
+                if (tx.hasWeakCredentials(user.id)) {
+                    sendEmailVerificationCode(tx, clock, user)
+                }
             }
         }
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
@@ -225,26 +227,7 @@ class PersonalDataControllerCitizen(
                     Action.Citizen.Person.VERIFY_EMAIL,
                     user.id,
                 )
-                val emails = tx.getPersonEmails(user.id)
-                if (emails.email != null && emails.email != emails.verifiedEmail) {
-                    val email = emails.email
-                    val verificationCode = generateConfirmationCode()
-                    val verification =
-                        tx.upsertEmailVerification(
-                            clock.now(),
-                            user.id,
-                            email,
-                            NewEmailVerification(
-                                verificationCode = verificationCode,
-                                expiresAt = clock.now().plus(CONFIRMATION_CODE_DURATION),
-                            ),
-                        )
-                    asyncJobRunner.plan(
-                        tx,
-                        sequenceOf(AsyncJob.SendConfirmationCodeEmail(id = verification.id)),
-                        runAt = clock.now(),
-                    )
-                }
+                sendEmailVerificationCode(tx, clock, user)
             }
         }
         Audit.CitizenSendVerificationCode.log(targetId = AuditId(user.id))
@@ -274,6 +257,33 @@ class PersonalDataControllerCitizen(
             }
         }
         Audit.CitizenVerifyEmail.log(targetId = AuditId(request.id))
+    }
+
+    private fun sendEmailVerificationCode(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        user: AuthenticatedUser.Citizen,
+    ) {
+        val emails = tx.getPersonEmails(user.id)
+        if (emails.email != null && emails.email != emails.verifiedEmail) {
+            val verification =
+                tx.upsertEmailVerification(
+                    clock.now(),
+                    user.id,
+                    emails.email,
+                    NewEmailVerification(
+                        verificationCode = generateConfirmationCode(),
+                        expiresAt = clock.now().plus(CONFIRMATION_CODE_DURATION),
+                    ),
+                )
+            if (verification.sentAt == null) {
+                asyncJobRunner.plan(
+                    tx,
+                    sequenceOf(AsyncJob.SendConfirmationCodeEmail(id = verification.id)),
+                    runAt = clock.now(),
+                )
+            }
+        }
     }
 
     private fun generateConfirmationCode(): String =

@@ -83,3 +83,11 @@ WHERE id = ${bind(id)}
             )
         }
         .updateExactlyOne()
+
+fun Database.Transaction.hasWeakCredentials(person: PersonId): Boolean =
+    createQuery {
+            sql(
+                "SELECT EXISTS(SELECT FROM citizen_user WHERE id = ${bind(person)} AND username IS NOT NULL)"
+            )
+        }
+        .exactlyOne()

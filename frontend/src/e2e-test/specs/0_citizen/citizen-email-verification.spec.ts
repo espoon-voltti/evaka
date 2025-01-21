@@ -66,7 +66,7 @@ describe('Citizen e-mail verification', () => {
       },
       true
     )
-    await section.unverifiedEmailStatus.waitUntilVisible()
+    await section.sendVerificationCode.waitUntilVisible()
   })
 })
 

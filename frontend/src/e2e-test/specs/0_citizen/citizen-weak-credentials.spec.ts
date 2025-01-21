@@ -93,7 +93,47 @@ describe('Citizen weak credentials', () => {
     await modal.ok.click()
     await modal.waitUntilHidden()
   })
-  test('a person with a different email can change their username', async () => {
+  test('a person with a different email can change their username - email updated on the same page', async () => {
+    const oldEmail = 'old@example.com'
+    const newEmail = 'new@example.com'
+    const citizen = await Fixture.person({
+      email: oldEmail,
+      verifiedEmail: oldEmail
+    }).saveAdult({
+      updateMockVtjWithDependants: [],
+      updateWeakCredentials: {
+        username: oldEmail,
+        password: 'aifiefaeC3io?dee'
+      }
+    })
+    page = await Page.open({ mockedTime })
+
+    const personalDetailsPage = await openPersonalDetailsPage(citizen)
+    const section = personalDetailsPage.personalDetailsSection
+
+    await section.editPersonalData(
+      {
+        preferredName: citizen.firstName.split(' ')[1],
+        email: newEmail,
+        phone: citizen.phone,
+        backupPhone: citizen.backupPhone
+      },
+      true
+    )
+
+    await section.verificationCodeField.waitUntilVisible()
+    await runJobs({ mockedTime })
+    const verificationCode = await getVerificationCodeFromEmail()
+    expect(verificationCode).toBeTruthy()
+    await section.verificationCodeField.fill(verificationCode ?? '')
+    await section.verifyEmail.click()
+
+    await section.verifiedEmailStatus.waitUntilVisible()
+    await personalDetailsPage.loginDetailsSection.username.assertTextEquals(
+      newEmail
+    )
+  })
+  test('a person with a different email can change their username - email updated elsewhere', async () => {
     const oldEmail = 'old@example.com'
     const newEmail = 'new@example.com'
     const citizen = await Fixture.person({
