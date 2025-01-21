@@ -477,6 +477,7 @@ enum class OtherGuardianAgreementStatus {
     AGREED,
     NOT_AGREED,
     RIGHT_TO_GET_NOTIFIED,
+    AUTOMATED,
 }
 
 data class PersonBasics(

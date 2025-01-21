@@ -31,6 +31,11 @@ type SecondGuardianSubSectionProps = {
   otherGuardianStatus: 'NO' | 'SAME_ADDRESS' | 'DIFFERENT_ADDRESS'
 }
 
+export type SelectableOtherGuardianAgreementStatus = Exclude<
+  OtherGuardianAgreementStatus,
+  'AUTOMATED'
+>
+
 export default React.memo(function SecondGuardianSubSection({
   type,
   formData,
@@ -41,7 +46,7 @@ export default React.memo(function SecondGuardianSubSection({
 }: SecondGuardianSubSectionProps) {
   const t = useTranslation()
 
-  const agreementStatuses: OtherGuardianAgreementStatus[] = [
+  const agreementStatuses: SelectableOtherGuardianAgreementStatus[] = [
     'AGREED',
     'NOT_AGREED',
     'RIGHT_TO_GET_NOTIFIED'

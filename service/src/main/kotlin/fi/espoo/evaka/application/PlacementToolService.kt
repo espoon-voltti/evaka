@@ -312,7 +312,7 @@ class PlacementToolService(
                                     SecondGuardian(
                                         phoneNumber = guardian2.phone,
                                         email = guardian2.email ?: "",
-                                        agreementStatus = OtherGuardianAgreementStatus.AGREED,
+                                        agreementStatus = OtherGuardianAgreementStatus.AUTOMATED,
                                     )
                                 },
                     ),

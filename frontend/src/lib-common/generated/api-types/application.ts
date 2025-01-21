@@ -598,6 +598,7 @@ export type OtherGuardianAgreementStatus =
   | 'AGREED'
   | 'NOT_AGREED'
   | 'RIGHT_TO_GET_NOTIFIED'
+  | 'AUTOMATED'
 
 /**
 * Generated from fi.espoo.evaka.application.PagedApplicationSummaries
