@@ -74,10 +74,13 @@ export default React.memo(function UnitPreferenceSection(
 
   useEffect(() => {
     updateFormData((prev) => {
-      if (
-        units &&
-        prev.preferredUnits.some((u1) => !units.some((u2) => u1.id === u2.id))
-      ) {
+      const preferredUnits = units
+        ? prev.preferredUnits.filter(({ id }) =>
+            units.some((unit) => unit.id === id)
+          )
+        : prev.preferredUnits
+
+      if (preferredUnits.length < prev.preferredUnits.length) {
         setInfoMessage({
           title: t.applications.editor.unitChangeWarning.title,
           text: t.applications.editor.unitChangeWarning.text,
@@ -89,13 +92,8 @@ export default React.memo(function UnitPreferenceSection(
           }
         })
       }
-      return {
-        preferredUnits: units
-          ? prev.preferredUnits.filter(({ id }) =>
-              units.some((unit) => unit.id === id)
-            )
-          : prev.preferredUnits
-      }
+
+      return { preferredUnits }
     })
   }, [
     units,
