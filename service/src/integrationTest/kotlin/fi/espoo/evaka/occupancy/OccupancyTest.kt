@@ -17,7 +17,6 @@ import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.db.Database
@@ -214,16 +213,18 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun realtimeAttendanceToday(
-        employeeId: EmployeeId,
+        employee: DevEmployee,
         minusDaysFromNow: Long = 0,
         type: StaffAttendanceType = StaffAttendanceType.PRESENT,
     ) =
         DevStaffAttendance(
-            employeeId = employeeId,
+            employeeId = employee.id,
             groupId = daycareGroup1,
             type = type,
             arrived = HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)),
             departed = HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 39)),
+            modifiedAt = HelsinkiDateTime.of(today, LocalTime.of(15, 40)),
+            modifiedBy = employee.evakaUserId,
         )
 
     private fun assertRealtimeAttendances(
@@ -284,7 +285,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
         val employee = DevEmployee()
-        val attendance = realtimeAttendanceToday(employee.id)
+        val attendance = realtimeAttendanceToday(employee)
 
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
@@ -333,8 +334,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
         val employee = DevEmployee()
-        val attendance1 = realtimeAttendanceToday(employee.id, 1)
-        val attendance2 = realtimeAttendanceToday(employee.id)
+        val attendance1 = realtimeAttendanceToday(employee, 1)
+        val attendance2 = realtimeAttendanceToday(employee)
 
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
@@ -374,7 +375,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         val employee1 = DevEmployee()
         val employee2 = DevEmployee()
         val attendances =
-            listOf(realtimeAttendanceToday(employee1.id), realtimeAttendanceToday(employee2.id))
+            listOf(realtimeAttendanceToday(employee1), realtimeAttendanceToday(employee2))
 
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
@@ -424,10 +425,10 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         val employee2 = DevEmployee()
         val attendances =
             listOf(
-                realtimeAttendanceToday(employee1.id, 1),
-                realtimeAttendanceToday(employee1.id),
-                realtimeAttendanceToday(employee2.id, 1),
-                realtimeAttendanceToday(employee2.id),
+                realtimeAttendanceToday(employee1, 1),
+                realtimeAttendanceToday(employee1),
+                realtimeAttendanceToday(employee2, 1),
+                realtimeAttendanceToday(employee2),
             )
 
         db.transaction { tx ->
@@ -478,6 +479,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         today.plusDays(1),
                         LocalTime.of(0, 0),
                     ), // At work for 7 hours 39 minutes
+                modifiedAt = HelsinkiDateTime.of(today.plusDays(1), LocalTime.of(0, 0)),
+                modifiedBy = employee.evakaUserId,
             )
 
         db.transaction { tx ->
@@ -517,6 +520,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 occupancyCoefficient = BigDecimal(3.5),
                 arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 15)),
                 departed = null,
+                modifiedAt = HelsinkiDateTime.of(today, LocalTime.of(16, 15)),
+                modifiedBy = employee.evakaUserId,
             )
 
         db.transaction { tx ->
@@ -552,7 +557,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         val employee2 = DevEmployee()
         val attendances =
             listOf(
-                realtimeAttendanceToday(employee1.id),
+                realtimeAttendanceToday(employee1),
 
                 // not included because of no departure time
                 DevStaffAttendance(
@@ -560,6 +565,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     groupId = daycareGroup1,
                     arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                     departed = null,
+                    modifiedAt = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
+                    modifiedBy = employee2.evakaUserId,
                 ),
             )
 
@@ -598,7 +605,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
         val employee = DevEmployee()
-        val attendance = realtimeAttendanceToday(employee.id, 1)
+        val attendance = realtimeAttendanceToday(employee, 1)
 
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
@@ -641,7 +648,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
         val employee = DevEmployee()
-        val attendance = realtimeAttendanceToday(employee.id, 0, type)
+        val attendance = realtimeAttendanceToday(employee, 0, type)
 
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
@@ -1954,6 +1961,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 groupId = daycareGroup1,
                 arrived = HelsinkiDateTime.of(today.minusDays(1), LocalTime.of(21, 0)),
                 departed = HelsinkiDateTime.of(today, LocalTime.of(4, 45)),
+                modifiedAt = HelsinkiDateTime.of(today, LocalTime.of(12, 0)),
+                modifiedBy = employee.evakaUserId,
             )
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)

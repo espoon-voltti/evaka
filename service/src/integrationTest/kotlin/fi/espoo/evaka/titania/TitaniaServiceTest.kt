@@ -943,21 +943,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2014, 3, 5), LocalTime.of(12, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(7, 0)),
@@ -965,10 +961,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(15, 0)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(6, 30)),
@@ -976,19 +974,16 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(12, 0)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OVERTIME,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "HESSU",
-                        lastName = "HOPO",
-                        employeeNumber = "255145",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "HESSU", lastName = "HOPO", employeeNumber = "255145")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(7, 0)),
@@ -996,10 +991,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(11, 0)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(12, 5)),
@@ -1007,10 +1004,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(16, 10)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(10, 15)),
@@ -1018,6 +1017,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(17, 15)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1027,23 +1028,30 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 titaniaService.getStampedWorkingTimeEvents(tx, titaniaGetRequestValidExampleData)
             }
 
-        assertThat(response).isEqualTo(titaniaGetResponseValidExampleData)
+        assertThat(
+                response.copy(
+                    schedulingUnit =
+                        response.schedulingUnit.map { unit ->
+                            unit.copy(
+                                person =
+                                    unit.person.sortedByDescending { person -> person.employeeId }
+                            )
+                        }
+                )
+            )
+            .isEqualTo(titaniaGetResponseValidExampleData)
     }
 
     @Test
     fun `getStampedWorkingTimeEvents without group`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2023, 2, 6), LocalTime.of(15, 40))
         db.transaction { tx ->
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = null,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2023, 2, 6), LocalTime.of(8, 0)),
@@ -1051,6 +1059,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2023, 2, 6), LocalTime.of(15, 39)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1112,21 +1122,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents with plan and overtime`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(18, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.insert(
                         DevStaffAttendancePlan(
-                            employeeId = employeeId,
+                            employeeId = employee.id,
                             type = StaffAttendanceType.PRESENT,
                             startTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
@@ -1140,7 +1146,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
@@ -1148,10 +1154,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
@@ -1159,6 +1167,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(16, 11)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OVERTIME,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1227,21 +1237,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents with plan and overtime without departed`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(18, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.insert(
                         DevStaffAttendancePlan(
-                            employeeId = employeeId,
+                            employeeId = employee.id,
                             type = StaffAttendanceType.PRESENT,
                             startTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
@@ -1255,7 +1261,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
@@ -1263,16 +1269,20 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
                         departureTime = null,
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OVERTIME,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1341,21 +1351,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents with plan and justified change inside plan`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(18, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.insert(
                         DevStaffAttendancePlan(
-                            employeeId = employeeId,
+                            employeeId = employee.id,
                             type = StaffAttendanceType.PRESENT,
                             startTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
@@ -1369,7 +1375,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 21)),
@@ -1377,10 +1383,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = null,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
@@ -1388,10 +1396,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
@@ -1399,6 +1409,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(15, 21)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1474,21 +1486,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents with plan and justified change outside plan`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(18, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.insert(
                         DevStaffAttendancePlan(
-                            employeeId = employeeId,
+                            employeeId = employee.id,
                             type = StaffAttendanceType.PRESENT,
                             startTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
@@ -1502,7 +1510,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(7, 39)),
@@ -1510,10 +1518,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = null,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
@@ -1521,10 +1531,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
@@ -1532,6 +1544,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(16, 39)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1607,21 +1621,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents with plan and justified change without departed`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(18, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.insert(
                         DevStaffAttendancePlan(
-                            employeeId = employeeId,
+                            employeeId = employee.id,
                             type = StaffAttendanceType.PRESENT,
                             startTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
@@ -1635,13 +1645,15 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 21)),
                         departureTime = null,
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1703,21 +1715,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents with overnight plan`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(18, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.insert(
                         DevStaffAttendancePlan(
-                            employeeId = employeeId,
+                            employeeId = employee.id,
                             type = StaffAttendanceType.PRESENT,
                             startTime =
                                 HelsinkiDateTime.of(
@@ -1731,7 +1739,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(20, 5)),
@@ -1739,6 +1747,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(7, 56)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1800,21 +1810,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents with overnight plan and justified change inside plan`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(18, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.insert(
                         DevStaffAttendancePlan(
-                            employeeId = employeeId,
+                            employeeId = employee.id,
                             type = StaffAttendanceType.PRESENT,
                             startTime =
                                 HelsinkiDateTime.of(
@@ -1828,7 +1834,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(20, 30)),
@@ -1836,10 +1842,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(21, 15)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = null,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(21, 15)),
@@ -1847,10 +1855,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(23, 10)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(23, 10)),
@@ -1858,6 +1868,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(7, 30)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }
@@ -1924,21 +1936,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `getStampedWorkingTimeEvents with attendance not within plan`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(18, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
-                    testEmployee.copy(
-                        firstName = "IINES",
-                        lastName = "ANKKA",
-                        employeeNumber = "177111",
-                    )
-                )
-                .let { (employeeId) ->
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
                     tx.insert(
                         DevStaffAttendancePlan(
-                            employeeId = employeeId,
+                            employeeId = employee.id,
                             type = StaffAttendanceType.PRESENT,
                             startTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(8, 0)),
@@ -1952,7 +1960,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
-                        employeeId = employeeId,
+                        employeeId = employee.id,
                         groupId = groupId,
                         arrivalTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(7, 54)),
@@ -1960,6 +1968,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(16, 6)),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 }
         }

@@ -304,7 +304,12 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun endOfDayStaffAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { it.addMissingStaffAttendanceDepartures(clock.now()) }
+        db.transaction {
+            it.addMissingStaffAttendanceDepartures(
+                clock.now(),
+                AuthenticatedUser.SystemInternalUser.evakaUserId,
+            )
+        }
     }
 
     fun endOfDayReservationUpkeep(db: Database.Connection, clock: EvakaClock) {

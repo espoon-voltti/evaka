@@ -482,3 +482,4 @@ V483__out_of_office.sql
 V484__invoice_attachment.sql
 V485__preschool_manager.sql
 V486__fix_application_confidentiality.sql
+V487__staff_attendance_realtime_modified.sql

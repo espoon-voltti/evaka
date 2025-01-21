@@ -167,6 +167,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(7, 0)),
                     departed = HelsinkiDateTime.of(date, LocalTime.of(16, 45)),
                     occupancyCoefficient = occupancyCoefficientSeven,
+                    modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(16, 45)),
+                    modifiedBy = employee.evakaUserId,
                 )
             )
 
@@ -446,6 +448,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(19, 45)),
                     departed = HelsinkiDateTime.of(tomorrow, LocalTime.of(9, 0)),
                     occupancyCoefficient = occupancyCoefficientSeven,
+                    modifiedAt = HelsinkiDateTime.of(tomorrow, LocalTime.of(9, 0)),
+                    modifiedBy = employee.evakaUserId,
                 )
             )
         }

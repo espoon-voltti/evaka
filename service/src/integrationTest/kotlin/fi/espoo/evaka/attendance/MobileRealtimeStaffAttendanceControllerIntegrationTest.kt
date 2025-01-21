@@ -92,6 +92,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 groupId,
                 HelsinkiDateTime.of(today, LocalTime.of(8, 0, 0)),
                 BigDecimal(7.0),
+                now,
+                mobileUser.evakaUserId,
             )
         }
 
@@ -1158,6 +1160,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         occupancyCoefficient = occupancyCoefficientSeven,
                         type = StaffAttendanceType.PRESENT,
                         departedAutomatically = false,
+                        modifiedAt = now,
+                        modifiedBy = mobileUser.evakaUserId,
                     )
                 )
             }
@@ -1173,6 +1177,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         occupancyCoefficient = occupancyCoefficientSeven,
                         type = StaffAttendanceType.PRESENT,
                         departedAutomatically = false,
+                        modifiedAt = now,
+                        modifiedBy = mobileUser.evakaUserId,
                     )
                 )
             }

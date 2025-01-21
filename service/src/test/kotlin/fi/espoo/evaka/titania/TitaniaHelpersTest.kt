@@ -68,4 +68,12 @@ private val testAttendance =
         firstName = "First",
         lastName = "Last",
         departedAutomatically = false,
+        arrivedAddedAt = null,
+        arrivedAddedBy = null,
+        arrivedModifiedAt = null,
+        arrivedModifiedBy = null,
+        departedAddedAt = null,
+        departedAddedBy = null,
+        departedModifiedAt = null,
+        departedModifiedBy = null,
     )
