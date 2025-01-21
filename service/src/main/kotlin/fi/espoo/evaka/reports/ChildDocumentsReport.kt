@@ -139,10 +139,12 @@ WITH valid_children AS (
     JOIN daycare d ON pl.unit_id = d.id
     JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id
       AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(today)}
+    JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
     WHERE dt.id = ANY(${bind(templateIds)})
       AND pl.unit_id = ANY(${bind(unitIds)})
       AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
       AND lower(dt.language::text) = lower(d.language::text)
+      AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(today)}
 )
 SELECT
     d.id AS unit_id,
@@ -155,7 +157,7 @@ SELECT
     COUNT(DISTINCT vc.child_id) FILTER (WHERE cd.id IS NULL) AS none,
     COUNT(DISTINCT vc.child_id) AS total
 FROM daycare d
-JOIN daycare_group dg ON d.id = dg.daycare_id
+JOIN daycare_group dg ON d.id = dg.daycare_id AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(today)}
 LEFT JOIN valid_children vc ON d.id = vc.unit_id AND dg.id = vc.group_id
 LEFT JOIN child_document cd ON vc.child_id = cd.child_id AND cd.template_id = ANY(${bind(templateIds)})
 WHERE d.id = ANY(${bind(unitIds)})
