@@ -4,12 +4,13 @@
 
 package fi.espoo.evaka.finance.notes
 
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FinanceNoteId
+import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
-fun Database.Read.getFinanceNotes(adultId: EvakaUserId): List<FinanceNote> =
+fun Database.Read.getFinanceNotes(personId: PersonId): List<FinanceNote> =
     createQuery {
             sql(
                 """
@@ -17,17 +18,17 @@ SELECT
     n.id,
     n.content,
     n.created_at,
-    ceu.id AS created_by_id,
-    ceu.type AS created_by_type,
-    ceu.name AS created_by_name,
+    c.id AS created_by_id,
+    c.type AS created_by_type,
+    c.name AS created_by_name,
     n.modified_at,
-    meu.id AS modified_by_id,
-    neu.type AS modified_by_type,
-    neu.name AS modified_by_name
+    m.id AS modified_by_id,
+    m.type AS modified_by_type,
+    m.name AS modified_by_name
 FROM finance_note n
-LEFT JOIN evaka_user ceu ON n.created_by = ceu.id
-LEFT JOIN evaka_user meu ON n.modified_by = meu.id
-WHERE n.adult_id = ${bind(adultId)}
+LEFT JOIN evaka_user c ON n.created_by = c.id
+LEFT JOIN evaka_user m ON n.modified_by = m.id
+WHERE n.person_id = ${bind(personId)}
 ORDER BY n.created_at
 """
             )
@@ -35,41 +36,29 @@ ORDER BY n.created_at
         .toList()
 
 fun Database.Transaction.createFinanceNote(
+    personId: PersonId,
     content: String,
-    createdBy: EvakaUserId,
+    user: AuthenticatedUser.Employee,
     now: HelsinkiDateTime,
-): FinanceNote =
+): FinanceNoteId =
     createQuery {
             sql(
                 """
-WITH new_note AS (
     INSERT INTO finance_note (
+        person_id,
         content,
         created_at,
         created_by,
         modified_at,
         modified_by
     ) VALUES (
+        ${bind(personId)},
         ${bind(content)},
         ${bind(now)},
-        ${bind(createdBy)},
+        ${bind(user.evakaUserId)},
         ${bind(now)},
-        ${bind(createdBy)}
-    ) RETURNING *
-)
-SELECT
-    n.id,
-    n.content,
-    n.created_at,
-    eu.id AS created_by_id,
-    eu.type AS created_by_type,
-    eu.name AS created_by_name,
-    n.modified_at,
-    eu.id AS modified_by_id,
-    eu.type AS modified_by_type,
-    eu.name AS modified_by_name
-FROM new_note n
-LEFT JOIN evaka_user eu ON n.created_by = eu.id
+        ${bind(user.evakaUserId)},
+    ) RETURNING id
 """
             )
         }
@@ -78,38 +67,21 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
 fun Database.Transaction.updateFinanceNote(
     id: FinanceNoteId,
     content: String,
-    modifiedBy: EvakaUserId,
+    user: AuthenticatedUser.Employee,
     now: HelsinkiDateTime,
-): FinanceNote =
-    createQuery {
+) =
+    createUpdate {
             sql(
                 """
-WITH updated_note AS (
     UPDATE finance_note SET
         content = ${bind(content)},
         modified_at = ${bind(now)},
-        modified_by = ${bind(modifiedBy)}
+        modified_by = ${bind(user.evakaUserId)}
     WHERE id = ${bind(id)}
-    RETURNING *
-)
-SELECT
-    n.id,
-    n.content,
-    n.created_at,
-    eu.id AS created_by_id,
-    eu.type AS created_by_type,
-    eu.name AS created_by_name,
-    n.modified_at,
-    eu.id AS modified_by_id,
-    eu.type AS modified_by_type,
-    eu.name AS modified_by_name
-FROM updated_note n
-LEFT JOIN evaka_user ceu ON n.created_by = ceu.id
-LEFT JOIN evaka_user meu ON n.modified_by = meu.id
 """
             )
         }
-        .exactlyOne()
+        .execute()
 
 fun Database.Transaction.deleteFinanceNote(id: FinanceNoteId) = execute {
     sql("DELETE FROM finance_note WHERE id = ${bind(id)}")

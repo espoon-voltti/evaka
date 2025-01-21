@@ -4,8 +4,8 @@ package fi.espoo.evaka.finance.notes
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FinanceNoteId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -20,89 +20,110 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-data class FinanceNoteRequest(val content: String)
+data class FinanceNoteRequest(
+    val personId: PersonId,
+    val content: String
+)
 
 @RestController
-@RequestMapping("/employee/note/finance")
+@RequestMapping("/employee/finance-notes")
 class FinanceNoteController(private val accessControl: AccessControl) {
-    @GetMapping("/{adultId}")
-    fun getNotes(
+    @GetMapping("/{id}")
+    fun getFinanceNotes(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable adultId: EvakaUserId,
+        @PathVariable id: PersonId,
     ): List<FinanceNote> {
         return db.connect { dbc ->
-            dbc.transaction {
-                // TODO access control
-                it.getFinanceNotes(adultId)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ_FINANCE_NOTES,
+                        id,
+                    )
+                    tx.getFinanceNotes(id)
+                }
             }
-        }
-        // TODO audit line
+            .also {
+                Audit.FinanceNoteRead.log(
+                    targetId = AuditId(id),
+                    meta = mapOf("count" to it.size),
+                )
+            }
     }
 
     @PostMapping("/")
-    fun createNote(
+    fun createFinanceNote(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody note: FinanceNoteRequest,
-    ): FinanceNote {
-        return db.connect { dbc ->
-            dbc.transaction {
-                /*accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.FinanceNote.CREATE,
-                    noteId, // TODO applicationId?
-                )*/
-                it.createFinanceNote(note.content, user.evakaUserId, clock.now())
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.CREATE_FINANCE_NOTE,
+                        note.personId,
+                    )
+                    tx.createFinanceNote(note.personId, note.content, user, clock.now())
+                }
             }
-        }
-        /*
-        .also {
-            Audit.NoteCreate.log(targetId = AuditId(noteId)) // TODO
-            // TODO audit line
-        }*/
+            .also { financeNoteId ->
+                Audit.FinanceNoteCreate.log(
+                    targetId = AuditId(note.personId),
+                    objectId = AuditId(financeNoteId)
+                )
+            }
     }
 
     @PutMapping("/{noteId}")
-    fun updateNote(
+    fun updateFinanceNote(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable noteId: FinanceNoteId,
         @RequestBody note: FinanceNoteRequest,
-    ): FinanceNote {
-        return db.connect { dbc ->
-            dbc.transaction {
-                // TODO access control
-                it.updateFinanceNote(noteId, note.content, user.evakaUserId, clock.now())
+    ) {
+        db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.FinanceNote.UPDATE,
+                        noteId,
+                    )
+                    it.updateFinanceNote(noteId, note.content, user, clock.now())
+                }
             }
-        }
-        // TODO audit log
+            .also { Audit.FinanceNoteUpdate.log(targetId = AuditId(noteId)) }
     }
 
     @DeleteMapping("/{noteId}")
-    fun deleteNote(
+    fun deleteFinanceNote(
         db: Database,
-        user: AuthenticatedUser.Employee, // TODO is this right? Also import.
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable noteId: FinanceNoteId,
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.FinanceNote.DELETE,
-                    noteId,
-                )
-                tx.deleteFinanceNote(noteId)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.FinanceNote.DELETE,
+                        noteId,
+                    )
+                    tx.deleteFinanceNote(noteId)
+                }
             }
-        }
-        Audit.NoteDelete.log(targetId = AuditId(noteId)) // TODO imports
+            .also { Audit.FinanceNoteDelete.log(targetId = AuditId(noteId)) }
     }
 }

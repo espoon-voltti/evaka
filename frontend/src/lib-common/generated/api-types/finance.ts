@@ -8,6 +8,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import { EvakaUser } from './user'
 import { FinanceNoteId } from './shared'
 import { JsonOf } from '../../json'
+import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.finance.notes.FinanceNote
@@ -26,6 +27,7 @@ export interface FinanceNote {
 */
 export interface FinanceNoteRequest {
   content: string
+  personId: PersonId
 }
 
 

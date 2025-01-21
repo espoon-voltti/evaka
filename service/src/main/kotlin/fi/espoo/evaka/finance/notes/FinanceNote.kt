@@ -9,9 +9,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.core.mapper.Nested
 
-// TODO imports
-// k
-
 data class FinanceNote(
     val id: FinanceNoteId,
     val content: String,
@@ -19,5 +16,4 @@ data class FinanceNote(
     @Nested("created_by") val createdBy: EvakaUser,
     val modifiedAt: HelsinkiDateTime,
     @Nested("modified_by") val modifiedBy: EvakaUser,
-    // TODO other fields? Message content and thread?
 )
