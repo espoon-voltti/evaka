@@ -266,6 +266,8 @@ function CreateApplicationModal({
               <PersonSearch
                 onResult={(res) => setPersonId(res?.id)}
                 onFocus={() => setPersonType('DB_SEARCH')}
+                ageAtLeast={10}
+                excludePeople={[child.id]}
               />
             </div>
 
@@ -278,6 +280,8 @@ function CreateApplicationModal({
               />
               <VtjPersonSearch
                 data-qa="select-search-from-vtj-guardian"
+                ageAtLeast={10}
+                excludePeople={[child.id]}
                 onResult={(res) =>
                   setNewVtjPersonSsn(res?.socialSecurityNumber || undefined)
                 }
