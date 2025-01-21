@@ -76,6 +76,7 @@ interface Props extends BaseProps {
   onFocus?: (e: React.FocusEvent<HTMLElement>) => void
   ageLessThan?: number
   ageAtLeast?: number
+  excludePeople?: PersonId[]
 }
 
 function PersonSearch({
@@ -85,6 +86,7 @@ function PersonSearch({
   onFocus,
   ageLessThan,
   ageAtLeast,
+  excludePeople,
   'data-qa': dataQa,
   getItemDataQa
 }: Props) {
@@ -107,6 +109,7 @@ function PersonSearch({
 
   const filterPeople = (people: PersonSummary[]) =>
     people.filter((person) => {
+      if (excludePeople && excludePeople.includes(person.id)) return false
       if (!person.dateOfBirth) return true
       const age = getAge(person.dateOfBirth)
       if (ageLessThan !== undefined && age >= ageLessThan) return false

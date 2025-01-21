@@ -215,6 +215,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
                 assignFridgePartnerForm({ partner: person })
               }
               ageAtLeast={13}
+              excludePeople={[headPersonId]}
               data-qa="fridge-partner-person-search"
             />
           </>
