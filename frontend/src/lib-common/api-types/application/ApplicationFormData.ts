@@ -370,8 +370,9 @@ export function formDataToApiData(
     preferences: {
       preferredUnits: form.unitPreference.preferredUnits,
       preferredStartDate: form.serviceNeed.preferredStartDate,
-      connectedDaycarePreferredStartDate:
-        form.serviceNeed.connectedDaycarePreferredStartDate,
+      connectedDaycarePreferredStartDate: form.serviceNeed.connectedDaycare
+        ? form.serviceNeed.connectedDaycarePreferredStartDate
+        : null,
       serviceNeed:
         type === 'DAYCARE' ||
         (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
