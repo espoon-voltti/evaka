@@ -5,14 +5,14 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import {
+  deleteAttachment,
   getAttachmentUrl,
   saveFeeAlterationAttachment
 } from 'employee-frontend/api/attachments'
-import { Result, Success, wrapResult } from 'lib-common/api'
+import { Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import {
-  AttachmentId,
   FeeAlterationId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
@@ -29,13 +29,10 @@ import { Gap } from 'lib-components/white-space'
 
 import DateRangeInput from '../../../components/common/DateRangeInput'
 import LabelValueList from '../../../components/common/LabelValueList'
-import { deleteAttachment } from '../../../generated/api-clients/attachment'
 import { useTranslation } from '../../../state/i18n'
 import { PartialFeeAlteration } from '../../../types/fee-alteration'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const newFeeAlteration = (
   personId: PersonId,
@@ -207,14 +204,6 @@ function FeeAlterationAttachments({
 }) {
   const { i18n } = useTranslation()
 
-  const handleDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
-        onDeleted(id)
-      }),
-    [onDeleted]
-  )
-
   return (
     <>
       <Title size={4}>
@@ -228,7 +217,8 @@ function FeeAlterationAttachments({
         files={attachments}
         onUpload={saveFeeAlterationAttachment(feeAlterationId)}
         onUploaded={onUploaded}
-        onDelete={handleDelete}
+        onDelete={deleteAttachment}
+        onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />
     </>

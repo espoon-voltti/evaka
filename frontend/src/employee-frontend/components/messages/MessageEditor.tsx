@@ -20,7 +20,6 @@ import {
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import {
-  AttachmentId,
   MessageAccountId,
   MessageDraftId
 } from 'lib-common/generated/api-types/shared'
@@ -77,6 +76,7 @@ import {
   faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
 
+import { deleteAttachment } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 
 import { createMessagePreflightCheckQuery } from './queries'
@@ -183,9 +183,6 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption<MessageAccountId>
-  deleteAttachment: (arg: {
-    attachmentId: AttachmentId
-  }) => Promise<Result<void>>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
   initDraftRaw: (accountId: MessageAccountId) => Promise<Result<MessageDraftId>>
@@ -202,7 +199,6 @@ interface Props {
 export default React.memo(function MessageEditor({
   availableReceivers,
   defaultSender,
-  deleteAttachment,
   draftContent,
   getAttachmentUrl,
   initDraftRaw,
@@ -411,17 +407,6 @@ export default React.memo(function MessageEditor({
       filters: filters
     })
   }, [onSend, message, selectedReceivers, draftId, filters])
-
-  const handleAttachmentDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachment({ attachmentId: id })).map(() =>
-        setMessage(({ attachments, ...rest }) => ({
-          ...rest,
-          attachments: attachments.filter((a) => a.id !== id)
-        }))
-      ),
-    [deleteAttachment]
-  )
 
   const onCloseHandler = useCallback(() => {
     if (draftWasModified && draftState === 'dirty') {
@@ -809,7 +794,13 @@ export default React.memo(function MessageEditor({
                     attachments: [...message.attachments, attachment]
                   })
                 }
-                onDelete={handleAttachmentDelete}
+                onDelete={deleteAttachment}
+                onDeleted={(id) =>
+                  setMessage(({ attachments, ...rest }) => ({
+                    ...rest,
+                    attachments: attachments.filter((a) => a.id !== id)
+                  }))
+                }
                 onStateChange={setUploadStatus}
               />
             )}

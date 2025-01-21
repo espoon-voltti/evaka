@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   AttachmentId,
@@ -17,13 +16,14 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 import { H3, H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getAttachmentUrl, saveIncomeStatementAttachment } from '../attachments'
-import { deleteAttachment } from '../generated/api-clients/attachment'
+import {
+  deleteAttachment,
+  getAttachmentUrl,
+  saveIncomeStatementAttachment
+} from '../attachments'
 import { useTranslation } from '../localization'
 
 import { AttachmentType } from './types/common'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export default React.memo(function Attachments({
   incomeStatementId,
@@ -39,14 +39,6 @@ export default React.memo(function Attachments({
   onDeleted: (attachmentId: AttachmentId) => void
 }) {
   const t = useTranslation()
-
-  const handleDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
-        onDeleted(id)
-      }),
-    [onDeleted]
-  )
 
   return (
     <ContentArea opaque paddingVertical="L">
@@ -73,7 +65,8 @@ export default React.memo(function Attachments({
           files={attachments}
           onUpload={saveIncomeStatementAttachment(incomeStatementId)}
           onUploaded={onUploaded}
-          onDelete={handleDelete}
+          onDelete={deleteAttachment}
+          onDeleted={onDeleted}
           getDownloadUrl={getAttachmentUrl}
         />
       </FixedSpaceColumn>

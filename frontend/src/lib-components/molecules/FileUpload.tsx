@@ -86,7 +86,7 @@ interface FileUploadProps {
   files: Attachment[]
   onUpload: UploadHandler
   onUploaded?: (attachment: Attachment) => void
-  onDelete: (id: AttachmentId) => Promise<Result<void>>
+  onDelete: (request: { attachmentId: AttachmentId }) => Promise<Result<void>>
   onDeleted?: (id: AttachmentId) => void
   onStateChange?: (status: UploadStatus) => void
   getDownloadUrl: (id: AttachmentId, fileName: string) => string
@@ -373,7 +373,7 @@ export default React.memo(function FileUpload({
     try {
       let success = false
       if (file.error === undefined) {
-        const result = await onDelete(file.id)
+        const result = await onDelete({ attachmentId: file.id })
         if (result.isSuccess) {
           onDeleted?.(file.id)
           success = true

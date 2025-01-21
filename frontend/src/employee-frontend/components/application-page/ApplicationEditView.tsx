@@ -8,7 +8,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Result, wrapResult } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import { swapElements } from 'lib-common/array'
 import DateRange from 'lib-common/date-range'
 import {
@@ -58,18 +58,16 @@ import {
 } from 'lib-icons'
 
 import {
+  deleteAttachment,
   getAttachmentUrl,
   saveApplicationAttachment
 } from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
-import { deleteAttachment } from '../../generated/api-clients/attachment'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -211,19 +209,17 @@ export default React.memo(function ApplicationEditView({
     [setApplication]
   )
 
-  const onDeleteAttachment = (id: AttachmentId) =>
-    deleteAttachmentResult({ attachmentId: id }).then((res) => {
-      if (res.isSuccess) {
-        setApplication(
-          (prev) =>
-            prev && {
-              ...prev,
-              attachments: prev.attachments.filter((a) => a.id !== id)
-            }
-        )
-      }
-      return res
-    })
+  const handleAttachmentDeleted = useCallback(
+    (id: AttachmentId) =>
+      setApplication(
+        (prev) =>
+          prev && {
+            ...prev,
+            attachments: prev.attachments.filter((a) => a.id !== id)
+          }
+      ),
+    [setApplication]
+  )
 
   const validationErrorInfo = (field: string): InputInfo | undefined =>
     errors[field]
@@ -302,7 +298,8 @@ export default React.memo(function ApplicationEditView({
                       'URGENCY'
                     )}
                     onUploaded={onAttachmentUploaded('URGENCY')}
-                    onDelete={onDeleteAttachment}
+                    onDelete={deleteAttachment}
+                    onDeleted={handleAttachmentDeleted}
                     getDownloadUrl={getAttachmentUrl}
                     files={attachments.filter((a) => a.type === 'URGENCY')}
                     data-qa="file-upload-urgent"
@@ -603,7 +600,8 @@ export default React.memo(function ApplicationEditView({
                       'EXTENDED_CARE'
                     )}
                     onUploaded={onAttachmentUploaded('EXTENDED_CARE')}
-                    onDelete={onDeleteAttachment}
+                    onDelete={deleteAttachment}
+                    onDeleted={handleAttachmentDeleted}
                     getDownloadUrl={getAttachmentUrl}
                     files={attachments.filter(
                       (a) => a.type === 'EXTENDED_CARE'
@@ -1337,7 +1335,8 @@ export default React.memo(function ApplicationEditView({
                 'SERVICE_WORKER_ATTACHMENT'
               )}
               onUploaded={onAttachmentUploaded('SERVICE_WORKER_ATTACHMENT')}
-              onDelete={onDeleteAttachment}
+              onDelete={deleteAttachment}
+              onDeleted={handleAttachmentDeleted}
               getDownloadUrl={getAttachmentUrl}
               files={attachments.filter(
                 (a) => a.type === 'SERVICE_WORKER_ATTACHMENT'

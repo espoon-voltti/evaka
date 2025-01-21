@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Success } from 'lib-common/api'
+import { Failure, Success, wrapResult } from 'lib-common/api'
 import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
+
+import { deleteAttachment as deleteAttachmentPromise } from '../generated/api-clients/attachment'
 
 import { API_URL, client } from './client'
 
@@ -95,3 +97,5 @@ export function getAttachmentUrl(
   const encodedFilename = encodeURIComponent(requestedFilename)
   return `${API_URL}/employee/attachments/${attachmentId}/download/${encodedFilename}`
 }
+
+export const deleteAttachment = wrapResult(deleteAttachmentPromise)

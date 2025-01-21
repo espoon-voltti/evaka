@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Success } from 'lib-common/api'
+import { Failure, Success, wrapResult } from 'lib-common/api'
 import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import {
   ApplicationId,
@@ -12,6 +12,7 @@ import {
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
 
 import { API_URL, client } from './api-client'
+import { deleteAttachment as deleteAttachmentPromise } from './generated/api-clients/attachment'
 
 function uploadHandler(url: string): UploadHandler {
   return async (file, onUploadProgress) => {
@@ -65,3 +66,5 @@ export function getAttachmentUrl(
   const encodedFilename = encodeURIComponent(requestedFilename)
   return `${API_URL}/citizen/attachments/${attachmentId}/download/${encodedFilename}`
 }
+
+export const deleteAttachment = wrapResult(deleteAttachmentPromise)

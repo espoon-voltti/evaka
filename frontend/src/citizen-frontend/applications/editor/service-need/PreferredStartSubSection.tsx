@@ -4,11 +4,7 @@
 
 import React from 'react'
 
-import { wrapResult } from 'lib-common/api'
-import {
-  ApplicationId,
-  AttachmentId
-} from 'lib-common/generated/api-types/shared'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -23,18 +19,16 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import {
+  deleteAttachment,
   getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
-import { deleteAttachment } from '../../../generated/api-clients/attachment'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,
@@ -51,18 +45,6 @@ export default React.memo(function PreferredStartSubSection({
   const t = useTranslation()
   const [lang] = useLang()
   const labelId = useUniqueId()
-
-  const deleteUrgencyAttachment = (id: AttachmentId) =>
-    deleteAttachmentResult({ attachmentId: id }).then((result) => {
-      if (result.isSuccess) {
-        updateFormData({
-          urgencyAttachments: formData.urgencyAttachments.filter(
-            (file) => file.id !== id
-          )
-        })
-      }
-      return result
-    })
 
   const showDaycare4MonthWarning = (): boolean =>
     type === 'DAYCARE' &&
@@ -176,7 +158,14 @@ export default React.memo(function PreferredStartSubSection({
                       ]
                     })
                   }
-                  onDelete={deleteUrgencyAttachment}
+                  onDelete={deleteAttachment}
+                  onDeleted={(id) =>
+                    updateFormData({
+                      urgencyAttachments: formData.urgencyAttachments.filter(
+                        (file) => file.id !== id
+                      )
+                    })
+                  }
                   getDownloadUrl={getAttachmentUrl}
                   data-qa="urgent-file-upload"
                 />

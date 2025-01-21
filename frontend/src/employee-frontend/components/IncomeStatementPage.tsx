@@ -18,7 +18,6 @@ import {
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
 import {
-  AttachmentId,
   IncomeStatementId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
@@ -40,10 +39,10 @@ import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import {
+  deleteAttachment,
   getAttachmentUrl,
   saveIncomeStatementAttachment
 } from '../api/attachments'
-import { deleteAttachment } from '../generated/api-clients/attachment'
 import {
   getIncomeStatement,
   setIncomeStatementHandled
@@ -54,7 +53,6 @@ import { Translations, useTranslation } from '../state/i18n'
 import { renderResult } from './async-rendering'
 
 const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 const getIncomeStatementResult = wrapResult(getIncomeStatement)
 const setIncomeStatementHandledResult = wrapResult(setIncomeStatementHandled)
 
@@ -463,14 +461,6 @@ function EmployeeAttachments({
 }) {
   const { i18n } = useTranslation()
 
-  const handleDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
-        onDeleted(id)
-      }),
-    [onDeleted]
-  )
-
   return (
     <>
       <H1>{i18n.incomeStatement.employeeAttachments.title}</H1>
@@ -479,7 +469,8 @@ function EmployeeAttachments({
         files={attachments}
         onUpload={saveIncomeStatementAttachment(incomeStatementId)}
         onUploaded={onUploaded}
-        onDelete={handleDelete}
+        onDelete={deleteAttachment}
+        onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />
     </>

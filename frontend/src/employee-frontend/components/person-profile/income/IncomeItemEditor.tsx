@@ -7,7 +7,7 @@ import omit from 'lodash/omit'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result, wrapResult } from 'lib-common/api'
+import { Failure, Result } from 'lib-common/api'
 import { incomeEffects } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -19,7 +19,7 @@ import {
   IncomeTypeOptions,
   IncomeValue
 } from 'lib-common/generated/api-types/invoicing'
-import { AttachmentId, PersonId } from 'lib-common/generated/api-types/shared'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -40,10 +40,10 @@ import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import {
+  deleteAttachment,
   getAttachmentUrl,
   saveIncomeAttachment
 } from '../../../api/attachments'
-import { deleteAttachment } from '../../../generated/api-clients/attachment'
 import { useTranslation } from '../../../state/i18n'
 import { IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
@@ -54,8 +54,6 @@ import IncomeTable, {
   IncomeTableData,
   tableDataFromIncomeFields
 } from './IncomeTable'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;
@@ -448,14 +446,6 @@ function IncomeAttachments({
 }) {
   const { i18n } = useTranslation()
 
-  const handleDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
-        onDeleted(id)
-      }),
-    [onDeleted]
-  )
-
   return (
     <>
       <H1>{i18n.incomeStatement.employeeAttachments.title}</H1>
@@ -465,7 +455,8 @@ function IncomeAttachments({
         files={attachments}
         onUpload={saveIncomeAttachment(incomeId)}
         onUploaded={onUploaded}
-        onDelete={handleDelete}
+        onDelete={deleteAttachment}
+        onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />
     </>

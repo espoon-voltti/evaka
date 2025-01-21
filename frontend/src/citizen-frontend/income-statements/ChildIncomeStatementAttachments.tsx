@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   AttachmentId,
@@ -13,10 +12,11 @@ import {
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 
-import { getAttachmentUrl, saveIncomeStatementAttachment } from '../attachments'
-import { deleteAttachment } from '../generated/api-clients/attachment'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
+import {
+  deleteAttachment,
+  getAttachmentUrl,
+  saveIncomeStatementAttachment
+} from '../attachments'
 
 export default React.memo(function Attachments({
   incomeStatementId,
@@ -29,21 +29,14 @@ export default React.memo(function Attachments({
   onUploaded: (attachment: Attachment) => void
   onDeleted: (attachmentId: AttachmentId) => void
 }) {
-  const handleDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
-        onDeleted(id)
-      }),
-    [onDeleted]
-  )
-
   return (
     <FixedSpaceColumn spacing="zero">
       <FileUpload
         files={attachments}
         onUpload={saveIncomeStatementAttachment(incomeStatementId)}
         onUploaded={onUploaded}
-        onDelete={handleDelete}
+        onDelete={deleteAttachment}
+        onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />
     </FixedSpaceColumn>
