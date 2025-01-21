@@ -125,6 +125,9 @@ export default class CitizenMessagesPage {
     await this.#threadListItem.click()
     await this.#redactedThreadTitle.waitUntilVisible()
   }
+  async assertOpenReplyEditorButtonIsHidden() {
+    await this.#openReplyEditorButton.waitUntilHidden()
+  }
   async openStrongAuthPage() {
     await this.#strongAuthLink.click()
     return new MockStrongAuthPage(this.page)
