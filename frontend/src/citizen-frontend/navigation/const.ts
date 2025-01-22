@@ -4,9 +4,13 @@
 
 export const logoutUrl = `/api/citizen/auth/logout?RelayState=/`
 
-export const getWeakLoginUri = (
+export const getWeakKeycloakLoginUri = (
   url = `${window.location.pathname}${window.location.search}${window.location.hash}`
 ) => `/api/citizen/auth/keycloak/login?RelayState=${encodeURIComponent(url)}`
+
+export const getWeakLoginUri = (
+  url = `${window.location.pathname}${window.location.search}${window.location.hash}`
+) => `/login/form?next=${encodeURIComponent(url)}`
 
 export const getStrongLoginUri = (
   url = `${window.location.pathname}${window.location.search}${window.location.hash}`

@@ -3,20 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useMemo, useState } from 'react'
-import { Link, Navigate, useSearchParams } from 'react-router'
+import React, { useState } from 'react'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
-import { string } from 'lib-common/form/fields'
-import { object, validated } from 'lib-common/form/form'
-import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
-import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
 import Main from 'lib-components/atoms/Main'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
-import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
@@ -34,10 +27,13 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { farMap } from 'lib-icons'
 
 import Footer from '../Footer'
-import { authWeakLogin } from '../auth/api'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
-import { getStrongLoginUri, getWeakLoginUri } from '../navigation/const'
+import {
+  getStrongLoginUri,
+  getWeakKeycloakLoginUri,
+  getWeakLoginUri
+} from '../navigation/const'
 
 import { systemNotificationsQuery } from './queries'
 
@@ -51,6 +47,7 @@ export default React.memo(function LoginPage() {
 
   const [searchParams] = useSearchParams()
   const unvalidatedNextPath = searchParams.get('next')
+  const navigate = useNavigate()
 
   const [showInfoBoxText1, setShowInfoBoxText1] = useState(false)
   const [showInfoBoxText2, setShowInfoBoxText2] = useState(false)
@@ -104,14 +101,24 @@ export default React.memo(function LoginPage() {
               />
             )}
             <Gap size="s" />
-            <LinkButton
-              href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
-              data-qa="weak-login"
-            >
-              {i18n.loginPage.login.link}
-            </LinkButton>
-            {featureFlags.weakLogin && (
-              <WeakLoginForm unvalidatedNextPath={unvalidatedNextPath} />
+            {featureFlags.weakLogin ? (
+              <LinkButton
+                href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
+                onClick={(e) => {
+                  e.preventDefault()
+                  void navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
+                }}
+                data-qa="weak-login"
+              >
+                {i18n.loginPage.login.link}
+              </LinkButton>
+            ) : (
+              <LinkButton
+                href={getWeakKeycloakLoginUri(unvalidatedNextPath ?? '/')}
+                data-qa="weak-login"
+              >
+                {i18n.loginPage.login.link}
+              </LinkButton>
             )}
           </ContentArea>
           <ContentArea opaque>
@@ -156,87 +163,6 @@ export default React.memo(function LoginPage() {
       </Container>
       <Footer />
     </Main>
-  )
-})
-
-const weakLoginForm = validated(
-  object({
-    username: string(),
-    password: string()
-  }),
-  (form) => {
-    if (form.username.length === 0 || form.password.length === 0) {
-      return 'required'
-    }
-    return undefined
-  }
-)
-
-const authWeakLoginResult = wrapResult(authWeakLogin)
-
-const WeakLoginForm = React.memo(function WeakLogin({
-  unvalidatedNextPath
-}: {
-  unvalidatedNextPath: string | null
-}) {
-  const i18n = useTranslation()
-  const [rateLimitError, setRateLimitError] = useState(false)
-
-  const nextUrl = useMemo(
-    () =>
-      unvalidatedNextPath
-        ? parseUrlWithOrigin(window.location, unvalidatedNextPath)
-        : undefined,
-    [unvalidatedNextPath]
-  )
-
-  const form = useForm(
-    weakLoginForm,
-    () => ({ username: '', password: '' }),
-    i18n.validationErrors
-  )
-  const { username, password } = useFormFields(form)
-  return (
-    <>
-      <Gap size="m" />
-      <form action="" onSubmit={(e) => e.preventDefault()}>
-        <FixedSpaceColumn spacing="xs">
-          {rateLimitError && (
-            <AlertBox message={i18n.loginPage.login.rateLimitError} />
-          )}
-          <InputFieldF
-            autoComplete="email"
-            bind={username}
-            placeholder={i18n.loginPage.login.email}
-            width="L"
-            hideErrorsBeforeTouched={true}
-          />
-          <InputFieldF
-            autoComplete="current-password"
-            bind={password}
-            type="password"
-            placeholder={i18n.loginPage.login.password}
-            width="L"
-            hideErrorsBeforeTouched={true}
-          />
-          <AsyncButton
-            primary
-            type="submit"
-            text={i18n.loginPage.login.link}
-            disabled={!form.isValid()}
-            onClick={() =>
-              authWeakLoginResult(form.state.username, form.state.password)
-            }
-            onSuccess={() => window.location.replace(nextUrl ?? '/')}
-            onFailure={(error) => {
-              if (error.statusCode === 429) {
-                setRateLimitError(true)
-              }
-            }}
-          />
-        </FixedSpaceColumn>
-      </form>
-    </>
   )
 })
 

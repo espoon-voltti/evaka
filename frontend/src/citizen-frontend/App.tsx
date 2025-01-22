@@ -47,6 +47,7 @@ import IncomeStatementView from './income-statements/IncomeStatementView'
 import IncomeStatements from './income-statements/IncomeStatements'
 import { Localization, useTranslation } from './localization'
 import LoginPage from './login/LoginPage'
+import LoginFormPage from './login/WeakLoginFormPage'
 import MapPage from './map/MapPage'
 import MessagesPage from './messages/MessagesPage'
 import { MessageContextProvider } from './messages/state'
@@ -143,6 +144,14 @@ export default createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
+      {
+        path: '/login/form',
+        element: (
+          <ScrollToTop>
+            <LoginFormPage />
+          </ScrollToTop>
+        )
+      },
       {
         path: '/login',
         element: (
