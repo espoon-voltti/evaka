@@ -222,17 +222,18 @@ export default React.memo(function ApplicationReadView({
                 value={serviceNeed !== null}
                 selectedLabel={i18n.application.serviceNeed.connectedValue}
               />
-              {connectedDaycarePreferredStartDate !== null && (
-                <>
-                  <Label>
-                    {
-                      i18n.application.serviceNeed
-                        .connectedDaycarePreferredStartDateLabel
-                    }
-                  </Label>
-                  <span>{connectedDaycarePreferredStartDate.format()}</span>
-                </>
-              )}
+              {serviceNeed !== null &&
+                connectedDaycarePreferredStartDate !== null && (
+                  <>
+                    <Label>
+                      {
+                        i18n.application.serviceNeed
+                          .connectedDaycarePreferredStartDateLabel
+                      }
+                    </Label>
+                    <span>{connectedDaycarePreferredStartDate.format()}</span>
+                  </>
+                )}
               {serviceNeed !== null &&
                 serviceNeed.serviceNeedOption !== null && (
                   <>
