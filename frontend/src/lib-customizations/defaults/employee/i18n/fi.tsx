@@ -2118,6 +2118,10 @@ export const fi = {
     noResults: 'Ei tuloksia'
   },
   unit: {
+    serviceWorkerNote: {
+      title: 'Palveluohjauksen muistiinpanot',
+      add: 'Aseta muistiinpano'
+    },
     tabs: {
       unitInfo: 'Yksikön tiedot',
       groups: 'Ryhmät',

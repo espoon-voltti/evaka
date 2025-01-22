@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -26,7 +26,7 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
-import { fontWeights, H1 } from 'lib-components/typography'
+import { fontWeights, H1, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import TabGroups from '../components/unit/TabGroups'
@@ -37,6 +37,7 @@ import { UnitContext, UnitContextProvider } from '../state/unit'
 
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabCalendar from './unit/TabCalendar'
+import UnitServiceWorkerNote from './unit/UnitServiceWorkerNote'
 import { unitNotificationsQuery } from './unit/queries'
 
 const defaultTab = (unit: DaycareResponse) => {
@@ -197,6 +198,21 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: DaycareId }) {
           </H1>
         </ContentArea>
       </Container>
+      {unitInformation.isSuccess &&
+        unitInformation.value.permittedActions.includes(
+          'READ_SERVICE_WORKER_NOTE'
+        ) && (
+          <>
+            <Gap size="s" />
+            <Container>
+              <ContentArea opaque>
+                <H3 noMargin>{i18n.unit.serviceWorkerNote.title}</H3>
+                <Gap size="s" />
+                <UnitServiceWorkerNote unitId={id} />
+              </ContentArea>
+            </Container>
+          </>
+        )}
       <Gap size="s" />
       <TabLinks tabs={tabs} />
       <Gap size="s" />

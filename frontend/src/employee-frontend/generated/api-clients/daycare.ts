@@ -38,6 +38,7 @@ import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { PreschoolTermId } from 'lib-common/generated/api-types/shared'
 import { PreschoolTermRequest } from 'lib-common/generated/api-types/daycare'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { ServiceWorkerNote } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import { TemporaryEmployee } from 'lib-common/generated/api-types/pis'
@@ -312,6 +313,22 @@ export async function getUnitNotifications(
 
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitServiceWorkerNote
+*/
+export async function getUnitServiceWorkerNote(
+  request: {
+    daycareId: DaycareId
+  }
+): Promise<ServiceWorkerNote> {
+  const { data: json } = await client.request<JsonOf<ServiceWorkerNote>>({
+    url: uri`/employee/daycares/${request.daycareId}/service-worker-note`.toString(),
+    method: 'GET'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.removeCaretakers
 */
 export async function removeCaretakers(
@@ -324,6 +341,24 @@ export async function removeCaretakers(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers/${request.id}`.toString(),
     method: 'DELETE'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.setUnitServiceWorkerNote
+*/
+export async function setUnitServiceWorkerNote(
+  request: {
+    daycareId: DaycareId,
+    body: ServiceWorkerNote
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/daycares/${request.daycareId}/service-worker-note`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<ServiceWorkerNote>
   })
   return json
 }

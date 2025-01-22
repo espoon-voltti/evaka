@@ -26,6 +26,8 @@ import {
   getUnitGroupDetails,
   getUnitNotifications,
   getUnits,
+  getUnitServiceWorkerNote,
+  setUnitServiceWorkerNote,
   updateDaycare,
   updateGroup,
   updateUnitClosingDate
@@ -58,6 +60,13 @@ export const unitFilterQuery = q.query(getUnits)
 export const unitsQuery = q.query(getDaycares)
 
 export const unitQuery = q.query(getDaycare)
+
+export const unitServiceWorkerNoteQuery = q.query(getUnitServiceWorkerNote)
+
+export const unitServiceWorkerNoteMutation = q.mutation(
+  setUnitServiceWorkerNote,
+  [unitServiceWorkerNoteQuery]
+)
 
 export const unitNotificationsQuery = q.query(getUnitNotifications)
 

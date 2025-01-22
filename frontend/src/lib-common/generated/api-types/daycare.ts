@@ -461,6 +461,13 @@ export interface PublicUnit {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.ServiceWorkerNote
+*/
+export interface ServiceWorkerNote {
+  note: string
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.service.StaffAttendanceForDates
 */
 export interface StaffAttendanceForDates {

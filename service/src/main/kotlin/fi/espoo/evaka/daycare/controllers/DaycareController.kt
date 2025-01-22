@@ -188,6 +188,73 @@ class DaycareController(
             .also { Audit.UnitRead.log(targetId = AuditId(daycareId)) }
     }
 
+    data class ServiceWorkerNote(val note: String)
+
+    @GetMapping("/{daycareId}/service-worker-note")
+    fun getUnitServiceWorkerNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable daycareId: DaycareId,
+    ): ServiceWorkerNote {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_SERVICE_WORKER_NOTE,
+                        daycareId,
+                    )
+                    tx.createQuery {
+                            sql(
+                                """
+                    SELECT service_worker_note
+                    FROM daycare
+                    WHERE id = ${bind(daycareId)}
+                """
+                            )
+                        }
+                        .exactlyOneOrNull<String>()
+                        ?.let { ServiceWorkerNote(it) }
+                        ?: throw NotFound("daycare $daycareId not found")
+                }
+            }
+            .also { Audit.UnitServiceWorkerNoteRead.log(targetId = AuditId(daycareId)) }
+    }
+
+    @PutMapping("/{daycareId}/service-worker-note")
+    fun setUnitServiceWorkerNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable daycareId: DaycareId,
+        @RequestBody body: ServiceWorkerNote,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.SET_SERVICE_WORKER_NOTE,
+                        daycareId,
+                    )
+                    tx.execute {
+                            sql(
+                                """
+                    UPDATE daycare
+                    SET service_worker_note = ${bind(body.note)}
+                    WHERE id = ${bind(daycareId)}
+                """
+                            )
+                        }
+                        .also { if (it == 0) throw NotFound("daycare $daycareId not found") }
+                }
+            }
+            .also { Audit.UnitServiceWorkerNoteSet.log(targetId = AuditId(daycareId)) }
+    }
+
     @GetMapping("/{daycareId}/groups")
     fun getGroups(
         db: Database,

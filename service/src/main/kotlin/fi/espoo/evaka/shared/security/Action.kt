@@ -2018,6 +2018,8 @@ sealed interface Action {
                 )
                 .inUnit(),
         ),
+        READ_SERVICE_WORKER_NOTE(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        SET_SERVICE_WORKER_NOTE(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_GROUP_DETAILS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(
