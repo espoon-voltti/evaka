@@ -10,7 +10,7 @@ export const MAX_DATE = LocalDate.of(2099, 12, 31)
 
 export const ENTER_PRESS = 13
 
-export const PROFILE_AGE_THRESHOLD_DEFAULT = 12
+export const PROFILE_AGE_THRESHOLD_DEFAULT = 13
 
 export function getEmployeeUrlPrefix(): string {
   const isLocalMultiPortEnv = window.location.host.includes(':9093')
