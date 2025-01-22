@@ -44,23 +44,16 @@ function Login({ error }: Props) {
             <span>{i18n.login.loginAD}</span>
           </LinkButton>
           <Gap horizontal />
-          {featureFlags.employeeSfiLogin ? (
-            <>
-              <LinkButton data-qa="login-btn" href={getLoginUrl('keycloak')}>
-                <span>{i18n.login.loginEvaka} (Keycloak)</span>
-              </LinkButton>
-              <Gap horizontal />
-              <LinkButton data-qa="login-btn" href={getLoginUrl('sfi')}>
-                <span>{i18n.login.loginEvaka} (Suomi.fi)</span>
-              </LinkButton>
-            </>
-          ) : (
-            <>
-              <LinkButton data-qa="login-btn" href={getLoginUrl('keycloak')}>
-                <span>{i18n.login.loginEvaka}</span>
-              </LinkButton>
-            </>
-          )}
+          <LinkButton
+            data-qa="login-btn"
+            href={
+              featureFlags.employeeSfiLogin
+                ? getLoginUrl('sfi')
+                : getLoginUrl('keycloak')
+            }
+          >
+            <span>{i18n.login.loginEvaka}</span>
+          </LinkButton>
         </Center>
         <ErrorMessage error={error} />
       </ContentArea>
