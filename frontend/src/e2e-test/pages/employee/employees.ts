@@ -9,11 +9,17 @@ import { Checkbox, Element, Page, TextInput } from '../../utils/page'
 export class EmployeesPage {
   nameInput: TextInput
   hideDeactivated: Checkbox
+  createNewSsnEmployee: Element
+  createSsnEmployeeWizard: CreateSsnEmployeeWizard
 
   constructor(private readonly page: Page) {
     this.nameInput = new TextInput(page.findByDataQa('employee-name-filter'))
     this.hideDeactivated = new Checkbox(
       page.findByDataQa('hide-deactivated-checkbox')
+    )
+    this.createNewSsnEmployee = page.findByDataQa('create-new-ssn-employee')
+    this.createSsnEmployeeWizard = new CreateSsnEmployeeWizard(
+      page.findByDataQa('create-ssn-employee-wizard')
     )
   }
 
@@ -48,5 +54,22 @@ export class EmployeePage {
 
   constructor(private readonly page: Page) {
     this.content = this.page.find('#app')
+  }
+}
+
+export class CreateSsnEmployeeWizard extends Element {
+  ssn: TextInput
+  firstName: TextInput
+  lastName: TextInput
+  email: TextInput
+  ok: Element
+
+  constructor(readonly root: Element) {
+    super(root)
+    this.ssn = new TextInput(root.findByDataQa('new-employee-ssn'))
+    this.firstName = new TextInput(root.findByDataQa('new-employee-first-name'))
+    this.lastName = new TextInput(root.findByDataQa('new-employee-last-name'))
+    this.email = new TextInput(root.findByDataQa('new-employee-email'))
+    this.ok = root.findByDataQa('modal-okBtn')
   }
 }

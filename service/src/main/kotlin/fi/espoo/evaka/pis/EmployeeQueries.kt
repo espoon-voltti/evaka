@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pairing.MobileDevice
 import fi.espoo.evaka.pairing.deleteDevice
 import fi.espoo.evaka.pairing.listPersonalDevices
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -140,6 +142,7 @@ fun Database.Transaction.loginEmployeeWithSuomiFi(
 UPDATE employee
 SET last_login = ${bind(now)}, first_name = ${bind(request.firstName)}, last_name = ${bind(request.lastName)}, active = TRUE
 WHERE social_security_number = ${bind(request.ssn.value)}
+RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, temporary_in_unit_id, active
 """
             )
         }
@@ -625,3 +628,27 @@ ORDER BY last_name, first_name
             .toList<Employee>()
     }
 }
+
+data class NewSsnEmployee(
+    val ssn: Sensitive<String>,
+    val firstName: String,
+    val lastName: String,
+    val email: String?,
+) {
+    init {
+        if (!isValidSSN(ssn.value)) throw BadRequest("Invalid SSN")
+    }
+}
+
+fun Database.Transaction.createEmployeeWithSsn(request: NewSsnEmployee): EmployeeId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO employee (social_security_number, first_name, last_name, email, active)
+VALUES (${bind(request.ssn.value)}, ${bind(request.firstName)}, ${bind(request.lastName)}, ${bind(request.email)}, true)
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()

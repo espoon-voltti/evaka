@@ -5,12 +5,14 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.DaycareGroupRole
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.NewEmployee
+import fi.espoo.evaka.pis.NewSsnEmployee
 import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -23,7 +25,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -35,7 +37,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Autowired lateinit var employeeController: EmployeeController
 
-    private val clock = RealEvakaClock()
+    private val clock = MockEvakaClock(2025, 1, 1, 12, 0)
 
     @Test
     fun `no employees return empty list`() {
@@ -201,6 +203,23 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
     }
 
+    @Test
+    fun `a new employee can be added using an ssn`() {
+        val request =
+            NewSsnEmployee(
+                ssn = Sensitive("010107A9917"),
+                firstName = "First",
+                lastName = "Last",
+                email = "test@example.com",
+            )
+        val response = createSsnEmployee(request)
+        val employee = getEmployee(response.id)
+        assertEquals(request.firstName, employee.firstName)
+        assertEquals(request.lastName, employee.lastName)
+        assertEquals(request.email, employee.email)
+        assertTrue(employee.active)
+    }
+
     val adminUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     fun getEmployees() = employeeController.getEmployees(dbInstance(), adminUser, clock)
@@ -231,6 +250,9 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     fun getEmployeeDetails(id: EmployeeId) =
         employeeController.getEmployeeDetails(dbInstance(), adminUser, clock, id)
+
+    fun createSsnEmployee(employee: NewSsnEmployee) =
+        employeeController.createSsnEmployee(dbInstance(), adminUser, clock, employee)
 
     fun requestFromEmployee(employee: Employee) =
         NewEmployee(

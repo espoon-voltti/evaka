@@ -8,6 +8,7 @@ import DateRange from 'lib-common/date-range'
 import { AddSsnRequest } from 'lib-common/generated/api-types/pis'
 import { CreateFosterParentRelationshipBody } from 'lib-common/generated/api-types/pis'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import { CreateSsnEmployeeResponse } from 'lib-common/generated/api-types/pis'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DisableSsnRequest } from 'lib-common/generated/api-types/pis'
 import { Employee } from 'lib-common/generated/api-types/pis'
@@ -28,6 +29,7 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MergeRequest } from 'lib-common/generated/api-types/pis'
 import { NewEmployee } from 'lib-common/generated/api-types/pis'
+import { NewSsnEmployee } from 'lib-common/generated/api-types/pis'
 import { PagedEmployeesWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { Parentship } from 'lib-common/generated/api-types/pis'
 import { ParentshipId } from 'lib-common/generated/api-types/shared'
@@ -100,6 +102,23 @@ export async function createEmployee(
     data: request.body satisfies JsonCompatible<NewEmployee>
   })
   return deserializeJsonEmployee(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.createSsnEmployee
+*/
+export async function createSsnEmployee(
+  request: {
+    body: NewSsnEmployee
+  }
+): Promise<CreateSsnEmployeeResponse> {
+  const { data: json } = await client.request<JsonOf<CreateSsnEmployeeResponse>>({
+    url: uri`/employee/employees/create-with-ssn`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<NewSsnEmployee>
+  })
+  return json
 }
 
 
