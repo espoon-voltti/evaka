@@ -5,7 +5,6 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { string } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
@@ -27,12 +26,9 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 
-import { getAttachmentUrl, saveInvoiceAttachment } from '../../api/attachments'
-import { deleteAttachment } from '../../generated/api-clients/attachment'
+import { getAttachmentUrl, invoiceAttachment } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { markReplacementDraftSentMutation } from '../invoices/queries'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const replacementDraftForm = validated(
   object({
@@ -96,16 +92,7 @@ export function ReplacementDraftForm({
         <FixedSpaceColumn>
           <FileUpload
             files={invoiceResponse.invoice.attachments}
-            onUpload={(file, onUploadProgress) =>
-              saveInvoiceAttachment(
-                invoiceResponse.invoice.id,
-                file,
-                onUploadProgress
-              )
-            }
-            onDelete={(attachmentId) =>
-              deleteAttachmentResult({ attachmentId })
-            }
+            uploadHandler={invoiceAttachment(invoiceResponse.invoice.id)}
             getDownloadUrl={getAttachmentUrl}
             data-qa="attachments"
           />

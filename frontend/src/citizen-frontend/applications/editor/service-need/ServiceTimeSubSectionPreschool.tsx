@@ -5,14 +5,10 @@
 import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import {
-  ApplicationId,
-  AttachmentId
-} from 'lib-common/generated/api-types/shared'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -32,11 +28,7 @@ import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import {
-  getAttachmentUrl,
-  saveApplicationAttachment
-} from '../../../attachments'
-import { deleteAttachment } from '../../../generated/api-clients/attachment'
+import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
@@ -50,8 +42,6 @@ const Hyphenbox = styled.div`
 type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 
 const applicationType = 'PRESCHOOL'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export default React.memo(function ServiceTimeSubSectionPreschool({
   originalPreferredStartDate,
@@ -83,48 +73,6 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
       new Map<PlacementType, ServiceNeedOptionPublicInfo[]>(),
     [serviceNeedOptions]
   )
-
-  const uploadExtendedCareAttachment = (
-    file: File,
-    onUploadProgress: (percentage: number) => void
-  ): Promise<Result<AttachmentId>> =>
-    saveApplicationAttachment(
-      applicationId,
-      file,
-      'EXTENDED_CARE',
-      onUploadProgress
-    ).then((result) => {
-      if (result.isSuccess) {
-        updateFormData({
-          shiftCareAttachments: [
-            ...formData.shiftCareAttachments,
-            {
-              id: result.value,
-              name: file.name,
-              contentType: file.type,
-              updated: HelsinkiDateTime.now(),
-              receivedAt: HelsinkiDateTime.now(),
-              type: 'EXTENDED_CARE',
-              uploadedByEmployee: null,
-              uploadedByPerson: null
-            }
-          ]
-        })
-      }
-      return result
-    })
-
-  const deleteExtendedCareAttachment = (id: AttachmentId) =>
-    deleteAttachmentResult({ attachmentId: id }).then((result) => {
-      if (result.isSuccess) {
-        updateFormData({
-          shiftCareAttachments: formData.shiftCareAttachments.filter(
-            (file) => file.id !== id
-          )
-        })
-      }
-      return result
-    })
 
   const preferredStartDate = featureFlags.preschoolApplication
     .connectedDaycarePreferredStartDate
@@ -387,8 +335,32 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
               <FileUpload
                 files={formData.shiftCareAttachments}
-                onUpload={uploadExtendedCareAttachment}
-                onDelete={deleteExtendedCareAttachment}
+                uploadHandler={applicationAttachment(
+                  applicationId,
+                  'EXTENDED_CARE'
+                )}
+                onUploaded={(attachment) =>
+                  updateFormData({
+                    shiftCareAttachments: [
+                      ...formData.shiftCareAttachments,
+                      {
+                        ...attachment,
+                        updated: HelsinkiDateTime.now(),
+                        receivedAt: HelsinkiDateTime.now(),
+                        type: 'EXTENDED_CARE',
+                        uploadedByEmployee: null,
+                        uploadedByPerson: null
+                      }
+                    ]
+                  })
+                }
+                onDeleted={(id) =>
+                  updateFormData({
+                    shiftCareAttachments: formData.shiftCareAttachments.filter(
+                      (file) => file.id !== id
+                    )
+                  })
+                }
                 getDownloadUrl={getAttachmentUrl}
               />
             </>

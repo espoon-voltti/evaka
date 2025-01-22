@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { ErrorMessageBox } from 'citizen-frontend/calendar/ChildSelector'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import { Failure, Result, Success } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
@@ -19,7 +19,6 @@ import {
   GetReceiversResponse,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -45,9 +44,8 @@ import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { getAttachmentUrl, saveMessageAttachment } from '../attachments'
+import { getAttachmentUrl, messageAttachment } from '../attachments'
 import { useUser } from '../auth/state'
-import { deleteAttachment } from '../generated/api-clients/attachment'
 import { useTranslation } from '../localization'
 
 const emptyMessage: CitizenMessageBody = {
@@ -108,29 +106,6 @@ export default React.memo(function MessageEditor({
     useState<UploadStatus>(initialUploadStatus)
 
   const [isChildSelectionTouched, setChildSelectionTouched] = useBoolean(false)
-
-  const handleAttachmentUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      (await saveMessageAttachment(file, onUploadProgress)).map((id) => {
-        setAttachments((prev) => [
-          ...prev,
-          { id, name: file.name, contentType: file.type }
-        ])
-        return id
-      }),
-    []
-  )
-
-  const handleAttachmentDelete = useCallback(
-    async (id: AttachmentId) =>
-      deleteAttachment({ attachmentId: id })
-        .then(() => {
-          setAttachments((prev) => prev.filter((a) => a.id !== id))
-          return Success.of()
-        })
-        .catch((e) => Failure.fromError<void>(e)),
-    []
-  )
 
   useEffect(
     () =>
@@ -420,8 +395,13 @@ export default React.memo(function MessageEditor({
                 <FileUpload
                   slimSingleFile
                   files={attachments}
-                  onUpload={handleAttachmentUpload}
-                  onDelete={handleAttachmentDelete}
+                  uploadHandler={messageAttachment}
+                  onUploaded={(attachment) =>
+                    setAttachments((prev) => [...prev, attachment])
+                  }
+                  onDeleted={(id) =>
+                    setAttachments((prev) => prev.filter((a) => a.id !== id))
+                  }
                   onStateChange={setUploadStatus}
                   getDownloadUrl={getAttachmentUrl}
                   data-qa="upload-message-attachment"

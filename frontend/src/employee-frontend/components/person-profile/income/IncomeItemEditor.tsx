@@ -7,7 +7,7 @@ import omit from 'lodash/omit'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result, wrapResult } from 'lib-common/api'
+import { Failure, Result } from 'lib-common/api'
 import { incomeEffects } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -19,7 +19,7 @@ import {
   IncomeTypeOptions,
   IncomeValue
 } from 'lib-common/generated/api-types/invoicing'
-import { AttachmentId, PersonId } from 'lib-common/generated/api-types/shared'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -39,11 +39,7 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  getAttachmentUrl,
-  saveIncomeAttachment
-} from '../../../api/attachments'
-import { deleteAttachment } from '../../../generated/api-clients/attachment'
+import { getAttachmentUrl, incomeAttachment } from '../../../api/attachments'
 import { useTranslation } from '../../../state/i18n'
 import { IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
@@ -54,8 +50,6 @@ import IncomeTable, {
   IncomeTableData,
   tableDataFromIncomeFields
 } from './IncomeTable'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;
@@ -448,25 +442,6 @@ function IncomeAttachments({
 }) {
   const { i18n } = useTranslation()
 
-  const handleUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      (await saveIncomeAttachment(incomeId, file, onUploadProgress)).map(
-        (id) => {
-          onUploaded({ id, name: file.name, contentType: file.type })
-          return id
-        }
-      ),
-    [incomeId, onUploaded]
-  )
-
-  const handleDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
-        onDeleted(id)
-      }),
-    [onDeleted]
-  )
-
   return (
     <>
       <H1>{i18n.incomeStatement.employeeAttachments.title}</H1>
@@ -474,8 +449,9 @@ function IncomeAttachments({
       <FileUpload
         data-qa="income-attachment-upload"
         files={attachments}
-        onUpload={handleUpload}
-        onDelete={handleDelete}
+        uploadHandler={incomeAttachment(incomeId)}
+        onUploaded={onUploaded}
+        onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />
     </>

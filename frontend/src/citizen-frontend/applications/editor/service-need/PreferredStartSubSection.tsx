@@ -4,11 +4,7 @@
 
 import React from 'react'
 
-import { Result, wrapResult } from 'lib-common/api'
-import {
-  ApplicationId,
-  AttachmentId
-} from 'lib-common/generated/api-types/shared'
+import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -22,19 +18,13 @@ import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import {
-  getAttachmentUrl,
-  saveApplicationAttachment
-} from '../../../attachments'
-import { deleteAttachment } from '../../../generated/api-clients/attachment'
+import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,
@@ -51,48 +41,6 @@ export default React.memo(function PreferredStartSubSection({
   const t = useTranslation()
   const [lang] = useLang()
   const labelId = useUniqueId()
-
-  const uploadUrgencyAttachment = (
-    file: File,
-    onUploadProgress: (percentage: number) => void
-  ): Promise<Result<AttachmentId>> =>
-    saveApplicationAttachment(
-      applicationId,
-      file,
-      'URGENCY',
-      onUploadProgress
-    ).then((result) => {
-      if (result.isSuccess) {
-        updateFormData({
-          urgencyAttachments: [
-            ...formData.urgencyAttachments,
-            {
-              id: result.value,
-              name: file.name,
-              contentType: file.type,
-              updated: HelsinkiDateTime.now(),
-              receivedAt: HelsinkiDateTime.now(),
-              type: 'URGENCY',
-              uploadedByEmployee: null,
-              uploadedByPerson: null
-            }
-          ]
-        })
-      }
-      return result
-    })
-
-  const deleteUrgencyAttachment = (id: AttachmentId) =>
-    deleteAttachmentResult({ attachmentId: id }).then((result) => {
-      if (result.isSuccess) {
-        updateFormData({
-          urgencyAttachments: formData.urgencyAttachments.filter(
-            (file) => file.id !== id
-          )
-        })
-      }
-      return result
-    })
 
   const showDaycare4MonthWarning = (): boolean =>
     type === 'DAYCARE' &&
@@ -190,8 +138,32 @@ export default React.memo(function PreferredStartSubSection({
 
                 <FileUpload
                   files={formData.urgencyAttachments}
-                  onUpload={uploadUrgencyAttachment}
-                  onDelete={deleteUrgencyAttachment}
+                  uploadHandler={applicationAttachment(
+                    applicationId,
+                    'URGENCY'
+                  )}
+                  onUploaded={(attachment) =>
+                    updateFormData({
+                      urgencyAttachments: [
+                        ...formData.urgencyAttachments,
+                        {
+                          ...attachment,
+                          updated: HelsinkiDateTime.now(),
+                          receivedAt: HelsinkiDateTime.now(),
+                          type: 'URGENCY',
+                          uploadedByEmployee: null,
+                          uploadedByPerson: null
+                        }
+                      ]
+                    })
+                  }
+                  onDeleted={(id) =>
+                    updateFormData({
+                      urgencyAttachments: formData.urgencyAttachments.filter(
+                        (file) => file.id !== id
+                      )
+                    })
+                  }
                   getDownloadUrl={getAttachmentUrl}
                   data-qa="urgent-file-upload"
                 />

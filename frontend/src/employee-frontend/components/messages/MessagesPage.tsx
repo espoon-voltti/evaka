@@ -26,8 +26,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { getAttachmentUrl, saveMessageAttachment } from '../../api/attachments'
-import { deleteAttachment } from '../../generated/api-clients/attachment'
+import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
 import {
   initDraftMessage,
   updateDraftMessage,
@@ -46,7 +45,6 @@ import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
 
 const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 const initDraftMessageResult = wrapResult(initDraftMessage)
 const updateDraftMessageResult = wrapResult(updateDraftMessage)
 const deleteDraftMessageResult = wrapResult(deleteDraftMessage)
@@ -238,7 +236,6 @@ export default React.memo(function MessagesPage({
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
               }}
-              deleteAttachment={deleteAttachmentResult}
               draftContent={selectedDraft}
               getAttachmentUrl={getAttachmentUrl}
               initDraftRaw={(accountId) =>
@@ -255,7 +252,7 @@ export default React.memo(function MessagesPage({
                   body: params.content
                 })
               }
-              saveMessageAttachment={saveMessageAttachment}
+              saveMessageAttachment={messageAttachment}
               sending={sending}
               defaultTitle={prefilledTitle ?? undefined}
             />

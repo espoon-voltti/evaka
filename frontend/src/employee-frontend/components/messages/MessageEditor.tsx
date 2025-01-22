@@ -7,7 +7,7 @@ import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -20,7 +20,6 @@ import {
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import {
-  AttachmentId,
   MessageAccountId,
   MessageDraftId
 } from 'lib-common/generated/api-types/shared'
@@ -58,6 +57,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import FileUpload, {
   initialUploadStatus,
+  UploadHandler,
   UploadStatus
 } from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
@@ -182,9 +182,6 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption<MessageAccountId>
-  deleteAttachment: (arg: {
-    attachmentId: AttachmentId
-  }) => Promise<Result<void>>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
   initDraftRaw: (accountId: MessageAccountId) => Promise<Result<MessageDraftId>>
@@ -193,11 +190,7 @@ interface Props {
   onDiscard: (accountId: MessageAccountId, draftId: MessageDraftId) => void
   onSend: (accountId: MessageAccountId, msg: PostMessageBody) => void
   saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
-  saveMessageAttachment: (
-    draftId: UUID,
-    file: File,
-    onUploadProgress: (percentage: number) => void
-  ) => Promise<Result<AttachmentId>>
+  saveMessageAttachment: (draftId: UUID) => UploadHandler
   sending: boolean
   defaultTitle?: string
 }
@@ -205,7 +198,6 @@ interface Props {
 export default React.memo(function MessageEditor({
   availableReceivers,
   defaultSender,
-  deleteAttachment,
   draftContent,
   getAttachmentUrl,
   initDraftRaw,
@@ -414,35 +406,6 @@ export default React.memo(function MessageEditor({
       filters: filters
     })
   }, [onSend, message, selectedReceivers, draftId, filters])
-
-  const handleAttachmentUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) =>
-      draftId
-        ? (await saveMessageAttachment(draftId, file, onUploadProgress)).map(
-            (id) => {
-              updateMessage({
-                attachments: [
-                  ...message.attachments,
-                  { id, name: file.name, contentType: file.type }
-                ]
-              })
-              return id
-            }
-          )
-        : Failure.of<AttachmentId>({ message: 'Should not happen' }),
-    [draftId, message.attachments, saveMessageAttachment, updateMessage]
-  )
-
-  const handleAttachmentDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachment({ attachmentId: id })).map(() =>
-        setMessage(({ attachments, ...rest }) => ({
-          ...rest,
-          attachments: attachments.filter((a) => a.id !== id)
-        }))
-      ),
-    [deleteAttachment]
-  )
 
   const onCloseHandler = useCallback(() => {
     if (draftWasModified && draftState === 'dirty') {
@@ -817,15 +780,25 @@ export default React.memo(function MessageEditor({
               onChange={(e) => updateMessage({ content: e.target.value })}
               data-qa="input-content"
             />
-            {!simpleMode && (
+            {!simpleMode && draftId !== null && (
               <FileUpload
                 slim
                 disabled={!draftId}
                 data-qa="upload-message-attachment"
                 files={message.attachments}
                 getDownloadUrl={getAttachmentUrl}
-                onUpload={handleAttachmentUpload}
-                onDelete={handleAttachmentDelete}
+                uploadHandler={saveMessageAttachment(draftId)}
+                onUploaded={(attachment) =>
+                  updateMessage({
+                    attachments: [...message.attachments, attachment]
+                  })
+                }
+                onDeleted={(id) =>
+                  setMessage(({ attachments, ...rest }) => ({
+                    ...rest,
+                    attachments: attachments.filter((a) => a.id !== id)
+                  }))
+                }
                 onStateChange={setUploadStatus}
               />
             )}

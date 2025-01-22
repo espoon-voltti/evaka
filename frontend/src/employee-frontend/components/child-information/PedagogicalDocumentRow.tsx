@@ -9,7 +9,6 @@ import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import {
-  AttachmentId,
   ChildId,
   PedagogicalDocumentId
 } from 'lib-common/generated/api-types/shared'
@@ -26,15 +25,13 @@ import { faPen, faTrash } from 'lib-icons'
 
 import {
   getAttachmentUrl,
-  savePedagogicalDocumentAttachment
+  pedagogicalDocumentAttachment
 } from '../../api/attachments'
-import { deleteAttachment } from '../../generated/api-clients/attachment'
 import { updatePedagogicalDocument } from '../../generated/api-clients/pedagogicaldocument'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 
 const updatePedagogicalDocumentResult = wrapResult(updatePedagogicalDocument)
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 interface Props {
   id: PedagogicalDocumentId
@@ -111,31 +108,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
     })
   }, [endEdit, i18n, id, onReload, pedagogicalDocument, setErrorMessage])
 
-  const handleAttachmentUpload = useCallback(
-    async (file: File, onUploadProgress: (percentage: number) => void) => {
-      setSubmitting(true)
-      return (
-        await savePedagogicalDocumentAttachment(id, file, onUploadProgress)
-      ).map((id) => {
-        setSubmitting(false)
-        onReload()
-        return id
-      })
-    },
-    [id, onReload]
-  )
-
-  const handleAttachmentDelete = useCallback(
-    async (id: AttachmentId) =>
-      (await deleteAttachmentResult({ attachmentId: id })).map(() =>
-        setPedagogicalDocument(({ ...rest }) => ({
-          ...rest,
-          attachment: null
-        }))
-      ),
-    []
-  )
-
   return (
     <Tr key={pedagogicalDocument.id} data-qa="table-pedagogical-document-row">
       <DateTd data-qa="pedagogical-document-start-date">
@@ -174,8 +146,17 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             data-qa="upload-pedagogical-document-attachment-new"
             files={attachments}
             getDownloadUrl={getAttachmentUrl}
-            onUpload={handleAttachmentUpload}
-            onDelete={handleAttachmentDelete}
+            uploadHandler={pedagogicalDocumentAttachment(id)}
+            onUploaded={() => {
+              setSubmitting(false)
+              onReload()
+            }}
+            onDeleted={() =>
+              setPedagogicalDocument(({ ...rest }) => ({
+                ...rest,
+                attachment: null
+              }))
+            }
             allowedFileTypes={['image', 'document', 'audio', 'video']}
           />
         </AttachmentsContainer>

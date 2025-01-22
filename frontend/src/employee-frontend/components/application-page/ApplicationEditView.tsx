@@ -4,11 +4,11 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { flow, set } from 'lodash/fp'
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Result, wrapResult } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import { swapElements } from 'lib-common/array'
 import DateRange from 'lib-common/date-range'
 import {
@@ -17,7 +17,10 @@ import {
   FutureAddress,
   PersonBasics
 } from 'lib-common/generated/api-types/application'
-import { AttachmentType } from 'lib-common/generated/api-types/attachment'
+import {
+  Attachment,
+  AttachmentType
+} from 'lib-common/generated/api-types/attachment'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -54,19 +57,13 @@ import {
   faUsers
 } from 'lib-icons'
 
-import {
-  getAttachmentUrl,
-  saveApplicationAttachment
-} from '../../api/attachments'
+import { getAttachmentUrl, applicationAttachment } from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
-import { deleteAttachment } from '../../generated/api-clients/attachment'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
-
-const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -186,55 +183,39 @@ export default React.memo(function ApplicationEditView({
   const formatAddress = (a: Address) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
-  const onUploadAttachment =
-    (type: AttachmentType) =>
-    (
-      file: File,
-      onUploadProgress: (percentage: number) => void
-    ): Promise<Result<AttachmentId>> =>
-      saveApplicationAttachment(
-        application.id,
-        file,
-        type,
-        onUploadProgress
-      ).then((res) => {
-        if (res.isSuccess) {
-          setApplication(
-            (prev) =>
-              prev && {
-                ...prev,
-                attachments: [
-                  ...prev.attachments,
-                  {
-                    contentType: file.type,
-                    id: res.value,
-                    name: file.name,
-                    type,
-                    updated: HelsinkiDateTime.now(),
-                    receivedAt: HelsinkiDateTime.now(),
-                    uploadedByEmployee: null,
-                    uploadedByPerson: null
-                  }
-                ]
+  const onAttachmentUploaded = useCallback(
+    (type: AttachmentType) => (attachment: Attachment) =>
+      setApplication(
+        (prev) =>
+          prev && {
+            ...prev,
+            attachments: [
+              ...prev.attachments,
+              {
+                ...attachment,
+                type,
+                updated: HelsinkiDateTime.now(),
+                receivedAt: HelsinkiDateTime.now(),
+                uploadedByEmployee: null,
+                uploadedByPerson: null
               }
-          )
-        }
-        return res
-      })
+            ]
+          }
+      ),
+    [setApplication]
+  )
 
-  const onDeleteAttachment = (id: AttachmentId) =>
-    deleteAttachmentResult({ attachmentId: id }).then((res) => {
-      if (res.isSuccess) {
-        setApplication(
-          (prev) =>
-            prev && {
-              ...prev,
-              attachments: prev.attachments.filter((a) => a.id !== id)
-            }
-        )
-      }
-      return res
-    })
+  const handleAttachmentDeleted = useCallback(
+    (id: AttachmentId) =>
+      setApplication(
+        (prev) =>
+          prev && {
+            ...prev,
+            attachments: prev.attachments.filter((a) => a.id !== id)
+          }
+      ),
+    [setApplication]
+  )
 
   const validationErrorInfo = (field: string): InputInfo | undefined =>
     errors[field]
@@ -308,8 +289,12 @@ export default React.memo(function ApplicationEditView({
               {urgent && featureFlags.urgencyAttachments && (
                 <FileUploadGridContainer>
                   <FileUpload
-                    onUpload={onUploadAttachment('URGENCY')}
-                    onDelete={onDeleteAttachment}
+                    uploadHandler={applicationAttachment(
+                      application.id,
+                      'URGENCY'
+                    )}
+                    onUploaded={onAttachmentUploaded('URGENCY')}
+                    onDeleted={handleAttachmentDeleted}
                     getDownloadUrl={getAttachmentUrl}
                     files={attachments.filter((a) => a.type === 'URGENCY')}
                     data-qa="file-upload-urgent"
@@ -605,8 +590,12 @@ export default React.memo(function ApplicationEditView({
               {serviceNeed.shiftCare && (
                 <FileUploadGridContainer>
                   <FileUpload
-                    onUpload={onUploadAttachment('EXTENDED_CARE')}
-                    onDelete={onDeleteAttachment}
+                    uploadHandler={applicationAttachment(
+                      application.id,
+                      'EXTENDED_CARE'
+                    )}
+                    onUploaded={onAttachmentUploaded('EXTENDED_CARE')}
+                    onDeleted={handleAttachmentDeleted}
                     getDownloadUrl={getAttachmentUrl}
                     files={attachments.filter(
                       (a) => a.type === 'EXTENDED_CARE'
@@ -1335,8 +1324,12 @@ export default React.memo(function ApplicationEditView({
 
           <FileUploadGridContainer>
             <FileUpload
-              onUpload={onUploadAttachment('SERVICE_WORKER_ATTACHMENT')}
-              onDelete={onDeleteAttachment}
+              uploadHandler={applicationAttachment(
+                application.id,
+                'SERVICE_WORKER_ATTACHMENT'
+              )}
+              onUploaded={onAttachmentUploaded('SERVICE_WORKER_ATTACHMENT')}
+              onDeleted={handleAttachmentDeleted}
               getDownloadUrl={getAttachmentUrl}
               files={attachments.filter(
                 (a) => a.type === 'SERVICE_WORKER_ATTACHMENT'
