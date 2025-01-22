@@ -7,7 +7,10 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { runPendingAsyncJobs } from '../../dev-api'
+import {
+  execSimpleApplicationActions,
+  runPendingAsyncJobs
+} from '../../dev-api'
 import {
   applicationFixture,
   applicationFixtureId,
@@ -20,9 +23,11 @@ import {
 import {
   createApplications,
   createMessageAccounts,
+  getApplicationDecisions,
   resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
+import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
@@ -126,6 +131,55 @@ describe('Service Worker Messaging', () => {
       await header.selectTab('messages')
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
       await citizenMessagesPage.newMessageButton.assertDisabled(true)
+    })
+
+    it('citizen can reply to a message when it is in progress, but not after that', async () => {
+      // Service worker sends a message regarding an application
+      await openStaffPage(mockedTime, serviceWorker)
+      const applReadView = new ApplicationReadView(staffPage)
+      await applReadView.navigateToApplication(applicationFixtureId)
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
+      await messageEditor.inputContent.fill('message')
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
+
+      // Progress the application for the citizen to accept
+      await execSimpleApplicationActions(
+        applicationFixtureId,
+        [
+          'MOVE_TO_WAITING_PLACEMENT',
+          'CREATE_DEFAULT_PLACEMENT_PLAN',
+          'SEND_DECISIONS_WITHOUT_PROPOSAL'
+        ],
+        mockedTime.addMinutes(2)
+      )
+
+      // Citizen replies to the application related message
+      await openCitizenPage(mockedTime.addHours(1))
+      const header = new CitizenHeader(citizenPage)
+      await header.selectTab('messages')
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.openFirstThread()
+      await citizenMessagesPage.replyToFirstThread('This is my reply')
+      await citizenPage.findByDataQa('timed-toast-close-button').click()
+
+      // Citizen accepts the decision
+      await header.selectTab('decisions')
+      const decisionsPage = new CitizenDecisionsPage(citizenPage)
+      const decisionResponse =
+        await decisionsPage.navigateToDecisionResponse(applicationFixtureId)
+      const decisions = await getApplicationDecisions({
+        applicationId: applicationFixtureId
+      })
+      await decisionResponse.acceptDecision(decisions[0].id)
+
+      // Citizen can no longer reply to a message related to the accepted decision
+      await header.selectTab('messages')
+      await citizenMessagesPage.openFirstThread()
+      await citizenMessagesPage.assertOpenReplyEditorButtonIsHidden()
     })
 
     it('should prefill the receiver and title fields when sending a new message', async () => {

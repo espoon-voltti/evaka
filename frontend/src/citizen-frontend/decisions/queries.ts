@@ -12,6 +12,7 @@ import {
   getLiableCitizenFinanceDecisions,
   rejectDecision
 } from '../generated/api-clients/application'
+import { receivedMessagesQuery } from '../messages/queries'
 
 const q = new Queries()
 
@@ -27,10 +28,12 @@ export const applicationNotificationsQuery = q.query(
 
 export const acceptDecisionMutation = q.mutation(acceptDecision, [
   ({ applicationId }) => decisionsOfApplicationQuery({ applicationId }),
-  applicationNotificationsQuery
+  applicationNotificationsQuery,
+  receivedMessagesQuery
 ])
 
 export const rejectDecisionMutation = q.mutation(rejectDecision, [
   ({ applicationId }) => decisionsOfApplicationQuery({ applicationId }),
-  applicationNotificationsQuery
+  applicationNotificationsQuery,
+  receivedMessagesQuery
 ])

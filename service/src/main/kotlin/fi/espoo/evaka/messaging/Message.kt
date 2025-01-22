@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
+import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -44,6 +45,7 @@ data class MessageThread(
     val urgent: Boolean,
     val sensitive: Boolean,
     val isCopy: Boolean,
+    val applicationStatus: ApplicationStatus?,
     val children: List<MessageChild>,
     @Json val messages: List<Message>,
 )
@@ -92,6 +94,7 @@ sealed interface CitizenMessageThread {
         val title: String,
         val sensitive: Boolean,
         val isCopy: Boolean,
+        val applicationStatus: ApplicationStatus?,
         val messages: List<Message>,
     ) : CitizenMessageThread {
         companion object {
@@ -104,6 +107,7 @@ sealed interface CitizenMessageThread {
                     messageThread.title,
                     messageThread.sensitive,
                     messageThread.isCopy,
+                    messageThread.applicationStatus,
                     messageThread.messages,
                 )
         }
