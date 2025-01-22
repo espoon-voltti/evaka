@@ -105,6 +105,11 @@ const isFullyAbsent = (child: ChildRecordOfDay) =>
     }
   })
 
+const occupancyFormatter = new Intl.NumberFormat('fi-FI', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+})
+
 export default React.memo(function ChildReservationsTable({
   days,
   childBasics,
@@ -133,9 +138,9 @@ export default React.memo(function ChildReservationsTable({
 
   const childrenCounts = useMemo(
     () =>
-      days.map(
-        (day) =>
-          day.children.filter((child) => {
+      days.map((day) => {
+        const presentChildren = day.children
+          .filter((child) => {
             const shiftCare = childBasics
               .find((c) => c.id === child.childId)
               ?.serviceNeeds?.find((sn) =>
@@ -150,9 +155,21 @@ export default React.memo(function ChildReservationsTable({
               selectedGroup,
               shiftCareAllowedForChild
             )
-          }).length
-      ),
-    [days, selectedGroup, childBasics]
+          })
+          .map((child) => child.childId)
+        const occupancy = day.children.reduce(
+          (occupancy, child) =>
+            presentChildren.includes(child.childId)
+              ? occupancy + child.occupancy
+              : occupancy,
+          0
+        )
+        return {
+          headcount: presentChildren.length,
+          occupancy
+        }
+      }),
+    [days, childBasics, selectedGroup]
   )
 
   return (
@@ -183,7 +200,9 @@ export default React.memo(function ChildReservationsTable({
         <SumRow data-qa="totals-row">
           <Td>{i18n.unit.attendanceReservations.childCount}</Td>
           {childrenCounts.map((day, i) => (
-            <Td key={i}>{day}</Td>
+            <Td key={i}>
+              {day.headcount} ({occupancyFormatter.format(day.occupancy)})
+            </Td>
           ))}
           <Td />
         </SumRow>

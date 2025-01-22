@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.absence
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.data.DateTimeSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
@@ -547,6 +549,7 @@ data class GroupMonthCalendarDayChild(
 
 data class ChildServiceNeedInfo(
     val childId: ChildId,
+    @get:JsonIgnore val optionId: ServiceNeedOptionId,
     val hasContractDays: Boolean,
     val daycareHoursPerMonth: Int?,
     val optionName: String,

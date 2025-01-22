@@ -11,10 +11,12 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
+import fi.espoo.evaka.assistance.getAssistanceFactorsForChildrenOverRange
 import fi.espoo.evaka.attendance.deleteAbsencesByDate
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
+import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
@@ -23,11 +25,13 @@ import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
+import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getChildServiceNeedInfos
+import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -53,6 +57,7 @@ import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -96,6 +101,10 @@ class AttendanceReservationController(
                     val preschoolTerms = tx.getPreschoolTerms()
 
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
+                    val familyUnitPlacement =
+                        unit.type.any {
+                            listOf(CareType.FAMILY, CareType.GROUP_FAMILY).contains(it)
+                        }
                     val groups =
                         tx.getDaycareGroupSummaries(unitId)
                             .filter { it.endDate == null || it.endDate.isAfter(clock.today()) }
@@ -121,6 +130,13 @@ class AttendanceReservationController(
                     val childIds = placementInfo.keys
                     val serviceTimes = tx.getDailyServiceTimesForChildren(childIds)
                     val childData = tx.getChildData(unitId, childIds, period)
+                    val serviceNeedOptions = tx.getServiceNeedOptions().associateBy { it.id }
+                    val defaultServiceNeedOptions =
+                        serviceNeedOptions.values
+                            .filter { it.defaultOption }
+                            .associateBy { it.validPlacementType }
+                    val assistanceFactors =
+                        tx.getAssistanceFactorsForChildrenOverRange(childIds, period)
 
                     UnitAttendanceReservations(
                         unit = unit.name,
@@ -147,6 +163,47 @@ class AttendanceReservationController(
                                             val placementStatus =
                                                 placementInfo[childId]?.getValue(date)
                                                     ?: return@mapNotNull null
+                                            val age =
+                                                ChronoUnit.YEARS.between(
+                                                    childData.child.dateOfBirth,
+                                                    date,
+                                                )
+                                            val coefficient =
+                                                if (familyUnitPlacement)
+                                                    BigDecimal(familyUnitPlacementCoefficient)
+                                                else
+                                                    childData.child.serviceNeeds
+                                                        .find { sn ->
+                                                            sn.validDuring.includes(date)
+                                                        }
+                                                        ?.let { sn ->
+                                                            val option =
+                                                                serviceNeedOptions[sn.optionId]
+                                                            if (age < 3)
+                                                                option
+                                                                    ?.realizedOccupancyCoefficientUnder3y
+                                                            else
+                                                                option?.realizedOccupancyCoefficient
+                                                        }
+                                                        ?: run {
+                                                            val option =
+                                                                defaultServiceNeedOptions[
+                                                                    placementStatus.placementType]
+                                                            if (age < 3)
+                                                                option
+                                                                    ?.realizedOccupancyCoefficientUnder3y
+                                                            else
+                                                                option?.realizedOccupancyCoefficient
+                                                        }
+                                                        ?: BigDecimal.ONE
+                                            val factor =
+                                                assistanceFactors
+                                                    .find {
+                                                        it.childId == childId &&
+                                                            it.validDuring.includes(date)
+                                                    }
+                                                    ?.capacityFactor
+                                                    ?.toBigDecimal() ?: BigDecimal.ONE
 
                                             UnitAttendanceReservations.ChildRecordOfDay(
                                                 childId = childData.child.id,
@@ -194,6 +251,7 @@ class AttendanceReservationController(
                                                         clubTerms,
                                                         preschoolTerms,
                                                     ),
+                                                occupancy = coefficient * factor,
                                             )
                                         }
                                 )
@@ -734,6 +792,7 @@ data class UnitAttendanceReservations(
         val backupGroupId: GroupId?,
         val inOtherUnit: Boolean,
         val scheduleType: ScheduleType,
+        val occupancy: BigDecimal,
     )
 
     data class Child(

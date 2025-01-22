@@ -18,6 +18,7 @@ import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -1032,6 +1033,7 @@ class MealReportTests {
 private fun createServiceNeedInfo(childId: ChildId, shiftCare: ShiftCareType) =
     ChildServiceNeedInfo(
         childId = childId,
+        optionId = ServiceNeedOptionId(UUID.randomUUID()),
         hasContractDays = false,
         daycareHoursPerMonth = null,
         optionName = "",

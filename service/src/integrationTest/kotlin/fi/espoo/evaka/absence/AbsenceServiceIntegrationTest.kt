@@ -188,6 +188,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             listOf(
                                 ChildServiceNeedInfo(
                                     childId = testChild_1.id,
+                                    optionId = snDefaultDaycare.id,
                                     validDuring =
                                         FiniteDateRange(
                                             placementStart,
@@ -201,6 +202,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                 ),
                                 ChildServiceNeedInfo(
                                     childId = testChild_1.id,
+                                    optionId = snDaycareContractDays15.id,
                                     validDuring =
                                         FiniteDateRange(placementStart.plusWeeks(2), placementEnd),
                                     shiftCare = ShiftCareType.NONE,
@@ -358,6 +360,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     listOf(
                                         ChildServiceNeedInfo(
                                             childId = testChild_3.id,
+                                            optionId = snDaycareFullDay35.id,
                                             hasContractDays = false,
                                             daycareHoursPerMonth = null,
                                             optionName = snDaycareFullDay35.nameFi,
@@ -1938,6 +1941,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             listOf(
                 ChildServiceNeedInfo(
                     childId = testChild_1.id,
+                    optionId = snDaycareContractDays15.id,
                     hasContractDays = true,
                     daycareHoursPerMonth = null,
                     optionName = snDaycareContractDays15.nameFi,

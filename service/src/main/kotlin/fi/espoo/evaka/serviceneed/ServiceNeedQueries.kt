@@ -295,6 +295,7 @@ fun Database.Read.getChildServiceNeedInfos(
             sql(
                 """
     SELECT p.child_id,
+           sno.id AS option_id,
            sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
            sno.daycare_hours_per_month,
            sno.name_fi                                 AS option_name,
@@ -309,6 +310,7 @@ fun Database.Read.getChildServiceNeedInfos(
     UNION ALL
     
     SELECT bc.child_id,
+           sno.id AS option_id,
            sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
            sno.daycare_hours_per_month,
            sno.name_fi                                 AS option_name,
@@ -339,6 +341,7 @@ fun Database.Read.getActualServiceNeedInfosByRangeAndGroup(
                 """
 SELECT
     p.child_id,
+    sno.id AS option_id,
     sno.contract_days_per_month IS NOT NULL AS has_contract_days,
     sno.daycare_hours_per_month,
     sno.name_fi AS option_name,
@@ -358,6 +361,7 @@ UNION ALL
 
 SELECT
     bc.child_id,
+    sno.id AS option_id,
     sno.contract_days_per_month IS NOT NULL AS has_contract_days,
     sno.daycare_hours_per_month,
     sno.name_fi AS option_name,
