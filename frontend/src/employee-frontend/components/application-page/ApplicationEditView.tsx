@@ -9,13 +9,13 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { SelectableOtherGuardianAgreementStatus } from 'lib-common/api-types/application/ApplicationFormData'
 import { swapElements } from 'lib-common/array'
 import DateRange from 'lib-common/date-range'
 import {
   Address,
   ApplicationDetails,
   FutureAddress,
-  OtherGuardianAgreementStatus,
   PersonBasics
 } from 'lib-common/generated/api-types/application'
 import {
@@ -91,12 +91,7 @@ const PreferredUnitGridContainer = styled.div`
   grid-template-columns: 1fr auto auto auto auto;
 `
 
-export type SelectableOtherGuardianAgreementStatus = Exclude<
-  OtherGuardianAgreementStatus,
-  'AUTOMATED'
-> | null
-
-const selectableOtherGuardianAgreementStatuses: SelectableOtherGuardianAgreementStatus[] =
+const selectableOtherGuardianAgreementStatuses: (SelectableOtherGuardianAgreementStatus | null)[] =
   ['AGREED', 'NOT_AGREED', 'RIGHT_TO_GET_NOTIFIED', null]
 
 export default React.memo(function ApplicationEditView({

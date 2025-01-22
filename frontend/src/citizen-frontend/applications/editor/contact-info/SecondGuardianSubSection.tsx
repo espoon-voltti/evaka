@@ -4,12 +4,12 @@
 
 import React from 'react'
 
-import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
 import {
-  ApplicationType,
-  OtherGuardianAgreementStatus
-} from 'lib-common/generated/api-types/application'
+  ContactInfoFormData,
+  SelectableOtherGuardianAgreementStatus
+} from 'lib-common/api-types/application/ApplicationFormData'
+import { UpdateStateFn } from 'lib-common/form-state'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -30,11 +30,6 @@ type SecondGuardianSubSectionProps = {
   verificationRequested: boolean
   otherGuardianStatus: 'NO' | 'SAME_ADDRESS' | 'DIFFERENT_ADDRESS'
 }
-
-export type SelectableOtherGuardianAgreementStatus = Exclude<
-  OtherGuardianAgreementStatus,
-  'AUTOMATED'
->
 
 export default React.memo(function SecondGuardianSubSection({
   type,

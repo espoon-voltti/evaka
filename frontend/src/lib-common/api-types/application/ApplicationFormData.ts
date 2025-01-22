@@ -46,6 +46,11 @@ export type UnitPreferenceFormData = {
   preferredUnits: { id: DaycareId; name: string }[]
 }
 
+export type SelectableOtherGuardianAgreementStatus = Exclude<
+  OtherGuardianAgreementStatus,
+  'AUTOMATED'
+>
+
 export type ContactInfoFormData = {
   childFirstName: string
   childLastName: string
