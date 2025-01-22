@@ -9,6 +9,7 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { SelectableOtherGuardianAgreementStatus } from 'lib-common/api-types/application/ApplicationFormData'
 import { swapElements } from 'lib-common/array'
 import DateRange from 'lib-common/date-range'
 import {
@@ -89,6 +90,9 @@ const PreferredUnitGridContainer = styled.div`
   grid-column-gap: ${defaultMargins.s};
   grid-template-columns: 1fr auto auto auto auto;
 `
+
+const selectableOtherGuardianAgreementStatuses: (SelectableOtherGuardianAgreementStatus | null)[] =
+  ['AGREED', 'NOT_AGREED', 'RIGHT_TO_GET_NOTIFIED', null]
 
 export default React.memo(function ApplicationEditView({
   application,
@@ -1072,35 +1076,32 @@ export default React.memo(function ApplicationEditView({
                       {i18n.application.person.agreementStatus}
                     </Label>
                     <div>
-                      {(
-                        [
-                          'AGREED',
-                          'NOT_AGREED',
-                          'RIGHT_TO_GET_NOTIFIED',
-                          null
-                        ] as const
-                      ).map((id, index) => (
-                        <React.Fragment key={id ?? 'NOT_SET'}>
-                          {index !== 0 ? <Gap size="xxs" /> : null}
-                          <Radio
-                            label={
-                              i18n.application.person
-                                .otherGuardianAgreementStatuses[id ?? 'NOT_SET']
-                            }
-                            checked={
-                              id === (secondGuardian?.agreementStatus ?? null)
-                            }
-                            onChange={() => {
-                              setApplication(
-                                set('form.secondGuardian.agreementStatus', id)
-                              )
-                            }}
-                            data-qa={`radio-other-guardian-agreement-status-${
-                              id ?? 'null'
-                            }`}
-                          />
-                        </React.Fragment>
-                      ))}
+                      {selectableOtherGuardianAgreementStatuses.map(
+                        (id, index) => (
+                          <React.Fragment key={id ?? 'NOT_SET'}>
+                            {index !== 0 ? <Gap size="xxs" /> : null}
+                            <Radio
+                              label={
+                                i18n.application.person
+                                  .otherGuardianAgreementStatuses[
+                                  id ?? 'NOT_SET'
+                                ]
+                              }
+                              checked={
+                                id === (secondGuardian?.agreementStatus ?? null)
+                              }
+                              onChange={() => {
+                                setApplication(
+                                  set('form.secondGuardian.agreementStatus', id)
+                                )
+                              }}
+                              data-qa={`radio-other-guardian-agreement-status-${
+                                id ?? 'null'
+                              }`}
+                            />
+                          </React.Fragment>
+                        )
+                      )}
                     </div>
                   </ListGrid>
                 </>

@@ -4,12 +4,12 @@
 
 import React from 'react'
 
-import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
 import {
-  ApplicationType,
-  OtherGuardianAgreementStatus
-} from 'lib-common/generated/api-types/application'
+  ContactInfoFormData,
+  SelectableOtherGuardianAgreementStatus
+} from 'lib-common/api-types/application/ApplicationFormData'
+import { UpdateStateFn } from 'lib-common/form-state'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -41,7 +41,7 @@ export default React.memo(function SecondGuardianSubSection({
 }: SecondGuardianSubSectionProps) {
   const t = useTranslation()
 
-  const agreementStatuses: OtherGuardianAgreementStatus[] = [
+  const agreementStatuses: SelectableOtherGuardianAgreementStatus[] = [
     'AGREED',
     'NOT_AGREED',
     'RIGHT_TO_GET_NOTIFIED'

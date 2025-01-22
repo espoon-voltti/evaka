@@ -440,6 +440,7 @@ export const fi = {
         AGREED: 'Sovittu yhdessä',
         NOT_AGREED: 'Ei ole sovittu yhdessä',
         RIGHT_TO_GET_NOTIFIED: 'Vain tiedonsaantioikeus',
+        AUTOMATED: 'Automaattinen päätös',
         NOT_SET: 'Huoltajat asuvat samassa osoitteessa'
       },
       noOtherChildren: 'Ei muita lapsia',
