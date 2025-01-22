@@ -44,7 +44,7 @@ export default React.memo(function UnitServiceWorkerNote({
     <FixedSpaceColumn>
       {editing ? (
         <>
-          <InputField value={text} onChange={setText} />
+          <InputField value={text} onChange={setText} data-qa="note-input" />
           <FixedSpaceRow>
             <MutateButton
               appearance="inline"
@@ -55,6 +55,7 @@ export default React.memo(function UnitServiceWorkerNote({
                 body: { note: text.trim() }
               })}
               onSuccess={closeEditor}
+              data-qa="note-save-btn"
             />
             <Button
               appearance="inline"
@@ -69,11 +70,16 @@ export default React.memo(function UnitServiceWorkerNote({
           text={i18n.unit.serviceWorkerNote.add}
           icon={faPlus}
           onClick={() => startEditing('')}
+          data-qa="note-add-btn"
         />
       ) : (
         <>
           <div>
-            <AlertBox message={note.trim()} noMargin />
+            <AlertBox
+              message={note.trim()}
+              noMargin
+              data-qa="service-worker-note"
+            />
           </div>
           <FixedSpaceRow>
             <Button
@@ -81,6 +87,7 @@ export default React.memo(function UnitServiceWorkerNote({
               text={i18n.common.edit}
               icon={faPen}
               onClick={() => startEditing(note)}
+              data-qa="note-edit-btn"
             />
             <MutateButton
               appearance="inline"
@@ -89,6 +96,7 @@ export default React.memo(function UnitServiceWorkerNote({
               mutation={unitServiceWorkerNoteMutation}
               onClick={() => ({ daycareId: unitId, body: { note: '' } })}
               onSuccess={closeEditor}
+              data-qa="note-remove-btn"
             />
           </FixedSpaceRow>
         </>

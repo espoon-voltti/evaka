@@ -50,12 +50,28 @@ export class UnitPage {
   #groupsTab: Element
   #calendarTab: Element
   #applicationProcessTab: Element
+  serviceWorkerNote: {
+    addButton: Element
+    editButton: Element
+    saveButton: Element
+    removeButton: Element
+    content: Element
+    input: TextInput
+  }
 
   constructor(private readonly page: Page) {
     this.#unitInfoTab = page.findByDataQa('unit-info-tab')
     this.#groupsTab = page.findByDataQa('groups-tab')
     this.#calendarTab = page.findByDataQa('calendar-tab')
     this.#applicationProcessTab = page.findByDataQa('application-process-tab')
+    this.serviceWorkerNote = {
+      addButton: page.findByDataQa('note-add-btn'),
+      editButton: page.findByDataQa('note-edit-btn'),
+      saveButton: page.findByDataQa('note-save-btn'),
+      removeButton: page.findByDataQa('note-remove-btn'),
+      content: page.findByDataQa('service-worker-note'),
+      input: new TextInput(page.findByDataQa('note-input'))
+    }
   }
 
   static async openUnit(page: Page, id: string): Promise<UnitPage> {
