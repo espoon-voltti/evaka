@@ -260,7 +260,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 otherInfo = "",
                 attachments =
                     listOf(
-                        Attachment(
+                        IncomeStatementAttachment(
                             id = attachmentId,
                             name = "evaka-logo.png",
                             contentType = "image/png",

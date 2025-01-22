@@ -192,7 +192,7 @@ private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean 
     estimatedIncome?.incomeEndDate == null ||
         estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
 
-data class Attachment(
+data class IncomeStatementAttachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
@@ -249,7 +249,7 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val handledAt: HelsinkiDateTime?,
         override val status: IncomeStatementStatus,
         override val handlerNote: String,
-        val attachments: List<Attachment>,
+        val attachments: List<IncomeStatementAttachment>,
     ) : IncomeStatement(IncomeStatementType.INCOME)
 
     @JsonTypeName("CHILD_INCOME")
@@ -267,6 +267,6 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val handledAt: HelsinkiDateTime?,
         override val status: IncomeStatementStatus,
         override val handlerNote: String,
-        val attachments: List<Attachment>,
+        val attachments: List<IncomeStatementAttachment>,
     ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)
 }

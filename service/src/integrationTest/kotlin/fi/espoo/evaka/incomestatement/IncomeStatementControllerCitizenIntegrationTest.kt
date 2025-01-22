@@ -991,7 +991,7 @@ WHERE id = ${bind(id)}
     }
 
     private fun idToAttachment(id: AttachmentId) =
-        Attachment(id, "evaka-logo.png", "image/png", false)
+        IncomeStatementAttachment(id, "evaka-logo.png", "image/png", false)
 
     private fun uploadAttachmentAsEmployee(
         user: AuthenticatedUser.Employee,

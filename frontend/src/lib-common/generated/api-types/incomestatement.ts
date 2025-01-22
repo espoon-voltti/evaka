@@ -25,16 +25,6 @@ export interface Accountant {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.Attachment
-*/
-export interface Attachment {
-  contentType: string
-  id: AttachmentId
-  name: string
-  uploadedByEmployee: boolean
-}
-
-/**
 * Generated from fi.espoo.evaka.incomestatement.ChildBasicInfo
 */
 export interface ChildBasicInfo {
@@ -94,7 +84,7 @@ export namespace IncomeStatement {
   */
   export interface ChildIncome {
     type: 'CHILD_INCOME'
-    attachments: Attachment[]
+    attachments: IncomeStatementAttachment[]
     createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     firstName: string
@@ -135,7 +125,7 @@ export namespace IncomeStatement {
   export interface Income {
     type: 'INCOME'
     alimonyPayer: boolean
-    attachments: Attachment[]
+    attachments: IncomeStatementAttachment[]
     createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     entrepreneur: Entrepreneur | null
@@ -160,6 +150,16 @@ export namespace IncomeStatement {
 */
 export type IncomeStatement = IncomeStatement.ChildIncome | IncomeStatement.HighestFee | IncomeStatement.Income
 
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementAttachment
+*/
+export interface IncomeStatementAttachment {
+  contentType: string
+  id: AttachmentId
+  name: string
+  uploadedByEmployee: boolean
+}
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
