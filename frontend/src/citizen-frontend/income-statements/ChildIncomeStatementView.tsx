@@ -35,7 +35,7 @@ import { renderResult } from '../async-rendering'
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
-import { childIncomeStatementQuery } from './queries'
+import { incomeStatementQuery } from './queries'
 
 export default React.memo(function ChildIncomeStatementView() {
   const childId = useIdRouteParam<ChildId>('childId')
@@ -43,9 +43,7 @@ export default React.memo(function ChildIncomeStatementView() {
     useIdRouteParam<IncomeStatementId>('incomeStatementId')
   const t = useTranslation()
   const navigate = useNavigate()
-  const result = useQueryResult(
-    childIncomeStatementQuery({ childId, incomeStatementId })
-  )
+  const result = useQueryResult(incomeStatementQuery({ incomeStatementId }))
 
   const handleEdit = useCallback(() => {
     void navigate(`/child-income/${childId}/${incomeStatementId}/edit`)

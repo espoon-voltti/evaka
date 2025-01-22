@@ -82,23 +82,6 @@ export async function deleteIncomeStatement(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getChildIncomeStatement
-*/
-export async function getChildIncomeStatement(
-  request: {
-    childId: PersonId,
-    incomeStatementId: IncomeStatementId
-  }
-): Promise<IncomeStatement> {
-  const { data: json } = await client.request<JsonOf<IncomeStatement>>({
-    url: uri`/citizen/income-statements/child/${request.childId}/${request.incomeStatementId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonIncomeStatement(json)
-}
-
-
-/**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getChildIncomeStatementStartDates
 */
 export async function getChildIncomeStatementStartDates(
@@ -192,47 +175,6 @@ export async function getIncomeStatements(
     params
   })
   return deserializeJsonPagedIncomeStatements(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.removeChildIncomeStatement
-*/
-export async function removeChildIncomeStatement(
-  request: {
-    childId: PersonId,
-    id: IncomeStatementId
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/citizen/income-statements/child/${request.childId}/${request.id}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.updateChildIncomeStatement
-*/
-export async function updateChildIncomeStatement(
-  request: {
-    childId: PersonId,
-    incomeStatementId: IncomeStatementId,
-    draft: boolean,
-    body: IncomeStatementBody
-  }
-): Promise<void> {
-  const params = createUrlSearchParams(
-    ['draft', request.draft.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/citizen/income-statements/child/${request.childId}/${request.incomeStatementId}`.toString(),
-    method: 'PUT',
-    params,
-    data: request.body satisfies JsonCompatible<IncomeStatementBody>
-  })
-  return json
 }
 
 

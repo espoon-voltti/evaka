@@ -27,12 +27,11 @@ import { uri } from 'lib-common/uri'
 */
 export async function getIncomeStatement(
   request: {
-    personId: PersonId,
     incomeStatementId: IncomeStatementId
   }
 ): Promise<IncomeStatement> {
   const { data: json } = await client.request<JsonOf<IncomeStatement>>({
-    url: uri`/employee/income-statements/person/${request.personId}/${request.incomeStatementId}`.toString(),
+    url: uri`/employee/income-statements/${request.incomeStatementId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonIncomeStatement(json)

@@ -11,7 +11,6 @@ import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.attachment.dissociateAttachmentsOfParent
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -168,41 +167,11 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         Action.Citizen.IncomeStatement.READ,
                         incomeStatementId,
                     )
-                    tx.readIncomeStatementForPerson(
-                        user = user,
-                        personId = user.id,
-                        incomeStatementId = incomeStatementId,
-                    ) ?: throw NotFound("No such income statement")
+                    tx.readIncomeStatement(user = user, incomeStatementId = incomeStatementId)
+                        ?: throw NotFound("No such income statement")
                 }
             }
-            .also { Audit.IncomeStatementReadOfPerson.log(targetId = AuditId(incomeStatementId)) }
-    }
-
-    @GetMapping("/child/{childId}/{incomeStatementId}")
-    fun getChildIncomeStatement(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @PathVariable childId: ChildId,
-        @PathVariable incomeStatementId: IncomeStatementId,
-    ): IncomeStatement {
-        return db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.IncomeStatement.READ,
-                        incomeStatementId,
-                    )
-                    tx.readIncomeStatementForPerson(
-                        user = user,
-                        personId = childId,
-                        incomeStatementId = incomeStatementId,
-                    ) ?: throw NotFound("No such child income statement")
-                }
-            }
-            .also { Audit.IncomeStatementReadOfChild.log(targetId = AuditId(incomeStatementId)) }
+            .also { Audit.IncomeStatementRead.log(targetId = AuditId(incomeStatementId)) }
     }
 
     @PostMapping
@@ -291,7 +260,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 )
 
                 val original =
-                    tx.readIncomeStatementForPerson(user, user.id, incomeStatementId)
+                    tx.readIncomeStatement(user, incomeStatementId)
                         ?: throw NotFound("Income statement not found")
 
                 verifyIncomeStatementUpdateAllowed(original, body)
@@ -306,63 +275,17 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
 
                 val parent = AttachmentParent.IncomeStatement(incomeStatementId)
                 tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
+
                 when (body) {
-                    is IncomeStatementBody.Income ->
-                        tx.associateOrphanAttachments(user.evakaUserId, parent, body.attachmentIds)
-                    else -> Unit
+                    is IncomeStatementBody.Income -> body.attachmentIds
+                    is IncomeStatementBody.ChildIncome -> body.attachmentIds
+                    else -> null
+                }?.also { attachmentIds ->
+                    tx.associateOrphanAttachments(user.evakaUserId, parent, attachmentIds)
                 }
             }
         }
         Audit.IncomeStatementUpdate.log(targetId = AuditId(incomeStatementId))
-    }
-
-    @PutMapping("/child/{childId}/{incomeStatementId}")
-    fun updateChildIncomeStatement(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @PathVariable childId: ChildId,
-        @PathVariable incomeStatementId: IncomeStatementId,
-        @RequestBody body: IncomeStatementBody,
-        @RequestParam draft: Boolean,
-    ) {
-        if (!draft && !validateIncomeStatementBody(body))
-            throw BadRequest("Invalid child income statement body")
-
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Citizen.IncomeStatement.UPDATE,
-                    incomeStatementId,
-                )
-
-                val original =
-                    tx.readIncomeStatementForPerson(user, childId, incomeStatementId)
-                        ?: throw NotFound("Income statement not found")
-
-                verifyIncomeStatementUpdateAllowed(original, body)
-
-                tx.updateIncomeStatement(
-                    user.evakaUserId,
-                    clock.now(),
-                    incomeStatementId,
-                    body,
-                    draft,
-                )
-
-                val parent = AttachmentParent.IncomeStatement(incomeStatementId)
-                tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
-                when (body) {
-                    is IncomeStatementBody.ChildIncome ->
-                        tx.associateOrphanAttachments(user.evakaUserId, parent, body.attachmentIds)
-                    else -> Unit
-                }
-            }
-        }
-        Audit.IncomeStatementUpdateForChild.log(targetId = AuditId(incomeStatementId))
     }
 
     @DeleteMapping("/{id}")
@@ -381,35 +304,11 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.DELETE,
                     id,
                 )
-                verifyIncomeStatementDeletionAllowed(tx, user, user.id, id)
+                verifyIncomeStatementDeletionAllowed(tx, user, id)
                 tx.removeIncomeStatement(id)
             }
         }
         Audit.IncomeStatementDelete.log(targetId = AuditId(id))
-    }
-
-    @DeleteMapping("/child/{childId}/{id}")
-    fun removeChildIncomeStatement(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @PathVariable childId: ChildId,
-        @PathVariable id: IncomeStatementId,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Citizen.IncomeStatement.DELETE,
-                    id,
-                )
-                verifyIncomeStatementDeletionAllowed(tx, user, childId, id)
-                tx.removeIncomeStatement(id)
-            }
-        }
-        Audit.IncomeStatementDeleteOfChild.log(targetId = AuditId(id))
     }
 
     @GetMapping("/children")
@@ -492,12 +391,10 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     private fun verifyIncomeStatementDeletionAllowed(
         tx: Database.Transaction,
         user: AuthenticatedUser.Citizen,
-        personId: PersonId,
         id: IncomeStatementId,
     ) {
         val incomeStatement =
-            tx.readIncomeStatementForPerson(user, personId, id)
-                ?: throw NotFound("Income statement not found")
+            tx.readIncomeStatement(user, id) ?: throw NotFound("Income statement not found")
         if (incomeStatement.status == IncomeStatementStatus.HANDLED) {
             throw Forbidden("Handled income statement cannot be removed")
         }

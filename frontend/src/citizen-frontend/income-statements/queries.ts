@@ -8,15 +8,12 @@ import {
   createChildIncomeStatement,
   createIncomeStatement,
   deleteIncomeStatement,
-  getChildIncomeStatement,
   getChildIncomeStatementStartDates,
   getChildIncomeStatements,
   getIncomeStatement,
   getIncomeStatementChildren,
   getIncomeStatementStartDates,
   getIncomeStatements,
-  removeChildIncomeStatement,
-  updateChildIncomeStatement,
   updateIncomeStatement
 } from '../generated/api-clients/incomestatement'
 
@@ -55,23 +52,11 @@ export const childIncomeStatementsQuery = q.prefixedQuery(
   ({ childId }) => childId
 )
 
-export const childIncomeStatementQuery = q.query(getChildIncomeStatement)
-
 export const childIncomeStatementStartDatesQuery = q.query(
   getChildIncomeStatementStartDates
 )
 
 export const createChildIncomeStatementMutation = q.mutation(
   createChildIncomeStatement,
-  [({ childId }) => childIncomeStatementsQuery.prefix(childId)]
-)
-
-export const updateChildIncomeStatementMutation = q.mutation(
-  updateChildIncomeStatement,
-  [({ childId }) => childIncomeStatementsQuery.prefix(childId)]
-)
-
-export const deleteChildIncomeStatementMutation = q.mutation(
-  removeChildIncomeStatement,
   [({ childId }) => childIncomeStatementsQuery.prefix(childId)]
 )

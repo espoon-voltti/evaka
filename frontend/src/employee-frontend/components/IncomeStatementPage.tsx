@@ -64,8 +64,8 @@ export default React.memo(function IncomeStatementPage() {
     [personId]
   )
   const [incomeStatement, loadIncomeStatement] = useApiState(
-    () => getIncomeStatementResult({ personId, incomeStatementId }),
-    [personId, incomeStatementId]
+    () => getIncomeStatementResult({ incomeStatementId }),
+    [incomeStatementId]
   )
 
   const onUpdateHandled = useCallback(

@@ -294,7 +294,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         return db.transaction { tx ->
             tx.insert(incomeStatement)
-            tx.readIncomeStatementForPerson(employee.user, personId, incomeStatement.id)!!
+            tx.readIncomeStatement(employee.user, incomeStatement.id)!!
         }
     }
 
@@ -319,7 +319,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         return db.transaction { tx ->
             tx.insert(incomeStatement)
-            tx.readIncomeStatementForPerson(employee.user, personId, incomeStatement.id)!!
+            tx.readIncomeStatement(employee.user, incomeStatement.id)!!
         }
     }
 
@@ -1604,7 +1604,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             dbInstance(),
             employee.user,
             MockEvakaClock(now),
-            citizenId,
             id,
         )
     }

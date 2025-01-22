@@ -45,7 +45,7 @@ import { OverlayContext } from '../overlay/state'
 
 import {
   childIncomeStatementsQuery,
-  deleteChildIncomeStatementMutation
+  deleteIncomeStatementMutation
 } from './queries'
 
 const HeadingContainer = styled.div`
@@ -245,14 +245,14 @@ const ChildIncomeStatements = React.memo(function ChildIncomeStatements({
     status: 'row-not-selected'
   })
 
-  const { mutateAsync: deleteChildIncomeStatement } = useMutation(
-    deleteChildIncomeStatementMutation
+  const { mutateAsync: deleteIncomeStatement } = useMutation(
+    deleteIncomeStatementMutation
   )
 
   const onDelete = useCallback(
     (id: IncomeStatementId) => {
       setDeletionState({ status: 'deleting', rowToDelete: id })
-      deleteChildIncomeStatement({ childId, id })
+      deleteIncomeStatement({ id })
         .then(() => {
           setDeletionState({ status: 'row-not-selected' })
         })
@@ -264,7 +264,7 @@ const ChildIncomeStatements = React.memo(function ChildIncomeStatements({
           })
         })
     },
-    [childId, deleteChildIncomeStatement, setErrorMessage, t]
+    [deleteIncomeStatement, setErrorMessage, t]
   )
 
   return (
