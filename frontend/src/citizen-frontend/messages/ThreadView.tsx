@@ -395,7 +395,7 @@ export default React.memo(
                     text={i18n.messages.thread.reply}
                   />
                 ) : (
-                  <div />
+                  <div data-qa="message-reply-editor-btn-hidden" />
                 )}
                 <ScreenReaderButton
                   onClick={focusThreadTitle}

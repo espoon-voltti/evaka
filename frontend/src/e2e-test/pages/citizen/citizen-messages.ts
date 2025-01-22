@@ -31,6 +31,7 @@ export default class CitizenMessagesPage {
   #redactedThreadTitle: Element
   #strongAuthLink: Element
   #openReplyEditorButton: Element
+  #openReplyEditorButtonHidden: Element
   #sendReplyButton: Element
   #messageEditor: Element
   discardMessageButton: Element
@@ -51,6 +52,9 @@ export default class CitizenMessagesPage {
     )
     this.#strongAuthLink = page.findByDataQa('strong-auth-link')
     this.#openReplyEditorButton = page.findByDataQa(`${this.replyButtonTag}`)
+    this.#openReplyEditorButtonHidden = page.findByDataQa(
+      `${this.replyButtonTag}-hidden`
+    )
     this.#sendReplyButton = page.findByDataQa('message-send-btn')
     this.#messageEditor = page.findByDataQa('message-editor')
     this.discardMessageButton = page.findByDataQa('message-discard-btn')
@@ -126,7 +130,7 @@ export default class CitizenMessagesPage {
     await this.#redactedThreadTitle.waitUntilVisible()
   }
   async assertOpenReplyEditorButtonIsHidden() {
-    await this.#openReplyEditorButton.waitUntilHidden()
+    await this.#openReplyEditorButtonHidden.waitUntilAttached()
   }
   async openStrongAuthPage() {
     await this.#strongAuthLink.click()
