@@ -58,6 +58,7 @@ export interface Translations {
     documentStates: Record<DocumentStatus, string>
   }
   fileUpload: {
+    uploadFile: string
     deleteFile: string
     input: {
       title: string

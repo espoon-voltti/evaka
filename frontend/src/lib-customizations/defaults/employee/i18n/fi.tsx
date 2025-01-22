@@ -5059,7 +5059,8 @@ export const fi = {
       'Voit luoda optimointityökalulla tuotetuista sijoitusehdotuksista hakemukset eVakaan. Hakemukset luodaan suoraan odottamaan päätöstä.',
     preschoolTermNotification: 'Hakemukset luodaan seuravaan esiopetuskauteen:',
     preschoolTermWarning:
-      'eVakasta puuttuu seuraavan esiopetuskauden määrittely. Esiopetuskausi tarvitaan hakemusten luontia varten.'
+      'eVakasta puuttuu seuraavan esiopetuskauden määrittely. Esiopetuskausi tarvitaan hakemusten luontia varten.',
+    validation: (count: number) => `Olet tuomassa ${count} sijoitusta, jatka?`
   },
   outOfOffice: {
     menu: 'Johtajan poissaolojakso',

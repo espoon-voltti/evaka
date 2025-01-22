@@ -68,6 +68,7 @@ export const testTranslations: Translations = {
     }
   },
   fileUpload: {
+    uploadFile: '',
     deleteFile: '',
     input: {
       title: '',
