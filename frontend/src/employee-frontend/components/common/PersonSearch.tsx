@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -15,7 +15,6 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { BaseProps } from 'lib-components/utils'
 
-import { CHILD_AGE } from '../../constants'
 import {
   getOrCreatePersonBySsn,
   getPersonIdentity,
@@ -75,8 +74,9 @@ interface Props extends BaseProps {
   searchFn: (q: string) => Promise<Result<PersonSummary[]>>
   onResult: (result: PersonSummary | undefined) => void
   onFocus?: (e: React.FocusEvent<HTMLElement>) => void
-  onlyChildren?: boolean
-  onlyAdults?: boolean
+  ageLessThan?: number
+  ageAtLeast?: number
+  excludePeople?: PersonId[]
 }
 
 function PersonSearch({
@@ -84,8 +84,9 @@ function PersonSearch({
   searchFn,
   onResult,
   onFocus,
-  onlyChildren = false,
-  onlyAdults = false,
+  ageLessThan,
+  ageAtLeast,
+  excludePeople,
   'data-qa': dataQa,
   getItemDataQa
 }: Props) {
@@ -107,15 +108,14 @@ function PersonSearch({
   }, [searchPeople, debouncedQuery])
 
   const filterPeople = (people: PersonSummary[]) =>
-    people.filter((person) =>
-      person.dateOfBirth
-        ? onlyChildren
-          ? getAge(person.dateOfBirth) < CHILD_AGE
-          : onlyAdults
-            ? getAge(person.dateOfBirth) >= CHILD_AGE
-            : true
-        : true
-    )
+    people.filter((person) => {
+      if (excludePeople && excludePeople.includes(person.id)) return false
+      if (!person.dateOfBirth) return true
+      const age = getAge(person.dateOfBirth)
+      if (ageLessThan !== undefined && age >= ageLessThan) return false
+      if (ageAtLeast !== undefined && age < ageAtLeast) return false
+      return true
+    })
 
   const options = useMemo(
     () => persons.map((ps) => filterPeople(ps)).getOrElse([]),

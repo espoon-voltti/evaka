@@ -23,7 +23,7 @@ import { colors } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
-import { CHILD_AGE } from '../../constants'
+import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
 import { mergePeople, safeDeletePerson } from '../../generated/api-clients/pis'
 import { getDuplicatePeopleReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
@@ -58,7 +58,7 @@ const hasReferences = (row: DuplicatePeopleReportRow) =>
 
 const isChild = (dateOfBirth: LocalDate) => {
   const age = LocalDate.todayInSystemTz().differenceInYears(dateOfBirth)
-  return age < CHILD_AGE
+  return age < PROFILE_AGE_THRESHOLD_DEFAULT
 }
 
 export default React.memo(function DuplicatePeople() {

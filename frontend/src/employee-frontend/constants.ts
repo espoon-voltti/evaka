@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,7 +10,7 @@ export const MAX_DATE = LocalDate.of(2099, 12, 31)
 
 export const ENTER_PRESS = 13
 
-export const CHILD_AGE = 18
+export const PROFILE_AGE_THRESHOLD_DEFAULT = 13
 
 export function getEmployeeUrlPrefix(): string {
   const isLocalMultiPortEnv = window.location.host.includes(':9093')

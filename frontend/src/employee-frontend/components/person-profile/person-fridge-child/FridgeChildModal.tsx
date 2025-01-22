@@ -208,7 +208,8 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
                     }
                     assignFridgeChildForm({ child: person, endDate })
                   }}
-                  onlyChildren
+                  ageLessThan={18}
+                  excludePeople={[headPersonId]}
                   data-qa="fridge-child-person-search"
                 />
               </>

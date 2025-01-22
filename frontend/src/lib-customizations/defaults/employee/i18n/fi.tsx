@@ -615,6 +615,7 @@ export const fi = {
   },
   childInformation: {
     restrictedDetails: 'Turvakielto',
+    asAdult: 'Tarkastele aikuisena',
     personDetails: {
       title: 'Henkilö-, yhteys- ja terveystiedot',
       attendanceReport: 'Läsnä- ja poissaolotiedot',
@@ -1673,6 +1674,7 @@ export const fi = {
   },
   personProfile: {
     restrictedDetails: 'Turvakielto',
+    asChild: 'Tarkastele lapsena',
     timeline: 'Aikajana',
     personDetails: 'Henkilö- ja yhteystiedot',
     addSsn: 'Aseta hetu',
