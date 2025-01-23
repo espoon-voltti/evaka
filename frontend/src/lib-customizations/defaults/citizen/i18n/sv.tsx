@@ -2114,7 +2114,8 @@ const sv: Translations = {
           `minst ${v} ${v > 1 ? 'gemena bokstäver' : 'gemen bokstav'}`,
         minUppers: (v: number) =>
           `minst ${v} ${v > 1 ? 'stora bokstäver' : 'stor bokstav'}`,
-        minDigits: (v: number) => `${v} eller fler siffror`,
+        minDigits: (v: number) =>
+          `${v} eller fler ${v > 1 ? 'siffror' : 'siffra'}`,
         minSymbols: (v: number) =>
           `${v} eller ${v > 1 ? 'flera specialtecken' : 'fler specialtecken'}`
       },
