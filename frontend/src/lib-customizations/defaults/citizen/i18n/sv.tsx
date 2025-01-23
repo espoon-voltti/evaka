@@ -2109,7 +2109,7 @@ const sv: Translations = {
       passwordConstraints: {
         label: 'Krav på lösenord',
         length: (min: number, _max: number) =>
-          `längd minst ${min} tecken ${min}`,
+          `längd minst ${min} tecken`,
         minLowers: (v: number) =>
           `minst ${v} ${v > 1 ? 'gemena bokstäver' : 'gemen bokstav'}`,
         minUppers: (v: number) =>
