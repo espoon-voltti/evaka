@@ -581,7 +581,9 @@ sealed interface Action {
             UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self()),
             READ_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
-            UPDATE_PASSWORD(IsCitizen(allowWeakLogin = false).self());
+            UPDATE_WEAK_LOGIN_CREDENTIALS(IsCitizen(allowWeakLogin = false).self()),
+            READ_EMAIL_VERIFICATION_STATUS(IsCitizen(allowWeakLogin = true).self()),
+            VERIFY_EMAIL(IsCitizen(allowWeakLogin = false).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

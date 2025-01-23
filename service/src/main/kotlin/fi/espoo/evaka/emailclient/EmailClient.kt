@@ -55,6 +55,22 @@ private constructor(
                 return null
             }
 
+            return createForAddress(toAddress, fromAddress, content, traceId)
+        }
+
+        fun createForAddress(
+            toAddress: String,
+            fromAddress: String,
+            content: EmailContent,
+            traceId: String,
+        ): Email? {
+            if (!toAddress.matches(EMAIL_PATTERN)) {
+                logger.warn {
+                    "Will not send email due to invalid toAddress \"$toAddress\": (traceId: $traceId)"
+                }
+                return null
+            }
+
             return Email(toAddress, fromAddress, content, traceId)
         }
 
@@ -74,14 +90,7 @@ private constructor(
                 return null
             }
 
-            if (!employee.email.matches(EMAIL_PATTERN)) {
-                logger.warn {
-                    "Will not send email due to invalid toAddress \"${employee.email}\": (traceId: $traceId)"
-                }
-                return null
-            }
-
-            return Email(employee.email, fromAddress, content, traceId)
+            return createForAddress(employee.email, fromAddress, content, traceId)
         }
     }
 }

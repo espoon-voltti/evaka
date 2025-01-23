@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { EmailVerification } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
@@ -2048,16 +2049,60 @@ export default {
       phoneMissing: 'Puhelinnumero puuttuu',
       noEmail: 'Minulla ei ole sähköpostiosoitetta',
       emailInfo:
-        'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
+        'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.',
+      contactEmailInfo: 'Tähän osoitteeseen saat kaikki ilmoitukset eVakasta.',
+      emailVerified: 'Vahvistettu',
+      emailUnverified: 'Sähköpostia ei ole vahvistettu',
+      sendVerificationCode: 'Vahvista sähköposti',
+      verifyEmail: {
+        section: 'Sähköpostin vahvistaminen',
+        codeSent: (verification: EmailVerification): ReactNode =>
+          `Vahvistuskoodi on lähetetty osoitteeseen ${verification.email}. Koodi on voimassa ${verification.expiresAt.toLocalTime().format()} asti.`,
+        toast: 'Sähköposti vahvistettu'
+      },
+      changeUsername: {
+        section: 'Käyttäjätunnuksen vaihtaminen',
+        codeSent: (verification: EmailVerification): ReactNode =>
+          `Käyttäjätunnuksen vaihtaaksesi syötä vahvistuskoodi, joka on lähetetty osoitteeseen ${verification.email}. Koodi on voimassa ${verification.expiresAt.toLocalTime().format()} asti.`,
+        toast: 'Käyttäjätunnus vaihdettu'
+      },
+      codeNotReceived: 'En ole saanut koodia.',
+      codeNotReceivedInfo:
+        'Tarkista roskapostikansio ja varmista, että sähköpostiosoite on kirjoitettu oikein.',
+      verificationForm: 'Syötä saamasi vahvistuskoodi',
+      confirmVerification: 'Vahvista',
+      updateUsernameAlert: {
+        usernameMismatch:
+          'Kirjautumiseen käyttämäsi käyttäjätunnus on eri kuin sähköpostiosoitteesi',
+        suggestedAction: (newUsername: string): ReactNode => (
+          <>
+            Voit halutessasi vaihtaa käyttäjätunnukseksi{' '}
+            <strong>{newUsername}</strong>
+          </>
+        )
+      },
+      updateUsername: (newUsername: string): string =>
+        `Vaihda käyttäjätunnukseksi ${newUsername}`
     },
     loginDetailsSection: {
       title: 'Kirjautumistiedot',
+      weakLoginCredentials: 'Sähköpostilla kirjautuminen',
+      status: {
+        enabled: 'Sallittu',
+        disabled: 'Ei sallittu',
+        info: 'Sähköpostilla kirjautumalla voit lukea eVakaan saapuvia viestejä ja tehdä läsnäoloilmoituksia ilman vahvaa tunnistautumista.'
+      },
+      usernameInfo: 'Tällä tunnuksella kirjaudut eVakaan',
       weakLoginUsername: 'Käyttäjätunnus',
       password: 'Salasana',
-      newPassword: 'Uusi salasana',
-      repeatPassword: 'Vahvista uusi salasana',
-      setPassword: 'Aseta salasana',
-      updatePassword: 'Vaihda salasana'
+      unverifiedEmailWarning:
+        'Sähköpostikirjautumisen voi sallia vain, jos olet vahvistanut sähköpostiosoitteesi',
+      updatePassword: 'Vaihda salasana',
+      activateCredentials: 'Salli sähköpostikirjautuminen',
+      activationSuccess: 'Sähköpostilla kirjautuminen otettu käyttöön',
+      activationSuccessOk: 'Selvä',
+      confirmPassword: 'Vahvista salasana',
+      confirmActivateCredentials: 'Ota käyttöön'
     },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',

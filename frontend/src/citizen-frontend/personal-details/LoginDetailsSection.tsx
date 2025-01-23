@@ -2,40 +2,79 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
+import styled from 'styled-components'
 
+import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
 import { string } from 'lib-common/form/fields'
 import { object, validated } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
+import { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
-import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  ExpandingInfoBox,
+  InfoButton,
+  InlineInfoButton
+} from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import BaseModal, {
+  ModalButtons
+} from 'lib-components/molecules/modals/BaseModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
+import { faCheck, faLockAlt } from 'lib-icons'
 
 import { User } from '../auth/state'
 import { useTranslation } from '../localization'
+import { getStrongLoginUri } from '../navigation/const'
 
-import { updatePasswordMutation } from './queries'
-
-const minLength = 8
-const maxLength = 128
+import { FullRow, Grid } from './components'
+import { updateWeakLoginCredentialsMutation } from './queries'
 
 export interface Props {
   user: User
   reloadUser: () => void
+  emailVerificationStatus: EmailVerificationStatusResponse
 }
 
 export default React.memo(function LoginDetailsSection({
   user,
-  reloadUser
+  reloadUser,
+  emailVerificationStatus
 }: Props) {
-  const t = useTranslation().personalDetails.loginDetailsSection
+  const i18n = useTranslation()
+  const t = i18n.personalDetails.loginDetailsSection
+
+  const canEdit = user.authLevel === 'STRONG'
+
+  const isEmailVerified = !!(
+    emailVerificationStatus.email &&
+    emailVerificationStatus.email === emailVerificationStatus.verifiedEmail
+  )
+
+  const [usernameInfo, { toggle: toggleUsernameInfo, off: closeUsernameInfo }] =
+    useBoolean(false)
+
+  const [modalOpen, { off: closeModal, on: openModal }] = useBoolean(false)
+  const [
+    activationSuccessModalOpen,
+    { off: closeActivationSuccessModal, on: openActivationSuccessModal }
+  ] = useBoolean(false)
+
+  const [infoOpen, { off: closeInfo, toggle: toggleInfo }] = useBoolean(false)
+
+  const navigateToLogin = useCallback(
+    () => window.location.replace(getStrongLoginUri()),
+    []
+  )
+
   return (
     <div data-qa="login-details-section">
-      <ListGrid rowGap="s" columnGap="L" labelWidth="max-content">
+      <Grid>
         <H2 noMargin>{t.title}</H2>
         <div />
         <Label>
@@ -45,41 +84,133 @@ export default React.memo(function LoginDetailsSection({
         <div data-qa="keycloak-email" translate="no">
           {user.keycloakEmail}
         </div>
-        {featureFlags.weakLogin && !!user.weakLoginUsername && (
+        {featureFlags.weakLogin && (user.email || user.weakLoginUsername) && (
           <>
-            <Label>
-              {t.weakLoginUsername}
-              {' (eVaka)'}
-            </Label>
-            <div data-qa="weak-login-username" translate="no">
-              {user.weakLoginUsername}
+            <Label>{t.weakLoginCredentials}</Label>
+            <div>
+              {user.weakLoginUsername ? (
+                <span data-qa="weak-login-enabled">{t.status.enabled}</span>
+              ) : (
+                <span data-qa="weak-login-disabled">{t.status.disabled}</span>
+              )}
+              <InlineInfoButton
+                onClick={toggleInfo}
+                aria-label={i18n.common.openExpandingInfo}
+              />
             </div>
+            {infoOpen && (
+              <FullRow>
+                <ExpandingInfoBox info={t.status.info} close={closeInfo} />
+              </FullRow>
+            )}
+            {user.weakLoginUsername ? (
+              <>
+                <Label>{t.weakLoginUsername}</Label>
+                <div>
+                  <span data-qa="username">{user.weakLoginUsername}</span>
+                  <Gap horizontal size="xs" />
+                  <InfoButton
+                    onClick={toggleUsernameInfo}
+                    aria-label={i18n.common.openExpandingInfo}
+                  />
+                </div>
+                {usernameInfo && (
+                  <FullRow>
+                    <ExpandingInfoBox
+                      info={t.usernameInfo}
+                      close={closeUsernameInfo}
+                    />
+                  </FullRow>
+                )}
+                <Label>{t.password}</Label>
+                <div>
+                  <div>********</div>
+                  <Button
+                    data-qa="update-password"
+                    appearance="inline"
+                    text={t.updatePassword}
+                    icon={canEdit ? undefined : faLockAlt}
+                    onClick={canEdit ? openModal : navigateToLogin}
+                  />
+                </div>
+              </>
+            ) : (
+              <FullRow>
+                {!isEmailVerified && (
+                  <AlertBox message={t.unverifiedEmailWarning} />
+                )}
+                <Button
+                  data-qa="activate-credentials"
+                  disabled={!isEmailVerified}
+                  text={t.activateCredentials}
+                  icon={canEdit ? undefined : faLockAlt}
+                  onClick={canEdit ? openModal : navigateToLogin}
+                />
+              </FullRow>
+            )}
           </>
         )}
-        {featureFlags.weakLogin &&
-          user.authLevel === 'STRONG' &&
-          !!user.weakLoginUsername && (
-            <>
-              <Label>{t.password}</Label>
-              <PasswordSection user={user} reloadUser={reloadUser} />
-            </>
-          )}
-      </ListGrid>
+      </Grid>
+      <ModalAccessibilityWrapper>
+        {!!emailVerificationStatus.verifiedEmail && (
+          <>
+            {modalOpen && (
+              <WeakCredentialsFormModal
+                hasCredentials={!!user.weakLoginUsername}
+                username={
+                  user.weakLoginUsername ??
+                  emailVerificationStatus.verifiedEmail
+                }
+                onSuccess={() => {
+                  closeModal()
+                  reloadUser()
+                  if (!user.weakLoginUsername) {
+                    openActivationSuccessModal()
+                  }
+                }}
+                onCancel={closeModal}
+              />
+            )}
+            {activationSuccessModalOpen && (
+              <BaseModal
+                data-qa="weak-credentials-modal"
+                type="success"
+                title={t.activationSuccess}
+                icon={faCheck}
+                close={closeActivationSuccessModal}
+                closeLabel={i18n.common.close}
+              >
+                <ModalButtons $justifyContent="center">
+                  <Button
+                    data-qa="modal-okBtn"
+                    primary
+                    text={t.activationSuccessOk}
+                    onClick={closeActivationSuccessModal}
+                  />
+                </ModalButtons>
+              </BaseModal>
+            )}
+          </>
+        )}
+      </ModalAccessibilityWrapper>
     </div>
   )
 })
 
+const minLength = 8
+const maxLength = 128
+
 const passwordForm = validated(
   object({
-    password1: string(),
-    password2: string()
+    password: string(),
+    confirmPassword: string()
   }),
   (form) => {
     if (
-      form.password1.length === 0 ||
-      form.password1 !== form.password2 ||
-      form.password1.length < minLength ||
-      form.password1.length > maxLength
+      form.password.length === 0 ||
+      form.password !== form.confirmPassword ||
+      form.password.length < minLength ||
+      form.password.length > maxLength
     ) {
       return 'required'
     }
@@ -87,84 +218,90 @@ const passwordForm = validated(
   }
 )
 
-const PasswordForm = React.memo(function PasswordForm({
-  onClose,
-  reloadUser
+const UsernameField = styled.input`
+  cursor: auto;
+  border: none;
+`
+
+const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
+  hasCredentials,
+  username,
+  onSuccess,
+  onCancel
 }: {
-  reloadUser: () => void
-  onClose: () => void
+  hasCredentials: boolean
+  username: string
+  onSuccess: () => void
+  onCancel: () => void
 }) {
   const i18n = useTranslation()
   const t = i18n.personalDetails.loginDetailsSection
 
   const form = useForm(
     passwordForm,
-    () => ({ password1: '', password2: '' }),
+    () => ({ password: '', confirmPassword: '' }),
     i18n.validationErrors
   )
-  const { password1, password2 } = useFormFields(form)
+  const { password, confirmPassword } = useFormFields(form)
   const pattern = `.{${minLength},${maxLength}}`
   return (
-    <form action="" onClick={(e) => e.preventDefault()}>
-      <FixedSpaceColumn spacing="xs">
-        <InputFieldF
-          autoComplete="new-password"
-          autoFocus={true}
-          bind={password1}
-          type="password"
-          placeholder={t.newPassword}
-          width="L"
-          hideErrorsBeforeTouched={true}
-          pattern={pattern}
-        />
-        <InputFieldF
-          autoComplete="new-password"
-          bind={password2}
-          type="password"
-          placeholder={t.repeatPassword}
-          width="L"
-          hideErrorsBeforeTouched={true}
-          pattern={pattern}
-        />
-        <MutateButton
-          type="submit"
-          disabled={!form.isValid()}
-          mutation={updatePasswordMutation}
-          text={i18n.common.save}
-          onClick={() => ({
-            body: {
-              password: form.state.password1
-            }
-          })}
-          onSuccess={() => {
-            reloadUser()
-            onClose()
-          }}
-        />
-      </FixedSpaceColumn>
-    </form>
-  )
-})
-
-const PasswordSection = React.memo(function PasswordSection({
-  user,
-  reloadUser
-}: Props) {
-  const t = useTranslation().personalDetails.loginDetailsSection
-
-  const isWeakLoginSetup = !!user.weakLoginUsername
-  const [editing, { on: startEditing, off: stopEditing }] = useBoolean(false)
-  return (
-    <div data-qa="password">
-      {editing ? (
-        <PasswordForm onClose={stopEditing} reloadUser={reloadUser} />
-      ) : (
-        <Button
-          text={isWeakLoginSetup ? t.updatePassword : t.setPassword}
-          appearance="link"
-          onClick={startEditing}
-        />
-      )}
-    </div>
+    <MutateFormModal
+      data-qa="weak-credentials-modal"
+      title={t.weakLoginCredentials}
+      resolveLabel={
+        hasCredentials ? t.updatePassword : t.confirmActivateCredentials
+      }
+      rejectLabel={i18n.common.cancel}
+      resolveMutation={updateWeakLoginCredentialsMutation}
+      resolveAction={() => ({
+        body: {
+          username: hasCredentials ? null : username,
+          password: form.value().password
+        }
+      })}
+      rejectAction={onCancel}
+      onSuccess={onSuccess}
+      resolveDisabled={!form.isValid()}
+    >
+      <form onClick={(e) => e.preventDefault()}>
+        <FixedSpaceColumn spacing="xs">
+          <Label htmlFor="username">{t.weakLoginUsername}</Label>
+          <UsernameField
+            data-qa="username"
+            id="username"
+            name="username"
+            type="email"
+            autoComplete="email"
+            readOnly
+            value={username}
+          />
+          <Label htmlFor="password">{t.password}</Label>
+          <InputFieldF
+            data-qa="password"
+            id="password"
+            name="password"
+            autoComplete="new-password"
+            autoFocus={true}
+            bind={password}
+            type="password"
+            width="full"
+            hideErrorsBeforeTouched={true}
+            pattern={pattern}
+          />
+          <Label htmlFor="confirm-password">{t.confirmPassword}</Label>
+          <InputFieldF
+            data-qa="confirm-password"
+            id="confirm-password"
+            name="confirm-password"
+            autoComplete="new-password"
+            bind={confirmPassword}
+            type="password"
+            width="full"
+            hideErrorsBeforeTouched={true}
+            pattern={pattern}
+          />
+        </FixedSpaceColumn>
+      </form>
+    </MutateFormModal>
   )
 })

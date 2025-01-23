@@ -51,20 +51,43 @@ WHERE id = ${bind(id)}
         }
         .updateExactlyOne()
 
-fun Database.Transaction.updatePassword(
-    clock: EvakaClock?, // null = don't update timestamp
+fun Database.Transaction.updatePasswordWithoutTimestamp(id: PersonId, password: EncodedPassword) =
+    createUpdate {
+            sql(
+                """
+UPDATE citizen_user
+SET password = ${bindJson(password)}
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .updateExactlyOne()
+
+fun Database.Transaction.updateWeakLoginCredentials(
+    clock: EvakaClock,
     id: PersonId,
-    password: EncodedPassword,
+    username: String?, // null = don't update
+    password: EncodedPassword?, // null = don't update
 ) =
     createUpdate {
             sql(
                 """
 UPDATE citizen_user
 SET
-    password = ${bindJson(password)},
-    password_updated_at = coalesce(${bind(clock?.now())}, password_updated_at)
+    username = coalesce(${bind(username)}, username),
+    username_updated_at = coalesce(${bind(clock.now().takeIf { username != null })}, username_updated_at),
+    password = coalesce(${bindJson(password)}, password),
+    password_updated_at = coalesce(${bind(clock.now().takeIf { password != null })}, password_updated_at)
 WHERE id = ${bind(id)}
 """
             )
         }
         .updateExactlyOne()
+
+fun Database.Transaction.hasWeakCredentials(person: PersonId): Boolean =
+    createQuery {
+            sql(
+                "SELECT EXISTS(SELECT FROM citizen_user WHERE id = ${bind(person)} AND username IS NOT NULL)"
+            )
+        }
+        .exactlyOne()

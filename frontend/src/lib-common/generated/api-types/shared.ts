@@ -217,6 +217,8 @@ export type PaymentId = Id<'Payment'>
 
 export type PedagogicalDocumentId = Id<'PedagogicalDocument'>
 
+export type PersonEmailVerificationId = Id<'PersonEmailVerification'>
+
 export type PersonId = Id<'Person'>
 
 /**

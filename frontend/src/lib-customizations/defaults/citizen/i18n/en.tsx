@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { EmailVerification } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
@@ -1808,16 +1809,61 @@ const en: Translations = {
       phoneMissing: 'Phone number missing',
       noEmail: 'I have no email address',
       emailInfo:
-        'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
+        'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.',
+      contactEmailInfo:
+        'You will receive all notifications from eVaka to this address.',
+      emailVerified: 'Verified',
+      emailUnverified: 'Email has not been verified',
+      sendVerificationCode: 'Verify email',
+      verifyEmail: {
+        section: 'Email verification',
+        codeSent: (verification: EmailVerification): ReactNode =>
+          `A confirmation code has been sent to ${verification.email}. The code is valid until ${verification.expiresAt.toLocalTime().format()} asti.`,
+        toast: 'Email verified'
+      },
+      changeUsername: {
+        section: 'Change username',
+        codeSent: (verification: EmailVerification): ReactNode =>
+          `To change your username, enter the verification code sent to ${verification.email}. The code is valid until ${verification.expiresAt.toLocalTime().format()} asti.`,
+        toast: 'Username changed'
+      },
+      codeNotReceived: 'I have not received a code.',
+      codeNotReceivedInfo:
+        'Please check your spam folder and that the address is correct.',
+      verificationForm: 'Enter the verification code you received',
+      confirmVerification: 'Verify',
+      updateUsernameAlert: {
+        usernameMismatch:
+          'The username you use to log in is different from your email address',
+        suggestedAction: (newUsername: string): ReactNode => (
+          <>
+            If you wish, you can change your username to{' '}
+            <strong>{newUsername}</strong>
+          </>
+        )
+      },
+      updateUsername: (newUsername: string): string =>
+        `Change your username to ${newUsername}`
     },
     loginDetailsSection: {
       title: 'Login information',
+      weakLoginCredentials: 'Login with email',
+      status: {
+        enabled: 'Allowed',
+        disabled: 'Not allowed',
+        info: 'By logging in with email, you can read incoming messages in eVaka and mark attendances without strong authentication.'
+      },
+      usernameInfo: 'You can log in to eVaka with this username.',
       weakLoginUsername: 'Username',
       password: 'Password',
-      newPassword: 'New password',
-      repeatPassword: 'Confirm new password',
-      setPassword: 'Set password',
-      updatePassword: 'Change password'
+      unverifiedEmailWarning:
+        'Email login can only be enabled if you have verified your email address',
+      updatePassword: 'Change password',
+      activateCredentials: 'Enable email login',
+      activationSuccess: 'Email login has been enabled',
+      activationSuccessOk: 'Okay',
+      confirmPassword: 'Confirm password',
+      confirmActivateCredentials: 'Enable'
     },
     notificationsSection: {
       title: 'Email notifications',
