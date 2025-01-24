@@ -352,6 +352,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   )
   router.get(
     '/employee-mobile/auth/status',
+    refreshMobileSession(employeeMobileSessions),
     internalAuthStatus(employeeMobileSessions)
   )
   router.post(
