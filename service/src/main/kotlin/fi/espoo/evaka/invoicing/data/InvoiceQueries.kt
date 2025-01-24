@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.db.freeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 import java.time.YearMonth
@@ -364,13 +363,19 @@ ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
 
 fun Database.Read.searchInvoices(
     status: InvoiceStatus? = null,
-    sentAt: HelsinkiDateTimeRange? = null,
+    period: FiniteDateRange? = null,
 ): List<InvoiceDetailed> {
     val predicate =
         Predicate.all(
             listOfNotNull(
                 if (status != null) Predicate { where("$it.status = ${bind(status)}") } else null,
-                if (sentAt != null) Predicate { where("$it.sent_at <@ ${bind(sentAt)}") } else null,
+                if (period != null)
+                    Predicate {
+                        where(
+                            "$it.period_start = ${bind(period.start)} AND $it.period_end = ${bind(period.end)}"
+                        )
+                    }
+                else null,
             )
         )
 

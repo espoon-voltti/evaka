@@ -50,7 +50,7 @@ class InvoiceReportController(private val accessControl: AccessControl) {
 }
 
 private fun Database.Read.getInvoiceReportWithRows(period: FiniteDateRange): InvoiceReport {
-    val invoices = searchInvoices(InvoiceStatus.SENT, sentAt = period.asHelsinkiDateTimeRange())
+    val invoices = searchInvoices(InvoiceStatus.SENT, period = period)
 
     val rows =
         invoices

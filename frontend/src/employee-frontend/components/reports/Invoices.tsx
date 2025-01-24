@@ -25,16 +25,16 @@ import { useTranslation } from '../../state/i18n'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { invoicesReportQuery } from './queries'
 
-const currentMonth = YearMonth.todayInHelsinkiTz()
+const previousMonth = YearMonth.todayInHelsinkiTz().subMonths(1)
 const monthOptions = range(1, 13)
-const yearOptions = range(currentMonth.year, currentMonth.year - 4, -1)
+const yearOptions = range(previousMonth.year, previousMonth.year - 4, -1)
 
 type InvoiceReportFilters = Arg0<typeof getInvoiceReport>
 
 export default React.memo(function ReportInvoices() {
   const { i18n } = useTranslation()
   const [filters, setFilters] = useState<InvoiceReportFilters>({
-    yearMonth: currentMonth
+    yearMonth: previousMonth
   })
   const report = useQueryResult(invoicesReportQuery(filters))
 
@@ -44,7 +44,7 @@ export default React.memo(function ReportInvoices() {
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.invoices.title}</Title>
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.period}</FilterLabel>
+          <FilterLabel>{i18n.reports.invoices.period}</FilterLabel>
           <Combobox
             items={monthOptions}
             selectedItem={filters.yearMonth.month}
