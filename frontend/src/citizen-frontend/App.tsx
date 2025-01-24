@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -14,6 +14,7 @@ import {
 } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
+import { desktopMin } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
@@ -51,6 +52,7 @@ import MessagesPage from './messages/MessagesPage'
 import { MessageContextProvider } from './messages/state'
 import Header from './navigation/Header'
 import MobileNav from './navigation/MobileNav'
+import { mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import PersonalDetails from './personal-details/PersonalDetails'
@@ -412,4 +414,9 @@ function HandleRedirection() {
 
 const ScrollableMain = styled.div`
   flex-grow: 1;
+
+  padding-bottom: ${mobileBottomNavHeight}px;
+  @media (min-width: ${desktopMin}) {
+    padding-bottom: 0;
+  }
 `
