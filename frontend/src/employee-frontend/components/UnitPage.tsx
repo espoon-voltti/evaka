@@ -208,7 +208,12 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: DaycareId }) {
               <ContentArea opaque>
                 <H3 noMargin>{i18n.unit.serviceWorkerNote.title}</H3>
                 <Gap size="s" />
-                <UnitServiceWorkerNote unitId={id} />
+                <UnitServiceWorkerNote
+                  unitId={id}
+                  canEdit={unitInformation.value.permittedActions.includes(
+                    'SET_SERVICE_WORKER_NOTE'
+                  )}
+                />
               </ContentArea>
             </Container>
           </>

@@ -26,9 +26,11 @@ import {
 } from './queries'
 
 export default React.memo(function UnitServiceWorkerNote({
-  unitId
+  unitId,
+  canEdit
 }: {
   unitId: DaycareId
+  canEdit: boolean
 }) {
   const { i18n } = useTranslation()
   const response = useQueryResult(
@@ -40,6 +42,7 @@ export default React.memo(function UnitServiceWorkerNote({
     setText(note)
     openEditor()
   }
+
   return renderResult(response, ({ note }) => (
     <FixedSpaceColumn>
       {editing ? (
@@ -65,13 +68,15 @@ export default React.memo(function UnitServiceWorkerNote({
           </FixedSpaceRow>
         </>
       ) : note.trim() === '' ? (
-        <Button
-          appearance="inline"
-          text={i18n.unit.serviceWorkerNote.add}
-          icon={faPlus}
-          onClick={() => startEditing('')}
-          data-qa="note-add-btn"
-        />
+        canEdit ? (
+          <Button
+            appearance="inline"
+            text={i18n.unit.serviceWorkerNote.add}
+            icon={faPlus}
+            onClick={() => startEditing('')}
+            data-qa="note-add-btn"
+          />
+        ) : null
       ) : (
         <>
           <div>
@@ -81,24 +86,26 @@ export default React.memo(function UnitServiceWorkerNote({
               data-qa="service-worker-note"
             />
           </div>
-          <FixedSpaceRow>
-            <Button
-              appearance="inline"
-              text={i18n.common.edit}
-              icon={faPen}
-              onClick={() => startEditing(note)}
-              data-qa="note-edit-btn"
-            />
-            <MutateButton
-              appearance="inline"
-              text={i18n.common.remove}
-              icon={faTrash}
-              mutation={unitServiceWorkerNoteMutation}
-              onClick={() => ({ daycareId: unitId, body: { note: '' } })}
-              onSuccess={closeEditor}
-              data-qa="note-remove-btn"
-            />
-          </FixedSpaceRow>
+          {canEdit && (
+            <FixedSpaceRow>
+              <Button
+                appearance="inline"
+                text={i18n.common.edit}
+                icon={faPen}
+                onClick={() => startEditing(note)}
+                data-qa="note-edit-btn"
+              />
+              <MutateButton
+                appearance="inline"
+                text={i18n.common.remove}
+                icon={faTrash}
+                mutation={unitServiceWorkerNoteMutation}
+                onClick={() => ({ daycareId: unitId, body: { note: '' } })}
+                onSuccess={closeEditor}
+                data-qa="note-remove-btn"
+              />
+            </FixedSpaceRow>
+          )}
         </>
       )}
     </FixedSpaceColumn>
