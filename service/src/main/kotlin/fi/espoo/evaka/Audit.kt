@@ -528,6 +528,8 @@ enum class Audit(
     UnitCalendarEventsRead,
     UnitFeaturesRead,
     UnitFeaturesUpdate,
+    UnitServiceWorkerNoteRead,
+    UnitServiceWorkerNoteSet,
     UnitGroupAclUpdate,
     UnitGroupsCreate,
     UnitGroupsUpdate,

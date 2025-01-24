@@ -485,3 +485,4 @@ V486__fix_application_confidentiality.sql
 V487__staff_attendance_realtime_modified.sql
 V488__no_head_of_self.sql
 V489__person_email_verification.sql
+V490__daycare_service_worker_note.sql
