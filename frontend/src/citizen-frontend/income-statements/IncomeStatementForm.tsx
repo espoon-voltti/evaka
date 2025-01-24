@@ -14,6 +14,7 @@ import {
 } from 'lib-common/form-validation'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
+  IncomeStatementAttachmentType,
   IncomeStatementStatus,
   OtherIncome,
   otherIncomes
@@ -59,7 +60,6 @@ import {
   useFieldDispatch,
   useFieldSetState
 } from './IncomeStatementComponents'
-import { AttachmentType } from './types/common'
 import * as Form from './types/form'
 
 interface Props {
@@ -1249,11 +1249,11 @@ const OtherInfo = React.memo(function OtherInfo({
 
 export function useRequiredAttachments(
   formData: Form.IncomeStatementForm
-): Set<AttachmentType> {
+): Set<IncomeStatementAttachmentType> {
   const { gross, entrepreneur, alimonyPayer, student } = formData
 
   return useMemo(() => {
-    const result = new Set<AttachmentType>()
+    const result = new Set<IncomeStatementAttachmentType>()
     if (gross.selected) {
       if (gross.incomeSource === 'ATTACHMENTS') result.add('PAYSLIP')
       if (gross.otherIncome)

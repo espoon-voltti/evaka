@@ -2,43 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 import { stringToInt } from 'lib-common/utils/number'
 
 import * as Form from './form'
-
-type ReadOnlyFields =
-  | 'id'
-  | 'created'
-  | 'updated'
-  | 'sent_at'
-  | 'status'
-  | 'handlerNote'
-
-export type HighestFeeBody = Omit<
-  ApiTypes.IncomeStatementBody.HighestFee,
-  ReadOnlyFields
->
-
-export interface ChildIncomeBody
-  extends Omit<
-    ApiTypes.IncomeStatementBody.ChildIncome,
-    ReadOnlyFields | 'attachments'
-  > {
-  attachmentIds: AttachmentId[]
-}
-
-export interface IncomeBody
-  extends Omit<
-    ApiTypes.IncomeStatementBody.Income,
-    ReadOnlyFields | 'attachments'
-  > {
-  attachmentIds: AttachmentId[]
-}
-
-export type IncomeStatementBody = HighestFeeBody | IncomeBody | ChildIncomeBody
 
 export function fromBody(
   personType: 'adult' | 'child',
@@ -61,7 +29,7 @@ export function fromBody(
   }
 
   if (formData.childIncome) {
-    const childIncome: ChildIncomeBody = {
+    const childIncome: IncomeStatementBody.ChildIncome = {
       type: 'CHILD_INCOME',
       startDate,
       endDate: formData.endDate,
