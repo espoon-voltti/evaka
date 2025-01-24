@@ -28,6 +28,7 @@ import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDraftContent } from 'lib-common/generated/api-types/messaging'
+import { deserializeJsonMessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonMessageThread } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedSentMessages } from 'lib-common/generated/api-types/messaging'
@@ -149,7 +150,7 @@ export async function getReceiversForNewMessage(): Promise<MessageReceiversRespo
     url: uri`/employee-mobile/messages/receivers`.toString(),
     method: 'GET'
   })
-  return json
+  return json.map(e => deserializeJsonMessageReceiversResponse(e))
 }
 
 

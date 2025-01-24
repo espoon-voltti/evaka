@@ -149,6 +149,7 @@ export default React.memo(function MessageEditor({
             recipients: receiversAsSelectorNode(
               accountId,
               availableRecipients,
+              i18n.messages.messageEditor.starters,
               draft.recipientIds
             ),
             urgent: draft.urgent,
@@ -156,7 +157,11 @@ export default React.memo(function MessageEditor({
             content: draft.content
           }
         : {
-            recipients: receiversAsSelectorNode(accountId, availableRecipients),
+            recipients: receiversAsSelectorNode(
+              accountId,
+              availableRecipients,
+              i18n.messages.messageEditor.starters
+            ),
             urgent: false,
             title: '',
             content: ''

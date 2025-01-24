@@ -1108,6 +1108,7 @@ data class UnitMessageReceiversResult(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
+    val startDate: LocalDate?,
 )
 
 data class MunicipalMessageReceiversResult(
@@ -1131,8 +1132,13 @@ fun Database.Read.getReceiversForNewMessage(
             WHERE
                 ${predicate(idFilter.forTable("message_account"))} AND
                 type = ANY('{PERSONAL,GROUP}'::message_account_type[])
+        ), starting_children as(
+            SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, COALESCE(dgp.start_date, p.start_date) AS start_date
+            FROM placement p
+            LEFT JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+            WHERE p.start_date > ${bind(today)} OR dgp.start_date > ${bind(today)}
         ), children AS (
-            SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name
+            SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
             FROM accounts a
             JOIN realized_placement_all(${bind(today)}) p ON a.daycare_group_id = p.group_id
             JOIN daycare d ON p.unit_id = d.id
@@ -1141,13 +1147,32 @@ fun Database.Read.getReceiversForNewMessage(
 
             UNION ALL
 
-            SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name
+            SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
             FROM accounts a
             JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
             JOIN daycare d ON acl.daycare_id = d.id
             JOIN daycare_group g ON d.id = g.daycare_id
             JOIN realized_placement_all(${bind(today)}) p ON g.id = p.group_id
             WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            
+            UNION ALL
+
+            SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name, p.start_date
+            FROM accounts a
+            JOIN starting_children p ON a.daycare_group_id = p.group_id
+            JOIN daycare d ON p.unit_id = d.id
+            JOIN daycare_group g ON p.group_id = g.id
+            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+
+            UNION ALL
+
+            SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, p.start_date
+            FROM accounts a
+            JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
+            JOIN daycare d ON acl.daycare_id = d.id
+            JOIN starting_children p ON d.id = p.unit_id
+            LEFT JOIN daycare_group g ON p.group_id = g.id
+            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)  
         )
         SELECT DISTINCT
             c.account_id,
@@ -1156,6 +1181,7 @@ fun Database.Read.getReceiversForNewMessage(
             c.group_id,
             c.group_name,
             c.child_id,
+            c.start_date,
             p.first_name,
             p.last_name
         FROM children c
@@ -1177,8 +1203,9 @@ fun Database.Read.getReceiversForNewMessage(
             }
             .toList<UnitMessageReceiversResult>()
             .groupBy { it.accountId }
-            .map { (accountId, receivers) ->
-                val units = receivers.groupBy { it.unitId to it.unitName }
+            .map { (groupKey, receivers) ->
+                val units =
+                    receivers.groupBy { Triple(it.unitId, it.unitName, it.startDate != null) }
                 val accountReceivers =
                     units.flatMap { (unit, groups) ->
                         val (unitId, unitName) = unit
@@ -1188,11 +1215,12 @@ fun Database.Read.getReceiversForNewMessage(
                                 MessageReceiver.Unit(
                                     id = unitId,
                                     name = unitName,
+                                    hasStarters = groups.any { it.startDate != null },
                                     receivers = getReceiverGroups(groups),
                                 )
                             )
                     }
-                MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
+                MessageReceiversResponse(accountId = groupKey, receivers = accountReceivers)
             }
 
     val municipalReceivers =
@@ -1248,11 +1276,13 @@ private fun getReceiverGroups(
             MessageReceiver.Group(
                 id = groupId,
                 name = groupName,
+                hasStarters = children.any { it.startDate != null },
                 receivers =
                     children.map {
                         MessageReceiver.Child(
                             id = it.childId,
                             name = formatName(it.firstName, it.lastName, true),
+                            startDate = it.startDate,
                         )
                     },
             )

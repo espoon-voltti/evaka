@@ -4607,7 +4607,8 @@ export const fi = {
       childName: 'Nimi',
       childDob: 'Syntymäaika',
       receivers: 'Vastaanottajat',
-      confirmText: 'Lähetä viesti valituille'
+      confirmText: 'Lähetä viesti valituille',
+      starters: 'aloittavat'
     },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',

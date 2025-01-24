@@ -128,17 +128,20 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             MessageReceiver.Unit(
                                 id = daycare1.id,
                                 name = daycare1.name,
+                                hasStarters = false,
                                 receivers =
                                     listOf(
                                         MessageReceiver.Group(
                                             id = group1.id,
                                             name = group1.name,
+                                            hasStarters = false,
                                             receivers =
                                                 listOf(
                                                     MessageReceiver.Child(
                                                         id = child1.id,
                                                         name =
                                                             "${child1.lastName} ${child2.firstName}",
+                                                        startDate = null,
                                                     )
                                                 ),
                                         )
@@ -153,11 +156,13 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             MessageReceiver.Group(
                                 id = group1.id,
                                 name = group1.name,
+                                hasStarters = false,
                                 receivers =
                                     listOf(
                                         MessageReceiver.Child(
                                             id = child1.id,
                                             name = "${child1.lastName} ${child1.firstName}",
+                                            startDate = null,
                                         )
                                     ),
                             )
@@ -182,17 +187,20 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             MessageReceiver.Unit(
                                 id = daycare2.id,
                                 name = daycare2.name,
+                                hasStarters = false,
                                 receivers =
                                     listOf(
                                         MessageReceiver.Group(
                                             id = group2.id,
                                             name = group2.name,
+                                            hasStarters = false,
                                             receivers =
                                                 listOf(
                                                     MessageReceiver.Child(
                                                         id = child2.id,
                                                         name =
                                                             "${child2.lastName} ${child2.firstName}",
+                                                        startDate = null,
                                                     )
                                                 ),
                                         )

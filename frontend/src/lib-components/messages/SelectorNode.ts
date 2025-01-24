@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageReceiver } from 'lib-common/api-types/messaging'
+import {
+  MessageReceiver,
+  messageReceiverIsStarter,
+  messageReceiverStartDate
+} from 'lib-common/api-types/messaging'
 import {
   MessageReceiversResponse,
   MessageRecipient
@@ -27,6 +31,7 @@ export interface SelectorNode extends TreeNode {
 export const receiversAsSelectorNode = (
   accountId: UUID,
   receivers: MessageReceiversResponse[],
+  starterTranslation: string,
   checkedIds: UUID[] = []
 ): SelectorNode[] => {
   const accountReceivers = receivers.find(
@@ -36,9 +41,9 @@ export const receiversAsSelectorNode = (
   if (!accountReceivers) {
     return []
   }
-
-  const selectorNodes = accountReceivers.map(receiverAsSelectorNode)
-
+  const selectorNodes = accountReceivers.map((r) =>
+    receiverAsSelectorNode(r, starterTranslation)
+  )
   if (selectorNodes.length === 1 && selectorNodes[0].children.length === 0) {
     return selectorNodes.map((node) => ({ ...node, checked: true }))
   }
@@ -67,16 +72,28 @@ function checkAll(node: SelectorNode): SelectorNode {
   return { ...node, checked: true, children: node.children.map(checkAll) }
 }
 
-const receiverAsSelectorNode = (receiver: MessageReceiver): SelectorNode => ({
-  key: receiver.id,
-  checked: false,
-  text: receiver.name,
-  messageRecipient: { type: receiver.type, id: receiver.id },
-  children:
-    'receivers' in receiver
-      ? receiver.receivers.map(receiverAsSelectorNode)
-      : []
-})
+function receiverAsSelectorNode(
+  receiver: MessageReceiver,
+  starterTranslation: string
+): SelectorNode {
+  const startDate = messageReceiverStartDate(receiver)
+  const isStarter = messageReceiverIsStarter(receiver)
+  const nameWithStarterIndication = isStarter
+    ? `${receiver.name} (${startDate?.format() ?? starterTranslation})`
+    : receiver.name
+  return {
+    key: `${receiver.id}-${isStarter}`,
+    checked: false,
+    text: nameWithStarterIndication,
+    messageRecipient: { type: receiver.type, id: receiver.id },
+    children:
+      'receivers' in receiver
+        ? receiver.receivers.map((r) =>
+            receiverAsSelectorNode(r, starterTranslation)
+          )
+        : []
+  }
+}
 
 export type SelectedNode = {
   key: UUID

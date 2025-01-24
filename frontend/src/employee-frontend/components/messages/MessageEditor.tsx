@@ -216,6 +216,7 @@ export default React.memo(function MessageEditor({
     receiversAsSelectorNode(
       defaultSender.value,
       availableReceivers,
+      i18n.messages.receiverSelection.starters,
       draftContent?.recipientIds
     )
   )
@@ -312,13 +313,20 @@ export default React.memo(function MessageEditor({
 
       const accountReceivers = receiversAsSelectorNode(
         sender.value,
-        availableReceivers
+        availableReceivers,
+        i18n.messages.receiverSelection.starters
       )
       if (accountReceivers) {
         setReceiverTree(accountReceivers)
       }
     },
-    [availableReceivers, message.type, selectedReceivers, updateMessage]
+    [
+      availableReceivers,
+      i18n.messages.receiverSelection.starters,
+      message.type,
+      selectedReceivers,
+      updateMessage
+    ]
   )
   const handleRecipientChange = useCallback(
     (recipients: SelectorNode[]) => {

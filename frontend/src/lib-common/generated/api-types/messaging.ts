@@ -20,6 +20,7 @@ import { MessageId } from './shared'
 import { MessageReceiver } from '../../api-types/messaging'
 import { MessageThreadId } from './shared'
 import { PersonId } from './shared'
+import { deserializeMessageReceiver } from '../../api-types/messaging'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AccountType
@@ -467,6 +468,14 @@ export function deserializeJsonMessageCopy(json: JsonOf<MessageCopy>): MessageCo
     ...json,
     readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt)
+  }
+}
+
+
+export function deserializeJsonMessageReceiversResponse(json: JsonOf<MessageReceiversResponse>): MessageReceiversResponse {
+  return {
+    ...json,
+    receivers: json.receivers.map(e => deserializeMessageReceiver(e))
   }
 }
 
