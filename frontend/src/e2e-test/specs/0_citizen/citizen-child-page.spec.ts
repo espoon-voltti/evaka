@@ -24,20 +24,16 @@ import {
 import {
   createApplications,
   createDaycarePlacements,
-  resetServiceState
+  resetServiceState,
+  upsertWeakCredentials
 } from '../../generated/api-clients'
 import { DevPlacement } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
-import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
-import {
-  citizenWeakAccount,
-  enduserLogin,
-  enduserLoginWeak
-} from '../../utils/user'
+import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 let page: Page
 
@@ -614,11 +610,15 @@ describe.each(['desktop', 'mobile'] as const)(
         endDate: mockedDate
       }).save()
 
-      const keycloak = await KeycloakRealmClient.createCitizenClient()
-      await keycloak.deleteAllUsers()
-      const account = citizenWeakAccount(testAdult)
-      await keycloak.createUser({ ...account, enabled: true })
-      await enduserLoginWeak(page, account)
+      const credentials = {
+        username: 'test@example.com',
+        password: 'TestPassword456!'
+      }
+      await upsertWeakCredentials({
+        id: testAdult.id,
+        body: credentials
+      })
+      await enduserLoginWeak(page, credentials)
       const header = new CitizenHeader(page, env)
       const childPage = new CitizenChildPage(page, env)
 

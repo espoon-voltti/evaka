@@ -117,6 +117,7 @@ export default {
     },
     closeModal: 'Sulje ponnahdusikkuna',
     close: 'Sulje',
+    goBack: 'Takaisin',
     duplicatedChild: {
       identifier: {
         DAYCARE: {
@@ -213,10 +214,16 @@ export default {
           </P>
         </>
       ),
-      email: 'Sähköpostiosoite',
+      username: 'Käyttäjätunnus',
       password: 'Salasana',
       rateLimitError:
-        'Käyttäjätunnuksesi on väliaikaisesti lukittu kirjautumisyritysten määrästä johtuen. Kokeile myöhemmin uudelleen.'
+        'Käyttäjätunnuksesi on väliaikaisesti lukittu kirjautumisyritysten määrästä johtuen. Kokeile myöhemmin uudelleen.',
+      forgotPassword: 'Unohditko salasanasi?',
+      forgotPasswordInfo:
+        'Voit vaihtaa salasanan omissa tiedoissasi kirjautumalla vahvasti.',
+      noUsername: 'Ei käyttäjätunnuksia?',
+      noUsernameInfo:
+        'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla'
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',

@@ -118,6 +118,7 @@ const sv: Translations = {
     },
     closeModal: 'Stäng popup',
     close: 'Stäng',
+    goBack: 'Tillbaka',
     duplicatedChild: {
       identifier: {
         DAYCARE: {
@@ -214,10 +215,16 @@ const sv: Translations = {
           </P>
         </>
       ),
-      email: 'E-post',
+      username: 'Användarnamn',
       password: 'Lösenord',
       rateLimitError:
-        'Ditt konto har tillfälligt låsts på grund av ett stort antal inloggningsförsök. Vänligen försök igen senare.'
+        'Ditt användarnamn är tillfälligt låst på grund av antalet inloggningsförsök. Försök igen senare.',
+      forgotPassword: 'Glömt lösenordet?',
+      forgotPasswordInfo:
+        'Du kan byta lösenord i dina egna uppgifter genom stark autentisering.',
+      noUsername: 'Inget användarnamn?',
+      noUsernameInfo:
+        'Du kan skapa ett användarnamn genom att logga in med stark autentisering och tillåta inloggning ned e-post på sidan "Egna uppgifter"'
     },
     applying: {
       title: 'Logga in via Suomi.fi',

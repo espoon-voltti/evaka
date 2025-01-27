@@ -135,7 +135,6 @@ export class CitizenPersonalDetailsSection extends Element {
 }
 
 export class LoginDetailsSection extends Element {
-  keycloakEmail: Element
   username: Element
   activateCredentials: Element
   weakLoginEnabled: Element
@@ -144,7 +143,6 @@ export class LoginDetailsSection extends Element {
 
   constructor(element: Element) {
     super(element)
-    this.keycloakEmail = element.findByDataQa('keycloak-email')
     this.username = element.findByDataQa('username')
     this.activateCredentials = element.findByDataQa('activate-credentials')
     this.weakLoginEnabled = element.findByDataQa('weak-login-enabled')

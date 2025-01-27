@@ -315,7 +315,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.post(
     '/citizen/auth/weak-login',
     express.json(),
-    authWeakLogin(citizenSessions, redisClient)
+    authWeakLogin(
+      citizenSessions,
+      config.citizen.weakLoginRateLimit,
+      redisClient
+    )
   )
   router.use('/citizen/public/map-api', mapRoutes)
   router.all('/citizen/public/*', citizenProxy)

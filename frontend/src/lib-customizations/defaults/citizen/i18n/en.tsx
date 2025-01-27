@@ -120,6 +120,7 @@ const en: Translations = {
     },
     closeModal: 'Close popup',
     close: 'Close',
+    goBack: 'Go back',
     duplicatedChild: {
       identifier: {
         DAYCARE: {
@@ -216,10 +217,16 @@ const en: Translations = {
           </P>
         </>
       ),
-      email: 'E-mail',
+      username: 'Username',
       password: 'Password',
       rateLimitError:
-        'Your account has been temporarily locked due to a large number of login attempts. Please try again later.'
+        'Your account has been temporarily locked due to a large number of login attempts. Please try again later.',
+      forgotPassword: 'Forgot your password?',
+      forgotPasswordInfo:
+        'You can change your password in your profile by logging in using strong authentication',
+      noUsername: 'No username?',
+      noUsernameInfo:
+        'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.'
     },
     applying: {
       title: 'Sign in using Suomi.fi',

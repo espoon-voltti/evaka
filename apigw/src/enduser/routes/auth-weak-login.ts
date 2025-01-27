@@ -23,10 +23,9 @@ const Request = z.object({
 
 const eventCode = (name: string) => `evaka.citizen_weak.${name}`
 
-const loginAttemptsPerHour = 20
-
 export const authWeakLogin = (
   sessions: Sessions<'citizen'>,
+  loginAttemptsPerHour: number,
   redis: RedisClient
 ) =>
   toRequestHandler(async (req, res) => {
@@ -34,19 +33,21 @@ export const authWeakLogin = (
     try {
       const body = Request.parse(req.body)
 
-      // Apply rate limit (attempts per hour)
-      // Reference: Redis Rate Limiting Best Practices
-      // https://redis.io/glossary/rate-limiting/
-      const hour = getHours(new Date())
-      const key = `citizen-weak-login:${body.username}:${hour}`
-      const value = Number.parseInt((await redis.get(key)) ?? '', 10)
-      if (Number.isNaN(value) || value < loginAttemptsPerHour) {
-        // expire in 1 hour, so there's no old entry when the hours value repeats the next day
-        const expirySeconds = 60 * 60
-        await redis.multi().incr(key).expire(key, expirySeconds).exec()
-      } else {
-        res.sendStatus(429)
-        return
+      if (loginAttemptsPerHour > 0) {
+        // Apply rate limit (attempts per hour)
+        // Reference: Redis Rate Limiting Best Practices
+        // https://redis.io/glossary/rate-limiting/
+        const hour = getHours(new Date())
+        const key = `citizen-weak-login:${body.username}:${hour}`
+        const value = Number.parseInt((await redis.get(key)) ?? '', 10)
+        if (Number.isNaN(value) || value < loginAttemptsPerHour) {
+          // expire in 1 hour, so there's no old entry when the hours value repeats the next day
+          const expirySeconds = 60 * 60
+          await redis.multi().incr(key).expire(key, expirySeconds).exec()
+        } else {
+          res.sendStatus(429)
+          return
+        }
       }
 
       const { id } = await citizenWeakLogin(body)
