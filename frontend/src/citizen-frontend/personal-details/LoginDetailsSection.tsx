@@ -82,13 +82,14 @@ export default React.memo(function LoginDetailsSection({
       <Grid>
         <H2 noMargin>{t.title}</H2>
         <div />
-        <Label>
-          {t.weakLoginUsername}
-          {featureFlags.weakLogin ? ' (Keycloak)' : ''}
-        </Label>
-        <div data-qa="keycloak-email" translate="no">
-          {user.keycloakEmail}
-        </div>
+        {!featureFlags.weakLogin && (
+          <>
+            <Label>{t.weakLoginUsername}</Label>
+            <div data-qa="keycloak-email" translate="no">
+              {user.keycloakEmail}
+            </div>
+          </>
+        )}
         {featureFlags.weakLogin && (user.email || user.weakLoginUsername) && (
           <>
             <Label>{t.weakLoginCredentials}</Label>
