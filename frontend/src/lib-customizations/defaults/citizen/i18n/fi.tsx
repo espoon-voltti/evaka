@@ -2510,6 +2510,17 @@ export default {
     table: {
       title: 'Omat tuloselvitykseni',
       incomeStatementForm: 'Tuloselvitys',
+      status: 'Tila',
+      statuses: {
+        DRAFT: 'Luonnos',
+        SENT: 'Lähetetty',
+        HANDLED: 'Käsitelty'
+      },
+      actions: {
+        view: 'Näytä tuloselvitys',
+        addDetails: 'Anna lisätietoja',
+        cancel: 'Peru tuloselvitys'
+      },
       startDate: 'Voimassa alkaen',
       endDate: 'Voimassa asti',
       createdAt: 'Luotu',

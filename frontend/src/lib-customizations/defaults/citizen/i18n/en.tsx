@@ -2277,6 +2277,17 @@ const en: Translations = {
     table: {
       title: 'Income statements',
       incomeStatementForm: 'Income statement form',
+      status: 'Status',
+      statuses: {
+        DRAFT: 'Draft',
+        SENT: 'Sent',
+        HANDLED: 'Handled'
+      },
+      actions: {
+        view: 'View statement',
+        addDetails: 'Add details',
+        cancel: 'Cancel statement'
+      },
       startDate: 'Valid as of',
       endDate: 'Valid until',
       createdAt: 'Created',

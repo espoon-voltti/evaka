@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useState } from 'react'
+import React, { Fragment, useCallback, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -11,15 +11,24 @@ import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
-import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import {
+  MobileOnly,
+  TabletAndDesktop
+} from 'lib-components/layout/responsive-layout'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { Dimmed, H1, H2 } from 'lib-components/typography'
+import { Dimmed, H1, H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
+import { faPen, faQuestion, faTrash, faFile } from 'lib-icons'
 
 import Footer from '../Footer'
 import { useTranslation } from '../localization'
@@ -36,32 +45,26 @@ const HeadingContainer = styled.div`
   display: flex;
   justify-content: space-between;
 `
-const Buttons = styled.div`
-  display: flex;
-  justify-content: flex-end;
-`
 
 function getLink(id: IncomeStatementId, mode: 'view' | 'edit') {
   return `/income/${id}/${mode === 'edit' ? 'edit' : ''}`
 }
 
+interface TableOrListProps {
+  items: IncomeStatement[]
+  onEdit: (id: IncomeStatementId) => void
+  onRemoveIncomeStatement: (id: IncomeStatementId) => void
+}
+
 const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
   items,
+  onEdit,
   onRemoveIncomeStatement
-}: {
-  items: IncomeStatement[]
-  onRemoveIncomeStatement: (id: IncomeStatementId) => void
-}) {
+}: TableOrListProps) {
   const t = useTranslation()
-  const navigate = useNavigate()
-
-  const onEdit = useCallback(
-    (id: IncomeStatementId) => () => navigate(getLink(id, 'edit')),
-    [navigate]
-  )
 
   return (
-    <Table>
+    <Table data-qa="income-statements-table">
       <Thead>
         <Tr>
           <Th>{t.income.table.incomeStatementForm}</Th>
@@ -72,7 +75,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
       </Thead>
       <Tbody>
         {items.map((item) => (
-          <Tr key={item.id}>
+          <Tr key={item.id} data-qa="income-statement-row">
             <Td>
               <Link
                 to={getLink(item.id, 'view')}
@@ -88,33 +91,115 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                 : t.income.table.notSent}
             </Td>
             <Td>
-              <Buttons>
+              <FixedSpaceRow justifyContent="flex-end">
                 {item.status === 'HANDLED' ? (
                   <Dimmed>{t.income.table.handled}</Dimmed>
                 ) : (
                   <>
-                    <ResponsiveInlineButton
+                    <Button
+                      appearance="inline"
                       icon={faPen}
-                      text={t.common.edit}
-                      onClick={onEdit(item.id)}
-                      altText={t.common.edit}
-                      data-qa="edit-income-statement-btn"
+                      text={
+                        item.status === 'DRAFT'
+                          ? t.common.edit
+                          : t.income.table.actions.addDetails
+                      }
+                      onClick={() => onEdit(item.id)}
+                      data-qa="edit-income-statement"
                     />
-                    <Gap size="xs" horizontal />
-                    <ResponsiveInlineButton
+                    <Button
+                      appearance="inline"
                       icon={faTrash}
-                      text={t.common.delete}
+                      text={
+                        item.status === 'DRAFT'
+                          ? t.common.delete
+                          : t.income.table.actions.cancel
+                      }
                       onClick={() => onRemoveIncomeStatement(item.id)}
-                      altText={t.common.delete}
                     />
                   </>
                 )}
-              </Buttons>
+              </FixedSpaceRow>
             </Td>
           </Tr>
         ))}
       </Tbody>
     </Table>
+  )
+})
+
+const IncomeStatementsList = React.memo(function IncomeStatementsList({
+  items,
+  onEdit,
+  onRemoveIncomeStatement
+}: TableOrListProps) {
+  const t = useTranslation()
+  const navigate = useNavigate()
+
+  const onView = useCallback(
+    (id: IncomeStatementId) => navigate(getLink(id, 'view')),
+    [navigate]
+  )
+
+  return (
+    <div data-qa="income-statements-list">
+      {items.map((item, i) => (
+        <Fragment key={item.id}>
+          {i > 0 && <HorizontalLine />}
+          <FixedSpaceColumn
+            spacing="s"
+            alignItems="flex-start"
+            data-qa="income-statement-row"
+          >
+            <H3>
+              {item.startDate.format()} - {item.endDate?.format()}
+            </H3>
+            <div>
+              {t.income.table.status}: {t.income.table.statuses[item.status]}
+            </div>
+            <div>
+              {t.income.table.createdAt}:{' '}
+              {item.createdAt.toLocalDate().format()}
+            </div>
+            <div>
+              {t.income.table.sentAt}:{' '}
+              {item.sentAt?.toLocalDate()?.format() ?? '-'}
+            </div>
+            <Button
+              appearance="inline"
+              icon={faFile}
+              text={t.income.table.actions.view}
+              onClick={() => onView(item.id)}
+            />
+            {item.status !== 'HANDLED' && (
+              <>
+                <Button
+                  appearance="inline"
+                  icon={faPen}
+                  text={
+                    item.status === 'DRAFT'
+                      ? t.common.edit
+                      : t.income.table.actions.addDetails
+                  }
+                  onClick={() => onEdit(item.id)}
+                  data-qa="edit-income-statement"
+                />
+                <Button
+                  appearance="inline"
+                  icon={faTrash}
+                  text={
+                    item.status === 'DRAFT'
+                      ? t.common.delete
+                      : t.income.table.actions.cancel
+                  }
+                  onClick={() => onRemoveIncomeStatement(item.id)}
+                />
+              </>
+            )}
+          </FixedSpaceColumn>
+        </Fragment>
+      ))}
+    </div>
   )
 })
 
@@ -145,6 +230,11 @@ export default React.memo(function IncomeStatements() {
   const [deletionState, setDeletionState] = useState<DeletionState>({
     status: 'row-not-selected'
   })
+
+  const onEdit = useCallback(
+    (id: IncomeStatementId) => navigate(getLink(id, 'edit')),
+    [navigate]
+  )
 
   const onDelete = useCallback(
     (id: IncomeStatementId) => {
@@ -185,15 +275,30 @@ export default React.memo(function IncomeStatements() {
             </HeadingContainer>
             {renderResult(incomeStatements, ({ data, pages }) => (
               <>
-                <IncomeStatementsTable
-                  items={data}
-                  onRemoveIncomeStatement={(id) =>
-                    setDeletionState({
-                      status: 'confirming',
-                      rowToDelete: id
-                    })
-                  }
-                />
+                <TabletAndDesktop>
+                  <IncomeStatementsTable
+                    items={data}
+                    onEdit={onEdit}
+                    onRemoveIncomeStatement={(id) =>
+                      setDeletionState({
+                        status: 'confirming',
+                        rowToDelete: id
+                      })
+                    }
+                  />
+                </TabletAndDesktop>
+                <MobileOnly>
+                  <IncomeStatementsList
+                    items={data}
+                    onEdit={onEdit}
+                    onRemoveIncomeStatement={(id) =>
+                      setDeletionState({
+                        status: 'confirming',
+                        rowToDelete: id
+                      })
+                    }
+                  />
+                </MobileOnly>
                 <Gap />
                 <Pagination
                   pages={pages}

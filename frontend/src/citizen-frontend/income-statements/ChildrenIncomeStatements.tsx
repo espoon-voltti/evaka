@@ -1,28 +1,42 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useState } from 'react'
+import React, { Fragment, useCallback, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
-import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
+import {
+  ChildBasicInfo,
+  IncomeStatement
+} from 'lib-common/generated/api-types/incomestatement'
 import {
   ChildId,
-  IncomeStatementId
+  IncomeStatementId,
+  PersonId
 } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
-import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import {
+  MobileOnly,
+  TabletAndDesktop
+} from 'lib-components/layout/responsive-layout'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Dimmed, H1, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faFile } from 'lib-icons'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../localization'
@@ -36,10 +50,6 @@ import {
 const HeadingContainer = styled.div`
   display: flex;
   justify-content: space-between;
-`
-const Buttons = styled.div`
-  display: flex;
-  justify-content: flex-end;
 `
 const ChildIncomeStatementsContainer = styled.div`
   border-style: solid;
@@ -55,133 +65,183 @@ function getLink(
   return `/child-income/${childId}/${id}/${mode === 'edit' ? 'edit' : ''}`
 }
 
+interface TableOrListProps {
+  childId: PersonId
+  items: IncomeStatement[]
+  onEdit: (id: IncomeStatementId) => void
+  onRemoveIncomeStatement: (id: IncomeStatementId) => void
+}
+
 const ChildIncomeStatementsTable = React.memo(
   function ChildIncomeStatementsTable({
-    child,
-    setDeletionState
-  }: {
-    child: ChildBasicInfo
-    setDeletionState: (deletionState: DeletionState) => void
-  }) {
+    childId,
+    items,
+    onEdit,
+    onRemoveIncomeStatement
+  }: TableOrListProps) {
     const t = useTranslation()
-    const navigate = useNavigate()
-
-    const [page, setPage] = useState(1)
-    const incomeStatements = useQueryResult(
-      childIncomeStatementsQuery({ childId: child.id, page })
-    )
-
-    const onEdit = useCallback(
-      (id: IncomeStatementId) => () => navigate(getLink(child.id, id, 'edit')),
-      [navigate, child.id]
-    )
 
     return (
-      <>
-        {renderResult(incomeStatements, ({ data, pages }) =>
-          data.length > 0 ? (
-            <>
-              <Table>
-                <Thead>
-                  <Tr>
-                    <Th>{t.income.table.incomeStatementForm}</Th>
-                    <Th>{t.income.table.createdAt}</Th>
-                    <Th>{t.income.table.sentAt}</Th>
-                    <Th />
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {data.map((item) => (
-                    <Tr key={item.id}>
-                      <Td>
-                        <Link
-                          to={getLink(child.id, item.id, 'view')}
-                          data-qa="button-open-income-statement"
-                        >
-                          {item.startDate.format()} - {item.endDate?.format()}
-                        </Link>
-                      </Td>
-                      <Td>{item.createdAt.toLocalDate().format()}</Td>
-                      <Td>
-                        {item.sentAt
-                          ? item.sentAt.toLocalDate().format()
-                          : t.income.table.notSent}
-                      </Td>
-                      <Td>
-                        <Buttons>
-                          {item.status === 'HANDLED' ? (
-                            <Dimmed>{t.income.table.handled}</Dimmed>
-                          ) : (
-                            <>
-                              <ResponsiveInlineButton
-                                icon={faPen}
-                                text={t.common.edit}
-                                onClick={onEdit(item.id)}
-                                data-qa="edit-income-statement"
-                              />
-                              <Gap size="xs" horizontal />
-                              <ResponsiveInlineButton
-                                icon={faTrash}
-                                text={t.common.delete}
-                                onClick={() =>
-                                  setDeletionState({
-                                    status: 'confirming',
-                                    rowToDelete: item.id,
-                                    childId: child.id
-                                  })
-                                }
-                                data-qa="delete-income-statement"
-                              />
-                            </>
-                          )}
-                        </Buttons>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-
-              <Gap />
-
-              <Pagination
-                pages={pages}
-                currentPage={page}
-                setPage={setPage}
-                label={t.common.page}
-                hideIfOnlyOnePage={true}
-              />
-            </>
-          ) : (
-            <InfoBox
-              message={t.income.incomeStatementMissing}
-              data-qa="child-income-statement-missing-warning"
-            />
-          )
-        )}
-      </>
+      <Table data-qa="child-income-statement-table">
+        <Thead>
+          <Tr>
+            <Th>{t.income.table.incomeStatementForm}</Th>
+            <Th>{t.income.table.createdAt}</Th>
+            <Th>{t.income.table.sentAt}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {items.map((item) => (
+            <Tr key={item.id} data-qa="child-income-statement-row">
+              <Td>
+                <Link
+                  to={getLink(childId, item.id, 'view')}
+                  data-qa="view-income-statement"
+                >
+                  {item.startDate.format()} - {item.endDate?.format()}
+                </Link>
+              </Td>
+              <Td>{item.createdAt.toLocalDate().format()}</Td>
+              <Td>
+                {item.sentAt
+                  ? item.sentAt.toLocalDate().format()
+                  : t.income.table.notSent}
+              </Td>
+              <Td>
+                <FixedSpaceRow justifyContent="flex-end">
+                  {item.status === 'HANDLED' ? (
+                    <Dimmed>{t.income.table.handled}</Dimmed>
+                  ) : (
+                    <>
+                      <Button
+                        appearance="inline"
+                        icon={faPen}
+                        text={
+                          item.status === 'DRAFT'
+                            ? t.common.edit
+                            : t.income.table.actions.addDetails
+                        }
+                        onClick={() => onEdit(item.id)}
+                        data-qa="edit-income-statement"
+                      />
+                      <Button
+                        appearance="inline"
+                        icon={faTrash}
+                        text={
+                          item.status === 'DRAFT'
+                            ? t.common.delete
+                            : t.income.table.actions.cancel
+                        }
+                        onClick={() => onRemoveIncomeStatement(item.id)}
+                        data-qa="delete-income-statement"
+                      />
+                    </>
+                  )}
+                </FixedSpaceRow>
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
     )
   }
 )
 
-type DeletionState =
-  | {
-      status: 'row-not-selected'
-    }
-  | {
-      status: 'confirming' | 'deleting'
-      rowToDelete: IncomeStatementId
-      childId: ChildId
-    }
+const ChildIncomeStatementsList = React.memo(
+  function ChildIncomeStatementsList({
+    childId,
+    items,
+    onEdit,
+    onRemoveIncomeStatement
+  }: TableOrListProps) {
+    const t = useTranslation()
+    const navigate = useNavigate()
 
-interface ChildrenIncomeStatementsProps {
-  childInfo: ChildBasicInfo[]
-}
+    const onView = useCallback(
+      (id: IncomeStatementId) => navigate(getLink(childId, id, 'view')),
+      [childId, navigate]
+    )
 
-export default React.memo(function ChildrenIncomeStatements({
-  childInfo
-}: ChildrenIncomeStatementsProps) {
+    return (
+      <div data-qa="child-income-statement-list">
+        {items.map((item, i) => (
+          <Fragment key={item.id}>
+            {i > 0 && <HorizontalLine />}
+            <FixedSpaceColumn
+              spacing="s"
+              alignItems="flex-start"
+              data-qa="child-income-statement-row"
+            >
+              <H3>
+                {item.startDate.format()} - {item.endDate?.format()}
+              </H3>
+              <div>
+                {t.income.table.status}: {t.income.table.statuses[item.status]}
+              </div>
+              <div>
+                {t.income.table.createdAt}:{' '}
+                {item.createdAt.toLocalDate().format()}
+              </div>
+              <div>
+                {t.income.table.sentAt}:{' '}
+                {item.sentAt?.toLocalDate()?.format() ?? '-'}
+              </div>
+              <Button
+                appearance="inline"
+                icon={faFile}
+                text={t.income.table.actions.view}
+                onClick={() => onView(item.id)}
+                data-qa="view-income-statement"
+              />
+              {item.status !== 'HANDLED' && (
+                <>
+                  <Button
+                    appearance="inline"
+                    icon={faPen}
+                    text={
+                      item.status === 'DRAFT'
+                        ? t.common.edit
+                        : t.income.table.actions.addDetails
+                    }
+                    onClick={() => onEdit(item.id)}
+                    data-qa="edit-income-statement"
+                  />
+                  <Button
+                    appearance="inline"
+                    icon={faTrash}
+                    text={
+                      item.status === 'DRAFT'
+                        ? t.common.delete
+                        : t.income.table.actions.cancel
+                    }
+                    onClick={() => onRemoveIncomeStatement(item.id)}
+                    data-qa="delete-income-statement"
+                  />
+                </>
+              )}
+            </FixedSpaceColumn>
+          </Fragment>
+        ))}
+      </div>
+    )
+  }
+)
+
+const ChildIncomeStatements = React.memo(function ChildIncomeStatements({
+  child
+}: {
+  child: ChildBasicInfo
+}) {
   const t = useTranslation()
   const navigate = useNavigate()
+  const childId = child.id
+
+  const [page, setPage] = useState(1)
+  const incomeStatements = useQueryResult(
+    childIncomeStatementsQuery({ childId: child.id, page })
+  )
+
   const { setErrorMessage } = useContext(OverlayContext)
 
   const [deletionState, setDeletionState] = useState<DeletionState>({
@@ -193,8 +253,8 @@ export default React.memo(function ChildrenIncomeStatements({
   )
 
   const onDelete = useCallback(
-    (childId: ChildId, id: IncomeStatementId) => {
-      setDeletionState({ status: 'deleting', rowToDelete: id, childId })
+    (id: IncomeStatementId) => {
+      setDeletionState({ status: 'deleting', rowToDelete: id })
       deleteChildIncomeStatement({ childId, id })
         .then(() => {
           setDeletionState({ status: 'row-not-selected' })
@@ -207,8 +267,102 @@ export default React.memo(function ChildrenIncomeStatements({
           })
         })
     },
-    [deleteChildIncomeStatement, setErrorMessage, t]
+    [childId, deleteChildIncomeStatement, setErrorMessage, t]
   )
+
+  const onEdit = useCallback(
+    (id: IncomeStatementId) => navigate(getLink(child.id, id, 'edit')),
+    [navigate, child.id]
+  )
+
+  return (
+    <>
+      {renderResult(incomeStatements, ({ data, pages }) =>
+        data.length > 0 ? (
+          <>
+            <TabletAndDesktop>
+              <ChildIncomeStatementsTable
+                childId={childId}
+                items={data}
+                onEdit={onEdit}
+                onRemoveIncomeStatement={(id) =>
+                  setDeletionState({
+                    status: 'confirming',
+                    rowToDelete: id
+                  })
+                }
+              />
+            </TabletAndDesktop>
+            <MobileOnly>
+              <ChildIncomeStatementsList
+                childId={childId}
+                items={data}
+                onEdit={onEdit}
+                onRemoveIncomeStatement={(id) =>
+                  setDeletionState({
+                    status: 'confirming',
+                    rowToDelete: id
+                  })
+                }
+              />
+            </MobileOnly>
+            <Gap />
+            <Pagination
+              pages={pages}
+              currentPage={page}
+              setPage={setPage}
+              label={t.common.page}
+              hideIfOnlyOnePage={true}
+            />
+
+            {deletionState.status !== 'row-not-selected' && (
+              <InfoModal
+                type="warning"
+                title={t.income.table.deleteConfirm}
+                text={t.income.table.deleteDescription}
+                icon={faQuestion}
+                reject={{
+                  action: () =>
+                    setDeletionState({ status: 'row-not-selected' }),
+                  label: t.common.return
+                }}
+                resolve={{
+                  action: () => onDelete(deletionState.rowToDelete),
+                  label: t.common.delete,
+                  disabled: deletionState.status === 'deleting'
+                }}
+              />
+            )}
+          </>
+        ) : (
+          <InfoBox
+            message={t.income.incomeStatementMissing}
+            data-qa="child-income-statement-missing-warning"
+          />
+        )
+      )}
+    </>
+  )
+})
+
+type DeletionState =
+  | {
+      status: 'row-not-selected'
+    }
+  | {
+      status: 'confirming' | 'deleting'
+      rowToDelete: IncomeStatementId
+    }
+
+interface ChildrenIncomeStatementsProps {
+  childInfo: ChildBasicInfo[]
+}
+
+export default React.memo(function ChildrenIncomeStatements({
+  childInfo
+}: ChildrenIncomeStatementsProps) {
+  const t = useTranslation()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -228,7 +382,7 @@ export default React.memo(function ChildrenIncomeStatements({
           {childInfo.map((child) => (
             <ChildIncomeStatementsContainer
               key={child.id}
-              data-qa="child-income-statement"
+              data-qa="child-income-statements"
             >
               <Gap size="s" />
               <HeadingContainer>
@@ -241,32 +395,10 @@ export default React.memo(function ChildrenIncomeStatements({
                   data-qa="new-child-income-statement-btn"
                 />
               </HeadingContainer>
-              <ChildIncomeStatementsTable
-                child={child}
-                setDeletionState={setDeletionState}
-              />
+              <ChildIncomeStatements child={child} />
               <Gap size="L" />
             </ChildIncomeStatementsContainer>
           ))}
-
-          {deletionState.status !== 'row-not-selected' && (
-            <InfoModal
-              type="warning"
-              title={t.income.table.deleteConfirm}
-              text={t.income.table.deleteDescription}
-              icon={faQuestion}
-              reject={{
-                action: () => setDeletionState({ status: 'row-not-selected' }),
-                label: t.common.return
-              }}
-              resolve={{
-                action: () =>
-                  onDelete(deletionState.childId, deletionState.rowToDelete),
-                label: t.common.delete,
-                disabled: deletionState.status === 'deleting'
-              }}
-            />
-          )}
         </ContentArea>
       </Container>
     </>
