@@ -425,10 +425,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/libdatadog@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "@datadog/libdatadog@npm:0.3.0"
-  checksum: 10/a170c62b882f16ab5fd2b9186ae45f7333e2315eb7178292770870b7a60f868e6ba885e40acdeb9cf48d429787ad11c44cb3151bdefbee7a803e9b196bd377ba
+"@datadog/libdatadog@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@datadog/libdatadog@npm:0.4.0"
+  checksum: 10/f56b58fdc24e136a47cde999726d6cbf2478cb9bbe0179b2c8b82b4d97f7b036e732c80a1191ad2241913e92a097adc554bcb75024ff73b0e493f0adee1495d3
   languageName: node
   linkType: hard
 
@@ -2674,11 +2674,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.31.0":
-  version: 5.31.0
-  resolution: "dd-trace@npm:5.31.0"
+"dd-trace@npm:^5.32.0":
+  version: 5.32.0
+  resolution: "dd-trace@npm:5.32.0"
   dependencies:
-    "@datadog/libdatadog": "npm:^0.3.0"
+    "@datadog/libdatadog": "npm:^0.4.0"
     "@datadog/native-appsec": "npm:8.4.0"
     "@datadog/native-iast-rewriter": "npm:2.6.1"
     "@datadog/native-iast-taint-tracking": "npm:3.2.0"
@@ -2709,7 +2709,8 @@ __metadata:
     shell-quote: "npm:^1.8.1"
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
-  checksum: 10/e643e2266b7f3faf8e6f9863ea9fdc184e5e019c0b7928181ab41980e401390ecdffac1e1da4eb10c998b648992e4a2fa767f5d18e2bc68144c40729ba2f1b88
+    ttl-set: "npm:^1.0.0"
+  checksum: 10/4b85ba575503df0d416eb1b563d37f6f30c4ec39684081bb765fbebc059eb04aa4f78ab5f1783b76867357897235e4aa16d8ef75c8788ee9721f22105150d30e
   languageName: node
   linkType: hard
 
@@ -3365,7 +3366,7 @@ __metadata:
     connect-redis: "npm:^8.0.0"
     cookie-parser: "npm:^1.4.6"
     date-fns: "npm:^4.1.0"
-    dd-trace: "npm:^5.31.0"
+    dd-trace: "npm:^5.32.0"
     eslint: "npm:^9.19.0"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-import: "npm:^2.31.0"
@@ -3536,6 +3537,13 @@ __metadata:
   version: 1.2.0
   resolution: "fast-diff@npm:1.2.0"
   checksum: 10/f62419b3d770f201d51c3ee8c4443b752b3ba2d548a6639026b7e09a08203ed2699a8d1fe21efcb8c5186135002d5d2916c12a687cac63785626456a92915adc
+  languageName: node
+  linkType: hard
+
+"fast-fifo@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "fast-fifo@npm:1.3.2"
+  checksum: 10/6bfcba3e4df5af7be3332703b69a7898a8ed7020837ec4395bb341bd96cc3a6d86c3f6071dd98da289618cf2234c70d84b2a6f09a33dd6f988b1ff60d8e54275
   languageName: node
   linkType: hard
 
@@ -7195,6 +7203,15 @@ __metadata:
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 10/bd26c22d36736513980091a1e356378e8b662ded04204453d353a7f34a4c21ed0afc59b5f90719d4ba756e581a162ecbf93118dc9c6be5acf70aa309188166ca
+  languageName: node
+  linkType: hard
+
+"ttl-set@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "ttl-set@npm:1.0.0"
+  dependencies:
+    fast-fifo: "npm:^1.3.2"
+  checksum: 10/50dd6b56edfb1335c5a4977c6f21eecf3e18f2138fa57b093a779f445a38a57cf3511a0ecf6c45762612a8bb867d6bd1c43525a3c2979429433fbf3f603de35a
   languageName: node
   linkType: hard
 
