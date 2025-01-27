@@ -235,6 +235,10 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                         where("date_part('year', age(${bind(yearlyStatDay)}, p.date_of_birth)) = 5")
                     }
 
+                    val voucherPredicate = Predicate {
+                        where("$it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}')")
+                    }
+
                     val purchasedFiveYearOlds =
                         tx.getPlacementCount(
                             statDay = yearlyStatDay,
@@ -327,12 +331,42 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                                 },
                         )
 
+                    val voucherAssistance =
+                        tx.getYearlyAssistanceCount(
+                            statDay = yearlyStatDay,
+                            daycarePred = voucherPredicate,
+                        )
+
+                    val voucherGeneralAssistance =
+                        tx.getYearlyAssistanceLevelCount(
+                            statDay = yearlyStatDay,
+                            daycarePred = voucherPredicate,
+                            assistancePred =
+                                Predicate { where("$it.level = ANY ('{GENERAL_SUPPORT}')") },
+                        )
+
+                    val voucherSpecialAssistance =
+                        tx.getYearlyAssistanceLevelCount(
+                            statDay = yearlyStatDay,
+                            daycarePred = voucherPredicate,
+                            assistancePred =
+                                Predicate { where("$it.level = ANY ('{SPECIAL_SUPPORT}')") },
+                        )
+
+                    val voucherEnhancedAssistance =
+                        tx.getYearlyAssistanceLevelCount(
+                            statDay = yearlyStatDay,
+                            daycarePred = voucherPredicate,
+                            assistancePred =
+                                Predicate { where("$it.level = ANY ('{INTENSIFIED_SUPPORT}')") },
+                        )
+
                     RegionalSurveyReportYearlyStatisticsResult(
                         year = year,
                         yearlyStatistics =
                             listOf(
                                 YearlyStatisticsResult(
-                                    voucherAssistanceCount = 0,
+                                    voucherAssistanceCount = voucherAssistance.placementCount,
                                     voucherTotalCount = voucherTotal.placementCount,
                                     voucher5YearOldCount = voucher5YearOld.placementCount,
                                     municipal5YearOldCount = municipal5YearOld.placementCount,
@@ -343,15 +377,18 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                                         preschoolDaycareFamilyCare.placementCount,
                                     preschoolDaycareUnitCareCount =
                                         preschoolDaycareUnitCare.placementCount,
-                                    generalAssistanceCount = 0,
-                                    specialAssistanceCount = 0,
-                                    enhancedAssistanceCount = 0,
+                                    generalAssistanceCount =
+                                        voucherGeneralAssistance.placementCount,
+                                    specialAssistanceCount =
+                                        voucherSpecialAssistance.placementCount,
+                                    enhancedAssistanceCount =
+                                        voucherEnhancedAssistance.placementCount,
                                 )
                             ),
                     )
                 }
             }
-            .also { Audit.TampereRegionalSurveyMonthly.log(meta = mapOf("year" to year)) }
+            .also { Audit.TampereRegionalSurveyYearly.log(meta = mapOf("year" to year)) }
     }
 
     private fun Database.Read.getMunicipalAssistanceMonthlyResults(
@@ -556,6 +593,32 @@ GROUP BY day
             .toList<MonthlyAssistanceResult>()
     }
 
+    private fun Database.Read.getYearlyAssistanceCount(
+        statDay: LocalDate,
+        daycarePred: Predicate,
+    ): SingularCount {
+        return createQuery {
+                sql(
+                    """
+SELECT count(pl.child_id) as placement_count
+FROM placement pl
+         JOIN daycare d ON pl.unit_id = d.id
+WHERE ${predicate(daycarePred.forTable("d"))}
+  AND pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
+  AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
+  AND (EXISTS (SELECT FROM assistance_factor af WHERE af.child_id = pl.child_id AND af.valid_during @> ${bind(statDay)})
+    OR EXISTS (SELECT
+               FROM assistance_action an
+                        JOIN assistance_action_option_ref anor ON anor.action_id = an.id
+                        JOIN assistance_action_option aao ON anor.option_id = aao.id
+               WHERE aao.value = ANY ('{10,40}')
+                 AND an.child_id = pl.child_id))
+                """
+                )
+            }
+            .exactlyOne<SingularCount>()
+    }
+
     private fun Database.Read.getMonthlyFamilyDaycareCounts(
         statDays: List<LocalDate>,
         range: FiniteDateRange,
@@ -703,6 +766,30 @@ FROM placement pl
 WHERE ${predicate(placementPred.forTable("pl"))}
   AND ${predicate(daycarePred.forTable("d"))}
   AND ${predicate(personPred.forTable("p"))}
+  AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
+                """
+                )
+            }
+            .exactlyOne<SingularCount>()
+    }
+
+    private fun Database.Read.getYearlyAssistanceLevelCount(
+        statDay: LocalDate,
+        daycarePred: Predicate,
+        assistancePred: Predicate,
+    ): SingularCount {
+        return createQuery {
+                sql(
+                    """
+SELECT count(pl.child_id) as placement_count
+FROM placement pl
+         JOIN daycare d ON pl.unit_id = d.id
+         JOIN daycare_assistance da 
+            ON da.child_id = pl.child_id 
+                AND da.valid_during @> ${bind(statDay)}
+WHERE ${predicate(daycarePred.forTable("d"))}
+  AND ${predicate(assistancePred.forTable("da"))}
+  --AND pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
                 """
                 )
