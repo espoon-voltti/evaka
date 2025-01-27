@@ -96,6 +96,13 @@ export type CreateSource =
   | 'DVV'
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.CreateSsnEmployeeResponse
+*/
+export interface CreateSsnEmployeeResponse {
+  id: EmployeeId
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.CreationModificationMetadata
 */
 export interface CreationModificationMetadata {
@@ -393,6 +400,16 @@ export interface NewEmployee {
   lastName: string
   roles: UserRole[]
   temporaryInUnitId: DaycareId | null
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.NewSsnEmployee
+*/
+export interface NewSsnEmployee {
+  email: string | null
+  firstName: string
+  lastName: string
+  ssn: string
 }
 
 /**

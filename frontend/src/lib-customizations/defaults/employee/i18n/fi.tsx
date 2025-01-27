@@ -4705,6 +4705,11 @@ export const fi = {
         nameless: 'Nimeämätön laite',
         deleteConfirm: 'Haluatko poistaa käyttäjän mobiililaitteen parituksen?'
       }
+    },
+    createNewSsnEmployee: 'Luo uusi hetullinen käyttäjä',
+    newSsnEmployeeModal: {
+      title: 'Lisää uusi hetullinen käyttäjä',
+      createButton: 'Luo tunnus'
     }
   },
   financeBasics: {

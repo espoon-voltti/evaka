@@ -78,4 +78,22 @@ describe('Employees page', () => {
       .waitUntilVisible()
     await employeePage.content.findTextExact(employee.email!).waitUntilVisible()
   })
+
+  test('a new employee can be added with SSN', async () => {
+    const person = {
+      ssn: '010107A977S',
+      firstName: 'Erkki',
+      lastName: 'Esimerkki',
+      email: 'test@example.com'
+    }
+    await employeesPage.createNewSsnEmployee.click()
+
+    const wizard = employeesPage.createSsnEmployeeWizard
+    await wizard.ssn.fill(person.ssn)
+    await wizard.firstName.fill(person.firstName)
+    await wizard.lastName.fill(person.lastName)
+    await wizard.email.fill(person.email)
+    await wizard.ok.click()
+    await wizard.waitUntilHidden()
+  })
 })

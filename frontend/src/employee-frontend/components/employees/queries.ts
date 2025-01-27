@@ -8,6 +8,7 @@ import { Queries } from 'lib-common/query'
 import { deleteMobileDevice } from '../../generated/api-clients/pairing'
 import {
   activateEmployee,
+  createSsnEmployee,
   deactivateEmployee,
   deleteEmployeeDaycareRoles,
   getEmployeeDetails,
@@ -52,4 +53,8 @@ export const activateEmployeeMutation = q.mutation(activateEmployee, [
 export const deactivateEmployeeMutation = q.mutation(deactivateEmployee, [
   searchEmployeesQuery.prefix,
   ({ id }) => employeeDetailsQuery({ id })
+])
+
+export const createSsnEmployeeMutation = q.mutation(createSsnEmployee, [
+  searchEmployeesQuery.prefix
 ])

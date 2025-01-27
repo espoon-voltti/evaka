@@ -11,8 +11,10 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 import fi.espoo.evaka.pis.NewEmployee
+import fi.espoo.evaka.pis.NewSsnEmployee
 import fi.espoo.evaka.pis.PagedEmployeesWithDaycareRoles
 import fi.espoo.evaka.pis.createEmployee
+import fi.espoo.evaka.pis.createEmployeeWithSsn
 import fi.espoo.evaka.pis.deactivateEmployeeRemoveRolesAndPin
 import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.deleteEmployeeDaycareRoles
@@ -32,6 +34,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
@@ -398,6 +401,34 @@ class EmployeeController(private val accessControl: AccessControl) {
         }
         Audit.EmployeePreferredFirstNameUpdate.log(targetId = AuditId(user.id))
     }
+
+    data class CreateSsnEmployeeResponse(val id: EmployeeId)
+
+    @PostMapping("/create-with-ssn")
+    fun createSsnEmployee(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody body: NewSsnEmployee,
+    ): CreateSsnEmployeeResponse =
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.CREATE_EMPLOYEE,
+                    )
+                    val id =
+                        try {
+                            tx.createEmployeeWithSsn(body)
+                        } catch (e: Exception) {
+                            throw mapPSQLException(e)
+                        }
+                    CreateSsnEmployeeResponse(id)
+                }
+            }
+            .also { Audit.EmployeeCreate.log(targetId = AuditId(it.id)) }
 
     private fun possiblePreferredFirstNames(employee: Employee): List<String> {
         val fullFirstNames = employee.firstName.split("\\s+".toRegex())
