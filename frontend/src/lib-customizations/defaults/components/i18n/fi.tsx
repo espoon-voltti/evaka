@@ -89,6 +89,7 @@ const components: Translations = {
           })
           .join(', ')
     },
+    uploadFile: 'Lähetä tiedosto',
     deleteFile: 'Poista tiedosto'
   },
   loginErrorModal: {

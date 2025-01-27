@@ -90,6 +90,7 @@ const components: Translations = {
           })
           .join(', ')
     },
+    uploadFile: 'Ladda upp filen',
     deleteFile: 'Radera fil'
   },
   loginErrorModal: {

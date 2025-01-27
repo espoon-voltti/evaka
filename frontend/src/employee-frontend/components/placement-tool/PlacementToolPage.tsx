@@ -13,7 +13,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
 
-import { placementFile } from './api'
+import { placementFileUpload, placementFileValidate } from './api'
 import { nextPreschoolTermQuery } from './queries'
 
 export default React.memo(function PlacementToolPage() {
@@ -41,7 +41,11 @@ export default React.memo(function PlacementToolPage() {
                 <FileUpload
                   disabled={term === null}
                   files={[]}
-                  uploadHandler={placementFile}
+                  validateHandler={placementFileValidate}
+                  getValidationResult={(validation) =>
+                    i18n.placementTool.validation(validation.count)
+                  }
+                  uploadHandler={placementFileUpload}
                   getDownloadUrl={() => ''}
                   allowedFileTypes={['csv']}
                 />

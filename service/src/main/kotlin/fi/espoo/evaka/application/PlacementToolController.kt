@@ -28,6 +28,28 @@ class PlacementToolController(
     private val placementToolService: PlacementToolService,
     private val accessControl: AccessControl,
 ) {
+    @PostMapping("/validation", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun validatePlacementToolApplications(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestPart("file") file: MultipartFile,
+    ): PlacementToolValidation {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.PLACEMENT_TOOL,
+                    )
+                    val placements = file.inputStream.use { parsePlacementToolCsv(it) }
+                    PlacementToolValidation(count = placements.size)
+                }
+            }
+            .also { Audit.PlacementToolValidate.log() }
+    }
+
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createPlacementToolApplications(
         db: Database,
@@ -78,3 +100,5 @@ class PlacementToolController(
             }
     }
 }
+
+data class PlacementToolValidation(val count: Int)

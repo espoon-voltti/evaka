@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
@@ -18,6 +18,7 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { H4, InformationText, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
+  faCheck,
   faExclamationTriangle,
   faFile,
   faFileImage,
@@ -44,6 +45,7 @@ interface FileObject extends Attachment {
   key: string
   file: File | undefined
   error: FileUploadError | undefined
+  validationResult: React.ReactNode | null
   /**
    * Percentage of upload done.
    * NOTE: 100 does not mean the file upload has finished processing,
@@ -62,7 +64,7 @@ interface FileObject extends Attachment {
 
 const isErrorCode = (code: string | undefined): code is FileUploadError =>
   !!code && code in fileUploadErrorKeys
-const getErrorCode = (res: Failure<string>): FileUploadError =>
+const getErrorCode = (res: Failure<unknown>): FileUploadError =>
   isErrorCode(res.errorCode) ? res.errorCode : 'SERVER_ERROR'
 
 export interface UploadStatus {
@@ -77,6 +79,13 @@ export const initialUploadStatus: UploadStatus = {
   error: 0
 }
 
+export type ValidateHandler<T> = {
+  validate: (
+    file: File,
+    onUploadProgress: (percentage: number) => void
+  ) => Promise<Result<T>>
+}
+
 export type UploadHandler = {
   upload: (
     file: File,
@@ -85,8 +94,10 @@ export type UploadHandler = {
   delete: (request: { attachmentId: AttachmentId }) => Promise<Result<void>>
 }
 
-interface FileUploadProps {
+interface FileUploadProps<T> {
   files: Attachment[]
+  validateHandler?: ValidateHandler<T>
+  getValidationResult?: (validation: T) => React.ReactNode
   uploadHandler: UploadHandler
   onUploaded?: (attachment: Attachment) => void
   onDeleted?: (id: AttachmentId) => void
@@ -223,7 +234,12 @@ const ProgressBar = styled.div<ProgressBarProps>`
   margin-bottom: 3px;
 `
 
-const FileDeleteButton = styled(IconOnlyButton)`
+const ValidationResult = styled.span`
+  margin-left: 12px;
+  color: ${(p) => p.theme.colors.grayscale.g100};
+`
+
+const FileActionButton = styled(IconOnlyButton)`
   border: none;
   background: none;
   padding: 4px;
@@ -266,6 +282,7 @@ const attachmentToFile = (attachment: Attachment): FileObject => ({
   contentType: attachment.contentType,
   progress: 100,
   error: undefined,
+  validationResult: undefined,
   uploaded: true,
   deleteInProgress: false
 })
@@ -305,8 +322,10 @@ export const fileIcon = (file: Attachment): IconDefinition => {
 
 const inProgress = (file: FileObject): boolean => !file.uploaded
 
-export default React.memo(function FileUpload({
+function FileUpload<T>({
   files,
+  validateHandler,
+  getValidationResult,
   uploadHandler,
   onUploaded,
   onDeleted,
@@ -318,7 +337,7 @@ export default React.memo(function FileUpload({
   'data-qa': dataQa,
   allowedFileTypes = defaultAllowedFileTypes,
   buttonText
-}: FileUploadProps) {
+}: FileUploadProps<T>) {
   const i18n = useTranslations().fileUpload
 
   const ariaId = useUniqueId('file-upload')
@@ -365,6 +384,49 @@ export default React.memo(function FileUpload({
 
   const errorMessage = ({ error }: FileObject) => error && i18n.error[error]
 
+  const processFile = async <T,>(
+    fileObject: FileObject,
+    request: () => Promise<Result<T>>,
+    successHandler: (result: Success<T>) => void
+  ) => {
+    try {
+      const result = await request()
+      if (result.isFailure) {
+        updateUploadedFile({
+          ...fileObject,
+          error: getErrorCode(result)
+        })
+      } else if (result.isSuccess) {
+        successHandler(result)
+      }
+    } catch (e) {
+      updateUploadedFile({ ...fileObject, error: 'SERVER_ERROR' })
+    }
+  }
+
+  const uploadFile = (fileObject: FileObject, file: File) =>
+    processFile(
+      fileObject,
+      () => uploadHandler.upload(file, updateProgress(fileObject)),
+      (result) => {
+        onUploaded?.({
+          id: result.value,
+          name: file.name,
+          contentType: file.type
+        })
+        updateUploadedFile(
+          {
+            ...fileObject,
+            validationResult: undefined,
+            progress: 100,
+            uploaded: true,
+            id: result.value
+          },
+          fileObject.id
+        )
+      }
+    )
+
   const deleteFile = async (file: FileObject) => {
     setUploadedFilesAndNotify(
       uploadedFiles.map((item) =>
@@ -397,6 +459,10 @@ export default React.memo(function FileUpload({
     }
   }
 
+  const updateProgress = (fileObject: FileObject) => (percentage: number) => {
+    updateUploadedFile({ ...fileObject, progress: percentage })
+  }
+
   const updateUploadedFile = (
     file: FileObject,
     id: UUID | undefined = undefined
@@ -416,6 +482,7 @@ export default React.memo(function FileUpload({
       file,
       name: file.name,
       contentType: file.type,
+      validationResult: undefined,
       progress: 0,
       uploaded: false,
       deleteInProgress: false,
@@ -428,35 +495,23 @@ export default React.memo(function FileUpload({
       return
     }
 
-    const updateProgress = (percentage: number) => {
-      updateUploadedFile({ ...fileObject, progress: percentage })
-    }
-
-    try {
-      const result = await uploadHandler.upload(file, updateProgress)
-      if (result.isFailure) {
-        updateUploadedFile({
-          ...fileObject,
-          error: getErrorCode(result)
-        })
-      } else if (result.isSuccess) {
-        onUploaded?.({
-          id: result.value,
-          name: file.name,
-          contentType: file.type
-        })
-        updateUploadedFile(
-          {
-            ...fileObject,
-            progress: 100,
-            uploaded: true,
-            id: result.value
-          },
-          fileObject.id
-        )
-      }
-    } catch (e) {
-      updateUploadedFile({ ...fileObject, error: 'SERVER_ERROR' })
+    if (validateHandler === undefined) {
+      await uploadFile(fileObject, file)
+    } else {
+      await processFile(
+        fileObject,
+        () => validateHandler.validate(file, updateProgress(fileObject)),
+        (result) =>
+          updateUploadedFile(
+            {
+              ...fileObject,
+              validationResult: getValidationResult?.(result.value),
+              progress: 100,
+              uploaded: true
+            },
+            fileObject.id
+          )
+      )
     }
   }
 
@@ -558,13 +613,29 @@ export default React.memo(function FileUpload({
                       </span>
                     )}
                     {(!inProgress(file) || file.error) && (
-                      <FileDeleteButton
-                        icon={faTimes}
-                        disabled={file.deleteInProgress}
-                        onClick={() => deleteFile(file)}
-                        aria-label={`${i18n.deleteFile} ${file.name}`}
-                        data-qa={`file-delete-button-${file.name}`}
-                      />
+                      <>
+                        {file.validationResult !== undefined && (
+                          <>
+                            <ValidationResult>
+                              {file.validationResult}
+                            </ValidationResult>
+                            <FileActionButton
+                              icon={faCheck}
+                              disabled={file.deleteInProgress}
+                              onClick={() => uploadFile(file, file.file!)}
+                              aria-label={`${i18n.uploadFile} ${file.name}`}
+                              data-qa={`file-upload-button-${file.name}`}
+                            />
+                          </>
+                        )}
+                        <FileActionButton
+                          icon={faTimes}
+                          disabled={file.deleteInProgress}
+                          onClick={() => deleteFile(file)}
+                          aria-label={`${i18n.deleteFile} ${file.name}`}
+                          data-qa={`file-delete-button-${file.name}`}
+                        />
+                      </>
                     )}
                   </FileHeader>
                   {inProgress(file) && (
@@ -594,4 +665,6 @@ export default React.memo(function FileUpload({
       )}
     </FileUploadContainer>
   )
-})
+}
+
+export default React.memo(FileUpload) as typeof FileUpload
