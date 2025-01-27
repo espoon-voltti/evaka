@@ -135,19 +135,19 @@ data class EmployeeSuomiFiLoginRequest(
 fun Database.Transaction.loginEmployeeWithSuomiFi(
     now: HelsinkiDateTime,
     request: EmployeeSuomiFiLoginRequest,
-): Employee =
+): Employee? =
     createUpdate {
             sql(
                 """
 UPDATE employee
-SET last_login = ${bind(now)}, first_name = ${bind(request.firstName)}, last_name = ${bind(request.lastName)}, active = TRUE
+SET last_login = ${bind(now)}, first_name = ${bind(request.firstName)}, last_name = ${bind(request.lastName)}
 WHERE social_security_number = ${bind(request.ssn.value)}
 RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, temporary_in_unit_id, active
 """
             )
         }
         .executeAndReturnGeneratedKeys()
-        .exactlyOne<Employee>()
+        .exactlyOneOrNull<Employee>()
 
 fun Database.Read.getEmployeeRoles(id: EmployeeId): EmployeeRoles =
     createQuery {

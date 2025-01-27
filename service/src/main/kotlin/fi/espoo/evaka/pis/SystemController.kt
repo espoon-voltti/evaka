@@ -204,7 +204,11 @@ class SystemController(
         )
         return db.connect { dbc ->
                 dbc.transaction { tx ->
-                    val employee = tx.loginEmployeeWithSuomiFi(clock.now(), request)
+                    val employee =
+                        tx.loginEmployeeWithSuomiFi(clock.now(), request)
+                            ?: throw BadRequest("Account not found", "ACCOUNT_NOT_FOUND")
+                    if (!employee.active)
+                        throw BadRequest("Account is not active", "ACCOUNT_INACTIVE")
                     val roles = tx.getEmployeeRoles(employee.id)
                     val employeeUser =
                         EmployeeUser(
