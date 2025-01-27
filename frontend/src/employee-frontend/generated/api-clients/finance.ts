@@ -53,11 +53,11 @@ export async function deleteFinanceNote(
 */
 export async function getFinanceNotes(
   request: {
-    id: PersonId
+    personId: PersonId
   }
 ): Promise<FinanceNote[]> {
   const { data: json } = await client.request<JsonOf<FinanceNote[]>>({
-    url: uri`/employee/finance-notes/${request.id}`.toString(),
+    url: uri`/employee/finance-notes/${request.personId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonFinanceNote(e))

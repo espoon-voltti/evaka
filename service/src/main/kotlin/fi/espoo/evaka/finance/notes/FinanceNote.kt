@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.finance.notes
 
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FinanceNoteId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
@@ -13,7 +14,9 @@ data class FinanceNote(
     val id: FinanceNoteId,
     val content: String,
     val createdAt: HelsinkiDateTime,
-    @Nested("created_by") val createdBy: EvakaUser,
+    val createdBy: EvakaUserId,
+    val createdByName: String,
     val modifiedAt: HelsinkiDateTime,
-    @Nested("modified_by") val modifiedBy: EvakaUser,
+    val modifiedBy: EvakaUserId,
+    val modifiedByName: String,
 )

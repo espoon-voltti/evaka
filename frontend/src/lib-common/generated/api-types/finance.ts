@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { EvakaUser } from './user'
+import { EvakaUserId } from './shared'
 import { FinanceNoteId } from './shared'
 import { JsonOf } from '../../json'
 import { PersonId } from './shared'
@@ -16,10 +16,12 @@ import { PersonId } from './shared'
 export interface FinanceNote {
   content: string
   createdAt: HelsinkiDateTime
-  createdBy: EvakaUser
+  createdBy: EvakaUserId
+  createdByName: string
   id: FinanceNoteId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: EvakaUser
+  modifiedBy: EvakaUserId
+  modifiedByName: string
 }
 
 /**

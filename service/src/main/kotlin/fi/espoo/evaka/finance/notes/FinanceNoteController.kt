@@ -28,12 +28,12 @@ data class FinanceNoteRequest(
 @RestController
 @RequestMapping("/employee/finance-notes")
 class FinanceNoteController(private val accessControl: AccessControl) {
-    @GetMapping("/{id}")
+    @GetMapping("/{personId}")
     fun getFinanceNotes(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: PersonId,
+        @PathVariable personId: PersonId,
     ): List<FinanceNote> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -42,14 +42,14 @@ class FinanceNoteController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Person.READ_FINANCE_NOTES,
-                        id,
+                        personId,
                     )
-                    tx.getFinanceNotes(id)
+                    tx.getFinanceNotes(personId)
                 }
             }
             .also {
                 Audit.FinanceNoteRead.log(
-                    targetId = AuditId(id),
+                    targetId = AuditId(personId),
                     meta = mapOf("count" to it.size),
                 )
             }

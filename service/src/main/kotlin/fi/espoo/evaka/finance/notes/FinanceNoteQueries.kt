@@ -18,18 +18,16 @@ SELECT
     n.id,
     n.content,
     n.created_at,
-    c.id AS created_by_id,
-    c.type AS created_by_type,
+    c.id AS created_by,
     c.name AS created_by_name,
     n.modified_at,
-    m.id AS modified_by_id,
-    m.type AS modified_by_type,
+    m.id AS modified_by,
     m.name AS modified_by_name
 FROM finance_note n
 LEFT JOIN evaka_user c ON n.created_by = c.id
 LEFT JOIN evaka_user m ON n.modified_by = m.id
 WHERE n.person_id = ${bind(personId)}
-ORDER BY n.created_at
+ORDER BY n.created_at DESC
 """
             )
         }
@@ -41,7 +39,7 @@ fun Database.Transaction.createFinanceNote(
     user: AuthenticatedUser.Employee,
     now: HelsinkiDateTime,
 ): FinanceNoteId =
-    createQuery {
+    createUpdate {
             sql(
                 """
     INSERT INTO finance_note (
@@ -50,7 +48,8 @@ fun Database.Transaction.createFinanceNote(
         created_at,
         created_by,
         modified_at,
-        modified_by
+        modified_by,
+        updated_at
     ) VALUES (
         ${bind(personId)},
         ${bind(content)},
@@ -58,11 +57,13 @@ fun Database.Transaction.createFinanceNote(
         ${bind(user.evakaUserId)},
         ${bind(now)},
         ${bind(user.evakaUserId)},
+        ${bind(now)}
     ) RETURNING id
 """
             )
         }
-        .exactlyOne()
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<FinanceNoteId>()
 
 fun Database.Transaction.updateFinanceNote(
     id: FinanceNoteId,
