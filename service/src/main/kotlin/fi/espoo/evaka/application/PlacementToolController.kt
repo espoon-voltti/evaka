@@ -36,12 +36,18 @@ class PlacementToolController(
         @RequestPart("file") file: MultipartFile,
     ): PlacementToolValidation {
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(tx, user, clock, Action.Global.PLACEMENT_TOOL)
-                val placements = file.inputStream.use { parsePlacementToolCsv(it) }
-                PlacementToolValidation(count = placements.size)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.PLACEMENT_TOOL,
+                    )
+                    val placements = file.inputStream.use { parsePlacementToolCsv(it) }
+                    PlacementToolValidation(count = placements.size)
+                }
             }
-        }
+            .also { Audit.PlacementToolValidate.log() }
     }
 
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
