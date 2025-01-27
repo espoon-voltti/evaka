@@ -22,10 +22,12 @@ import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.DefaultInvoiceGenerationLogic
+import fi.espoo.evaka.invoicing.service.DefaultInvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.InvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.logging.defaultAccessLoggingValve
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
@@ -145,6 +147,9 @@ class EspooConfig {
     @Bean fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
     @Bean
+    fun invoiceNumberProvider(): InvoiceNumberProvider = DefaultInvoiceNumberProvider(5000000000)
+
+    @Bean
     fun titaniaEmployeeIdConverter(): TitaniaEmployeeIdConverter =
         object : TitaniaEmployeeIdConverter {
             override fun fromTitania(employeeId: String): String = employeeId.trimStart('0')
@@ -178,7 +183,6 @@ class EspooConfig {
             freeSickLeaveOnContractDays = false, // Doesn't affect Espoo
             freeAbsenceGivesADailyRefund = true,
             alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
-            invoiceNumberSeriesStart = 5000000000,
             paymentNumberSeriesStart = 1, // Payments are not yet in use in Espoo
             unplannedAbsencesAreContractSurplusDays = false, // Doesn't affect Espoo
             maxContractDaySurplusThreshold = null, // Doesn't affect Espoo
