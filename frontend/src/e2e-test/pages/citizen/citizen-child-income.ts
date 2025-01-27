@@ -9,7 +9,8 @@ import {
   Page,
   TextInput,
   Element,
-  ElementCollection
+  ElementCollection,
+  EnvType
 } from '../../utils/page'
 
 export class CitizenChildIncomeStatementViewPage {
@@ -95,21 +96,31 @@ export class CitizenChildIncomeStatementEditPage {
 }
 
 export class CitizenChildIncomeStatementListPage {
-  private childIncomeStatementList: Element
-  private childIncomeStatementRow: ElementCollection
+  private childIncomeStatementsSection: Element
+  private childIncomeStatementsList: Element
+  private childIncomeStatementRows: ElementCollection
   constructor(
     private readonly page: Page,
-    private readonly nth: number
+    private readonly nth: number,
+    env: EnvType
   ) {
-    this.childIncomeStatementList = page
-      .findAll(`[data-qa="child-income-statement"]`)
+    this.childIncomeStatementsSection = page
+      .findAllByDataQa('child-income-statements')
       .nth(this.nth)
-    this.childIncomeStatementRow =
-      this.childIncomeStatementList.findAll('tbody>tr')
+    this.childIncomeStatementsList =
+      this.childIncomeStatementsSection.findByDataQa(
+        env === 'desktop'
+          ? 'child-income-statement-table'
+          : 'child-income-statement-list'
+      )
+    this.childIncomeStatementRows =
+      this.childIncomeStatementsList.findAllByDataQa(
+        'child-income-statement-row'
+      )
   }
 
   async createIncomeStatement(): Promise<CitizenChildIncomeStatementEditPage> {
-    await this.childIncomeStatementList
+    await this.childIncomeStatementsSection
       .find('[data-qa="new-child-income-statement-btn"]')
       .click()
     const isPage = new CitizenChildIncomeStatementEditPage(this.page)
@@ -118,7 +129,7 @@ export class CitizenChildIncomeStatementListPage {
   }
 
   async assertChildName(expectedName: string) {
-    await this.childIncomeStatementList
+    await this.childIncomeStatementsSection
       .find('[data-qa="child-name"]')
       .assertTextEquals(expectedName)
   }
@@ -126,7 +137,7 @@ export class CitizenChildIncomeStatementListPage {
   async assertIncomeStatementMissingWarningIsShown() {
     await waitUntilTrue(
       () =>
-        this.childIncomeStatementList.find(
+        this.childIncomeStatementsSection.find(
           '[data-qa="child-income-statement-missing-warning"]'
         ).visible
     )
@@ -137,20 +148,20 @@ export class CitizenChildIncomeStatementListPage {
       .find('[data-qa="children-income-statements"]')
       .waitUntilVisible()
     await waitUntilEqual(
-      () => this.page.findAll(`[data-qa="child-income-statement"]`).count(),
+      () => this.page.findAll(`[data-qa="child-income-statements"]`).count(),
       expected
     )
   }
 
   async assertChildIncomeStatementRowCount(expected: number) {
-    await this.childIncomeStatementList.find('table').waitUntilVisible()
-    await waitUntilEqual(() => this.childIncomeStatementRow.count(), expected)
+    await this.childIncomeStatementsList.waitUntilVisible()
+    await waitUntilEqual(() => this.childIncomeStatementRows.count(), expected)
   }
 
   async clickEditChildIncomeStatement(nth: number) {
-    await this.childIncomeStatementList
-      .findAll('[data-qa="edit-income-statement"]')
+    await this.childIncomeStatementRows
       .nth(nth)
+      .findByDataQa('edit-income-statement')
       .click()
     const isPage = new CitizenChildIncomeStatementEditPage(this.page)
     await isPage.waitUntilReady()
@@ -158,17 +169,17 @@ export class CitizenChildIncomeStatementListPage {
   }
 
   async deleteChildIncomeStatement(nth: number) {
-    await this.childIncomeStatementList
-      .findAll('[data-qa="delete-income-statement"]')
+    await this.childIncomeStatementRows
       .nth(nth)
+      .findByDataQa('delete-income-statement')
       .click()
     await this.page.findAll('[data-qa="modal-okBtn"]').nth(0).click()
   }
 
   async clickViewChildIncomeStatement(nth: number) {
-    await this.childIncomeStatementList
-      .findAll('[data-qa="button-open-income-statement"]')
+    await this.childIncomeStatementRows
       .nth(nth)
+      .findByDataQa('view-income-statement')
       .click()
     const isPage = new CitizenChildIncomeStatementViewPage(this.page)
     await isPage.waitUntilReady()

@@ -32,7 +32,7 @@ import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import { envs, Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 let page: Page
@@ -520,151 +520,148 @@ describe('Citizen children page', () => {
   })
 })
 
-describe.each(['desktop', 'mobile'] as const)(
-  'Citizen children page with weak login (%s)',
-  (env) => {
-    beforeEach(async () => {
-      await resetServiceState()
-      await Fixture.careArea(testCareArea).save()
-      await Fixture.daycare(testDaycare).save()
-      await Fixture.daycare(testPreschool).save()
-      await Fixture.family({
-        guardian: testAdult,
-        children: [testChild, testChild2]
-      }).save()
+describe.each(envs)('Citizen children page with weak login (%s)', (env) => {
+  beforeEach(async () => {
+    await resetServiceState()
+    await Fixture.careArea(testCareArea).save()
+    await Fixture.daycare(testDaycare).save()
+    await Fixture.daycare(testPreschool).save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
 
-      const viewport =
-        env === 'mobile'
-          ? { width: 375, height: 812 }
-          : { width: 1920, height: 1080 }
-      page = await Page.open({
-        viewport,
-        screen: viewport,
-        mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-      })
+    const viewport =
+      env === 'mobile'
+        ? { width: 375, height: 812 }
+        : { width: 1920, height: 1080 }
+    page = await Page.open({
+      viewport,
+      screen: viewport,
+      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
+  })
 
-    test('Citizen can see its children and their service needs and daily service times', async () => {
-      const daycareSupervisor = await Fixture.employee()
-        .unitSupervisor(testDaycare.id)
-        .save()
-      const serviceNeedOption = await Fixture.serviceNeedOption({
-        validPlacementType: 'DAYCARE',
-        defaultOption: false,
-        nameFi: 'Kokopäiväinen',
-        nameSv: 'Kokopäiväinen (sv)',
-        nameEn: 'Kokopäiväinen (en)'
-      }).save()
-      await Fixture.serviceNeedOption({
-        validPlacementType: 'PRESCHOOL',
-        defaultOption: true,
-        nameFi: 'Esiopetus',
-        nameSv: 'Esiopetus (sv)',
-        nameEn: 'Esiopetus (en)'
-      }).save()
-      const placement = await Fixture.placement({
-        childId: testChild.id,
-        unitId: testDaycare.id,
-        type: 'DAYCARE',
-        startDate: mockedDate.subMonths(2),
-        endDate: mockedDate
-      }).save()
-      await Fixture.serviceNeed({
-        placementId: placement.id,
-        startDate: mockedDate.subMonths(1),
-        endDate: mockedDate,
-        optionId: serviceNeedOption.id,
-        confirmedBy: evakaUserId(daycareSupervisor.id)
-      }).save()
-      await Fixture.dailyServiceTime({
-        childId: testChild.id,
-        validityPeriod: new DateRange(
-          mockedDate.subMonths(3),
-          mockedDate.subMonths(2).subDays(1)
-        ),
-        type: 'REGULAR',
-        regularTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46))
-      }).save()
-      await Fixture.dailyServiceTime({
-        childId: testChild.id,
-        validityPeriod: new DateRange(
-          mockedDate.subMonths(2),
-          mockedDate.subMonths(1).subDays(1)
-        ),
-        type: 'IRREGULAR',
-        regularTimes: null,
-        mondayTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46)),
-        thursdayTimes: new TimeRange(LocalTime.of(7, 46), LocalTime.of(16, 32))
-      }).save()
-      await Fixture.dailyServiceTime({
-        childId: testChild.id,
-        validityPeriod: new DateRange(mockedDate.subMonths(1), null),
-        type: 'VARIABLE_TIME',
-        regularTimes: null
-      }).save()
-      await Fixture.placement({
-        childId: testChild2.id,
-        unitId: testPreschool.id,
-        type: 'PRESCHOOL',
-        startDate: mockedDate.subMonths(1),
-        endDate: mockedDate
-      }).save()
+  test('Citizen can see its children and their service needs and daily service times', async () => {
+    const daycareSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: 'DAYCARE',
+      defaultOption: false,
+      nameFi: 'Kokopäiväinen',
+      nameSv: 'Kokopäiväinen (sv)',
+      nameEn: 'Kokopäiväinen (en)'
+    }).save()
+    await Fixture.serviceNeedOption({
+      validPlacementType: 'PRESCHOOL',
+      defaultOption: true,
+      nameFi: 'Esiopetus',
+      nameSv: 'Esiopetus (sv)',
+      nameEn: 'Esiopetus (en)'
+    }).save()
+    const placement = await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: mockedDate.subMonths(2),
+      endDate: mockedDate
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: mockedDate.subMonths(1),
+      endDate: mockedDate,
+      optionId: serviceNeedOption.id,
+      confirmedBy: evakaUserId(daycareSupervisor.id)
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChild.id,
+      validityPeriod: new DateRange(
+        mockedDate.subMonths(3),
+        mockedDate.subMonths(2).subDays(1)
+      ),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46))
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChild.id,
+      validityPeriod: new DateRange(
+        mockedDate.subMonths(2),
+        mockedDate.subMonths(1).subDays(1)
+      ),
+      type: 'IRREGULAR',
+      regularTimes: null,
+      mondayTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46)),
+      thursdayTimes: new TimeRange(LocalTime.of(7, 46), LocalTime.of(16, 32))
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChild.id,
+      validityPeriod: new DateRange(mockedDate.subMonths(1), null),
+      type: 'VARIABLE_TIME',
+      regularTimes: null
+    }).save()
+    await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testPreschool.id,
+      type: 'PRESCHOOL',
+      startDate: mockedDate.subMonths(1),
+      endDate: mockedDate
+    }).save()
 
-      const credentials = {
-        username: 'test@example.com',
-        password: 'TestPassword456!'
+    const credentials = {
+      username: 'test@example.com',
+      password: 'TestPassword456!'
+    }
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+    await enduserLoginWeak(page, credentials)
+    const header = new CitizenHeader(page, env)
+    const childPage = new CitizenChildPage(page, env)
+
+    await header.openChildPage(testChild.id)
+    await childPage.assertChildNameIsShown(
+      'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
+    )
+    await childPage.openCollapsible('service-need-and-daily-service-time')
+    await childPage.assertServiceNeedTable([
+      {
+        dateRange: '01.02.2022 - 01.03.2022',
+        description: 'Kokopäiväinen',
+        unit: 'Alkuräjähdyksen päiväkoti'
+      },
+      {
+        dateRange: '01.01.2022 - 31.01.2022',
+        description: '',
+        unit: 'Alkuräjähdyksen päiväkoti'
       }
-      await upsertWeakCredentials({
-        id: testAdult.id,
-        body: credentials
-      })
-      await enduserLoginWeak(page, credentials)
-      const header = new CitizenHeader(page, env)
-      const childPage = new CitizenChildPage(page, env)
-
-      await header.openChildPage(testChild.id)
-      await childPage.assertChildNameIsShown(
-        'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
-      )
-      await childPage.openCollapsible('service-need-and-daily-service-time')
-      await childPage.assertServiceNeedTable([
-        {
-          dateRange: '01.02.2022 - 01.03.2022',
-          description: 'Kokopäiväinen',
-          unit: 'Alkuräjähdyksen päiväkoti'
-        },
-        {
-          dateRange: '01.01.2022 - 31.01.2022',
-          description: '',
-          unit: 'Alkuräjähdyksen päiväkoti'
-        }
-      ])
-      await childPage.assertDailyServiceTimeTable([
-        {
-          dateRange: '01.02.2022 -',
-          description: 'Päivittäinen aika vaihtelee'
-        },
-        {
-          dateRange: '01.01.2022 - 31.01.2022',
-          description: 'Ma 08:15–14:46, To 07:46–16:32'
-        },
-        {
-          dateRange: '01.12.2021 - 31.12.2021',
-          description: '08:15–14:46'
-        }
-      ])
-      await childPage.closeCollapsible()
-      await header.openChildPage(testChild2.id)
-      await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
-      await childPage.openCollapsible('service-need-and-daily-service-time')
-      await childPage.assertServiceNeedTable([
-        {
-          dateRange: '01.02.2022 - 01.03.2022',
-          description: 'Esiopetus',
-          unit: 'Alkuräjähdyksen eskari'
-        }
-      ])
-      await childPage.assertDailyServiceTimeTable([])
-    })
-  }
-)
+    ])
+    await childPage.assertDailyServiceTimeTable([
+      {
+        dateRange: '01.02.2022 -',
+        description: 'Päivittäinen aika vaihtelee'
+      },
+      {
+        dateRange: '01.01.2022 - 31.01.2022',
+        description: 'Ma 08:15–14:46, To 07:46–16:32'
+      },
+      {
+        dateRange: '01.12.2021 - 31.12.2021',
+        description: '08:15–14:46'
+      }
+    ])
+    await childPage.closeCollapsible()
+    await header.openChildPage(testChild2.id)
+    await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
+    await childPage.openCollapsible('service-need-and-daily-service-time')
+    await childPage.assertServiceNeedTable([
+      {
+        dateRange: '01.02.2022 - 01.03.2022',
+        description: 'Esiopetus',
+        unit: 'Alkuräjähdyksen eskari'
+      }
+    ])
+    await childPage.assertDailyServiceTimeTable([])
+  })
+})

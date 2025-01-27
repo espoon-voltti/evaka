@@ -10,10 +10,9 @@ import {
   Page,
   TextInput,
   ElementCollection,
-  Element
+  Element,
+  EnvType
 } from '../../utils/page'
-
-import { EnvType } from './citizen-header'
 
 export class CitizenChildPage {
   #placements: ElementCollection

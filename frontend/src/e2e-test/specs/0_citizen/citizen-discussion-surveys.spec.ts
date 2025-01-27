@@ -31,12 +31,10 @@ import {
 } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
-import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
-import { Modal, Page } from '../../utils/page'
+import { envs, EnvType, Modal, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
-
-const e: EnvType[] = ['desktop', 'mobile']
 
 let page: Page
 let header: CitizenHeader
@@ -208,7 +206,7 @@ beforeEach(async () => {
   }).save()
 })
 
-describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
+describe.each(envs)('Citizen calendar discussion surveys (%s)', (env) => {
   beforeEach(async () => {
     const viewport =
       env === 'mobile'
@@ -408,7 +406,7 @@ const unavailableEventTimeId = randomId<CalendarEventTimeId>()
 const visibleLaterEventTimeId = randomId<CalendarEventTimeId>()
 const multiPlacementEventId = randomId<CalendarEventId>()
 
-describe.each(e)('Citizen calendar event time visibility (%s)', (env) => {
+describe.each(envs)('Citizen calendar event time visibility (%s)', (env) => {
   beforeEach(async () => {
     await Fixture.family({
       guardian: testAdult2,
@@ -547,7 +545,7 @@ describe.each(e)('Citizen calendar event time visibility (%s)', (env) => {
 })
 
 async function loginAndOpenCalendar(
-  env: 'desktop' | 'mobile',
+  env: EnvType,
   user: DevPerson
 ): Promise<CitizenCalendarPage> {
   const viewport =

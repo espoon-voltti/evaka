@@ -19,7 +19,7 @@ import {
 } from '../../generated/api-clients'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
@@ -31,39 +31,47 @@ const testFilePath1 = `src/e2e-test/assets/${testFileName1}`
 const testFileName2 = 'test_file.jpg'
 const testFilePath2 = `src/e2e-test/assets/${testFileName2}`
 
-beforeEach(async () => {
-  await resetServiceState()
+describe.each(envs)('Child Income statements (%s)', (env) => {
+  beforeEach(async () => {
+    await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+    await Fixture.careArea(testCareArea).save()
+    await Fixture.daycare(testDaycare).save()
+    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
-  await createDaycarePlacements({
-    body: [
-      createDaycarePlacementFixture(
-        randomId(),
-        testChild.id,
-        testDaycare.id,
-        LocalDate.todayInSystemTz(),
-        LocalDate.todayInSystemTz()
-      ),
-      createDaycarePlacementFixture(
-        randomId(),
-        testChild.id,
-        testDaycare.id,
-        LocalDate.todayInSystemTz().addDays(1),
-        LocalDate.todayInSystemTz().addDays(1)
-      )
-    ]
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          randomId(),
+          testChild.id,
+          testDaycare.id,
+          LocalDate.todayInSystemTz(),
+          LocalDate.todayInSystemTz()
+        ),
+        createDaycarePlacementFixture(
+          randomId(),
+          testChild.id,
+          testDaycare.id,
+          LocalDate.todayInSystemTz().addDays(1),
+          LocalDate.todayInSystemTz().addDays(1)
+        )
+      ]
+    })
+
+    const viewport =
+      env === 'mobile'
+        ? { width: 375, height: 812 }
+        : { width: 1920, height: 1080 }
+
+    page = await Page.open({
+      viewport,
+      screen: viewport
+    })
+    await enduserLogin(page, testAdult)
+    header = new CitizenHeader(page, env)
+    child1ISList = new CitizenChildIncomeStatementListPage(page, 0, env)
   })
 
-  page = await Page.open()
-  await enduserLogin(page, testAdult)
-  header = new CitizenHeader(page)
-  child1ISList = new CitizenChildIncomeStatementListPage(page, 0)
-})
-
-describe('Child Income statements', () => {
   test('Shows a warning of missing income statement', async () => {
     await header.selectTab('income')
     await child1ISList.assertChildName(

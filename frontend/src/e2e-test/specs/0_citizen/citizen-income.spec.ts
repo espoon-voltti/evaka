@@ -24,12 +24,10 @@ import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-const e = ['desktop', 'mobile'] as const
-
-describe.each(e)('Citizen income (%s)', (env) => {
+describe.each(envs)('Citizen income (%s)', (env) => {
   let page: Page
   const child = testChild
   let daycare: DevDaycare
@@ -137,7 +135,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
     )
     await calendar.clickExpiringIncomeCta()
 
-    const incomeStatementsPage = new IncomeStatementsPage(page)
+    const incomeStatementsPage = new IncomeStatementsPage(page, env)
     await incomeStatementsPage.createNewIncomeStatement()
     await incomeStatementsPage.setValidFromDate(today.format())
     await incomeStatementsPage.selectIncomeStatementType('highest-fee')
