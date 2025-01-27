@@ -16,7 +16,7 @@ ktlint-gradle = "12.1.0"
 mockito = "5.15.2"
 owasp = "12.0.0"
 spring-boot = "3.4.1"
-versions = "0.51.0"
+versions = "0.52.0"
 
 [libraries]
 bouncycastle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
