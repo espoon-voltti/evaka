@@ -2,32 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { testAdult, Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
-import CitizenHeader from '../../pages/citizen/citizen-header'
-import { KeycloakRealmClient } from '../../utils/keycloak'
-import { Page } from '../../utils/page'
+import { Fixture, testAdult } from '../../dev-api/fixtures'
 import {
-  CitizenWeakAccount,
-  citizenWeakAccount,
-  enduserLogin,
-  enduserLoginWeak
-} from '../../utils/user'
+  resetServiceState,
+  upsertWeakCredentials
+} from '../../generated/api-clients'
+import CitizenHeader from '../../pages/citizen/citizen-header'
+import { Page } from '../../utils/page'
+import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 describe('Citizen authentication', () => {
   let page: Page
-  let account: CitizenWeakAccount
+  const credentials = {
+    username: 'test@example.com',
+    password: 'TestPassword456!'
+  }
 
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.person(testAdult).saveAdult({
       updateMockVtjWithDependants: []
     })
-    const keycloak = await KeycloakRealmClient.createCitizenClient()
-    await keycloak.deleteAllUsers()
-
-    account = citizenWeakAccount(testAdult)
-    await keycloak.createUser({ ...account, enabled: true })
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
 
     page = await Page.open()
   })
@@ -39,7 +38,7 @@ describe('Citizen authentication', () => {
     ] as const,
     [
       'weak login',
-      async (page: Page) => enduserLoginWeak(page, account)
+      async (page: Page) => enduserLoginWeak(page, credentials)
     ] as const
   ]
 

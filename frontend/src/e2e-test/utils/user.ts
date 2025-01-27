@@ -39,34 +39,18 @@ export async function enduserLogin(page: Page, person: DevPerson) {
   await page.goto(config.enduserUrl + '/applications')
 }
 
-export type CitizenWeakAccount = {
-  username: string
-  password: string
-  email: string
-  socialSecurityNumber: string
-  firstName: string
-  lastName: string
-}
-
-export const citizenWeakAccount = (person: DevPerson): CitizenWeakAccount => ({
-  username: 'test@example.com',
-  password: 'test123',
-  email: 'test@example.com',
-  socialSecurityNumber: person.ssn!,
-  firstName: 'Seppo',
-  lastName: 'Sorsa'
-})
-
 export async function enduserLoginWeak(
   page: Page,
-  account: CitizenWeakAccount
+  credentials: { username: string; password: string }
 ) {
   await page.goto(config.enduserLoginUrl)
   await page.findByDataQa('weak-login').click()
 
-  await new TextInput(page.find('[id="username"]')).fill(account.username)
-  await new TextInput(page.find('[id="password"]')).fill(account.password)
-  await page.find('[id="kc-login"]').click()
+  const form = page.findByDataQa('weak-login-form')
+  await new TextInput(form.find('[id="username"]')).fill(credentials.username)
+  await new TextInput(form.find('[id="password"]')).fill(credentials.password)
+  await form.findByDataQa('login').click()
+  await form.findByDataQa('login').waitUntilHidden()
 
   await page.findByDataQa('header-city-logo').waitUntilVisible()
 }

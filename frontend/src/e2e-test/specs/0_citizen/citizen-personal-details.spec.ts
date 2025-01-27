@@ -2,20 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { testAdult, Fixture } from '../../dev-api/fixtures'
+import { Fixture, testAdult } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
   CitizenNotificationSettingsSection,
   CitizenPersonalDetailsSection
 } from '../../pages/citizen/citizen-personal-details'
-import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
-import {
-  citizenWeakAccount,
-  enduserLogin,
-  enduserLoginWeak
-} from '../../utils/user'
+import { enduserLogin } from '../../utils/user'
 
 let header: CitizenHeader
 let personalDetailsPage: CitizenPersonalDetailsPage
@@ -95,22 +90,6 @@ describe('Citizen personal details', () => {
     await section.checkPersonalData(data)
     await section.assertAlertIsNotShown()
   })
-})
-
-test('Citizen keycloak email is shown', async () => {
-  const account = citizenWeakAccount(citizenFixture)
-  const keycloak = await KeycloakRealmClient.createCitizenClient()
-  await keycloak.deleteAllUsers()
-  await keycloak.createUser({ ...account, enabled: true })
-  await enduserLoginWeak(page, account)
-  header = new CitizenHeader(page)
-
-  await header.selectTab('personal-details')
-  personalDetailsPage = new CitizenPersonalDetailsPage(page)
-
-  await personalDetailsPage.loginDetailsSection.keycloakEmail.assertTextEquals(
-    account.username
-  )
 })
 
 describe('Citizen notification settings', () => {

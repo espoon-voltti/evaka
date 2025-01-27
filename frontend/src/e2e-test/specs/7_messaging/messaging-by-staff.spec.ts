@@ -10,34 +10,28 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
-  testDaycareGroup,
-  testChild2,
-  testAdult,
   Fixture,
+  testAdult,
   testAdult2,
-  testChild,
   testCareArea,
-  testDaycare
+  testChild,
+  testChild2,
+  testDaycare,
+  testDaycareGroup
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   createMessageAccounts,
   insertGuardians,
-  resetServiceState
+  resetServiceState,
+  upsertWeakCredentials
 } from '../../generated/api-clients'
 import { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
-import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
-import {
-  CitizenWeakAccount,
-  citizenWeakAccount,
-  employeeLogin,
-  enduserLogin,
-  enduserLoginWeak
-} from '../../utils/user'
+import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 let staffPage: Page
 let unitSupervisorPage: Page
@@ -45,7 +39,6 @@ let citizenPage: Page
 let childId: PersonId
 let staff: DevEmployee
 let unitSupervisor: DevEmployee
-let account: CitizenWeakAccount
 
 const mockedDate = LocalDate.of(2020, 5, 21)
 const mockedDateAt10 = HelsinkiDateTime.fromLocal(
@@ -60,6 +53,10 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
   mockedDate,
   LocalTime.of(12, 17)
 )
+const credentials = {
+  username: 'test@example.com',
+  password: 'TestPassword456!'
+}
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea(testCareArea).save()
@@ -70,10 +67,10 @@ beforeEach(async () => {
   }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const keycloak = await KeycloakRealmClient.createCitizenClient()
-  await keycloak.deleteAllUsers()
-  account = citizenWeakAccount(testAdult)
-  await keycloak.createUser({ ...account, enabled: true })
+  await upsertWeakCredentials({
+    id: testAdult.id,
+    body: credentials
+  })
 
   staff = await Fixture.employee()
     .staff(testDaycare.id)
@@ -161,7 +158,7 @@ async function initOtherCitizenPage(
 
 async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLoginWeak(citizenPage, account)
+  await enduserLoginWeak(citizenPage, credentials)
 }
 
 const defaultReply = 'Testivastaus testiviestiin'

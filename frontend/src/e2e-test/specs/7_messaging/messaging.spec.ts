@@ -16,17 +16,17 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
+  Fixture,
+  testAdult,
+  testAdult2,
+  testCareArea,
+  testChild,
+  testChild2,
+  testChildRestricted,
+  testDaycare,
   testDaycare2,
   testDaycareGroup,
-  testChild2,
-  Fixture,
-  testAdult2,
-  testAdult,
-  testChild,
-  testDaycarePrivateVoucher,
-  testDaycare,
-  testCareArea,
-  testChildRestricted
+  testDaycarePrivateVoucher
 } from '../../dev-api/fixtures'
 import {
   addAclRoleForDaycare,
@@ -34,7 +34,8 @@ import {
   createDaycareGroups,
   createMessageAccounts,
   insertGuardians,
-  resetServiceState
+  resetServiceState,
+  upsertWeakCredentials
 } from '../../generated/api-clients'
 import {
   DevCareArea,
@@ -44,21 +45,13 @@ import {
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
-import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
-import {
-  CitizenWeakAccount,
-  citizenWeakAccount,
-  employeeLogin,
-  enduserLogin,
-  enduserLoginWeak
-} from '../../utils/user'
+import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 let unitSupervisorPage: Page
 let citizenPage: Page
 let childId: PersonId
 let unitSupervisor: DevEmployee
-let account: CitizenWeakAccount
 let careArea: DevCareArea
 let daycarePlacementFixture: DevPlacement
 let backupDaycareId: DaycareId
@@ -78,6 +71,10 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
   LocalTime.of(12, 17)
 )
 
+const credentials = {
+  username: 'test@example.com',
+  password: 'TestPassword456!'
+}
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea(testCareArea).save()
@@ -94,10 +91,10 @@ beforeEach(async () => {
   careArea = testCareArea
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const keycloak = await KeycloakRealmClient.createCitizenClient()
-  await keycloak.deleteAllUsers()
-  account = citizenWeakAccount(testAdult)
-  await keycloak.createUser({ ...account, enabled: true })
+  await upsertWeakCredentials({
+    id: testAdult.id,
+    body: credentials
+  })
 
   unitSupervisor = await Fixture.employee({
     firstName: 'Essi',
@@ -172,7 +169,7 @@ async function openCitizenPageWeak(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({
     mockedTime: mockedTime
   })
-  await enduserLoginWeak(citizenPage, account)
+  await enduserLoginWeak(citizenPage, credentials)
 }
 
 const defaultTitle = 'Otsikko'
@@ -840,7 +837,7 @@ describe('Sending and receiving messages', () => {
       citizenPage = await Page.open({
         mockedTime: mockedDateAt10
       })
-      await enduserLoginWeak(citizenPage, account)
+      await enduserLoginWeak(citizenPage, credentials)
       await citizenPage.goto(config.enduserMessagesUrl)
       await citizenPage.page.evaluate(() => {
         if (window.evaka) window.evaka.keepSessionAliveThrottleTime = 300
