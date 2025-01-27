@@ -73,6 +73,13 @@ const envVariables = {
    */
   PIN_SESSION_TIMEOUT_SECONDS: 10 * 60,
 
+  /**
+   * Rate limit for citizen weak logins per username (attempts per hour).
+   *
+   * 0 means no limit
+   */
+  CITIZEN_WEAK_LOGIN_RATE_LIMIT: 20,
+
   // ----- Redis configuration -----
   /**
    * Redis server hostname
@@ -415,6 +422,7 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
         CITIZEN_COOKIE_SECRET: 'A very hush hush cookie secret.',
         EMPLOYEE_COOKIE_SECRET: 'A very hush hush cookie secret.',
         USE_SECURE_COOKIES: false,
+        CITIZEN_WEAK_LOGIN_RATE_LIMIT: 0,
 
         REDIS_HOST: '127.0.0.1',
         REDIS_PORT: 6379,
@@ -456,7 +464,7 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
 }
 
 export interface Config {
-  citizen: SessionConfig
+  citizen: SessionConfig & { weakLoginRateLimit: number }
   employee: SessionConfig
   ad:
     | { type: 'mock' | 'disabled' }
@@ -739,7 +747,11 @@ export function configFromEnv(): Config {
       ),
       sessionTimeoutMinutes:
         optional('CITIZEN_SESSION_TIMEOUT_MINUTES', parseInteger) ??
-        defaultSessionTimeoutMinutes
+        defaultSessionTimeoutMinutes,
+      weakLoginRateLimit: required(
+        'CITIZEN_WEAK_LOGIN_RATE_LIMIT',
+        parseInteger
+      )
     },
     employee: {
       useSecureCookies,
