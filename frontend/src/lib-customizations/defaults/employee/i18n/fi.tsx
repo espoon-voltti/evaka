@@ -4327,6 +4327,7 @@ export const fi = {
         'Raportti kerää kunnan vuosittaiseen seutuselvitykseen tarvittavat tiedot ladattaviksi CSV-tiedostoiksi',
       monthlyReport: 'Seutuselvityksen kuukausittaiset määrät',
       ageStatisticsReport: 'Seutuselvityksen ikäjakaumat',
+      yearlyStatisticsReport: 'Seutuselvityksen vuosittaiset määrät',
       reportLabel: 'Seutuselvitys',
       monthlyColumns: {
         month: 'Kuukausi',
@@ -4359,6 +4360,20 @@ export const fi = {
           'Alle 3v perhepäivähoidon hoitopäivät',
         effectiveFamilyDaycareDaysOver3Count:
           '3v ja yli perhepäivähoidon hoitopäivät'
+      },
+      yearlyStatisticsColumns: {
+        voucherTotalCount: 'Palvelusetelien määrä',
+        voucherAssistanceCount: 'Tuen lasten määrä palveluseteliyksiköissä',
+        voucher5YearOldCount: '5-vuotiaat palveluseteliyksiköissä',
+        purchased5YearlOldCount: '5-vuotiaat ostopalveluyksiköissä',
+        municipal5YearOldCount: '5-vuotiaat kunnallisissa yksiköissä',
+        familyCare5YearOldCount: '5-vuotiaat perhepäivähoidossa',
+        club5YearOldCount: '5-vuotiaat kerhossa',
+        preschoolDaycareUnitCareCount: 'Täydentävän varhaiskasvatuksen lapset yksiköissä',
+        preschoolFamilyCareCount: 'Täydentävän varhaiskasvatuksen lapset perhepäivähoidossa',
+        generalAssistanceCount: 'Yleisen tuen lapsimäärä',
+        specialAssistanceCount: 'Erityisen tuen lapsimäärä',
+        enhancedAssistanceCount: 'Tehostetun tuen lapsimäärä',
       }
     }
   },

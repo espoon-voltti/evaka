@@ -10,7 +10,8 @@ import styled from 'styled-components'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import {
   RegionalSurveyReportAgeStatisticsResult,
-  RegionalSurveyReportResult
+  RegionalSurveyReportResult,
+  RegionalSurveyReportYearlyStatisticsResult
 } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -33,7 +34,8 @@ import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow } from './common'
 import {
   tampereRegionalSurveyAgeReport,
-  tampereRegionalSurveyMonthlyReport
+  tampereRegionalSurveyMonthlyReport,
+  tampereRegionalSurveyYearlyReport
 } from './queries'
 
 interface ReportQueryParams {
@@ -43,11 +45,28 @@ interface ReportQueryParams {
 interface ReportSelection {
   monthlyStatistics: boolean
   ageStatistics: boolean
+  yearlyStatistics: boolean
 }
 
 const emptyReportSelection = {
   monthlyStatistics: false,
-  ageStatistics: false
+  ageStatistics: false,
+  yearlyStatistics: false,
+}
+
+const emptyMonthlyValue: RegionalSurveyReportResult = {
+  monthlyCounts: [],
+  year: 0
+}
+
+const emptyAgeValue: RegionalSurveyReportAgeStatisticsResult = {
+  ageStatistics: [],
+  year: 0
+}
+
+const emptyYearlyValue: RegionalSurveyReportYearlyStatisticsResult = {
+  yearlyStatistics: [],
+  year: 0
 }
 
 export default React.memo(function TampereRegionalSurveyReport() {
@@ -69,16 +88,6 @@ export default React.memo(function TampereRegionalSurveyReport() {
     null
   )
 
-  const emptyMonthlyValue: RegionalSurveyReportResult = {
-    monthlyCounts: [],
-    year: 0
-  }
-
-  const emptyAgeValue: RegionalSurveyReportAgeStatisticsResult = {
-    ageStatistics: [],
-    year: 0
-  }
-
   const [reportSelection, setReportSelection] =
     useState<ReportSelection>(emptyReportSelection)
 
@@ -94,6 +103,12 @@ export default React.memo(function TampereRegionalSurveyReport() {
       : constantQuery(emptyAgeValue)
   )
 
+  const yearlyStatisticsResult = useQueryResult(
+    activeParams && reportSelection.yearlyStatistics
+      ? tampereRegionalSurveyYearlyReport(activeParams)
+      : constantQuery(emptyYearlyValue)
+  )
+
   const fetchMonthlyResults = useCallback(() => {
     if (selectedYear) {
       setReportSelection({ ...reportSelection, monthlyStatistics: true })
@@ -104,6 +119,13 @@ export default React.memo(function TampereRegionalSurveyReport() {
   const fetchAgeResults = useCallback(() => {
     if (selectedYear) {
       setReportSelection({ ...reportSelection, ageStatistics: true })
+      setActiveParams({ year: selectedYear })
+    }
+  }, [selectedYear, reportSelection])
+
+  const fetchYearlyResults = useCallback(() => {
+    if (selectedYear) {
+      setReportSelection({ ...reportSelection, yearlyStatistics: true })
       setActiveParams({ year: selectedYear })
     }
   }, [selectedYear, reportSelection])
@@ -275,6 +297,79 @@ export default React.memo(function TampereRegionalSurveyReport() {
                     }
                   ]}
                   filename={`${t.reportLabel} ${selectedYear} - ${t.ageStatisticsReport}.csv`}
+                />
+              ) : null
+            })}
+          </ReportRow>
+          <ReportRow spacing="L" alignItems="center" fullWidth>
+            <ReportLabel>{t.yearlyStatisticsReport}</ReportLabel>
+            <Button
+              primary
+              disabled={!selectedYear}
+              text={i18n.common.search}
+              onClick={fetchYearlyResults}
+              data-qa="fetch-yearly-button"
+            />
+            {renderResult(yearlyStatisticsResult, (result) => {
+              return result.yearlyStatistics.length > 0 &&
+                result.year === selectedYear ? (
+                <ReportDownload
+                  data={result.yearlyStatistics}
+                  headers={[
+                    {
+                      label: t.yearlyStatisticsColumns.voucherTotalCount,
+                      key: 'voucherTotalCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.voucherAssistanceCount,
+                      key: 'voucherAssistanceCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.voucher5YearOldCount,
+                      key: 'voucher5YearOldCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.purchased5YearlOldCount,
+                      key: 'purchased5YearOldCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.municipal5YearOldCount,
+                      key: 'municipal5YearOldCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.familyCare5YearOldCount,
+                      key: 'familyCare5YearOldCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.club5YearOldCount,
+                      key: 'club5YearOldCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.preschoolDaycareUnitCareCount,
+                      key: 'preschoolDaycareUnitCareCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.preschoolFamilyCareCount,
+                      key: 'preschoolDaycareFamilyCareCount'
+                    },
+                    {
+                      label: t.yearlyStatisticsColumns.generalAssistanceCount,
+                      key: 'generalAssistanceCount'
+                    },
+                    {
+                      label:
+                        t.yearlyStatisticsColumns
+                          .specialAssistanceCount,
+                      key: 'specialAssistanceCount'
+                    },
+                    {
+                      label:
+                        t.yearlyStatisticsColumns
+                          .enhancedAssistanceCount,
+                      key: 'enhancedAssistanceCount'
+                    }
+                  ]}
+                  filename={`${t.reportLabel} ${selectedYear} - ${t.yearlyStatisticsReport}.csv`}
                 />
               ) : null
             })}

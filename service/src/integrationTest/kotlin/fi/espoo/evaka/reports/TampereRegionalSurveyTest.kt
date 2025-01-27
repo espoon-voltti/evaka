@@ -737,6 +737,174 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         assertEquals(expectedResults, assistanceResults)
     }
 
+    @Test
+    fun `Voucher total count is correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        initTestPlacementData(
+            octFirst,
+            testUnitData[3],
+            FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1)),
+        )
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Aapo + Bertil + Cecil = 3
+        assertEquals(3, results.yearlyStatistics.first().voucherTotalCount)
+    }
+
+    @Test
+    fun `Five year old voucher counts are correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        initTestPlacementData(
+            start = octFirst,
+            daycareId = testUnitData[3],
+            defaultPlacementDuration =
+                FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1)),
+            baseAge = 5,
+        )
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Bertil + Cecil = 2
+        assertEquals(2, results.yearlyStatistics.first().voucher5YearOldCount)
+    }
+
+    @Test
+    fun `Five year old purchased counts are correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        initTestPlacementData(
+            start = octFirst,
+            daycareId = testUnitData[4],
+            defaultPlacementDuration =
+                FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1)),
+            baseAge = 5,
+        )
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Bertil + Cecil = 2
+        assertEquals(2, results.yearlyStatistics.first().purchased5YearOldCount)
+    }
+
+    @Test
+    fun `Five year old municipal counts are correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        initTestPlacementData(
+            start = octFirst,
+            daycareId = testUnitData[0],
+            defaultPlacementDuration =
+                FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1)),
+            baseAge = 5,
+        )
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Bertil + Cecil = 2
+        assertEquals(2, results.yearlyStatistics.first().municipal5YearOldCount)
+    }
+
+    @Test
+    fun `Five year old family care counts are correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        initTestPlacementData(
+            start = octFirst,
+            daycareId = testUnitData[2],
+            defaultPlacementDuration =
+                FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1)),
+            baseAge = 5,
+        )
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Bertil + Cecil = 2
+        assertEquals(2, results.yearlyStatistics.first().familyCare5YearOldCount)
+    }
+
+    @Test
+    fun `Five year club care counts are correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        val defaultPlacementDuration =
+            FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1))
+
+        val testChildren =
+            initTestPlacementData(
+                start = octFirst,
+                daycareId = testUnitData[1],
+                defaultPlacementDuration = defaultPlacementDuration,
+                baseAge = 5,
+            )
+
+        db.transaction { tx ->
+            // add two 5-year-old clubbers
+            tx.insert(
+                DevPlacement(
+                    childId = testChildren[3].first.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                    unitId = testUnitData[1],
+                    type = PlacementType.CLUB,
+                )
+            )
+
+            tx.insert(
+                DevPlacement(
+                    childId = testChildren[4].first.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                    unitId = testUnitData[1],
+                    type = PlacementType.CLUB,
+                )
+            )
+        }
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Ville + Fabio = 2
+        assertEquals(2, results.yearlyStatistics.first().club5YearOldCount)
+    }
+
     private fun initTestUnitData(monday: LocalDate): List<DaycareId> {
         return db.transaction { tx ->
             val areaAId = tx.insert(DevCareArea(name = "Area A", shortName = "Area A"))
@@ -825,6 +993,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         start: LocalDate,
         daycareId: DaycareId,
         defaultPlacementDuration: FiniteDateRange = FiniteDateRange(start, start.plusMonths(2)),
+        baseAge: Long = 4,
     ): List<Pair<DevPerson, List<DevPlacement>>> {
 
         val actionOption10 =
@@ -919,7 +1088,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
 
             val testChildBertil =
                 DevPerson(
-                    dateOfBirth = start.minusYears(4),
+                    dateOfBirth = start.minusYears(baseAge),
                     firstName = "Bertil",
                     lastName = "Becker",
                     language = "99",
@@ -928,7 +1097,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
 
             val testChildCecil =
                 DevPerson(
-                    dateOfBirth = start.minusYears(4),
+                    dateOfBirth = start.minusYears(baseAge),
                     firstName = "Cecil",
                     lastName = "Cilliacus",
                     language = "sv",
@@ -937,7 +1106,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
 
             val testChildVille =
                 DevPerson(
-                    dateOfBirth = start.minusYears(4),
+                    dateOfBirth = start.minusYears(baseAge),
                     firstName = "Ville",
                     lastName = "Varahoidettava",
                     language = "se",
@@ -947,7 +1116,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
 
             val testChildFabio =
                 DevPerson(
-                    dateOfBirth = start.minusYears(4),
+                    dateOfBirth = start.minusYears(baseAge),
                     firstName = "Fabio",
                     lastName = "Familycare",
                 )
