@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.job
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
@@ -33,6 +34,7 @@ import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.PasswordBlacklist
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -215,6 +217,10 @@ enum class ScheduledJob(
         ScheduledJobs::generateReplacementDraftInvoices,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(4, 15))),
     ),
+    ImportPasswordsBlacklists(
+        ScheduledJobs::importPasswordBlacklists,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 20))),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -223,6 +229,7 @@ private val logger = KotlinLogging.logger {}
 class ScheduledJobs(
     // private val vardaService: VardaService, // Use this once varda fixes MA003 retry glitch
     private val vardaUpdateServiceNew: VardaUpdateServiceNew,
+    private val evakaEnv: EvakaEnv,
     private val vardaEnv: VardaEnv,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
@@ -238,6 +245,7 @@ class ScheduledJobs(
     private val attachmentService: AttachmentService,
     private val jamixService: JamixService,
     private val sfiMessagesClient: SfiMessagesClient?,
+    private val passwordBlacklist: PasswordBlacklist,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -462,4 +470,9 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun generateReplacementDraftInvoices(db: Database.Connection, clock: EvakaClock) =
         invoiceGenerator.generateAllReplacementDraftInvoices(db, clock.today())
+
+    fun importPasswordBlacklists(db: Database.Connection, clock: EvakaClock) =
+        evakaEnv.passwordBlacklistDirectory?.let { directory ->
+            passwordBlacklist.importBlacklists(db, directory)
+        }
 }

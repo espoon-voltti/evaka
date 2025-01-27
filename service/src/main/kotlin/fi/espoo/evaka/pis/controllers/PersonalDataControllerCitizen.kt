@@ -13,7 +13,9 @@ import fi.espoo.evaka.shared.PersonEmailVerificationId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.PasswordConstraints
 import fi.espoo.evaka.shared.auth.PasswordService
+import fi.espoo.evaka.shared.auth.PasswordSpecification
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -39,6 +41,7 @@ class PersonalDataControllerCitizen(
     private val accessControl: AccessControl,
     private val passwordService: PasswordService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val passwordSpecification: PasswordSpecification,
     private val env: EvakaEnv,
 ) {
     private val secureRandom = SecureRandom()
@@ -141,10 +144,7 @@ class PersonalDataControllerCitizen(
     ) {
         init {
             if (
-                password != null &&
-                    (password.value.isEmpty() ||
-                        password.value.length < 8 ||
-                        password.value.length > 128)
+                password != null && password.value.length !in PasswordConstraints.SUPPORTED_LENGTH
             ) {
                 throw BadRequest("Invalid password")
             }
@@ -160,8 +160,18 @@ class PersonalDataControllerCitizen(
     ) {
         if (!env.newCitizenWeakLoginEnabled) throw BadRequest("New citizen weak login is disabled")
         Audit.CitizenCredentialsUpdateAttempt.log(targetId = AuditId(user.id))
+        if (body.password != null) {
+            if (!passwordSpecification.constraints().isPasswordStructureValid(body.password)) {
+                throw BadRequest("Password is not structurally valid", "PASSWORD_FORMAT")
+            }
+        }
         val password = body.password?.let { passwordService.encode(it) }
         db.connect { dbc ->
+            if (body.password != null) {
+                if (!passwordSpecification.isPasswordAcceptable(dbc, body.password)) {
+                    throw BadRequest("Password is not acceptable", "PASSWORD_UNACCEPTABLE")
+                }
+            }
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
                     tx,
@@ -290,6 +300,10 @@ class PersonalDataControllerCitizen(
         generateSequence { "0123456789".random(secureRandom.asKotlinRandom()) }
             .take(CONFIRMATION_CODE_LENGTH)
             .joinToString(separator = "")
+
+    @GetMapping("/password-constraints")
+    fun getPasswordConstraints(user: AuthenticatedUser.Citizen): PasswordConstraints =
+        passwordSpecification.constraints()
 }
 
 val CONFIRMATION_CODE_DURATION: Duration = Duration.ofHours(2)

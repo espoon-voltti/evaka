@@ -2,14 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
+import { Failure } from 'lib-common/api'
 import { string } from 'lib-common/form/fields'
-import { object, validated } from 'lib-common/form/form'
+import { object, required, validated } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
+import { PasswordConstraints } from 'lib-common/generated/api-types/shared'
+import { isPasswordStructureValid } from 'lib-common/password'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -23,7 +26,7 @@ import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, Label } from 'lib-components/typography'
+import { H2, Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { faCheck, faLockAlt } from 'lib-icons'
@@ -39,12 +42,14 @@ export interface Props {
   user: User
   reloadUser: () => void
   emailVerificationStatus: EmailVerificationStatusResponse
+  passwordConstraints: PasswordConstraints
 }
 
 export default React.memo(function LoginDetailsSection({
   user,
   reloadUser,
-  emailVerificationStatus
+  emailVerificationStatus,
+  passwordConstraints
 }: Props) {
   const i18n = useTranslation()
   const t = i18n.personalDetails.loginDetailsSection
@@ -156,6 +161,7 @@ export default React.memo(function LoginDetailsSection({
           <>
             {modalOpen && (
               <WeakCredentialsFormModal
+                passwordConstraints={passwordConstraints}
                 hasCredentials={!!user.weakLoginUsername}
                 username={
                   user.weakLoginUsername ??
@@ -197,38 +203,23 @@ export default React.memo(function LoginDetailsSection({
   )
 })
 
-const minLength = 8
-const maxLength = 128
-
-const passwordForm = validated(
-  object({
-    password: string(),
-    confirmPassword: string()
-  }),
-  (form) => {
-    if (
-      form.password.length === 0 ||
-      form.password !== form.confirmPassword ||
-      form.password.length < minLength ||
-      form.password.length > maxLength
-    ) {
-      return 'required'
-    }
-    return undefined
-  }
-)
-
 const UsernameField = styled.input`
   cursor: auto;
   border: none;
 `
 
+const ConstraintsList = styled.ul`
+  margin: 0;
+`
+
 const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
+  passwordConstraints,
   hasCredentials,
   username,
   onSuccess,
   onCancel
 }: {
+  passwordConstraints: PasswordConstraints
   hasCredentials: boolean
   username: string
   onSuccess: () => void
@@ -237,13 +228,54 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
   const i18n = useTranslation()
   const t = i18n.personalDetails.loginDetailsSection
 
+  const passwordForm = useMemo(
+    () =>
+      validated(
+        object({
+          password: validated(required(string()), (password) =>
+            isPasswordStructureValid(passwordConstraints, password)
+              ? undefined
+              : 'passwordFormat'
+          ),
+          confirmPassword: required(string())
+        }),
+        (form) =>
+          form.password !== form.confirmPassword
+            ? { confirmPassword: 'passwordMismatch' }
+            : undefined
+      ),
+    [passwordConstraints]
+  )
+
   const form = useForm(
     passwordForm,
     () => ({ password: '', confirmPassword: '' }),
-    i18n.validationErrors
+    {
+      ...i18n.validationErrors,
+      ...t.validationErrors
+    },
+    {
+      // clear error when password is updated
+      onUpdate: (prev, next, _) => {
+        if (prev.password !== next.password) {
+          setUnacceptable(false)
+        }
+        return next
+      }
+    }
   )
   const { password, confirmPassword } = useFormFields(form)
-  const pattern = `.{${minLength},${maxLength}}`
+  const pattern = `.{${passwordConstraints.minLength},${passwordConstraints.maxLength}}`
+
+  const [isUnacceptable, setUnacceptable] = useState<boolean>(false)
+
+  const onFailure = useCallback(
+    (failure: Failure<unknown>) => {
+      setUnacceptable(failure.errorCode === 'PASSWORD_UNACCEPTABLE')
+    },
+    [setUnacceptable]
+  )
+
   return (
     <MutateFormModal
       data-qa="weak-credentials-modal"
@@ -260,8 +292,9 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
         }
       })}
       rejectAction={onCancel}
+      onFailure={onFailure}
       onSuccess={onSuccess}
-      resolveDisabled={!form.isValid()}
+      resolveDisabled={!form.isValid() || isUnacceptable}
     >
       <form onClick={(e) => e.preventDefault()}>
         <FixedSpaceColumn spacing="xs">
@@ -300,6 +333,44 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
             hideErrorsBeforeTouched={true}
             pattern={pattern}
           />
+          <Gap size="xs" />
+          <LabelLike>{`${t.passwordConstraints.label}:`}</LabelLike>
+          <ConstraintsList>
+            <li>
+              {t.passwordConstraints.length(
+                passwordConstraints.minLength,
+                passwordConstraints.maxLength
+              )}
+            </li>
+            {passwordConstraints.minLowers > 0 && (
+              <li>
+                {t.passwordConstraints.minLowers(passwordConstraints.minLowers)}
+              </li>
+            )}
+            {passwordConstraints.minUppers > 0 && (
+              <li>
+                {t.passwordConstraints.minUppers(passwordConstraints.minUppers)}
+              </li>
+            )}
+            {passwordConstraints.minDigits > 0 && (
+              <li>
+                {t.passwordConstraints.minDigits(passwordConstraints.minDigits)}
+              </li>
+            )}
+            {passwordConstraints.minSymbols > 0 && (
+              <li>
+                {t.passwordConstraints.minSymbols(
+                  passwordConstraints.minSymbols
+                )}
+              </li>
+            )}
+          </ConstraintsList>
+          {isUnacceptable && (
+            <AlertBox
+              data-qa="unacceptable-password-alert"
+              message={t.unacceptablePassword}
+            />
+          )}
         </FixedSpaceColumn>
       </form>
     </MutateFormModal>

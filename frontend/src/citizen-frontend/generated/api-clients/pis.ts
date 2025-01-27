@@ -9,6 +9,7 @@ import { EmailVerificationRequest } from 'lib-common/generated/api-types/pis'
 import { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
 import { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
 import { client } from '../../api-client'
@@ -34,6 +35,18 @@ export async function getEmailVerificationStatus(): Promise<EmailVerificationSta
 export async function getNotificationSettings(): Promise<EmailMessageType[]> {
   const { data: json } = await client.request<JsonOf<EmailMessageType[]>>({
     url: uri`/citizen/personal-data/notification-settings`.toString(),
+    method: 'GET'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.getPasswordConstraints
+*/
+export async function getPasswordConstraints(): Promise<PasswordConstraints> {
+  const { data: json } = await client.request<JsonOf<PasswordConstraints>>({
+    url: uri`/citizen/personal-data/password-constraints`.toString(),
     method: 'GET'
   })
   return json

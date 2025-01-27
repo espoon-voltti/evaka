@@ -25,7 +25,8 @@ import NotificationSettingsSection from './NotificationSettingsSection'
 import PersonalDetailsSection from './PersonalDetailsSection'
 import {
   emailVerificationStatusQuery,
-  notificationSettingsQuery
+  notificationSettingsQuery,
+  passwordConstraintsQuery
 } from './queries'
 
 export default React.memo(function PersonalDetails() {
@@ -34,6 +35,7 @@ export default React.memo(function PersonalDetails() {
   const notificationSettings = useQueryResult(notificationSettingsQuery())
   const notificationSettingsSection = useRef<HTMLDivElement>(null)
   const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
+  const passwordConstraints = useQueryResult(passwordConstraintsQuery())
 
   useEffect(() => {
     if (
@@ -78,8 +80,8 @@ export default React.memo(function PersonalDetails() {
             </>
           ))}
           {renderResult(
-            combine(user, emailVerificationStatus),
-            ([user, emailVerificationStatus]) =>
+            combine(user, emailVerificationStatus, passwordConstraints),
+            ([user, emailVerificationStatus, passwordConstraints]) =>
               user ? (
                 <>
                   {(!!user.keycloakEmail || featureFlags.weakLogin) && (
@@ -87,6 +89,7 @@ export default React.memo(function PersonalDetails() {
                       <HorizontalLine />
                       <LoginDetailsSection
                         user={user}
+                        passwordConstraints={passwordConstraints}
                         emailVerificationStatus={emailVerificationStatus}
                         reloadUser={refreshAuthStatus}
                       />

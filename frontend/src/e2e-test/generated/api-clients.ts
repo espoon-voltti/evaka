@@ -2456,6 +2456,29 @@ export async function terminatePlacement(
 
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertPasswordBlacklist
+*/
+export async function upsertPasswordBlacklist(
+  request: {
+    body: string[]
+  },
+  options?: { mockedTime?: HelsinkiDateTime }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/password-blacklist`.toString(),
+      method: 'PUT',
+      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
+      data: request.body satisfies JsonCompatible<string[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.upsertPerson
 */
 export async function upsertPerson(

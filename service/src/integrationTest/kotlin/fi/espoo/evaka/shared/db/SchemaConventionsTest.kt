@@ -513,6 +513,9 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ColumnRef("pairing", "employee_id"),
                 ColumnRef("pairing", "mobile_device_id"),
                 ColumnRef("pairing", "unit_id"),
+                // this is intentional, because the table may have a large number of rows (> 10
+                // million)
+                ColumnRef("password_blacklist", "source"),
                 ColumnRef("payment", "sent_by"),
                 ColumnRef("placement", "modified_by"),
                 ColumnRef("placement", "terminated_by"),
