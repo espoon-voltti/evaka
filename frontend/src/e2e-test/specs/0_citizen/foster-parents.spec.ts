@@ -275,8 +275,13 @@ test('Foster parent can receive and reply to messages', async () => {
   await messagesPage.receivedMessage.click()
   await messagesPage.assertMessageContent(1, reply)
 
-  const { endedRelationshipHeader } = await openEndedRelationshipPage()
-  await endedRelationshipHeader.assertNoTab('messages')
+  const { endedRelationshipPage } = await openEndedRelationshipPage()
+  await endedRelationshipPage.goto(config.enduserMessagesUrl)
+  const endedCitizenMessagesPage = new CitizenMessagesPage(
+    endedRelationshipPage
+  )
+  await endedCitizenMessagesPage.openFirstThread()
+  await endedCitizenMessagesPage.assertOpenReplyEditorButtonIsHidden()
 })
 
 test('Foster parent can read an accepted assistance decision', async () => {
