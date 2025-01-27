@@ -510,6 +510,7 @@ enum class Audit(
     SystemNotificationsReadCitizen,
     SystemNotificationsReadEmployeeMobile,
     TampereRegionalSurveyMonthly,
+    TampereRegionalSurveyAgeStatistics,
     TemporaryEmployeesRead,
     TemporaryEmployeeCreate,
     TemporaryEmployeeRead,
