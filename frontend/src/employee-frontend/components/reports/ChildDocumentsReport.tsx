@@ -47,7 +47,12 @@ export default React.memo(function ChildDocumentsReport() {
 
   const units = useQueryResult(unitsQuery({ includeClosed: false }))
   const unitOptions = useMemo(
-    () => units.map((res) => orderBy(res, (u) => u.name)),
+    () =>
+      units
+        .map((res) =>
+          res.filter((u) => u.enabledPilotFeatures.includes('VASU_AND_PEDADOC'))
+        )
+        .map((res) => orderBy(res, (u) => u.name)),
     [units]
   )
   const templates = useQueryResult(childDocumentsReportTemplateOptionsQuery())
