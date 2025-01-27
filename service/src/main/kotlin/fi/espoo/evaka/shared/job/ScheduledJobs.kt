@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.titania.cleanTitaniaErrors
 import fi.espoo.evaka.varda.new.VardaUpdateServiceNew
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.Path
 import java.time.LocalTime
 import org.springframework.stereotype.Component
 
@@ -473,6 +474,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun importPasswordBlacklists(db: Database.Connection, clock: EvakaClock) =
         evakaEnv.passwordBlacklistDirectory?.let { directory ->
-            passwordBlacklist.importBlacklists(db, directory)
+            passwordBlacklist.importBlacklists(db, Path.of(directory))
         }
 }

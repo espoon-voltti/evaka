@@ -82,13 +82,14 @@ export default React.memo(function LoginDetailsSection({
       <Grid>
         <H2 noMargin>{t.title}</H2>
         <div />
-        <Label>
-          {t.weakLoginUsername}
-          {featureFlags.weakLogin ? ' (Keycloak)' : ''}
-        </Label>
-        <div data-qa="keycloak-email" translate="no">
-          {user.keycloakEmail}
-        </div>
+        {!featureFlags.weakLogin && (
+          <>
+            <Label>{t.weakLoginUsername}</Label>
+            <div data-qa="keycloak-email" translate="no">
+              {user.keycloakEmail}
+            </div>
+          </>
+        )}
         {featureFlags.weakLogin && (user.email || user.weakLoginUsername) && (
           <>
             <Label>{t.weakLoginCredentials}</Label>
@@ -247,6 +248,8 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
     [passwordConstraints]
   )
 
+  const [isUnacceptable, setUnacceptable] = useState<boolean>(false)
+
   const form = useForm(
     passwordForm,
     () => ({ password: '', confirmPassword: '' }),
@@ -266,8 +269,6 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
   )
   const { password, confirmPassword } = useFormFields(form)
   const pattern = `.{${passwordConstraints.minLength},${passwordConstraints.maxLength}}`
-
-  const [isUnacceptable, setUnacceptable] = useState<boolean>(false)
 
   const onFailure = useCallback(
     (failure: Failure<unknown>) => {
