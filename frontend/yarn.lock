@@ -3148,14 +3148,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.49.0":
-  version: 1.49.0
-  resolution: "@playwright/test@npm:1.49.0"
+"@playwright/test@npm:^1.50.0":
+  version: 1.50.0
+  resolution: "@playwright/test@npm:1.50.0"
   dependencies:
-    playwright: "npm:1.49.0"
+    playwright: "npm:1.50.0"
   bin:
     playwright: cli.js
-  checksum: 10/e87485ab4c02b6dc0bc20a43ea3965c949c45caa4e7f5beea4a0abd29be0a318662931e887072db0d165f8dde93709b97ea1b2c6f4c833b403aa13427d76dd22
+  checksum: 10/1fec2ed986205b57b03f24392bb01c6454c1f0a5c14204ce921afd51c3f5d61f20eddb3a18d36a02b19b3e3d731c7ff6bb7ba3c622aabc8fa3802021aef7d21b
   languageName: node
   linkType: hard
 
@@ -6777,7 +6777,7 @@ __metadata:
     "@fortawesome/free-regular-svg-icons": "npm:6.7.1"
     "@fortawesome/free-solid-svg-icons": "npm:6.7.1"
     "@fortawesome/react-fontawesome": "npm:0.2.0"
-    "@playwright/test": "npm:^1.49.0"
+    "@playwright/test": "npm:^1.50.0"
     "@react-spring/rafz": "npm:^9.7.3"
     "@react-spring/web": "npm:^9.7.3"
     "@sentry/browser": "npm:^8.51.0"
@@ -6848,7 +6848,7 @@ __metadata:
     linkify-it: "npm:^5.0.0"
     lodash: "npm:^4.17.21"
     make-error-cause: "npm:^2.3.0"
-    playwright: "npm:^1.49.0"
+    playwright: "npm:^1.50.0"
     polished: "npm:^4.3.1"
     postcss: "npm:^8.4.31"
     postcss-loader: "npm:^8.1.0"
@@ -10106,27 +10106,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.49.0":
-  version: 1.49.0
-  resolution: "playwright-core@npm:1.49.0"
+"playwright-core@npm:1.50.0":
+  version: 1.50.0
+  resolution: "playwright-core@npm:1.50.0"
   bin:
     playwright-core: cli.js
-  checksum: 10/ef9c708293adab100337ed7fd8e61660be381707fc2b84f07b5f40d1ead44feb6a8e52fef98075e594522229d15a9ad56dd1471689cfa59409bec6447c22944d
+  checksum: 10/0d27e52164bcc37ed5aeaa0c7efa6a0b3616cfbb01e206c26572bff8b8e5f0923a993369c826056cd7bee4b975508a1ec257b533098ee9db7bc5b75832110e4d
   languageName: node
   linkType: hard
 
-"playwright@npm:1.49.0, playwright@npm:^1.49.0":
-  version: 1.49.0
-  resolution: "playwright@npm:1.49.0"
+"playwright@npm:1.50.0, playwright@npm:^1.50.0":
+  version: 1.50.0
+  resolution: "playwright@npm:1.50.0"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.49.0"
+    playwright-core: "npm:1.50.0"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10/1fb198d09d388ec46cc2f0fc6b889a8bde8a75066ded82d35f08ba333091ebf3fc4ddf11263a86058a7078c7238ec4f23a86a9f1dc3ebd4f610c9eb07841fb32
+  checksum: 10/53521f05c48ab51a37d6fa280a7c1e6486e2879f9997e877227517945faf195ce16829cf144709bba292c3023bcd07cf44a4dd965458c9adc30ea6fbe1f0f74a
   languageName: node
   linkType: hard
 
