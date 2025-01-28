@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -32,14 +33,14 @@ class UnitsReportController(private val accessControl: AccessControl) {
                         Action.Global.READ_UNITS_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getUnitRows()
+                    it.getUnitRows(today = clock.today())
                 }
             }
             .also { Audit.UnitsReportRead.log() }
     }
 }
 
-private fun Database.Read.getUnitRows(): List<UnitsReportRow> {
+private fun Database.Read.getUnitRows(today: LocalDate): List<UnitsReportRow> {
     return createQuery {
             sql(
                 """
@@ -69,6 +70,7 @@ private fun Database.Read.getUnitRows(): List<UnitsReportRow> {
                 u.unit_manager_phone
             FROM daycare u
             JOIN care_area ca ON ca.id = u.care_area_id
+            WHERE u.closing_date IS NULL OR u.closing_date >= ${bind(today)}
         """
             )
         }
