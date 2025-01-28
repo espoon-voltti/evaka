@@ -90,12 +90,12 @@ type Message = Omit<
 
 const messageToUpdatableDraftWithAccount = (
   m: Message,
-  recipients: { key: string; text: string }[]
+  recipients: { id: string; text: string }[]
 ): Draft => ({
   content: m.content,
   urgent: m.urgent,
   sensitive: false,
-  recipientIds: recipients.map(({ key }) => key),
+  recipientIds: recipients.map(({ id }) => id),
   recipientNames: recipients.map(({ text }) => text),
   title: m.title,
   type: m.type,
@@ -252,7 +252,13 @@ export default React.memo(function MessageEditor({
       setMessage(updatedMessage)
       const selectedReceivers = getSelected(receiverTree)
       setDraft(
-        messageToUpdatableDraftWithAccount(updatedMessage, selectedReceivers)
+        messageToUpdatableDraftWithAccount(
+          updatedMessage,
+          selectedReceivers.map((r) => ({
+            id: r.messageRecipient.id,
+            text: r.text
+          }))
+        )
       )
     },
     [message, receiverTree, setDraft]
@@ -341,12 +347,17 @@ export default React.memo(function MessageEditor({
 
       const updatedMessage = {
         ...message,
-        recipientIds: selected.map((s) => s.key),
+        recipientIds: selected.map((s) => s.messageRecipient.id),
         recipientNames: selected.map((s) => s.text),
         sensitive: shouldResetSensitivity ? false : message.sensitive
       }
       setMessage(updatedMessage)
-      setDraft(messageToUpdatableDraftWithAccount(updatedMessage, selected))
+      setDraft(
+        messageToUpdatableDraftWithAccount(
+          updatedMessage,
+          selected.map((r) => ({ id: r.messageRecipient.id, text: r.text }))
+        )
+      )
     },
     [message, senderAccountType, setDraft]
   )
