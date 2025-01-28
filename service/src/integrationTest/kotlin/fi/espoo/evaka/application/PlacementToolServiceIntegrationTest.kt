@@ -446,11 +446,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         )
         db.transaction { tx -> tx.insert(testFeeThresholds) }
-
-        controller.createPlacementToolApplications(
-            dbInstance(),
-            admin,
-            clock,
+        val file =
             MockMultipartFile(
                 "test.csv",
                 """
@@ -459,8 +455,14 @@ ${child.ssn!!};${unit.id}
         """
                     .trimIndent()
                     .toByteArray(StandardCharsets.UTF_8),
-            ),
-        )
+            )
+
+        val validationPre =
+            controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
+        assertEquals(1, validationPre.count)
+        assertEquals(0, validationPre.existing)
+
+        controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
         asyncJobRunner.runPendingJobsSync(clock)
 
         val applicationSummaries =
@@ -473,6 +475,11 @@ ${child.ssn!!};${unit.id}
         assertEquals(summary.preferredUnitId, unit.id)
         val child = db.read { it.getPersonBySSN(child.ssn!!) }
         assertEquals(summary.childId, child!!.id)
+
+        val validationPost =
+            controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
+        assertEquals(1, validationPost.count)
+        assertEquals(1, validationPost.existing)
     }
 
     @Test
@@ -487,11 +494,7 @@ ${child.ssn!!};${unit.id}
             )
         )
         db.transaction { tx -> tx.insert(testFeeThresholds) }
-
-        controller.createPlacementToolApplications(
-            dbInstance(),
-            admin,
-            clock,
+        val file =
             MockMultipartFile(
                 "test.csv",
                 """
@@ -500,8 +503,14 @@ ${child.ssn!!};${unit.id}
         """
                     .trimIndent()
                     .toByteArray(StandardCharsets.UTF_8),
-            ),
-        )
+            )
+
+        val validationPre =
+            controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
+        assertEquals(1, validationPre.count)
+        assertEquals(0, validationPre.existing)
+
+        controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
         asyncJobRunner.runPendingJobsSync(clock)
 
         val applicationSummaries =
@@ -514,6 +523,11 @@ ${child.ssn!!};${unit.id}
         assertEquals(summary.preferredUnitId, unit.id)
         val child = db.read { it.getPersonBySSN(child.ssn!!) }
         assertEquals(summary.childId, child!!.id)
+
+        val validationPost =
+            controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
+        assertEquals(1, validationPost.count)
+        assertEquals(1, validationPost.existing)
     }
 
     @Test

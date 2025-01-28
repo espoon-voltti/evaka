@@ -59,6 +59,35 @@ class PlacementToolService(
         asyncJobRunner.registerHandler(::createPlacementToolApplicationsFromSsn)
     }
 
+    fun validatePlacementToolApplications(
+        tx: Database.Read,
+        clock: EvakaClock,
+        file: MultipartFile,
+    ): PlacementToolValidation {
+        val placements = file.inputStream.use { parsePlacementToolCsv(it) }
+        val (socialSecurityNumbers, personIds) =
+            placements.keys
+                .partition { isValidSSN(it) }
+                .let { it.first to it.second.map { id -> PersonId(UUID.fromString(id)) } }
+        val term =
+            findNextPreschoolTerm(tx, clock.today()) ?: error("Next preschool term not found")
+        val existing =
+            tx.createQuery {
+                    sql(
+                        """
+SELECT count(DISTINCT child.id)
+FROM application
+JOIN person child ON application.child_id = child.id
+WHERE application.type = 'PRESCHOOL'
+  AND (application.document ->> 'preferredStartDate')::date = ${bind(term.finnishPreschool.start)}
+  AND (child.social_security_number = ANY (${bind(socialSecurityNumbers)}) OR child.id = ANY(${bind(personIds)}))
+            """
+                    )
+                }
+                .exactlyOne<Int>()
+        return PlacementToolValidation(count = placements.size, existing = existing)
+    }
+
     fun doCreatePlacementToolApplications(
         db: Database.Connection,
         clock: EvakaClock,

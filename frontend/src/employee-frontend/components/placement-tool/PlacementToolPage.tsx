@@ -43,7 +43,10 @@ export default React.memo(function PlacementToolPage() {
                   files={[]}
                   validateHandler={placementFileValidate}
                   getValidationResult={(validation) =>
-                    i18n.placementTool.validation(validation.count)
+                    i18n.placementTool.validation(
+                      validation.count,
+                      validation.existing
+                    )
                   }
                   uploadHandler={placementFileUpload}
                   getDownloadUrl={() => ''}
