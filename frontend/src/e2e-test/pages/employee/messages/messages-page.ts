@@ -219,7 +219,7 @@ export class MessageEditor extends Element {
     sensitive?: boolean
     attachmentCount?: number
     sender?: string
-    receivers?: string[]
+    receiverKeys?: string[]
     confirmManyRecipients?: boolean
     yearsOfBirth?: number[]
     shiftcare?: boolean
@@ -234,10 +234,10 @@ export class MessageEditor extends Element {
       await this.senderSelection.fillAndSelectFirst(message.sender)
     }
 
-    if (message.receivers) {
+    if (message.receiverKeys) {
       await this.receiverSelection.open()
       await this.receiverSelection.expandAll()
-      for (const receiver of message.receivers) {
+      for (const receiver of message.receiverKeys) {
         await this.receiverSelection.option(receiver).check()
       }
       await this.receiverSelection.close()

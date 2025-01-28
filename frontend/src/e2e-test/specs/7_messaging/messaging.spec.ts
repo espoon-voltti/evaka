@@ -249,7 +249,7 @@ describe('Sending and receiving messages', () => {
         const messageEditor = await messagesPage.openMessageEditor()
         await messageEditor.sendNewMessage({
           ...defaultMessage,
-          receivers: [testChild2.id]
+          receiverKeys: [`${testChild2.id}-false`]
         })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
