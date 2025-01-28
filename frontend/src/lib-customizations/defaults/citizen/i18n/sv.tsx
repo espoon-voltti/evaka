@@ -2528,9 +2528,9 @@ const sv: Translations = {
         HANDLED: 'Handläggare'
       },
       actions: {
-        view: 'Näytä tuloselvitys',
-        addDetails: 'Anna lisätietoja',
-        cancel: 'Peru tuloselvitys'
+        view: 'Visa inkomstutredning',
+        addDetails: 'Lägga till information',
+        cancel: 'Avbryt inkomstutredning'
       },
       startDate: 'Gäller från och med',
       endDate: 'Gäller till och med',
