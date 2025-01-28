@@ -576,15 +576,11 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
           }
           disabled={readOnly}
         />
-        {formData.incomeSource === 'ATTACHMENTS' && (
-          <>
-            <Gap size="s" />
-            <InfoBox
-              message={t.income.grossIncome.attachmentsVerificationInfo}
-              thin
-            />
-          </>
-        )}
+        <Gap size="s" />
+        <InfoBox
+          message={t.income.grossIncome.attachmentsVerificationInfo}
+          thin
+        />
         <Gap size="L" />
         <Label>{t.income.grossIncome.estimate}</Label>
         <Gap size="m" />

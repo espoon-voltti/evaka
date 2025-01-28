@@ -2329,7 +2329,8 @@ export default {
       incomeSource: 'Tulotietojen toimitus',
       provideAttachments:
         'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
-      attachmentsVerificationInfo: 'Tulotiedot tarkistetaan vuoden välein.',
+      attachmentsVerificationInfo:
+        'Tulotiedot tarkistetaan vähintään vuoden välein.',
       estimate: 'Arvio bruttotuloistani',
       estimatedMonthlyIncome: 'Keskimääräiset tulot sisältäen lomarahat, €/kk',
       otherIncome: 'Muut tulot',
