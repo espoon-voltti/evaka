@@ -4920,7 +4920,7 @@ export const fi = {
       MESSAGING: 'Viestintä',
       MOBILE: 'Mobiili',
       RESERVATIONS: 'Varaukset',
-      VASU_AND_PEDADOC: 'Vasu ja pedagoginen dokumentointi',
+      VASU_AND_PEDADOC: 'Pedagogiset asiakirjat ja pedagoginen dokumentointi',
       MOBILE_MESSAGING: 'Mobiili-viestintä',
       PLACEMENT_TERMINATION: 'Paikan irtisanominen',
       REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo',
