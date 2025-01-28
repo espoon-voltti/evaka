@@ -18,9 +18,11 @@ import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.DefaultInvoiceGenerationLogic
+import fi.espoo.evaka.invoicing.service.DefaultInvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.InvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealTypeMapper
@@ -200,6 +202,9 @@ class SharedIntegrationTestConfig {
     @Bean fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
 
     @Bean
+    fun invoiceNumberProvider(): InvoiceNumberProvider = DefaultInvoiceNumberProvider(5000000000)
+
+    @Bean
     fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
         EspooIncomeCoefficientMultiplierProvider()
 
@@ -228,7 +233,6 @@ val testFeatureConfig =
         freeSickLeaveOnContractDays = false,
         freeAbsenceGivesADailyRefund = true,
         alwaysUseDaycareFinanceDecisionHandler = false,
-        invoiceNumberSeriesStart = 5000000000,
         paymentNumberSeriesStart = 9000000000,
         unplannedAbsencesAreContractSurplusDays = true,
         maxContractDaySurplusThreshold = null,

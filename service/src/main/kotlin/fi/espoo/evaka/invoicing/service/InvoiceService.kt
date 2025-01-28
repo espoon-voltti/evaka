@@ -15,7 +15,6 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -29,11 +28,25 @@ data class InvoiceDaycare(val id: DaycareId, val name: String, val costCenter: S
 
 data class InvoiceCodes(val products: List<ProductWithName>, val units: List<InvoiceDaycare>)
 
+interface InvoiceNumberProvider {
+    /**
+     * The next invoice number to use
+     *
+     * The number of subsequent invoices is the previous number plus one.
+     */
+    fun getNextInvoiceNumber(tx: Database.Read): Long
+}
+
+class DefaultInvoiceNumberProvider(private val seriesStart: Long) : InvoiceNumberProvider {
+    override fun getNextInvoiceNumber(tx: Database.Read): Long =
+        tx.getMaxInvoiceNumber().let { if (it >= seriesStart) it + 1 else seriesStart }
+}
+
 @Component
 class InvoiceService(
     private val integrationClient: InvoiceIntegrationClient,
     private val productProvider: InvoiceProductProvider,
-    private val featureConfig: FeatureConfig,
+    private val numberProvider: InvoiceNumberProvider,
 ) {
     fun sendInvoices(
         tx: Database.Transaction,
@@ -43,7 +56,6 @@ class InvoiceService(
         invoiceDate: LocalDate?,
         dueDate: LocalDate?,
     ) {
-        val seriesStart = featureConfig.invoiceNumberSeriesStart
         tx.lockInvoices(invoiceIds)
 
         val invoices = tx.getInvoicesByIds(invoiceIds)
@@ -54,12 +66,11 @@ class InvoiceService(
             throw BadRequest("Some invoices were not drafts")
         }
 
-        val maxInvoiceNumber =
-            tx.getMaxInvoiceNumber().let { if (it >= seriesStart) it + 1 else seriesStart }
+        val nextInvoiceNumber = numberProvider.getNextInvoiceNumber(tx)
         val updatedInvoices =
             invoices.mapIndexed { index, invoice ->
                 invoice.copy(
-                    number = maxInvoiceNumber + index,
+                    number = nextInvoiceNumber + index,
                     invoiceDate = invoiceDate ?: invoice.invoiceDate,
                     dueDate = dueDate ?: invoice.dueDate,
                 )

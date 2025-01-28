@@ -63,13 +63,6 @@ data class FeatureConfig(
     val alwaysUseDaycareFinanceDecisionHandler: Boolean,
 
     /**
-     * The first invoice number to use
-     *
-     * The number of subsequent invoices is the previous number plus one.
-     */
-    val invoiceNumberSeriesStart: Long,
-
-    /**
      * The first payment number to use
      *
      * The number of subsequent payments is the previous number plus one. If null, payments cannot
