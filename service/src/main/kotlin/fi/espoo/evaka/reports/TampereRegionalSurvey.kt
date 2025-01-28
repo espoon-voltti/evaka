@@ -235,7 +235,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                         where("date_part('year', age(${bind(yearlyStatDay)}, p.date_of_birth)) = 5")
                     }
 
-                    val voucherPredicate = Predicate {
+                    val voucherDaycarePredicate = Predicate {
                         where("$it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}')")
                     }
 
@@ -334,13 +334,16 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val voucherAssistance =
                         tx.getYearlyAssistanceCount(
                             statDay = yearlyStatDay,
-                            daycarePred = voucherPredicate,
+                            daycarePred =
+                                voucherDaycarePredicate.and(
+                                    Predicate { where("$it.type && '{CENTRE}'") }
+                                ),
                         )
 
                     val voucherGeneralAssistance =
                         tx.getYearlyAssistanceLevelCount(
                             statDay = yearlyStatDay,
-                            daycarePred = voucherPredicate,
+                            daycarePred = voucherDaycarePredicate,
                             assistancePred =
                                 Predicate { where("$it.level = ANY ('{GENERAL_SUPPORT}')") },
                         )
@@ -348,7 +351,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val voucherSpecialAssistance =
                         tx.getYearlyAssistanceLevelCount(
                             statDay = yearlyStatDay,
-                            daycarePred = voucherPredicate,
+                            daycarePred = voucherDaycarePredicate,
                             assistancePred =
                                 Predicate { where("$it.level = ANY ('{SPECIAL_SUPPORT}')") },
                         )
@@ -356,7 +359,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val voucherEnhancedAssistance =
                         tx.getYearlyAssistanceLevelCount(
                             statDay = yearlyStatDay,
-                            daycarePred = voucherPredicate,
+                            daycarePred = voucherDaycarePredicate,
                             assistancePred =
                                 Predicate { where("$it.level = ANY ('{INTENSIFIED_SUPPORT}')") },
                         )
@@ -395,7 +398,9 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
         reportingDays: List<LocalDate>
     ): List<MonthlyAssistanceResult> {
         val data =
-            getMonthlyAssistanceCountRows(reportingDays = reportingDays).associateBy { it.month }
+            getMonthlyMunicipalAssistanceCountRows(reportingDays = reportingDays).associateBy {
+                it.month
+            }
 
         return (1..12).map { month -> data[month] ?: MonthlyAssistanceResult(month = month) }
     }
@@ -566,7 +571,7 @@ GROUP BY month
             .toList<MonthlyMunicipalShiftCareResult>()
     }
 
-    private fun Database.Read.getMonthlyAssistanceCountRows(
+    private fun Database.Read.getMonthlyMunicipalAssistanceCountRows(
         reportingDays: List<LocalDate>
     ): List<MonthlyAssistanceResult> {
         return createQuery {
@@ -579,6 +584,8 @@ FROM unnest(${bind(reportingDays)}::date[]) day
               ON daterange(pl.start_date, pl.end_date, '[]') @> day
          JOIN daycare d ON pl.unit_id = d.id
 WHERE pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
+  AND d.provider_type = ANY ('{MUNICIPAL}')
+  AND d.type && '{CENTRE}'
   AND (EXISTS (SELECT FROM assistance_factor af WHERE af.child_id = pl.child_id AND af.valid_during @> day)
     OR EXISTS (SELECT
                FROM assistance_action an
