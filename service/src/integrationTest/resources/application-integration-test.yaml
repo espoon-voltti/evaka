@@ -85,7 +85,6 @@ evaka:
   jwt:
     public_keys_url: classpath:evaka-integration-test/jwks.json
   max_attachments_per_user: 3
-  use_new_assistance_model: true
   web_push:
     enabled: true
     vapid_private_key: G3IfWt-tclp_R5d_SIMLl_jjttrC86dwG4Fs8OwMDmg
