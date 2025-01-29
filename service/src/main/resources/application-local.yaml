@@ -72,8 +72,6 @@ evaka:
     vapid_private_key: G3IfWt-tclp_R5d_SIMLl_jjttrC86dwG4Fs8OwMDmg
   use_new_assistance_model: true
   replacement_invoices_start: '2021-01'
-  new_citizen_weak_login:
-    enabled: true
 espoo:
   integration:
     invoice:

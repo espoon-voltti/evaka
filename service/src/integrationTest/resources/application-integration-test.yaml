@@ -90,8 +90,6 @@ evaka:
     enabled: true
     vapid_private_key: G3IfWt-tclp_R5d_SIMLl_jjttrC86dwG4Fs8OwMDmg
   titania_enabled: true
-  new_citizen_weak_login:
-    enabled: true
 espoo:
   integration:
     invoice:

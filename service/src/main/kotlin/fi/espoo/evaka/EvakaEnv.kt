@@ -41,7 +41,6 @@ data class EvakaEnv(
     val plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean,
     val personAddressEnvelopeWindowPosition: Rectangle,
     val replacementInvoicesStart: YearMonth?,
-    val newCitizenWeakLoginEnabled: Boolean,
     val passwordBlacklistDirectory: String?,
 ) {
     companion object {
@@ -78,8 +77,6 @@ data class EvakaEnv(
                     env.lookup<String?>("evaka.replacement_invoices_start")?.let {
                         YearMonth.parse(it)
                     },
-                newCitizenWeakLoginEnabled =
-                    env.lookup("evaka.new_citizen_weak_login.enabled") ?: false,
                 passwordBlacklistDirectory = env.lookup("evaka.password_blacklist_directory"),
             )
         }

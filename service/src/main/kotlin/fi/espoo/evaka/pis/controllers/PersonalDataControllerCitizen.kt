@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.pis.*
 import fi.espoo.evaka.shared.PersonEmailVerificationId
@@ -42,7 +41,6 @@ class PersonalDataControllerCitizen(
     private val passwordService: PasswordService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val passwordSpecification: PasswordSpecification,
-    private val env: EvakaEnv,
 ) {
     private val secureRandom = SecureRandom()
 
@@ -158,7 +156,6 @@ class PersonalDataControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: UpdateWeakLoginCredentialsRequest,
     ) {
-        if (!env.newCitizenWeakLoginEnabled) throw BadRequest("New citizen weak login is disabled")
         Audit.CitizenCredentialsUpdateAttempt.log(targetId = AuditId(user.id))
         if (body.password != null) {
             if (!passwordSpecification.constraints().isPasswordStructureValid(body.password)) {
