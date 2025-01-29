@@ -36,11 +36,10 @@ import {
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import CitizenHeader from '../../pages/citizen/citizen-header'
+import { envs, EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-const e: EnvType[] = ['desktop', 'mobile']
 const today = LocalDate.of(2022, 1, 5)
 
 let page: Page
@@ -71,7 +70,7 @@ async function openCalendarPage(
   return new CitizenCalendarPage(page, envType)
 }
 
-describe.each(e)('Citizen attendance reservations (%s)', (env) => {
+describe.each(envs)('Citizen attendance reservations (%s)', (env) => {
   let children: DevPerson[]
 
   beforeEach(async () => {
@@ -659,7 +658,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   })
 })
 
-describe.each(e)('Calendar day content (%s)', (env) => {
+describe.each(envs)('Calendar day content (%s)', (env) => {
   async function init(options?: { placementType?: PlacementType }) {
     await resetServiceState()
 
@@ -1162,65 +1161,71 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   })
 })
 
-describe.each(e)('Citizen calendar previous month contents on (%s)', (env) => {
-  const attendanceDateInPast = LocalDate.of(2021, 10, 4)
-  beforeEach(async () => {
-    const startDate = today.subMonths(4)
-    await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
-    await Fixture.placement({
-      childId: testChild.id,
-      unitId: testDaycare.id,
-      startDate,
-      endDate: startDate.addYears(1),
-      type: 'DAYCARE'
-    }).save()
+describe.each(envs)(
+  'Citizen calendar previous month contents on (%s)',
+  (env) => {
+    const attendanceDateInPast = LocalDate.of(2021, 10, 4)
+    beforeEach(async () => {
+      const startDate = today.subMonths(4)
+      await resetServiceState()
+      await Fixture.careArea(testCareArea).save()
+      await Fixture.daycare(testDaycare).save()
+      await Fixture.family({
+        guardian: testAdult,
+        children: [testChild]
+      }).save()
+      await Fixture.placement({
+        childId: testChild.id,
+        unitId: testDaycare.id,
+        startDate,
+        endDate: startDate.addYears(1),
+        type: 'DAYCARE'
+      }).save()
 
-    await Fixture.childAttendance({
-      childId: testChild.id,
-      unitId: testDaycare.id,
-      date: attendanceDateInPast,
-      arrived: LocalTime.of(8, 0),
-      departed: LocalTime.of(15, 30)
-    }).save()
-    await Fixture.absence({
-      childId: testChild.id,
-      date: attendanceDateInPast.addDays(1)
-    }).save()
-  })
+      await Fixture.childAttendance({
+        childId: testChild.id,
+        unitId: testDaycare.id,
+        date: attendanceDateInPast,
+        arrived: LocalTime.of(8, 0),
+        departed: LocalTime.of(15, 30)
+      }).save()
+      await Fixture.absence({
+        childId: testChild.id,
+        date: attendanceDateInPast.addDays(1)
+      }).save()
+    })
 
-  test('Citizen can browse calendar history and view attendances', async () => {
-    const calendarPage = await openCalendarPage(env)
+    test('Citizen can browse calendar history and view attendances', async () => {
+      const calendarPage = await openCalendarPage(env)
 
-    await calendarPage.assertHasNoDate(attendanceDateInPast)
+      await calendarPage.assertHasNoDate(attendanceDateInPast)
 
-    if (env === 'desktop') {
-      await calendarPage.assertMonthTitle('Tammikuu 2022')
-      await calendarPage.navigateToPreviousMonths(3)
-      await calendarPage.assertMonthTitle('Lokakuu 2021')
-    } else {
-      // Mobile calendar can have the "load previous" button
-      // on the "side" of the previous month already,
-      // thus less clicks needed in this case compared to desktop
-      await calendarPage.navigateToPreviousMonths(2)
-    }
-
-    await calendarPage.assertDay(attendanceDateInPast, [
-      {
-        childIds: [testChild.id],
-        text: '08:00–15:30'
+      if (env === 'desktop') {
+        await calendarPage.assertMonthTitle('Tammikuu 2022')
+        await calendarPage.navigateToPreviousMonths(3)
+        await calendarPage.assertMonthTitle('Lokakuu 2021')
+      } else {
+        // Mobile calendar can have the "load previous" button
+        // on the "side" of the previous month already,
+        // thus less clicks needed in this case compared to desktop
+        await calendarPage.navigateToPreviousMonths(2)
       }
-    ])
-    await calendarPage.assertDay(attendanceDateInPast.addDays(1), [
-      {
-        childIds: [testChild.id],
-        text: 'Poissa'
-      }
-    ])
-  })
-})
+
+      await calendarPage.assertDay(attendanceDateInPast, [
+        {
+          childIds: [testChild.id],
+          text: '08:00–15:30'
+        }
+      ])
+      await calendarPage.assertDay(attendanceDateInPast.addDays(1), [
+        {
+          childIds: [testChild.id],
+          text: 'Poissa'
+        }
+      ])
+    })
+  }
+)
 
 describe('Citizen calendar child visibility', () => {
   let page: Page
@@ -1518,7 +1523,7 @@ describe('Citizen calendar visibility', () => {
   })
 })
 
-describe.each(e)('Citizen calendar shift care reservations', (env) => {
+describe.each(envs)('Citizen calendar shift care reservations', (env) => {
   let page: Page
   const today = LocalDate.of(2022, 1, 5)
   const placement1start = today

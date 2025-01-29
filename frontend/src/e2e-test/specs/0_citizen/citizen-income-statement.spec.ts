@@ -9,7 +9,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Page } from '../../utils/page'
+import { envs, EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
@@ -18,26 +18,22 @@ let incomeStatementsPage: IncomeStatementsPage
 
 const now = HelsinkiDateTime.of(2024, 11, 25, 12)
 
-beforeEach(async () => {
-  await resetServiceState()
-
-  await Fixture.person(testAdult).saveAdult({ updateMockVtjWithDependants: [] })
-
-  page = await Page.open({ mockedTime: now })
-  await enduserLogin(page, testAdult)
-  header = new CitizenHeader(page)
-  incomeStatementsPage = new IncomeStatementsPage(page)
-})
-
 async function assertIncomeStatementCreated(
   startDate: string,
-  sent: HelsinkiDateTime | null
+  sent: HelsinkiDateTime | null,
+  env: EnvType
 ) {
   await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
   const row = incomeStatementsPage.rows.only()
   await row.assertText((text) => text.includes(startDate))
   await row.assertText((text) =>
-    text.includes(sent ? sent.toLocalDate().format() : 'Ei lähetetty')
+    text.includes(
+      sent
+        ? sent.toLocalDate().format()
+        : env === 'desktop'
+          ? 'Ei lähetetty'
+          : 'Lähetetty: -'
+    )
   )
 }
 
@@ -53,9 +49,31 @@ const assertRequiredAttachment = async (attachment: string, present = true) =>
         )
   )
 
-describe('Income statements', () => {
+describe.each(envs)('Income statements', (env) => {
   const startDate = '24.12.2044'
   const endDate = '24.12.2044'
+
+  beforeEach(async () => {
+    await resetServiceState()
+
+    await Fixture.person(testAdult).saveAdult({
+      updateMockVtjWithDependants: []
+    })
+
+    const viewport =
+      env === 'mobile'
+        ? { width: 375, height: 812 }
+        : { width: 1920, height: 1080 }
+
+    page = await Page.open({
+      viewport,
+      screen: viewport,
+      mockedTime: now
+    })
+    await enduserLogin(page, testAdult)
+    header = new CitizenHeader(page, env)
+    incomeStatementsPage = new IncomeStatementsPage(page, env)
+  })
 
   describe('With the bare minimum selected', () => {
     test('Highest fee', async () => {
@@ -66,7 +84,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate, now)
+      await assertIncomeStatementCreated(startDate, now, env)
     })
 
     test('Gross income', async () => {
@@ -98,7 +116,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
       await incomeStatementsPage.incomeValidMaxRangeInfo.waitUntilHidden()
       await incomeStatementsPage.submit()
-      await assertIncomeStatementCreated(startDate, now)
+      await assertIncomeStatementCreated(startDate, now, env)
     })
   })
 
@@ -140,7 +158,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate, now)
+      await assertIncomeStatementCreated(startDate, now, env)
     })
     test('Self employed', async () => {
       await header.selectTab('income')
@@ -177,7 +195,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate, now)
+      await assertIncomeStatementCreated(startDate, now, env)
     })
 
     test('Light entrepreneur', async () => {
@@ -211,7 +229,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate, now)
+      await assertIncomeStatementCreated(startDate, now, env)
     })
 
     test('Partnership', async () => {
@@ -238,7 +256,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate, now)
+      await assertIncomeStatementCreated(startDate, now, env)
     })
   })
 
@@ -250,7 +268,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.selectIncomeStatementType('highest-fee')
       await incomeStatementsPage.saveDraft()
 
-      await assertIncomeStatementCreated(startDate, null)
+      await assertIncomeStatementCreated(startDate, null, env)
 
       // update and send
       const startDate2 = '24.12.2044'
@@ -259,7 +277,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated(startDate2, now)
+      await assertIncomeStatementCreated(startDate2, now, env)
     })
   })
 })

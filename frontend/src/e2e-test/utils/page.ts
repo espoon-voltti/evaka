@@ -16,6 +16,10 @@ import { EvakaBrowserContextOptions, newBrowserContext } from '../browser'
 
 import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
 
+export type EnvType = 'desktop' | 'mobile'
+
+export const envs = ['desktop', 'mobile'] as const
+
 export class Page {
   readonly keyboard: Keyboard
 

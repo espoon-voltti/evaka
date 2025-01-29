@@ -15,14 +15,13 @@ import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage, {
   TwoPartReservation
 } from '../../pages/citizen/citizen-calendar'
-import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import CitizenHeader from '../../pages/citizen/citizen-header'
+import { envs, EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-const e: EnvType[] = ['desktop', 'mobile']
 const june7th2023 = LocalDate.of(2023, 6, 7)
 
-describe.each(e)(
+describe.each(envs)(
   'Citizen reservations with intermittent shift care (%s)',
   (env) => {
     beforeEach(async (): Promise<void> => resetServiceState())

@@ -2522,6 +2522,17 @@ const sv: Translations = {
     table: {
       title: 'Inkomstutredningar',
       incomeStatementForm: 'Blankett för inkomstutredning',
+      status: 'Status',
+      statuses: {
+        DRAFT: 'Utkast',
+        SENT: 'Skickat',
+        HANDLED: 'Handläggare'
+      },
+      actions: {
+        view: 'Visa inkomstutredning',
+        addDetails: 'Lägga till information',
+        cancel: 'Avbryt inkomstutredning'
+      },
       startDate: 'Gäller från och med',
       endDate: 'Gäller till och med',
       createdAt: 'Skapad',

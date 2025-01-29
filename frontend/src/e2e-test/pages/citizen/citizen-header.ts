@@ -5,9 +5,7 @@
 import { Lang } from 'lib-customizations/citizen'
 
 import { waitUntilFalse } from '../../utils'
-import { Page, Element } from '../../utils/page'
-
-export type EnvType = 'desktop' | 'mobile'
+import { Page, Element, EnvType } from '../../utils/page'
 
 export default class CitizenHeader {
   #languageMenuToggle: Element

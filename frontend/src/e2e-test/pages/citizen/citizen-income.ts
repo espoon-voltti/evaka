@@ -8,7 +8,8 @@ import {
   Radio,
   TextInput,
   Element,
-  ElementCollection
+  ElementCollection,
+  EnvType
 } from '../../utils/page'
 
 export default class CitizenIncomePage {
@@ -21,9 +22,16 @@ export default class CitizenIncomePage {
   incomeStartDateInfo: Element
   incomeEndDateInfo: Element
   incomeValidMaxRangeInfo: Element
-  constructor(private readonly page: Page) {
+  constructor(
+    private readonly page: Page,
+    env: EnvType
+  ) {
     this.requiredAttachments = page.findByDataQa('required-attachments')
-    this.rows = page.findAll('tbody tr')
+    this.rows = page
+      .findByDataQa(
+        env === 'desktop' ? 'income-statements-table' : 'income-statements-list'
+      )
+      .findAllByDataQa('income-statement-row')
     this.assureCheckBox = new Checkbox(page.findByDataQa('assure-checkbox'))
     this.#entrepreneurDate = new TextInput(
       page.findByDataQa('entrepreneur-start-date')
@@ -40,7 +48,7 @@ export default class CitizenIncomePage {
   }
 
   async editIncomeStatement(n: number) {
-    await this.page.findAllByDataQa('edit-income-statement-btn').nth(n).click()
+    await this.rows.nth(n).findByDataQa('edit-income-statement').click()
   }
 
   async selectIncomeStatementType(

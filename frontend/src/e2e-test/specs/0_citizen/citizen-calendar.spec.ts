@@ -29,11 +29,9 @@ import {
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import CitizenHeader from '../../pages/citizen/citizen-header'
+import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
-
-const e: EnvType[] = ['desktop', 'mobile']
 
 let page: Page
 let header: CitizenHeader
@@ -126,7 +124,7 @@ beforeEach(async () => {
   }).save()
 })
 
-describe.each(e)('Citizen calendar (%s)', (env) => {
+describe.each(envs)('Citizen calendar (%s)', (env) => {
   beforeEach(async () => {
     const viewport =
       env === 'mobile'
