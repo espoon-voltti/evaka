@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import noop from 'lodash/noop'
 import React, { Fragment, useCallback, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
@@ -52,13 +53,11 @@ function getLink(id: IncomeStatementId, mode: 'view' | 'edit') {
 
 interface TableOrListProps {
   items: IncomeStatement[]
-  onEdit: (id: IncomeStatementId) => void
   onRemoveIncomeStatement: (id: IncomeStatementId) => void
 }
 
 const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
   items,
-  onEdit,
   onRemoveIncomeStatement
 }: TableOrListProps) {
   const t = useTranslation()
@@ -96,17 +95,19 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                   <Dimmed>{t.income.table.handled}</Dimmed>
                 ) : (
                   <>
-                    <Button
-                      appearance="inline"
-                      icon={faPen}
-                      text={
-                        item.status === 'DRAFT'
-                          ? t.common.edit
-                          : t.income.table.actions.addDetails
-                      }
-                      onClick={() => onEdit(item.id)}
-                      data-qa="edit-income-statement"
-                    />
+                    <Link to={getLink(item.id, 'edit')}>
+                      <Button
+                        appearance="inline"
+                        onClick={noop}
+                        icon={faPen}
+                        text={
+                          item.status === 'DRAFT'
+                            ? t.common.edit
+                            : t.income.table.actions.addDetails
+                        }
+                        data-qa="edit-income-statement"
+                      />
+                    </Link>
                     <Button
                       appearance="inline"
                       icon={faTrash}
@@ -130,16 +131,9 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
 
 const IncomeStatementsList = React.memo(function IncomeStatementsList({
   items,
-  onEdit,
   onRemoveIncomeStatement
 }: TableOrListProps) {
   const t = useTranslation()
-  const navigate = useNavigate()
-
-  const onView = useCallback(
-    (id: IncomeStatementId) => navigate(getLink(id, 'view')),
-    [navigate]
-  )
 
   return (
     <div data-qa="income-statements-list">
@@ -165,25 +159,29 @@ const IncomeStatementsList = React.memo(function IncomeStatementsList({
               {t.income.table.sentAt}:{' '}
               {item.sentAt?.toLocalDate()?.format() ?? '-'}
             </div>
-            <Button
-              appearance="inline"
-              icon={faFile}
-              text={t.income.table.actions.view}
-              onClick={() => onView(item.id)}
-            />
+            <Link to={getLink(item.id, 'view')}>
+              <Button
+                appearance="inline"
+                icon={faFile}
+                text={t.income.table.actions.view}
+                onClick={noop}
+              />
+            </Link>
             {item.status !== 'HANDLED' && (
               <>
-                <Button
-                  appearance="inline"
-                  icon={faPen}
-                  text={
-                    item.status === 'DRAFT'
-                      ? t.common.edit
-                      : t.income.table.actions.addDetails
-                  }
-                  onClick={() => onEdit(item.id)}
-                  data-qa="edit-income-statement"
-                />
+                <Link to={getLink(item.id, 'edit')}>
+                  <Button
+                    appearance="inline"
+                    icon={faPen}
+                    text={
+                      item.status === 'DRAFT'
+                        ? t.common.edit
+                        : t.income.table.actions.addDetails
+                    }
+                    onClick={noop}
+                    data-qa="edit-income-statement"
+                  />
+                </Link>
                 <Button
                   appearance="inline"
                   icon={faTrash}
@@ -231,11 +229,6 @@ export default React.memo(function IncomeStatements() {
     status: 'row-not-selected'
   })
 
-  const onEdit = useCallback(
-    (id: IncomeStatementId) => navigate(getLink(id, 'edit')),
-    [navigate]
-  )
-
   const onDelete = useCallback(
     (id: IncomeStatementId) => {
       setDeletionState({ status: 'deleting', rowToDelete: id })
@@ -278,7 +271,6 @@ export default React.memo(function IncomeStatements() {
                 <TabletAndDesktop>
                   <IncomeStatementsTable
                     items={data}
-                    onEdit={onEdit}
                     onRemoveIncomeStatement={(id) =>
                       setDeletionState({
                         status: 'confirming',
@@ -290,7 +282,6 @@ export default React.memo(function IncomeStatements() {
                 <MobileOnly>
                   <IncomeStatementsList
                     items={data}
-                    onEdit={onEdit}
                     onRemoveIncomeStatement={(id) =>
                       setDeletionState({
                         status: 'confirming',
