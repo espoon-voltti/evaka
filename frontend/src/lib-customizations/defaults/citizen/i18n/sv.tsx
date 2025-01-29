@@ -2332,7 +2332,8 @@ const sv: Translations = {
       incomeSource: 'Inlämning av inkomstuppgifterna',
       provideAttachments:
         'Jag lämnar in uppgifterna som bilaga, och mina uppgifter får kontrolleras hos FPA vid behov',
-      attachmentsVerificationInfo: 'Inkomstuppgifter kontrolleras årligen.',
+      attachmentsVerificationInfo:
+        'Inkomstuppgifter kontrolleras minst årligen.',
       estimate: 'Uppskattning av mina bruttoinkomster',
       estimatedMonthlyIncome:
         'Genomsnittliga inkomster inklusive semesterpenning, €/månad',

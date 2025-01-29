@@ -2087,7 +2087,8 @@ const en: Translations = {
       incomeSource: 'Reporting income information',
       provideAttachments:
         'I will submit the information as attachments, and my information can be checked from Kela if necessary',
-      attachmentsVerificationInfo: 'Income information is verified annually.',
+      attachmentsVerificationInfo:
+        'Income information is verified at least annually.',
       estimate: 'Estimate of my gross income',
       estimatedMonthlyIncome:
         'Average earnings including holiday bonus, €/month',
