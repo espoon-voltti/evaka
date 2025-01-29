@@ -551,7 +551,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         val arrivalTime = clock.now()
         val arrivalAddedAt = arrivalTime.plusMinutes(2)
 
-        val attendanceId =
+        val attendance =
             db.transaction { tx ->
                 tx.upsertStaffAttendance(
                     attendanceId = null,
@@ -582,7 +582,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 { it.departedAddedAt },
                 { it.departedModifiedAt },
             )
-            .containsExactly(Tuple(attendanceId, arrivalAddedAt, arrivalAddedAt, null, null))
+            .containsExactly(Tuple(attendance.new.id, arrivalAddedAt, arrivalAddedAt, null, null))
     }
 
     @Test
@@ -594,7 +594,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         val departureTime = arrivalTime.plusHours(7)
         val addedAt = departureTime.plusMinutes(2)
 
-        val attendanceId =
+        val attendance =
             db.transaction { tx ->
                 tx.upsertStaffAttendance(
                     attendanceId = null,
@@ -625,7 +625,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 { it.departedAddedAt },
                 { it.departedModifiedAt },
             )
-            .containsExactly(Tuple(attendanceId, addedAt, addedAt, addedAt, addedAt))
+            .containsExactly(Tuple(attendance.new.id, addedAt, addedAt, addedAt, addedAt))
     }
 
     @Test

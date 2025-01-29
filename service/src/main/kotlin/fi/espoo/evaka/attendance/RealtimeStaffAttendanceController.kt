@@ -6,6 +6,7 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.changes
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -205,7 +206,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             throw BadRequest("Date cannot be in the future")
         }
 
-        val staffAttendanceIds =
+        val updates =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -215,12 +216,13 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
                         body.unitId,
                     )
-                    tx.deleteStaffAttendancesOnDateExcept(
-                        body.unitId,
-                        body.employeeId,
-                        body.date,
-                        body.entries.mapNotNull { it.id },
-                    )
+                    val deleted =
+                        tx.deleteStaffAttendancesOnDateExcept(
+                            body.unitId,
+                            body.employeeId,
+                            body.date,
+                            body.entries.mapNotNull { it.id },
+                        )
 
                     accessControl.requirePermissionFor(
                         tx,
@@ -246,13 +248,21 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             clock.now(),
                             user.evakaUserId,
                         )
-                    }
+                    } + deleted.map { StaffAttendanceRealtimeChange(old = it) }
                 }
             }
         Audit.StaffAttendanceUpdate.log(
             targetId = AuditId(body.unitId),
-            objectId = AuditId(staffAttendanceIds),
-            meta = mapOf("date" to body.date),
+            objectId =
+                AuditId(
+                    (updates.mapNotNull { it.new.id } + updates.mapNotNull { it.old.id }).distinct()
+                ),
+            meta =
+                mapOf(
+                    "date" to body.date,
+                    "changes" to
+                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) },
+                ),
         )
     }
 
