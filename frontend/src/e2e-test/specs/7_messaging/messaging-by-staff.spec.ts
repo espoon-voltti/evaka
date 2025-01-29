@@ -241,7 +241,7 @@ describe('Sending and receiving sensitive messages', () => {
     const sensitiveMessage = {
       ...defaultMessage,
       sensitive: true,
-      receiverKeys: [`${testChild2.id}-false`]
+      receiverKeys: [`${testChild2.id}+false`]
     }
 
     await initStaffPage(mockedDateAt10)
@@ -271,7 +271,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiverKeys: [`${testDaycare.id}-false`],
+      receiverKeys: [`${testDaycare.id}+false`],
       type: 'BULLETIN' as const
     }
     const messageEditor = await new MessagesPage(
@@ -294,12 +294,12 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiverKeys: [`${testChild2.id}-false`]
+      receiverKeys: [`${testChild2.id}+false`]
     }
     const bulletin = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiverKeys: [`${testChild2.id}-false`],
+      receiverKeys: [`${testChild2.id}+false`],
       type: 'BULLETIN' as const
     }
     const messagesPage = new MessagesPage(unitSupervisorPage)
@@ -321,7 +321,7 @@ describe('Staff copies', () => {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
       sender: `${testDaycare.name} - ${testDaycareGroup.name}`,
-      receiverKeys: [`${testDaycareGroup.id}-false`]
+      receiverKeys: [`${testDaycareGroup.id}+false`]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -373,7 +373,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receiverKeys: [`${testDaycare.id}-false`],
+      receiverKeys: [`${testDaycare.id}+false`],
       yearsOfBirth: [2014]
     }
     const messageEditor = await new MessagesPage(
@@ -406,7 +406,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receiverKeys: [`${testDaycare.id}-false`]
+      receiverKeys: [`${testDaycare.id}+false`]
     }
     let messageEditor = await new MessagesPage(
       unitSupervisorPage

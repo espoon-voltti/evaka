@@ -77,7 +77,7 @@ SET
     urgent = ${bind(draft.urgent)},
     sensitive = ${bind(draft.sensitive)},
     type = ${bind(draft.type)},
-    recipient_ids = ${bind(draft.recipientIds)},
+    recipients = ${bindJson(draft.recipients)},
     recipient_names = ${bind(draft.recipientNames)},
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)}

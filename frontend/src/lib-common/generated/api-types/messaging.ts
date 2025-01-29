@@ -111,8 +111,8 @@ export interface DraftContent {
   content: string
   createdAt: HelsinkiDateTime
   id: MessageDraftId
-  recipientIds: string[]
   recipientNames: string[]
+  recipients: SelectableRecipient[]
   sensitive: boolean
   title: string
   type: MessageType
@@ -345,6 +345,14 @@ export interface ReplyToMessageBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.SelectableRecipient
+*/
+export interface SelectableRecipient {
+  accountId: string
+  starter: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.SentMessage
 */
 export interface SentMessage {
@@ -398,8 +406,8 @@ export interface UnreadCountByAccountAndGroup {
 */
 export interface UpdatableDraftContent {
   content: string
-  recipientIds: string[]
   recipientNames: string[]
+  recipients: SelectableRecipient[]
   sensitive: boolean
   title: string
   type: MessageType

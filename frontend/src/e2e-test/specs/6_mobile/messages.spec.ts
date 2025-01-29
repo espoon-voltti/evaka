@@ -382,12 +382,12 @@ describe('Messages page', () => {
     // The user has access to all groups, but only the one whose messages are viewed should be available in the
     // message editor
     await messageEditor.recipients.open()
-    await messageEditor.recipients.option(`${daycareGroup.id}-false`).click()
+    await messageEditor.recipients.option(`${daycareGroup.id}+false`).click()
     await messageEditor.recipients
-      .option(`${daycareGroup2.id}-false`)
+      .option(`${daycareGroup2.id}+false`)
       .waitUntilHidden()
     await messageEditor.recipients
-      .option(`${daycareGroup3.id}-false`)
+      .option(`${daycareGroup3.id}+false`)
       .waitUntilHidden()
 
     const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
@@ -405,7 +405,7 @@ describe('Messages page', () => {
   test('Employee sees sent messages', async () => {
     await staffStartsNewMessage()
     await messageEditor.recipients.open()
-    await messageEditor.recipients.option(`${daycareGroup.id}-false`).click()
+    await messageEditor.recipients.option(`${daycareGroup.id}+false`).click()
     const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
     await messageEditor.fillMessage(message)
     await messageEditor.send.click()
@@ -423,7 +423,7 @@ describe('Messages page', () => {
   test('Employee sees a draft message and can send it', async () => {
     let messageEditor = await staffStartsNewMessage()
     await messageEditor.recipients.open()
-    await messageEditor.recipients.option(`${daycareGroup.id}-false`).click()
+    await messageEditor.recipients.option(`${daycareGroup.id}+false`).click()
     const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
     await messageEditor.fillMessage(message)
     await messageEditor.close.click()
@@ -446,7 +446,7 @@ describe('Messages page', () => {
   test('Employee can discard a draft message', async () => {
     let messageEditor = await staffStartsNewMessage()
     await messageEditor.recipients.open()
-    await messageEditor.recipients.option(`${daycareGroup.id}-false`).click()
+    await messageEditor.recipients.option(`${daycareGroup.id}+false`).click()
     const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
     await messageEditor.fillMessage(message)
     await messageEditor.close.click()
