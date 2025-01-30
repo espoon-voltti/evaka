@@ -4029,6 +4029,7 @@ export const fi = {
       title: 'Laskujen täsmäytys',
       description:
         'Laskujen täsmäytysraportti laskutusjärjestelmään vertailua varten',
+      period: 'Laskutuskausi',
       areaCode: 'Alue',
       amountOfInvoices: 'Laskuja',
       totalSumCents: 'Summa',

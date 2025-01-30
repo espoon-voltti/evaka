@@ -15,12 +15,14 @@ import fi.espoo.evaka.shared.dev.DevInvoice
 import fi.espoo.evaka.shared.dev.DevInvoiceRow
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
-import java.time.LocalDate
+import java.time.LocalTime
 import java.time.YearMonth
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -50,8 +52,8 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `simple case of three invoices`() {
-        val yearMonth = YearMonth.of(2019, 1)
-        insertInvoices(yearMonth.atDay(1))
+        val yearMonth = YearMonth.of(2018, 12)
+        insertInvoices(yearMonth)
 
         getAndAssert(
             yearMonth,
@@ -115,10 +117,21 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             ),
         )
 
-    private fun insertInvoices(date: LocalDate) {
+    private fun insertInvoices(period: YearMonth) {
+        val range = FiniteDateRange.ofMonth(period)
+        val invoiceDate = range.start.plusMonths(1)
         db.transaction {
-            it.insert(testInvoices)
-            it.execute { sql("UPDATE invoice SET sent_at = ${bind(date)}") }
+            it.insert(
+                testInvoices.map { invoice ->
+                    invoice.copy(
+                        invoiceDate = invoiceDate,
+                        dueDate = invoiceDate.plusWeeks(2),
+                        periodStart = range.start,
+                        periodEnd = range.end,
+                        sentAt = HelsinkiDateTime.of(invoiceDate, LocalTime.of(11, 12)),
+                    )
+                }
+            )
         }
     }
 }
