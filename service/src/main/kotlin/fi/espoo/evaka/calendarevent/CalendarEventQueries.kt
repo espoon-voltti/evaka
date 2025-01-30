@@ -78,8 +78,11 @@ AND (cea.child_id IS NULL OR EXISTS(
     SELECT 1 FROM generate_series(lower(ce.period), upper(ce.period) - INTERVAL '1 day', '1 day') d
     JOIN realized_placement_one(d::date) rp ON true
     WHERE rp.child_id = cea.child_id
-      AND (cea.group_id IS NULL OR rp.group_id = cea.group_id)
-      AND rp.unit_id = cea.unit_id
+      AND (cea.group_id IS NULL
+        OR ce.event_type = 'DAYCARE_EVENT' AND rp.group_id = cea.group_id
+        OR ce.event_type = 'DISCUSSION_SURVEY' AND rp.placement_group_id = cea.group_id)
+      AND (ce.event_type = 'DAYCARE_EVENT' AND rp.unit_id = cea.unit_id
+        OR ce.event_type = 'DISCUSSION_SURVEY' AND rp.placement_unit_id = cea.unit_id)
 ))
 GROUP BY ce.id, cea.unit_id, eu.id
 """

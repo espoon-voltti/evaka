@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCalendarEvent
 import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 import fi.espoo.evaka.shared.dev.DevCalendarEventTime
@@ -1869,6 +1870,73 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     backupPhone = "",
                     email = "example@example.com",
                 ),
+            )
+        }
+
+        val form =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to setOf(testChild_1.id)),
+                title = "Group survey",
+                description = "gsu",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times =
+                    listOf(
+                        CalendarEventTimeForm(
+                            date = today.plusDays(1),
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+                        )
+                    ),
+            )
+
+        val event = createCalendarEvent(form)
+
+        calendarEventNotificationService.scheduleDiscussionSurveyDigests(db, now)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val expectedRecipients = listOf(testAdult_1.copy(email = email))
+
+        val emailDetails =
+            DiscussionSurveyCreationNotificationData(
+                eventId = event.id,
+                eventTitle = HtmlSafe(event.title),
+                eventDescription = HtmlSafe(event.description),
+            )
+
+        val notificationEmailContent =
+            emailMessageProvider.discussionSurveyCreationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails,
+            )
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertEmails(expectedRecipients, notificationEmailContent, expectedFromAddress)
+    }
+
+    @Test
+    fun `notifications are sent even child in backup care`() {
+        val email = "example@example.com"
+        db.transaction { tx ->
+            // Email address is needed
+            tx.updatePersonalDetails(
+                testAdult_1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = "example@example.com",
+                ),
+            )
+        }
+        db.transaction { tx ->
+            tx.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    groupId = groupId2,
+                    period = FiniteDateRange(placementStart, placementEnd),
+                )
             )
         }
 
