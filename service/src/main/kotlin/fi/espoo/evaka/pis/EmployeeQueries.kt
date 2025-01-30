@@ -15,10 +15,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Binding
-import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
+import fi.espoo.evaka.shared.db.*
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -383,31 +380,18 @@ fun getEmployeesPaged(
     hideDeactivated: Boolean = false,
     globalRoles: Set<UserRole>?,
 ): PagedEmployeesWithDaycareRoles {
-    val (freeTextQuery, freeTextParams) =
-        freeTextSearchQueryForColumns(
-            listOf("employee"),
-            listOf("first_name", "last_name"),
-            searchTerm,
-        )
-
-    val params =
-        listOfNotNull(
-            Binding.of("offset", (page - 1) * pageSize),
-            Binding.of("pageSize", pageSize),
-            if (globalRoles != null) Binding.of("roles", globalRoles) else null,
-        )
-
+    val offset = (page - 1) * pageSize
     val conditions =
-        listOfNotNull(
-            if (searchTerm.isNotBlank()) freeTextQuery else null,
-            if (hideDeactivated) "employee.active = TRUE" else null,
-            if (globalRoles != null) "employee.roles && :roles" else null,
+        Predicate.allNotNull(
+            if (searchTerm.isNotBlank()) employeeFreeTextSearchPredicate(searchTerm) else null,
+            if (hideDeactivated) Predicate { where("$it.active = TRUE") } else null,
+            if (globalRoles != null) Predicate { where("$it.roles && ${bind(globalRoles)}") }
+            else null,
         )
 
-    val whereClause = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ") ?: "TRUE"
-
-    val sql =
-        """
+    return tx.createQuery {
+            sql(
+                """
 SELECT
     employee.id,
     employee.external_id,
@@ -444,15 +428,12 @@ SELECT
     count(*) OVER () AS count
 FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
-WHERE $whereClause
+WHERE ${predicate(conditions.forTable("employee"))}
 ORDER BY last_name, first_name DESC
-LIMIT :pageSize OFFSET :offset
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return tx.createQuery(sql)
-        .addBindings(params)
-        .addBindings(freeTextParams)
+LIMIT ${bind(pageSize)} OFFSET ${bind(offset)}
+"""
+            )
+        }
         .mapToPaged(::PagedEmployeesWithDaycareRoles, pageSize)
 }
 

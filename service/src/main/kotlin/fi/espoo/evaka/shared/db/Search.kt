@@ -100,24 +100,20 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
     return DBQuery(wholeQuery, allParams)
 }
 
-fun freeTextSearchQueryForColumns(
-    tables: List<String>,
-    columns: List<String>,
-    searchText: String,
-): DBQuery {
-    val query =
-        listOfNotNull(
-                "true",
-                freeTextQuery(tables, freeTextParamName, columns).takeIf { searchText.isNotBlank() },
-            )
-            .joinToString(" AND ")
-    val params =
-        listOfNotNull(
-            (Binding.of(freeTextParamName, freeTextParamsToTsQuery(searchText))).takeIf {
-                searchText.isNotBlank()
+fun employeeFreeTextSearchPredicate(searchText: String): Predicate {
+    val nameColumns = listOf("first_name", "last_name")
+    return searchText
+        .takeIf { it.isNotBlank() }
+        ?.let(::freeTextParamsToTsQuery)
+        ?.let { tsQuery ->
+            Predicate {
+                val tsVector =
+                    nameColumns.joinToString(" || ") { column ->
+                        "to_tsvector('simple', coalesce(unaccent($it.$column), ''))"
+                    }
+                where("($tsVector) @@ to_tsquery('simple', ${bind(tsQuery)})")
             }
-        )
-    return DBQuery(query, params)
+        } ?: Predicate.alwaysTrue()
 }
 
 fun disjointNumberQuery(
@@ -134,25 +130,6 @@ fun disjointNumberQuery(
             .joinToString(" OR ", "(", ")")
 
     return numberParamQuery to numberParams
-}
-
-private val freeTextSearchColumns =
-    listOf("first_name", "last_name", "street_address", "postal_code")
-
-private fun freeTextQuery(
-    tables: List<String>,
-    param: String,
-    columns: List<String> = freeTextSearchColumns,
-): String {
-    val tsVector =
-        tables
-            .flatMap { table -> columns.map { column -> "$table.$column" } }
-            .map { column -> "to_tsvector('simple', coalesce(unaccent($column), ''))" }
-            .joinToString("\n|| ", "(", ")")
-
-    val tsQuery = "to_tsquery('simple', :$param)"
-
-    return "($tsVector @@ $tsQuery)"
 }
 
 private fun freeTextComputedColumnQuery(tables: List<String>, param: String): String {
