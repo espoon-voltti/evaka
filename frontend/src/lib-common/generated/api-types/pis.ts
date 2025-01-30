@@ -199,6 +199,7 @@ export interface Employee {
   email: string | null
   externalId: string | null
   firstName: string
+  hasSsn: boolean
   id: EmployeeId
   lastName: string
   preferredFirstName: string | null
@@ -247,6 +248,7 @@ export interface EmployeeWithDaycareRoles {
   externalId: string | null
   firstName: string
   globalRoles: UserRole[]
+  hasSsn: boolean
   id: EmployeeId
   lastLogin: HelsinkiDateTime | null
   lastName: string
