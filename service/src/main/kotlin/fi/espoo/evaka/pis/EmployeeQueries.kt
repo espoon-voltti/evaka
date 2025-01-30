@@ -79,8 +79,6 @@ data class EmployeeWithDaycareRoles(
     val active: Boolean,
 )
 
-data class EmployeeIdWithName(val id: EmployeeId, val name: String)
-
 fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
     createUpdate {
             sql(
@@ -570,19 +568,6 @@ fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
     removePinCode(userId = id)
     listPersonalDevices(id).forEach { deleteDevice(it.id) }
 }
-
-fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
-    createQuery {
-            sql(
-                """
-SELECT id, concat(first_name, ' ', last_name) AS name
-FROM employee
-WHERE id = ANY(${bind(employeeIds)})
-"""
-            )
-        }
-        .toList<EmployeeIdWithName>()
-        .associate { it.id to it.name }
 
 fun Database.Transaction.setEmployeePreferredFirstName(
     employeeId: EmployeeId,
