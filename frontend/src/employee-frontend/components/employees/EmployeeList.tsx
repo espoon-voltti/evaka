@@ -62,7 +62,8 @@ export function EmployeeList({ employees }: Props) {
       externalId,
       employeeNumber,
       temporaryUnitName,
-      active
+      active,
+      hasSsn
     }) => (
       <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
         <Td>
@@ -71,6 +72,7 @@ export function EmployeeList({ employees }: Props) {
           </Name>
           <Email>{email}</Email>
           {!!externalId && <Details>{externalId}</Details>}
+          {hasSsn && <Details>{i18n.employees.hasSsn}</Details>}
           {!!employeeNumber && (
             <Details>
               {i18n.employees.employeeNumber}: {employeeNumber}

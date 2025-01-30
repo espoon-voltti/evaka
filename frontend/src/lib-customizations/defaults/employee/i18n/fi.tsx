@@ -4711,7 +4711,8 @@ export const fi = {
     newSsnEmployeeModal: {
       title: 'Lisää uusi hetullinen käyttäjä',
       createButton: 'Luo tunnus'
-    }
+    },
+    hasSsn: 'Hetullinen käyttäjä'
   },
   financeBasics: {
     fees: {
