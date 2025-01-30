@@ -114,6 +114,7 @@ data class PaymentUnit(
     val iban: String?,
     val providerId: String?,
     val careType: Set<CareType>,
+    val costCenter: String?,
 )
 
 data class Payment(

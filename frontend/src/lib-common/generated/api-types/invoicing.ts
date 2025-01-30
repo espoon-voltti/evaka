@@ -819,6 +819,7 @@ export type PaymentStatus =
 export interface PaymentUnit {
   businessId: string | null
   careType: CareType[]
+  costCenter: string | null
   iban: string | null
   id: DaycareId
   name: string
