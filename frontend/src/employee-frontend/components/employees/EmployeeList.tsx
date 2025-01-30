@@ -157,6 +157,7 @@ export function EmployeeList({ employees }: Props) {
             <Th>{i18n.employees.name}</Th>
             <Th>{i18n.employees.rights}</Th>
             <Th>{i18n.employees.lastLogin}</Th>
+            <Th />
           </Tr>
         </Thead>
         <Tbody>{rows}</Tbody>
