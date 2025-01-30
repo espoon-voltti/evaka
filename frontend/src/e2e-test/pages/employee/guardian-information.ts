@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
-import HelsinkiDateTime from '../../../lib-common/helsinki-date-time'
 
 import config from '../../config'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
