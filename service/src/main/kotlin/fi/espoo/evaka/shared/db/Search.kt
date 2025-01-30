@@ -102,18 +102,27 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
 
 fun employeeFreeTextSearchPredicate(searchText: String): Predicate {
     val nameColumns = listOf("first_name", "last_name")
-    return searchText
-        .takeIf { it.isNotBlank() }
-        ?.let(::freeTextParamsToTsQuery)
-        ?.let { tsQuery ->
-            Predicate {
-                val tsVector =
-                    nameColumns.joinToString(" || ") { column ->
-                        "to_tsvector('simple', coalesce(unaccent($it.$column), ''))"
-                    }
-                where("($tsVector) @@ to_tsquery('simple', ${bind(tsQuery)})")
+    val ssnPredicate =
+        Predicate.all(
+            findSsnParams(searchText).map { ssn ->
+                Predicate { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
             }
-        } ?: Predicate.alwaysTrue()
+        )
+    val freeTextPredicate =
+        searchText
+            .let(removeSsnParams)
+            .takeIf { it.isNotBlank() }
+            ?.let(::freeTextParamsToTsQuery)
+            ?.let { tsQuery ->
+                Predicate {
+                    val tsVector =
+                        nameColumns.joinToString(" || ") { column ->
+                            "to_tsvector('simple', coalesce(unaccent($it.$column), ''))"
+                        }
+                    where("($tsVector) @@ to_tsquery('simple', ${bind(tsQuery)})")
+                }
+            }
+    return Predicate.allNotNull(ssnPredicate, freeTextPredicate)
 }
 
 fun disjointNumberQuery(
