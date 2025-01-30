@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
+import { Failure } from 'lib-common/api'
 import { globalRoles } from 'lib-common/api-types/employee-auth'
 import { string } from 'lib-common/form/fields'
 import { object, required, validated } from 'lib-common/form/form'
@@ -27,10 +28,10 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
-import { faPlus } from 'lib-icons'
-import { faSearch } from 'lib-icons'
+import { faPlus, faSearch } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { RequirePermittedGlobalAction } from '../../utils/roles'
@@ -183,15 +184,29 @@ const CreateModal = React.memo(function CreateModal({
   const { i18n } = useTranslation()
   const t = i18n.employees.newSsnEmployeeModal
 
+  const [ssnConflict, setSsnConflict] = useState(false)
   const form = useForm(
     createForm,
     () => ({ ssn: '', firstName: '', lastName: '', email: '' }),
-    i18n.validationErrors
+    i18n.validationErrors,
+    {
+      onUpdate: (prev, next) => {
+        if (prev.ssn !== next.ssn) {
+          setSsnConflict(false)
+        }
+        return next
+      }
+    }
   )
   const ssn = useFormField(form, 'ssn')
   const firstName = useFormField(form, 'firstName')
   const lastName = useFormField(form, 'lastName')
   const email = useFormField(form, 'email')
+
+  const onFailure = useCallback(
+    (failure: Failure<unknown>) => setSsnConflict(failure.statusCode === 409),
+    [setSsnConflict]
+  )
 
   return (
     <MutateFormModal
@@ -203,8 +218,9 @@ const CreateModal = React.memo(function CreateModal({
         body: form.value()
       })}
       resolveLabel={t.createButton}
-      resolveDisabled={!form.isValid()}
+      resolveDisabled={!form.isValid() || ssnConflict}
       onSuccess={({ id }) => onSuccess(id)}
+      onFailure={onFailure}
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
     >
@@ -250,6 +266,7 @@ const CreateModal = React.memo(function CreateModal({
             bind={email}
           />
         </div>
+        {ssnConflict && <AlertBox message={t.ssnConflict} />}
       </FixedSpaceColumn>
     </MutateFormModal>
   )

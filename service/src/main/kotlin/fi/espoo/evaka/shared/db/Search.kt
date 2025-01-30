@@ -15,7 +15,12 @@ private const val freeTextParamName = "free_text"
 private val ssnParamName = { index: Int -> "ssn_$index" }
 private val dateParamName = { index: Int -> "date_$index" }
 
-fun freeTextSearchPredicate(tables: Collection<String>, searchText: String): PredicateSql {
+/**
+ * Returns a predicate that does a free text search using the given text on the given table names.
+ *
+ * The tables *must have* the following columns: social_security_number, date_of_birth, freetext_vec
+ */
+fun personFreeTextSearchPredicate(tables: Collection<String>, searchText: String): PredicateSql {
     val ssnPredicates =
         findSsnParams(searchText).map { ssn ->
             Predicate { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
@@ -95,24 +100,29 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
     return DBQuery(wholeQuery, allParams)
 }
 
-fun freeTextSearchQueryForColumns(
-    tables: List<String>,
-    columns: List<String>,
-    searchText: String,
-): DBQuery {
-    val query =
-        listOfNotNull(
-                "true",
-                freeTextQuery(tables, freeTextParamName, columns).takeIf { searchText.isNotBlank() },
-            )
-            .joinToString(" AND ")
-    val params =
-        listOfNotNull(
-            (Binding.of(freeTextParamName, freeTextParamsToTsQuery(searchText))).takeIf {
-                searchText.isNotBlank()
+fun employeeFreeTextSearchPredicate(searchText: String): Predicate {
+    val nameColumns = listOf("first_name", "last_name")
+    val ssnPredicate =
+        Predicate.all(
+            findSsnParams(searchText).map { ssn ->
+                Predicate { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
             }
         )
-    return DBQuery(query, params)
+    val freeTextPredicate =
+        searchText
+            .let(removeSsnParams)
+            .takeIf { it.isNotBlank() }
+            ?.let(::freeTextParamsToTsQuery)
+            ?.let { tsQuery ->
+                Predicate {
+                    val tsVector =
+                        nameColumns.joinToString(" || ") { column ->
+                            "to_tsvector('simple', coalesce(unaccent($it.$column), ''))"
+                        }
+                    where("($tsVector) @@ to_tsquery('simple', ${bind(tsQuery)})")
+                }
+            }
+    return Predicate.allNotNull(ssnPredicate, freeTextPredicate)
 }
 
 fun disjointNumberQuery(
@@ -129,25 +139,6 @@ fun disjointNumberQuery(
             .joinToString(" OR ", "(", ")")
 
     return numberParamQuery to numberParams
-}
-
-private val freeTextSearchColumns =
-    listOf("first_name", "last_name", "street_address", "postal_code")
-
-private fun freeTextQuery(
-    tables: List<String>,
-    param: String,
-    columns: List<String> = freeTextSearchColumns,
-): String {
-    val tsVector =
-        tables
-            .flatMap { table -> columns.map { column -> "$table.$column" } }
-            .map { column -> "to_tsvector('simple', coalesce(unaccent($column), ''))" }
-            .joinToString("\n|| ", "(", ")")
-
-    val tsQuery = "to_tsquery('simple', :$param)"
-
-    return "($tsVector @@ $tsQuery)"
 }
 
 private fun freeTextComputedColumnQuery(tables: List<String>, param: String): String {

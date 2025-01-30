@@ -382,7 +382,7 @@ export default React.memo(function UnitAccessControl({
           employees.filter(
             (employee) =>
               employee.id !== user?.id &&
-              employee.externalId !== null &&
+              (employee.externalId !== null || employee.hasSsn) &&
               employee.temporaryInUnitId === null &&
               !daycareAclRows.some((row) => row.employee.id === employee.id)
           ),

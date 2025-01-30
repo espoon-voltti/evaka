@@ -278,6 +278,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             id = EmployeeId(UUID.randomUUID()),
             temporaryInUnitId = null,
             active = true,
+            hasSsn = false,
         )
 
     val employee2 =
@@ -293,6 +294,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             id = EmployeeId(UUID.randomUUID()),
             temporaryInUnitId = null,
             active = true,
+            hasSsn = false,
         )
 
     private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) =

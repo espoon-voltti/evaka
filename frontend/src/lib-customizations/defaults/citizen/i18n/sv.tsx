@@ -2104,7 +2104,7 @@ const sv: Translations = {
       unverifiedEmailWarning:
         'Inloggning med e-post är endast tillåten om du har bekräftat din e-postadress',
       updatePassword: 'Uppdatera lösenord',
-      activateCredentials: 'Salli sähköpostikirjautuminen',
+      activateCredentials: 'Tillåt inloggning med e-post',
       activationSuccess: 'E-postinloggning aktiverad',
       activationSuccessOk: 'Klart',
       confirmPassword: 'Bekräfta lösenordet',

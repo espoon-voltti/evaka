@@ -15,10 +15,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Binding
-import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
+import fi.espoo.evaka.shared.db.*
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -77,9 +74,8 @@ data class EmployeeWithDaycareRoles(
     @Json val personalMobileDevices: List<MobileDevice> = listOf(),
     val temporaryUnitName: String?,
     val active: Boolean,
+    val hasSsn: Boolean,
 )
-
-data class EmployeeIdWithName(val id: EmployeeId, val name: String)
 
 fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
     createUpdate {
@@ -87,7 +83,7 @@ fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
                 """
 INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, temporary_in_unit_id, active)
 VALUES (${bind(employee.firstName)}, ${bind(employee.lastName)}, ${bind(employee.email)}, ${bind(employee.externalId)}, ${bind(employee.employeeNumber)}, ${bind(employee.roles)}::user_role[], ${bind(employee.temporaryInUnitId)}, ${bind(employee.active)})
-RETURNING id, first_name, last_name, email, external_id, created, updated, roles, temporary_in_unit_id, active
+RETURNING id, first_name, last_name, email, external_id, created, updated, roles, temporary_in_unit_id, active, (social_security_number IS NOT NULL) AS has_ssn
 """
             )
         }
@@ -118,7 +114,7 @@ VALUES (${bind(employee.firstName)}, ${bind(employee.lastName)}, ${bind(employee
             }, ${bind(employee.roles)}::user_role[], ${bind(employee.active)}, ${bind(now)})
 ON CONFLICT (external_id) DO UPDATE
 SET last_login = ${bind(now)}, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number, active = TRUE
-RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles, active
+RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles, active, (social_security_number IS NOT NULL) AS has_ssn
 """
             )
         }
@@ -142,7 +138,7 @@ fun Database.Transaction.loginEmployeeWithSuomiFi(
 UPDATE employee
 SET last_login = ${bind(now)}, first_name = ${bind(request.firstName)}, last_name = ${bind(request.lastName)}
 WHERE social_security_number = ${bind(request.ssn.value)}
-RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, temporary_in_unit_id, active
+RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, temporary_in_unit_id, active, (social_security_number IS NOT NULL) AS has_ssn
 """
             )
         }
@@ -185,7 +181,7 @@ private fun Database.Read.searchEmployees(
     createQuery {
             sql(
                 """
-SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles, temporary_in_unit_id, e.active
+SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles, temporary_in_unit_id, e.active, (social_security_number IS NOT NULL) AS has_ssn
 FROM employee e
 WHERE (${bind(id)}::uuid IS NULL OR e.id = ${bind(id)}) AND (${bind(externalId)}::text IS NULL OR e.external_id = ${bind(externalId)})
   AND (${bind(temporaryInUnitId)} IS NULL OR e.temporary_in_unit_id = ${bind(temporaryInUnitId)})
@@ -198,7 +194,7 @@ private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) 
     createQuery {
             sql(
                 """
-SELECT DISTINCT e.id, e.preferred_first_name, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles, e.active
+SELECT DISTINCT e.id, e.preferred_first_name, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles, e.active, (e.social_security_number IS NOT NULL) AS has_ssn
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
 WHERE (${bind(id)}::uuid IS NULL OR e.id = ${bind(id)})
@@ -266,6 +262,7 @@ SELECT
     employee.last_name,
     employee.email,
     employee.active,
+    (employee.social_security_number IS NOT NULL) AS has_ssn,
     temp_unit.name as temporary_unit_name,
     employee.roles AS global_roles,
     (
@@ -383,31 +380,18 @@ fun getEmployeesPaged(
     hideDeactivated: Boolean = false,
     globalRoles: Set<UserRole>?,
 ): PagedEmployeesWithDaycareRoles {
-    val (freeTextQuery, freeTextParams) =
-        freeTextSearchQueryForColumns(
-            listOf("employee"),
-            listOf("first_name", "last_name"),
-            searchTerm,
-        )
-
-    val params =
-        listOfNotNull(
-            Binding.of("offset", (page - 1) * pageSize),
-            Binding.of("pageSize", pageSize),
-            if (globalRoles != null) Binding.of("roles", globalRoles) else null,
-        )
-
+    val offset = (page - 1) * pageSize
     val conditions =
-        listOfNotNull(
-            if (searchTerm.isNotBlank()) freeTextQuery else null,
-            if (hideDeactivated) "employee.active = TRUE" else null,
-            if (globalRoles != null) "employee.roles && :roles" else null,
+        Predicate.allNotNull(
+            if (searchTerm.isNotBlank()) employeeFreeTextSearchPredicate(searchTerm) else null,
+            if (hideDeactivated) Predicate { where("$it.active = TRUE") } else null,
+            if (globalRoles != null) Predicate { where("$it.roles && ${bind(globalRoles)}") }
+            else null,
         )
 
-    val whereClause = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ") ?: "TRUE"
-
-    val sql =
-        """
+    return tx.createQuery {
+            sql(
+                """
 SELECT
     employee.id,
     employee.external_id,
@@ -420,6 +404,7 @@ SELECT
     employee.last_name,
     employee.email,
     employee.active,
+    (employee.social_security_number IS NOT NULL) AS has_ssn,
     temp_unit.name as temporary_unit_name,
     employee.roles AS global_roles,
     (
@@ -443,15 +428,12 @@ SELECT
     count(*) OVER () AS count
 FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
-WHERE $whereClause
+WHERE ${predicate(conditions.forTable("employee"))}
 ORDER BY last_name, first_name DESC
-LIMIT :pageSize OFFSET :offset
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return tx.createQuery(sql)
-        .addBindings(params)
-        .addBindings(freeTextParams)
+LIMIT ${bind(pageSize)} OFFSET ${bind(offset)}
+"""
+            )
+        }
         .mapToPaged(::PagedEmployeesWithDaycareRoles, pageSize)
 }
 
@@ -571,19 +553,6 @@ fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
     listPersonalDevices(id).forEach { deleteDevice(it.id) }
 }
 
-fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
-    createQuery {
-            sql(
-                """
-SELECT id, concat(first_name, ' ', last_name) AS name
-FROM employee
-WHERE id = ANY(${bind(employeeIds)})
-"""
-            )
-        }
-        .toList<EmployeeIdWithName>()
-        .associate { it.id to it.name }
-
 fun Database.Transaction.setEmployeePreferredFirstName(
     employeeId: EmployeeId,
     preferredFirstName: String?,
@@ -602,7 +571,7 @@ fun Database.Read.getEmployeesByRoles(roles: Set<UserRole>, unitId: DaycareId?):
         createQuery {
                 sql(
                     """
-SELECT id, first_name, last_name, email, external_id, created, updated, active
+SELECT id, first_name, last_name, email, external_id, created, updated, active, (social_security_number IS NOT NULL) AS has_ssn
 FROM employee
 WHERE roles && ${bind(globalRoles)}::user_role[]
 ORDER BY last_name, first_name
@@ -614,7 +583,7 @@ ORDER BY last_name, first_name
         createQuery {
                 sql(
                     """
-SELECT id, first_name, last_name, email, external_id, created, updated, active
+SELECT id, first_name, last_name, email, external_id, created, updated, active, (social_security_number IS NOT NULL) AS has_ssn
 FROM employee
 WHERE roles && ${bind(globalRoles)}::user_role[] OR id IN (
     SELECT employee_id
