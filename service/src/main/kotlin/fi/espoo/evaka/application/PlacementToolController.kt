@@ -36,15 +36,14 @@ class PlacementToolController(
         @RequestPart("file") file: MultipartFile,
     ): PlacementToolValidation {
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
                         Action.Global.PLACEMENT_TOOL,
                     )
-                    val placements = file.inputStream.use { parsePlacementToolCsv(it) }
-                    PlacementToolValidation(count = placements.size)
+                    placementToolService.validatePlacementToolApplications(tx, clock, file)
                 }
             }
             .also { Audit.PlacementToolValidate.log() }
@@ -101,4 +100,4 @@ class PlacementToolController(
     }
 }
 
-data class PlacementToolValidation(val count: Int)
+data class PlacementToolValidation(val count: Int, val existing: Int)

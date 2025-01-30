@@ -37,6 +37,7 @@ const upload =
 
 export interface PlacementToolValidation {
   count: number
+  existing: number
 }
 
 export const placementFileValidate: ValidateHandler<PlacementToolValidation> = {

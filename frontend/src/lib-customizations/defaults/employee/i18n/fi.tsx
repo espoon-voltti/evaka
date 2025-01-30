@@ -5085,7 +5085,8 @@ export const fi = {
     preschoolTermNotification: 'Hakemukset luodaan seuravaan esiopetuskauteen:',
     preschoolTermWarning:
       'eVakasta puuttuu seuraavan esiopetuskauden määrittely. Esiopetuskausi tarvitaan hakemusten luontia varten.',
-    validation: (count: number) => `Olet tuomassa ${count} sijoitusta, jatka?`
+    validation: (count: number, existing: number) =>
+      `Olet tuomassa ${count} sijoitusta${existing > 0 ? ` (joista ${existing} löytyy jo järjestelmästä)` : ''}, jatka?`
   },
   outOfOffice: {
     menu: 'Johtajan poissaolojakso',
