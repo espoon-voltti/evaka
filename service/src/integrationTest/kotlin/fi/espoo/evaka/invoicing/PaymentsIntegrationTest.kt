@@ -266,6 +266,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(PaymentStatus.DRAFT, payment.status)
             assertEquals(testDaycare.id, payment.unit.id)
             assertEquals(testDaycare.name, payment.unit.name)
+            assertEquals(testDaycare.costCenter, payment.unit.costCenter)
             assertEquals(134850 - 28800, payment.amount)
         }
         payments[1].let { payment ->
@@ -273,12 +274,14 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(testVoucherDaycare.id, payment.unit.id)
             assertEquals(87000 - 28800, payment.amount)
             assertEquals(testVoucherDaycare.name, payment.unit.name)
+            assertEquals(testVoucherDaycare.costCenter, payment.unit.costCenter)
         }
         payments.last().let { payment ->
             assertEquals(PaymentStatus.CONFIRMED, payment.status)
             assertEquals(testVoucherDaycare2.id, payment.unit.id)
             assertEquals(35000 - 28800, payment.amount)
             assertEquals(testVoucherDaycare2.name, payment.unit.name)
+            assertEquals(testVoucherDaycare2.costCenter, payment.unit.costCenter)
         }
 
         // assert that sending details remain unset
@@ -345,12 +348,14 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(DateRange(janFirst, janLast), payment.period)
             assertEquals(testDaycare.id, payment.unit.id)
             assertEquals(testDaycare.name, payment.unit.name)
+            assertEquals(testDaycare.costCenter, payment.unit.costCenter)
             assertEquals(134850 - 28800, payment.amount)
         }
         payments.last().let { payment ->
             assertEquals(testVoucherDaycare.id, payment.unit.id)
             assertEquals(87000 - 28800, payment.amount)
             assertEquals(testVoucherDaycare.name, payment.unit.name)
+            assertEquals(testVoucherDaycare.costCenter, payment.unit.costCenter)
         }
 
         // assert that status is set and sending details remain unset
@@ -406,6 +411,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(PaymentStatus.CONFIRMED, payment.status)
             assertEquals(DateRange(janFirst, janLast), payment.period)
             assertEquals(testDaycare.id, payment.unit.id)
+            assertEquals(testDaycare.costCenter, payment.unit.costCenter)
             assertEquals(134850 - 28800, payment.amount)
         }
         payments.last().let { payment ->
@@ -421,6 +427,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(testVoucherDaycare.businessId, payment.unit.businessId)
             assertEquals(testVoucherDaycare.iban, payment.unit.iban)
             assertEquals(testVoucherDaycare.providerId, payment.unit.providerId)
+            assertEquals(testVoucherDaycare.costCenter, payment.unit.costCenter)
         }
     }
 

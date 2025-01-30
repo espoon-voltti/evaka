@@ -42,7 +42,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
                 """
 SELECT 
     p.id, p.created, p.updated, p.unit_id, 
-    d.name AS unit_name, d.business_id AS unit_business_id, d.iban AS unit_iban, d.provider_id AS unit_provider_id, d.type as unit_care_type,
+    d.name AS unit_name, d.business_id AS unit_business_id, d.iban AS unit_iban, d.provider_id AS unit_provider_id, d.type as unit_care_type, d.cost_center as unit_cost_center,
     p.period, p.number, p.amount, p.status, p.payment_date, p.due_date, p.sent_at, p.sent_by
 FROM payment p
 JOIN daycare d ON d.id = p.unit_id
@@ -61,7 +61,7 @@ SELECT
     p.id, p.created, p.updated,
     p.unit_id, p.unit_name, p.unit_business_id, p.unit_iban, p.unit_provider_id,
     p.period, p.number, p.amount, p.status, p.payment_date, p.due_date, p.sent_at, p.sent_by,
-    d.type as unit_care_type
+    d.type as unit_care_type, d.cost_center as unit_cost_center
 FROM payment p
 JOIN daycare d ON d.id = p.unit_id
 ORDER BY period DESC, unit_name
@@ -113,6 +113,7 @@ SELECT
     CASE WHEN p.status = 'SENT' THEN unit_iban ELSE d.iban END AS unit_iban,
     CASE WHEN p.status = 'SENT' THEN unit_provider_id ELSE d.provider_id END AS unit_provider_id,
     d.type AS unit_care_type,
+    d.cost_center as unit_cost_center,
     p.period, p.number, p.amount, p.status, p.payment_date, p.due_date, p.sent_at, p.sent_by,
     count(*) OVER () AS count
 FROM payment p
