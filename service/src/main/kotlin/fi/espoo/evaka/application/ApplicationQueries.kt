@@ -22,7 +22,7 @@ import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.Row
-import fi.espoo.evaka.shared.db.freeTextSearchPredicate
+import fi.espoo.evaka.shared.db.personFreeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -367,7 +367,8 @@ fun Database.Read.fetchApplicationSummaries(
                     )
                 }
             else null,
-            if (searchTerms.isNotBlank()) freeTextSearchPredicate(listOf("child"), searchTerms)
+            if (searchTerms.isNotBlank())
+                personFreeTextSearchPredicate(listOf("child"), searchTerms)
             else null,
             when (transferApplications) {
                 TransferApplicationFilter.TRANSFER_ONLY ->

@@ -22,7 +22,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.QuerySql
-import fi.espoo.evaka.shared.db.freeTextSearchPredicate
+import fi.espoo.evaka.shared.db.personFreeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
@@ -292,7 +292,7 @@ fun Database.Read.paginatedSearch(
                 }
             else null,
             if (searchTerms.isNotBlank())
-                freeTextSearchPredicate(listOf("head", "child"), searchTerms)
+                personFreeTextSearchPredicate(listOf("head", "child"), searchTerms)
             else null,
             if (periodStart != null) PredicateSql { where("invoice_date  >= ${bind(periodStart)}") }
             else null,

@@ -15,7 +15,12 @@ private const val freeTextParamName = "free_text"
 private val ssnParamName = { index: Int -> "ssn_$index" }
 private val dateParamName = { index: Int -> "date_$index" }
 
-fun freeTextSearchPredicate(tables: Collection<String>, searchText: String): PredicateSql {
+/**
+ * Returns a predicate that does a free text search using the given text on the given table names.
+ *
+ * The tables *must have* the following columns: social_security_number, date_of_birth, freetext_vec
+ */
+fun personFreeTextSearchPredicate(tables: Collection<String>, searchText: String): PredicateSql {
     val ssnPredicates =
         findSsnParams(searchText).map { ssn ->
             Predicate { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
