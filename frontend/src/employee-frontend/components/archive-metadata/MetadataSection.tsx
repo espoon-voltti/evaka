@@ -49,7 +49,7 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
                     text={i18n.metadata.downloadPdf}
                     onClick={() => {
                       window.open(
-                        `/api/internal${document.downloadPath}`,
+                        `/api${document.downloadPath}`,
                         '_blank',
                         'noopener,noreferrer'
                       )

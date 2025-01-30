@@ -851,7 +851,7 @@ describe('Sending and receiving messages', () => {
       const msDelayPerCharToTypeSlowly = 1200 / slowTypedText.length
       const authStatusRequests: string[] = []
       citizenPage.page.on('request', (request) => {
-        if (request.url().includes('/api/application/auth/status')) {
+        if (request.url().includes('/api/citizen/auth/status')) {
           authStatusRequests.push(request.url())
         }
       })

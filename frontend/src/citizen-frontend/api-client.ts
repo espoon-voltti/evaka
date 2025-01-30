@@ -6,7 +6,7 @@ import axios, { AxiosError } from 'axios'
 
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 
-export const API_URL = '/api/application'
+export const API_URL = '/api'
 
 export const client = axios.create({
   baseURL: API_URL
