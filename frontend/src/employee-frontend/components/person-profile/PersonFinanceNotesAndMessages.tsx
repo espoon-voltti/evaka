@@ -173,7 +173,10 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                         </Label>
                         <Light style={{ fontSize: '14px' }}>
                           {i18n.personProfile.financeNotesAndMessages.created}{' '}
-                          <span data-qa="finance-note-created-at">{note.createdAt.format()}</span>, {note.createdByName}
+                          <span data-qa="finance-note-created-at">
+                            {note.createdAt.format()}
+                          </span>
+                          ,{note.createdByName}
                         </Light>
                         {uiMode === `edit-finance-note_${note.id}` && (
                           <Light style={{ fontSize: '14px' }}>
