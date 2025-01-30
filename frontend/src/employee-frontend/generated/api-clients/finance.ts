@@ -4,14 +4,14 @@
 
 // GENERATED FILE: no manual modifications
 
-import { FinanceNote } from 'lib-common/generated/api-types/finance'
 import { FinanceNoteId } from 'lib-common/generated/api-types/shared'
 import { FinanceNoteRequest } from 'lib-common/generated/api-types/finance'
+import { FinanceNoteResponse } from 'lib-common/generated/api-types/finance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
-import { deserializeJsonFinanceNote } from 'lib-common/generated/api-types/finance'
+import { deserializeJsonFinanceNoteResponse } from 'lib-common/generated/api-types/finance'
 import { uri } from 'lib-common/uri'
 
 
@@ -55,12 +55,12 @@ export async function getFinanceNotes(
   request: {
     personId: PersonId
   }
-): Promise<FinanceNote[]> {
-  const { data: json } = await client.request<JsonOf<FinanceNote[]>>({
+): Promise<FinanceNoteResponse[]> {
+  const { data: json } = await client.request<JsonOf<FinanceNoteResponse[]>>({
     url: uri`/employee/finance-notes/${request.personId}`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonFinanceNote(e))
+  return json.map(e => deserializeJsonFinanceNoteResponse(e))
 }
 
 

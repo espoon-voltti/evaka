@@ -288,6 +288,10 @@ export type FeeDecision =
   | 'UNIGNORE'
   | 'UPDATE'
 
+export type FinanceNote =
+  | 'DELETE'
+  | 'UPDATE'
+
 export type Group =
   | 'CREATE_ABSENCES'
   | 'CREATE_CALENDAR_EVENT'

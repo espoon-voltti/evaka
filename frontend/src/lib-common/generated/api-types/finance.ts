@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { Action } from '../action'
 import { EvakaUserId } from './shared'
 import { FinanceNoteId } from './shared'
 import { JsonOf } from '../../json'
@@ -32,11 +33,27 @@ export interface FinanceNoteRequest {
   personId: PersonId
 }
 
+/**
+* Generated from fi.espoo.evaka.finance.notes.FinanceNoteResponse
+*/
+export interface FinanceNoteResponse {
+  note: FinanceNote
+  permittedActions: Action.FinanceNote[]
+}
+
 
 export function deserializeJsonFinanceNote(json: JsonOf<FinanceNote>): FinanceNote {
   return {
     ...json,
     createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
+export function deserializeJsonFinanceNoteResponse(json: JsonOf<FinanceNoteResponse>): FinanceNoteResponse {
+  return {
+    ...json,
+    note: deserializeJsonFinanceNote(json.note)
   }
 }

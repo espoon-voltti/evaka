@@ -29,6 +29,7 @@ import { faQuestion } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
+import { formatParagraphs } from '../../utils/html-utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
@@ -157,7 +158,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
           // list note items eiter edit or view mode
           <>
             {notes.length > 0
-              ? notes.map((note) => (
+              ? notes.map(({ note, permittedActions }) => (
                   <BorderedContentArea
                     key={note.id}
                     opaque
@@ -189,6 +190,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                               setText(note.content)
                               toggleUiMode(`edit-finance-note_${note.id}`)
                             }}
+                            disabled={!permittedActions.includes('UPDATE')}
                             size="s"
                             data-qa="edit-finance-note"
                             aria-label={i18n.common.edit}
@@ -199,6 +201,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                               setConfirmDelete(note.id)
                               toggleUiMode(`delete-finance-note-${note.id}`)
                             }}
+                            disabled={!permittedActions.includes('DELETE')}
                             size="s"
                             data-qa="delete-finance-note"
                             aria-label={i18n.common.remove}
@@ -240,7 +243,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                         </FixedSpaceRow>
                       </div>
                     ) : (
-                      <div>{note.content}</div>
+                      <div>{formatParagraphs(note.content)}</div>
                     )}
                   </BorderedContentArea>
                 ))

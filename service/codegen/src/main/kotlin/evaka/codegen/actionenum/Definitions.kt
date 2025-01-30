@@ -32,6 +32,7 @@ val generatedFiles =
                 generateEnum<Action.Decision>(),
                 generateEnum<Action.FeeAlteration>(),
                 generateEnum<Action.FeeDecision>(),
+                generateEnum<Action.FinanceNote>(),
                 generateEnum<Action.Group>(),
                 generateEnum<Action.GroupPlacement>(),
                 generateEnum<Action.Income>(),

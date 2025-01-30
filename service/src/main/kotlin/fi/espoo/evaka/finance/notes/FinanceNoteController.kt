@@ -25,6 +25,11 @@ data class FinanceNoteRequest(
     val content: String
 )
 
+data class FinanceNoteResponse(
+    val note: FinanceNote,
+    val permittedActions: Set<Action.FinanceNote>,
+)
+
 @RestController
 @RequestMapping("/employee/finance-notes")
 class FinanceNoteController(private val accessControl: AccessControl) {
@@ -34,7 +39,7 @@ class FinanceNoteController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
-    ): List<FinanceNote> {
+    ): List<FinanceNoteResponse> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -44,7 +49,18 @@ class FinanceNoteController(private val accessControl: AccessControl) {
                         Action.Person.READ_FINANCE_NOTES,
                         personId,
                     )
-                    tx.getFinanceNotes(personId)
+                    val notes = tx.getFinanceNotes(personId)
+                    val permittedActions = accessControl.getPermittedActions<FinanceNoteId, Action.FinanceNote>(
+                        tx,
+                        user,
+                        clock,
+                        notes.map { it.id })
+                    notes.map {
+                        FinanceNoteResponse(
+                            note = it,
+                            permittedActions = permittedActions[it.id] ?: setOf(),
+                        )
+                    }
                 }
             }
             .also {
