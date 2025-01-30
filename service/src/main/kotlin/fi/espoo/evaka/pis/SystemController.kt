@@ -93,7 +93,6 @@ class SystemController(
         @RequestBody request: CitizenWeakLoginRequest,
     ): CitizenUserIdentity {
         Audit.CitizenWeakLoginAttempt.log(targetId = AuditId(request.username))
-        if (!env.newCitizenWeakLoginEnabled) throw BadRequest("New citizen weak login is disabled")
         return db.connect { dbc ->
             val citizen = dbc.read { it.getCitizenWeakLoginDetails(request.username) }
             dbc.close() // avoid hogging the connection while we check the password
