@@ -61,6 +61,7 @@ import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MessageThreadData
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.finance.notes.createFinanceNote
 import fi.espoo.evaka.holidayperiod.HolidayPeriodCreate
 import fi.espoo.evaka.holidayperiod.QuestionnaireBody
 import fi.espoo.evaka.holidayperiod.createFixedPeriodQuestionnaire
@@ -1657,6 +1658,24 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
                     PasswordBlacklistSource("Dev API", clock.now()),
                     request.asSequence(),
                 )
+            }
+        }
+    }
+
+    data class DevFinanceNote(val personId: PersonId, val content: String)
+
+    @PostMapping("/finance-notes")
+    fun createFinanceNotes(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody notes: List<DevFinanceNote>,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.ensureFakeAdminExists()
+                notes.forEach { note ->
+                    tx.createFinanceNote(note.personId, note.content, fakeAdmin, clock.now())
+                }
             }
         }
     }

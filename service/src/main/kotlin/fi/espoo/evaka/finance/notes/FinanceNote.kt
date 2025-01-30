@@ -7,8 +7,6 @@ package fi.espoo.evaka.finance.notes
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FinanceNoteId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.user.EvakaUser
-import org.jdbi.v3.core.mapper.Nested
 
 data class FinanceNote(
     val id: FinanceNoteId,

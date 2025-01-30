@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-data class FinanceNoteRequest(
-    val personId: PersonId,
-    val content: String
-)
+data class FinanceNoteRequest(val personId: PersonId, val content: String)
 
 data class FinanceNoteResponse(
     val note: FinanceNote,
@@ -50,11 +47,13 @@ class FinanceNoteController(private val accessControl: AccessControl) {
                         personId,
                     )
                     val notes = tx.getFinanceNotes(personId)
-                    val permittedActions = accessControl.getPermittedActions<FinanceNoteId, Action.FinanceNote>(
-                        tx,
-                        user,
-                        clock,
-                        notes.map { it.id })
+                    val permittedActions =
+                        accessControl.getPermittedActions<FinanceNoteId, Action.FinanceNote>(
+                            tx,
+                            user,
+                            clock,
+                            notes.map { it.id },
+                        )
                     notes.map {
                         FinanceNoteResponse(
                             note = it,
@@ -93,7 +92,7 @@ class FinanceNoteController(private val accessControl: AccessControl) {
             .also { financeNoteId ->
                 Audit.FinanceNoteCreate.log(
                     targetId = AuditId(note.personId),
-                    objectId = AuditId(financeNoteId)
+                    objectId = AuditId(financeNoteId),
                 )
             }
     }
