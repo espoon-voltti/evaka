@@ -187,21 +187,12 @@ private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean 
     estimatedIncome?.incomeEndDate == null ||
         estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
 
+// These are ordered by the order in which they are viewed in the frontend
+@ConstList("incomeStatementAttachmentTypes")
 enum class IncomeStatementAttachmentType {
-    OTHER,
-    ALIMONY_PAYOUT,
     PAYSLIP_GROSS,
-    STARTUP_GRANT,
-    SALARY,
-    ACCOUNTANT_REPORT_PARTNERSHIP,
-    PAYSLIP_LLC,
-    ACCOUNTANT_REPORT_LLC,
-    PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP,
-    PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED,
-    PROOF_OF_STUDIES,
-    CHILD_INCOME,
 
-    // These are the entries of `OtherIncome`
+    // These are the entries of `OtherIncome` in no particular order
     PENSION,
     ADULT_EDUCATION_ALLOWANCE,
     SICKNESS_ALLOWANCE,
@@ -226,6 +217,29 @@ enum class IncomeStatementAttachmentType {
     APPRENTICESHIP_SALARY,
     ACCIDENT_INSURANCE_COMPENSATION,
     OTHER_INCOME,
+    STARTUP_GRANT,
+
+    // Self-employed
+    PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED,
+
+    // Limited company
+    ACCOUNTANT_REPORT_LLC,
+    PAYSLIP_LLC,
+
+    // Partnership
+    ACCOUNTANT_REPORT_PARTNERSHIP,
+    PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP,
+
+    // Light entrepreneur
+    SALARY,
+
+    // Other info
+    PROOF_OF_STUDIES,
+    ALIMONY_PAYOUT,
+    OTHER,
+
+    // Child's income statement only has one attachment type
+    CHILD_INCOME,
 }
 
 data class IncomeStatementAttachment(

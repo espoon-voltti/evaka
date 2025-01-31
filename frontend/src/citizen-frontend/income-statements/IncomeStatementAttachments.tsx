@@ -7,7 +7,10 @@ import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/generated/api-types/attachment'
-import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
+import {
+  IncomeStatementAttachmentType,
+  incomeStatementAttachmentTypes
+} from 'lib-common/generated/api-types/incomestatement'
 import {
   AttachmentId,
   IncomeStatementId
@@ -329,21 +332,21 @@ export const CitizenAttachments = React.memo(function CitizenAttachments({
       ) : (
         <Table>
           <Tbody>
-            {Object.entries(incomeStatementAttachments.attachmentsByType).map(
-              ([type, attachments]) => {
-                const attachmentType = type as IncomeStatementAttachmentType
-                return (
-                  <Tr key={attachmentType}>
-                    <Td>
-                      {t.income.attachments.attachmentNames[attachmentType]}
-                    </Td>
-                    <Td>
-                      <UploadedFiles files={attachments} />
-                    </Td>
-                  </Tr>
-                )
-              }
-            )}
+            {incomeStatementAttachmentTypes.flatMap((attachmentType) => {
+              const attachments =
+                incomeStatementAttachments.attachmentsByType[attachmentType]
+              if (!attachments?.length) return []
+              return (
+                <Tr key={attachmentType}>
+                  <Td>
+                    {t.income.attachments.attachmentNames[attachmentType]}
+                  </Td>
+                  <Td>
+                    <UploadedFiles files={attachments} />
+                  </Td>
+                </Tr>
+              )
+            })}
           </Tbody>
         </Table>
       )}
