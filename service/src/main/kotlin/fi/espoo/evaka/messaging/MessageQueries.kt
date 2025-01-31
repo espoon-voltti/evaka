@@ -1103,8 +1103,8 @@ data class UnitMessageReceiversResult(
     val accountId: MessageAccountId,
     val unitId: DaycareId?,
     val unitName: String?,
-    val groupId: GroupId,
-    val groupName: String,
+    val groupId: GroupId?,
+    val groupName: String?,
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
@@ -1132,7 +1132,7 @@ fun Database.Read.getReceiversForNewMessage(
             WHERE
                 ${predicate(idFilter.forTable("message_account"))} AND
                 type = ANY('{PERSONAL,GROUP}'::message_account_type[])
-        ), starting_children as(
+        ), starting_children AS (
             SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, COALESCE(dgp.start_date, p.start_date) AS start_date
             FROM placement p
             LEFT JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
@@ -1202,6 +1202,7 @@ fun Database.Read.getReceiversForNewMessage(
                 )
             }
             .toList<UnitMessageReceiversResult>()
+            .filter { it.groupId != null }
             .groupBy { it.accountId }
             .map { (groupKey, receivers) ->
                 val units =
@@ -1274,8 +1275,9 @@ private fun getReceiverGroups(
         .map { (group, children) ->
             val (groupId, groupName) = group
             MessageReceiver.Group(
-                id = groupId,
-                name = groupName,
+                id = groupId!!, // TODO: Groupless are filtered out. Fix this when children without
+                // group need to be available.
+                name = groupName!!,
                 hasStarters = children.any { it.startDate != null },
                 receivers =
                     children.map {
@@ -1294,13 +1296,21 @@ fun Database.Read.getMessageAccountsForRecipients(
     filters: MessageController.PostMessageFilters?,
     date: LocalDate,
 ): List<Pair<MessageAccountId, ChildId?>> {
-    val groupedRecipients = recipients.groupBy { it.type }
-    val areaRecipients = groupedRecipients[MessageRecipientType.AREA]?.map { it.id } ?: listOf()
-    val unitRecipients = groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf()
-    val groupRecipients = groupedRecipients[MessageRecipientType.GROUP]?.map { it.id } ?: listOf()
-    val childRecipients = groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
-    val citizenRecipients =
-        groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
+
+    fun getRecipientIdsByType(
+        recipients: List<MessageRecipient>
+    ): Map<MessageRecipientType, List<Id<*>>> {
+        val recipientMap =
+            MessageRecipientType.values().associateWith { emptyList<Id<*>>() }.toMutableMap()
+        recipients
+            .groupBy { it.type }
+            .forEach { (type, recipients) -> recipientMap[type] = recipients.map { it.id } }
+        return recipientMap.toMap()
+    }
+
+    val recipientsByStartingStatus = recipients.groupBy { it.starter }
+    val starterRecipients = getRecipientIdsByType(recipientsByStartingStatus[true] ?: emptyList())
+    val currentRecipients = getRecipientIdsByType(recipientsByStartingStatus[false] ?: emptyList())
 
     val filterPredicates =
         PredicateSql.allNotNull(
@@ -1328,13 +1338,16 @@ fun Database.Read.getMessageAccountsForRecipients(
                 """
 WITH sender AS (
     SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}
-), children AS (
+), current_children AS (
     SELECT DISTINCT pl.child_id
     FROM realized_placement_all(${bind(date)}) pl
     JOIN daycare d ON pl.unit_id = d.id
     LEFT JOIN person p ON p.id = pl.child_id
     LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
-    WHERE (d.care_area_id = ANY(${bind(areaRecipients)}) OR pl.unit_id = ANY(${bind(unitRecipients)}) OR pl.group_id = ANY(${bind(groupRecipients)}) OR pl.child_id = ANY(${bind(childRecipients)}))
+    WHERE (d.care_area_id = ANY(${bind(currentRecipients[MessageRecipientType.AREA])}) 
+        OR pl.unit_id = ANY(${bind(currentRecipients[MessageRecipientType.UNIT])})
+        OR pl.group_id = ANY(${bind(currentRecipients[MessageRecipientType.GROUP])})
+        OR pl.child_id = ANY(${bind(currentRecipients[MessageRecipientType.CHILD])}))
     AND ${predicate(filterPredicates)}
     AND EXISTS (
         SELECT 1
@@ -1363,6 +1376,41 @@ WITH sender AS (
         WHERE type = 'MUNICIPAL'
     )
     AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+), starting_children AS (
+    SELECT DISTINCT pl.child_id
+    FROM placement pl
+    JOIN daycare d ON pl.unit_id = d.id
+    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id
+    LEFT JOIN person p ON p.id = pl.child_id
+    LEFT JOIN service_need sn ON false
+    WHERE (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)})
+        AND (d.care_area_id = ANY(${bind(starterRecipients[MessageRecipientType.AREA])})
+            OR pl.unit_id = ANY(${bind(starterRecipients[MessageRecipientType.UNIT])})
+            OR dgp.daycare_group_id = ANY(${bind(starterRecipients[MessageRecipientType.GROUP])})
+            OR pl.child_id = ANY(${bind(starterRecipients[MessageRecipientType.CHILD])}))
+    AND ${predicate(filterPredicates)}
+    AND EXISTS (
+        SELECT 1
+        FROM daycare_acl_view acl
+        WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = (SELECT sender.employee_id FROM sender)
+
+        UNION ALL
+
+        SELECT 1
+        FROM sender
+        WHERE dgp.daycare_group_id = sender.daycare_group_id
+
+        UNION ALL
+
+        SELECT 1
+        FROM sender
+        WHERE type = 'MUNICIPAL'
+    )
+    AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+), children AS (
+    SELECT child_id FROM current_children
+    UNION
+    SELECT child_id FROM starting_children
 )
 SELECT acc.id AS account_id, c.child_id
 FROM children c
@@ -1381,7 +1429,7 @@ UNION
 SELECT acc.id AS account_id, NULL as child_id
 FROM person p
 JOIN message_account acc ON p.id = acc.person_id
-WHERE p.id = ANY(${bind(citizenRecipients)})
+WHERE p.id = ANY(${bind(currentRecipients[MessageRecipientType.CITIZEN])})
 """
             )
         }

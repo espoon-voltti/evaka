@@ -215,6 +215,7 @@ export interface MessageReceiversResponse {
 */
 export interface MessageRecipient {
   id: string
+  starter: boolean
   type: MessageRecipientType
 }
 

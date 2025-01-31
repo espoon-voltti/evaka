@@ -114,7 +114,11 @@ function receiverAsSelectorNode(
     key: receiverToKey(receiver.id, isStarter),
     checked: false,
     text: nameWithStarterIndication,
-    messageRecipient: { type: receiver.type, id: receiver.id },
+    messageRecipient: {
+      type: receiver.type,
+      id: receiver.id,
+      starter: isStarter
+    },
     children:
       'receivers' in receiver
         ? receiver.receivers.map((r) =>

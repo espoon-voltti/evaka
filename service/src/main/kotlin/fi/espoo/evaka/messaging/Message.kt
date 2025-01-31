@@ -223,7 +223,11 @@ enum class MessageRecipientType {
     CITIZEN,
 }
 
-data class MessageRecipient(val type: MessageRecipientType, val id: Id<*>) {
+data class MessageRecipient(
+    val type: MessageRecipientType,
+    val id: Id<*>,
+    val starter: Boolean = false,
+) {
     fun toAreaId(): AreaId? = if (type == MessageRecipientType.AREA) AreaId(id.raw) else null
 
     fun toUnitId(): DaycareId? = if (type == MessageRecipientType.UNIT) DaycareId(id.raw) else null
