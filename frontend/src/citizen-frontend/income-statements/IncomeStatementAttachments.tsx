@@ -124,7 +124,8 @@ export const AttachmentSection = React.memo(function AttachmentSection({
   attachmentHandler,
   infoText = '',
   dense = false,
-  optional = false
+  optional = false,
+  labelKey = 'addAttachment'
 }: {
   attachmentType: IncomeStatementAttachmentType
   showFormErrors: boolean
@@ -132,6 +133,7 @@ export const AttachmentSection = React.memo(function AttachmentSection({
   infoText?: string
   dense?: boolean
   optional?: boolean
+  labelKey?: 'addAttachment' | 'attachmentNames'
 }) {
   const t = useTranslation()
   if (!attachmentHandler) return null
@@ -140,7 +142,7 @@ export const AttachmentSection = React.memo(function AttachmentSection({
 
   const label = (
     <LabelWithError
-      label={`${t.income.attachments.addAttachment[attachmentType]}${optional ? '' : ' *'}`}
+      label={`${t.income.attachments[labelKey][attachmentType]}${optional ? '' : ' *'}`}
       showError={!optional && showFormErrors && !hasAttachment(attachmentType)}
       errorText={t.income.errors.attachmentMissing}
     />

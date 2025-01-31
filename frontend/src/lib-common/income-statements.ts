@@ -10,6 +10,7 @@ import {
   IncomeStatementAttachment,
   IncomeStatementAttachmentType
 } from './generated/api-types/incomestatement'
+import { AttachmentId } from './generated/api-types/shared'
 
 export type AttachmentsByType = Partial<
   Record<IncomeStatementAttachmentType, Attachment[]>
@@ -48,4 +49,13 @@ export function numAttachments(
   return incomeStatementAttachments.typed
     ? Object.keys(incomeStatementAttachments.attachmentsByType).length
     : incomeStatementAttachments.untypedAttachments.length
+}
+
+export function collectAttachmentIds(
+  incomeStatementAttachments: IncomeStatementAttachments
+): AttachmentId[] {
+  const attachments = incomeStatementAttachments.typed
+    ? Object.values(incomeStatementAttachments.attachmentsByType).flat()
+    : incomeStatementAttachments.untypedAttachments
+  return attachments.map((a) => a.id)
 }

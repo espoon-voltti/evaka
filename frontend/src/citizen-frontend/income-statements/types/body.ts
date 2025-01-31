@@ -3,20 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import { collectAttachmentIds } from 'lib-common/income-statements'
 import LocalDate from 'lib-common/local-date'
 import { stringToInt } from 'lib-common/utils/number'
 
 import * as Form from './form'
-
-function collectAttachmentIds(
-  formData: Form.IncomeStatementForm
-): AttachmentId[] {
-  const attachments = formData.attachments.typed
-    ? Object.values(formData.attachments.attachmentsByType).flat()
-    : formData.attachments.untypedAttachments
-  return attachments.map((a) => a.id)
-}
 
 export function fromBody(
   personType: 'adult' | 'child',
@@ -39,7 +30,7 @@ export function fromBody(
   }
 
   if (formData.childIncome) {
-    const attachmentIds = collectAttachmentIds(formData)
+    const attachmentIds = collectAttachmentIds(formData.attachments)
     if (attachmentIds.length === 0) return null
 
     const childIncome: IncomeStatementBody.ChildIncome = {
@@ -74,7 +65,7 @@ export function fromBody(
     student: formData.student,
     alimonyPayer: formData.alimonyPayer,
     otherInfo: formData.otherInfo,
-    attachmentIds: collectAttachmentIds(formData)
+    attachmentIds: collectAttachmentIds(formData.attachments)
   }
 }
 

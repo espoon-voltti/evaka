@@ -541,6 +541,25 @@ WHERE id = :id
         .updateExactlyOne()
 }
 
+fun Database.Transaction.updateIncomeStatementOtherInfo(
+    incomeStatementId: IncomeStatementId,
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
+    otherInfo: String,
+) {
+    execute {
+        sql(
+            """
+UPDATE income_statement
+SET modified_at = ${bind(now)},
+    modified_by = ${bind(userId)},
+    other_info = ${bind(otherInfo)}
+WHERE id = ${bind(incomeStatementId)}
+"""
+        )
+    }
+}
+
 fun Database.Transaction.updateIncomeStatementHandled(
     user: AuthenticatedUser.Employee,
     now: HelsinkiDateTime,

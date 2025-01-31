@@ -9,6 +9,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.attachment.dissociateAttachmentsOfParent
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -283,6 +284,64 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 }?.also { attachmentIds ->
                     tx.associateOrphanAttachments(user.evakaUserId, parent, attachmentIds)
                 }
+            }
+        }
+        Audit.IncomeStatementUpdate.log(targetId = AuditId(incomeStatementId))
+    }
+
+    data class UpdateSentIncomeStatementBody(
+        val otherInfo: String,
+        val attachmentIds: List<AttachmentId>,
+    )
+
+    @PutMapping("/{incomeStatementId}/update-sent")
+    fun updateSentIncomeStatement(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable incomeStatementId: IncomeStatementId,
+        @RequestBody body: UpdateSentIncomeStatementBody,
+    ) {
+        val now = clock.now()
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.IncomeStatement.UPDATE,
+                    incomeStatementId,
+                )
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Attachment.READ_ORPHAN_ATTACHMENT,
+                    body.attachmentIds,
+                )
+
+                val original =
+                    tx.readIncomeStatement(user, incomeStatementId)
+                        ?: throw NotFound("Income statement not found")
+
+                if (
+                    (original !is IncomeStatement.Income &&
+                        original !is IncomeStatement.ChildIncome) ||
+                        original.status != IncomeStatementStatus.SENT
+                ) {
+                    throw Forbidden("Only sent income statements can be updated")
+                }
+
+                tx.updateIncomeStatementOtherInfo(
+                    incomeStatementId,
+                    user.evakaUserId,
+                    now,
+                    body.otherInfo,
+                )
+
+                val parent = AttachmentParent.IncomeStatement(incomeStatementId)
+                tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
+                tx.associateOrphanAttachments(user.evakaUserId, parent, body.attachmentIds)
             }
         }
         Audit.IncomeStatementUpdate.log(targetId = AuditId(incomeStatementId))

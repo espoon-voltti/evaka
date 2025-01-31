@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -14,11 +14,12 @@ import {
   EstimatedIncome,
   Gross,
   IncomeStatement,
-  IncomeStatementAttachment,
   IncomeStatementAttachmentType
 } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import {
+  collectAttachmentIds,
+  IncomeStatementAttachments,
   numAttachments,
   toIncomeStatementAttachments
 } from 'lib-common/income-statements'
@@ -26,8 +27,10 @@ import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
-import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import InputField from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
@@ -39,41 +42,46 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { fileIcon } from 'lib-components/molecules/FileUpload'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faPen } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
-import { incomeStatementQuery } from './queries'
+import {
+  AttachmentSection,
+  IncomeStatementUntypedAttachments,
+  makeAttachmentHandler
+} from './IncomeStatementAttachments'
+import { SetStateCallback } from './IncomeStatementComponents'
+import {
+  incomeStatementQuery,
+  updateSentIncomeStatementMutation
+} from './queries'
 
 export default React.memo(function IncomeStatementView() {
   const incomeStatementId =
     useIdRouteParam<IncomeStatementId>('incomeStatementId')
-  const t = useTranslation()
-  const navigate = useNavigate()
   const result = useQueryResult(incomeStatementQuery({ incomeStatementId }))
 
-  const handleEdit = useCallback(() => {
-    void navigate('edit')
-  }, [navigate])
-
   return renderResult(result, (incomeStatement) => (
+    <IncomeStatementView2 incomeStatement={incomeStatement} />
+  ))
+})
+
+const IncomeStatementView2 = React.memo(function IncomeStatementView2({
+  incomeStatement
+}: {
+  incomeStatement: IncomeStatement
+}) {
+  const t = useTranslation()
+
+  return (
     <Container>
       <ReturnButton label={t.common.return} />
       <Main>
         <ContentArea opaque>
           <FixedSpaceRow spacing="L">
             <H1>{t.income.view.title}</H1>
-            {incomeStatement.status !== 'HANDLED' && (
-              <EditButtonContainer>
-                <ResponsiveInlineButton
-                  text={t.common.edit}
-                  icon={faPen}
-                  onClick={handleEdit}
-                />
-              </EditButtonContainer>
-            )}
           </FixedSpaceRow>
           <Row
             label={t.income.view.startDate}
@@ -89,7 +97,7 @@ export default React.memo(function IncomeStatementView() {
         </ContentArea>
       </Main>
     </Container>
-  ))
+  )
 })
 
 const IncomeInfo = React.memo(function IncomeInfo({
@@ -98,6 +106,15 @@ const IncomeInfo = React.memo(function IncomeInfo({
   incomeStatement: IncomeStatement.Income
 }) {
   const t = useTranslation()
+  const navigate = useNavigate()
+
+  const editable = incomeStatement.status !== 'HANDLED'
+
+  const [otherInfo, setOtherInfo] = useState(() => incomeStatement.otherInfo)
+  const [incomeStatementAttachments, setIncomeStatementAttachments] = useState(
+    () => toIncomeStatementAttachments(incomeStatement.attachments)
+  )
+
   return (
     <>
       {incomeStatement.gross && (
@@ -122,12 +139,59 @@ const IncomeInfo = React.memo(function IncomeInfo({
         label={t.income.view.alimonyPayer}
         value={t.common.yesno(incomeStatement.alimonyPayer)}
       />
+
       <Row
         label={t.income.view.otherInfo}
-        value={incomeStatement.otherInfo || '-'}
+        value={editable ? '' : incomeStatement.otherInfo || '-'}
       />
+      {editable && (
+        <InputField
+          value={otherInfo}
+          onChange={setOtherInfo}
+          placeholder={t.common.write}
+        />
+      )}
+
       <HorizontalLine />
-      <CitizenAttachments attachments={incomeStatement.attachments} />
+
+      {editable ? (
+        <CitizenAttachmentsWithUpload
+          incomeStatementId={incomeStatement.id}
+          incomeStatementAttachments={incomeStatementAttachments}
+          onChange={setIncomeStatementAttachments}
+        />
+      ) : (
+        <CitizenAttachments
+          incomeStatementAttachments={incomeStatementAttachments}
+        />
+      )}
+
+      {editable && (
+        <>
+          <Gap size="L" />
+          <FixedSpaceRow justifyContent="flex-end">
+            <Button
+              text={t.common.cancel}
+              onClick={() => navigate('/income')}
+            />
+            <MutateButton
+              primary
+              text={t.common.save}
+              mutation={updateSentIncomeStatementMutation}
+              onClick={() => ({
+                incomeStatementId: incomeStatement.id,
+                body: {
+                  otherInfo,
+                  attachmentIds: collectAttachmentIds(
+                    incomeStatementAttachments
+                  )
+                }
+              })}
+              onSuccess={() => navigate('/income')}
+            />
+          </FixedSpaceRow>
+        </>
+      )}
     </>
   )
 })
@@ -347,15 +411,11 @@ const AccountantInfo = React.memo(function AccountantInfo({
 })
 
 const CitizenAttachments = React.memo(function CitizenAttachments({
-  attachments
+  incomeStatementAttachments
 }: {
-  attachments: IncomeStatementAttachment[]
+  incomeStatementAttachments: IncomeStatementAttachments
 }) {
   const t = useTranslation()
-  const incomeStatementAttachments = useMemo(
-    () => toIncomeStatementAttachments(attachments),
-    [attachments]
-  )
   const noAttachments = numAttachments(incomeStatementAttachments) === 0
   return (
     <>
@@ -413,16 +473,58 @@ const UploadedFiles = React.memo(function UploadedFiles({
   )
 })
 
+const CitizenAttachmentsWithUpload = React.memo(function CitizenAttachments({
+  incomeStatementId,
+  incomeStatementAttachments,
+  onChange
+}: {
+  incomeStatementId: IncomeStatementId
+  incomeStatementAttachments: IncomeStatementAttachments
+  onChange: SetStateCallback<IncomeStatementAttachments>
+}) {
+  const t = useTranslation()
+  const attachmentHandler = useMemo(
+    () =>
+      makeAttachmentHandler(
+        incomeStatementId,
+        incomeStatementAttachments,
+        onChange
+      ),
+    [incomeStatementAttachments, incomeStatementId, onChange]
+  )
+  return (
+    <>
+      <H2>{t.income.view.citizenAttachments.title}</H2>
+      {!incomeStatementAttachments.typed ? (
+        <IncomeStatementUntypedAttachments
+          incomeStatementId={incomeStatementId}
+          requiredAttachments={new Set()}
+          attachments={incomeStatementAttachments}
+          onChange={onChange}
+        />
+      ) : (
+        Object.keys(incomeStatementAttachments.attachmentsByType).map(
+          (type) => {
+            const attachmentType = type as IncomeStatementAttachmentType
+            return (
+              <AttachmentSection
+                key={attachmentType}
+                attachmentType={attachmentType}
+                showFormErrors={false}
+                attachmentHandler={attachmentHandler}
+                labelKey="attachmentNames"
+              />
+            )
+          }
+        )
+      )}
+    </>
+  )
+})
+
 const FileIcon = styled(FontAwesomeIcon)`
   color: ${(p) => p.theme.colors.main.m2};
   margin-right: ${defaultMargins.s};
-`
-
-const EditButtonContainer = styled.div`
-  flex: 1 0 auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
 `
 
 const Row = React.memo(function Row({

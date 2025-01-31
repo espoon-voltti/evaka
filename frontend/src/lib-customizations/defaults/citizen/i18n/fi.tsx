@@ -48,6 +48,7 @@ export default {
     add: 'Lisää',
     show: 'Näytä',
     hide: 'Piilota',
+    write: 'Kirjoita',
     yes,
     no,
     yesno: (value: boolean): string => (value ? yes : no),

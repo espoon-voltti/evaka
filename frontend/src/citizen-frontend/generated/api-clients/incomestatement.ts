@@ -13,6 +13,7 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PagedIncomeStatements } from 'lib-common/generated/api-types/incomestatement'
 import { PersonId } from 'lib-common/generated/api-types/shared'
+import { UpdateSentIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonIncomeStatement } from 'lib-common/generated/api-types/incomestatement'
@@ -196,6 +197,24 @@ export async function updateIncomeStatement(
     method: 'PUT',
     params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.updateSentIncomeStatement
+*/
+export async function updateSentIncomeStatement(
+  request: {
+    incomeStatementId: IncomeStatementId,
+    body: UpdateSentIncomeStatementBody
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/income-statements/${request.incomeStatementId}/update-sent`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<UpdateSentIncomeStatementBody>
   })
   return json
 }

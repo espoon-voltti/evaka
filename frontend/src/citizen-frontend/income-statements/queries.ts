@@ -14,7 +14,8 @@ import {
   getIncomeStatementChildren,
   getIncomeStatementStartDates,
   getIncomeStatements,
-  updateIncomeStatement
+  updateIncomeStatement,
+  updateSentIncomeStatement
 } from '../generated/api-clients/incomestatement'
 
 const q = new Queries()
@@ -36,6 +37,14 @@ export const createIncomeStatementMutation = q.mutation(createIncomeStatement, [
 export const updateIncomeStatementMutation = q.mutation(updateIncomeStatement, [
   incomeStatementsQuery.prefix
 ])
+
+export const updateSentIncomeStatementMutation = q.mutation(
+  updateSentIncomeStatement,
+  [
+    incomeStatementsQuery.prefix,
+    ({ incomeStatementId }) => incomeStatementQuery({ incomeStatementId })
+  ]
+)
 
 export const deleteIncomeStatementMutation = q.mutation(deleteIncomeStatement, [
   incomeStatementsQuery.prefix

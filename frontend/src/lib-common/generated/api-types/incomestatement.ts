@@ -379,6 +379,14 @@ export interface SetIncomeStatementHandledBody {
   handlerNote: string
 }
 
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody
+*/
+export interface UpdateSentIncomeStatementBody {
+  attachmentIds: AttachmentId[]
+  otherInfo: string
+}
+
 
 export function deserializeJsonEntrepreneur(json: JsonOf<Entrepreneur>): Entrepreneur {
   return {
