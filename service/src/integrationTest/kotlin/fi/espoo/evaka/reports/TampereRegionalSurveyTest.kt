@@ -728,13 +728,13 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Fabio (>3y) 23 + 21 + (22 - 4)
         val expectedResults = Pair(17, 62)
 
-        val assistanceResults =
+        val careDayResults =
             Pair(
                 results.ageStatistics.first().effectiveFamilyDaycareDaysUnder3Count,
                 results.ageStatistics.first().effectiveFamilyDaycareDaysOver3Count,
             )
 
-        assertEquals(expectedResults, assistanceResults)
+        assertEquals(expectedResults, careDayResults)
     }
 
     @Test
@@ -903,6 +903,79 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         // Ville + Fabio = 2
         assertEquals(2, results.yearlyStatistics.first().club5YearOldCount)
+    }
+
+    @Test
+    fun `Voucher assistance count is correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        val defaultPlacementDuration =
+            FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1))
+
+        val childTestData =
+            initTestPlacementData(
+                start = octFirst,
+                daycareId = testUnitData[3],
+                defaultPlacementDuration = defaultPlacementDuration,
+                baseAge = 5,
+            )
+
+        db.transaction { tx ->
+            // add an assistance factor for Aapo that should show up
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childTestData[0].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    capacityFactor = 5.50,
+                )
+            )
+
+            // add a test child with an assistance factor that should not show up
+            val testChildKaarina =
+                DevPerson(
+                    dateOfBirth = startDate.minusYears(2),
+                    firstName = "Kaarina",
+                    lastName = "Kunnallinen",
+                    language = "fi",
+                )
+
+            tx.insert(testChildKaarina, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildKaarina.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testUnitData[0],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = testChildKaarina.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    capacityFactor = 5.50,
+                )
+            )
+        }
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Bertil (action 40) + Cecil (action 10) + Aapo (factor)
+        assertEquals(3, results.yearlyStatistics.first().voucherAssistanceCount)
     }
 
     private fun initTestUnitData(monday: LocalDate): List<DaycareId> {

@@ -791,8 +791,8 @@ WHERE ${predicate(placementPred.forTable("pl"))}
 SELECT count(pl.child_id) as placement_count
 FROM placement pl
          JOIN daycare d ON pl.unit_id = d.id
-         JOIN daycare_assistance da 
-            ON da.child_id = pl.child_id 
+         JOIN daycare_assistance da
+            ON da.child_id = pl.child_id
                 AND da.valid_during @> ${bind(statDay)}
 WHERE ${predicate(daycarePred.forTable("d"))}
   AND ${predicate(assistancePred.forTable("da"))}
