@@ -16,20 +16,34 @@ import {
   updateBackupCare
 } from '../../generated/api-clients/backupcare'
 import {
+  addFullAclForRole,
   createDaycare,
   createGroup,
+  createTemporaryEmployee,
+  deleteEarlyChildhoodEducationSecretary,
   deleteGroup,
+  deleteSpecialEducationTeacher,
+  deleteStaff,
+  deleteTemporaryEmployee,
+  deleteTemporaryEmployeeAcl,
+  deleteUnitSupervisor,
   getAreas,
   getDaycare,
+  getDaycareAcl,
   getDaycares,
   getGroups,
+  getTemporaryEmployee,
+  getTemporaryEmployees,
   getUnitGroupDetails,
   getUnitNotifications,
   getUnits,
   getUnitServiceWorkerNote,
+  reactivateTemporaryEmployee,
   setUnitServiceWorkerNote,
   updateDaycare,
   updateGroup,
+  updateGroupAclWithOccupancyCoefficient,
+  updateTemporaryEmployee,
   updateUnitClosingDate
 } from '../../generated/api-clients/daycare'
 import {
@@ -60,6 +74,68 @@ export const unitFilterQuery = q.query(getUnits)
 export const unitsQuery = q.query(getDaycares)
 
 export const unitQuery = q.query(getDaycare)
+
+export const unitAclQuery = q.query(getDaycareAcl)
+
+export const temporaryEmployeeQuery = q.query(getTemporaryEmployee)
+
+export const temporaryEmployeesQuery = q.query(getTemporaryEmployees)
+
+export const addFullAclForRoleMutation = q.mutation(addFullAclForRole, [
+  ({ unitId }) => unitAclQuery({ unitId })
+])
+export const createTemporaryEmployeeMutation = q.mutation(
+  createTemporaryEmployee,
+  [
+    ({ unitId }) => unitAclQuery({ unitId }),
+    ({ unitId }) => temporaryEmployeesQuery({ unitId })
+  ]
+)
+export const updateTemporaryEmployeeMutation = q.mutation(
+  updateTemporaryEmployee,
+  [
+    ({ unitId }) => unitAclQuery({ unitId }),
+    ({ unitId }) => temporaryEmployeesQuery({ unitId }),
+    ({ unitId, employeeId }) => temporaryEmployeeQuery({ unitId, employeeId })
+  ]
+)
+export const deleteTemporaryEmployeeMutation = q.mutation(
+  deleteTemporaryEmployee,
+  [
+    ({ unitId }) => temporaryEmployeesQuery({ unitId }),
+    ({ unitId, employeeId }) => temporaryEmployeeQuery({ unitId, employeeId })
+  ]
+)
+export const deleteTemporaryEmployeeAclMutation = q.mutation(
+  deleteTemporaryEmployeeAcl,
+  [
+    ({ unitId }) => unitAclQuery({ unitId }),
+    ({ unitId }) => temporaryEmployeesQuery({ unitId })
+  ]
+)
+export const reactivateTemporaryEmployeeMutation = q.mutation(
+  reactivateTemporaryEmployee,
+  [({ unitId }) => unitAclQuery({ unitId })]
+)
+
+export const deleteUnitSupervisorMutation = q.mutation(deleteUnitSupervisor, [
+  ({ unitId }) => unitAclQuery({ unitId })
+])
+export const deleteSpecialEducationTeacherMutation = q.mutation(
+  deleteSpecialEducationTeacher,
+  [({ unitId }) => unitAclQuery({ unitId })]
+)
+export const deleteEarlyChildhoodEducationSecretaryMutation = q.mutation(
+  deleteEarlyChildhoodEducationSecretary,
+  [({ unitId }) => unitAclQuery({ unitId })]
+)
+export const deleteStaffMutation = q.mutation(deleteStaff, [
+  ({ unitId }) => unitAclQuery({ unitId })
+])
+export const updateGroupAclWithOccupancyCoefficientMutation = q.mutation(
+  updateGroupAclWithOccupancyCoefficient,
+  [({ unitId }) => unitAclQuery({ unitId })]
+)
 
 export const unitServiceWorkerNoteQuery = q.query(getUnitServiceWorkerNote)
 

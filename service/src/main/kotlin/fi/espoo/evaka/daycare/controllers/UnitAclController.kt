@@ -488,6 +488,33 @@ class UnitAclController(
         )
     }
 
+    @PutMapping("/employee/daycares/{unitId}/temporary/{employeeId}/reactivate")
+    fun reactivateTemporaryEmployee(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @PathVariable employeeId: EmployeeId,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_TEMPORARY_EMPLOYEE,
+                    unitId,
+                )
+                tx.insertDaycareAclRow(unitId, employeeId, UserRole.STAFF)
+                tx.upsertEmployeeMessageAccount(employeeId)
+            }
+        }
+        Audit.TemporaryEmployeeUpdate.log(
+            targetId = AuditId(employeeId),
+            meta = mapOf("unitId" to unitId),
+        )
+    }
+
     @DeleteMapping("/employee/daycares/{unitId}/temporary/{employeeId}/acl")
     fun deleteTemporaryEmployeeAcl(
         db: Database,

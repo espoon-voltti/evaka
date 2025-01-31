@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,7 +10,6 @@ import uniqBy from 'lodash/uniqBy'
 import React, {
   Fragment,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState
@@ -19,7 +18,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { formatPersonName } from 'employee-frontend/utils'
-import { combine, wrapResult } from 'lib-common/api'
+import { combine, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -27,6 +26,7 @@ import {
   GroupInfo,
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
+import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
   ChildId,
@@ -68,10 +68,9 @@ import {
   modifyCalendarEvent
 } from '../../../generated/api-clients/calendarevent'
 import { useTranslation } from '../../../state/i18n'
-import { UnitContext } from '../../../state/unit'
 import { DayOfWeek } from '../../../types'
 import { renderResult } from '../../async-rendering'
-import { unitGroupDetailsQuery } from '../queries'
+import { unitGroupDetailsQuery, unitQuery } from '../queries'
 
 const createCalendarEventResult = wrapResult(createCalendarEvent)
 const getUnitCalendarEventsResult = wrapResult(getUnitCalendarEvents)
@@ -237,7 +236,7 @@ export default React.memo(function CalendarEventsSection({
 
   const [createEventModalVisible, setCreateEventModalVisible] = useState(false)
 
-  const { unitInformation } = useContext(UnitContext)
+  const unitInformation = useQueryResult(unitQuery({ daycareId: unitId }))
 
   const editingEvent = useMemo(() => {
     if (!calendarEventId) return undefined
@@ -279,6 +278,7 @@ export default React.memo(function CalendarEventsSection({
       {editingEvent && editingEvent.eventType === 'DAYCARE_EVENT' && (
         <EditEventModal
           event={editingEvent}
+          unitInformation={unitInformation}
           onClose={(shouldRefresh) => {
             if (shouldRefresh) {
               void reloadEvents()
@@ -514,7 +514,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
 }) {
   const { i18n, lang } = useTranslation()
 
-  const { unitInformation } = useContext(UnitContext)
+  const unitInformation = useQueryResult(unitQuery({ daycareId: unitId }))
 
   const [form, setForm] = useState<CreationForm>({
     attendees: [],
@@ -854,9 +854,11 @@ const getLongAttendees = (
 
 const EditEventModal = React.memo(function EditEventModal({
   event,
-  onClose
+  onClose,
+  unitInformation
 }: {
   event: CalendarEvent
+  unitInformation: Result<DaycareResponse>
   onClose: (shouldRefresh: boolean) => void
 }) {
   const { i18n } = useTranslation()
@@ -879,8 +881,6 @@ const EditEventModal = React.memo(function EditEventModal({
       })),
     []
   )
-
-  const { unitInformation } = useContext(UnitContext)
 
   const [showDeletionModal, setShowDeletionModal] = useState(false)
 

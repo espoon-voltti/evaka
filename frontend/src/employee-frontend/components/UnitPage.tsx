@@ -23,7 +23,6 @@ import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
-import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { fontWeights, H1, H3 } from 'lib-components/typography'
@@ -33,12 +32,13 @@ import TabGroups from '../components/unit/TabGroups'
 import TabUnitInformation from '../components/unit/TabUnitInformation'
 import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
-import { UnitContext, UnitContextProvider } from '../state/unit'
+import { UnitContext } from '../state/unit'
 
+import { renderResult } from './async-rendering'
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabCalendar from './unit/TabCalendar'
 import UnitServiceWorkerNote from './unit/UnitServiceWorkerNote'
-import { unitNotificationsQuery } from './unit/queries'
+import { unitNotificationsQuery, unitQuery } from './unit/queries'
 
 const defaultTab = (unit: DaycareResponse) => {
   if (unit.permittedActions.includes('READ_ATTENDANCES')) return 'calendar'
@@ -47,10 +47,13 @@ const defaultTab = (unit: DaycareResponse) => {
   return 'unit-info'
 }
 
-const UnitPage = React.memo(function UnitPage({ id }: { id: DaycareId }) {
+export default React.memo(function UnitPage() {
+  const id = useIdRouteParam<DaycareId>('id')
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const { unitInformation, filters, setFilters } = useContext(UnitContext)
+  const { filters, setFilters } = useContext(UnitContext)
+
+  const unitInformation = useQueryResult(unitQuery({ daycareId: id }))
 
   const unitNotifications = useQueryResult(
     unitNotificationsQuery({ daycareId: id })
@@ -174,69 +177,58 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: DaycareId }) {
     [id, i18n, unitInformation, unitNotifications]
   )
 
-  if (unitInformation.isLoading) {
-    return (
-      <Container>
-        <Spinner />
-      </Container>
-    )
-  }
-  if (unitInformation.isFailure) {
-    return (
-      <Container>
-        <p>{i18n.common.loadingFailed}</p>
-      </Container>
-    )
-  }
-
-  return (
+  return renderResult(unitInformation, (unitInformation) => (
     <>
       <Container>
         <ContentArea opaque>
-          <H1 noMargin>
-            {unitInformation.map(({ daycare }) => daycare.name).getOrElse('')}
-          </H1>
+          <H1 noMargin>{unitInformation.daycare.name}</H1>
         </ContentArea>
       </Container>
-      {unitInformation.isSuccess &&
-        unitInformation.value.permittedActions.includes(
-          'READ_SERVICE_WORKER_NOTE'
-        ) && (
-          <>
-            <Gap size="s" />
-            <Container>
-              <ContentArea opaque>
-                <H3 noMargin>{i18n.unit.serviceWorkerNote.title}</H3>
-                <Gap size="s" />
-                <UnitServiceWorkerNote
-                  unitId={id}
-                  canEdit={unitInformation.value.permittedActions.includes(
-                    'SET_SERVICE_WORKER_NOTE'
-                  )}
-                />
-              </ContentArea>
-            </Container>
-          </>
-        )}
+      {unitInformation.permittedActions.includes(
+        'READ_SERVICE_WORKER_NOTE'
+      ) && (
+        <>
+          <Gap size="s" />
+          <Container>
+            <ContentArea opaque>
+              <H3 noMargin>{i18n.unit.serviceWorkerNote.title}</H3>
+              <Gap size="s" />
+              <UnitServiceWorkerNote
+                unitId={id}
+                canEdit={unitInformation.permittedActions.includes(
+                  'SET_SERVICE_WORKER_NOTE'
+                )}
+              />
+            </ContentArea>
+          </Container>
+        </>
+      )}
       <Gap size="s" />
       <TabLinks tabs={tabs} />
       <Gap size="s" />
       <Container>
         <Routes>
-          <Route path="unit-info" element={<TabUnitInformation />} />
+          <Route
+            path="unit-info"
+            element={<TabUnitInformation unitInformation={unitInformation} />}
+          />
           <Route
             path="groups"
             element={
               <TabGroups
+                unitInformation={unitInformation}
                 openGroups={openGroups}
                 setOpenGroups={setOpenGroups}
               />
             }
           />
-          <Route path="calendar" element={<TabCalendar />} />
+          <Route
+            path="calendar"
+            element={<TabCalendar unitInformation={unitInformation} />}
+          />
           <Route
             path="calendar/events/:calendarEventId"
-            element={<TabCalendar />}
+            element={<TabCalendar unitInformation={unitInformation} />}
           />
           <Route
             // redirect from old attendances page to the renamed calendar page
@@ -245,27 +237,18 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: DaycareId }) {
           />
           <Route
             path="application-process"
-            element={<TabApplicationProcess unitId={id} />}
+            element={
+              <TabApplicationProcess unitInformation={unitInformation} />
+            }
           />
           <Route
             index
-            element={
-              <Navigate replace to={defaultTab(unitInformation.value)} />
-            }
+            element={<Navigate replace to={defaultTab(unitInformation)} />}
           />
         </Routes>
       </Container>
     </>
-  )
-})
-
-export default React.memo(function UnitPageWrapper() {
-  const id = useIdRouteParam<DaycareId>('id')
-  return (
-    <UnitContextProvider id={id}>
-      <UnitPage id={id} />
-    </UnitContextProvider>
-  )
+  ))
 })
 
 export const NotificationCounter = styled.div`

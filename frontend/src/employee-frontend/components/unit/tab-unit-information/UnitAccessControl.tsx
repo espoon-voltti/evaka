@@ -1,79 +1,69 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { combine, isLoading, Success, wrapResult } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
+import { combine, isLoading } from 'lib-common/api'
+import {
+  DaycareGroupResponse,
+  DaycareResponse
+} from 'lib-common/generated/api-types/daycare'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import {
   DaycareAclRow,
   DaycareId,
   EmployeeId,
   UserRole
 } from 'lib-common/generated/api-types/shared'
-import { useQueryResult } from 'lib-common/query'
+import {
+  constantQuery,
+  MutationDescription,
+  useQueryResult
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { StaticChip } from 'lib-components/atoms/Chip'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2, H4 } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
-
 import {
-  deleteEarlyChildhoodEducationSecretary,
-  deleteSpecialEducationTeacher,
-  deleteStaff,
-  deleteTemporaryEmployee,
-  deleteTemporaryEmployeeAcl,
-  deleteUnitSupervisor,
-  getTemporaryEmployees,
-  updateGroupAclWithOccupancyCoefficient
-} from '../../../generated/api-clients/daycare'
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import { H2, H3 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { faPen, faTrash } from 'lib-icons'
+import { faUndo } from 'lib-icons'
+
 import { getEmployeesQuery } from '../../../queries'
-import { Translations, useTranslation } from '../../../state/i18n'
-import { UIContext } from '../../../state/ui'
-import { UnitContext } from '../../../state/unit'
+import { useTranslation } from '../../../state/i18n'
 import { UserContext } from '../../../state/user'
 import { formatName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
+import {
+  deleteEarlyChildhoodEducationSecretaryMutation,
+  deleteSpecialEducationTeacherMutation,
+  deleteStaffMutation,
+  deleteTemporaryEmployeeAclMutation,
+  deleteTemporaryEmployeeMutation,
+  deleteUnitSupervisorMutation,
+  reactivateTemporaryEmployeeMutation,
+  temporaryEmployeesQuery,
+  unitAclQuery
+} from '../queries'
 
-import DaycareAclAdditionModal from './DaycareAclAdditionModal'
-import EmployeeAclRowEditModal from './EmployeeAclRowEditModal'
-
-const getTemporaryEmployeesResult = wrapResult(getTemporaryEmployees)
-const updateGroupAclWithOccupancyCoefficientResult = wrapResult(
-  updateGroupAclWithOccupancyCoefficient
-)
-const deleteEarlyChildhoodEducationSecretaryResult = wrapResult(
-  deleteEarlyChildhoodEducationSecretary
-)
-const deleteSpecialEducationTeacherResult = wrapResult(
-  deleteSpecialEducationTeacher
-)
-const deleteStaffResult = wrapResult(deleteStaff)
-const deleteUnitSupervisorResult = wrapResult(deleteUnitSupervisor)
-const deleteTemporaryEmployeeAclResult = wrapResult(deleteTemporaryEmployeeAcl)
-const deleteTemporaryEmployeeResult = wrapResult(deleteTemporaryEmployee)
-
-type Props = {
-  groups: Record<UUID, DaycareGroupResponse>
-  permittedActions: Action.Unit[]
-}
+import AddAclModal from './acl-modals/AddAclModal'
+import AddTemporaryEmployeeModal from './acl-modals/AddTemporaryEmployeeModal'
+import EditAclModal from './acl-modals/EditAclModal'
+import EditTemporaryEmployeeModal from './acl-modals/EditTemporaryEmployeeModal'
 
 export type DaycareAclRole = Extract<
   UserRole,
@@ -82,27 +72,6 @@ export type DaycareAclRole = Extract<
   | 'SPECIAL_EDUCATION_TEACHER'
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
 >
-
-export interface FormattedRow {
-  id: EmployeeId
-  firstName: string
-  lastName: string
-  name: string
-  email: string
-  groupIds: UUID[]
-  hasStaffOccupancyEffect: boolean
-  temporary: boolean
-}
-
-const RowButtons = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-
-  & > * {
-    margin-left: 10px;
-  }
-`
 
 function GroupListing({
   unitGroups,
@@ -129,89 +98,106 @@ function GroupListing({
 }
 
 function AclRow({
+  unitId,
   row,
-  hideTemporaryChip,
   isEditable,
   isDeletable,
   coefficientPermitted,
-  onClickDelete,
   onClickEdit,
   unitGroups
 }: {
-  row: FormattedRow
-  hideTemporaryChip: boolean
+  unitId: DaycareId
+  row: DaycareAclRow
   isEditable: boolean
   isDeletable: boolean
   coefficientPermitted: boolean
-  onClickDelete: () => void
-  onClickEdit: (employeeRow: FormattedRow) => void
+  onClickEdit: () => void
   unitGroups: Record<UUID, DaycareGroupResponse> | undefined
 }) {
   const { i18n } = useTranslation()
   const theme = useTheme()
-  const buttons = (
-    <RowButtons>
-      {isEditable && (
-        <IconOnlyButton
-          icon={faPen}
-          onClick={() => onClickEdit(row)}
-          data-qa="edit"
-          aria-label={i18n.common.edit}
-        />
-      )}
-      {isDeletable && (
-        <IconOnlyButton
-          icon={faTrash}
-          onClick={onClickDelete}
-          data-qa="delete"
-          aria-label={i18n.common.remove}
-        />
-      )}
-    </RowButtons>
-  )
+  const deleteMutation: MutationDescription<
+    { unitId: DaycareId; employeeId: EmployeeId },
+    void
+  > | null =
+    row.role === 'UNIT_SUPERVISOR'
+      ? deleteUnitSupervisorMutation
+      : row.role === 'SPECIAL_EDUCATION_TEACHER'
+        ? deleteSpecialEducationTeacherMutation
+        : row.role === 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+          ? deleteEarlyChildhoodEducationSecretaryMutation
+          : row.role === 'STAFF' && !row.employee.temporary
+            ? deleteStaffMutation
+            : null
 
   return (
-    <Tr data-qa={`acl-row-${row.id}`}>
-      <Td data-qa="name">
-        <span data-qa="text">{row.name}</span>
-        {!hideTemporaryChip && row.temporary && (
-          <>
-            {' '}
-            <StaticChip color={colors.accents.a8lightBlue} data-qa="icon">
-              TS
-            </StaticChip>
-          </>
-        )}
+    <Tr data-qa={`acl-row-${row.employee.id}`}>
+      <Td>
+        <FixedSpaceRow>
+          <span data-qa="role">{i18n.roles.adRoles[row.role]}</span>
+          {coefficientPermitted && (
+            <span
+              data-qa={
+                row.employee.hasStaffOccupancyEffect
+                  ? 'coefficient-on'
+                  : 'coefficient-off'
+              }
+            >
+              {row.employee.hasStaffOccupancyEffect && (
+                <Tooltip
+                  tooltip={i18n.unit.attendanceReservations.affectsOccupancy}
+                  position="bottom"
+                  width="large"
+                >
+                  <RoundIcon
+                    content="K"
+                    active={true}
+                    color={theme.colors.accents.a3emerald}
+                    size="s"
+                  />
+                </Tooltip>
+              )}
+            </span>
+          )}
+        </FixedSpaceRow>
       </Td>
-      <Td data-qa="email">{row.email}</Td>
+      <Td>
+        <FixedSpaceColumn spacing="zero">
+          <span data-qa="name">
+            {formatName(row.employee.firstName, row.employee.lastName, i18n)}
+          </span>
+          <EmailSpan data-qa="email">{row.employee.email}</EmailSpan>
+        </FixedSpaceColumn>
+      </Td>
       {unitGroups && (
         <Td data-qa="groups">
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}
-      {coefficientPermitted && (
-        <Td
-          data-qa={
-            row.hasStaffOccupancyEffect ? 'coefficient-on' : 'coefficient-off'
-          }
-        >
-          {row.hasStaffOccupancyEffect && (
-            <Tooltip
-              tooltip={i18n.unit.attendanceReservations.affectsOccupancy}
-              position="bottom"
-              width="large"
-            >
-              <RoundIcon
-                content="K"
-                active={true}
-                color={theme.colors.accents.a3emerald}
-                size="s"
-              />
-            </Tooltip>
+      <Td>
+        <FixedSpaceRow justifyContent="flex-end">
+          {isEditable && (
+            <IconOnlyButton
+              icon={faPen}
+              onClick={onClickEdit}
+              data-qa="edit"
+              aria-label={i18n.common.edit}
+            />
           )}
-        </Td>
-      )}
-      <Td>{(isEditable || isDeletable) && buttons}</Td>
+          {isDeletable && deleteMutation && (
+            <ConfirmedMutation
+              buttonStyle="ICON"
+              icon={faTrash}
+              buttonAltText={i18n.common.remove}
+              confirmationTitle={i18n.unit.accessControl.removeConfirmation}
+              mutation={deleteMutation}
+              onClick={() => ({ unitId, employeeId: row.employee.id })}
+              data-qa="delete"
+              data-qa-modal="confirm-delete"
+            />
+          )}
+        </FixedSpaceRow>
+      </Td>
     </Tr>
   )
 }
@@ -225,22 +211,20 @@ const ActionsTh = styled(Th)`
 `
 
 function AclTable({
+  unitId,
   dataQa = 'acl-table',
   unitGroups,
   rows,
-  hideTemporaryChip,
-  onDeleteAclRow,
   onClickEdit,
   editPermitted,
   deletePermitted,
   coefficientPermitted
 }: {
+  unitId: DaycareId
   dataQa?: string
   unitGroups?: Record<UUID, DaycareGroupResponse>
-  rows: FormattedRow[]
-  hideTemporaryChip?: boolean
-  onDeleteAclRow: (employee: FormattedRow) => void
-  onClickEdit: (employeeRow: FormattedRow) => void
+  rows: DaycareAclRow[]
+  onClickEdit: (employeeRow: DaycareAclRow) => void
   editPermitted?: boolean
   deletePermitted: boolean
   coefficientPermitted: boolean
@@ -248,31 +232,47 @@ function AclTable({
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
 
+  const orderedRows = useMemo(
+    () =>
+      orderBy(
+        rows.filter((row) => !row.employee.temporary),
+        [
+          (row) =>
+            row.role === 'UNIT_SUPERVISOR'
+              ? 0
+              : row.role === 'SPECIAL_EDUCATION_TEACHER'
+                ? 1
+                : row.role === 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+                  ? 2
+                  : 3,
+          (row) => row.employee.firstName,
+          (row) => row.employee.lastName
+        ]
+      ),
+    [rows]
+  )
+
   return (
     <Table data-qa={dataQa}>
       <Thead>
         <Tr>
+          <Th>{i18n.unit.accessControl.role}</Th>
           <Th>{i18n.common.form.name}</Th>
-          <Th>{i18n.unit.accessControl.email}</Th>
           {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
-          {coefficientPermitted && (
-            <Th>{i18n.unit.accessControl.hasOccupancyCoefficient}</Th>
-          )}
           <ActionsTh />
         </Tr>
       </Thead>
       <Tbody>
-        {rows.map((row) => (
+        {orderedRows.map((row) => (
           <AclRow
-            key={row.id}
+            key={row.employee.id}
+            unitId={unitId}
             unitGroups={unitGroups}
             row={row}
-            hideTemporaryChip={hideTemporaryChip ?? false}
-            isDeletable={deletePermitted && row.id !== user?.id}
+            isDeletable={deletePermitted && row.employee.id !== user?.id}
             isEditable={!!(editPermitted && unitGroups)}
             coefficientPermitted={coefficientPermitted}
-            onClickDelete={() => onDeleteAclRow(row)}
-            onClickEdit={onClickEdit}
+            onClickEdit={() => onClickEdit(row)}
           />
         ))}
       </Tbody>
@@ -280,99 +280,218 @@ function AclTable({
   )
 }
 
-interface RemoveState {
-  employee: FormattedRow
-  removeFn: (unitId: DaycareId, employeeId: EmployeeId) => Promise<unknown>
-}
-
-export interface UpdateState {
-  employeeRow: FormattedRow
-}
-
-interface AdditionState {
-  role: DaycareAclRole
-}
-
-function formatRowsOfRole(
-  rows: DaycareAclRow[],
-  role: UserRole,
-  i18n: Translations
-): FormattedRow[] {
-  return orderBy(
-    rows
-      .filter((row) => row.role === role)
-      .map((row) => ({
-        id: row.employee.id,
-        hasStaffOccupancyEffect: row.employee.hasStaffOccupancyEffect ?? false,
-        firstName: row.employee.firstName,
-        lastName: row.employee.lastName,
-        name: formatName(row.employee.firstName, row.employee.lastName, i18n),
-        email: row.employee.email ?? '',
-        groupIds: row.groupIds,
-        temporary: row.employee.temporary
-      })),
-    (row) => row.name
-  )
-}
-
-const DeleteConfirmationModal = React.memo(function DeleteConfirmationModal({
-  onClose,
-  onConfirm
+function TemporaryEmployeesTable({
+  unitId,
+  unitGroups,
+  rows,
+  onClickEdit,
+  editPermitted,
+  deletePermitted
 }: {
-  onClose: () => void
-  onConfirm: () => void
+  unitId: DaycareId
+  unitGroups: Record<UUID, DaycareGroupResponse>
+  rows: DaycareAclRow[]
+  onClickEdit: (employeeRow: DaycareAclRow) => void
+  editPermitted: boolean
+  deletePermitted: boolean
 }) {
   const { i18n } = useTranslation()
-  return (
-    <InfoModal
-      data-qa="remove-daycare-acl-modal"
-      type="warning"
-      title={i18n.unit.accessControl.removeConfirmation}
-      icon={faQuestion}
-      reject={{ action: onClose, label: i18n.common.cancel }}
-      resolve={{ action: onConfirm, label: i18n.common.remove }}
-    />
+  const theme = useTheme()
+
+  const orderedRows = useMemo(
+    () =>
+      orderBy(
+        rows.filter((row) => row.employee.temporary),
+        [(row) => row.employee.firstName, (row) => row.employee.lastName]
+      ),
+    [rows]
   )
-})
 
-const DeleteTemporaryEmployeeConfirmationModal = React.memo(
-  function DeleteTemporaryEmployeeConfirmationModal({
-    onClose,
-    onConfirm
-  }: {
-    onClose: () => void
-    onConfirm: () => void
-  }) {
-    const { i18n } = useTranslation()
-    return (
-      <InfoModal
-        data-qa="remove-temporary-employee-modal"
-        type="warning"
-        title={i18n.unit.accessControl.removeTemporaryEmployeeConfirmation}
-        icon={faQuestion}
-        reject={{ action: onClose, label: i18n.common.cancel }}
-        resolve={{ action: onConfirm, label: i18n.common.remove }}
-      />
-    )
-  }
-)
+  return (
+    <Table data-qa="temporary-employee-table">
+      <Thead>
+        <Tr>
+          <Th>{i18n.common.form.name}</Th>
+          <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>
+          <ActionsTh />
+        </Tr>
+      </Thead>
+      <Tbody>
+        {orderedRows.map((row) => (
+          <Tr
+            key={row.employee.id}
+            data-qa={`temporary-employee-row-${row.employee.id}`}
+          >
+            <Td>
+              <FixedSpaceRow>
+                <span data-qa="name">
+                  {formatName(
+                    row.employee.firstName,
+                    row.employee.lastName,
+                    i18n
+                  )}
+                </span>
+                <span
+                  data-qa={
+                    row.employee.hasStaffOccupancyEffect
+                      ? 'coefficient-on'
+                      : 'coefficient-off'
+                  }
+                >
+                  {row.employee.hasStaffOccupancyEffect && (
+                    <Tooltip
+                      tooltip={
+                        i18n.unit.attendanceReservations.affectsOccupancy
+                      }
+                      position="bottom"
+                      width="large"
+                    >
+                      <RoundIcon
+                        content="K"
+                        active={true}
+                        color={theme.colors.accents.a3emerald}
+                        size="s"
+                      />
+                    </Tooltip>
+                  )}
+                </span>
+              </FixedSpaceRow>
+            </Td>
+            {unitGroups && (
+              <Td data-qa="groups">
+                <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
+              </Td>
+            )}
+            <Td>
+              <FixedSpaceRow justifyContent="flex-end">
+                {editPermitted && (
+                  <IconOnlyButton
+                    icon={faPen}
+                    onClick={() => onClickEdit(row)}
+                    data-qa="edit"
+                    aria-label={i18n.common.edit}
+                  />
+                )}
+                {deletePermitted && (
+                  <ConfirmedMutation
+                    buttonStyle="ICON"
+                    icon={faTrash}
+                    buttonAltText={i18n.common.remove}
+                    confirmationTitle={
+                      i18n.unit.accessControl.removeConfirmation
+                    }
+                    mutation={deleteTemporaryEmployeeAclMutation}
+                    onClick={() => ({ unitId, employeeId: row.employee.id })}
+                    data-qa="delete"
+                    data-qa-modal="confirm-delete"
+                  />
+                )}
+              </FixedSpaceRow>
+            </Td>
+          </Tr>
+        ))}
+      </Tbody>
+    </Table>
+  )
+}
 
-export default React.memo(function UnitAccessControl({
-  groups,
-  permittedActions
-}: Props) {
+function PreviousTemporaryEmployeesTable({
+  unitId,
+  rows,
+  editPermitted,
+  deletePermitted
+}: {
+  unitId: DaycareId
+  rows: Employee[]
+  editPermitted: boolean
+  deletePermitted: boolean
+}) {
   const { i18n } = useTranslation()
 
-  const { unitId, daycareAclRows, reloadDaycareAclRows } =
-    useContext(UnitContext)
+  const orderedRows = useMemo(
+    () => orderBy(rows, [(row) => row.firstName, (row) => row.lastName]),
+    [rows]
+  )
+
+  return (
+    <Table data-qa="previous-temporary-employee-table">
+      <Thead>
+        <Tr>
+          <Th>{i18n.common.form.name}</Th>
+          <ActionsTh />
+        </Tr>
+      </Thead>
+      <Tbody>
+        {orderedRows.map((row) => (
+          <Tr
+            key={row.id}
+            data-qa={`previous-temporary-employee-row-${row.id}`}
+          >
+            <Td data-qa="name">
+              {formatName(row.firstName, row.lastName, i18n)}
+            </Td>
+            <StyledTd $width="400px">
+              <FixedSpaceRow justifyContent="flex-end">
+                {editPermitted && (
+                  <MutateButton
+                    appearance="inline"
+                    icon={faUndo}
+                    text={i18n.unit.accessControl.reactivateTemporaryEmployee}
+                    mutation={reactivateTemporaryEmployeeMutation}
+                    onClick={() => ({ unitId, employeeId: row.id })}
+                    data-qa="reactivate"
+                  />
+                )}
+                {deletePermitted && (
+                  <ConfirmedMutation
+                    buttonStyle="INLINE"
+                    icon={faTrash}
+                    buttonText={i18n.common.remove}
+                    confirmationTitle={
+                      i18n.unit.accessControl
+                        .removeTemporaryEmployeeConfirmation
+                    }
+                    mutation={deleteTemporaryEmployeeMutation}
+                    onClick={() => ({ unitId, employeeId: row.id })}
+                    data-qa="delete"
+                    data-qa-modal="confirm-delete"
+                  />
+                )}
+              </FixedSpaceRow>
+            </StyledTd>
+          </Tr>
+        ))}
+      </Tbody>
+    </Table>
+  )
+}
+
+export default React.memo(function UnitAccessControl({
+  unitInformation
+}: {
+  unitInformation: DaycareResponse
+}) {
+  const { i18n } = useTranslation()
+  const {
+    daycare: { id: unitId },
+    permittedActions
+  } = unitInformation
   const { user } = useContext(UserContext)
-  const employees = useQueryResult(getEmployeesQuery())
-  const [temporaryEmployees, reloadTemporaryEmployees] = useApiState(
+
+  const groups = useMemo(
     () =>
-      permittedActions.includes('READ_TEMPORARY_EMPLOYEE')
-        ? getTemporaryEmployeesResult({ unitId })
-        : Promise.resolve(Success.of([])),
-    [permittedActions, unitId]
+      Object.fromEntries(
+        unitInformation.groups.map((group) => [group.id, group] as const)
+      ),
+    [unitInformation]
+  )
+
+  const employees = useQueryResult(getEmployeesQuery())
+  const daycareAclRows = useQueryResult(unitAclQuery({ unitId }))
+  const temporaryEmployees = useQueryResult(
+    permittedActions.includes('READ_TEMPORARY_EMPLOYEE')
+      ? temporaryEmployeesQuery({ unitId })
+      : constantQuery([])
   )
 
   const candidateEmployees = useMemo(
@@ -407,191 +526,50 @@ export default React.memo(function UnitAccessControl({
     [temporaryEmployees, daycareAclRows, user]
   )
 
-  const unitSupervisors = useMemo(
+  const [addAclModalOpen, setAddAclModalOpen] = useState<boolean>(false)
+  const [editedAclRow, setEditedAclRow] = useState<DaycareAclRow | null>(null)
+
+  const [addTemporaryEmployeeModalOpen, setAddTemporaryEmployeeModalOpen] =
+    useState<boolean>(false)
+
+  const canInsertAcl = useMemo(
     () =>
-      daycareAclRows.map((daycareAclRows) =>
-        formatRowsOfRole(daycareAclRows, 'UNIT_SUPERVISOR', i18n)
-      ),
-    [daycareAclRows, i18n]
+      unitInformation.permittedActions.includes('INSERT_ACL_UNIT_SUPERVISOR') ||
+      unitInformation.permittedActions.includes(
+        'INSERT_ACL_SPECIAL_EDUCATION_TEACHER'
+      ) ||
+      unitInformation.permittedActions.includes(
+        'INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+      ) ||
+      unitInformation.permittedActions.includes('INSERT_ACL_STAFF'),
+    [unitInformation.permittedActions]
   )
-  const specialEducationTeachers = useMemo(
-    () =>
-      daycareAclRows.map((daycareAclRows) =>
-        formatRowsOfRole(daycareAclRows, 'SPECIAL_EDUCATION_TEACHER', i18n)
-      ),
-    [daycareAclRows, i18n]
-  )
-  const earlyChildhoodEducationSecretaries = useMemo(
-    () =>
-      daycareAclRows.map((daycareAclRows) =>
-        formatRowsOfRole(
-          daycareAclRows,
-          'EARLY_CHILDHOOD_EDUCATION_SECRETARY',
-          i18n
-        )
-      ),
-    [daycareAclRows, i18n]
-  )
-  const staff = useMemo(
-    () =>
-      daycareAclRows.map((daycareAclRows) =>
-        formatRowsOfRole(daycareAclRows, 'STAFF', i18n)
-      ),
-    [daycareAclRows, i18n]
-  )
-
-  const [removeState, setRemoveState] = useState<RemoveState | undefined>(
-    undefined
-  )
-
-  const [updateState, setUpdateState] = useState<UpdateState | undefined>(
-    undefined
-  )
-
-  const [additionState, setAdditionState] = useState<AdditionState | undefined>(
-    undefined
-  )
-
-  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-
-  // in-row editing modal generic fns
-  const openEmployeeAclRowEditModal = useCallback(
-    (employeeRow: FormattedRow) => {
-      setUpdateState({ employeeRow })
-      toggleUiMode(`edit-daycare-acl-${unitId}`)
-    },
-    [toggleUiMode, unitId]
-  )
-
-  const closeEmployeeAclRowEditModal = useCallback(() => {
-    clearUiMode()
-    setUpdateState(undefined)
-  }, [clearUiMode])
-
-  const confirmEmployeeAclRowEditModal = useCallback(() => {
-    closeEmployeeAclRowEditModal()
-    reloadDaycareAclRows()
-  }, [closeEmployeeAclRowEditModal, reloadDaycareAclRows])
-
-  // in-row removal modal generic fns
-  const openRemoveModal = useCallback(
-    (removeState: RemoveState) => {
-      setRemoveState(removeState)
-      toggleUiMode(`remove-daycare-acl-${unitId}`)
-    },
-    [toggleUiMode, unitId]
-  )
-
-  const closeRemoveModal = useCallback(() => {
-    clearUiMode()
-    setRemoveState(undefined)
-  }, [clearUiMode])
-
-  const confirmRemoveModal = useCallback(async () => {
-    await removeState?.removeFn(unitId, removeState.employee.id)
-    closeRemoveModal()
-    reloadDaycareAclRows()
-    await reloadTemporaryEmployees()
-  }, [
-    closeRemoveModal,
-    reloadDaycareAclRows,
-    reloadTemporaryEmployees,
-    removeState,
-    unitId
-  ])
-
-  const openRemoveTemporaryEmployeeModal = useCallback(
-    (removeState: RemoveState) => {
-      setRemoveState(removeState)
-      toggleUiMode(`remove-temporary-employee-${unitId}`)
-    },
-    [toggleUiMode, unitId]
-  )
-
-  const closeRemoveTemporaryEmployeeModal = useCallback(() => {
-    clearUiMode()
-    setRemoveState(undefined)
-  }, [clearUiMode])
-
-  const confirmRemoveTemporaryEmployeeModal = useCallback(async () => {
-    await removeState?.removeFn(unitId, removeState.employee.id)
-    closeRemoveTemporaryEmployeeModal()
-    await reloadTemporaryEmployees()
-  }, [
-    closeRemoveTemporaryEmployeeModal,
-    reloadTemporaryEmployees,
-    removeState,
-    unitId
-  ])
-
-  // daycare addition modal role-based addition fns
-  const openAddStaffModal = useCallback(() => {
-    setAdditionState({ role: 'STAFF' })
-    toggleUiMode(`add-daycare-acl-${unitId}`)
-  }, [toggleUiMode, unitId])
-
-  const openAddEcesModal = useCallback(() => {
-    setAdditionState({
-      role: 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-    })
-    toggleUiMode(`add-daycare-acl-${unitId}`)
-  }, [toggleUiMode, unitId])
-
-  const openAddSpecialEducatioTeachedModal = useCallback(() => {
-    setAdditionState({ role: 'SPECIAL_EDUCATION_TEACHER' })
-    toggleUiMode(`add-daycare-acl-${unitId}`)
-  }, [toggleUiMode, unitId])
-
-  const openAddSupervisorModal = useCallback(() => {
-    setAdditionState({ role: 'UNIT_SUPERVISOR' })
-    toggleUiMode(`add-daycare-acl-${unitId}`)
-  }, [toggleUiMode, unitId])
-
-  // daycare addition modal generic fns
-  const closeAddDaycareAclModal = useCallback(() => {
-    clearUiMode()
-  }, [clearUiMode])
-
-  const confirmAddDaycareAclModal = useCallback(() => {
-    closeAddDaycareAclModal()
-    reloadDaycareAclRows()
-  }, [closeAddDaycareAclModal, reloadDaycareAclRows])
 
   return (
-    <div data-qa="daycare-acl" data-isloading={isLoading(daycareAclRows)}>
-      {uiMode === `remove-daycare-acl-${unitId}` && (
-        <DeleteConfirmationModal
-          onClose={closeRemoveModal}
-          onConfirm={confirmRemoveModal}
-        />
-      )}
-
-      {uiMode === `remove-temporary-employee-${unitId}` && (
-        <DeleteTemporaryEmployeeConfirmationModal
-          onClose={closeRemoveTemporaryEmployeeModal}
-          onConfirm={confirmRemoveTemporaryEmployeeModal}
-        />
-      )}
-
-      {uiMode === `edit-daycare-acl-${unitId}` && updateState && (
-        <EmployeeAclRowEditModal
-          onClose={closeEmployeeAclRowEditModal}
-          onSuccess={confirmEmployeeAclRowEditModal}
-          updatesGroupAcl={updateGroupAclWithOccupancyCoefficientResult}
-          permittedActions={permittedActions}
-          employeeRow={updateState.employeeRow}
-          unitId={unitId}
-          groups={groups}
-        />
-      )}
+    <div data-qa="unit-employees" data-isloading={isLoading(daycareAclRows)}>
+      {editedAclRow &&
+        (editedAclRow.employee.temporary ? (
+          <EditTemporaryEmployeeModal
+            onClose={() => setEditedAclRow(null)}
+            row={editedAclRow}
+            unitId={unitId}
+            groups={groups}
+          />
+        ) : (
+          <EditAclModal
+            onClose={() => setEditedAclRow(null)}
+            permittedActions={permittedActions}
+            row={editedAclRow}
+            unitId={unitId}
+            groups={groups}
+          />
+        ))}
 
       {renderResult(candidateEmployees, (candidateEmployees) => (
         <>
-          {uiMode === `add-daycare-acl-${unitId}` && (
-            <DaycareAclAdditionModal
-              onClose={closeAddDaycareAclModal}
-              onSuccess={confirmAddDaycareAclModal}
-              role={additionState?.role}
+          {addAclModalOpen && (
+            <AddAclModal
+              onClose={() => setAddAclModalOpen(false)}
               employees={candidateEmployees}
               unitId={unitId}
               groups={groups}
@@ -601,21 +579,36 @@ export default React.memo(function UnitAccessControl({
         </>
       ))}
 
-      <ContentArea opaque data-qa="daycare-acl-supervisors">
-        <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
-        {renderResult(unitSupervisors, (unitSupervisors) => (
+      {addTemporaryEmployeeModalOpen && (
+        <AddTemporaryEmployeeModal
+          onClose={() => setAddTemporaryEmployeeModalOpen(false)}
+          unitId={unitId}
+          groups={groups}
+          permittedActions={permittedActions}
+        />
+      )}
+
+      <ContentArea opaque>
+        <H2>{i18n.unit.accessControl.aclRoles}</H2>
+
+        <FixedSpaceRow justifyContent="space-between" alignItems="center">
+          <H3 noMargin>{i18n.unit.accessControl.activeAclRoles}</H3>
+          {canInsertAcl && (
+            <AddButton
+              text={i18n.unit.accessControl.addDaycareAclModal.title}
+              onClick={() => setAddAclModalOpen(true)}
+              data-qa="open-add-daycare-acl-modal"
+            />
+          )}
+        </FixedSpaceRow>
+
+        {renderResult(daycareAclRows, (daycareAclRows) => (
           <>
             <AclTable
-              rows={unitSupervisors}
-              onDeleteAclRow={(employee) =>
-                openRemoveModal({
-                  employee,
-                  removeFn: async (daycareId, employeeId) =>
-                    deleteUnitSupervisorResult({ daycareId, employeeId })
-                })
-              }
+              unitId={unitId}
+              rows={daycareAclRows}
               unitGroups={groups}
-              onClickEdit={openEmployeeAclRowEditModal}
+              onClickEdit={(row) => setEditedAclRow(row)}
               editPermitted={
                 permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
                 permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
@@ -627,197 +620,76 @@ export default React.memo(function UnitAccessControl({
                 'READ_STAFF_OCCUPANCY_COEFFICIENTS'
               )}
             />
-            {permittedActions.includes('INSERT_ACL_UNIT_SUPERVISOR') && (
-              <>
-                <Gap />
-                <AddButton
-                  text={i18n.unit.accessControl.addDaycareAclModal.title}
-                  onClick={openAddSupervisorModal}
-                  data-qa="open-add-daycare-acl-modal"
-                />
-              </>
-            )}
           </>
         ))}
-      </ContentArea>
-      <ContentArea opaque data-qa="daycare-acl-set">
-        <H2>{i18n.unit.accessControl.specialEducationTeachers}</H2>
-        {renderResult(specialEducationTeachers, (specialEducationTeachers) => (
-          <>
-            <AclTable
-              rows={specialEducationTeachers}
-              onDeleteAclRow={(employee) =>
-                openRemoveModal({
-                  employee,
-                  removeFn: async (daycareId, employeeId) =>
-                    deleteSpecialEducationTeacherResult({
-                      daycareId,
-                      employeeId
-                    })
-                })
-              }
-              unitGroups={groups}
-              onClickEdit={openEmployeeAclRowEditModal}
-              editPermitted={
-                permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
-                permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
-              }
-              deletePermitted={permittedActions.includes(
-                'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
-              )}
-              coefficientPermitted={permittedActions.includes(
-                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
-              )}
+
+        <Gap size="XL" />
+
+        <FixedSpaceRow justifyContent="space-between" alignItems="center">
+          <H3 noMargin>{i18n.unit.accessControl.temporaryEmployees.title}</H3>
+          {permittedActions.includes('CREATE_TEMPORARY_EMPLOYEE') && (
+            <AddButton
+              text={i18n.unit.accessControl.addTemporaryEmployeeModal.title}
+              onClick={() => setAddTemporaryEmployeeModalOpen(true)}
+              data-qa="open-add-temporary-employee-modal"
             />
-            {permittedActions.includes(
-              'INSERT_ACL_SPECIAL_EDUCATION_TEACHER'
-            ) && (
-              <>
-                <Gap />
-                <AddButton
-                  text={i18n.unit.accessControl.addDaycareAclModal.title}
-                  onClick={openAddSpecialEducatioTeachedModal}
-                  data-qa="open-add-daycare-acl-modal"
-                />
-              </>
-            )}
-          </>
-        ))}
-      </ContentArea>
-      <ContentArea opaque data-qa="daycare-acl-eces">
-        <H2>{i18n.unit.accessControl.earlyChildhoodEducationSecretary}</H2>
-        {renderResult(
-          earlyChildhoodEducationSecretaries,
-          (earlyChildhoodEducationSecretaries) => (
-            <>
-              <AclTable
-                rows={earlyChildhoodEducationSecretaries}
-                onDeleteAclRow={(employee) =>
-                  openRemoveModal({
-                    employee,
-                    removeFn: async (daycareId, employeeId) =>
-                      deleteEarlyChildhoodEducationSecretaryResult({
-                        daycareId,
-                        employeeId
-                      })
-                  })
-                }
-                unitGroups={groups}
-                onClickEdit={openEmployeeAclRowEditModal}
-                editPermitted={
-                  permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
-                  permittedActions.includes(
-                    'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
-                  )
-                }
-                deletePermitted={permittedActions.includes(
-                  'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-                )}
-                coefficientPermitted={permittedActions.includes(
-                  'READ_STAFF_OCCUPANCY_COEFFICIENTS'
-                )}
-              />
-              {permittedActions.includes(
-                'INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-              ) && (
-                <>
-                  <Gap />
-                  <AddButton
-                    text={i18n.unit.accessControl.addDaycareAclModal.title}
-                    onClick={openAddEcesModal}
-                    data-qa="open-add-daycare-acl-modal"
-                  />
-                </>
-              )}
-            </>
-          )
-        )}
-      </ContentArea>
-      <ContentArea opaque data-qa="daycare-acl-staff">
-        <H2>{i18n.unit.accessControl.staff}</H2>
-        {renderResult(staff, (staff) => (
-          <AclTable
-            rows={staff}
-            onDeleteAclRow={(employee) =>
-              openRemoveModal({
-                employee,
-                removeFn: async (daycareId, employeeId) =>
-                  employee.temporary
-                    ? deleteTemporaryEmployeeAclResult({
-                        unitId: daycareId,
-                        employeeId
-                      })
-                    : deleteStaffResult({ daycareId, employeeId })
-              })
-            }
+          )}
+        </FixedSpaceRow>
+
+        {renderResult(daycareAclRows, (daycareAclRows) => (
+          <TemporaryEmployeesTable
+            unitId={unitId}
+            rows={daycareAclRows}
             unitGroups={groups}
-            onClickEdit={openEmployeeAclRowEditModal}
+            onClickEdit={(row) => setEditedAclRow(row)}
             editPermitted={
-              permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
-              permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+              permittedActions.includes('UPDATE_TEMPORARY_EMPLOYEE') &&
+              permittedActions.includes(
+                'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+              ) &&
+              permittedActions.includes('UPDATE_STAFF_GROUP_ACL')
             }
-            deletePermitted={permittedActions.includes('DELETE_ACL_STAFF')}
-            coefficientPermitted={permittedActions.includes(
-              'READ_STAFF_OCCUPANCY_COEFFICIENTS'
+            deletePermitted={permittedActions.includes(
+              'UPDATE_TEMPORARY_EMPLOYEE'
             )}
           />
         ))}
-        {(permittedActions.includes('INSERT_ACL_STAFF') ||
-          permittedActions.includes('CREATE_TEMPORARY_EMPLOYEE')) && (
-          <>
-            <Gap />
-            <AddButton
-              text={i18n.unit.accessControl.addDaycareAclModal.title}
-              onClick={openAddStaffModal}
-              data-qa="open-add-daycare-acl-modal"
-            />
-          </>
-        )}
-        {permittedActions.includes('READ_TEMPORARY_EMPLOYEE')
-          ? renderResult(candidateTemporaryEmployees, (employees) =>
-              employees.length > 0 ? (
-                <>
-                  <HorizontalLine />
-                  <H4>{i18n.unit.accessControl.previousTemporaryEmployees}</H4>
-                  <AclTable
-                    dataQa="previous-temporary-employee-table"
-                    rows={employees.map((employee) => ({
-                      id: employee.id,
-                      firstName: employee.firstName ?? '',
-                      lastName: employee.lastName ?? '',
-                      name: formatName(
-                        employee.firstName,
-                        employee.lastName,
-                        i18n
-                      ),
-                      email: employee.email ?? '',
-                      groupIds: [],
-                      hasStaffOccupancyEffect: false,
-                      temporary: true
-                    }))}
-                    hideTemporaryChip={true}
-                    onDeleteAclRow={(employee) =>
-                      openRemoveTemporaryEmployeeModal({
-                        employee,
-                        removeFn: async (unitId, employeeId) =>
-                          deleteTemporaryEmployeeResult({ unitId, employeeId })
-                      })
-                    }
-                    unitGroups={groups}
-                    onClickEdit={openEmployeeAclRowEditModal}
-                    editPermitted={permittedActions.includes(
-                      'UPDATE_TEMPORARY_EMPLOYEE'
-                    )}
-                    deletePermitted={permittedActions.includes(
-                      'DELETE_TEMPORARY_EMPLOYEE'
-                    )}
-                    coefficientPermitted={true}
-                  />
-                </>
-              ) : null
-            )
-          : null}
+
+        {permittedActions.includes('READ_TEMPORARY_EMPLOYEE') &&
+          renderResult(candidateTemporaryEmployees, (employees) =>
+            employees.length > 0 ? (
+              <>
+                <Gap size="XL" />
+                <H3 noMargin>
+                  {
+                    i18n.unit.accessControl.temporaryEmployees
+                      .previousEmployeesTitle
+                  }
+                </H3>
+                <PreviousTemporaryEmployeesTable
+                  unitId={unitId}
+                  rows={employees}
+                  editPermitted={permittedActions.includes(
+                    'UPDATE_TEMPORARY_EMPLOYEE'
+                  )}
+                  deletePermitted={permittedActions.includes(
+                    'DELETE_TEMPORARY_EMPLOYEE'
+                  )}
+                />
+              </>
+            ) : null
+          )}
       </ContentArea>
     </div>
   )
 })
+
+const EmailSpan = styled.span`
+  font-size: 14px;
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-weight: 600;
+`
+
+const StyledTd = styled(Td)<{ $width: string }>`
+  width: ${(p) => p.$width};
+`

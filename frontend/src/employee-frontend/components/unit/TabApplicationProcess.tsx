@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 
+import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -12,7 +13,6 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
-import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 
 import TabApplications from './TabApplications'
@@ -21,15 +21,18 @@ import TabServiceApplications from './TabServiceApplications'
 import TabWaitingConfirmation from './TabWaitingConfirmation'
 import { unitApplicationsQuery } from './queries'
 
-interface Props {
-  unitId: DaycareId
-}
-
-export default React.memo(function TabApplicationProcess({ unitId }: Props) {
+export default React.memo(function TabApplicationProcess({
+  unitInformation
+}: {
+  unitInformation: DaycareResponse
+}) {
   const { i18n } = useTranslation()
-  const { unitInformation } = useContext(UnitContext)
+  const {
+    daycare: { id: unitId },
+    permittedActions
+  } = unitInformation
 
-  return renderResult(unitInformation, ({ permittedActions }) => (
+  return (
     <div>
       <ContentArea opaque>
         <Title size={2}>{i18n.unit.applicationProcess.title}</Title>
@@ -45,12 +48,14 @@ export default React.memo(function TabApplicationProcess({ unitId }: Props) {
         <DaycareApplications unitId={unitId} />
       )}
     </div>
-  ))
+  )
 })
 
 const DaycareApplications = React.memo(function DaycareApplications({
   unitId
-}: Props) {
+}: {
+  unitId: DaycareId
+}) {
   const applications = useQueryResult(unitApplicationsQuery({ unitId }))
   return renderResult(
     applications,

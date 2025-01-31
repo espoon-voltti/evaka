@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,69 +10,35 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result, Success, wrapResult } from 'lib-common/api'
-import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycareAclRow, DaycareId } from 'lib-common/generated/api-types/shared'
-import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
-import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { unitQuery } from '../components/unit/queries'
-import { getDaycareAcl } from '../generated/api-clients/daycare'
 import { UnitFilters } from '../utils/UnitFilters'
 
-const getDaycareAclResult = wrapResult(getDaycareAcl)
-
 export interface UnitState {
-  unitId: DaycareId
-  unitInformation: Result<DaycareResponse>
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
-  daycareAclRows: Result<DaycareAclRow[]>
-  reloadDaycareAclRows: () => void
 }
 
 const defaultState: UnitState = {
-  unitId: fromUuid('00000000-0000-0000-0000-000000000000'),
-  unitInformation: Loading.of(),
   filters: new UnitFilters(LocalDate.todayInSystemTz(), '1 day'),
-  setFilters: () => undefined,
-  daycareAclRows: Loading.of(),
-  reloadDaycareAclRows: () => undefined
+  setFilters: () => undefined
 }
 
 export const UnitContext = createContext<UnitState>(defaultState)
 
 export const UnitContextProvider = React.memo(function UnitContextProvider({
-  id,
   children
 }: {
-  id: DaycareId
   children: React.JSX.Element
 }) {
   const [filters, setFilters] = useState(defaultState.filters)
-  const unitInformation = useQueryResult(unitQuery({ daycareId: id }))
-
-  const [daycareAclRows, reloadDaycareAclRows] = useApiState(
-    () =>
-      unitInformation.isSuccess &&
-      unitInformation.value.permittedActions.includes('READ_ACL')
-        ? getDaycareAclResult({ daycareId: id })
-        : Promise.resolve(Success.of([])),
-    [id, unitInformation]
-  )
 
   const value = useMemo(
     () => ({
-      unitId: id,
-      unitInformation,
       filters,
-      setFilters,
-      daycareAclRows,
-      reloadDaycareAclRows
+      setFilters
     }),
-    [id, unitInformation, filters, daycareAclRows, reloadDaycareAclRows]
+    [filters]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>

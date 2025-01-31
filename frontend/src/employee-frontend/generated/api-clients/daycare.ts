@@ -891,6 +891,23 @@ export async function getTemporaryEmployees(
 
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.reactivateTemporaryEmployee
+*/
+export async function reactivateTemporaryEmployee(
+  request: {
+    unitId: DaycareId,
+    employeeId: EmployeeId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}/reactivate`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.updateGroupAclWithOccupancyCoefficient
 */
 export async function updateGroupAclWithOccupancyCoefficient(

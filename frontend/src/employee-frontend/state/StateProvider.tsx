@@ -14,6 +14,7 @@ import { CustomersContextProvider } from './customers'
 import { InvoicingUIContextProvider } from './invoicing-ui'
 import { TitleContextProvider } from './title'
 import { UIContextProvider } from './ui'
+import { UnitContextProvider } from './unit'
 import { UnitsContextProvider } from './units'
 
 const StateProvider = React.memo(function StateProvider({
@@ -25,19 +26,21 @@ const StateProvider = React.memo(function StateProvider({
     <NotificationsContextProvider>
       <UIContextProvider>
         <UnitsContextProvider>
-          <CustomersContextProvider>
-            <InvoicingUIContextProvider>
-              <MessageContextProvider>
-                <TitleContextProvider>
-                  <ApplicationUIContextProvider>
-                    <AssistanceNeedDecisionReportContextProvider>
-                      {children}
-                    </AssistanceNeedDecisionReportContextProvider>
-                  </ApplicationUIContextProvider>
-                </TitleContextProvider>
-              </MessageContextProvider>
-            </InvoicingUIContextProvider>
-          </CustomersContextProvider>
+          <UnitContextProvider>
+            <CustomersContextProvider>
+              <InvoicingUIContextProvider>
+                <MessageContextProvider>
+                  <TitleContextProvider>
+                    <ApplicationUIContextProvider>
+                      <AssistanceNeedDecisionReportContextProvider>
+                        {children}
+                      </AssistanceNeedDecisionReportContextProvider>
+                    </ApplicationUIContextProvider>
+                  </TitleContextProvider>
+                </MessageContextProvider>
+              </InvoicingUIContextProvider>
+            </CustomersContextProvider>
+          </UnitContextProvider>
         </UnitsContextProvider>
       </UIContextProvider>
     </NotificationsContextProvider>
