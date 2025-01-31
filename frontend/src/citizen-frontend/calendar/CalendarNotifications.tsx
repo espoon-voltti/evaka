@@ -107,7 +107,12 @@ export default React.memo(function CalendarNotifications({
     if (activeQuestionnaire === undefined) return
 
     let cta: HolidayCta
-    if (activeQuestionnaire) {
+    if (
+      activeQuestionnaire &&
+      activeQuestionnaire.eligibleChildren.some(
+        (c) => !activeQuestionnaire.previousAnswers.some((a) => a.childId === c)
+      )
+    ) {
       cta = {
         type: 'questionnaire',
         deadline: activeQuestionnaire.questionnaire.active.end
