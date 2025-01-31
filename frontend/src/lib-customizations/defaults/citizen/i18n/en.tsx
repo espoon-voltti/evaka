@@ -51,6 +51,7 @@ const en: Translations = {
     add: 'Add',
     show: 'Show',
     hide: 'Hide',
+    write: 'Write',
     yes,
     no,
     yesno: (value: boolean): string => (value ? yes : no),
@@ -2216,7 +2217,9 @@ const en: Translations = {
       deductions: 'Deductions',
       alimony:
         'I pay child support. I will provide a copy of proof of payment as an attachment.',
-      otherInfoLabel: 'More information about income information'
+      otherInfoLabel: 'More information about income information',
+      otherAttachmentInfo:
+        'If you have any other attachments related to your income or early childhood education fees, you can add them here.'
     },
     attachments: {
       title: 'Attachments related to income and early childhood education fees',
@@ -2225,7 +2228,10 @@ const en: Translations = {
       required: {
         title: 'Necessary attachments'
       },
+      missingAttachments: 'Missing attachments',
+      noMissingAttachments: 'No missing attachments',
       attachmentNames: {
+        OTHER: 'Other attachment',
         PENSION: 'Decision on pension',
         ADULT_EDUCATION_ALLOWANCE: 'Decision on adult education allowance',
         SICKNESS_ALLOWANCE: 'Decision on sickness benefit',
@@ -2257,17 +2263,71 @@ const en: Translations = {
         INTEREST_AND_INVESTMENT_INCOME:
           'Documents of interest and dividend income',
         RENTAL_INCOME: 'Documents of rental income',
-        PAYSLIP: 'Last pay slip',
+        PAYSLIP_GROSS: 'Last pay slip',
+        PAYSLIP_LLC: 'Last pay slip',
         STARTUP_GRANT: 'Decision on a start-up grant',
-        ACCOUNTANT_REPORT:
-          'Accountant’s account of fringe benefits and dividends',
+        ACCOUNTANT_REPORT_PARTNERSHIP:
+          'Accountant’s account salary and fringe benefits',
         ACCOUNTANT_REPORT_LLC:
           'Accountant’s account of fringe benefits and dividends',
-        PROFIT_AND_LOSS_STATEMENT: 'Profit and loss account and balance sheet',
+        PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED:
+          'Profit and loss account or taxation decision',
+        PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP:
+          'Profit and loss account and balance sheet',
         SALARY: 'Payslips of salaries and trade incomes',
         PROOF_OF_STUDIES:
           'Certificate of student status or a decision on a student benefit from an unemployment fund / training allowance from an employment fund',
         CHILD_INCOME: 'Documents of child income'
+      },
+      addAttachment: {
+        OTHER: 'Add other attachment',
+        PENSION: 'Add decision on pension',
+        ADULT_EDUCATION_ALLOWANCE: 'Add decision on adult education allowance',
+        SICKNESS_ALLOWANCE: 'Add decision on sickness benefit',
+        PARENTAL_ALLOWANCE: 'Add decision on maternity or parental allowance',
+        HOME_CARE_ALLOWANCE: 'Add decision on child home care allowance',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+          'Add decision on care allowance',
+        ALIMONY:
+          'Add child maintenance agreement or decision on maintenance allowance',
+        UNEMPLOYMENT_ALLOWANCE: 'Add decision on unemployment benefit',
+        LABOUR_MARKET_SUBSIDY: 'Add decision on labour market subsidy',
+        ADJUSTED_DAILY_ALLOWANCE: 'Add decision on the daily allowance',
+        JOB_ALTERNATION_COMPENSATION:
+          'Add document of job alternation leave payment',
+        REWARD_OR_BONUS: 'Add new pay statement or pay slip with bonus',
+        RELATIVE_CARE_SUPPORT: 'Add decision on informal care allowance',
+        BASIC_INCOME: 'Add decision on guaranteed minimum income',
+        FOREST_INCOME: 'Add document of forest income',
+        FAMILY_CARE_COMPENSATION: 'Add documents of family care remuneration',
+        REHABILITATION:
+          'Add decision on rehabilitation allowance or rehabilitation grant',
+        EDUCATION_ALLOWANCE: 'Add decision on training allowance',
+        GRANT: 'Add document of grant/scholarship',
+        APPRENTICESHIP_SALARY:
+          'Add document of earnings from apprenticeship training',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Add document of compensation for accident insurance',
+        OTHER_INCOME: 'Add attachments on other income',
+        ALIMONY_PAYOUT: 'Add proof of payment of child support',
+        INTEREST_AND_INVESTMENT_INCOME:
+          'Add documents of interest and dividend income',
+        RENTAL_INCOME: 'Add documents of rental income',
+        PAYSLIP_GROSS: 'Add last pay slip',
+        PAYSLIP_LLC: 'Add last pay slip',
+        STARTUP_GRANT: 'Add decision on a start-up grant',
+        ACCOUNTANT_REPORT_PARTNERSHIP:
+          'Add accountant’s account salary and fringe benefits',
+        ACCOUNTANT_REPORT_LLC:
+          'Add accountant’s account of fringe benefits and dividends',
+        PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED:
+          'Add profit and loss account or taxation decision',
+        PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP:
+          'Add profit and loss account and balance sheet',
+        SALARY: 'Add payslips of salaries and trade incomes',
+        PROOF_OF_STUDIES:
+          'Add certificate of student status or a decision on a student benefit from an unemployment fund / training allowance from an employment fund',
+        CHILD_INCOME: 'Add documents of child income'
       }
     },
     assure: <>I testify that the information I have provided is correct. *</>,
@@ -2278,7 +2338,8 @@ const en: Translations = {
       chooseAtLeastOne: 'Select at least one option',
       deleteFailed: 'The income statement could not be deleted',
       dateRangeInvalid:
-        'Income information can be valid for a maximum of one year'
+        'Income information can be valid for a maximum of one year',
+      attachmentMissing: 'Attachment is missing'
     },
     table: {
       title: 'Income statements',
