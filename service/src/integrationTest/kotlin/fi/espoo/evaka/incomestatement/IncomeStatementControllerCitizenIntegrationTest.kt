@@ -446,6 +446,40 @@ class IncomeStatementControllerCitizenIntegrationTest :
     }
 
     @Test
+    fun `create an income statement with an untyped attachment`() {
+        val attachmentId = uploadAttachment(attachmentType = null)
+
+        createIncomeStatement(
+            IncomeStatementBody.Income(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = LocalDate.of(2022, 4, 1),
+                gross =
+                    Gross(
+                        incomeSource = IncomeSource.ATTACHMENTS,
+                        estimatedMonthlyIncome = 1500,
+                        otherIncome = setOf(),
+                        otherIncomeInfo = "",
+                    ),
+                entrepreneur = null,
+                student = false,
+                alimonyPayer = true,
+                otherInfo = "foo bar",
+                attachmentIds = listOf(attachmentId),
+            )
+        )
+
+        val incomeStatements = getIncomeStatements().data
+        assertEquals(1, incomeStatements.size)
+        incomeStatements.first().also {
+            val incomeStatement = it as IncomeStatement.Income
+            assertEquals(
+                listOf(idToAttachment(attachmentId, attachmentType = null)),
+                incomeStatement.attachments,
+            )
+        }
+    }
+
+    @Test
     fun `create an income statement for a child with an attachment`() {
         db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
         val attachmentId = uploadAttachment()
@@ -980,18 +1014,24 @@ WHERE id = ${bind(id)}
         incomeStatementControllerCitizen.deleteIncomeStatement(dbInstance(), citizen, clock, id)
     }
 
-    private fun uploadAttachment(user: AuthenticatedUser.Citizen = citizen): AttachmentId {
+    private fun uploadAttachment(
+        user: AuthenticatedUser.Citizen = citizen,
+        attachmentType: IncomeStatementAttachmentType? = IncomeStatementAttachmentType.OTHER,
+    ): AttachmentId {
         return attachmentsController.uploadIncomeStatementAttachmentCitizen(
             dbInstance(),
             user,
             clock,
             incomeStatementId = null,
+            attachmentType = attachmentType,
             file = MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }
 
-    private fun idToAttachment(id: AttachmentId) =
-        IncomeStatementAttachment(id, "evaka-logo.png", "image/png", false)
+    private fun idToAttachment(
+        id: AttachmentId,
+        attachmentType: IncomeStatementAttachmentType? = IncomeStatementAttachmentType.OTHER,
+    ) = IncomeStatementAttachment(id, "evaka-logo.png", "image/png", attachmentType, false)
 
     private fun uploadAttachmentAsEmployee(
         user: AuthenticatedUser.Employee,
@@ -1002,6 +1042,7 @@ WHERE id = ${bind(id)}
             user,
             clock,
             incomeStatementId,
+            IncomeStatementAttachmentType.OTHER,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }

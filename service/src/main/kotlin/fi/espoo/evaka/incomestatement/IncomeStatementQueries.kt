@@ -102,16 +102,17 @@ SELECT
         'id', id, 
         'name', name,
         'contentType', content_type,
+        'type', CASE WHEN type = '' THEN NULL ELSE type END,
         'uploadedByEmployee', uploaded_by_employee
       )), '[]'::jsonb) FROM (
-        SELECT a.id, a.name, content_type, eu.type = 'EMPLOYEE' AS uploaded_by_employee
+        SELECT a.id, a.name, a.content_type, a.type, eu.type = 'EMPLOYEE' AS uploaded_by_employee
         FROM attachment a
         JOIN evaka_user eu ON a.uploaded_by = eu.id
         WHERE a.income_statement_id = ist.id 
         AND ${predicate(attachmentVisibility.forTable("eu"))}
         ORDER BY a.created
     ) s) AS attachments,
-   COUNT(*) OVER () AS count
+    COUNT(*) OVER () AS count
 FROM income_statement ist 
 JOIN person p ON p.id = ist.person_id
 WHERE ${predicate(statusVisibility.forTable("ist"))}

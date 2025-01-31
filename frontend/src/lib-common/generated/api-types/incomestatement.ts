@@ -158,8 +158,50 @@ export interface IncomeStatementAttachment {
   contentType: string
   id: AttachmentId
   name: string
+  type: IncomeStatementAttachmentType | null
   uploadedByEmployee: boolean
 }
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
+*/
+export type IncomeStatementAttachmentType =
+  | 'OTHER'
+  | 'ALIMONY_PAYOUT'
+  | 'PAYSLIP_GROSS'
+  | 'STARTUP_GRANT'
+  | 'SALARY'
+  | 'ACCOUNTANT_REPORT_PARTNERSHIP'
+  | 'PAYSLIP_LLC'
+  | 'ACCOUNTANT_REPORT_LLC'
+  | 'PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP'
+  | 'PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED'
+  | 'PROOF_OF_STUDIES'
+  | 'CHILD_INCOME'
+  | 'PENSION'
+  | 'ADULT_EDUCATION_ALLOWANCE'
+  | 'SICKNESS_ALLOWANCE'
+  | 'PARENTAL_ALLOWANCE'
+  | 'HOME_CARE_ALLOWANCE'
+  | 'FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE'
+  | 'ALIMONY'
+  | 'INTEREST_AND_INVESTMENT_INCOME'
+  | 'RENTAL_INCOME'
+  | 'UNEMPLOYMENT_ALLOWANCE'
+  | 'LABOUR_MARKET_SUBSIDY'
+  | 'ADJUSTED_DAILY_ALLOWANCE'
+  | 'JOB_ALTERNATION_COMPENSATION'
+  | 'REWARD_OR_BONUS'
+  | 'RELATIVE_CARE_SUPPORT'
+  | 'BASIC_INCOME'
+  | 'FOREST_INCOME'
+  | 'FAMILY_CARE_COMPENSATION'
+  | 'REHABILITATION'
+  | 'EDUCATION_ALLOWANCE'
+  | 'GRANT'
+  | 'APPRENTICESHIP_SALARY'
+  | 'ACCIDENT_INSURANCE_COMPENSATION'
+  | 'OTHER_INCOME'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler

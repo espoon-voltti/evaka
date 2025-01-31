@@ -264,6 +264,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                             id = attachmentId,
                             name = "evaka-logo.png",
                             contentType = "image/png",
+                            type = IncomeStatementAttachmentType.OTHER,
                             uploadedByEmployee = true,
                         )
                     ),
@@ -1659,6 +1660,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             employee.user,
             MockEvakaClock(now),
             id,
+            IncomeStatementAttachmentType.OTHER,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }

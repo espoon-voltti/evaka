@@ -168,20 +168,15 @@ fun createValidatedIncomeStatement(
     val incomeStatementId = tx.insertIncomeStatement(user.evakaUserId, now, personId, body, draft)
 
     when (body) {
-        is IncomeStatementBody.Income ->
-            tx.associateOrphanAttachments(
-                user.evakaUserId,
-                AttachmentParent.IncomeStatement(incomeStatementId),
-                body.attachmentIds,
-            )
-        is IncomeStatementBody.ChildIncome -> {
-            tx.associateOrphanAttachments(
-                user.evakaUserId,
-                AttachmentParent.IncomeStatement(incomeStatementId),
-                body.attachmentIds,
-            )
-        }
-        else -> {}
+        is IncomeStatementBody.Income -> body.attachmentIds
+        is IncomeStatementBody.ChildIncome -> body.attachmentIds
+        else -> null
+    }?.also { attachmentIds ->
+        tx.associateOrphanAttachments(
+            user.evakaUserId,
+            AttachmentParent.IncomeStatement(incomeStatementId),
+            attachmentIds,
+        )
     }
 
     return incomeStatementId
@@ -192,10 +187,52 @@ private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean 
     estimatedIncome?.incomeEndDate == null ||
         estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
 
+enum class IncomeStatementAttachmentType {
+    OTHER,
+    ALIMONY_PAYOUT,
+    PAYSLIP_GROSS,
+    STARTUP_GRANT,
+    SALARY,
+    ACCOUNTANT_REPORT_PARTNERSHIP,
+    PAYSLIP_LLC,
+    ACCOUNTANT_REPORT_LLC,
+    PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP,
+    PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED,
+    PROOF_OF_STUDIES,
+    CHILD_INCOME,
+
+    // These are the entries of `OtherIncome`
+    PENSION,
+    ADULT_EDUCATION_ALLOWANCE,
+    SICKNESS_ALLOWANCE,
+    PARENTAL_ALLOWANCE,
+    HOME_CARE_ALLOWANCE,
+    FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE,
+    ALIMONY,
+    INTEREST_AND_INVESTMENT_INCOME,
+    RENTAL_INCOME,
+    UNEMPLOYMENT_ALLOWANCE,
+    LABOUR_MARKET_SUBSIDY,
+    ADJUSTED_DAILY_ALLOWANCE,
+    JOB_ALTERNATION_COMPENSATION,
+    REWARD_OR_BONUS,
+    RELATIVE_CARE_SUPPORT,
+    BASIC_INCOME,
+    FOREST_INCOME,
+    FAMILY_CARE_COMPENSATION,
+    REHABILITATION,
+    EDUCATION_ALLOWANCE,
+    GRANT,
+    APPRENTICESHIP_SALARY,
+    ACCIDENT_INSURANCE_COMPENSATION,
+    OTHER_INCOME,
+}
+
 data class IncomeStatementAttachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
+    val type: IncomeStatementAttachmentType?,
     val uploadedByEmployee: Boolean,
 )
 

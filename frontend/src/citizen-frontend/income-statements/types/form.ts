@@ -2,12 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Attachment } from 'lib-common/generated/api-types/attachment'
 import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
 import {
   IncomeSource,
+  IncomeStatementAttachmentType,
   OtherIncome
 } from 'lib-common/generated/api-types/incomestatement'
+import {
+  IncomeStatementAttachments,
+  toIncomeStatementAttachments
+} from 'lib-common/income-statements'
 import LocalDate from 'lib-common/local-date'
 
 export interface IncomeStatementForm {
@@ -20,7 +24,7 @@ export interface IncomeStatementForm {
   student: boolean
   alimonyPayer: boolean
   otherInfo: string
-  attachments: Attachment[]
+  attachments: IncomeStatementAttachments
   assure: boolean
 }
 
@@ -114,7 +118,7 @@ export const emptyIncomeStatementForm: IncomeStatementForm = {
   student: false,
   alimonyPayer: false,
   otherInfo: '',
-  attachments: [],
+  attachments: { typed: true, attachmentsByType: {} },
   assure: false
 }
 
@@ -133,13 +137,15 @@ export function fromIncomeStatement(
           student: incomeStatement.student,
           alimonyPayer: incomeStatement.alimonyPayer,
           otherInfo: incomeStatement.otherInfo,
-          attachments: incomeStatement.attachments
+          attachments: toIncomeStatementAttachments(incomeStatement.attachments)
         }
       : incomeStatement.type === 'CHILD_INCOME'
         ? {
             childIncome: true,
             otherInfo: incomeStatement.otherInfo,
-            attachments: incomeStatement.attachments
+            attachments: toIncomeStatementAttachments(
+              incomeStatement.attachments
+            )
           }
         : undefined)
   }
@@ -213,4 +219,45 @@ function mapLimitedCompany(
     selected: true,
     incomeSource: limitedCompany.incomeSource
   }
+}
+
+export function computeRequiredAttachments(
+  formData: IncomeStatementForm
+): Set<IncomeStatementAttachmentType> {
+  const result = new Set<IncomeStatementAttachmentType>()
+
+  const { gross, entrepreneur, alimonyPayer, student } = formData
+  if (gross.selected) {
+    if (gross.incomeSource === 'ATTACHMENTS') result.add('PAYSLIP_GROSS')
+    if (gross.otherIncome) gross.otherIncome.forEach((item) => result.add(item))
+  }
+  if (entrepreneur.selected) {
+    if (entrepreneur.startupGrant) result.add('STARTUP_GRANT')
+    if (
+      entrepreneur.selfEmployed.selected &&
+      !entrepreneur.selfEmployed.estimation
+    ) {
+      result.add('PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED')
+    }
+    if (entrepreneur.limitedCompany.selected) {
+      if (entrepreneur.limitedCompany.incomeSource === 'ATTACHMENTS') {
+        result.add('PAYSLIP_LLC')
+      }
+      result.add('ACCOUNTANT_REPORT_LLC')
+    }
+    if (entrepreneur.partnership) {
+      result
+        .add('PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP')
+        .add('ACCOUNTANT_REPORT_PARTNERSHIP')
+    }
+    if (entrepreneur.lightEntrepreneur) {
+      result.add('SALARY')
+    }
+  }
+  if (gross.selected || entrepreneur.selected) {
+    if (student) result.add('PROOF_OF_STUDIES')
+    if (alimonyPayer) result.add('ALIMONY_PAYOUT')
+  }
+
+  return result
 }

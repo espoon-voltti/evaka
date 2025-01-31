@@ -10,6 +10,7 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
 import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.messaging.findMessageAccountIdByDraftId
@@ -109,6 +110,7 @@ class AttachmentsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
+        @RequestParam attachmentType: IncomeStatementAttachmentType,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
@@ -127,6 +129,7 @@ class AttachmentsController(
                     clock,
                     AttachmentParent.IncomeStatement(incomeStatementId),
                     file,
+                    attachmentType,
                 )
             }
             .also { attachmentId ->
@@ -337,8 +340,12 @@ class AttachmentsController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId?,
+        @RequestParam attachmentType: IncomeStatementAttachmentType?,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
+        // TODO: `attachmentType` is nullable for backwards compatibility. It can be made
+        // non-nullable when all income statements with untyped attachments have been marked
+        // as handled and cannot be edited anymore.
         return db.connect { dbc ->
                 if (incomeStatementId != null) {
                     dbc.read {
@@ -356,7 +363,7 @@ class AttachmentsController(
                         AttachmentParent.IncomeStatement(incomeStatementId)
                     else AttachmentParent.None
 
-                handleFileUpload(dbc, user, clock, attachTo, file)
+                handleFileUpload(dbc, user, clock, attachTo, file, attachmentType)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(

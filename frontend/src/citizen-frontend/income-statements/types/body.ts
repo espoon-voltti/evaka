@@ -3,10 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { stringToInt } from 'lib-common/utils/number'
 
 import * as Form from './form'
+
+function collectAttachmentIds(
+  formData: Form.IncomeStatementForm
+): AttachmentId[] {
+  const attachments = formData.attachments.typed
+    ? Object.values(formData.attachments.attachmentsByType).flat()
+    : formData.attachments.untypedAttachments
+  return attachments.map((a) => a.id)
+}
 
 export function fromBody(
   personType: 'adult' | 'child',
@@ -29,19 +39,24 @@ export function fromBody(
   }
 
   if (formData.childIncome) {
+    const attachmentIds = collectAttachmentIds(formData)
+    if (attachmentIds.length === 0) return null
+
     const childIncome: IncomeStatementBody.ChildIncome = {
       type: 'CHILD_INCOME',
       startDate,
       endDate: formData.endDate,
       otherInfo: formData.otherInfo,
-      attachmentIds: formData.attachments.map((a) => a.id)
+      attachmentIds
     }
     return childIncome
   }
 
+  // Require attachments "one-by-one" if there are no old-style attachments without a type
+  if (!validateAttachments(formData, draft)) return null
+
   const gross = validateGross(formData.gross)
   const entrepreneur = validateEntrepreneur(formData.entrepreneur, draft)
-
   if (
     gross === invalid ||
     entrepreneur === invalid ||
@@ -59,11 +74,24 @@ export function fromBody(
     student: formData.student,
     alimonyPayer: formData.alimonyPayer,
     otherInfo: formData.otherInfo,
-    attachmentIds: formData.attachments.map((a) => a.id)
+    attachmentIds: collectAttachmentIds(formData)
   }
 }
 
 const invalid: unique symbol = Symbol()
+
+function validateAttachments(
+  formData: Form.IncomeStatementForm,
+  draft: boolean
+) {
+  if (draft || !formData.attachments.typed) return true
+  const { attachmentsByType } = formData.attachments
+
+  const requiredAttachments = Form.computeRequiredAttachments(formData)
+  return [...requiredAttachments].every(
+    (type) => (attachmentsByType[type]?.length ?? 0) > 0
+  )
+}
 
 function validateGross(formData: Form.Gross) {
   if (!formData.selected) return null

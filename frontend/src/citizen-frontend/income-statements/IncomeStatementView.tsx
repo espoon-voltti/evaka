@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -13,9 +13,15 @@ import {
   Entrepreneur,
   EstimatedIncome,
   Gross,
-  IncomeStatement
+  IncomeStatement,
+  IncomeStatementAttachment,
+  IncomeStatementAttachmentType
 } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import {
+  numAttachments,
+  toIncomeStatementAttachments
+} from 'lib-common/income-statements'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -24,6 +30,7 @@ import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlin
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -342,19 +349,48 @@ const AccountantInfo = React.memo(function AccountantInfo({
 const CitizenAttachments = React.memo(function CitizenAttachments({
   attachments
 }: {
-  attachments: Attachment[]
+  attachments: IncomeStatementAttachment[]
 }) {
   const t = useTranslation()
+  const incomeStatementAttachments = useMemo(
+    () => toIncomeStatementAttachments(attachments),
+    [attachments]
+  )
+  const noAttachments = numAttachments(incomeStatementAttachments) === 0
   return (
     <>
       <H2>{t.income.view.citizenAttachments.title}</H2>
-      {attachments.length === 0 ? (
+      {noAttachments ? (
         <p>{t.income.view.citizenAttachments.noAttachments}</p>
-      ) : (
+      ) : !incomeStatementAttachments.typed ? (
         <Row
           label={`${t.income.view.attachments}:`}
-          value={<UploadedFiles files={attachments} />}
+          value={
+            <UploadedFiles
+              files={incomeStatementAttachments.untypedAttachments}
+            />
+          }
         />
+      ) : (
+        <Table>
+          <Tbody>
+            {Object.entries(incomeStatementAttachments.attachmentsByType).map(
+              ([type, attachments]) => {
+                const attachmentType = type as IncomeStatementAttachmentType
+                return (
+                  <Tr key={attachmentType}>
+                    <Td>
+                      {t.income.attachments.attachmentNames[attachmentType]}
+                    </Td>
+                    <Td>
+                      <UploadedFiles files={attachments} />
+                    </Td>
+                  </Tr>
+                )
+              }
+            )}
+          </Tbody>
+        </Table>
       )}
     </>
   )

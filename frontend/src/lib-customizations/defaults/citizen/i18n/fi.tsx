@@ -2456,7 +2456,9 @@ export default {
       deductions: 'Vähennykset',
       alimony:
         'Maksan elatusmaksuja. Toimitan kopion maksutositteesta liitteenä.',
-      otherInfoLabel: 'Lisätietoja tulotietoihin liittyen'
+      otherInfoLabel: 'Lisätietoja tulotietoihin liittyen',
+      otherAttachmentInfo:
+        'Jos sinulla on muita tuloihisi tai varhaiskasvatusmaksuihin liittyviä liitteitä, voit lisätä ne tässä'
     },
     attachments: {
       title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
@@ -2465,7 +2467,10 @@ export default {
       required: {
         title: 'Tarvittavat liitteet'
       },
+      missingAttachments: 'Puuttuvat liitteet',
+      noMissingAttachments: 'Ei puuttuvia liitteitä',
       attachmentNames: {
+        OTHER: 'Muu liite',
         PENSION: 'Päätös eläkkeestä',
         ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
         SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
@@ -2492,16 +2497,65 @@ export default {
         ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
         INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
         RENTAL_INCOME: 'Tositteet vuokratuloista ja vastikkeesta',
-        PAYSLIP: 'Viimeisin palkkakuitti',
+        PAYSLIP_GROSS: 'Viimeisin palkkakuitti',
         STARTUP_GRANT: 'Starttirahapäätös',
-        ACCOUNTANT_REPORT: 'Kirjanpitäjän selvitys palkasta ja luontoiseduista',
+        ACCOUNTANT_REPORT_PARTNERSHIP:
+          'Kirjanpitäjän selvitys palkasta ja luontoiseduista',
+        PAYSLIP_LLC: 'Viimeisin palkkakuitti',
         ACCOUNTANT_REPORT_LLC:
           'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
-        PROFIT_AND_LOSS_STATEMENT: 'Tuloslaskelma ja tase',
+        PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED:
+          'Tulos- ja taselaskelma tai veropäätös',
+        PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP: 'Tulos- ja taselaskelma',
         SALARY: 'Maksutositteet palkoista ja työkorvauksista',
         PROOF_OF_STUDIES:
           'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta',
         CHILD_INCOME: 'Tositteet lapsen tuloista'
+      },
+      addAttachment: {
+        OTHER: 'Muu liite',
+        PENSION: 'Lisää päätös eläkkeestä',
+        ADULT_EDUCATION_ALLOWANCE: 'Lisää päätös aikuiskoulutustuesta',
+        SICKNESS_ALLOWANCE: 'Lisää päätös sairauspäivärahasta',
+        PARENTAL_ALLOWANCE: 'Lisää päätös äitiys- tai vanhempainrahasta',
+        HOME_CARE_ALLOWANCE: 'Lisää päätös kotihoidontuesta',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Lisää päätös hoitorahasta',
+        ALIMONY: 'Lisää elatussopimus tai päätös elatustuesta',
+        UNEMPLOYMENT_ALLOWANCE: 'Lisää päätös työttömyyspäivärahasta',
+        LABOUR_MARKET_SUBSIDY: 'Lisää päätös työmarkkinatuesta',
+        ADJUSTED_DAILY_ALLOWANCE: 'Lisää päätös päivärahasta',
+        JOB_ALTERNATION_COMPENSATION: 'Lisää tosite vuorotteluvapaakorvaus',
+        REWARD_OR_BONUS: 'Lisää palkkatosite bonuksesta tai/ja palkkiosta',
+        RELATIVE_CARE_SUPPORT: 'Lisää päätös omaishoidontuesta',
+        BASIC_INCOME: 'Lisää päätös perustulosta',
+        FOREST_INCOME: 'Lisää tosite metsätulosta',
+        FAMILY_CARE_COMPENSATION: 'Lisää tositteet perhehoidon palkkioista',
+        REHABILITATION: 'Lisää päätös kuntoutustuesta tai kuntoutusrahasta',
+        EDUCATION_ALLOWANCE: 'Lisää päätös koulutuspäivärahasta',
+        GRANT: 'Lisää tosite apurahasta',
+        APPRENTICESHIP_SALARY:
+          'Lisää tosite oppisopimuskoulutuksen palkkatuloista',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Lisää tosite tapaturmavakuutuksen korvauksesta',
+        OTHER_INCOME: 'Lisää liitteet muista tuloista',
+        ALIMONY_PAYOUT: 'Lisää maksutosite elatusmaksuista',
+        INTEREST_AND_INVESTMENT_INCOME:
+          'Lisää tositteet korko- ja osinkotuloista',
+        RENTAL_INCOME: 'Lisää tositteet vuokratuloista ja vastikkeesta',
+        PAYSLIP_GROSS: 'Lisää viimeisin palkkakuitti',
+        STARTUP_GRANT: 'Lisää starttirahapäätös',
+        ACCOUNTANT_REPORT_PARTNERSHIP:
+          'Lisää kirjanpitäjän selvitys palkasta ja luontoiseduista',
+        PAYSLIP_LLC: 'Lisää viimeisin palkkakuitti',
+        ACCOUNTANT_REPORT_LLC:
+          'Lisää kirjanpitäjän selvitys luontoiseduista ja osingoista',
+        PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED:
+          'Lisää tulos- ja taselaskelma tai veropäätös',
+        PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP: 'Lisää tulos- ja taselaskelma',
+        SALARY: 'Lisää maksutositteet palkoista ja työkorvauksista',
+        PROOF_OF_STUDIES:
+          'Lisää opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta',
+        CHILD_INCOME: 'Lisää tositteet lapsen tuloista'
       }
     },
     assure: <>Vakuutan antamani tiedot oikeiksi. *</>,
@@ -2511,7 +2565,8 @@ export default {
       choose: 'Valitse vaihtoehto',
       chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
       deleteFailed: 'Tuloselvitystä ei voitu poistaa',
-      dateRangeInvalid: `Tulotiedot voivat olla voimassa korkeintaan vuoden`
+      dateRangeInvalid: `Tulotiedot voivat olla voimassa korkeintaan vuoden`,
+      attachmentMissing: 'Liite puuttuu'
     },
     table: {
       title: 'Omat tuloselvitykseni',

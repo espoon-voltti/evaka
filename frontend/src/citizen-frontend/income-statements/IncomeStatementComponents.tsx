@@ -7,7 +7,8 @@ import React, { useCallback } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { tabletMin } from 'lib-components/breakpoints'
-import { fontWeights } from 'lib-components/typography'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { fontWeights, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { fasExclamationTriangle } from 'lib-icons'
 
@@ -30,6 +31,23 @@ export function useFieldDispatch<T, K extends keyof T>(
   const setState = useFieldSetState(onChange, key)
   return useCallback((value: T[K]) => setState(() => value), [setState])
 }
+
+export const LabelWithError = React.memo(function LabelWithError({
+  label,
+  showError,
+  errorText
+}: {
+  label: string
+  showError: boolean
+  errorText: string
+}) {
+  return (
+    <FixedSpaceRow>
+      <Label>{label}</Label>
+      {showError ? <LabelError text={errorText} /> : null}
+    </FixedSpaceRow>
+  )
+})
 
 export function identity<T>(value: T): T {
   return value
