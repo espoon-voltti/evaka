@@ -17,7 +17,8 @@ import {
   testChild,
   testChild2,
   testDaycare,
-  testDaycareGroup
+  testDaycareGroup,
+  testPreschool
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -61,6 +62,7 @@ beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testPreschool).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -78,7 +80,8 @@ beforeEach(async () => {
     .save()
 
   unitSupervisor = await Fixture.employee()
-    .unitSupervisor(testDaycare.id)
+    .withDaycareAcl(testDaycare.id, 'UNIT_SUPERVISOR')
+    .withDaycareAcl(testPreschool.id, 'UNIT_SUPERVISOR')
     .save()
 
   const unitId = testDaycare.id
@@ -227,6 +230,65 @@ describe('Sending and receiving messages', () => {
       })
     }
   )
+
+  test('Staff can select starters as receivers', async () => {
+    const daycarePlacementFixture1 = await Fixture.placement({
+      childId,
+      unitId: testPreschool.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    const preschoolGroup = await Fixture.daycareGroup({
+      daycareId: testPreschool.id,
+      name: 'Esiopetusryhmä'
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture1.id,
+      daycareGroupId: preschoolGroup.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+
+    // Verify that available recipients contain current placements and starters
+    await initUnitSupervisorPage(mockedDateAt10)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    const receiverSelector = messageEditor.receiverSelection
+    await receiverSelector.open()
+    await receiverSelector.expandAll() // open first level
+    await receiverSelector.expandAll() // open second level
+    const labels = await receiverSelector.labels.allTexts()
+    const starterChildLabel = `${testChild.lastName} ${testChild.firstName} (${mockedDate.addYears(1).addDays(1).format()})`
+    const expectedReceiverNames = [
+      testDaycare.name,
+      testDaycareGroup.name,
+      `${testChild.lastName} ${testChild.firstName}`,
+      `${testChild2.lastName} ${testChild2.firstName}`,
+      `${testPreschool.name} (aloittavat)`,
+      `${preschoolGroup.name} (aloittavat)`,
+      starterChildLabel
+    ]
+    expect(labels.sort()).toEqual(expectedReceiverNames.sort())
+
+    // Send a message to a starter child
+    await receiverSelector.optionByLabel(starterChildLabel).click()
+    await messageEditor.inputTitle.fill('Aloittavalle otsikko')
+    await messageEditor.inputContent.fill('Sisältö')
+    await messageEditor.sendButton.click()
+    await messageEditor.waitUntilHidden()
+
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    // Verify that the message is received by the starter child
+    await initCitizenPage(mockedDateAt11)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.assertThreadContent({
+      title: 'Aloittavalle otsikko',
+      content: 'Sisältö'
+    })
+  })
 })
 
 describe('Sending and receiving sensitive messages', () => {
