@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
+import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
@@ -11,23 +12,35 @@ import {
   AttachmentId,
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
-import { IncomeStatementAttachments } from 'lib-common/income-statements'
+import {
+  IncomeStatementAttachments,
+  numAttachments
+} from 'lib-common/income-statements'
 import { scrollToElement } from 'lib-common/utils/scrolling'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import FileUpload, { UploadHandler } from 'lib-components/molecules/FileUpload'
-import { H3, H4, P } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import FileUpload, {
+  fileIcon,
+  UploadHandler
+} from 'lib-components/molecules/FileUpload'
+import { H2, H3, H4, P } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
 
 import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
 import { useTranslation } from '../localization'
 
-import { LabelWithError, SetStateCallback } from './IncomeStatementComponents'
+import {
+  LabelWithError,
+  Row,
+  SetStateCallback
+} from './IncomeStatementComponents'
 
 function attachmentSectionId(type: IncomeStatementAttachmentType): string {
   return `attachment-section-${type}`
@@ -288,6 +301,125 @@ export const IncomeStatementUntypedAttachments = React.memo(
           />
         </FixedSpaceColumn>
       </ContentArea>
+    )
+  }
+)
+
+export const CitizenAttachments = React.memo(function CitizenAttachments({
+  incomeStatementAttachments
+}: {
+  incomeStatementAttachments: IncomeStatementAttachments
+}) {
+  const t = useTranslation()
+  const noAttachments = numAttachments(incomeStatementAttachments) === 0
+  return (
+    <>
+      <H2>{t.income.view.citizenAttachments.title}</H2>
+      {noAttachments ? (
+        <p>{t.income.view.citizenAttachments.noAttachments}</p>
+      ) : !incomeStatementAttachments.typed ? (
+        <Row
+          label={`${t.income.view.attachments}:`}
+          value={
+            <UploadedFiles
+              files={incomeStatementAttachments.untypedAttachments}
+            />
+          }
+        />
+      ) : (
+        <Table>
+          <Tbody>
+            {Object.entries(incomeStatementAttachments.attachmentsByType).map(
+              ([type, attachments]) => {
+                const attachmentType = type as IncomeStatementAttachmentType
+                return (
+                  <Tr key={attachmentType}>
+                    <Td>
+                      {t.income.attachments.attachmentNames[attachmentType]}
+                    </Td>
+                    <Td>
+                      <UploadedFiles files={attachments} />
+                    </Td>
+                  </Tr>
+                )
+              }
+            )}
+          </Tbody>
+        </Table>
+      )}
+    </>
+  )
+})
+
+const UploadedFiles = React.memo(function UploadedFiles({
+  files
+}: {
+  files: Attachment[]
+}) {
+  return (
+    <FixedSpaceColumn>
+      {files.map((file) => (
+        <div key={file.id}>
+          <FileIcon icon={fileIcon(file)} />
+          <FileDownloadButton file={file} getFileUrl={getAttachmentUrl} />{' '}
+        </div>
+      ))}
+    </FixedSpaceColumn>
+  )
+})
+
+const FileIcon = styled(FontAwesomeIcon)`
+  color: ${(p) => p.theme.colors.main.m2};
+  margin-right: ${defaultMargins.s};
+`
+
+export const CitizenAttachmentsWithUpload = React.memo(
+  function CitizenAttachments({
+    incomeStatementId,
+    incomeStatementAttachments,
+    onChange
+  }: {
+    incomeStatementId: IncomeStatementId
+    incomeStatementAttachments: IncomeStatementAttachments
+    onChange: SetStateCallback<IncomeStatementAttachments>
+  }) {
+    const t = useTranslation()
+    const attachmentHandler = useMemo(
+      () =>
+        makeAttachmentHandler(
+          incomeStatementId,
+          incomeStatementAttachments,
+          onChange
+        ),
+      [incomeStatementAttachments, incomeStatementId, onChange]
+    )
+    return (
+      <>
+        <H2>{t.income.view.citizenAttachments.title}</H2>
+        {!incomeStatementAttachments.typed ? (
+          <IncomeStatementUntypedAttachments
+            incomeStatementId={incomeStatementId}
+            requiredAttachments={new Set()}
+            attachments={incomeStatementAttachments}
+            onChange={onChange}
+          />
+        ) : (
+          Object.keys(incomeStatementAttachments.attachmentsByType).map(
+            (type) => {
+              const attachmentType = type as IncomeStatementAttachmentType
+              return (
+                <AttachmentSection
+                  key={attachmentType}
+                  attachmentType={attachmentType}
+                  showFormErrors={false}
+                  attachmentHandler={attachmentHandler}
+                  labelKey="attachmentNames"
+                />
+              )
+            }
+          )
+        )}
+      </>
     )
   }
 )
