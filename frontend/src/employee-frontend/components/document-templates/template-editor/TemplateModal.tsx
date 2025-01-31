@@ -269,7 +269,11 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
           {i18n.documentTemplates.templateModal.processDefinitionNumber}
         </Label>
       </ExpandingInfo>
-      <InputFieldF bind={processDefinitionNumber} hideErrorsBeforeTouched />
+      <InputFieldF
+        bind={processDefinitionNumber}
+        hideErrorsBeforeTouched
+        data-qa="process-definition-number"
+      />
       {processDefinitionNumber.value().trim().length > 0 && (
         <>
           <Gap />
@@ -277,6 +281,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
             {i18n.documentTemplates.templateModal.archiveDurationMonths}
           </Label>
           <InputFieldF
+            data-qa="archive-duration-months"
             bind={archiveDurationMonths}
             type="number"
             hideErrorsBeforeTouched

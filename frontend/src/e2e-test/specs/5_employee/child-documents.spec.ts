@@ -11,7 +11,7 @@ import {
   testChild2,
   testDaycare
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import { resetServiceState, runJobs } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
@@ -315,5 +315,93 @@ describe('Employee - Child documents', () => {
     await groupRow.completed.assertTextEquals('0')
     await groupRow.noDocuments.assertTextEquals('1')
     await groupRow.total.assertTextEquals('2')
+  })
+  test('Document archiving', async () => {
+    // Admin creates a template
+
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl)
+    const nav = new EmployeeNav(page)
+    await nav.openAndClickDropdownMenuItem('document-templates')
+
+    const documentTemplatesPage = new DocumentTemplatesListPage(page)
+    const modal = await documentTemplatesPage.openCreateModal()
+    const documentName = 'VASU 2022-2023'
+    await modal.nameInput.fill(documentName)
+    await modal.typeSelect.selectOption('VASU')
+    await modal.placementTypesSelect.fillAndSelectFirst('Esiopetus')
+    await modal.validityStartInput.fill('01.08.2022')
+    await modal.processDefinitionNumberInput.fill('1234')
+    await modal.archiveDurationMonthsInput.fill('1320')
+    await modal.confirmCreateButton.click()
+    await documentTemplatesPage.openTemplate(documentName)
+
+    const templateEditor = new DocumentTemplateEditorPage(page)
+    await templateEditor.createNewSectionButton.click()
+    const sectionName = 'Eka osio'
+    await templateEditor.sectionNameInput.fill(sectionName)
+    await templateEditor.confirmCreateSectionButton.click()
+
+    const section = templateEditor.getSection(sectionName)
+    await section.element.hover()
+    await section.createNewQuestionButton.click()
+    const questionName = 'Eka kysymys'
+    await templateEditor.questionLabelInput.fill(questionName)
+    await templateEditor.confirmCreateQuestionButton.click()
+
+    await templateEditor.publishCheckbox.check()
+    await templateEditor.saveButton.click()
+    await templateEditor.saveButton.waitUntilHidden()
+    await page.close()
+    // End of admin creates a template
+
+    // Unit supervisor creates a child document
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
+      'VASU 2022-2023'
+    )
+    await childDocumentsSection.modalOk.click()
+
+    // Fill an answer and return
+    const childDocument = new ChildDocumentPage(page)
+    await childDocument.editButton.click()
+    await childDocument.status.assertTextEquals('Luonnos')
+    const answer = 'Jonkin sortin vastaus'
+    const question = childDocument.getTextQuestion(sectionName, questionName)
+    await question.fill(answer)
+    await childDocument.savingIndicator.waitUntilHidden()
+    await childDocument.previewButton.click()
+    await childDocument.publish()
+    await childDocument.goToNextStatus()
+    await childDocument.goToNextStatus()
+
+    // PDF-generation should be triggered by publishing
+    await runJobs({ mockedTime: now })
+
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage2 = new ChildInformationPage(page)
+    const childDocumentsSection2 =
+      await childInformationPage2.openCollapsible('childDocuments')
+    const row2 = childDocumentsSection2.childDocuments(0)
+    await row2.openLink.click()
+    const childDocument2 = new ChildDocumentPage(page)
+    await childDocument2.archiveButton.click()
+    await runJobs({ mockedTime: now })
+
+    await page.reload()
+    const childDocument3 = new ChildDocumentPage(page)
+    await childDocument3.archiveButton.hover()
+    await childDocument3.archiveTooltip.assertText((text) =>
+      text.includes('Asiakirja on arkistoitu ')
+    )
   })
 })

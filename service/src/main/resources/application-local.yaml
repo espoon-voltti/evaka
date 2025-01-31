@@ -63,6 +63,9 @@ evaka:
         trust_store:
           password: password
           type: JKS
+    särmä:
+      enabled: true
+      url: https://eoy3xw8tftt5shn.m.pipedream.net/archive-core
   not_for_prod:
     force_unpublish_document_template_enabled: true
   jwt:

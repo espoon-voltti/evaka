@@ -152,6 +152,7 @@ export interface ChildDocumentCreateRequest {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 */
 export interface ChildDocumentDetails {
+  archivedAt: HelsinkiDateTime | null
   child: ChildBasics
   content: DocumentContent
   id: ChildDocumentId
@@ -480,6 +481,7 @@ export function deserializeJsonChildDocumentCitizenSummary(json: JsonOf<ChildDoc
 export function deserializeJsonChildDocumentDetails(json: JsonOf<ChildDocumentDetails>): ChildDocumentDetails {
   return {
     ...json,
+    archivedAt: (json.archivedAt != null) ? HelsinkiDateTime.parseIso(json.archivedAt) : null,
     child: deserializeJsonChildBasics(json.child),
     content: deserializeJsonDocumentContent(json.content),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,

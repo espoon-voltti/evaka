@@ -236,6 +236,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                 archiveDurationMonths = null,
                                 content = templateContent,
                             ),
+                        archivedAt = null,
                     ),
                 permittedActions =
                     setOf(
@@ -247,6 +248,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         Action.ChildDocument.PREV_STATUS,
                         Action.ChildDocument.READ_METADATA,
                         Action.ChildDocument.DOWNLOAD,
+                        Action.ChildDocument.ARCHIVE,
                     ),
             ),
             document,

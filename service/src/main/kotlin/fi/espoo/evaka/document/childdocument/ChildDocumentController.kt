@@ -6,6 +6,7 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
@@ -45,6 +46,7 @@ class ChildDocumentController(
     private val childDocumentService: ChildDocumentService,
     private val featureConfig: FeatureConfig,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val evakaEnv: EvakaEnv,
 ) {
     @PostMapping
     fun createDocument(
@@ -459,6 +461,37 @@ class ChildDocumentController(
                 }
             }
             .also { Audit.ChildDocumentDelete.log(targetId = AuditId(documentId)) }
+    }
+
+    @PostMapping("/{documentId}/archive")
+    fun planArchiveChildDocument(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ) {
+        if (!evakaEnv.särmäEnabled) {
+            throw BadRequest("Document archival is not enabled")
+        }
+
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.ARCHIVE,
+                        documentId,
+                    )
+
+                    asyncJobRunner.plan(
+                        tx = tx,
+                        payloads = listOf(AsyncJob.ArchiveChildDocument(documentId)),
+                        runAt = clock.now(),
+                    )
+                }
+            }
+            .also { Audit.ChildDocumentArchive.log(targetId = AuditId(documentId)) }
     }
 
     @GetMapping("/{documentId}/pdf")

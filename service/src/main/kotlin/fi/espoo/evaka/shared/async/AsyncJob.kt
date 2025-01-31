@@ -409,6 +409,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class ArchiveChildDocument(val documentId: ChildDocumentId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -444,6 +448,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     PlacementToolFromSSN::class,
                     InvoiceCorrectionMigration::class,
                     DeletePersonalDevicesIfNeeded::class,
+                    ArchiveChildDocument::class,
                 ),
             )
         val email =

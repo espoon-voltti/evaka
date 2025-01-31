@@ -389,7 +389,11 @@ const BasicsEditor = React.memo(function BasicsEditor({
             {i18n.documentTemplates.templateModal.processDefinitionNumber}
           </Label>
         </ExpandingInfo>
-        <InputFieldF bind={processDefinitionNumber} hideErrorsBeforeTouched />
+        <InputFieldF
+          bind={processDefinitionNumber}
+          hideErrorsBeforeTouched
+          data-qa="process-definition-number"
+        />
         {processDefinitionNumber.value().trim().length > 0 && (
           <>
             <Gap />

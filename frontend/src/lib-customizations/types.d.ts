@@ -293,6 +293,11 @@ interface BaseFeatureFlags {
    * Enable support for employee Suomi.fi login
    */
   employeeSfiLogin?: boolean
+
+  /**
+   * Enable support for document archival integration
+   */
+  archiveIntegrationEnabled?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

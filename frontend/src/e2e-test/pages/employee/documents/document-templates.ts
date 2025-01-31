@@ -77,6 +77,8 @@ export class TemplateModal extends Element {
   readonly typeSelect
   readonly placementTypesSelect
   readonly validityStartInput
+  readonly processDefinitionNumberInput
+  readonly archiveDurationMonthsInput
   readonly confirmCreateButton
 
   constructor(locator: Locator) {
@@ -87,6 +89,12 @@ export class TemplateModal extends Element {
       this.findByDataQa('placement-types-select')
     )
     this.validityStartInput = new TextInput(this.findByDataQa('start-date'))
+    this.processDefinitionNumberInput = new TextInput(
+      this.findByDataQa('process-definition-number')
+    )
+    this.archiveDurationMonthsInput = new TextInput(
+      this.findByDataQa('archive-duration-months')
+    )
     this.confirmCreateButton = this.findByDataQa('modal-okBtn')
   }
 }

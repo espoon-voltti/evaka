@@ -10,12 +10,16 @@ export class ChildDocumentPage {
   previewButton: Element
   editButton: Element
   returnButton: Element
+  archiveButton: Element
+  archiveTooltip: Element
   constructor(private readonly page: Page) {
     this.status = page.findByDataQa('document-state-chip')
     this.savingIndicator = page.findByDataQa('saving-spinner')
     this.previewButton = page.findByDataQa('preview-button')
     this.editButton = page.findByDataQa('edit-button')
     this.returnButton = page.findByDataQa('return-button')
+    this.archiveButton = page.findByDataQa('archive-button')
+    this.archiveTooltip = page.findByDataQa('archive-tooltip')
   }
 
   getTextQuestion(sectionName: string, questionName: string) {

@@ -414,6 +414,7 @@ class PdfGeneratorTest {
                     ),
                 content = content,
                 publishedContent = content,
+                archivedAt = null,
             )
 
         val html = generateChildDocumentHtml(document)
