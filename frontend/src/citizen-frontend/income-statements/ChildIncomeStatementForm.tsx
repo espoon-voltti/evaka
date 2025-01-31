@@ -131,14 +131,12 @@ const ChildIncomeTimeRangeSelection = React.memo(
       formData,
       isValidStartDate,
       showFormErrors,
-      onChange,
-      readOnly
+      onChange
     }: {
       formData: ChildIncomeTypeSelectionData
       isValidStartDate: (date: LocalDate) => boolean
       showFormErrors: boolean
       onChange: SetStateCallback<Form.IncomeStatementForm>
-      readOnly: boolean
     },
     ref: React.ForwardedRef<HTMLDivElement>
   ) {
@@ -174,42 +172,32 @@ const ChildIncomeTimeRangeSelection = React.memo(
               {t.income.incomeType.startDate} *
             </Label>
             <Gap size="xs" />
-            {readOnly ? (
-              <span>{formData.startDate?.format() ?? '-'}</span>
-            ) : (
-              <DatePicker
-                id="start-date"
-                date={formData.startDate}
-                onChange={onStartDateChanged}
-                info={startDateInputInfo}
-                hideErrorsBeforeTouched={!showFormErrors}
-                locale={lang}
-                isInvalidDate={(d) =>
-                  isValidStartDate(d)
-                    ? null
-                    : t.validationErrors.unselectableDate
-                }
-                data-qa="start-date"
-                required={true}
-              />
-            )}
+            <DatePicker
+              id="start-date"
+              date={formData.startDate}
+              onChange={onStartDateChanged}
+              info={startDateInputInfo}
+              hideErrorsBeforeTouched={!showFormErrors}
+              locale={lang}
+              isInvalidDate={(d) =>
+                isValidStartDate(d) ? null : t.validationErrors.unselectableDate
+              }
+              data-qa="start-date"
+              required={true}
+            />
           </div>
           <div>
             <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
             <Gap size="xs" />
-            {readOnly ? (
-              <span>{formData.endDate?.format() ?? '-'}</span>
-            ) : (
-              <DatePicker
-                id="end-date"
-                date={formData.endDate}
-                onChange={onEndDateChanged}
-                minDate={formData.startDate ?? undefined}
-                hideErrorsBeforeTouched
-                locale={lang}
-                data-qa="end-date"
-              />
-            )}
+            <DatePicker
+              id="end-date"
+              date={formData.endDate}
+              onChange={onEndDateChanged}
+              minDate={formData.startDate ?? undefined}
+              hideErrorsBeforeTouched
+              locale={lang}
+              data-qa="end-date"
+            />
           </div>
         </FixedSpaceRow>
       </FixedSpaceColumn>
@@ -258,8 +246,6 @@ export default React.memo(
   ) {
     const t = useTranslation()
     const scrollTarget = useRef<HTMLDivElement>(null)
-
-    const limitedEditing = status !== 'DRAFT'
 
     const isValidStartDate = useCallback(
       (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date)),
@@ -313,7 +299,6 @@ export default React.memo(
               isValidStartDate={isValidStartDate}
               showFormErrors={showFormErrors}
               onChange={onChange}
-              readOnly={limitedEditing}
               ref={scrollTarget}
             />
             <Gap size="L" />

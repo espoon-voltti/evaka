@@ -114,6 +114,11 @@ export default React.memo(function IncomeStatementEditor() {
   return renderResult(
     combine(state, draftBody, validatedBody),
     ([{ status, formData, startDates }, draftBody, validatedBody]) => {
+      if (status !== 'DRAFT') {
+        navigateToList()
+        return null
+      }
+
       const save = (draft: boolean) => {
         const body = draft ? draftBody : validatedBody
         if (body) {

@@ -47,8 +47,9 @@ const HeadingContainer = styled.div`
   justify-content: space-between;
 `
 
-function getLink(id: IncomeStatementId, mode: 'view' | 'edit') {
-  return `/income/${id}/${mode === 'edit' ? 'edit' : ''}`
+function getLink({ id, status }: IncomeStatement) {
+  const suffix = status === 'DRAFT' ? 'edit' : ''
+  return `/income/${id}/${suffix}`
 }
 
 interface TableOrListProps {
@@ -77,7 +78,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
           <Tr key={item.id} data-qa="income-statement-row">
             <Td>
               <Link
-                to={getLink(item.id, 'view')}
+                to={getLink(item)}
                 data-qa={`button-open-income-statement-${item.id}`}
               >
                 {item.startDate.format()} - {item.endDate?.format()}
@@ -95,7 +96,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                   <Dimmed>{t.income.table.handled}</Dimmed>
                 ) : (
                   <>
-                    <Link to={getLink(item.id, 'edit')}>
+                    <Link to={getLink(item)}>
                       <Button
                         appearance="inline"
                         onClick={noop}
@@ -159,7 +160,7 @@ const IncomeStatementsList = React.memo(function IncomeStatementsList({
               {t.income.table.sentAt}:{' '}
               {item.sentAt?.toLocalDate()?.format() ?? '-'}
             </div>
-            <Link to={getLink(item.id, 'view')}>
+            <Link to={getLink(item)}>
               <Button
                 appearance="inline"
                 icon={faFile}
@@ -169,7 +170,7 @@ const IncomeStatementsList = React.memo(function IncomeStatementsList({
             </Link>
             {item.status !== 'HANDLED' && (
               <>
-                <Link to={getLink(item.id, 'edit')}>
+                <Link to={getLink(item)}>
                   <Button
                     appearance="inline"
                     icon={faPen}

@@ -389,8 +389,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
     }
 
     @Test
-    fun `create an income statement with an attachment`() {
-        val attachmentId = uploadAttachment()
+    fun `create an income statement with attachments`() {
+        val attachmentId1 =
+            uploadAttachment(attachmentType = IncomeStatementAttachmentType.PAYSLIP_GROSS)
+        val attachmentId2 = uploadAttachment(attachmentType = IncomeStatementAttachmentType.OTHER)
 
         createIncomeStatement(
             IncomeStatementBody.Income(
@@ -407,7 +409,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
-                attachmentIds = listOf(attachmentId),
+                attachmentIds = listOf(attachmentId1, attachmentId2),
             )
         )
 
@@ -438,7 +440,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     handledAt = null,
-                    attachments = listOf(idToAttachment(attachmentId)),
+                    attachments =
+                        listOf(
+                            idToAttachment(
+                                attachmentId1,
+                                IncomeStatementAttachmentType.PAYSLIP_GROSS,
+                            ),
+                            idToAttachment(attachmentId2, IncomeStatementAttachmentType.OTHER),
+                        ),
                 )
             ),
             incomeStatements,
@@ -711,9 +720,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
         )
 
         // attachments and otherInfo can be still updated after sending
-        val update2 =
-            update1.copy(otherInfo = "hello", attachmentIds = listOf(attachment1, attachment3))
-        updateIncomeStatement(id = original.id, body = update2, draft = false)
+        updateSentIncomeStatement(
+            id = original.id,
+            body =
+                IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody(
+                    otherInfo = "hello",
+                    attachmentIds = listOf(attachment1, attachment3),
+                ),
+        )
         getIncomeStatement(original.id).let {
             assertEquals("hello", (it as IncomeStatement.Income).otherInfo)
             assertEquals(
@@ -722,9 +736,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
             )
         }
 
-        // other fields cannot be updated after sending
-        val update3 = update2.copy(alimonyPayer = true)
-        assertThrows<BadRequest> {
+        // full update is not allowed after sending
+        val update3 = update1.copy(alimonyPayer = true)
+        assertThrows<Forbidden> {
             updateIncomeStatement(id = original.id, body = update3, draft = false)
         }
     }
@@ -740,6 +754,16 @@ class IncomeStatementControllerCitizenIntegrationTest :
         val id = getIncomeStatements().data.first().id
 
         markIncomeStatementHandled(id, employee.id, "foooooo")
+
+        assertThrows<Forbidden> {
+            updateSentIncomeStatement(
+                id,
+                IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody(
+                    otherInfo = "hello",
+                    attachmentIds = listOf(),
+                ),
+            )
+        }
 
         assertThrows<Forbidden> {
             updateIncomeStatement(
@@ -1007,6 +1031,19 @@ WHERE id = ${bind(id)}
             id,
             body,
             draft,
+        )
+    }
+
+    private fun updateSentIncomeStatement(
+        id: IncomeStatementId,
+        body: IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody,
+    ) {
+        incomeStatementControllerCitizen.updateSentIncomeStatement(
+            dbInstance(),
+            citizen,
+            clock,
+            id,
+            body,
         )
     }
 
