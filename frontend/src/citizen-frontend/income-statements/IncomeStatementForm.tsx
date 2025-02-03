@@ -20,6 +20,7 @@ import {
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { scrollToRef } from 'lib-common/utils/scrolling'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -37,7 +38,15 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { fontWeights, H1, H2, H3, Label, P } from 'lib-components/typography'
+import {
+  fontWeights,
+  H1,
+  H2,
+  H3,
+  H4,
+  Label,
+  P
+} from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
@@ -252,12 +261,37 @@ export default React.memo(
                   attachmentHandler={attachmentHandler}
                 />
               ) : (
-                <IncomeStatementUntypedAttachments
-                  incomeStatementId={incomeStatementId}
-                  requiredAttachments={requiredAttachments}
-                  attachments={formData.attachments}
-                  onChange={onAttachmentChange}
-                />
+                <ContentArea opaque paddingVertical="L">
+                  <FixedSpaceColumn spacing="zero">
+                    <H3 noMargin>{t.income.attachments.title}</H3>
+                    <Gap size="s" />
+                    <P noMargin>{t.income.attachments.description}</P>
+                    <Gap size="L" />
+                    {requiredAttachments.size > 0 && (
+                      <>
+                        <H4 noMargin>{t.income.attachments.required.title}</H4>
+                        <Gap size="s" />
+                        <UnorderedList data-qa="required-attachments">
+                          {[...requiredAttachments].map((attachmentType) => (
+                            <li key={attachmentType}>
+                              {
+                                t.income.attachments.attachmentNames[
+                                  attachmentType
+                                ]
+                              }
+                            </li>
+                          ))}
+                        </UnorderedList>
+                        <Gap size="L" />
+                      </>
+                    )}
+                    <IncomeStatementUntypedAttachments
+                      incomeStatementId={incomeStatementId}
+                      attachments={formData.attachments}
+                      onChange={onAttachmentChange}
+                    />
+                  </FixedSpaceColumn>
+                </ContentArea>
               )}
             </>
           )}

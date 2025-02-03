@@ -31,7 +31,7 @@ import FileUpload, {
   fileIcon,
   UploadHandler
 } from 'lib-components/molecules/FileUpload'
-import { H2, H3, H4, P } from 'lib-components/typography'
+import { H2, H3, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
@@ -236,17 +236,13 @@ export const IncomeStatementMissingAttachments = React.memo(
 export const IncomeStatementUntypedAttachments = React.memo(
   function IncomeStatementUntypedAttachments({
     incomeStatementId,
-    requiredAttachments,
     attachments,
     onChange
   }: {
     incomeStatementId: IncomeStatementId | undefined
-    requiredAttachments: Set<IncomeStatementAttachmentType>
     attachments: IncomeStatementAttachments
     onChange: SetStateCallback<IncomeStatementAttachments>
   }) {
-    const t = useTranslation()
-
     const onUploaded = useCallback(
       (attachment: Attachment) =>
         onChange((prev) =>
@@ -278,35 +274,13 @@ export const IncomeStatementUntypedAttachments = React.memo(
     if (attachments.typed) return null
 
     return (
-      <ContentArea opaque paddingVertical="L">
-        <FixedSpaceColumn spacing="zero">
-          <H3 noMargin>{t.income.attachments.title}</H3>
-          <Gap size="s" />
-          <P noMargin>{t.income.attachments.description}</P>
-          <Gap size="L" />
-          {requiredAttachments.size > 0 && (
-            <>
-              <H4 noMargin>{t.income.attachments.required.title}</H4>
-              <Gap size="s" />
-              <UnorderedList data-qa="required-attachments">
-                {[...requiredAttachments].map((attachmentType) => (
-                  <li key={attachmentType}>
-                    {t.income.attachments.attachmentNames[attachmentType]}
-                  </li>
-                ))}
-              </UnorderedList>
-              <Gap size="L" />
-            </>
-          )}
-          <FileUpload
-            files={attachments.untypedAttachments}
-            uploadHandler={incomeStatementAttachment(incomeStatementId, null)}
-            onUploaded={onUploaded}
-            onDeleted={onDeleted}
-            getDownloadUrl={getAttachmentUrl}
-          />
-        </FixedSpaceColumn>
-      </ContentArea>
+      <FileUpload
+        files={attachments.untypedAttachments}
+        uploadHandler={incomeStatementAttachment(incomeStatementId, null)}
+        onUploaded={onUploaded}
+        onDeleted={onDeleted}
+        getDownloadUrl={getAttachmentUrl}
+      />
     )
   }
 )
@@ -412,7 +386,6 @@ export const CitizenAttachmentsWithUpload = React.memo(
         {!incomeStatementAttachments.typed ? (
           <IncomeStatementUntypedAttachments
             incomeStatementId={incomeStatementId}
-            requiredAttachments={new Set()}
             attachments={incomeStatementAttachments}
             onChange={onChange}
           />
