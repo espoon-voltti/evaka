@@ -15,7 +15,7 @@ dependencies {
         api("ch.qos.logback:logback-core:1.5.15")
 
         api("com.auth0:java-jwt:4.4.0")
-        api("com.github.kagkarlsson:db-scheduler:15.1.1")
+        api("com.github.kagkarlsson:db-scheduler:15.2.0")
         api(libs.fuel)
         api(libs.fuel.jackson)
         api("com.google.guava:guava:33.4.0-jre")
