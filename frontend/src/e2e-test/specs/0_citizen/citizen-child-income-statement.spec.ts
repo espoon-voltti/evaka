@@ -15,21 +15,18 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  resetServiceState
+  resetServiceState,
+  updateIncomeStatementHandled
+  // updateIncomeStatementHandled
 } from '../../generated/api-clients'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { envs, Page } from '../../utils/page'
+import { envs, Page, testFileName } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let header: CitizenHeader
-let child1ISList: CitizenChildIncomeStatementListPage
-
-const testFileName1 = 'test_file.png'
-const testFilePath1 = `src/e2e-test/assets/${testFileName1}`
-const testFileName2 = 'test_file.jpg'
-const testFilePath2 = `src/e2e-test/assets/${testFileName2}`
+let listPage: CitizenChildIncomeStatementListPage
 
 describe.each(envs)('Child Income statements (%s)', (env) => {
   beforeEach(async () => {
@@ -69,73 +66,75 @@ describe.each(envs)('Child Income statements (%s)', (env) => {
     })
     await enduserLogin(page, testAdult)
     header = new CitizenHeader(page, env)
-    child1ISList = new CitizenChildIncomeStatementListPage(page, 0, env)
+    listPage = new CitizenChildIncomeStatementListPage(page, 0, env)
   })
 
   test('Shows a warning of missing income statement', async () => {
     await header.selectTab('income')
-    await child1ISList.assertChildName(
+    await listPage.assertChildName(
       'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
     )
-    await child1ISList.assertIncomeStatementMissingWarningIsShown()
+    await listPage.assertIncomeStatementMissingWarningIsShown()
   })
 
-  test('Create child income statement, edit, view and delete it', async () => {
+  test('Create child income statement, edit, send, edit again and delete', async () => {
     // Create
     await header.selectTab('income')
-    await child1ISList.assertChildCount(1)
+    await listPage.assertChildCount(1)
 
-    const editPage = await child1ISList.createIncomeStatement()
+    const editPage = await listPage.createIncomeStatement()
     await editPage.setValidFromDate('01.02.2034')
-    await editPage.uploadAttachment(testFilePath1, testFileName1)
-    await editPage.saveDraft()
-    await child1ISList.assertChildIncomeStatementRowCount(1)
+    await editPage.attachments.uploadTestFile()
+    await editPage.saveDraftButton.click()
+    await listPage.assertChildIncomeStatementRowCount(1)
 
     // Edit draft
-    await child1ISList.clickEditChildIncomeStatement(0)
+    await listPage.editChildDraftIncomeStatement(0)
     await editPage.setValidFromDate('01.03.2034')
-    await editPage.uploadAttachment(testFilePath2, testFileName2)
-    await editPage.fillOtherInfo('foo bar baz')
-    await editPage.selectAssure()
-    await editPage.save()
-    await child1ISList.assertChildIncomeStatementRowCount(1)
+    await editPage.attachments.uploadTestFile()
+    await editPage.otherInfoInput.fill('foo bar baz')
+    await editPage.assure.check()
+    await editPage.sendButton.click()
+    await listPage.assertChildIncomeStatementRowCount(1)
 
     // Edit sent
-    await child1ISList.clickEditChildIncomeStatement(0)
-    await editPage.fillOtherInfo('foo bar baz and more')
-    await editPage.selectAssure()
-    await editPage.save()
-    await child1ISList.assertChildIncomeStatementRowCount(1)
-
-    // View
-    const viewPage = await child1ISList.clickViewChildIncomeStatement(0)
-    await viewPage.waitUntilReady()
-    await viewPage.assertOtherInfo('foo bar baz and more')
-    await viewPage.assertAttachmentExists(testFileName1)
-    await viewPage.assertAttachmentExists(testFileName2)
-    await viewPage.clickGoBack()
+    const editSentPage = await listPage.editChildSentIncomeStatement(0)
+    await editSentPage.otherInfoInput.fill('foo bar baz and more')
+    await editPage.sendButton.click()
+    await listPage.assertChildIncomeStatementRowCount(1)
 
     // Delete
-    await child1ISList.deleteChildIncomeStatement(0)
-    await child1ISList.assertIncomeStatementMissingWarningIsShown()
+    await listPage.deleteChildIncomeStatement(0)
+    await listPage.assertIncomeStatementMissingWarningIsShown()
   })
 
-  test('Save a highest fee income statement as draft, then update and send', async () => {
-    // Create
+  test('Create child income statement, mark as handled, and view', async () => {
     await header.selectTab('income')
-    await child1ISList.assertChildCount(1)
+    await listPage.assertChildCount(1)
 
-    const editPage = await child1ISList.createIncomeStatement()
-    await editPage.setValidFromDate('01.02.2034')
-    await editPage.fillOtherInfo('foo bar baz')
-    await editPage.saveDraft()
-    await child1ISList.assertChildIncomeStatementRowCount(1)
+    const editPage = await listPage.createIncomeStatement()
+    await editPage.setValidFromDate('01.03.2034')
+    await editPage.attachments.uploadTestFile()
+    await editPage.otherInfoInput.fill('foo bar baz')
+    await editPage.assure.check()
+    await editPage.sendButton.click()
+    await listPage.assertChildIncomeStatementRowCount(1)
 
-    // Edit and sent
-    await child1ISList.clickEditChildIncomeStatement(0)
-    await editPage.uploadAttachment(testFilePath1, testFileName1)
-    await editPage.selectAssure()
-    await editPage.save()
-    await child1ISList.assertChildIncomeStatementRowCount(1)
+    // Mark as handled
+    const incomeStatementId = await listPage.incomeStatementId(0)
+    const employee = await Fixture.employee().save()
+    await updateIncomeStatementHandled({
+      body: {
+        incomeStatementId,
+        employeeId: employee.id,
+        note: '',
+        handled: true
+      }
+    })
+
+    // View
+    const viewPage = await listPage.viewChildHandledIncomeStatement(0)
+    await viewPage.otherInfo.assertTextEquals('foo bar baz')
+    await viewPage.assertAttachmentExists('CHILD_INCOME', testFileName)
   })
 })

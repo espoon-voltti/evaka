@@ -90,12 +90,14 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
       <Row
         label={t.income.view.otherInfo}
         value={editable ? '' : incomeStatement.otherInfo || '-'}
+        data-qa={editable ? undefined : 'other-info'}
       />
       {editable && (
         <InputField
           value={otherInfo}
           onChange={setOtherInfo}
           placeholder={t.common.write}
+          data-qa="other-info"
         />
       )}
       <HorizontalLine />
@@ -132,6 +134,7 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
                 }
               })}
               onSuccess={() => navigate('/income')}
+              data-qa="save-btn"
             />
           </FixedSpaceRow>
         </>

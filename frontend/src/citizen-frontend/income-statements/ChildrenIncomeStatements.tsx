@@ -45,7 +45,7 @@ import { OverlayContext } from '../overlay/state'
 
 import {
   childIncomeStatementsQuery,
-  deleteIncomeStatementMutation
+  deleteChildIncomeStatementMutation
 } from './queries'
 
 const HeadingContainer = styled.div`
@@ -120,7 +120,7 @@ const ChildIncomeStatementsTable = React.memo(
                               : t.income.table.actions.addDetails
                           }
                           onClick={noop}
-                          data-qa="edit-income-statement"
+                          data-qa={`edit-income-statement-${item.status}`}
                         />
                       </Link>
                       <Button
@@ -178,13 +178,12 @@ const ChildIncomeStatementsList = React.memo(
                 {t.income.table.sentAt}:{' '}
                 {item.sentAt?.toLocalDate()?.format() ?? '-'}
               </div>
-              <Link to={getLink(childId, item)}>
+              <Link to={getLink(childId, item)} data-qa="view-income-statement">
                 <Button
                   appearance="inline"
                   icon={faFile}
                   text={t.income.table.actions.view}
                   onClick={noop}
-                  data-qa="view-income-statement"
                 />
               </Link>
               {item.status !== 'HANDLED' && (
@@ -199,7 +198,7 @@ const ChildIncomeStatementsList = React.memo(
                           : t.income.table.actions.addDetails
                       }
                       onClick={noop}
-                      data-qa="edit-income-statement"
+                      data-qa={`edit-income-statement-${item.status}`}
                     />
                   </Link>
                   <Button
@@ -243,13 +242,13 @@ const ChildIncomeStatements = React.memo(function ChildIncomeStatements({
   })
 
   const { mutateAsync: deleteIncomeStatement } = useMutation(
-    deleteIncomeStatementMutation
+    deleteChildIncomeStatementMutation
   )
 
   const onDelete = useCallback(
     (id: IncomeStatementId) => {
       setDeletionState({ status: 'deleting', rowToDelete: id })
-      deleteIncomeStatement({ id })
+      deleteIncomeStatement({ childId, id })
         .then(() => {
           setDeletionState({ status: 'row-not-selected' })
         })
@@ -261,7 +260,7 @@ const ChildIncomeStatements = React.memo(function ChildIncomeStatements({
           })
         })
     },
-    [deleteIncomeStatement, setErrorMessage, t]
+    [deleteIncomeStatement, childId, setErrorMessage, t]
   )
 
   return (

@@ -8,7 +8,7 @@ import { testAdult, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { waitUntilEqual } from '../../utils'
 import { envs, EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -36,18 +36,6 @@ async function assertIncomeStatementCreated(
     )
   )
 }
-
-const assertRequiredAttachment = async (attachment: string, present = true) =>
-  waitUntilTrue(async () =>
-    present
-      ? (await incomeStatementsPage.requiredAttachments.text).includes(
-          attachment
-        )
-      : !(await incomeStatementsPage.requiredAttachments.visible) ||
-        !(await incomeStatementsPage.requiredAttachments.text).includes(
-          attachment
-        )
-  )
 
 describe.each(envs)('Income statements', (env) => {
   const startDate = '24.12.2044'
@@ -138,24 +126,28 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.toggleEntrepreneurStartupGrant(false)
       await incomeStatementsPage.toggleEntrepreneurCheckupConsent(false)
 
-      await assertRequiredAttachment(
-        'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
-        false
-      )
       await incomeStatementsPage.toggleLimitedLiabilityCompany(true)
-      await assertRequiredAttachment(
-        'Kirjanpitäjän selvitys luontoiseduista ja osingoista'
+      await incomeStatementsPage.assertMissingAttachment(
+        'ACCOUNTANT_REPORT_LLC'
       )
 
-      await assertRequiredAttachment('Viimeisin palkkakuitti', false)
       await incomeStatementsPage.toggleLlcType('attachments')
-      await assertRequiredAttachment('Viimeisin palkkakuitti')
+      await incomeStatementsPage.assertMissingAttachment('PAYSLIP_LLC')
       await incomeStatementsPage.toggleLlcType('incomes-register')
-      await assertRequiredAttachment('Viimeisin palkkakuitti', false)
 
       await incomeStatementsPage.fillAccountant()
 
       await incomeStatementsPage.checkAssured()
+
+      // Try to submit without attachments
+      await incomeStatementsPage.submit()
+      await incomeStatementsPage.invalidForm.waitUntilVisible()
+
+      // Add the missing attachment
+      await incomeStatementsPage
+        .attachmentInput('ACCOUNTANT_REPORT_LLC')
+        .uploadTestFile()
+
       await incomeStatementsPage.submit()
 
       await assertIncomeStatementCreated(startDate, now, env)
@@ -175,22 +167,24 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
       await incomeStatementsPage.toggleEntrepreneurStartupGrant(true)
-      await assertRequiredAttachment('Starttirahapäätös')
+      await incomeStatementsPage.assertMissingAttachment('STARTUP_GRANT')
 
       await incomeStatementsPage.toggleEntrepreneurCheckupConsent(true)
 
-      await assertRequiredAttachment('Tuloslaskelma ja tase', false)
       await incomeStatementsPage.toggleSelfEmployed(true)
-      await assertRequiredAttachment('Tuloslaskelma ja tase')
-
-      await incomeStatementsPage.toggleSelfEmployedEstimatedIncome(true)
-      await assertRequiredAttachment('Tuloslaskelma ja tase', false)
-      await incomeStatementsPage.toggleSelfEmployedEstimatedIncome(false)
-
       await incomeStatementsPage.toggleSelfEmployedAttachments(true)
-      await assertRequiredAttachment('Tuloslaskelma ja tase')
+      await incomeStatementsPage.assertMissingAttachment(
+        'PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED'
+      )
 
       await incomeStatementsPage.fillAccountant()
+
+      await incomeStatementsPage
+        .attachmentInput('STARTUP_GRANT')
+        .uploadTestFile()
+      await incomeStatementsPage
+        .attachmentInput('PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED')
+        .uploadTestFile()
 
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
@@ -212,19 +206,21 @@ describe.each(envs)('Income statements', (env) => {
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
-      await assertRequiredAttachment(
-        'Maksutositteet palkoista ja työkorvauksista',
-        false
-      )
       await incomeStatementsPage.toggleLightEntrepreneur(true)
-      await assertRequiredAttachment(
-        'Maksutositteet palkoista ja työkorvauksista'
-      )
+      await incomeStatementsPage.assertMissingAttachment('SALARY')
 
       await incomeStatementsPage.toggleStudent(true)
-      await assertRequiredAttachment('Opiskelutodistus')
+      await incomeStatementsPage.assertMissingAttachment('PROOF_OF_STUDIES')
       await incomeStatementsPage.toggleAlimonyPayer(true)
-      await assertRequiredAttachment('Maksutosite elatusmaksuista')
+      await incomeStatementsPage.assertMissingAttachment('ALIMONY_PAYOUT')
+
+      await incomeStatementsPage.attachmentInput('SALARY').uploadTestFile()
+      await incomeStatementsPage
+        .attachmentInput('PROOF_OF_STUDIES')
+        .uploadTestFile()
+      await incomeStatementsPage
+        .attachmentInput('ALIMONY_PAYOUT')
+        .uploadTestFile()
 
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
@@ -247,11 +243,20 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.selectEntrepreneurSpouse('yes')
 
       await incomeStatementsPage.togglePartnership(true)
-      await assertRequiredAttachment('Tuloslaskelma ja tase')
-      await assertRequiredAttachment(
-        'Kirjanpitäjän selvitys palkasta ja luontoiseduista'
+      await incomeStatementsPage.assertMissingAttachment(
+        'PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP'
+      )
+      await incomeStatementsPage.assertMissingAttachment(
+        'ACCOUNTANT_REPORT_PARTNERSHIP'
       )
       await incomeStatementsPage.fillAccountant()
+
+      await incomeStatementsPage
+        .attachmentInput('PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP')
+        .uploadTestFile()
+      await incomeStatementsPage
+        .attachmentInput('ACCOUNTANT_REPORT_PARTNERSHIP')
+        .uploadTestFile()
 
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()

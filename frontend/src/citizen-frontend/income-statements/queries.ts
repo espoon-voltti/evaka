@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
@@ -69,3 +70,10 @@ export const createChildIncomeStatementMutation = q.mutation(
   createChildIncomeStatement,
   [({ childId }) => childIncomeStatementsQuery.prefix(childId)]
 )
+
+export const deleteChildIncomeStatementMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(deleteIncomeStatement, [
+  incomeStatementsQuery.prefix,
+  ({ childId }) => childIncomeStatementsQuery.prefix(childId)
+])

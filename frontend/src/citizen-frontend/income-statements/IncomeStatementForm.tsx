@@ -413,7 +413,11 @@ const IncomeTypeSelection = React.memo(
           <Gap size="s" />
           {showFormErrors && (
             <>
-              <AlertBox noMargin message={t.income.errors.invalidForm} />
+              <AlertBox
+                noMargin
+                message={t.income.errors.invalidForm}
+                data-qa="invalid-form"
+              />
               <Gap size="s" />
             </>
           )}

@@ -120,6 +120,7 @@ import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { StaffAttendancePlanId } from './api-types'
 import { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
+import { UpdateIncomeStatementHandledBody } from './api-types'
 import { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
 import { VoucherValueDecision } from './api-types'
 import { VtjPersonSummary } from './api-types'
@@ -2471,6 +2472,29 @@ export async function terminatePlacement(
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
       data: request.body satisfies JsonCompatible<DevTerminatePlacementRequest>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.updateIncomeStatementHandled
+*/
+export async function updateIncomeStatementHandled(
+  request: {
+    body: UpdateIncomeStatementHandledBody
+  },
+  options?: { mockedTime?: HelsinkiDateTime }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/income-statement/update-handled`.toString(),
+      method: 'POST',
+      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
+      data: request.body satisfies JsonCompatible<UpdateIncomeStatementHandledBody>
     })
     return json
   } catch (e) {

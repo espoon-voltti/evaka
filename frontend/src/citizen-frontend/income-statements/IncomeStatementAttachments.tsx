@@ -199,10 +199,13 @@ export const IncomeStatementMissingAttachments = React.memo(
       <ContentArea opaque paddingVertical="L">
         <H3>{t.income.attachments.missingAttachments}</H3>
         {missingAttachments.length > 0 ? (
-          <UnorderedList>
+          <UnorderedList data-qa="missing-attachments">
             {missingAttachments.map((attachmentType) => {
               return (
-                <li key={attachmentType}>
+                <li
+                  key={attachmentType}
+                  data-qa={`attachment-${attachmentType}`}
+                >
                   <Button
                     appearance="link"
                     onClick={() => {
@@ -337,7 +340,10 @@ export const CitizenAttachments = React.memo(function CitizenAttachments({
                 incomeStatementAttachments.attachmentsByType[attachmentType]
               if (!attachments?.length) return []
               return (
-                <Tr key={attachmentType}>
+                <Tr
+                  key={attachmentType}
+                  data-qa={`attachments-${attachmentType}`}
+                >
                   <Td>
                     {t.income.attachments.attachmentNames[attachmentType]}
                   </Td>
@@ -364,7 +370,11 @@ const UploadedFiles = React.memo(function UploadedFiles({
       {files.map((file) => (
         <div key={file.id}>
           <FileIcon icon={fileIcon(file)} />
-          <FileDownloadButton file={file} getFileUrl={getAttachmentUrl} />{' '}
+          <FileDownloadButton
+            file={file}
+            getFileUrl={getAttachmentUrl}
+            data-qa={`file-${file.name}`}
+          />
         </div>
       ))}
     </FixedSpaceColumn>
