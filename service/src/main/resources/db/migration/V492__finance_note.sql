@@ -1,12 +1,12 @@
 CREATE TABLE finance_note
 (
     id          UUID PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
-    person_id   UUID REFERENCES person NOT NULL,
+    person_id   UUID                     NOT NULL REFERENCES person ON DELETE CASCADE,
     content     TEXT,
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_by  UUID REFERENCES evaka_user NOT NULL,
+    created_by  UUID                     NOT NULL REFERENCES evaka_user,
     modified_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    modified_by UUID REFERENCES evaka_user NOT NULL,
+    modified_by UUID                     NOT NULL REFERENCES evaka_user,
     updated_at  TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
