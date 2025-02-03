@@ -118,7 +118,7 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
     multiSelectDeparture: false,
-    weakLogin: false,
+    weakLogin: true,
     employeeSfiLogin: true
   }
 }
