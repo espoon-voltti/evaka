@@ -119,7 +119,7 @@ const features: Features = {
     serviceApplications: false,
     multiSelectDeparture: false,
     weakLogin: false,
-    employeeSfiLogin: false
+    employeeSfiLogin: true
   }
 }
 
