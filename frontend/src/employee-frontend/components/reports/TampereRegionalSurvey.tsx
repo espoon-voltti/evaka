@@ -51,7 +51,7 @@ interface ReportSelection {
 const emptyReportSelection = {
   monthlyStatistics: false,
   ageStatistics: false,
-  yearlyStatistics: false,
+  yearlyStatistics: false
 }
 
 const emptyMonthlyValue: RegionalSurveyReportResult = {
@@ -345,7 +345,8 @@ export default React.memo(function TampereRegionalSurveyReport() {
                       key: 'club5YearOldCount'
                     },
                     {
-                      label: t.yearlyStatisticsColumns.preschoolDaycareUnitCareCount,
+                      label:
+                        t.yearlyStatisticsColumns.preschoolDaycareUnitCareCount,
                       key: 'preschoolDaycareUnitCareCount'
                     },
                     {
@@ -353,20 +354,38 @@ export default React.memo(function TampereRegionalSurveyReport() {
                       key: 'preschoolDaycareFamilyCareCount'
                     },
                     {
-                      label: t.yearlyStatisticsColumns.generalAssistanceCount,
-                      key: 'generalAssistanceCount'
+                      label:
+                        t.yearlyStatisticsColumns.voucherGeneralAssistanceCount,
+                      key: 'voucherGeneralAssistanceCount'
+                    },
+                    {
+                      label:
+                        t.yearlyStatisticsColumns.voucherSpecialAssistanceCount,
+                      key: 'voucherSpecialAssistanceCount'
                     },
                     {
                       label:
                         t.yearlyStatisticsColumns
-                          .specialAssistanceCount,
-                      key: 'specialAssistanceCount'
+                          .voucherEnhancedAssistanceCount,
+                      key: 'voucherEnhancedAssistanceCount'
                     },
                     {
                       label:
                         t.yearlyStatisticsColumns
-                          .enhancedAssistanceCount,
-                      key: 'enhancedAssistanceCount'
+                          .municipalGeneralAssistanceCount,
+                      key: 'municipalGeneralAssistanceCount'
+                    },
+                    {
+                      label:
+                        t.yearlyStatisticsColumns
+                          .municipalSpecialAssistanceCount,
+                      key: 'municipalSpecialAssistanceCount'
+                    },
+                    {
+                      label:
+                        t.yearlyStatisticsColumns
+                          .municipalEnhancedAssistanceCount,
+                      key: 'municipalEnhancedAssistanceCount'
                     }
                   ]}
                   filename={`${t.reportLabel} ${selectedYear} - ${t.yearlyStatisticsReport}.csv`}

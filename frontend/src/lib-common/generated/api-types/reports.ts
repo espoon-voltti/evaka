@@ -1166,16 +1166,19 @@ export type VoucherReportRowType =
 */
 export interface YearlyStatisticsResult {
   club5YearOldCount: number
-  enhancedAssistanceCount: number
   familyCare5YearOldCount: number
-  generalAssistanceCount: number
   municipal5YearOldCount: number
+  municipalEnhancedAssistanceCount: number
+  municipalGeneralAssistanceCount: number
+  municipalSpecialAssistanceCount: number
   preschoolDaycareFamilyCareCount: number
   preschoolDaycareUnitCareCount: number
   purchased5YearOldCount: number
-  specialAssistanceCount: number
   voucher5YearOldCount: number
   voucherAssistanceCount: number
+  voucherEnhancedAssistanceCount: number
+  voucherGeneralAssistanceCount: number
+  voucherSpecialAssistanceCount: number
   voucherTotalCount: number
 }
 

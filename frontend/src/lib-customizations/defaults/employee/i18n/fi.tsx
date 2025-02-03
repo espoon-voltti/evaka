@@ -4369,11 +4369,22 @@ export const fi = {
         municipal5YearOldCount: '5-vuotiaat kunnallisissa yksiköissä',
         familyCare5YearOldCount: '5-vuotiaat perhepäivähoidossa',
         club5YearOldCount: '5-vuotiaat kerhossa',
-        preschoolDaycareUnitCareCount: 'Täydentävän varhaiskasvatuksen lapset yksiköissä',
-        preschoolFamilyCareCount: 'Täydentävän varhaiskasvatuksen lapset perhepäivähoidossa',
-        generalAssistanceCount: 'Yleisen tuen lapsimäärä',
-        specialAssistanceCount: 'Erityisen tuen lapsimäärä',
-        enhancedAssistanceCount: 'Tehostetun tuen lapsimäärä',
+        preschoolDaycareUnitCareCount:
+          'Täydentävän varhaiskasvatuksen lapset yksiköissä',
+        preschoolFamilyCareCount:
+          'Täydentävän varhaiskasvatuksen lapset perhepäivähoidossa',
+        voucherGeneralAssistanceCount:
+          'Yleisen tuen lapsimäärä (palveluseteli)',
+        voucherSpecialAssistanceCount:
+          'Erityisen tuen lapsimäärä (palveluseteli)',
+        voucherEnhancedAssistanceCount:
+          'Tehostetun tuen lapsimäärä (palveluseteli)',
+        municipalGeneralAssistanceCount:
+          'Yleisen tuen lapsimäärä (kunnallinen)',
+        municipalSpecialAssistanceCount:
+          'Erityisen tuen lapsimäärä (kunnallinen)',
+        municipalEnhancedAssistanceCount:
+          'Tehostetun tuen lapsimäärä (kunnallinen)'
       }
     }
   },

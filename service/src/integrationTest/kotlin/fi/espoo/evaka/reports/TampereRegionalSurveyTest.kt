@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
@@ -976,6 +977,266 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         // Bertil (action 40) + Cecil (action 10) + Aapo (factor)
         assertEquals(3, results.yearlyStatistics.first().voucherAssistanceCount)
+    }
+
+    @Test
+    fun `Municipal assistance level counts are correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        val defaultPlacementDuration =
+            FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1))
+
+        val childTestData =
+            initTestPlacementData(
+                start = octFirst,
+                daycareId = testUnitData[0],
+                defaultPlacementDuration = defaultPlacementDuration,
+                baseAge = 5,
+            )
+
+        db.transaction { tx ->
+            // add daycare assistance periods that should show up for Aapo, Bertil and Ville
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = childTestData[0].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.GENERAL_SUPPORT_WITH_DECISION,
+                )
+            )
+
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = childTestData[1].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.INTENSIFIED_SUPPORT,
+                )
+            )
+
+            tx.insert(
+                DevPlacement(
+                    childId = childTestData[3].first.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                    unitId = testUnitData[0],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = childTestData[3].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
+                )
+            )
+
+            // add a daycare assistance period that should not show up for family care Fabio
+            tx.insert(
+                DevPlacement(
+                    childId = childTestData[4].first.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testUnitData[2],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = childTestData[4].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
+                )
+            )
+
+            // add a voucher daycare assistance period that should not show up
+            val testChildKaarina =
+                DevPerson(
+                    dateOfBirth = startDate.minusYears(2),
+                    firstName = "Kaarina",
+                    lastName = "Kunnallinen",
+                    language = "fi",
+                )
+
+            tx.insert(testChildKaarina, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildKaarina.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testUnitData[3],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = testChildKaarina.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
+                )
+            )
+        }
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Aapo (GENERAL), Bertil (INTENSIFIED), Ville (SPECIAL)
+        assertEquals(1, results.yearlyStatistics.first().municipalGeneralAssistanceCount)
+        assertEquals(1, results.yearlyStatistics.first().municipalSpecialAssistanceCount)
+        assertEquals(1, results.yearlyStatistics.first().municipalEnhancedAssistanceCount)
+    }
+
+    @Test
+    fun `Voucher assistance level counts are correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val testUnitData = initTestUnitData(octFirst)
+        val defaultPlacementDuration =
+            FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1))
+
+        val childTestData =
+            initTestPlacementData(
+                start = octFirst,
+                daycareId = testUnitData[3],
+                defaultPlacementDuration = defaultPlacementDuration,
+                baseAge = 5,
+            )
+
+        db.transaction { tx ->
+            // add daycare assistance periods that should show up for Aapo, Bertil and Ville
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = childTestData[0].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.GENERAL_SUPPORT_WITH_DECISION,
+                )
+            )
+
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = childTestData[1].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.INTENSIFIED_SUPPORT,
+                )
+            )
+
+            tx.insert(
+                DevPlacement(
+                    childId = childTestData[3].first.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                    unitId = testUnitData[3],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = childTestData[3].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
+                )
+            )
+
+            // add a daycare assistance period that should not show up for family care Fabio
+            tx.insert(
+                DevPlacement(
+                    childId = childTestData[4].first.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testUnitData[2],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = childTestData[4].first.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
+                )
+            )
+
+            // add a municipal daycare assistance period that should not show up
+            val testChildKaarina =
+                DevPerson(
+                    dateOfBirth = startDate.minusYears(2),
+                    firstName = "Kaarina",
+                    lastName = "Kunnallinen",
+                    language = "fi",
+                )
+
+            tx.insert(testChildKaarina, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildKaarina.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testUnitData[0],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = testChildKaarina.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
+                )
+            )
+        }
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        // Aapo (GENERAL), Bertil (INTENSIFIED), Ville (SPECIAL)
+        assertEquals(1, results.yearlyStatistics.first().voucherGeneralAssistanceCount)
+        assertEquals(1, results.yearlyStatistics.first().voucherSpecialAssistanceCount)
+        assertEquals(1, results.yearlyStatistics.first().voucherEnhancedAssistanceCount)
     }
 
     private fun initTestUnitData(monday: LocalDate): List<DaycareId> {
