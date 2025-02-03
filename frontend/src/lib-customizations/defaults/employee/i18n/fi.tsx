@@ -2163,6 +2163,7 @@ export const fi = {
       role: 'Rooli',
       name: 'Nimi',
       email: 'Sähköpostiosoite',
+      aclEndDate: 'Luvitus päättyy',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
       addDaycareAclModal: {

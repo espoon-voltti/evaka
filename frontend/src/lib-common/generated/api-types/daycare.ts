@@ -46,6 +46,7 @@ import { deserializeJsonUnitBackupCare } from './backupcare'
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.AclUpdate
 */
 export interface AclUpdate {
+  endDate: LocalDate | null
   groupIds: GroupId[] | null
   hasStaffOccupancyEffect: boolean | null
 }
@@ -570,6 +571,14 @@ export interface VisitingAddress {
 }
 
 
+export function deserializeJsonAclUpdate(json: JsonOf<AclUpdate>): AclUpdate {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
+  }
+}
+
+
 export function deserializeJsonCaretakerAmount(json: JsonOf<CaretakerAmount>): CaretakerAmount {
   return {
     ...json,
@@ -701,6 +710,14 @@ export function deserializeJsonDaycareResponse(json: JsonOf<DaycareResponse>): D
     daycare: deserializeJsonDaycare(json.daycare),
     groups: json.groups.map(e => deserializeJsonDaycareGroupResponse(e)),
     lastPlacementDate: (json.lastPlacementDate != null) ? LocalDate.parseIso(json.lastPlacementDate) : null
+  }
+}
+
+
+export function deserializeJsonFullAclInfo(json: JsonOf<FullAclInfo>): FullAclInfo {
+  return {
+    ...json,
+    update: deserializeJsonAclUpdate(json.update)
   }
 }
 

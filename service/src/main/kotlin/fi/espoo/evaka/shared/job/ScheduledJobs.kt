@@ -17,6 +17,7 @@ import fi.espoo.evaka.assistanceneed.vouchercoefficient.endOutdatedAssistanceNee
 import fi.espoo.evaka.attachment.AttachmentService
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
+import fi.espoo.evaka.daycare.controllers.removeDaycareAclForRole
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
@@ -32,9 +33,12 @@ import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.sficlient.SfiMessagesClient
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.PasswordBlacklist
+import fi.espoo.evaka.shared.auth.getEndedDaycareAclRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -230,6 +234,10 @@ enum class ScheduledJob(
         ScheduledJobs::importPasswordBlacklists,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 20))),
     ),
+    DeleteEndedAcl(
+        ScheduledJobs::deleteEndedAcl,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 5))),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -255,6 +263,7 @@ class ScheduledJobs(
     private val jamixService: JamixService,
     private val sfiMessagesClient: SfiMessagesClient?,
     private val passwordBlacklist: PasswordBlacklist,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -499,5 +508,19 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     fun importPasswordBlacklists(db: Database.Connection, clock: EvakaClock) =
         evakaEnv.passwordBlacklistDirectory?.let { directory ->
             passwordBlacklist.importBlacklists(db, Path.of(directory))
+        }
+
+    fun deleteEndedAcl(db: Database.Connection, clock: EvakaClock) =
+        db.transaction { tx ->
+            tx.getEndedDaycareAclRows(clock.today()).forEach {
+                removeDaycareAclForRole(
+                    tx,
+                    asyncJobRunner,
+                    clock.now(),
+                    it.daycareId,
+                    it.employeeId,
+                    it.role,
+                )
+            }
         }
 }

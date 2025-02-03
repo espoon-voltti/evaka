@@ -175,6 +175,7 @@ function AclRow({
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}
+      <Td>{row.endDate?.format()}</Td>
       <Td>
         <FixedSpaceRow justifyContent="flex-end">
           {isEditable && (
@@ -288,6 +289,7 @@ function AclTable({
           <Th>{i18n.unit.accessControl.role}</Th>
           <Th>{i18n.common.form.name}</Th>
           {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
+          <Th>{i18n.unit.accessControl.aclEndDate}</Th>
           <ActionsTh />
         </Tr>
       </Thead>

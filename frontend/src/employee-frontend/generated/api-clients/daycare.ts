@@ -54,6 +54,7 @@ import { deserializeJsonCaretakersResponse } from 'lib-common/generated/api-type
 import { deserializeJsonChildResponse } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonClubTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonDaycare } from 'lib-common/generated/api-types/daycare'
+import { deserializeJsonDaycareAclRow } from 'lib-common/generated/api-types/shared'
 import { deserializeJsonDaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonDaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
@@ -853,7 +854,7 @@ export async function getDaycareAcl(
     url: uri`/employee/daycares/${request.unitId}/acl`.toString(),
     method: 'GET'
   })
-  return json
+  return json.map(e => deserializeJsonDaycareAclRow(e))
 }
 
 
