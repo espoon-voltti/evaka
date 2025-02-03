@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -150,6 +151,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     data class UpsertEmployeeDaycareRolesRequest(
         val daycareIds: List<DaycareId>,
         val role: UserRole,
+        val endDate: LocalDate?,
     ) {
         init {
             if (!role.isUnitScopedRole()) {
@@ -169,6 +171,9 @@ class EmployeeController(private val accessControl: AccessControl) {
         if (body.daycareIds.isEmpty()) {
             throw BadRequest("No daycare IDs provided")
         }
+        if (body.endDate != null && body.endDate.isBefore(clock.today())) {
+            throw BadRequest("End date cannot be in the past")
+        }
 
         db.connect { dbc ->
             dbc.transaction {
@@ -180,7 +185,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     id,
                 )
 
-                it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role)
+                it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role, body.endDate)
                 it.upsertEmployeeMessageAccount(id)
             }
         }

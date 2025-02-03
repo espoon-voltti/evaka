@@ -4710,6 +4710,7 @@ export const fi = {
         title: 'Luvitukset',
         unit: 'Yksikkö',
         role: 'Rooli yksikössä',
+        endDate: 'Luvitus päättyy',
         deleteConfirm: 'Haluatko poistaa käyttäjän luvituksen?',
         deleteAll: 'Poista kaikki luvitukset',
         deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?',
