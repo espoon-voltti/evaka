@@ -2125,7 +2125,8 @@ const sv: Translations = {
         minSymbols: (v: number) =>
           `${v} eller ${v > 1 ? 'flera specialtecken' : 'fler specialtecken'}`
       },
-      unacceptablePassword: 'Lösenordet är för lätt att gissa'
+      unacceptablePassword: 'Lösenordet är för lätt att gissa',
+      usernameConflict: 'Användarnamnet är redan i bruk'
     },
     notificationsSection: {
       title: 'E-postmeddelanden',

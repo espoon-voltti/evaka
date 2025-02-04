@@ -249,6 +249,7 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
   )
 
   const [isUnacceptable, setUnacceptable] = useState<boolean>(false)
+  const [isUsernameConflict, setUsernameConflict] = useState<boolean>(false)
 
   const form = useForm(
     passwordForm,
@@ -273,6 +274,7 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
   const onFailure = useCallback(
     (failure: Failure<unknown>) => {
       setUnacceptable(failure.errorCode === 'PASSWORD_UNACCEPTABLE')
+      setUsernameConflict(failure.statusCode === 409)
     },
     [setUnacceptable]
   )
@@ -295,7 +297,7 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
       rejectAction={onCancel}
       onFailure={onFailure}
       onSuccess={onSuccess}
-      resolveDisabled={!form.isValid() || isUnacceptable}
+      resolveDisabled={!form.isValid() || isUnacceptable || isUsernameConflict}
     >
       <form onClick={(e) => e.preventDefault()}>
         <FixedSpaceColumn spacing="xs">
@@ -372,6 +374,7 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
               message={t.unacceptablePassword}
             />
           )}
+          {isUsernameConflict && <AlertBox message={t.usernameConflict} />}
         </FixedSpaceColumn>
       </form>
     </MutateFormModal>
