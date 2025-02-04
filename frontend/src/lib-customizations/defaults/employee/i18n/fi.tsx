@@ -2149,23 +2149,27 @@ export const fi = {
       phone: 'Puhelinnumero'
     },
     accessControl: {
-      unitSupervisors: 'Yksikön johtajat',
-      specialEducationTeachers: 'Varhaiskasvatuksen erityisopettajat',
-      earlyChildhoodEducationSecretary: 'Varhaiskasvatussihteerit',
-      staff: 'Yksikön henkilökunta',
+      aclRoles: 'Luvitukset',
+      activeAclRoles: 'Aktiiviset luvitukset',
+      role: 'Rooli',
+      name: 'Nimi',
       email: 'Sähköpostiosoite',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
-      removeTemporaryEmployeeConfirmation:
-        'Haluatko poistaa listalta valitun henkilön?',
       addDaycareAclModal: {
-        title: 'Lisää henkilö',
-        type: {
-          PERMANENT: 'Henkilökunta',
-          TEMPORARY: 'Tilapäinen sijainen'
-        },
-        groups: 'Valitse ryhmä',
-        employees: 'Valitse henkilö',
+        title: 'Lisää luvitus',
+        role: 'Valitse rooli',
+        employees: 'Valitse henkilö'
+      },
+      editDaycareAclModal: {
+        title: 'Muokkaa luvitusta'
+      },
+      chooseRole: 'Valitse rooli',
+      choosePerson: 'Valitse henkilö',
+      chooseGroup: 'Valitse ryhmä',
+      temporaryEmployees: {
+        title: 'Tilapäiset sijaiset',
+        previousEmployeesTitle: 'Aiemmat tilapäiset sijaiset',
         firstName: 'Etunimi',
         firstNamePlaceholder: 'Kirjoita etunimi',
         lastName: 'Sukunimi',
@@ -2173,11 +2177,15 @@ export const fi = {
         pinCode: 'PIN-koodi',
         pinCodePlaceholder: 'koodi'
       },
-      editEmployeeRowModal: {
-        title: 'Muokkaa henkilön tietoja',
-        groups: 'Valitse ryhmä'
+      addTemporaryEmployeeModal: {
+        title: 'Lisää tilapäinen sijainen'
       },
-      choosePerson: 'Valitse henkilö',
+      editTemporaryEmployeeModal: {
+        title: 'Muokkaa tilapäistä sijaista'
+      },
+      reactivateTemporaryEmployee: 'Luvita uudelleen',
+      removeTemporaryEmployeeConfirmation:
+        'Haluatko poistaa listalta valitun henkilön?',
       mobileDevices: {
         mobileDevices: 'Yksikön mobiililaitteet',
         addMobileDevice: 'Lisää mobiililaite',
@@ -2187,8 +2195,7 @@ export const fi = {
       },
       groups: 'Luvitukset ryhmiin',
       noGroups: 'Ei luvituksia',
-      hasOccupancyCoefficient: 'Kasvatusvastuullinen',
-      previousTemporaryEmployees: 'Aiemmat tilapäiset työntekijät'
+      hasOccupancyCoefficient: 'Kasvatusvastuullinen'
     },
     filters: {
       title: 'Näytä tiedot',

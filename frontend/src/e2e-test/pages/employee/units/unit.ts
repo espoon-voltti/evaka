@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,7 +18,6 @@ import {
   Element,
   Modal,
   Page,
-  SelectionChip,
   TextInput,
   TreeDropdown
 } from '../../../utils/page'
@@ -136,39 +135,23 @@ export class UnitInfoPage {
   #unitName: Element
   #visitingAddress: Element
   #unitDetailsLink: Element
-  supervisorAcl: AclSection
-  specialEducationTeacherAcl: AclSection
-  earlyChildhoodEducationSecretary: AclSection
-  staffAcl: AclSection
+  activeAcl: AclSection
+  temporaryEmployees: TemporaryEmployeesSection
   mobileAcl: MobileDevicesSection
 
   constructor(private readonly page: Page) {
     this.#unitName = page.findByDataQa('unit-name')
     this.#visitingAddress = page.findByDataQa('unit-visiting-address')
     this.#unitDetailsLink = page.findByDataQa('unit-details-link')
-    this.supervisorAcl = new AclSection(
+    this.activeAcl = new AclSection(page, page.findByDataQa('unit-employees'))
+    this.temporaryEmployees = new TemporaryEmployeesSection(
       page,
-      page.findByDataQa('daycare-acl-supervisors')
+      page.findByDataQa('unit-employees')
     )
-    this.specialEducationTeacherAcl = new AclSection(
-      page,
-      page.findByDataQa('daycare-acl-set')
-    )
-    this.earlyChildhoodEducationSecretary = new AclSection(
-      page,
-      page.findByDataQa('daycare-acl-eces')
-    )
-    this.staffAcl = new AclSection(page, page.findByDataQa('daycare-acl-staff'))
     this.mobileAcl = new MobileDevicesSection(
       page,
       page.findByDataQa('daycare-mobile-devices')
     )
-  }
-
-  async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-information"][data-isloading="false"]')
-      .waitUntilVisible()
   }
 
   async assertUnitName(expectedName: string) {
@@ -495,28 +478,11 @@ export class UnitClosingDateModal extends Modal {
   }
 }
 
-class DaycareAclAdditionModal extends Modal {
-  permanentSelect = new SelectionChip(
-    this.find('[data-qa="add-daycare-acl-type-permanent"]')
-  )
-  temporarySelect = new SelectionChip(
-    this.find('[data-qa="add-daycare-acl-type-temporary"]')
-  )
-  personCombobox = new Combobox(
-    this.find('[data-qa="add-daycare-acl-emp-combobox"]')
-  )
-  employeeFirstName = new TextInput(
-    this.find('[data-qa="add-daycare-acl-first-name"]')
-  )
-  employeeLastName = new TextInput(
-    this.find('[data-qa="add-daycare-acl-last-name"]')
-  )
-  groupSelect = this.find('[data-qa="add-daycare-acl-group-select"]')
-  pinCode = new TextInput(this.find('[data-qa="add-daycare-acl-pin-code"]'))
-  submitButton = this.find('[data-qa="add-daycare-acl-save-btn"]')
-  coefficientCheckbox = new Checkbox(
-    this.find('[data-qa="add-daycare-acl-coeff-checkbox"]')
-  )
+class AclModal extends Modal {
+  roleCombobox = new Combobox(this.findByDataQa('role-combobox'))
+  personCombobox = new Combobox(this.findByDataQa('employee-combobox'))
+  groupSelect = this.findByDataQa('group-select')
+  coefficientCheckbox = new Checkbox(this.findByDataQa('coefficient-checkbox'))
 
   async toggleGroups(groupIds: UUID[]) {
     await this.groupSelect.find('> div').click()
@@ -529,25 +495,12 @@ class DaycareAclAdditionModal extends Modal {
   }
 }
 
-export class EmployeeRowEditModal extends Modal {
-  firstName = new TextInput(this.find('[data-qa="first-name"]'))
-  lastName = new TextInput(this.find('[data-qa="last-name"]'))
-  groupSelect = this.find('[data-qa="group-select"]')
-  saveButton = this.find('[data-qa="edit-acl-row-save-btn"]')
-  coefficientCheckbox = new Checkbox(
-    this.find('[data-qa="edit-acl-modal-coeff-checkbox"]')
-  )
-  pinCode = new TextInput(this.find('[data-qa="pin-code"]'))
-
-  async setFirstName(firstName: string) {
-    await this.firstName.waitUntilVisible()
-    await this.firstName.fill(firstName)
-  }
-
-  async setLastName(lastName: string) {
-    await this.lastName.waitUntilVisible()
-    await this.lastName.fill(lastName)
-  }
+class TemporaryEmployeeModal extends Modal {
+  employeeFirstName = new TextInput(this.findByDataQa('first-name'))
+  employeeLastName = new TextInput(this.findByDataQa('last-name'))
+  groupSelect = this.findByDataQa('group-select')
+  pinCode = new TextInput(this.findByDataQa('pin-code'))
+  coefficientCheckbox = new Checkbox(this.findByDataQa('coefficient-checkbox'))
 
   async toggleGroups(groupIds: UUID[]) {
     await this.groupSelect.find('> div').click()
@@ -558,56 +511,13 @@ export class EmployeeRowEditModal extends Modal {
     }
     await this.groupSelect.find('> div').click()
   }
-
-  async setCoefficient(value: boolean) {
-    await this.coefficientCheckbox.waitUntilVisible()
-    if (value) {
-      await this.coefficientCheckbox.check()
-    } else {
-      await this.coefficientCheckbox.uncheck()
-    }
-  }
-
-  async setPinCode(pinCode: string) {
-    await this.pinCode.waitUntilVisible()
-    await this.pinCode.fill(pinCode)
-  }
-
-  async assertPinCode(pinCode: string) {
-    await this.pinCode.assertValueEquals(pinCode)
-  }
-
-  async submitWithTemporaryEmployee({
-    firstName,
-    lastName,
-    toggleGroups,
-    coefficient,
-    pinCode
-  }: {
-    firstName?: string
-    lastName?: string
-    toggleGroups?: UUID[]
-    coefficient?: boolean
-    pinCode?: string
-  }) {
-    if (firstName !== undefined) {
-      await this.setFirstName(firstName)
-    }
-    if (lastName !== undefined) {
-      await this.setLastName(lastName)
-    }
-    if (toggleGroups !== undefined) {
-      await this.toggleGroups(toggleGroups)
-    }
-    if (coefficient !== undefined) {
-      await this.setCoefficient(coefficient)
-    }
-    if (pinCode !== undefined) {
-      await this.setPinCode(pinCode)
-    }
-    await this.saveButton.click()
-  }
 }
+
+export type AclRole =
+  | 'Johtaja'
+  | 'Erityisopettaja'
+  | 'Varhaiskasvatussihteeri'
+  | 'Henkilökunta'
 
 class AclSection extends Element {
   constructor(
@@ -617,89 +527,43 @@ class AclSection extends Element {
     super(root)
   }
 
-  #table = this.find('[data-qa="acl-table"]')
+  #table = this.findByDataQa('acl-table')
   #tableRows = this.#table.findAll(`[data-qa^="acl-row-"]`)
   #tableRow = (id: UUID) => this.#table.find(`[data-qa="acl-row-${id}"]`)
 
-  #previousTemporaryEmployeeTable = this.find(
-    '[data-qa="previous-temporary-employee-table"]'
-  )
-  #previousTemporaryEmployeeTableRows =
-    this.#previousTemporaryEmployeeTable.findAll(`[data-qa^="acl-row-"]`)
+  addButton = this.findByDataQa('open-add-daycare-acl-modal')
+  addModal = new AclModal(this.findByDataQa('add-acl-modal'))
+  editModal = new AclModal(this.findByDataQa('edit-acl-modal'))
 
-  #addButton = this.find('[data-qa="open-add-daycare-acl-modal"]')
-
-  async assertTemporaryEmployeeHidden() {
-    await this.#addButton.click()
-    const addModal = new DaycareAclAdditionModal(
-      this.page.findByDataQa('add-daycare-acl-modal')
-    )
-    await addModal.temporarySelect.waitUntilHidden()
-  }
-
-  async assertTemporaryEmployeeVisible() {
-    await this.#addButton.click()
-    const addModal = new DaycareAclAdditionModal(
-      this.page.findByDataQa('add-daycare-acl-modal')
-    )
-    await addModal.temporarySelect.waitUntilVisible()
-  }
-
-  async addAcl(email: string, groupIds: UUID[], occupancyCoefficient: boolean) {
-    await this.#addButton.click()
-    const addModal = new DaycareAclAdditionModal(
-      this.page.findByDataQa('add-daycare-acl-modal')
-    )
-    await addModal.personCombobox.fillAndSelectFirst(email)
+  async addAcl(
+    role: AclRole,
+    email: string,
+    groupIds: UUID[],
+    occupancyCoefficient: boolean
+  ) {
+    await this.addButton.click()
+    if (role !== 'Henkilökunta') {
+      await this.addModal.roleCombobox.fillAndSelectFirst(role)
+    }
+    await this.addModal.personCombobox.fillAndSelectFirst(email)
     if (groupIds.length > 0) {
-      await addModal.toggleGroups(groupIds)
+      await this.addModal.toggleGroups(groupIds)
     }
     if (occupancyCoefficient) {
-      await addModal.coefficientCheckbox.check()
+      await this.addModal.coefficientCheckbox.check()
     }
-    await addModal.submitButton.click()
-    await this.#table.waitUntilVisible()
-  }
-
-  async addTemporaryAcl(
-    firstName: string,
-    lastName: string,
-    groupIds: UUID[],
-    pinCode: string
-  ) {
-    await this.#addButton.click()
-    const addModal = new DaycareAclAdditionModal(
-      this.page.findByDataQa('add-daycare-acl-modal')
-    )
-    await addModal.temporarySelect.check()
-    await addModal.employeeFirstName.fill(firstName)
-    await addModal.employeeLastName.fill(lastName)
-    if (groupIds.length > 0) {
-      await addModal.toggleGroups(groupIds)
-    }
-    await addModal.pinCode.fill(pinCode)
-    await addModal.submitButton.click()
+    await this.addModal.submitButton.click()
     await this.#table.waitUntilVisible()
   }
 
   async deleteAcl(id: UUID) {
-    await this.#tableRow(id).find('[data-qa="delete"]').click()
-    await new Modal(this.page.findByDataQa('remove-daycare-acl-modal')).submit()
+    await this.#tableRow(id).findByDataQa('delete').click()
+    await new Modal(this.page.findByDataQa('confirm-delete')).submit()
   }
 
   async deleteAclByIndex(index: number) {
-    await this.#tableRows.nth(index).find('[data-qa="delete"]').click()
-    await new Modal(this.page.findByDataQa('remove-daycare-acl-modal')).submit()
-  }
-
-  async deleteTemporaryEmployeeByIndex(index: number) {
-    await this.#previousTemporaryEmployeeTableRows
-      .nth(index)
-      .find('[data-qa="delete"]')
-      .click()
-    await new Modal(
-      this.page.findByDataQa('remove-temporary-employee-modal')
-    ).submit()
+    await this.#tableRows.nth(index).findByDataQa('delete').click()
+    await new Modal(this.page.findByDataQa('confirm-delete')).submit()
   }
 
   async assertRowFields(
@@ -707,19 +571,19 @@ class AclSection extends Element {
     fields: {
       name: string
       email: string
+      role: AclRole
       groups: string[]
       occupancyCoefficient: boolean
     }
   ) {
-    await row
-      .find('[data-qa="name"] > [data-qa="text"]')
-      .assertTextEquals(fields.name)
-    await row.find('[data-qa="email"]').assertTextEquals(fields.email)
-    await row
-      .find(
-        `[data-qa="coefficient-${fields.occupancyCoefficient ? 'on' : 'off'}"]`
-      )
-      .waitUntilVisible()
+    await row.findByDataQa('name').assertTextEquals(fields.name)
+    await row.findByDataQa('email').assertTextEquals(fields.email)
+    await row.findByDataQa('role').assertTextEquals(fields.role)
+    if (fields.occupancyCoefficient) {
+      await row.findByDataQa('coefficient-on').waitUntilVisible()
+    } else {
+      await row.findByDataQa('coefficient-off').waitUntilAttached()
+    }
     await waitUntilEqual(
       () => row.find('[data-qa="groups"] > div').findAll('div').allTexts(),
       fields.groups
@@ -731,6 +595,7 @@ class AclSection extends Element {
       id: UUID
       name: string
       email: string
+      role: AclRole
       groups: string[]
       occupancyCoefficient: boolean
     }[]
@@ -747,6 +612,7 @@ class AclSection extends Element {
     rows: {
       name: string
       email: string
+      role: AclRole
       groups: string[]
       occupancyCoefficient: boolean
     }[]
@@ -759,31 +625,134 @@ class AclSection extends Element {
     )
   }
 
-  async assertPreviousTemporaryEmployeeRowsExactly(
-    rows: {
-      name: string
-      email: string
-      groups: string[]
-      occupancyCoefficient: boolean
-    }[]
-  ) {
-    await this.#previousTemporaryEmployeeTableRows.assertCount(rows.length)
-    await Promise.all(
-      rows.map((fields, index) =>
-        this.assertRowFields(
-          this.#previousTemporaryEmployeeTableRows.nth(index),
-          fields
-        )
-      )
-    )
-  }
-
   getRow(id: UUID) {
     return new AclRow(this.#table.find(`[data-qa="acl-row-${id}"]`))
   }
 
   getRowByIndex(index: number) {
     return new AclRow(this.#tableRows.nth(index))
+  }
+}
+
+class TemporaryEmployeesSection extends Element {
+  constructor(
+    private page: Page,
+    root: Element
+  ) {
+    super(root)
+  }
+
+  addButton = this.findByDataQa('open-add-temporary-employee-modal')
+  addModal = new TemporaryEmployeeModal(
+    this.findByDataQa('add-temporary-employee-modal')
+  )
+  editModal = new TemporaryEmployeeModal(
+    this.findByDataQa('edit-temporary-employee-modal')
+  )
+
+  #table = this.findByDataQa('temporary-employee-table')
+  #tableRows = this.#table.findAll(`[data-qa^="temporary-employee-row-"]`)
+  #tableRow = (id: UUID) =>
+    this.#table.find(`[data-qa="temporary-employee-row-${id}"]`)
+
+  #previousTemporaryEmployeeTable = this.findByDataQa(
+    'previous-temporary-employee-table'
+  )
+  previousTemporaryEmployeeTableRows =
+    this.#previousTemporaryEmployeeTable.findAll(
+      `[data-qa^="previous-temporary-employee-row-"]`
+    )
+
+  async addTemporaryAcl(
+    firstName: string,
+    lastName: string,
+    groupIds: UUID[],
+    pinCode: string
+  ) {
+    await this.addButton.click()
+    await this.addModal.employeeFirstName.fill(firstName)
+    await this.addModal.employeeLastName.fill(lastName)
+    if (groupIds.length > 0) {
+      await this.addModal.toggleGroups(groupIds)
+    }
+    await this.addModal.pinCode.fill(pinCode)
+    await this.addModal.submitButton.click()
+    await this.#table.waitUntilVisible()
+  }
+
+  async softDeleteTemporaryEmployeeByIndex(index: number) {
+    await this.#tableRows.nth(index).findByDataQa('delete').click()
+    await new Modal(this.page.findByDataQa('confirm-delete')).submit()
+  }
+
+  async hardDeleteTemporaryEmployeeByIndex(index: number) {
+    await this.previousTemporaryEmployeeTableRows
+      .nth(index)
+      .findByDataQa('delete')
+      .click()
+    await new Modal(this.page.findByDataQa('confirm-delete')).submit()
+  }
+
+  async reactivateTemporaryEmployeeByIndex(index: number) {
+    await this.previousTemporaryEmployeeTableRows
+      .nth(index)
+      .findByDataQa('reactivate')
+      .click()
+  }
+
+  async assertRowFields(
+    row: Element,
+    fields: {
+      name: string
+      groups: string[]
+      occupancyCoefficient: boolean
+    }
+  ) {
+    await row.findByDataQa('name').assertTextEquals(fields.name)
+    if (fields.occupancyCoefficient) {
+      await row.findByDataQa('coefficient-on').waitUntilVisible()
+    } else {
+      await row.findByDataQa('coefficient-off').waitUntilAttached()
+    }
+    await waitUntilEqual(
+      () => row.find('[data-qa="groups"] > div').findAll('div').allTexts(),
+      fields.groups
+    )
+  }
+
+  async assertRows(
+    rows: {
+      id: UUID
+      name: string
+      groups: string[]
+      occupancyCoefficient: boolean
+    }[]
+  ) {
+    await waitUntilEqual(() => this.#tableRows.count(), rows.length)
+    await Promise.all(
+      rows.map((fields) =>
+        this.assertRowFields(this.#tableRow(fields.id), fields)
+      )
+    )
+  }
+
+  async assertRowsExactly(
+    rows: {
+      name: string
+      groups: string[]
+      occupancyCoefficient: boolean
+    }[]
+  ) {
+    await this.#tableRows.assertCount(rows.length)
+    await Promise.all(
+      rows.map((fields, index) =>
+        this.assertRowFields(this.#tableRows.nth(index), fields)
+      )
+    )
+  }
+
+  getRowByIndex(index: number) {
+    return new TemporaryEmployeeRow(this.#tableRows.nth(index))
   }
 }
 
@@ -837,6 +806,14 @@ class MobileDevicesSection extends Element {
 }
 
 class AclRow extends Element {
+  readonly #editButton = this.find('[data-qa="edit"]')
+
+  async edit() {
+    await this.#editButton.click()
+  }
+}
+
+class TemporaryEmployeeRow extends Element {
   readonly #editButton = this.find('[data-qa="edit"]')
 
   async edit() {

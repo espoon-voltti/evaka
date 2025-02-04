@@ -8,7 +8,10 @@ import styled from 'styled-components'
 
 import { isLoading, wrapResult } from 'lib-common/api'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import { MobileDeviceId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  MobileDeviceId
+} from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -28,7 +31,6 @@ import {
 } from '../../../generated/api-clients/pairing'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { UnitContext } from '../../../state/unit'
 import { renderResult } from '../../async-rendering'
 
 const getMobileDevicesResult = wrapResult(getMobileDevices)
@@ -36,6 +38,7 @@ const deleteMobileDeviceResult = wrapResult(deleteMobileDevice)
 const putMobileDeviceNameResult = wrapResult(putMobileDeviceName)
 
 type Props = {
+  unitId: DaycareId
   canAddNew: boolean
 }
 
@@ -166,10 +169,11 @@ const EditMobileDeviceModal = React.memo(function EditMobileDeviceModal({
   )
 })
 
-export default React.memo(function UnitMobileDevices({ canAddNew }: Props) {
+export default React.memo(function UnitMobileDevices({
+  unitId,
+  canAddNew
+}: Props) {
   const { i18n } = useTranslation()
-
-  const { unitId } = useContext(UnitContext)
 
   const [mobileDevices, reloadMobileDevices] = useApiState(
     () => getMobileDevicesResult({ unitId }),

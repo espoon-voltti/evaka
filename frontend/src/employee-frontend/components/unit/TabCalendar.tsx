@@ -104,11 +104,15 @@ function attendanceGroupToString(group: AttendanceGroupFilter): string {
   return group.type
 }
 
-export default React.memo(function TabCalendar() {
+export default React.memo(function TabCalendar({
+  unitInformation
+}: {
+  unitInformation: DaycareResponse
+}) {
   const unitId = useIdRouteParam<DaycareId>('id')
-  const { unitInformation, filters, setFilters } = useContext(UnitContext)
+  const { filters, setFilters } = useContext(UnitContext)
 
-  return renderResult(unitInformation, (unitInformation) => (
+  return (
     <>
       {unitInformation.permittedActions.includes('READ_OCCUPANCIES') ? (
         <>
@@ -131,7 +135,7 @@ export default React.memo(function TabCalendar() {
         <Calendar unitId={unitId} unitInformation={unitInformation} />
       ) : null}
     </>
-  ))
+  )
 })
 
 const Calendar = React.memo(function Calendar({
