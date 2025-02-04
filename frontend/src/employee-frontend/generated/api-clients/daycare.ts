@@ -38,6 +38,7 @@ import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { PreschoolTermId } from 'lib-common/generated/api-types/shared'
 import { PreschoolTermRequest } from 'lib-common/generated/api-types/daycare'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { ScheduledDaycareAclRow } from 'lib-common/generated/api-types/shared'
 import { ServiceWorkerNote } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
@@ -60,6 +61,7 @@ import { deserializeJsonDaycareResponse } from 'lib-common/generated/api-types/d
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonPublicUnit } from 'lib-common/generated/api-types/daycare'
+import { deserializeJsonScheduledDaycareAclRow } from 'lib-common/generated/api-types/shared'
 import { deserializeJsonStaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { uri } from 'lib-common/uri'
@@ -855,6 +857,22 @@ export async function getDaycareAcl(
     method: 'GET'
   })
   return json.map(e => deserializeJsonDaycareAclRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.getScheduledDaycareAcl
+*/
+export async function getScheduledDaycareAcl(
+  request: {
+    unitId: DaycareId
+  }
+): Promise<ScheduledDaycareAclRow[]> {
+  const { data: json } = await client.request<JsonOf<ScheduledDaycareAclRow[]>>({
+    url: uri`/employee/daycares/${request.unitId}/scheduled-acl`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonScheduledDaycareAclRow(e))
 }
 
 

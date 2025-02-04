@@ -262,6 +262,19 @@ export type PreschoolAssistanceId = Id<'PreschoolAssistance'>
 
 export type PreschoolTermId = Id<'PreschoolTerm'>
 
+/**
+* Generated from fi.espoo.evaka.shared.auth.ScheduledDaycareAclRow
+*/
+export interface ScheduledDaycareAclRow {
+  email: string | null
+  endDate: LocalDate | null
+  firstName: string
+  id: EmployeeId
+  lastName: string
+  role: UserRole
+  startDate: LocalDate
+}
+
 export type ServiceApplicationId = Id<'ServiceApplication'>
 
 export type ServiceNeedId = Id<'ServiceNeed'>
@@ -319,5 +332,14 @@ export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTi
     ...json,
     end: HelsinkiDateTime.parseIso(json.end),
     start: HelsinkiDateTime.parseIso(json.start)
+  }
+}
+
+
+export function deserializeJsonScheduledDaycareAclRow(json: JsonOf<ScheduledDaycareAclRow>): ScheduledDaycareAclRow {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }

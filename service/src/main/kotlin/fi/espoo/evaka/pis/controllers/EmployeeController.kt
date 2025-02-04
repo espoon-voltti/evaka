@@ -33,6 +33,9 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.deleteScheduledDaycareAclRow
+import fi.espoo.evaka.shared.auth.deleteScheduledDaycareAclRows
+import fi.espoo.evaka.shared.auth.insertScheduledDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -151,6 +154,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     data class UpsertEmployeeDaycareRolesRequest(
         val daycareIds: List<DaycareId>,
         val role: UserRole,
+        val startDate: LocalDate,
         val endDate: LocalDate?,
     ) {
         init {
@@ -171,8 +175,11 @@ class EmployeeController(private val accessControl: AccessControl) {
         if (body.daycareIds.isEmpty()) {
             throw BadRequest("No daycare IDs provided")
         }
-        if (body.endDate != null && body.endDate.isBefore(clock.today())) {
-            throw BadRequest("End date cannot be in the past")
+        if (body.startDate.isBefore(clock.today())) {
+            throw BadRequest("Start date cannot be in the past")
+        }
+        if (body.endDate != null && body.endDate.isBefore(body.startDate)) {
+            throw BadRequest("End date cannot be before start date")
         }
 
         db.connect { dbc ->
@@ -185,8 +192,18 @@ class EmployeeController(private val accessControl: AccessControl) {
                     id,
                 )
 
-                it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role, body.endDate)
-                it.upsertEmployeeMessageAccount(id)
+                if (body.startDate == clock.today()) {
+                    it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role, body.endDate)
+                    it.upsertEmployeeMessageAccount(id)
+                } else {
+                    it.insertScheduledDaycareAclRow(
+                        id,
+                        body.daycareIds,
+                        body.role,
+                        body.startDate,
+                        body.endDate,
+                    )
+                }
             }
         }
         Audit.EmployeeUpdateDaycareRoles.log(
@@ -214,10 +231,41 @@ class EmployeeController(private val accessControl: AccessControl) {
                 )
 
                 tx.deleteEmployeeDaycareRoles(id, daycareId)
+                if (daycareId == null) {
+                    tx.deleteScheduledDaycareAclRows(id)
+                }
+
                 deactivatePersonalMessageAccountIfNeeded(tx, id)
             }
         }
         Audit.EmployeeDeleteDaycareRoles.log(
+            targetId = AuditId(id),
+            meta = mapOf("daycareId" to daycareId),
+        )
+    }
+
+    @DeleteMapping("/{id}/scheduled-daycare-role")
+    fun deleteEmployeeScheduledDaycareRole(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: EmployeeId,
+        @RequestParam daycareId: DaycareId,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Employee.DELETE_DAYCARE_ROLES,
+                    id,
+                )
+
+                tx.deleteScheduledDaycareAclRow(id, daycareId)
+            }
+        }
+        Audit.EmployeeDeleteScheduledDaycareRole.log(
             targetId = AuditId(id),
             meta = mapOf("daycareId" to daycareId),
         )

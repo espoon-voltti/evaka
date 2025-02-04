@@ -57,6 +57,7 @@ const form = transformed(
   object({
     daycareTree: array(treeNode()),
     role: required(oneOf<UserRole>()),
+    startDate: required(localDate()),
     endDate: localDate()
   }),
   (res) => {
@@ -67,9 +68,13 @@ const form = transformed(
 
     if (daycareIds.length === 0) return ValidationError.of('required')
 
+    if (res.endDate && res.endDate.isBefore(res.startDate))
+      return ValidationError.field('endDate', 'dateTooEarly')
+
     return ValidationSuccess.of<UpsertEmployeeDaycareRolesRequest>({
       daycareIds,
       role: res.role,
+      startDate: res.startDate,
       endDate: res.endDate ?? null
     })
   }
@@ -119,6 +124,9 @@ export default React.memo(function DaycareRolesModal({
           label: i18n.roles.adRoles[r]
         }))
       },
+      startDate: localDate.fromDate(LocalDate.todayInHelsinkiTz(), {
+        minDate: LocalDate.todayInHelsinkiTz()
+      }),
       endDate: localDate.fromDate(null, {
         minDate: LocalDate.todayInHelsinkiTz()
       })
@@ -126,7 +134,7 @@ export default React.memo(function DaycareRolesModal({
     i18n.validationErrors
   )
 
-  const { daycareTree, role, endDate } = useFormFields(boundForm)
+  const { daycareTree, role, startDate, endDate } = useFormFields(boundForm)
 
   return (
     <MutateFormModal
@@ -151,6 +159,10 @@ export default React.memo(function DaycareRolesModal({
         <FixedSpaceColumn spacing="xs">
           <Label>{i18n.employees.editor.unitRoles.role}</Label>
           <SelectF bind={role} />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="xs">
+          <Label>{i18n.employees.editor.unitRoles.startDate}</Label>
+          <DatePickerF bind={startDate} locale={lang} />
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xs">
           <Label>{i18n.employees.editor.unitRoles.endDate}</Label>

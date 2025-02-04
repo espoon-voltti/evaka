@@ -57,6 +57,14 @@ data class DaycareRole(
     val endDate: LocalDate?,
 )
 
+data class ScheduledDaycareRole(
+    val daycareId: DaycareId,
+    val daycareName: String,
+    val role: UserRole,
+    val startDate: LocalDate,
+    val endDate: LocalDate?,
+)
+
 data class DaycareGroupRole(
     val daycareId: DaycareId,
     val daycareName: String,
@@ -76,6 +84,7 @@ data class EmployeeWithDaycareRoles(
     val email: String?,
     val globalRoles: List<UserRole> = listOf(),
     @Json val daycareRoles: List<DaycareRole> = listOf(),
+    @Json val scheduledDaycareRoles: List<ScheduledDaycareRole> = listOf(),
     @Json val daycareGroupRoles: List<DaycareGroupRole> = listOf(),
     @Json val personalMobileDevices: List<MobileDevice> = listOf(),
     val temporaryUnitName: String?,
@@ -277,6 +286,12 @@ SELECT
         JOIN daycare d ON acl.daycare_id = d.id
         WHERE acl.employee_id = employee.id
     ) AS daycare_roles,
+    (
+        SELECT jsonb_agg(jsonb_build_object('daycareId', acls.daycare_id, 'daycareName', d.name, 'role', acls.role, 'startDate', acls.start_date, 'endDate', acls.end_date))
+        FROM daycare_acl_schedule acls
+        JOIN daycare d ON acls.daycare_id = d.id
+        WHERE acls.employee_id = employee.id
+    ) AS scheduled_daycare_roles,
     (
         SELECT jsonb_agg(jsonb_build_object('daycareId', d.id, 'daycareName', d.name, 'groupId', dg.id, 'groupName', dg.name))
         FROM daycare_group_acl acl
