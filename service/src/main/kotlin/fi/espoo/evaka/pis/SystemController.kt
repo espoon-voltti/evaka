@@ -442,6 +442,9 @@ class SystemController(
 
     data class CitizenWeakLoginRequest(val username: String, val password: Sensitive<String>) {
         init {
+            if (username.lowercase() != username) {
+                throw BadRequest("Invalid username")
+            }
             if (password.value.length !in PasswordConstraints.SUPPORTED_LENGTH) {
                 throw BadRequest("Invalid password length")
             }

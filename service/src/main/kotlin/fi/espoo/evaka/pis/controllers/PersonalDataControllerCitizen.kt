@@ -181,7 +181,7 @@ class PersonalDataControllerCitizen(
                 if (body.username != null && emails.verifiedEmail != body.username) {
                     throw BadRequest("Invalid username")
                 }
-                tx.updateWeakLoginCredentials(clock, user.id, body.username, password)
+                tx.updateWeakLoginCredentials(clock, user.id, body.username?.lowercase(), password)
             }
         }
         Audit.CitizenCredentialsUpdate.log(targetId = AuditId(user.id))
