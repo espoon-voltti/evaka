@@ -28,9 +28,13 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.getDaycareAclRows
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
@@ -449,6 +453,54 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             val note2AfterCleanup = it.getChildDailyNoteForChild(testChild_2.id)
             assertNotNull(note2AfterCleanup)
             assertEquals(validNoteId, note2AfterCleanup.id)
+        }
+    }
+
+    @Test
+    fun `removeEndedAcl removes rows where end date has passed`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 5, 1), LocalTime.of(0, 5))
+        val today = now.toLocalDate()
+
+        val daycare1 = DevDaycare(areaId = testArea.id)
+        val daycare2 = DevDaycare(areaId = testArea.id)
+        val daycare3 = DevDaycare(areaId = testArea.id)
+        val daycare4 = DevDaycare(areaId = testArea.id)
+        val staff = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare3)
+            tx.insert(daycare4)
+            tx.insert(staff)
+            tx.insertDaycareAclRow(daycare1.id, staff.id, UserRole.STAFF, endDate = null)
+            tx.insertDaycareAclRow(
+                daycare2.id,
+                staff.id,
+                UserRole.STAFF,
+                endDate = today.minusDays(1),
+            )
+            tx.insertDaycareAclRow(daycare3.id, staff.id, UserRole.STAFF, endDate = today)
+            tx.insertDaycareAclRow(
+                daycare4.id,
+                staff.id,
+                UserRole.STAFF,
+                endDate = today.plusDays(1),
+            )
+        }
+        db.read { tx ->
+            assertEquals(1, tx.getDaycareAclRows(daycare1.id, false).size)
+            assertEquals(1, tx.getDaycareAclRows(daycare2.id, false).size)
+            assertEquals(1, tx.getDaycareAclRows(daycare3.id, false).size)
+            assertEquals(1, tx.getDaycareAclRows(daycare4.id, false).size)
+        }
+
+        scheduledJobs.removeEndedAcl(db, MockEvakaClock(now))
+
+        db.read { tx ->
+            assertEquals(1, tx.getDaycareAclRows(daycare1.id, false).size)
+            assertEquals(0, tx.getDaycareAclRows(daycare2.id, false).size)
+            assertEquals(1, tx.getDaycareAclRows(daycare3.id, false).size)
+            assertEquals(1, tx.getDaycareAclRows(daycare4.id, false).size)
         }
     }
 

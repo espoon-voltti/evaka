@@ -80,7 +80,7 @@ fun Database.Transaction.insertDaycareAclRow(
     daycareId: DaycareId,
     employeeId: EmployeeId,
     role: UserRole,
-    endDate: LocalDate?,
+    endDate: LocalDate? = null,
 ) = execute {
     sql(
         """

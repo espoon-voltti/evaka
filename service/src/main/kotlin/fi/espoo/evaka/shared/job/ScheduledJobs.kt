@@ -235,7 +235,7 @@ enum class ScheduledJob(
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 20))),
     ),
     DeleteEndedAcl(
-        ScheduledJobs::deleteEndedAcl,
+        ScheduledJobs::removeEndedAcl,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 5))),
     ),
 }
@@ -510,7 +510,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             passwordBlacklist.importBlacklists(db, Path.of(directory))
         }
 
-    fun deleteEndedAcl(db: Database.Connection, clock: EvakaClock) =
+    fun removeEndedAcl(db: Database.Connection, clock: EvakaClock) =
         db.transaction { tx ->
             tx.getEndedDaycareAclRows(clock.today()).forEach {
                 removeDaycareAclForRole(
