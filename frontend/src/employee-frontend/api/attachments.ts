@@ -4,6 +4,7 @@
 
 import { Failure, Success, wrapResult } from 'lib-common/api'
 import { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
+import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
 import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
@@ -58,10 +59,12 @@ export function applicationAttachment(
 }
 
 export function incomeStatementAttachment(
-  incomeStatementId: UUID
+  incomeStatementId: UUID,
+  attachmentType: IncomeStatementAttachmentType
 ): UploadHandler {
   return uploadHandler({
-    path: `/employee/attachments/income-statements/${incomeStatementId}`
+    path: `/employee/attachments/income-statements/${incomeStatementId}`,
+    params: { attachmentType }
   })
 }
 

@@ -496,7 +496,7 @@ function EmployeeAttachments({
       <P>{i18n.incomeStatement.employeeAttachments.description}</P>
       <FileUpload
         files={attachments}
-        uploadHandler={incomeStatementAttachment(incomeStatementId)}
+        uploadHandler={incomeStatementAttachment(incomeStatementId, 'OTHER')}
         onUploaded={onUploaded}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
