@@ -196,6 +196,18 @@ describe('Holiday periods and questionnaires', () => {
       )
     })
 
+    test('The holiday reservations toast is hidden after answering questionnaire', async () => {
+      await enduserLogin(page, guardian)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayCtaContent(
+        'Vastaa poissaolokyselyyn 06.12.2035 mennessä.'
+      )
+      const holidayModal = await calendar.openHolidayModal()
+      await holidayModal.markNoHoliday(child)
+      await calendar.assertHolidayCtaNotVisible()
+    })
+
     test('Clicking on the holiday reservations toast opens the holiday modal', async () => {
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
