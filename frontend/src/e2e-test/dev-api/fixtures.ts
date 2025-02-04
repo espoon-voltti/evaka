@@ -157,6 +157,7 @@ import {
   ReservationInsert,
   VoucherValueDecision
 } from '../generated/api-types'
+import { upsertDummyIdpUser } from '../utils/dummy-idp'
 
 import FixedPeriodQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
 
@@ -1298,6 +1299,15 @@ export class PersonBuilder extends FixtureBuilder<DevPerson> {
     await createPerson({ body: this.data, type: 'ADULT' })
     if (opts.updateMockVtjWithDependants !== undefined) {
       await this.updateMockVtj(opts.updateMockVtjWithDependants)
+      if (this.data.ssn) {
+        await upsertDummyIdpUser({
+          ssn: this.data.ssn,
+          commonName: `${this.data.firstName} ${this.data.lastName}`,
+          givenName: this.data.firstName,
+          surname: this.data.lastName,
+          comment: `${opts.updateMockVtjWithDependants.length} huollettavaa`
+        })
+      }
     }
     if (opts.updateWeakCredentials) {
       await upsertWeakCredentials({

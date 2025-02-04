@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "module": "node16",
+    "moduleResolution": "node16",
+    "noEmitOnError": true,
+    "noEmit": true,
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2023"
+  },
+  "exclude": ["node_modules", "dist"]
+}

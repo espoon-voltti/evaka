@@ -113,6 +113,14 @@ services:
     ports:
       - "9000:9000"
 
+  dummy-idp:
+    build:
+      context: ../dummy-idp
+    init: true
+    restart: on-failure
+    ports:
+      - "9090:9090"
+
 volumes:
   db-data:
     driver: local

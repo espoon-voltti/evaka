@@ -1,0 +1,8 @@
+{
+  "restartable": false,
+  "delay": 500,
+  "verbose": false,
+  "ignore": [],
+  "watch": ["dist/"],
+  "ext": "js json"
+}
