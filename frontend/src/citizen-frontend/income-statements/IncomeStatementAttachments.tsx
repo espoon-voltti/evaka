@@ -361,12 +361,14 @@ const FileIcon = styled(FontAwesomeIcon)`
 `
 
 export const CitizenAttachmentsWithUpload = React.memo(
-  function CitizenAttachments({
+  function CitizenAttachmentsWithUpload({
     incomeStatementId,
+    requiredAttachments,
     incomeStatementAttachments,
     onChange
   }: {
     incomeStatementId: IncomeStatementId
+    requiredAttachments: Set<IncomeStatementAttachmentType>
     incomeStatementAttachments: IncomeStatementAttachments
     onChange: SetStateCallback<IncomeStatementAttachments>
   }) {
@@ -380,30 +382,32 @@ export const CitizenAttachmentsWithUpload = React.memo(
         ),
       [incomeStatementAttachments, incomeStatementId, onChange]
     )
-    return (
-      <>
-        <H2>{t.income.view.citizenAttachments.title}</H2>
-        {!incomeStatementAttachments.typed ? (
+
+    if (!incomeStatementAttachments.typed) {
+      return (
+        <>
+          <H2>{t.income.view.citizenAttachments.title}</H2>
           <IncomeStatementUntypedAttachments
             incomeStatementId={incomeStatementId}
             attachments={incomeStatementAttachments}
             onChange={onChange}
           />
-        ) : (
-          Object.keys(incomeStatementAttachments.attachmentsByType).map(
-            (type) => {
-              const attachmentType = type as IncomeStatementAttachmentType
-              return (
-                <AttachmentSection
-                  key={attachmentType}
-                  attachmentType={attachmentType}
-                  showFormErrors={false}
-                  attachmentHandler={attachmentHandler}
-                  labelKey="attachmentNames"
-                />
-              )
-            }
-          )
+        </>
+      )
+    }
+
+    return (
+      <>
+        {incomeStatementAttachmentTypes.map((attachmentType) =>
+          requiredAttachments.has(attachmentType) ? (
+            <AttachmentSection
+              key={attachmentType}
+              attachmentType={attachmentType}
+              showFormErrors={false}
+              attachmentHandler={attachmentHandler}
+              labelKey="attachmentNames"
+            />
+          ) : null
         )}
       </>
     )

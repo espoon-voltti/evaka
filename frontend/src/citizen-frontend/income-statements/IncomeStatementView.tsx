@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -46,6 +46,7 @@ import {
   incomeStatementQuery,
   updateSentIncomeStatementMutation
 } from './queries'
+import { computeRequiredAttachments, fromIncomeStatement } from './types/form'
 
 export default React.memo(function IncomeStatementView() {
   const incomeStatementId =
@@ -97,6 +98,11 @@ const IncomeInfo = React.memo(function IncomeInfo({
   const t = useTranslation()
   const navigate = useNavigate()
 
+  const requiredAttachments = useMemo(
+    () => computeRequiredAttachments(fromIncomeStatement(incomeStatement)),
+    [incomeStatement]
+  )
+
   const editable = incomeStatement.status !== 'HANDLED'
 
   const [otherInfo, setOtherInfo] = useState(() => incomeStatement.otherInfo)
@@ -146,6 +152,7 @@ const IncomeInfo = React.memo(function IncomeInfo({
       {editable ? (
         <CitizenAttachmentsWithUpload
           incomeStatementId={incomeStatement.id}
+          requiredAttachments={requiredAttachments}
           incomeStatementAttachments={incomeStatementAttachments}
           onChange={setIncomeStatementAttachments}
         />
