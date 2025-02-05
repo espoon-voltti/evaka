@@ -1887,7 +1887,8 @@ const en: Translations = {
         minSymbols: (v: number) =>
           `at least ${v} ${v > 1 ? 'special characters' : 'special character'}`
       },
-      unacceptablePassword: 'The password is too easy to guess'
+      unacceptablePassword: 'The password is too easy to guess',
+      usernameConflict: 'The username is already in use'
     },
     notificationsSection: {
       title: 'Email notifications',

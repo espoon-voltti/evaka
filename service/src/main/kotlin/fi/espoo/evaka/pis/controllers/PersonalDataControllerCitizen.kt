@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.PasswordConstraints
 import fi.espoo.evaka.shared.auth.PasswordService
 import fi.espoo.evaka.shared.auth.PasswordSpecification
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
@@ -181,7 +182,16 @@ class PersonalDataControllerCitizen(
                 if (body.username != null && emails.verifiedEmail != body.username) {
                     throw BadRequest("Invalid username")
                 }
-                tx.updateWeakLoginCredentials(clock, user.id, body.username, password)
+                try {
+                    tx.updateWeakLoginCredentials(
+                        clock,
+                        user.id,
+                        body.username?.lowercase(),
+                        password,
+                    )
+                } catch (e: Exception) {
+                    throw mapPSQLException(e)
+                }
             }
         }
         Audit.CitizenCredentialsUpdate.log(targetId = AuditId(user.id))

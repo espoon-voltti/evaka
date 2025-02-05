@@ -70,15 +70,6 @@ export default React.memo(function PersonalDetails() {
                 <Navigate replace to="/" />
               )
           )}
-          {renderResult(notificationSettings, (notificationSettings) => (
-            <>
-              <HorizontalLine />
-              <NotificationSettingsSection
-                initialData={notificationSettings}
-                ref={notificationSettingsSection}
-              />
-            </>
-          ))}
           {renderResult(
             combine(user, emailVerificationStatus, passwordConstraints),
             ([user, emailVerificationStatus, passwordConstraints]) =>
@@ -100,6 +91,15 @@ export default React.memo(function PersonalDetails() {
                 <Navigate replace to="/" />
               )
           )}
+          {renderResult(notificationSettings, (notificationSettings) => (
+            <>
+              <HorizontalLine />
+              <NotificationSettingsSection
+                initialData={notificationSettings}
+                ref={notificationSettingsSection}
+              />
+            </>
+          ))}
         </ContentArea>
       </Container>
       <Footer />

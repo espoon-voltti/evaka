@@ -2127,7 +2127,8 @@ export default {
         minSymbols: (v: number) =>
           `vähintään ${v} ${v > 1 ? 'erikoismerkkiä' : 'erikoismerkki'}`
       },
-      unacceptablePassword: 'Salasana on liian helposti arvattava'
+      unacceptablePassword: 'Salasana on liian helposti arvattava',
+      usernameConflict: 'Käyttäjätunnus on jo käytössä'
     },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',

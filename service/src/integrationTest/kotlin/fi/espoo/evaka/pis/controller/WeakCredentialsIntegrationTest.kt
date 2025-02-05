@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.pis.SystemController
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.dev.DevCitizenUser
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -40,17 +41,9 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         citizenStrongLogin()
         val password = Sensitive("test123123")
-        updateWeakLoginCredentials(
-            PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(
-                username = email,
-                password = password,
-            )
-        )
+        updateWeakLoginCredentials(username = email, password = password)
 
-        val identity =
-            citizenWeakLogin(
-                SystemController.CitizenWeakLoginRequest(username = email, password = password)
-            )
+        val identity = citizenWeakLogin(username = email, password = password)
         assertEquals(person.id, identity.id)
     }
 
@@ -60,29 +53,35 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         val password = Sensitive("test123123")
         db.transaction { tx ->
             tx.insert(person.copy(email = newEmail, verifiedEmail = newEmail), DevPersonType.ADULT)
-            MockPersonDetailsService.addPersons(person)
-            tx.insert(
-                DevCitizenUser(
-                    person.id,
-                    username = email,
-                    usernameUpdatedAt = clock.now(),
-                    password = passwordService.encode(password),
-                    passwordUpdatedAt = clock.now(),
-                )
-            )
+            tx.insert(citizenUser(person.id, email, password))
         }
+        MockPersonDetailsService.addPersons(person)
 
-        updateWeakLoginCredentials(
-            PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(
-                username = newEmail,
-                password = null,
-            )
-        )
+        updateWeakLoginCredentials(username = newEmail, password = null)
 
-        val identity =
-            citizenWeakLogin(
-                SystemController.CitizenWeakLoginRequest(username = newEmail, password = password)
-            )
+        val identity = citizenWeakLogin(username = newEmail, password = password)
+        assertEquals(person.id, identity.id)
+    }
+
+    @Test
+    fun `username is converted to lowercase automatically`() {
+        val newEmail = "nEW@eXample.Com"
+        val password = Sensitive("test123123")
+        db.transaction { tx ->
+            tx.insert(person.copy(email = newEmail, verifiedEmail = newEmail), DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+        }
+        MockPersonDetailsService.addPersons(person)
+
+        updateWeakLoginCredentials(username = newEmail, password = null)
+
+        // In a real environment apigw converts the username to lowercase when logging in.
+        // This conversion must be in the apigw so the login rate limit is applied correctly to the
+        // lowercase username, and it can't be bypassed by just changing some letter(s) to
+        // uppercase. The service API endpoint expects a lowercase username, so in this test we have
+        // to convert it manually
+        val actualUsername = newEmail.lowercase()
+        val identity = citizenWeakLogin(username = actualUsername, password = password)
         assertEquals(person.id, identity.id)
     }
 
@@ -91,30 +90,14 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         val password = Sensitive("test123123")
         db.transaction { tx ->
             tx.insert(person, DevPersonType.ADULT)
-            MockPersonDetailsService.addPersons(person)
-            tx.insert(
-                DevCitizenUser(
-                    person.id,
-                    username = email,
-                    usernameUpdatedAt = clock.now(),
-                    password = passwordService.encode(password),
-                    passwordUpdatedAt = clock.now(),
-                )
-            )
+            tx.insert(citizenUser(person.id, email, password))
         }
+        MockPersonDetailsService.addPersons(person)
 
         val newPassword = Sensitive("test256256")
-        updateWeakLoginCredentials(
-            PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(
-                username = null,
-                password = newPassword,
-            )
-        )
+        updateWeakLoginCredentials(username = null, password = newPassword)
 
-        val identity =
-            citizenWeakLogin(
-                SystemController.CitizenWeakLoginRequest(username = email, password = newPassword)
-            )
+        val identity = citizenWeakLogin(username = email, password = newPassword)
         assertEquals(person.id, identity.id)
     }
 
@@ -127,12 +110,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         val password = Sensitive("nope")
         val error =
             assertThrows<BadRequest> {
-                updateWeakLoginCredentials(
-                    PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(
-                        username = email,
-                        password = password,
-                    )
-                )
+                updateWeakLoginCredentials(username = email, password = password)
             }
         assertEquals("PASSWORD_FORMAT", error.errorCode)
     }
@@ -152,19 +130,18 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         citizenStrongLogin()
         val error =
             assertThrows<BadRequest> {
-                updateWeakLoginCredentials(
-                    PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(
-                        username = email,
-                        password = password,
-                    )
-                )
+                updateWeakLoginCredentials(username = email, password = password)
             }
         assertEquals("PASSWORD_UNACCEPTABLE", error.errorCode)
     }
 
-    private fun updateWeakLoginCredentials(
-        request: PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest
-    ) = controller.updateWeakLoginCredentials(dbInstance(), user, clock, request)
+    private fun updateWeakLoginCredentials(username: String?, password: Sensitive<String>?) =
+        controller.updateWeakLoginCredentials(
+            dbInstance(),
+            user,
+            clock,
+            PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(username, password),
+        )
 
     private fun citizenStrongLogin() =
         systemController.citizenLogin(
@@ -179,11 +156,20 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             ),
         )
 
-    private fun citizenWeakLogin(request: SystemController.CitizenWeakLoginRequest) =
+    private fun citizenWeakLogin(username: String, password: Sensitive<String>) =
         systemController.citizenWeakLogin(
             dbInstance(),
             AuthenticatedUser.SystemInternalUser,
             clock,
-            request,
+            SystemController.CitizenWeakLoginRequest(username, password),
+        )
+
+    private fun citizenUser(id: PersonId, email: String, password: Sensitive<String>) =
+        DevCitizenUser(
+            id,
+            username = email,
+            usernameUpdatedAt = clock.now(),
+            password = passwordService.encode(password),
+            passwordUpdatedAt = clock.now(),
         )
 }
