@@ -83,7 +83,8 @@ export default {
     },
     openExpandingInfo: 'Avaa lisätietokenttä',
     errors: {
-      genericGetError: 'Tietojen hakeminen ei onnistunut'
+      genericGetError: 'Tietojen hakeminen ei onnistunut',
+      http403Error: 'Oikeudet puuttuvat'
     },
     today: 'Tänään',
     datetime: {

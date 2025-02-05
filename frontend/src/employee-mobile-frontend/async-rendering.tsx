@@ -12,7 +12,10 @@ import { useTranslation } from './common/i18n'
 
 function useFailureMessage() {
   const { i18n } = useTranslation()
-  return i18n.common.loadingFailed
+  return {
+    generic: i18n.common.loadingFailed,
+    http403: i18n.common.noAccess
+  }
 }
 
 const { UnwrapResult, renderResult } = makeHelpers(useFailureMessage)

@@ -86,7 +86,8 @@ const en: Translations = {
     },
     openExpandingInfo: 'Open the details',
     errors: {
-      genericGetError: 'Error in fetching the requested information'
+      genericGetError: 'Error in fetching the requested information',
+      http403Error: 'No access to the requested information'
     },
     today: 'Today',
     datetime: {

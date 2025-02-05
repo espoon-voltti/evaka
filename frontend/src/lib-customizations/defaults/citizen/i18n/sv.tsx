@@ -84,7 +84,8 @@ const sv: Translations = {
     },
     openExpandingInfo: 'Öppna detaljer',
     errors: {
-      genericGetError: 'Hämtning av information misslyckades'
+      genericGetError: 'Hämtning av information misslyckades',
+      http403Error: 'Ingen tillgång till informationen'
     },
     today: 'Idag',
     datetime: {

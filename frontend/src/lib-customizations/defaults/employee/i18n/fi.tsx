@@ -70,6 +70,7 @@ export const fi = {
     no: 'Ei',
     and: 'Ja',
     loadingFailed: 'Tietojen haku epäonnistui',
+    noAccess: 'Oikeudet puuttuvat',
     edit: 'Muokkaa',
     add: 'Lisää',
     addNew: 'Lisää uusi',

@@ -9,6 +9,7 @@ export const fi = {
     yesIDo: 'Kyllä',
     noIDoNot: 'En',
     loadingFailed: 'Tietojen haku epäonnistui',
+    noAccess: 'Oikeudet puuttuvat',
     add: 'Lisää',
     cancel: 'Peruuta',
     confirm: 'Vahvista',
