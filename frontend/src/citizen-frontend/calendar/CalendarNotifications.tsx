@@ -109,7 +109,7 @@ export default React.memo(function CalendarNotifications({
     let cta: HolidayCta
     if (
       activeQuestionnaire &&
-      activeQuestionnaire.eligibleChildren.some(
+      Object.keys(activeQuestionnaire.eligibleChildren).some(
         (c) => !activeQuestionnaire.previousAnswers.some((a) => a.childId === c)
       )
     ) {

@@ -33,6 +33,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -111,7 +112,10 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         val response = getActiveQuestionnaires(mockToday)
 
         assertEquals(1, response.size)
-        assertEquals(listOf(child1.id, child2.id).sorted(), response[0].eligibleChildren.sorted())
+        assertThat(response[0].eligibleChildren)
+            .containsExactlyInAnyOrderEntriesOf(
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions, child2.id to emptyList())
+            )
     }
 
     @Test
@@ -164,7 +168,10 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         val response = getActiveQuestionnaires(mockToday)
 
         assertEquals(1, response.size)
-        assertEquals(listOf(child1.id, child4.id).sorted(), response[0].eligibleChildren.sorted())
+        assertThat(response[0].eligibleChildren)
+            .containsExactlyInAnyOrderEntriesOf(
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions, child4.id to emptyList())
+            )
     }
 
     @Test
@@ -252,6 +259,64 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             )
 
         val firstOption = freePeriodQuestionnaire.periodOptions[0]
+        assertThrows<BadRequest> {
+            reportFreePeriods(
+                id,
+                FixedPeriodsBody(mapOf(child1.id to firstOption, child2.id to firstOption)),
+            )
+        }
+    }
+
+    @Test
+    fun `free absences cannot be saved if a child's placement starts after given option`() {
+        val firstOption = freePeriodQuestionnaire.periodOptions[0]
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            tx.insertPlacement(
+                PlacementType.DAYCARE,
+                child2.id,
+                daycare.id,
+                firstOption.start.plusDays(1),
+                firstOption.end,
+                false,
+            )
+        }
+        val id =
+            createFixedPeriodQuestionnaire(
+                freePeriodQuestionnaire.copy(
+                    conditions = QuestionnaireConditions(continuousPlacement = null)
+                )
+            )
+
+        assertThrows<BadRequest> {
+            reportFreePeriods(
+                id,
+                FixedPeriodsBody(mapOf(child1.id to firstOption, child2.id to firstOption)),
+            )
+        }
+    }
+
+    @Test
+    fun `free absences cannot be saved if a child's placement ends before given option`() {
+        val firstOption = freePeriodQuestionnaire.periodOptions[0]
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            tx.insertPlacement(
+                PlacementType.DAYCARE,
+                child2.id,
+                daycare.id,
+                firstOption.start,
+                firstOption.end.minusDays(1),
+                false,
+            )
+        }
+        val id =
+            createFixedPeriodQuestionnaire(
+                freePeriodQuestionnaire.copy(
+                    conditions = QuestionnaireConditions(continuousPlacement = null)
+                )
+            )
+
         assertThrows<BadRequest> {
             reportFreePeriods(
                 id,

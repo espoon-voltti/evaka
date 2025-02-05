@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.Row
@@ -887,6 +888,25 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
             )
         }
         .exactlyOne<Boolean>()
+
+fun Database.Read.getConsecutivePlacementRanges(
+    childId: ChildId,
+    types: List<PlacementType>,
+    period: FiniteDateRange,
+): DateSet =
+    createQuery {
+            sql(
+                """
+SELECT range_agg(daterange(start_date, end_date, '[]'))
+FROM placement
+WHERE child_id = ${bind(childId)}
+  AND type = ANY (${bind(types)})
+  AND end_date >= ${bind(period.start)}
+  AND start_date <= ${bind(period.end)}
+"""
+            )
+        }
+        .exactlyOneOrNull<DateSet>() ?: DateSet.empty()
 
 fun Database.Transaction.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
     childId: ChildId,

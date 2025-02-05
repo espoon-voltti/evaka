@@ -943,4 +943,11 @@ class HolidayModal extends Element {
       .findByDataQa('not-eligible')
       .waitUntilVisible()
   }
+
+  async assertOptions(child: { id: string }, expected: string[]) {
+    const select = this.#childHolidaySelect(child.id)
+    await select.waitUntilVisible()
+    const actual = await select.allOptions
+    expect(actual).toEqual(expected)
+  }
 }
