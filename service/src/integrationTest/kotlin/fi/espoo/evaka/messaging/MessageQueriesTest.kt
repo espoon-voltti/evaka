@@ -391,6 +391,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `query citizen receivers for group change over 2 weeks into the future`() {
         lateinit var group1Account: MessageAccount
+        lateinit var group2Account: MessageAccount
 
         val today = LocalDate.now()
         val startDate = today.minusDays(30)
@@ -399,9 +400,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val endDate = today.plusDays(30)
 
         db.transaction { tx ->
-            val (childId, daycareId, group1Id, tempGroup1Account, group2Id) =
+            val (childId, daycareId, group1Id, tempGroup1Account, group2Id, tempGroup2Account) =
                 prepareDataForReceiversTest(tx)
             group1Account = tempGroup1Account
+            group2Account = tempGroup2Account
 
             val placementId =
                 tx.insert(
@@ -434,13 +436,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val receivers = db.read { it.getCitizenReceivers(today, accounts.person1.id).values }
 
         val expectedForNewMessage = setOf(group1Account, accounts.employee1)
+        val expectedForReply =
+            setOf(group1Account, accounts.employee1, accounts.employee2, group2Account)
 
         assertEquals(
             expectedForNewMessage,
             receivers.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
         )
         assertEquals(
-            expectedForNewMessage + accounts.employee2,
+            expectedForReply,
             receivers.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
         )
     }

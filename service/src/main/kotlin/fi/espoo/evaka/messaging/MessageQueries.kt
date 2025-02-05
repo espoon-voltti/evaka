@@ -764,6 +764,8 @@ fun Database.Read.getCitizenReceivers(
         val oooPeriod: FiniteDateRange?,
     )
 
+    val sendNewMessageWeeksBefore = 2L
+
     return createQuery {
             sql(
                 """
@@ -780,34 +782,44 @@ WITH user_account AS (
     FROM user_account acc
     JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> ${bind(today)}
 ), backup_care_placements AS (
-    SELECT p.id, p.unit_id, p.child_id, p.group_id
+    SELECT p.id, p.unit_id, p.child_id, p.group_id, p.start_date
     FROM children c
-    JOIN backup_care p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
+    JOIN backup_care p ON p.child_id = c.child_id AND p.end_date >= ${bind(today)}
     WHERE EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
     )
 ), placements AS (
-    SELECT p.id, p.unit_id, p.child_id
+    SELECT p.id, p.unit_id, p.child_id, p.start_date
     FROM children c
-    JOIN placement p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
+    JOIN placement p ON p.child_id = c.child_id AND p.end_date >= ${bind(today)}
     AND EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
     )
 ),
 relevant_placements AS (
-    SELECT p.id, p.unit_id, p.child_id
+    SELECT p.id, p.unit_id, p.child_id, p.start_date
     FROM placements p
 
     UNION
 
-    SELECT bc.id, bc.unit_id, bc.child_id
+    SELECT bc.id, bc.unit_id, bc.child_id, bc.start_date
     FROM backup_care_placements bc
 ),
 personal_accounts AS (
-    SELECT acc.id, acc_name.name, 'PERSONAL' AS type, p.child_id, acl.role != 'UNIT_SUPERVISOR' AS reply_only, ooo.period AS ooo_period
-    FROM (SELECT DISTINCT unit_id, child_id FROM relevant_placements) p
+    SELECT
+        acc.id,
+        acc_name.name,
+        'PERSONAL' AS type, 
+        p.child_id, 
+        (acl.role != 'UNIT_SUPERVISOR' OR ${bind(today.plusWeeks(sendNewMessageWeeksBefore))} < p.start_date) AS reply_only,
+        ooo.period AS ooo_period
+    FROM (
+        SELECT unit_id, child_id, min(start_date) AS start_date 
+        FROM relevant_placements 
+        GROUP BY unit_id, child_id
+    ) p
     JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
     JOIN message_account acc ON acc.employee_id = acl.employee_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
@@ -820,15 +832,15 @@ personal_accounts AS (
     WHERE active IS TRUE
 ),
 group_accounts AS (
-    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
+    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id, ${bind(today.plusWeeks(sendNewMessageWeeksBefore))} < dgp.start_date AS reply_only
     FROM placements p
-    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND ${bind(today)} BETWEEN (dgp.start_date - INTERVAL '2 weeks')::date AND dgp.end_date
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND dgp.end_date >= ${bind(today)}
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
 
     UNION ALL
 
-    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
+    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id, ${bind(today.plusWeeks(sendNewMessageWeeksBefore))} < p.start_date AS reply_only
     FROM backup_care_placements p
     JOIN daycare_group g ON g.id = p.group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
@@ -853,7 +865,7 @@ citizen_accounts AS (
 mixed_accounts AS (
     SELECT id, name, type, child_id, reply_only, ooo_period FROM personal_accounts
     UNION ALL
-    SELECT id, name, type, child_id, FALSE AS reply_only, null as ooo_period FROM group_accounts
+    SELECT id, name, type, child_id, reply_only, null as ooo_period FROM group_accounts
     UNION ALL
     SELECT id, name, type, child_id, FALSE AS reply_only, null as ooo_period FROM citizen_accounts
 )
