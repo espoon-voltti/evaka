@@ -2126,7 +2126,8 @@ const sv: Translations = {
           `${v} eller ${v > 1 ? 'flera specialtecken' : 'fler specialtecken'}`
       },
       unacceptablePassword: 'Lösenordet är för lätt att gissa',
-      usernameConflict: 'Användarnamnet är redan i bruk'
+      usernameConflict: (username: string): ReactNode =>
+        `Användarnamnet ${username} används redan av en annan person`
     },
     notificationsSection: {
       title: 'E-postmeddelanden',
