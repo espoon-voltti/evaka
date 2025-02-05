@@ -218,7 +218,7 @@ enum class ScheduledJob(
         ScheduledJobs::generateReplacementDraftInvoices,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(4, 15))),
     ),
-    ImportPasswordsBlacklists(
+    ImportPasswordBlacklists(
         ScheduledJobs::importPasswordBlacklists,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 20))),
     ),
