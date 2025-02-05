@@ -6,6 +6,7 @@ import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { formatFirstName } from 'lib-common/names'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
@@ -231,7 +232,7 @@ describe('Sending and receiving messages', () => {
     }
   )
 
-  test('Staff can select starters as receivers', async () => {
+  test('Unit supervisor can send a message to a starter', async () => {
     const daycarePlacementFixture1 = await Fixture.placement({
       childId,
       unitId: testPreschool.id,
@@ -271,8 +272,9 @@ describe('Sending and receiving messages', () => {
     ]
     expect(labels.sort()).toEqual(expectedReceiverNames.sort())
 
-    // Send a message to a starter child
+    // Send a message to a starter child -> selects the whole unit
     await receiverSelector.optionByLabel(starterChildLabel).click()
+    await receiverSelector.close()
     await messageEditor.inputTitle.fill('Aloittavalle otsikko')
     await messageEditor.inputContent.fill('Sisältö')
     await messageEditor.sendButton.click()
@@ -288,6 +290,95 @@ describe('Sending and receiving messages', () => {
       title: 'Aloittavalle otsikko',
       content: 'Sisältö'
     })
+  })
+
+  test('Staff can send a message to a starter', async () => {
+    const secondGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id,
+      name: 'Toinen ryhmä'
+    }).save()
+    const futureStaff = await Fixture.employee()
+      .staff(testDaycare.id)
+      .withGroupAcl(secondGroup.id, mockedDateAt10, mockedDateAt10)
+      .save()
+    const daycarePlacementFixture1 = await Fixture.placement({
+      childId,
+      unitId: testDaycare.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    const daycarePlacementFixture2 = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture1.id,
+      daycareGroupId: secondGroup.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture2.id,
+      daycareGroupId: secondGroup.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    await createMessageAccounts()
+
+    // Verify that available recipients contain current placements and starters
+    staffPage = await Page.open({ mockedTime: mockedDateAt10 })
+    await employeeLogin(staffPage, futureStaff)
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(staffPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    const receiverSelector = messageEditor.receiverSelection
+    await receiverSelector.open()
+    await receiverSelector.expandAll()
+    const labels = await receiverSelector.labels.allTexts()
+    const expectedReceiverNames = [
+      `${secondGroup.name} (aloittavat)`,
+      `${testChild.lastName} ${testChild.firstName} (${mockedDate.addYears(1).addDays(1).format()})`,
+      `${testChild2.lastName} ${testChild2.firstName} (${mockedDate.addYears(1).addDays(1).format()})`
+    ]
+    expect(labels.sort()).toEqual(expectedReceiverNames.sort())
+
+    // Send a message to a starter group (contains 2 children)
+    await receiverSelector
+      .optionByLabel(`${secondGroup.name} (aloittavat)`)
+      .click()
+    await receiverSelector.close()
+    await messageEditor.inputTitle.fill('Aloittavalle otsikko')
+    await messageEditor.inputContent.fill('Sisältö')
+    await messageEditor.sendButton.click()
+    await messageEditor.waitUntilHidden()
+
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    // Verify that the message is received by the starter
+    await initCitizenPage(mockedDateAt11)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.assertThreadContent({
+      title: 'Aloittavalle otsikko',
+      content: 'Sisältö',
+      childNames: [formatFirstName(testChild), formatFirstName(testChild2)]
+    })
+
+    // Reply to the message
+    await citizenMessagesPage.replyToFirstThread('Vastaukseni')
+
+    await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
+
+    // Verify that the message is received by the staff
+    staffPage = await Page.open({ mockedTime: mockedDateAt12 })
+    await employeeLogin(staffPage, futureStaff)
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    const staffMessagesPage = new MessagesPage(staffPage)
+    await waitUntilEqual(() => staffMessagesPage.getReceivedMessageCount(), 1)
+    await staffMessagesPage.receivedMessage.click()
+    await staffMessagesPage.assertMessageContent(1, 'Vastaukseni')
   })
 })
 

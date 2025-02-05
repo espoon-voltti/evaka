@@ -170,6 +170,13 @@ export class ElementCollection {
   async assertTextsEqual(values: string[]) {
     await waitUntilEqual(() => this.allTexts(), values)
   }
+
+  async assertTextsEqualAnyOrder(values: string[]) {
+    await waitUntilEqual(async () => {
+      const texts = await this.allTexts()
+      return texts.sort()
+    }, values.slice().sort())
+  }
 }
 
 export class Element {

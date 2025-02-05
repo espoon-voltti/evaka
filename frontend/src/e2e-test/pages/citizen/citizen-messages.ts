@@ -38,6 +38,7 @@ export default class CitizenMessagesPage {
   #inboxEmpty: Element
   #threadContent: ElementCollection
   #threadUrgent: Element
+  #threadChildren: ElementCollection
   newMessageButton: Element
   fileUpload: Element
   #threadOutOfOfficeInfo: Element
@@ -65,6 +66,9 @@ export default class CitizenMessagesPage {
     this.#threadUrgent = page
       .findByDataQa('thread-reader')
       .findByDataQa('urgent')
+    this.#threadChildren = page
+      .findByDataQa('thread-reader')
+      .findAllByDataQa('thread-child')
     this.newMessageButton = page.findAllByDataQa('new-message-btn').first()
     this.fileUpload = page.findByDataQa('upload-message-attachment')
     this.#threadOutOfOfficeInfo = page
@@ -113,6 +117,7 @@ export default class CitizenMessagesPage {
     content: string
     urgent?: boolean
     sensitive?: boolean
+    childNames?: string[]
   }) {
     await this.#threadListItem.click()
     await this.#threadTitle.assertTextEquals(
@@ -123,6 +128,9 @@ export default class CitizenMessagesPage {
       await this.#threadUrgent.waitUntilVisible()
     } else {
       await this.#threadUrgent.waitUntilHidden()
+    }
+    if (message.childNames) {
+      await this.#threadChildren.assertTextsEqualAnyOrder(message.childNames)
     }
   }
   async assertThreadIsRedacted() {
@@ -143,11 +151,6 @@ export default class CitizenMessagesPage {
 
   async openFirstThread() {
     await this.#threadListItem.click()
-  }
-
-  async openFirstThreadReplyEditor() {
-    await this.#threadListItem.click()
-    await this.#openReplyEditorButton.click()
   }
 
   async discardReplyEditor() {

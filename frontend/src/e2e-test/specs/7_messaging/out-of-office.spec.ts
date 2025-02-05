@@ -96,7 +96,7 @@ describe('Out of Office', () => {
     await editor2.sendMessage()
 
     // Reply editor shows the out of office period
-    await messagesPage2.openFirstThreadReplyEditor()
+    await messagesPage2.startReplyToFirstThread()
     await messagesPage2.assertThreadOutOfOffice({
       name: getSupervisorName(),
       period: FiniteDateRange.tryCreate(newStartDate, endDate)!
