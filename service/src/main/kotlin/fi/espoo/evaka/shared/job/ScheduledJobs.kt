@@ -143,6 +143,14 @@ enum class ScheduledJob(
             retryCount = 1,
         ),
     ),
+    RemoveGuardiansFromAdults(
+        ScheduledJobs::removeGuardiansFromAdults,
+        ScheduledJobSettings(
+            enabled = true,
+            schedule = JobSchedule.daily(LocalTime.of(2, 0)),
+            retryCount = 1,
+        ),
+    ),
     InactivePeopleCleanup(
         ScheduledJobs::inactivePeopleCleanup,
         ScheduledJobSettings(
@@ -398,6 +406,22 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun removeOldAsyncJobs(db: Database.Connection, clock: EvakaClock) {
         db.removeOldAsyncJobs(clock.now())
+    }
+
+    fun removeGuardiansFromAdults(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    """
+                DELETE FROM guardian g
+                WHERE EXISTS(
+                    SELECT FROM person ch 
+                    WHERE g.child_id = ch.id AND ch.date_of_birth <= ${bind(clock.today().minusYears(18))}
+                )
+            """
+                )
+            }
+        }
     }
 
     fun inactivePeopleCleanup(db: Database.Connection, clock: EvakaClock) {
