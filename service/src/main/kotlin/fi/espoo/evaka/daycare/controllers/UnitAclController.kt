@@ -99,6 +99,33 @@ class UnitAclController(
         }
     }
 
+    @GetMapping("/employee/daycares/{unitId}/scheduled-acl")
+    fun getScheduledDaycareAcl(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+    ): List<ScheduledDaycareAclRow> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_ACL,
+                        unitId,
+                    )
+                    tx.getScheduledDaycareAclRows(unitId)
+                }
+            }
+            .also {
+                Audit.UnitScheduledAclRead.log(
+                    targetId = AuditId(unitId),
+                    meta = mapOf("count" to it.size),
+                )
+            }
+    }
+
     @DeleteMapping("/employee/daycares/{unitId}/supervisors/{employeeId}")
     fun deleteUnitSupervisor(
         db: Database,
@@ -303,6 +330,7 @@ class UnitAclController(
                     val roleAction = getRoleAddAction(aclInfo.role)
                     accessControl.requirePermissionFor(tx, user, clock, roleAction, unitId)
                     validateIsPermanentEmployee(tx, employeeId)
+                    tx.deleteScheduledDaycareAclRow(employeeId, unitId)
                     tx.insertDaycareAclRow(unitId, employeeId, aclInfo.role, aclInfo.update.endDate)
                     tx.upsertEmployeeMessageAccount(employeeId)
                     aclInfo.update.groupIds?.let {

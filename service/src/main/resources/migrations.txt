@@ -489,3 +489,4 @@ V490__daycare_service_worker_note.sql
 V491__password_blacklist.sql
 V492__finance_note.sql
 V493__acl_end_date.sql
+V494__daycare_acl_schedule.sql

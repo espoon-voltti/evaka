@@ -32,6 +32,7 @@ import {
   getDaycareAcl,
   getDaycares,
   getGroups,
+  getScheduledDaycareAcl,
   getTemporaryEmployee,
   getTemporaryEmployees,
   getUnitGroupDetails,
@@ -77,12 +78,15 @@ export const unitQuery = q.query(getDaycare)
 
 export const unitAclQuery = q.query(getDaycareAcl)
 
+export const unitScheduledAclQuery = q.query(getScheduledDaycareAcl)
+
 export const temporaryEmployeeQuery = q.query(getTemporaryEmployee)
 
 export const temporaryEmployeesQuery = q.query(getTemporaryEmployees)
 
 export const addFullAclForRoleMutation = q.mutation(addFullAclForRole, [
-  ({ unitId }) => unitAclQuery({ unitId })
+  ({ unitId }) => unitAclQuery({ unitId }),
+  ({ unitId }) => unitScheduledAclQuery({ unitId })
 ])
 export const createTemporaryEmployeeMutation = q.mutation(
   createTemporaryEmployee,

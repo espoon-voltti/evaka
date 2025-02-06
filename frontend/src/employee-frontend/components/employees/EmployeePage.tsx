@@ -40,6 +40,7 @@ import DaycareRolesModal from './DaycareRolesModal'
 import {
   deleteEmployeeDaycareRolesMutation,
   deleteEmployeeMobileDeviceMutation,
+  deleteEmployeeScheduledDaycareRoleMutation,
   employeeDetailsQuery,
   updateEmployeeGlobalRolesMutation
 } from './queries'
@@ -111,6 +112,12 @@ const EmployeePage = React.memo(function EmployeePage({
   const sortedRoles = useMemo(
     () => sortBy(employee.daycareRoles, ({ daycareName }) => daycareName),
     [employee.daycareRoles]
+  )
+
+  const sortedScheduledRoles = useMemo(
+    () =>
+      sortBy(employee.scheduledDaycareRoles, ({ daycareName }) => daycareName),
+    [employee.scheduledDaycareRoles]
   )
 
   return (
@@ -212,6 +219,54 @@ const EmployeePage = React.memo(function EmployeePage({
           ))}
         </Tbody>
       </Table>
+
+      <Gap />
+
+      <Title size={3}>
+        {i18n.employees.editor.unitRoles.scheduledRolesTitle}
+      </Title>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{i18n.employees.editor.unitRoles.unit}</Th>
+            <Th>{i18n.employees.editor.unitRoles.role}</Th>
+            <Th>{i18n.employees.editor.unitRoles.startDate}</Th>
+            <Th>{i18n.employees.editor.unitRoles.endDate}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {sortedScheduledRoles.map(
+            ({ daycareId, daycareName, role, startDate, endDate }) => (
+              <Tr key={`${daycareId}/${role}`}>
+                <Td>
+                  <Link to={`/units/${daycareId}`}>{daycareName}</Link>
+                </Td>
+                <Td>{i18n.roles.adRoles[role]}</Td>
+                <Td>{startDate.format()}</Td>
+                <Td>{endDate?.format() ?? '-'}</Td>
+                <Td>
+                  <ConfirmedMutation
+                    buttonStyle="ICON"
+                    icon={faTrash}
+                    buttonAltText={i18n.common.remove}
+                    confirmationTitle={
+                      i18n.employees.editor.unitRoles.deleteConfirm
+                    }
+                    mutation={deleteEmployeeScheduledDaycareRoleMutation}
+                    onClick={() => ({
+                      id: employee.id,
+                      daycareId: daycareId
+                    })}
+                    disabled={editingGlobalRoles}
+                  />
+                </Td>
+              </Tr>
+            )
+          )}
+        </Tbody>
+      </Table>
+
       <Gap />
 
       <Title size={3}>{i18n.employees.editor.mobile.title}</Title>

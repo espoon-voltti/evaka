@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.service.NewCustomerIncomeNotification
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.jamix.JamixService
 import fi.espoo.evaka.koski.KoskiUpdateService
+import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.deactivateInactiveEmployees
@@ -39,6 +40,7 @@ import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.PasswordBlacklist
 import fi.espoo.evaka.shared.auth.getEndedDaycareAclRows
+import fi.espoo.evaka.shared.auth.upsertAclRowsFromScheduled
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -235,7 +237,7 @@ enum class ScheduledJob(
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 20))),
     ),
     DeleteEndedAcl(
-        ScheduledJobs::removeEndedAcl,
+        ScheduledJobs::syncAclRows,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 5))),
     ),
 }
@@ -510,17 +512,23 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             passwordBlacklist.importBlacklists(db, Path.of(directory))
         }
 
-    fun removeEndedAcl(db: Database.Connection, clock: EvakaClock) =
+    fun syncAclRows(db: Database.Connection, clock: EvakaClock) =
         db.transaction { tx ->
-            tx.getEndedDaycareAclRows(clock.today()).forEach {
+            val now = clock.now()
+            val today = now.toLocalDate()
+
+            tx.getEndedDaycareAclRows(today).forEach {
                 removeDaycareAclForRole(
                     tx,
                     asyncJobRunner,
-                    clock.now(),
+                    now,
                     it.daycareId,
                     it.employeeId,
                     it.role,
                 )
             }
+
+            val employeeIds = tx.upsertAclRowsFromScheduled(today)
+            employeeIds.forEach { tx.upsertEmployeeMessageAccount(it) }
         }
 }

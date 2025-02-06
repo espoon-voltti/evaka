@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.auth.insertScheduledDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -61,6 +62,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -457,7 +459,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `removeEndedAcl removes rows where end date has passed`() {
+    fun `syncAclRows removes rows where end date has passed`() {
         val now = HelsinkiDateTime.of(LocalDate.of(2024, 5, 1), LocalTime.of(0, 5))
         val today = now.toLocalDate()
 
@@ -494,13 +496,66 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, tx.getDaycareAclRows(daycare4.id, false).size)
         }
 
-        scheduledJobs.removeEndedAcl(db, MockEvakaClock(now))
+        scheduledJobs.syncAclRows(db, MockEvakaClock(now))
 
         db.read { tx ->
             assertEquals(1, tx.getDaycareAclRows(daycare1.id, false).size)
             assertEquals(0, tx.getDaycareAclRows(daycare2.id, false).size)
             assertEquals(1, tx.getDaycareAclRows(daycare3.id, false).size)
             assertEquals(1, tx.getDaycareAclRows(daycare4.id, false).size)
+        }
+    }
+
+    @Test
+    fun `syncAclRows upserts scheduled rows where start date has come`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 5, 1), LocalTime.of(0, 5))
+        val today = now.toLocalDate()
+
+        val daycare1 = DevDaycare(areaId = testArea.id)
+        val daycare2 = DevDaycare(areaId = testArea.id)
+        val daycare3 = DevDaycare(areaId = testArea.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare3)
+            tx.insert(employee)
+            tx.insertDaycareAclRow(daycare1.id, employee.id, UserRole.STAFF, endDate = null)
+            tx.insertScheduledDaycareAclRow(
+                employeeId = employee.id,
+                daycareIds = listOf(daycare1.id),
+                role = UserRole.SPECIAL_EDUCATION_TEACHER,
+                startDate = today,
+                endDate = null,
+            )
+            tx.insertScheduledDaycareAclRow(
+                employeeId = employee.id,
+                daycareIds = listOf(daycare2.id),
+                role = UserRole.SPECIAL_EDUCATION_TEACHER,
+                startDate = today.minusDays(1),
+                endDate = null,
+            )
+            tx.insertScheduledDaycareAclRow(
+                employeeId = employee.id,
+                daycareIds = listOf(daycare3.id),
+                role = UserRole.SPECIAL_EDUCATION_TEACHER,
+                startDate = today.plusDays(1),
+                endDate = null,
+            )
+        }
+
+        scheduledJobs.syncAclRows(db, MockEvakaClock(now))
+
+        db.read { tx ->
+            assertEquals(
+                listOf(UserRole.SPECIAL_EDUCATION_TEACHER),
+                tx.getDaycareAclRows(daycare1.id, false).map { it.role },
+            )
+            assertEquals(
+                listOf(UserRole.SPECIAL_EDUCATION_TEACHER),
+                tx.getDaycareAclRows(daycare2.id, false).map { it.role },
+            )
+            assertTrue(tx.getDaycareAclRows(daycare3.id, false).isEmpty())
         }
     }
 

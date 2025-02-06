@@ -2160,9 +2160,11 @@ export const fi = {
     accessControl: {
       aclRoles: 'Luvitukset',
       activeAclRoles: 'Aktiiviset luvitukset',
+      scheduledAclRoles: 'Tulevat luvitukset',
       role: 'Rooli',
       name: 'Nimi',
       email: 'Sähköpostiosoite',
+      aclStartDate: 'Luvitus alkaa',
       aclEndDate: 'Luvitus päättyy',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
@@ -4708,8 +4710,10 @@ export const fi = {
       globalRoles: 'Järjestelmäroolit',
       unitRoles: {
         title: 'Luvitukset',
+        scheduledRolesTitle: 'Tulevat luvitukset',
         unit: 'Yksikkö',
         role: 'Rooli yksikössä',
+        startDate: 'Luvitus alkaa',
         endDate: 'Luvitus päättyy',
         deleteConfirm: 'Haluatko poistaa käyttäjän luvituksen?',
         deleteAll: 'Poista kaikki luvitukset',

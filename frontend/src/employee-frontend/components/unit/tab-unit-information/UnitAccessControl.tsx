@@ -18,6 +18,7 @@ import {
   DaycareAclRow,
   DaycareId,
   EmployeeId,
+  ScheduledDaycareAclRow,
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import {
@@ -58,7 +59,8 @@ import {
   deleteUnitSupervisorMutation,
   reactivateTemporaryEmployeeMutation,
   temporaryEmployeesQuery,
-  unitAclQuery
+  unitAclQuery,
+  unitScheduledAclQuery
 } from '../queries'
 
 import AddAclModal from './acl-modals/AddAclModal'
@@ -73,6 +75,21 @@ export type DaycareAclRole = Extract<
   | 'SPECIAL_EDUCATION_TEACHER'
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
 >
+
+const roleOrder = (role: UserRole) => {
+  switch (role) {
+    case 'UNIT_SUPERVISOR':
+      return 0
+    case 'SPECIAL_EDUCATION_TEACHER':
+      return 1
+    case 'EARLY_CHILDHOOD_EDUCATION_SECRETARY':
+      return 2
+    case 'STAFF':
+      return 3
+    default:
+      return 999 // not expected
+  }
+}
 
 function GroupListing({
   unitGroups,
@@ -235,14 +252,7 @@ function AclTable({
       orderBy(
         rows.filter((row) => !row.employee.temporary),
         [
-          (row) =>
-            row.role === 'UNIT_SUPERVISOR'
-              ? 0
-              : row.role === 'SPECIAL_EDUCATION_TEACHER'
-                ? 1
-                : row.role === 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-                  ? 2
-                  : 3,
+          (row) => roleOrder(row.role),
           (row) => row.employee.firstName,
           (row) => row.employee.lastName
         ]
@@ -307,6 +317,52 @@ function AclTable({
             coefficientPermitted={coefficientPermitted}
             onClickEdit={() => onClickEdit(row)}
           />
+        ))}
+      </Tbody>
+    </Table>
+  )
+}
+
+function ScheduledAclTable({ rows }: { rows: ScheduledDaycareAclRow[] }) {
+  const { i18n } = useTranslation()
+
+  const orderedRows = useMemo(
+    () =>
+      orderBy(rows, [
+        (row) => roleOrder(row.role),
+        (row) => row.firstName,
+        (row) => row.lastName
+      ]),
+    [rows]
+  )
+
+  return (
+    <Table data-qa="scheduled-acl-table">
+      <Thead>
+        <Tr>
+          <Th>{i18n.unit.accessControl.role}</Th>
+          <Th>{i18n.common.form.name}</Th>
+          <Th>{i18n.unit.accessControl.aclStartDate}</Th>
+          <Th>{i18n.unit.accessControl.aclEndDate}</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {orderedRows.map((row) => (
+          <Tr key={row.id} data-qa={`scheduled-acl-row-${row.id}`}>
+            <Td>
+              <span data-qa="role">{i18n.roles.adRoles[row.role]}</span>
+            </Td>
+            <Td>
+              <FixedSpaceColumn spacing="zero">
+                <span data-qa="name">
+                  {formatName(row.firstName, row.lastName, i18n)}
+                </span>
+                <EmailSpan data-qa="email">{row.email}</EmailSpan>
+              </FixedSpaceColumn>
+            </Td>
+            <Td>{row.startDate.format()}</Td>
+            <Td>{row.endDate?.format()}</Td>
+          </Tr>
         ))}
       </Tbody>
     </Table>
@@ -521,6 +577,9 @@ export default React.memo(function UnitAccessControl({
 
   const employees = useQueryResult(getEmployeesQuery())
   const daycareAclRows = useQueryResult(unitAclQuery({ unitId }))
+  const scheduledDaycareAclRows = useQueryResult(
+    unitScheduledAclQuery({ unitId })
+  )
   const temporaryEmployees = useQueryResult(
     permittedActions.includes('READ_TEMPORARY_EMPLOYEE')
       ? temporaryEmployeesQuery({ unitId })
@@ -648,6 +707,11 @@ export default React.memo(function UnitAccessControl({
         ))}
 
         <Gap size="XL" />
+
+        <H3 noMargin>{i18n.unit.accessControl.scheduledAclRoles}</H3>
+        {renderResult(scheduledDaycareAclRows, (scheduledDaycareAclRows) => (
+          <ScheduledAclTable rows={scheduledDaycareAclRows} />
+        ))}
 
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
           <H3 noMargin>{i18n.unit.accessControl.temporaryEmployees.title}</H3>
