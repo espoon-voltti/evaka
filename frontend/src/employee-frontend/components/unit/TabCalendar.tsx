@@ -131,7 +131,10 @@ export default React.memo(function TabCalendar({
           <Gap size="s" />
         </>
       ) : null}
-      {unitInformation.permittedActions.includes('READ_GROUP_DETAILS') ? (
+      {unitInformation.permittedActions.includes('READ_GROUP_DETAILS') &&
+      unitInformation.groups.some((g) =>
+        g.permittedActions.includes('READ_ABSENCES')
+      ) ? (
         <Calendar unitId={unitId} unitInformation={unitInformation} />
       ) : null}
     </>
@@ -169,8 +172,9 @@ const CalendarContent = React.memo(function CalendarContent({
 
   // Using READ_CHILD_ATTENDANCES to check if the user can see the week view is not exactly accurate,
   // but it's hard to do a finer grained check with the current UX.
-  const hasPermissionToReadAttendances =
-    unitInformation.permittedActions.includes('READ_CHILD_ATTENDANCES')
+  const hasPermissionWeekCalendar = unitInformation.permittedActions.includes(
+    'READ_CHILD_ATTENDANCES'
+  )
 
   const [searchParams] = useSearchParams()
 
@@ -190,13 +194,13 @@ const CalendarContent = React.memo(function CalendarContent({
   const [requestedMode, setRequestedMode] = useState<CalendarMode>(
     modeParam && ['month', 'week'].includes(modeParam)
       ? (modeParam as CalendarMode)
-      : realtimeStaffAttendanceEnabled && hasPermissionToReadAttendances
+      : realtimeStaffAttendanceEnabled && hasPermissionWeekCalendar
         ? 'week'
         : 'month'
   )
 
   const [mode, availableModes]: [CalendarMode, CalendarMode[]] =
-    hasPermissionToReadAttendances
+    hasPermissionWeekCalendar
       ? selectedGroup.type === 'staff' ||
         selectedGroup.type === 'no-group' ||
         selectedGroup.type === 'all-children'
