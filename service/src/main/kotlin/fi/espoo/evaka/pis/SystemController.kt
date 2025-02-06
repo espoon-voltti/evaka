@@ -114,6 +114,7 @@ class SystemController(
                     }
 
                     tx.updateLastWeakLogin(clock, citizen.id)
+                    tx.updateCitizenOnLogin(clock, citizen.id, keycloakEmail = null)
                     personService.getPersonWithChildren(tx, user, citizen.id)
                     CitizenUserIdentity(citizen.id)
                 }

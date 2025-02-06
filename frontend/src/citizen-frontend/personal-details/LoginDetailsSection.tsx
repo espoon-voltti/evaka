@@ -374,7 +374,9 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
               message={t.unacceptablePassword}
             />
           )}
-          {isUsernameConflict && <AlertBox message={t.usernameConflict} />}
+          {isUsernameConflict && (
+            <AlertBox message={t.usernameConflict(username)} />
+          )}
         </FixedSpaceColumn>
       </form>
     </MutateFormModal>
