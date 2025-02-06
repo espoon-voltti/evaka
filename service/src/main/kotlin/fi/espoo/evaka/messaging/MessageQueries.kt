@@ -1115,8 +1115,8 @@ data class UnitMessageReceiversResult(
     val accountId: MessageAccountId,
     val unitId: DaycareId?,
     val unitName: String?,
-    val groupId: GroupId?,
-    val groupName: String?,
+    val groupId: GroupId,
+    val groupName: String,
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
@@ -1145,9 +1145,9 @@ fun Database.Read.getReceiversForNewMessage(
                 ${predicate(idFilter.forTable("message_account"))} AND
                 type = ANY('{PERSONAL,GROUP}'::message_account_type[])
         ), starting_children AS (
-            SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, COALESCE(dgp.start_date, p.start_date) AS start_date
+            SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, dgp.start_date
             FROM placement p
-            LEFT JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+            JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
             WHERE p.start_date > ${bind(today)} OR dgp.start_date > ${bind(today)}
         ), children AS (
             SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
@@ -1214,7 +1214,6 @@ fun Database.Read.getReceiversForNewMessage(
                 )
             }
             .toList<UnitMessageReceiversResult>()
-            .filter { it.groupId != null }
             .groupBy { it.accountId }
             .map { (groupKey, receivers) ->
                 val units =
@@ -1287,9 +1286,8 @@ private fun getReceiverGroups(
         .map { (group, children) ->
             val (groupId, groupName) = group
             MessageReceiver.Group(
-                id = groupId!!, // TODO: Groupless are filtered out. Fix this when children without
-                // group need to be available.
-                name = groupName!!,
+                id = groupId,
+                name = groupName,
                 hasStarters = children.any { it.startDate != null },
                 receivers =
                     children.map {
