@@ -7,9 +7,11 @@ import React, { useState } from 'react'
 import { Action } from 'lib-common/generated/action'
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import { DaycareAclRow, DaycareId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
@@ -30,6 +32,7 @@ interface Props {
 type FormState = {
   selectedGroups: DaycareGroupResponse[] | null
   hasStaffOccupancyEffect: boolean | null
+  endDate: LocalDate | null
 }
 
 export default React.memo(function EditAclModal({
@@ -39,7 +42,7 @@ export default React.memo(function EditAclModal({
   groups,
   row
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { employee, role } = row
   const groupOptions = useGroupOptions(groups)
 
@@ -51,7 +54,8 @@ export default React.memo(function EditAclModal({
       'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
     )
       ? employee.hasStaffOccupancyEffect
-      : null
+      : null,
+    endDate: row.endDate
   })
 
   return (
@@ -63,7 +67,8 @@ export default React.memo(function EditAclModal({
         employeeId: row.employee.id,
         body: {
           groupIds: formData.selectedGroups?.map(({ id }) => id) ?? null,
-          hasStaffOccupancyEffect: formData.hasStaffOccupancyEffect
+          hasStaffOccupancyEffect: formData.hasStaffOccupancyEffect,
+          endDate: formData.endDate
         }
       })}
       resolveLabel={i18n.common.save}
@@ -99,6 +104,7 @@ export default React.memo(function EditAclModal({
             />
           </FixedSpaceColumn>
         )}
+
         {permittedActions.includes('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
             data-qa="coefficient-checkbox"
@@ -115,6 +121,19 @@ export default React.memo(function EditAclModal({
             }}
           />
         )}
+
+        <FixedSpaceColumn spacing="xs">
+          <Label>{`${i18n.unit.accessControl.aclEndDate}`}</Label>
+          <DatePicker
+            data-qa="end-date"
+            date={formData.endDate}
+            onChange={(date) =>
+              setFormData((prev) => ({ ...prev, endDate: date }))
+            }
+            locale={lang}
+            minDate={LocalDate.todayInHelsinkiTz()}
+          />
+        </FixedSpaceColumn>
       </FixedSpaceColumn>
     </MutateFormModal>
   )

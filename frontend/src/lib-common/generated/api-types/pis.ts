@@ -135,6 +135,7 @@ export interface DaycareGroupRole {
 export interface DaycareRole {
   daycareId: DaycareId
   daycareName: string
+  endDate: LocalDate | null
   role: UserRole
 }
 
@@ -734,6 +735,7 @@ export interface UpdateWeakLoginCredentialsRequest {
 */
 export interface UpsertEmployeeDaycareRolesRequest {
   daycareIds: DaycareId[]
+  endDate: LocalDate | null
   role: UserRole
 }
 
@@ -760,6 +762,14 @@ export function deserializeJsonCreationModificationMetadata(json: JsonOf<Creatio
     createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
     createdFromApplicationCreated: (json.createdFromApplicationCreated != null) ? HelsinkiDateTime.parseIso(json.createdFromApplicationCreated) : null,
     modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
+  }
+}
+
+
+export function deserializeJsonDaycareRole(json: JsonOf<DaycareRole>): DaycareRole {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
   }
 }
 
@@ -794,6 +804,7 @@ export function deserializeJsonEmployeeWithDaycareRoles(json: JsonOf<EmployeeWit
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
+    daycareRoles: json.daycareRoles.map(e => deserializeJsonDaycareRole(e)),
     lastLogin: (json.lastLogin != null) ? HelsinkiDateTime.parseIso(json.lastLogin) : null,
     updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
   }
@@ -979,6 +990,14 @@ export function deserializeJsonPersonWithChildrenDTO(json: JsonOf<PersonWithChil
 
 
 export function deserializeJsonRestrictedDetails(json: JsonOf<RestrictedDetails>): RestrictedDetails {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
+  }
+}
+
+
+export function deserializeJsonUpsertEmployeeDaycareRolesRequest(json: JsonOf<UpsertEmployeeDaycareRolesRequest>): UpsertEmployeeDaycareRolesRequest {
   return {
     ...json,
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null

@@ -180,16 +180,18 @@ const EmployeePage = React.memo(function EmployeePage({
           <Tr>
             <Th>{i18n.employees.editor.unitRoles.unit}</Th>
             <Th>{i18n.employees.editor.unitRoles.role}</Th>
+            <Th>{i18n.employees.editor.unitRoles.endDate}</Th>
             <Th />
           </Tr>
         </Thead>
         <Tbody>
-          {sortedRoles.map(({ daycareId, daycareName, role }) => (
+          {sortedRoles.map(({ daycareId, daycareName, role, endDate }) => (
             <Tr key={`${daycareId}/${role}`}>
               <Td>
                 <Link to={`/units/${daycareId}`}>{daycareName}</Link>
               </Td>
               <Td>{i18n.roles.adRoles[role]}</Td>
+              <Td>{endDate?.format() ?? '-'}</Td>
               <Td>
                 <ConfirmedMutation
                   buttonStyle="ICON"

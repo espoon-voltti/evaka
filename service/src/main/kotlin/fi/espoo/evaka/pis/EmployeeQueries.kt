@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
+import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
 data class NewEmployee(
@@ -49,7 +50,12 @@ data class EmployeeRoles(
     val allScopedRoles: Set<UserRole> = setOf(),
 )
 
-data class DaycareRole(val daycareId: DaycareId, val daycareName: String, val role: UserRole)
+data class DaycareRole(
+    val daycareId: DaycareId,
+    val daycareName: String,
+    val role: UserRole,
+    val endDate: LocalDate?,
+)
 
 data class DaycareGroupRole(
     val daycareId: DaycareId,
@@ -266,7 +272,7 @@ SELECT
     temp_unit.name as temporary_unit_name,
     employee.roles AS global_roles,
     (
-        SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
+        SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role, 'endDate', acl.end_date))
         FROM daycare_acl acl
         JOIN daycare d ON acl.daycare_id = d.id
         WHERE acl.employee_id = employee.id
@@ -308,13 +314,14 @@ fun Database.Transaction.upsertEmployeeDaycareRoles(
     id: EmployeeId,
     daycareIds: List<DaycareId>,
     role: UserRole,
+    endDate: LocalDate?,
 ) {
     executeBatch(daycareIds) {
         sql(
             """
-INSERT INTO daycare_acl (daycare_id, employee_id, role) 
-VALUES (${bind { daycareId -> daycareId }}, ${bind(id)}, ${bind(role)})
-ON CONFLICT (employee_id, daycare_id) DO UPDATE SET role = ${bind(role)}
+INSERT INTO daycare_acl (daycare_id, employee_id, role, end_date) 
+VALUES (${bind { daycareId -> daycareId }}, ${bind(id)}, ${bind(role)}, ${bind(endDate)})
+ON CONFLICT (employee_id, daycare_id) DO UPDATE SET role = ${bind(role)}, end_date = ${bind(endDate)}
 """
         )
     }

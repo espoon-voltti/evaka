@@ -80,6 +80,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     daycareId = testDaycare.id,
                     daycareName = testDaycare.name,
                     role = UserRole.UNIT_SUPERVISOR,
+                    endDate = null,
                 )
             ),
             supervisor.daycareRoles,

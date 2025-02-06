@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import LocalDate from '../../local-date'
 import { Id } from '../../id-type'
 import { JsonOf } from '../../json'
 
@@ -84,6 +85,7 @@ export type DailyServiceTimeNotificationId = Id<'DailyServiceTimeNotification'>
 */
 export interface DaycareAclRow {
   employee: DaycareAclRowEmployee
+  endDate: LocalDate | null
   groupIds: GroupId[]
   role: UserRole
 }
@@ -302,6 +304,14 @@ export type UserRole =
 export type VoucherValueDecisionId = Id<'VoucherValueDecision'>
 
 export type ChildId = PersonId
+
+
+export function deserializeJsonDaycareAclRow(json: JsonOf<DaycareAclRow>): DaycareAclRow {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
+  }
+}
 
 
 export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {

@@ -2163,6 +2163,7 @@ export const fi = {
       role: 'Rooli',
       name: 'Nimi',
       email: 'Sähköpostiosoite',
+      aclEndDate: 'Luvitus päättyy',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
       addDaycareAclModal: {
@@ -4709,6 +4710,7 @@ export const fi = {
         title: 'Luvitukset',
         unit: 'Yksikkö',
         role: 'Rooli yksikössä',
+        endDate: 'Luvitus päättyy',
         deleteConfirm: 'Haluatko poistaa käyttäjän luvituksen?',
         deleteAll: 'Poista kaikki luvitukset',
         deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?',
