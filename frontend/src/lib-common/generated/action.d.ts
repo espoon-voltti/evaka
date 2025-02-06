@@ -288,6 +288,10 @@ export type FeeDecision =
   | 'UNIGNORE'
   | 'UPDATE'
 
+export type FinanceNote =
+  | 'DELETE'
+  | 'UPDATE'
+
 export type Group =
   | 'CREATE_ABSENCES'
   | 'CREATE_CALENDAR_EVENT'
@@ -362,6 +366,7 @@ export type Payment =
 
 export type Person =
   | 'ADD_SSN'
+  | 'CREATE_FINANCE_NOTE'
   | 'CREATE_FOSTER_PARENT_RELATIONSHIP'
   | 'CREATE_INCOME'
   | 'CREATE_INVOICE_CORRECTION'
@@ -383,6 +388,7 @@ export type Person =
   | 'READ_DEPENDANTS'
   | 'READ_FAMILY_OVERVIEW'
   | 'READ_FEE_DECISIONS'
+  | 'READ_FINANCE_NOTES'
   | 'READ_FOSTER_CHILDREN'
   | 'READ_FOSTER_PARENTS'
   | 'READ_INCOME'

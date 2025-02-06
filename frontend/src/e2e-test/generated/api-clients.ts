@@ -59,6 +59,7 @@ import { DevDocumentTemplate } from './api-types'
 import { DevEmployee } from './api-types'
 import { DevEmployeePin } from './api-types'
 import { DevFamilyContact } from './api-types'
+import { DevFinanceNote } from './api-types'
 import { DevFosterParent } from './api-types'
 import { DevFridgeChild } from './api-types'
 import { DevFridgePartner } from './api-types'
@@ -1083,6 +1084,29 @@ export async function createFeeThresholds(
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
       data: request.body satisfies JsonCompatible<FeeThresholds>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createFinanceNotes
+*/
+export async function createFinanceNotes(
+  request: {
+    body: DevFinanceNote[]
+  },
+  options?: { mockedTime?: HelsinkiDateTime }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/finance-notes`.toString(),
+      method: 'POST',
+      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
+      data: request.body satisfies JsonCompatible<DevFinanceNote[]>
     })
     return json
   } catch (e) {

@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.FeeThresholdsId
+import fi.espoo.evaka.shared.FinanceNoteId
 import fi.espoo.evaka.shared.FosterParentId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
@@ -696,6 +697,20 @@ sealed interface Action {
     ) : ScopedAction<ApplicationNoteId> {
         UPDATE(HasGlobalRole(ADMIN, SERVICE_WORKER), IsEmployee.authorOfApplicationNote()),
         DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER), IsEmployee.authorOfApplicationNote());
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class FinanceNote(override vararg val defaultRules: ScopedActionRule<in FinanceNoteId>) :
+        ScopedAction<FinanceNoteId> {
+        UPDATE(
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF),
+            IsEmployee.authorOfFinanceNote(),
+        ),
+        DELETE(
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF),
+            IsEmployee.authorOfFinanceNote(),
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1814,6 +1829,7 @@ sealed interface Action {
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) :
         ScopedAction<PersonId> {
         ADD_SSN(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        CREATE_FINANCE_NOTE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         CREATE_FOSTER_PARENT_RELATIONSHIP(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         CREATE_INCOME(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_INVOICE_CORRECTION(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
@@ -1848,6 +1864,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfPerson(),
         ),
         READ_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
+        READ_FINANCE_NOTES(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         READ_FOSTER_CHILDREN(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild(),

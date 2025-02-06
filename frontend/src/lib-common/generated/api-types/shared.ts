@@ -151,6 +151,8 @@ export type FeeDecisionId = Id<'FeeDecision'>
 
 export type FeeThresholdsId = Id<'FeeThresholds'>
 
+export type FinanceNoteId = Id<'FinanceNote'>
+
 export type FosterParentId = Id<'FosterParent'>
 
 export type GroupId = Id<'Group'>

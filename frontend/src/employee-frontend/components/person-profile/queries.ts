@@ -6,6 +6,12 @@ import { PersonId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
+  createFinanceNote,
+  deleteFinanceNote,
+  getFinanceNotes,
+  updateFinanceNote
+} from '../../generated/api-clients/finance'
+import {
   createInvoiceCorrection,
   createReplacementDraftsForHeadOfFamily,
   deleteInvoiceCorrection,
@@ -44,3 +50,17 @@ export const createReplacementDraftsForHeadOfFamilyMutation = q.mutation(
   createReplacementDraftsForHeadOfFamily,
   [({ headOfFamilyId }) => headOfFamilyInvoicesQuery({ id: headOfFamilyId })]
 )
+
+export const financeNotesQuery = q.query(getFinanceNotes)
+
+export const createFinanceNoteMutation = q.mutation(createFinanceNote, [
+  ({ body }) => financeNotesQuery({ personId: body.personId })
+])
+
+export const updateFinanceNoteMutation = q.parametricMutation<{
+  id: PersonId
+}>()(updateFinanceNote, [({ id }) => financeNotesQuery({ personId: id })])
+
+export const deleteFinanceNoteMutation = q.parametricMutation<{
+  id: PersonId
+}>()(deleteFinanceNote, [({ id }) => financeNotesQuery({ personId: id })])

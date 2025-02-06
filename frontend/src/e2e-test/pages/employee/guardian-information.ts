@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -655,6 +656,16 @@ class InvoiceCorrectionNoteModal extends Modal {
   note = new TextInput(this.findByDataQa('note-textarea'))
 }
 
+class FinanceNotesAndMessagesSection extends Section {
+  #noteCreatedAt = this.findAll(`[data-qa="finance-note-created-at"]`)
+
+  async checkNoteCreatedAt(nth: number, expectedCreatedAt: HelsinkiDateTime) {
+    await this.#noteCreatedAt
+      .nth(nth)
+      .assertTextEquals(expectedCreatedAt.format())
+  }
+}
+
 const collapsibles = {
   personInfo: {
     selector: '[data-qa="person-info-collapsible"]',
@@ -707,6 +718,10 @@ const collapsibles = {
   invoiceCorrections: {
     selector: '[data-qa="person-invoice-corrections-collapsible"]',
     section: InvoiceCorrectionsSection
+  },
+  financeNotesAndMessages: {
+    selector: '[data-qa="person-finance-notes-and-messages-collapsible"]',
+    section: FinanceNotesAndMessagesSection
   }
 }
 

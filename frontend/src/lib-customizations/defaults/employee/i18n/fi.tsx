@@ -1691,6 +1691,14 @@ export const fi = {
     partnerInfo:
       'Samassa osoitteessa avio/avoliiton omaisessa suhteessa asuva toinen henkilö',
     partnerAdd: 'Lisää puoliso',
+    financeNotesAndMessages: {
+      title: 'Talouden muistiinpanot ja viestit',
+      addNote: 'Lisää muistiinpano',
+      confirmDelete: 'Haluatko varmasti poistaa muistiinpanon',
+      note: 'Muistiinpano',
+      created: 'Luotu',
+      inEdit: 'Muokattavana'
+    },
     forceManualFeeDecisionsLabel: 'Maksupäätösten lähettäminen',
     forceManualFeeDecisionsChecked: 'Lähetetään aina manuaalisesti',
     forceManualFeeDecisionsUnchecked: 'Automaattisesti, jos mahdollista',
