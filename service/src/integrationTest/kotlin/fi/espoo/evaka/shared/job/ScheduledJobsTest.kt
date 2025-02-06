@@ -19,6 +19,8 @@ import fi.espoo.evaka.note.child.daily.getChildDailyNoteForChild
 import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
 import fi.espoo.evaka.note.child.sticky.createChildStickyNote
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChild
+import fi.espoo.evaka.pis.service.getGuardianChildIds
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.ApplicationId
@@ -28,11 +30,14 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
@@ -47,6 +52,7 @@ import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -343,6 +349,37 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.WAITING_CONFIRMATION, applicationStatus)
+    }
+
+    @Test
+    fun `RemoveGuardiansFromAdults removes guardianships where child is already 18`() {
+        val today = LocalDate.of(2024, 8, 15)
+        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(2, 0)))
+
+        val adult = DevPerson()
+        val child1 = DevPerson(dateOfBirth = today.minusYears(18).minusDays(1))
+        val child2 = DevPerson(dateOfBirth = today.minusYears(18))
+        val child3 = DevPerson(dateOfBirth = today.minusYears(18).plusDays(1))
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(child3, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child1.id)
+            tx.insertGuardian(adult.id, child2.id)
+            tx.insertGuardian(adult.id, child3.id)
+        }
+
+        db.read { tx ->
+            assertEquals(
+                setOf(child1.id, child2.id, child3.id),
+                tx.getGuardianChildIds(adult.id).toSet(),
+            )
+        }
+
+        scheduledJobs.removeGuardiansFromAdults(db, clock)
+
+        db.read { tx -> assertEquals(setOf(child3.id), tx.getGuardianChildIds(adult.id).toSet()) }
     }
 
     @Test
