@@ -8,6 +8,10 @@ import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
+import {
+  AssistanceNeedDecisionStatus,
+  assistanceNeedDecisionStatuses
+} from 'lib-common/generated/api-types/assistanceneed'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -15,6 +19,7 @@ import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
   SortableTh,
@@ -25,6 +30,7 @@ import {
   Thead,
   Tr
 } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import { getAssistanceNeedDecisionsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
@@ -87,18 +93,33 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
     [sortColumn, sortDirection]
   )
 
+  const [shownStatuses, setShownStatuses] = useState<
+    AssistanceNeedDecisionStatus[]
+  >(['DRAFT', 'NEEDS_WORK', 'ACCEPTED'])
+  const [showExpired, setShowExpired] = useState(false)
+
   const decisionRows = useMemo(
     () =>
       report.map((rs) =>
         orderBy(
           rs.filter(
-            (row) => !careAreaFilter || row.careAreaName === careAreaFilter
+            (row) =>
+              (!careAreaFilter || row.careAreaName === careAreaFilter) &&
+              (showExpired || !row.expired) &&
+              shownStatuses.includes(row.status)
           ),
           [sortColumn],
           [sortDirection === 'ASC' ? 'asc' : 'desc']
         )
       ),
-    [report, careAreaFilter, sortColumn, sortDirection]
+    [
+      report,
+      careAreaFilter,
+      shownStatuses,
+      showExpired,
+      sortColumn,
+      sortDirection
+    ]
   )
 
   const navigate = useNavigate()
@@ -118,6 +139,7 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.assistanceNeedDecisions.title}</Title>
+
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <Wrapper>
@@ -151,6 +173,41 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
               getItemLabel={(item) => item.label}
             />
           </Wrapper>
+        </FilterRow>
+
+        <FilterRow>
+          <FilterLabel>
+            {i18n.reports.assistanceNeedDecisions.statusFilter}
+          </FilterLabel>
+          <FixedSpaceRow>
+            {assistanceNeedDecisionStatuses.map((status) => (
+              <Checkbox
+                key={status}
+                label={
+                  i18n.childInformation.assistanceNeedDecision.statuses[status]
+                }
+                checked={shownStatuses.includes(status)}
+                onChange={(checked) =>
+                  setShownStatuses((prev) =>
+                    checked
+                      ? [...prev, status]
+                      : prev.filter((s) => s !== status)
+                  )
+                }
+              />
+            ))}
+          </FixedSpaceRow>
+        </FilterRow>
+
+        <FilterRow>
+          <FilterLabel>
+            {i18n.reports.assistanceNeedDecisions.otherFilters}
+          </FilterLabel>
+          <Checkbox
+            label={i18n.reports.assistanceNeedDecisions.showExpired}
+            checked={showExpired}
+            onChange={setShowExpired}
+          />
         </FilterRow>
 
         {renderResult(decisionRows, (rows) => (

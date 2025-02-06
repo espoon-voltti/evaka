@@ -3627,6 +3627,9 @@ export const fi = {
       sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
       decisionMade: 'Päätös tehty',
       status: 'Tila',
+      statusFilter: 'Näytettävät tilat',
+      otherFilters: 'Muut valinnat',
+      showExpired: 'Näytä päättyneet tuen päätökset',
       returnForEditModal: {
         title: 'Palautetaanko päätös korjattavaksi?',
         okBtn: 'Palauta korjattavaksi',
