@@ -76,16 +76,20 @@ export type DaycareAclRole = Extract<
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
 >
 
-const roleOrder = (role: UserRole) =>
-  role === 'UNIT_SUPERVISOR'
-    ? 0
-    : role === 'SPECIAL_EDUCATION_TEACHER'
-      ? 1
-      : role === 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-        ? 2
-        : role === 'STAFF'
-          ? 3
-          : 999 // not expected
+const roleOrder = (role: UserRole) => {
+  switch (role) {
+    case 'UNIT_SUPERVISOR':
+      return 0
+    case 'SPECIAL_EDUCATION_TEACHER':
+      return 1
+    case 'EARLY_CHILDHOOD_EDUCATION_SECRETARY':
+      return 2
+    case 'STAFF':
+      return 3
+    default:
+      return 999 // not expected
+  }
+}
 
 function GroupListing({
   unitGroups,
