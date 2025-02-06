@@ -4,10 +4,11 @@
 
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { combine, isLoading } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import {
   DaycareGroupResponse,
   DaycareResponse
@@ -216,18 +217,14 @@ function AclTable({
   unitGroups,
   rows,
   onClickEdit,
-  editPermitted,
-  deletePermitted,
-  coefficientPermitted
+  permittedActions
 }: {
   unitId: DaycareId
   dataQa?: string
   unitGroups?: Record<UUID, DaycareGroupResponse>
   rows: DaycareAclRow[]
   onClickEdit: (employeeRow: DaycareAclRow) => void
-  editPermitted?: boolean
-  deletePermitted: boolean
-  coefficientPermitted: boolean
+  permittedActions: Action.Unit[]
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -252,6 +249,38 @@ function AclTable({
     [rows]
   )
 
+  const editPermitted = useMemo(
+    () =>
+      permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
+      permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'),
+    [permittedActions]
+  )
+  const deletePermitted = useCallback(
+    (role: UserRole) => {
+      switch (role) {
+        case 'UNIT_SUPERVISOR':
+          return permittedActions.includes('DELETE_ACL_UNIT_SUPERVISOR')
+        case 'SPECIAL_EDUCATION_TEACHER':
+          return permittedActions.includes(
+            'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
+          )
+        case 'EARLY_CHILDHOOD_EDUCATION_SECRETARY':
+          return permittedActions.includes(
+            'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+          )
+        case 'STAFF':
+          return permittedActions.includes('DELETE_ACL_STAFF')
+        default:
+          return false
+      }
+    },
+    [permittedActions]
+  )
+  const coefficientPermitted = useMemo(
+    () => permittedActions.includes('READ_STAFF_OCCUPANCY_COEFFICIENTS'),
+    [permittedActions]
+  )
+
   return (
     <Table data-qa={dataQa}>
       <Thead>
@@ -269,7 +298,9 @@ function AclTable({
             unitId={unitId}
             unitGroups={unitGroups}
             row={row}
-            isDeletable={deletePermitted && row.employee.id !== user?.id}
+            isDeletable={
+              deletePermitted(row.role) && row.employee.id !== user?.id
+            }
             isEditable={!!(editPermitted && unitGroups)}
             coefficientPermitted={coefficientPermitted}
             onClickEdit={() => onClickEdit(row)}
@@ -609,16 +640,7 @@ export default React.memo(function UnitAccessControl({
               rows={daycareAclRows}
               unitGroups={groups}
               onClickEdit={(row) => setEditedAclRow(row)}
-              editPermitted={
-                permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
-                permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
-              }
-              deletePermitted={permittedActions.includes(
-                'DELETE_ACL_UNIT_SUPERVISOR'
-              )}
-              coefficientPermitted={permittedActions.includes(
-                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
-              )}
+              permittedActions={permittedActions}
             />
           </>
         ))}
