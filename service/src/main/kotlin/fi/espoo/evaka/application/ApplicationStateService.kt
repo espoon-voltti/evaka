@@ -276,13 +276,6 @@ class ApplicationStateService(
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags, clock.now(), user.evakaUserId)
 
-        tx.resetCheckedByAdminAndConfidentiality(
-            applicationId,
-            application.form,
-            clock.now(),
-            user.evakaUserId,
-        )
-
         val sentDate = application.sentDate ?: currentDate
         val dueDate =
             application.dueDate
@@ -382,6 +375,8 @@ class ApplicationStateService(
                 tx.setApplicationProcessId(applicationId, processId, clock.now(), user.evakaUserId)
             }
 
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
+
         Audit.ApplicationSend.log(targetId = AuditId(applicationId))
     }
 
@@ -426,14 +421,9 @@ class ApplicationStateService(
             )
         }
 
-        tx.resetCheckedByAdminAndConfidentiality(
-            application.id,
-            application.form,
-            clock.now(),
-            user.evakaUserId,
-        )
-
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
+
+        tx.resetCheckedByAdminAndConfidentiality(application.id, clock.now(), user.evakaUserId)
     }
 
     fun moveToWaitingPlacement(
@@ -464,13 +454,6 @@ class ApplicationStateService(
             )
         )
 
-        tx.resetCheckedByAdminAndConfidentiality(
-            applicationId,
-            application.form,
-            clock.now(),
-            user.evakaUserId,
-        )
-
         asyncJobRunner.plan(
             tx,
             listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)),
@@ -489,6 +472,8 @@ class ApplicationStateService(
                 )
             }
         }
+
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
 
         Audit.ApplicationVerify.log(targetId = AuditId(applicationId))
     }
@@ -510,13 +495,6 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_PLACEMENT, CANCELLED))
 
-        tx.resetCheckedByAdminAndConfidentiality(
-            applicationId,
-            application.form,
-            clock.now(),
-            user.evakaUserId,
-        )
-
         if (application.status == CANCELLED) {
             tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
                 if (process.history.any { it.state == ArchivedProcessState.COMPLETED }) {
@@ -527,6 +505,9 @@ class ApplicationStateService(
 
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
+
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
+
         Audit.ApplicationReturnToSent.log(targetId = AuditId(applicationId))
     }
 
@@ -1202,6 +1183,8 @@ class ApplicationStateService(
             updatedForm,
             manuallySetDueDate = update.dueDate,
         )
+
+        tx.resetCheckedByAdminAndConfidentiality(original.id, now, user.evakaUserId)
     }
 
     private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean {
@@ -1233,7 +1216,6 @@ class ApplicationStateService(
             modifiedBy,
         )
 
-        resetCheckedByAdminAndConfidentiality(original.id, updatedForm, now, modifiedBy)
         when (manuallySetDueDate) {
             null ->
                 // We don't want to calculate the due date for applications in the CREATED state.
@@ -1249,6 +1231,8 @@ class ApplicationStateService(
                 }
             else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
         }
+
+        resetCheckedByAdminAndConfidentiality(original.id, now, modifiedBy)
     }
 
     private fun Database.Transaction.updateManuallySetDueDate(
