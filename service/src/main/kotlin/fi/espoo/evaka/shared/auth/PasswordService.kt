@@ -6,16 +6,22 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.shared.domain.ServiceUnavailable
+import fi.espoo.evaka.shared.noopMeter
+import fi.espoo.evaka.shared.noopTracer
+import fi.espoo.evaka.shared.withSpan
+import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.api.trace.Tracer
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 import org.springframework.stereotype.Service
 
 @Service
-class PasswordService : AutoCloseable {
+class PasswordService(private val tracer: Tracer = noopTracer(), meter: Meter = noopMeter()) :
+    AutoCloseable {
     private val algorithm = PasswordHashAlgorithm.DEFAULT
     private val passwordPlaceholder = algorithm.placeholder()
-    private val pool: ExecutorService = run {
+    private val pool: ThreadPoolExecutor = run {
         val corePoolSize = 1
         val maximumPoolSize = 16
         val workQueueCapacity = 128
@@ -43,6 +49,19 @@ class PasswordService : AutoCloseable {
             handler,
         )
     }
+    private val activeWorkersGauge =
+        meter
+            .gaugeBuilder("evaka.auth.password_service.active_workers")
+            .ofLongs()
+            .buildWithCallback { it.record(pool.activeCount.toLong()) }
+    private val queueCapacityGauge =
+        meter
+            .gaugeBuilder("evaka.auth.password_service.queue_capacity")
+            .ofLongs()
+            .buildWithCallback { it.record(pool.queue.remainingCapacity().toLong()) }
+    private val matchCount = meter.counterBuilder("evaka.auth.password_service.match_count").build()
+    private val encodeCount =
+        meter.counterBuilder("evaka.auth.password_service.encode_count").build()
 
     /**
      * Checks if the given password matches the given optional encoded password.
@@ -53,7 +72,13 @@ class PasswordService : AutoCloseable {
      */
     @Throws(ServiceUnavailable::class)
     fun isMatch(password: Sensitive<String>, encoded: EncodedPassword?): Boolean =
-        pool.submit<Boolean> { (encoded ?: passwordPlaceholder).isMatch(password) }.get()
+        tracer.withSpan("isMatch") {
+            pool
+                .submit<Boolean> {
+                    (encoded ?: passwordPlaceholder).isMatch(password).also { matchCount.add(1) }
+                }
+                .get()
+        }
 
     /**
      * Encodes the given raw password.
@@ -63,7 +88,11 @@ class PasswordService : AutoCloseable {
      */
     @Throws(ServiceUnavailable::class)
     fun encode(password: Sensitive<String>): EncodedPassword =
-        pool.submit<EncodedPassword> { algorithm.encode(password) }.get()
+        tracer.withSpan("encode") {
+            pool
+                .submit<EncodedPassword> { algorithm.encode(password).also { encodeCount.add(1) } }
+                .get()
+        }
 
     /**
      * Returns true if the encoded password should be rehashed for security and/or maintenance
@@ -71,5 +100,9 @@ class PasswordService : AutoCloseable {
      */
     fun needsRehashing(encoded: EncodedPassword): Boolean = encoded.algorithm != algorithm
 
-    override fun close() = pool.close()
+    override fun close() {
+        pool.close()
+        activeWorkersGauge.close()
+        queueCapacityGauge.close()
+    }
 }
