@@ -11,7 +11,11 @@ import {
 import { useTranslation } from './localization'
 
 function useFailureMessage() {
-  return useTranslation().common.errors.genericGetError
+  const t = useTranslation().common.errors
+  return {
+    generic: t.genericGetError,
+    http403: t.http403Error
+  }
 }
 
 const { UnwrapResult, renderResult } = makeHelpers(useFailureMessage)
