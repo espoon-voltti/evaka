@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import { localDate } from 'lib-common/form/fields'
 import { object, oneOf, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import {
   FinanceDecisionType,
   financeDecisionTypes
@@ -24,6 +25,7 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
+import { unitProviderTypes } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
@@ -37,6 +39,7 @@ const filterForm = object({
   date: required(localDate()),
   areaId: oneOf<AreaId>(),
   unitId: oneOf<DaycareId>(),
+  providerType: oneOf<ProviderType>(),
   decisionType: required(oneOf<FinanceDecisionType>())
 })
 
@@ -69,6 +72,14 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
           label: name
         }))
       },
+      providerType: {
+        domValue: '' as const,
+        options: unitProviderTypes.map((t) => ({
+          value: t,
+          domValue: t,
+          label: i18n.common.providerType[t]
+        }))
+      },
       decisionType: {
         domValue: 'FEE_DECISION' as const,
         options: financeDecisionTypes.map((t) => ({
@@ -80,7 +91,8 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
     }),
     i18n.validationErrors
   )
-  const { date, unitId, areaId, decisionType } = useFormFields(filters)
+  const { date, unitId, areaId, providerType, decisionType } =
+    useFormFields(filters)
 
   const rowsResult = useQueryResult(
     filters.isValid()
@@ -110,6 +122,10 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
         <FilterRow>
           <FilterLabel>{i18n.reports.customerFees.unit}</FilterLabel>
           <SelectF bind={unitId} placeholder={i18n.common.select} />
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.customerFees.providerType}</FilterLabel>
+          <SelectF bind={providerType} placeholder={i18n.common.select} />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.customerFees.type}</FilterLabel>

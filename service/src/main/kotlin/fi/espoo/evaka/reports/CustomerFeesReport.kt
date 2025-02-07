@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
@@ -33,6 +34,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
         @RequestParam areaId: AreaId?,
         @RequestParam unitId: DaycareId?,
         @RequestParam decisionType: FinanceDecisionType,
+        @RequestParam providerType: ProviderType?,
     ): List<CustomerFeesReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -44,9 +46,9 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                     )
                     when (decisionType) {
                         FinanceDecisionType.FEE_DECISION ->
-                            tx.getFeeDecisionRows(date, areaId, unitId)
+                            tx.getFeeDecisionRows(date, areaId, unitId, providerType)
                         FinanceDecisionType.VOUCHER_VALUE_DECISION ->
-                            tx.getVoucherValueDecisionRows(date, areaId, unitId)
+                            tx.getVoucherValueDecisionRows(date, areaId, unitId, providerType)
                     }
                 }
             }
@@ -57,6 +59,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
         date: LocalDate,
         areaId: AreaId?,
         unitId: DaycareId?,
+        providerType: ProviderType?,
     ): List<CustomerFeesReportRow> {
         val predicates =
             PredicateSql { where("fd.valid_during @> ${bind(date)}") }
@@ -66,6 +69,10 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                 )
                 .and(
                     unitId?.let { PredicateSql { where("d.id = ${bind(it)}") } }
+                        ?: PredicateSql.alwaysTrue()
+                )
+                .and(
+                    providerType?.let { PredicateSql { where("d.provider_type = ${bind(it)}") } }
                         ?: PredicateSql.alwaysTrue()
                 )
         return createQuery {
@@ -88,6 +95,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
         date: LocalDate,
         areaId: AreaId?,
         unitId: DaycareId?,
+        providerType: ProviderType?,
     ): List<CustomerFeesReportRow> {
         val predicates =
             PredicateSql { where("daterange(vvd.valid_from, vvd.valid_to, '[]') @> ${bind(date)}") }
@@ -97,6 +105,10 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                 )
                 .and(
                     unitId?.let { PredicateSql { where("d.id = ${bind(it)}") } }
+                        ?: PredicateSql.alwaysTrue()
+                )
+                .and(
+                    providerType?.let { PredicateSql { where("d.provider_type = ${bind(it)}") } }
                         ?: PredicateSql.alwaysTrue()
                 )
         return createQuery {

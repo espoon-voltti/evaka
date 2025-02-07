@@ -3710,6 +3710,7 @@ export const fi = {
       date: 'Päivämäärä',
       area: 'Palvelualue',
       unit: 'Yksikkö',
+      providerType: 'Toimintamuoto',
       type: 'Päätöstyyppi',
       types: {
         FEE_DECISION: 'Maksupäätökset',
