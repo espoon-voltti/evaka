@@ -1063,7 +1063,8 @@ fun Database.Transaction.resetCheckedByAdminAndConfidentiality(
             form.child.assistanceNeeded ||
             form.child.allergies.isNotBlank() ||
             form.child.diet.isNotBlank() ||
-            form.otherInfo.isNotBlank()
+            form.otherInfo.isNotBlank() ||
+            form.secondGuardian?.agreementStatus == OtherGuardianAgreementStatus.NOT_AGREED
 
     execute {
         sql(
