@@ -55,6 +55,7 @@ export interface CreateRetroactiveFeeDecisionsBody {
 export interface DecisionIncome {
   data: Partial<Record<string, number>>
   effect: IncomeEffect
+  forceNewDecision: boolean
   total: number
   totalExpenses: number
   totalIncome: number
@@ -406,6 +407,7 @@ export interface Income {
   createdBy: EvakaUser
   data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
+  forceNewDecision: boolean
   id: IncomeId
   isEntrepreneur: boolean
   modifiedAt: HelsinkiDateTime
@@ -480,6 +482,7 @@ export interface IncomeRequest {
   attachments: Attachment[]
   data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
+  forceNewDecision: boolean
   isEntrepreneur: boolean
   notes: string
   personId: PersonId

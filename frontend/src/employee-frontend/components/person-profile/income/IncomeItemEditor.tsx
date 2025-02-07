@@ -63,6 +63,7 @@ export interface IncomeForm {
   validFrom: LocalDate | null
   validTo: LocalDate | null
   notes: string
+  forceNewDecision: boolean
   attachments: Attachment[]
 }
 
@@ -76,6 +77,7 @@ const emptyIncome: IncomeForm = {
   isEntrepreneur: false,
   worksAtECHA: false,
   notes: '',
+  forceNewDecision: false,
   validFrom: null,
   validTo: null,
   attachments: []
@@ -370,6 +372,15 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           />
         </>
       ) : null}
+
+      <Checkbox
+        label={i18n.personProfile.income.details.forceDecisionsCheckbox}
+        checked={editedIncome.forceNewDecision}
+        onChange={(checked) =>
+          setEditedIncome((prev) => ({ ...prev, forceNewDecision: checked }))
+        }
+      />
+
       <IncomeAttachments
         incomeId={isUpdate(props) ? props.baseIncome.id : null}
         attachments={isUpdate(props) ? props.baseIncome.attachments : []}

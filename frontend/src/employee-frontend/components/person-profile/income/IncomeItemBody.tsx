@@ -66,6 +66,12 @@ const IncomeItemBody = React.memo(function IncomeItemBody({
         <span>{income.notes}</span>
         <Label>{i18n.personProfile.income.details.created}</Label>
         <span>{income.createdAt.toLocalDate().format()}</span>
+        <Label>{i18n.personProfile.income.details.forceDecisions}</Label>
+        <span>
+          {income.forceNewDecision
+            ? i18n.personProfile.income.details.forceDecisionsYes
+            : i18n.personProfile.income.details.forceDecisionsNo}
+        </span>
         <Label>{i18n.personProfile.income.details.handler}</Label>
         <span>
           {income.applicationId

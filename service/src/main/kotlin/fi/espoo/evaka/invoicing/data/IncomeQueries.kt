@@ -39,6 +39,7 @@ fun Database.Transaction.insertIncome(
             data,
             is_entrepreneur,
             works_at_echa,
+            force_new_decision,
             valid_from,
             valid_to,
             notes,
@@ -53,6 +54,7 @@ fun Database.Transaction.insertIncome(
             ${bindJson(income.data)},
             ${bind(income.isEntrepreneur)},
             ${bind(income.worksAtECHA)},
+            ${bind(income.forceNewDecision)},
             ${bind(income.validFrom)},
             ${bind(income.validTo)},
             ${bind(income.notes)},
@@ -85,6 +87,7 @@ fun Database.Transaction.updateIncome(
             data = ${bindJson(income.data)},
             is_entrepreneur = ${bind(income.isEntrepreneur)},
             works_at_echa = ${bind(income.worksAtECHA)},
+            force_new_decision = ${bind(income.forceNewDecision)},
             valid_from = ${bind(income.validFrom)},
             valid_to = ${bind(income.validTo)},
             notes = ${bind(income.notes)},
@@ -272,6 +275,7 @@ fun Row.toIncome(
         totalIncome = calculateTotalIncome(data, coefficientMultiplierProvider),
         totalExpenses = calculateTotalExpense(data, coefficientMultiplierProvider),
         total = calculateIncomeTotal(data, coefficientMultiplierProvider),
+        forceNewDecision = column("force_new_decision"),
     )
 }
 

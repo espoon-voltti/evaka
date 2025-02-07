@@ -38,6 +38,7 @@ data class Income(
     val totalIncome: Int,
     val totalExpenses: Int,
     val total: Int,
+    val forceNewDecision: Boolean,
 )
 
 data class IncomeRequest(
@@ -49,6 +50,7 @@ data class IncomeRequest(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
+    val forceNewDecision: Boolean,
     val attachments: List<Attachment> = listOf(),
 )
 
@@ -60,12 +62,13 @@ data class DecisionIncome(
     val totalExpenses: Int,
     val total: Int,
     val worksAtECHA: Boolean,
+    val forceNewDecision: Boolean,
 ) {
     fun effectiveComparable(): DecisionIncome? {
         return when (this.effect) {
             IncomeEffect.NOT_AVAILABLE,
             IncomeEffect.INCOMPLETE -> null
-            else -> this
+            else -> this.copy(forceNewDecision = false)
         }
     }
 }

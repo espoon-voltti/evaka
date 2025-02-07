@@ -1,0 +1,1 @@
+ALTER TABLE income ADD COLUMN force_new_decision BOOLEAN NOT NULL DEFAULT FALSE;

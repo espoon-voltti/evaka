@@ -1907,6 +1907,11 @@ export const fi = {
         attachments: 'Liitteet',
         name: 'Nimi',
         created: 'Tulotiedot luotu',
+        forceDecisions: 'Luodaanko uusi maksu/arvopäätös',
+        forceDecisionsYes: 'Kyllä, vaikka tiedot eivät olisi muuttuneet',
+        forceDecisionsNo: 'Vain jos tiedot ovat muuttuneet',
+        forceDecisionsCheckbox:
+          'Luo uusi maksu/arvopäätös vaikka tiedot eivät olisi muuttuneet',
         handler: 'Käsittelijä',
         originApplication:
           'Huoltaja on hakemuksella suostunut korkeimpaan maksuluokkaan',
