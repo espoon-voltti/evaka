@@ -253,6 +253,11 @@ interface BaseFeatureFlags {
   aromiIntegration?: boolean
 
   /**
+   * Display Nekku food ordering service related functions
+   */
+  nekkuIntegration?: boolean
+
+  /**
    * Allow admin to force unpublish document templates.
    * Do not set in production.
    * Note the corresponding backend environment variable feature flag.

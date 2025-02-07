@@ -13,6 +13,7 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.JamixEnv
 import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
+import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.SfiEnv
@@ -90,6 +91,12 @@ class EnvConfig {
     fun jamixEnv(evakaEnv: EvakaEnv, env: Environment): JamixEnv? =
         when (evakaEnv.jamixEnabled) {
             true -> JamixEnv.fromEnvironment(env)
+            false -> null
+        }
+
+    fun nekkuEnv(evakaEnv: EvakaEnv, env: Environment): NekkuEnv? =
+        when (evakaEnv.nekkuEnabled) {
+            true -> NekkuEnv.fromEnvironment(env)
             false -> null
         }
 }

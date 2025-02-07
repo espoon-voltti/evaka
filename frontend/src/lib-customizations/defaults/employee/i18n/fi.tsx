@@ -2491,6 +2491,7 @@ export const fi = {
         endDate: 'Viimeinen toimintapäivä',
         info: 'Ryhmän aikaisempia tietoja ei säilytetä',
         jamixPlaceholder: 'Jamix customerNumber',
+        nekkuPlaceholder: 'Nekku asiakasnumero',
         jamixTitle: 'Ruokatilausten asiakasnumero'
       },
       startDate: 'Perustettu',
