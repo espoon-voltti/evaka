@@ -328,6 +328,7 @@ const sv: Translations = {
     absent: 'Frånvarande',
     absentFree: 'Gratis frånvaro',
     absentPlanned: 'Skiftarbete frånvaro',
+    absentUnknown: 'Oanmäld frånvaro',
     absences: {
       SICKLEAVE: 'Sjukfrånvaro',
       PLANNED_ABSENCE: 'Skiftarbete frånvaro'

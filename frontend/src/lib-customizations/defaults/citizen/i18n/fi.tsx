@@ -331,6 +331,7 @@ export default {
     absent: 'Poissa',
     absentFree: 'Maksuton poissaolo',
     absentPlanned: 'Vuorotyöpoissaolo',
+    absentUnknown: 'Ilmoittamaton poissaolo',
     absences: {
       SICKLEAVE: 'Sairauspoissaolo',
       PLANNED_ABSENCE: 'Vuorotyöpoissaolo'

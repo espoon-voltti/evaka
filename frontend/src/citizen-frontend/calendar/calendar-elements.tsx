@@ -145,6 +145,7 @@ type DailyChildGroupElementType =
   | 'missingReservation'
   | 'absentFree'
   | 'absentPlanned'
+  | 'absentUnknown'
 
 export type BackgroundHighlightType =
   | 'nonEditableAbsence'
@@ -169,10 +170,12 @@ interface GroupedDailyChildren {
 const absenceElementType = (absence: AbsenceInfo) =>
   absence.type === 'FREE_ABSENCE'
     ? 'absentFree'
-    : featureFlags.citizenAttendanceSummary &&
-        absence.type === 'PLANNED_ABSENCE'
-      ? 'absentPlanned'
-      : 'absent'
+    : absence.type === 'UNKNOWN_ABSENCE'
+      ? 'absentUnknown'
+      : featureFlags.citizenAttendanceSummary &&
+          absence.type === 'PLANNED_ABSENCE'
+        ? 'absentPlanned'
+        : 'absent'
 
 const groupChildren = ({
   children,
