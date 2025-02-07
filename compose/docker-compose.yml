@@ -46,7 +46,7 @@ services:
       retries: 5
 
   s3-mock:
-    image: adobe/s3mock:3.7.2
+    image: adobe/s3mock:3.12.0
     ports:
     - "9876:9191"
     volumes:
@@ -54,6 +54,7 @@ services:
     environment:
       ROOT: /data
       initialBuckets: "static"
+      JAVA_TOOL_OPTIONS: "-XX:UseSVE=0"
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090"]
       interval: 1s
