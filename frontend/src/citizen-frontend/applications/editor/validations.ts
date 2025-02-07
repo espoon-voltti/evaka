@@ -18,7 +18,10 @@ import {
   TIME_REGEXP,
   validate
 } from 'lib-common/form-validation'
-import { ApplicationDetails as ApplicationDetailsGen } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationAttachment,
+  ApplicationDetails as ApplicationDetailsGen
+} from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -66,6 +69,26 @@ const preferredStartDateValidator =
     val && isValidPreferredStartDate(val, originalPreferredStartDate, terms)
       ? undefined
       : err
+
+export const getUrgencyAttachmentValidStatus = (
+  urgent: boolean,
+  urgencyAttachments: ApplicationAttachment[]
+) =>
+  urgent && urgencyAttachments.length === 0 && featureFlags.urgencyAttachments
+    ? featureFlags.requireAttachments
+      ? 'require'
+      : 'notify'
+    : undefined
+
+export const getShiftCareAttachmentsValidStatus = (
+  shiftCare: boolean,
+  shiftCareAttachments: ApplicationAttachment[]
+) =>
+  shiftCare && shiftCareAttachments.length === 0
+    ? featureFlags.requireAttachments
+      ? 'require'
+      : 'notify'
+    : undefined
 
 export const validateApplication = (
   apiData: ApplicationDetailsGen,
@@ -125,7 +148,36 @@ export const validateApplication = (
           : undefined,
       assistanceDescription: form.serviceNeed.assistanceNeeded
         ? required(form.serviceNeed.assistanceDescription)
-        : undefined
+        : undefined,
+      urgencyAttachments:
+        getUrgencyAttachmentValidStatus(
+          form.serviceNeed.urgent,
+          form.serviceNeed.urgencyAttachments
+        ) === 'require'
+          ? {
+              arrayErrors: 'required',
+              itemErrors: form.serviceNeed.urgencyAttachments.map(() => ({
+                id: undefined,
+                name: undefined
+              }))
+            }
+          : undefined,
+      shiftCareAttachments:
+        getShiftCareAttachmentsValidStatus(
+          form.serviceNeed.shiftCare,
+          form.serviceNeed.shiftCareAttachments
+        ) === 'require'
+          ? {
+              arrayErrors:
+                form.serviceNeed.shiftCareAttachments.length === 0
+                  ? 'required'
+                  : undefined,
+              itemErrors: form.serviceNeed.shiftCareAttachments.map(() => ({
+                id: undefined,
+                name: undefined
+              }))
+            }
+          : undefined
     },
     unitPreference: {
       siblingName:
