@@ -14,6 +14,7 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.JamixEnv
 import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
+import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.SfiEnv
@@ -98,6 +99,12 @@ class EnvConfig {
     fun archiveEnv(evakaEnv: EvakaEnv, env: Environment): ArchiveEnv? =
         when (evakaEnv.särmäEnabled) {
             true -> ArchiveEnv.fromEnvironment(env)
+            false -> null
+        }
+
+    fun nekkuEnv(evakaEnv: EvakaEnv, env: Environment): NekkuEnv? =
+        when (evakaEnv.nekkuEnabled) {
+            true -> NekkuEnv.fromEnvironment(env)
             false -> null
         }
 }
