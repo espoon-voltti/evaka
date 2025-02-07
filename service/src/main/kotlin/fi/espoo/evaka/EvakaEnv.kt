@@ -31,6 +31,7 @@ data class EvakaEnv(
     val jamixEnabled: Boolean,
     val särmäEnabled: Boolean,
     val linkityEnabled: Boolean,
+    val nekkuEnabled: Boolean,
     val forceUnpublishDocumentTemplateEnabled: Boolean,
     val asyncJobRunnerDisabled: Boolean,
     val frontendBaseUrlFi: String,
@@ -55,6 +56,7 @@ data class EvakaEnv(
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 särmäEnabled = env.lookup("evaka.integration.särmä.enabled") ?: false,
                 linkityEnabled = env.lookup("evaka.integration.linkity.enabled") ?: false,
+                nekkuEnabled = env.lookup("evaka.integration.nekku.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
                         ?: false,
@@ -564,6 +566,18 @@ data class JamixEnv(val url: URI, val user: String, val password: Sensitive<Stri
                 url = URI.create(env.lookup("evaka.integration.jamix.url")),
                 user = env.lookup("evaka.integration.jamix.user"),
                 password = Sensitive(env.lookup("evaka.integration.jamix.password")),
+            )
+        }
+    }
+}
+
+data class NekkuEnv(val url: URI, val apikey: Sensitive<String>) {
+    companion object {
+        fun fromEnvironment(env: Environment): NekkuEnv {
+            return NekkuEnv(
+                // URL up to the operation name/
+                url = URI.create(env.lookup("evaka.integration.nekku.url")),
+                apikey = Sensitive(env.lookup("evaka.integration.nekku.apikey")),
             )
         }
     }
