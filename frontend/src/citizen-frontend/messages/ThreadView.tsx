@@ -321,6 +321,7 @@ export default React.memo(
                 </ScreenReaderOnly>
                 {children.map((child) => (
                   <StaticChip
+                    data-qa="thread-child"
                     key={child.childId}
                     color={theme.colors.main.m2}
                     translate="no"

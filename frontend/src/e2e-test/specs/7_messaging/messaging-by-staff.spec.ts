@@ -6,6 +6,7 @@ import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { formatFirstName } from 'lib-common/names'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
@@ -17,7 +18,8 @@ import {
   testChild,
   testChild2,
   testDaycare,
-  testDaycareGroup
+  testDaycareGroup,
+  testPreschool
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -61,6 +63,7 @@ beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testPreschool).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -78,7 +81,8 @@ beforeEach(async () => {
     .save()
 
   unitSupervisor = await Fixture.employee()
-    .unitSupervisor(testDaycare.id)
+    .withDaycareAcl(testDaycare.id, 'UNIT_SUPERVISOR')
+    .withDaycareAcl(testPreschool.id, 'UNIT_SUPERVISOR')
     .save()
 
   const unitId = testDaycare.id
@@ -227,6 +231,155 @@ describe('Sending and receiving messages', () => {
       })
     }
   )
+
+  test('Unit supervisor can send a message to a starter', async () => {
+    const daycarePlacementFixture1 = await Fixture.placement({
+      childId,
+      unitId: testPreschool.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    const preschoolGroup = await Fixture.daycareGroup({
+      daycareId: testPreschool.id,
+      name: 'Esiopetusryhmä'
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture1.id,
+      daycareGroupId: preschoolGroup.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+
+    // Verify that available recipients contain current placements and starters
+    await initUnitSupervisorPage(mockedDateAt10)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    const receiverSelector = messageEditor.receiverSelection
+    await receiverSelector.open()
+    await receiverSelector.expandAll() // open first level
+    await receiverSelector.expandAll() // open second level
+    const labels = await receiverSelector.labels.allTexts()
+    const starterChildLabel = `${testChild.lastName} ${testChild.firstName} (${mockedDate.addYears(1).addDays(1).format()})`
+    const expectedReceiverNames = [
+      testDaycare.name,
+      testDaycareGroup.name,
+      `${testChild.lastName} ${testChild.firstName}`,
+      `${testChild2.lastName} ${testChild2.firstName}`,
+      `${testPreschool.name} (aloittavat)`,
+      `${preschoolGroup.name} (aloittavat)`,
+      starterChildLabel
+    ]
+    expect(labels.sort()).toEqual(expectedReceiverNames.sort())
+
+    // Send a message to a starter child -> selects the whole unit
+    await receiverSelector.optionByLabel(starterChildLabel).click()
+    await receiverSelector.close()
+    await messageEditor.inputTitle.fill('Aloittavalle otsikko')
+    await messageEditor.inputContent.fill('Sisältö')
+    await messageEditor.sendButton.click()
+    await messageEditor.waitUntilHidden()
+
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    // Verify that the message is received by the starter child
+    await initCitizenPage(mockedDateAt11)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.assertThreadContent({
+      title: 'Aloittavalle otsikko',
+      content: 'Sisältö'
+    })
+  })
+
+  test('Staff can send a message to a starter', async () => {
+    const secondGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id,
+      name: 'Toinen ryhmä'
+    }).save()
+    const futureStaff = await Fixture.employee()
+      .staff(testDaycare.id)
+      .withGroupAcl(secondGroup.id, mockedDateAt10, mockedDateAt10)
+      .save()
+    const daycarePlacementFixture1 = await Fixture.placement({
+      childId,
+      unitId: testDaycare.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    const daycarePlacementFixture2 = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture1.id,
+      daycareGroupId: secondGroup.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture2.id,
+      daycareGroupId: secondGroup.id,
+      startDate: mockedDate.addYears(1).addDays(1),
+      endDate: mockedDate.addYears(2)
+    }).save()
+    await createMessageAccounts()
+
+    // Verify that available recipients contain current placements and starters
+    staffPage = await Page.open({ mockedTime: mockedDateAt10 })
+    await employeeLogin(staffPage, futureStaff)
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(staffPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    const receiverSelector = messageEditor.receiverSelection
+    await receiverSelector.open()
+    await receiverSelector.expandAll()
+    const labels = await receiverSelector.labels.allTexts()
+    const expectedReceiverNames = [
+      `${secondGroup.name} (aloittavat)`,
+      `${testChild.lastName} ${testChild.firstName} (${mockedDate.addYears(1).addDays(1).format()})`,
+      `${testChild2.lastName} ${testChild2.firstName} (${mockedDate.addYears(1).addDays(1).format()})`
+    ]
+    expect(labels.sort()).toEqual(expectedReceiverNames.sort())
+
+    // Send a message to a starter group (contains 2 children)
+    await receiverSelector
+      .optionByLabel(`${secondGroup.name} (aloittavat)`)
+      .click()
+    await receiverSelector.close()
+    await messageEditor.inputTitle.fill('Aloittavalle otsikko')
+    await messageEditor.inputContent.fill('Sisältö')
+    await messageEditor.sendButton.click()
+    await messageEditor.waitUntilHidden()
+
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    // Verify that the message is received by the starter
+    await initCitizenPage(mockedDateAt11)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.assertThreadContent({
+      title: 'Aloittavalle otsikko',
+      content: 'Sisältö',
+      childNames: [formatFirstName(testChild), formatFirstName(testChild2)]
+    })
+
+    // Reply to the message
+    await citizenMessagesPage.replyToFirstThread('Vastaukseni')
+
+    await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
+
+    // Verify that the message is received by the staff
+    staffPage = await Page.open({ mockedTime: mockedDateAt12 })
+    await employeeLogin(staffPage, futureStaff)
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    const staffMessagesPage = new MessagesPage(staffPage)
+    await waitUntilEqual(() => staffMessagesPage.getReceivedMessageCount(), 1)
+    await staffMessagesPage.receivedMessage.click()
+    await staffMessagesPage.assertMessageContent(1, 'Vastaukseni')
+  })
 })
 
 describe('Sending and receiving sensitive messages', () => {
@@ -241,7 +394,7 @@ describe('Sending and receiving sensitive messages', () => {
     const sensitiveMessage = {
       ...defaultMessage,
       sensitive: true,
-      receivers: [testChild2.id]
+      receiverKeys: [`${testChild2.id}+false`]
     }
 
     await initStaffPage(mockedDateAt10)
@@ -271,7 +424,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receivers: [testDaycare.id],
+      receiverKeys: [`${testDaycare.id}+false`],
       type: 'BULLETIN' as const
     }
     const messageEditor = await new MessagesPage(
@@ -294,12 +447,12 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receivers: [testChild2.id]
+      receiverKeys: [`${testChild2.id}+false`]
     }
     const bulletin = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receivers: [testChild2.id],
+      receiverKeys: [`${testChild2.id}+false`],
       type: 'BULLETIN' as const
     }
     const messagesPage = new MessagesPage(unitSupervisorPage)
@@ -321,7 +474,7 @@ describe('Staff copies', () => {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
       sender: `${testDaycare.name} - ${testDaycareGroup.name}`,
-      receivers: [testDaycareGroup.id]
+      receiverKeys: [`${testDaycareGroup.id}+false`]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -373,7 +526,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receivers: [testDaycare.id],
+      receiverKeys: [`${testDaycare.id}+false`],
       yearsOfBirth: [2014]
     }
     const messageEditor = await new MessagesPage(
@@ -406,7 +559,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receivers: [testDaycare.id]
+      receiverKeys: [`${testDaycare.id}+false`]
     }
     let messageEditor = await new MessagesPage(
       unitSupervisorPage

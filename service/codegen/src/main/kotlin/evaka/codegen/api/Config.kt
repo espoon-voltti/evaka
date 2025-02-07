@@ -61,6 +61,8 @@ object Imports {
     val vasuQuestion = TsImport.Named(LibCommon / "api-types/vasu.ts", "VasuQuestion")
     val mapVasuQuestion = TsImport.Named(LibCommon / "api-types/vasu.ts", "mapVasuQuestion")
     val messageReceiver = TsImport.Named(LibCommon / "api-types/messaging.ts", "MessageReceiver")
+    val deserializeMessageReceiver =
+        TsImport.Named(LibCommon / "api-types/messaging.ts", "deserializeMessageReceiver")
     val uuid = TsImport.Named(LibCommon / "types.d.ts", "UUID")
     val action = TsImport.Named(LibCommon / "generated/action.ts", "Action")
     val jsonOf = TsImport.Named(LibCommon / "json.d.ts", "JsonOf")
@@ -184,7 +186,9 @@ val defaultMetadata =
             TsExternalTypeRef(
                 "MessageReceiver",
                 keyRepresentation = null,
-                deserializeJson = null,
+                deserializeJson = { json ->
+                    TsCode { "${ref(Imports.deserializeMessageReceiver)}(${inline(json)})" }
+                },
                 serializePathVariable = null,
                 serializeRequestParam = null,
                 Imports.messageReceiver,

@@ -34,6 +34,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import {
   getSelected,
   receiversAsSelectorNode,
+  selectedNodeToReceiver,
   SelectorNode
 } from 'lib-components/messages/SelectorNode'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
@@ -101,7 +102,10 @@ const messageForm = mapped(
             },
       draftContent: (): UpdatableDraftContent => ({
         ...commonContent,
-        recipientIds: selectedRecipients.map((r) => r.messageRecipient.id),
+        recipients: selectedRecipients.map(selectedNodeToReceiver).map((r) => ({
+          accountId: r.id,
+          starter: r.isStarter
+        })),
         recipientNames: selectedRecipients.map((r) => r.text)
       })
     }
@@ -149,14 +153,19 @@ export default React.memo(function MessageEditor({
             recipients: receiversAsSelectorNode(
               accountId,
               availableRecipients,
-              draft.recipientIds
+              i18n.messages.messageEditor.starters,
+              draft.recipients
             ),
             urgent: draft.urgent,
             title: draft.title,
             content: draft.content
           }
         : {
-            recipients: receiversAsSelectorNode(accountId, availableRecipients),
+            recipients: receiversAsSelectorNode(
+              accountId,
+              availableRecipients,
+              i18n.messages.messageEditor.starters
+            ),
             urgent: false,
             title: '',
             content: ''

@@ -38,7 +38,10 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val title = "Hello"
         val type = MessageType.MESSAGE
         val recipients =
-            setOf(MessageAccountId(UUID.randomUUID()), MessageAccountId(UUID.randomUUID()))
+            setOf(
+                SelectableRecipient(MessageAccountId(UUID.randomUUID()), false),
+                SelectableRecipient(MessageAccountId(UUID.randomUUID()), false),
+            )
         val recipientNames = listOf("Auringonkukat", "Hippiäiset")
 
         val id = db.transaction { it.initDraft(accountId) }
@@ -48,7 +51,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 type = type,
                 title = title,
                 content = content,
-                recipientIds = recipients,
+                recipients = recipients,
                 recipientNames = recipientNames,
                 urgent = false,
                 sensitive = false,
@@ -71,7 +74,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(expected.title, actual.title)
         assertEquals(expected.type, actual.type)
         assertEquals(expected.content, actual.content)
-        assertEquals(expected.recipientIds, actual.recipientIds)
+        assertEquals(expected.recipients, actual.recipients)
         assertEquals(expected.recipientNames, actual.recipientNames)
     }
 }

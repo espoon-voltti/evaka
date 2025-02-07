@@ -2,10 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageReceiver } from 'lib-common/api-types/messaging'
+import {
+  MessageReceiver,
+  messageReceiverIsStarter,
+  messageReceiverStartDate
+} from 'lib-common/api-types/messaging'
 import {
   MessageReceiversResponse,
-  MessageRecipient
+  MessageRecipient,
+  SelectableRecipient
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
@@ -27,7 +32,8 @@ export interface SelectorNode extends TreeNode {
 export const receiversAsSelectorNode = (
   accountId: UUID,
   receivers: MessageReceiversResponse[],
-  checkedIds: UUID[] = []
+  starterTranslation: string,
+  checkedRecipients: SelectableRecipient[] = []
 ): SelectorNode[] => {
   const accountReceivers = receivers.find(
     (receiver) => receiver.accountId === accountId
@@ -36,24 +42,31 @@ export const receiversAsSelectorNode = (
   if (!accountReceivers) {
     return []
   }
-
-  const selectorNodes = accountReceivers.map(receiverAsSelectorNode)
-
+  const selectorNodes = accountReceivers.map((r) =>
+    receiverAsSelectorNode(r, starterTranslation)
+  )
   if (selectorNodes.length === 1 && selectorNodes[0].children.length === 0) {
     return selectorNodes.map((node) => ({ ...node, checked: true }))
   }
-  if (checkedIds.length > 0) {
-    return selectorNodes.map((node) => checkSelected(checkedIds, node))
+  if (checkedRecipients.length > 0) {
+    return selectorNodes.map((node) => checkSelected(checkedRecipients, node))
   }
   return selectorNodes
 }
 
-function checkSelected(selectedIds: UUID[], node: SelectorNode): SelectorNode {
-  if (selectedIds.includes(node.key)) {
+function checkSelected(
+  selectedRecipients: SelectableRecipient[],
+  node: SelectorNode
+): SelectorNode {
+  if (
+    selectedRecipients
+      .map((r) => receiverToKey(r.accountId, r.starter))
+      .includes(node.key)
+  ) {
     return checkAll(node)
   } else {
     const children = node.children.map((child) =>
-      checkSelected(selectedIds, child)
+      checkSelected(selectedRecipients, child)
     )
     return {
       ...node,
@@ -67,16 +80,53 @@ function checkAll(node: SelectorNode): SelectorNode {
   return { ...node, checked: true, children: node.children.map(checkAll) }
 }
 
-const receiverAsSelectorNode = (receiver: MessageReceiver): SelectorNode => ({
-  key: receiver.id,
-  checked: false,
-  text: receiver.name,
-  messageRecipient: { type: receiver.type, id: receiver.id },
-  children:
-    'receivers' in receiver
-      ? receiver.receivers.map(receiverAsSelectorNode)
-      : []
-})
+function receiverToKey(accountId: UUID, isStarter: boolean): string {
+  return `${accountId}+${isStarter}`
+}
+
+function keyToReceiver(key: string): {
+  accountId: UUID
+  isStarter: boolean
+} {
+  const [accountId, isStarter] = key.split('+')
+  return { accountId, isStarter: isStarter === 'true' }
+}
+
+export function selectedNodeToReceiver(node: SelectedNode) {
+  const r = keyToReceiver(node.key)
+  return {
+    id: r.accountId,
+    isStarter: r.isStarter,
+    text: node.text
+  }
+}
+
+function receiverAsSelectorNode(
+  receiver: MessageReceiver,
+  starterTranslation: string
+): SelectorNode {
+  const startDate = messageReceiverStartDate(receiver)
+  const isStarter = messageReceiverIsStarter(receiver)
+  const nameWithStarterIndication = isStarter
+    ? `${receiver.name} (${startDate?.format() ?? starterTranslation})`
+    : receiver.name
+  return {
+    key: receiverToKey(receiver.id, isStarter),
+    checked: false,
+    text: nameWithStarterIndication,
+    messageRecipient: {
+      type: receiver.type,
+      id: receiver.id,
+      starter: isStarter
+    },
+    children:
+      'receivers' in receiver
+        ? receiver.receivers.map((r) =>
+            receiverAsSelectorNode(r, starterTranslation)
+          )
+        : []
+  }
+}
 
 export type SelectedNode = {
   key: UUID

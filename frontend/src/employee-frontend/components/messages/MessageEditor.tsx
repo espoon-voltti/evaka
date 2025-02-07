@@ -47,7 +47,8 @@ import {
   getSelected,
   receiversAsSelectorNode,
   SelectedNode,
-  SelectorNode
+  SelectorNode,
+  selectedNodeToReceiver
 } from 'lib-components/messages/SelectorNode'
 import { SaveDraftParams } from 'lib-components/messages/types'
 import { Draft, useDraft } from 'lib-components/messages/useDraft'
@@ -80,22 +81,22 @@ import { useTranslation } from '../../state/i18n'
 
 import { createMessagePreflightCheckQuery } from './queries'
 
-type Message = Omit<
-  UpdatableDraftContent,
-  'recipientIds' | 'recipientNames'
-> & {
+type Message = Omit<UpdatableDraftContent, 'recipients' | 'recipientNames'> & {
   sender: SelectOption<MessageAccountId>
   attachments: Attachment[]
 }
 
 const messageToUpdatableDraftWithAccount = (
   m: Message,
-  recipients: { key: string; text: string }[]
+  recipients: { id: string; isStarter: boolean; text: string }[]
 ): Draft => ({
   content: m.content,
   urgent: m.urgent,
   sensitive: false,
-  recipientIds: recipients.map(({ key }) => key),
+  recipients: recipients.map((r) => ({
+    accountId: r.id,
+    starter: r.isStarter
+  })),
   recipientNames: recipients.map(({ text }) => text),
   title: m.title,
   type: m.type,
@@ -216,7 +217,8 @@ export default React.memo(function MessageEditor({
     receiversAsSelectorNode(
       defaultSender.value,
       availableReceivers,
-      draftContent?.recipientIds
+      i18n.messages.receiverSelection.starters,
+      draftContent?.recipients
     )
   )
   const [filtersVisible, useFiltersVisible] = useBoolean(false)
@@ -249,7 +251,9 @@ export default React.memo(function MessageEditor({
     (changes) => {
       const updatedMessage = { ...message, ...changes }
       setMessage(updatedMessage)
-      const selectedReceivers = getSelected(receiverTree)
+      const selectedReceivers = getSelected(receiverTree).map(
+        selectedNodeToReceiver
+      )
       setDraft(
         messageToUpdatableDraftWithAccount(updatedMessage, selectedReceivers)
       )
@@ -312,33 +316,40 @@ export default React.memo(function MessageEditor({
 
       const accountReceivers = receiversAsSelectorNode(
         sender.value,
-        availableReceivers
+        availableReceivers,
+        i18n.messages.receiverSelection.starters
       )
       if (accountReceivers) {
         setReceiverTree(accountReceivers)
       }
     },
-    [availableReceivers, message.type, selectedReceivers, updateMessage]
+    [
+      availableReceivers,
+      i18n.messages.receiverSelection.starters,
+      message.type,
+      selectedReceivers,
+      updateMessage
+    ]
   )
   const handleRecipientChange = useCallback(
     (recipients: SelectorNode[]) => {
       setReceiverTree(recipients)
       const selected = getSelected(recipients)
-
+      const selectedAsReceivers = selected.map(selectedNodeToReceiver)
       const shouldResetSensitivity = !shouldSensitiveCheckboxBeEnabled(
         selected,
         message.type,
         senderAccountType
       )
 
-      const updatedMessage = {
+      const updatedMessage: Message = {
         ...message,
-        recipientIds: selected.map((s) => s.key),
-        recipientNames: selected.map((s) => s.text),
         sensitive: shouldResetSensitivity ? false : message.sensitive
       }
       setMessage(updatedMessage)
-      setDraft(messageToUpdatableDraftWithAccount(updatedMessage, selected))
+      setDraft(
+        messageToUpdatableDraftWithAccount(updatedMessage, selectedAsReceivers)
+      )
     },
     [message, senderAccountType, setDraft]
   )

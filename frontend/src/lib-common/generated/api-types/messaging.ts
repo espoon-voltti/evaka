@@ -20,6 +20,7 @@ import { MessageId } from './shared'
 import { MessageReceiver } from '../../api-types/messaging'
 import { MessageThreadId } from './shared'
 import { PersonId } from './shared'
+import { deserializeMessageReceiver } from '../../api-types/messaging'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AccountType
@@ -110,8 +111,8 @@ export interface DraftContent {
   content: string
   createdAt: HelsinkiDateTime
   id: MessageDraftId
-  recipientIds: string[]
   recipientNames: string[]
+  recipients: SelectableRecipient[]
   sensitive: boolean
   title: string
   type: MessageType
@@ -214,6 +215,7 @@ export interface MessageReceiversResponse {
 */
 export interface MessageRecipient {
   id: string
+  starter: boolean
   type: MessageRecipientType
 }
 
@@ -344,6 +346,14 @@ export interface ReplyToMessageBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.SelectableRecipient
+*/
+export interface SelectableRecipient {
+  accountId: string
+  starter: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.SentMessage
 */
 export interface SentMessage {
@@ -397,8 +407,8 @@ export interface UnreadCountByAccountAndGroup {
 */
 export interface UpdatableDraftContent {
   content: string
-  recipientIds: string[]
   recipientNames: string[]
+  recipients: SelectableRecipient[]
   sensitive: boolean
   title: string
   type: MessageType
@@ -467,6 +477,14 @@ export function deserializeJsonMessageCopy(json: JsonOf<MessageCopy>): MessageCo
     ...json,
     readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt)
+  }
+}
+
+
+export function deserializeJsonMessageReceiversResponse(json: JsonOf<MessageReceiversResponse>): MessageReceiversResponse {
+  return {
+    ...json,
+    receivers: json.receivers.map(e => deserializeMessageReceiver(e))
   }
 }
 

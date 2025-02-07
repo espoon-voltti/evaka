@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
 
+data class SelectableRecipient(val accountId: Id<*>, val starter: Boolean)
+
 data class DraftContent(
     val id: MessageDraftId,
     val createdAt: HelsinkiDateTime,
@@ -18,7 +20,7 @@ data class DraftContent(
     val content: String,
     val urgent: Boolean,
     val sensitive: Boolean,
-    val recipientIds: Set<Id<*>>,
+    @Json val recipients: Set<SelectableRecipient>,
     val recipientNames: List<String>,
     @Json val attachments: List<Attachment>,
 )
@@ -29,6 +31,6 @@ data class UpdatableDraftContent(
     val content: String,
     val urgent: Boolean,
     val sensitive: Boolean,
-    val recipientIds: Set<Id<*>>,
+    val recipients: Set<SelectableRecipient>,
     val recipientNames: List<String>,
 )
