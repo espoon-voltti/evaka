@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.serviceNeedOptionVoucherValueCoefficients
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
@@ -1340,6 +1341,66 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         }
     }
 
+    @Test
+    fun `only one decision is generated from two identical and adjacent incomes`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 3, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertIncome(
+            testAdult_1.id,
+            8000,
+            period.copy(end = period.start.plusMonths(1)).asDateRange(),
+        )
+        insertIncome(
+            testAdult_1.id,
+            8000,
+            period.copy(start = period.start.plusMonths(1).plusDays(1)).asDateRange(),
+        )
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        val decisions = getAllVoucherValueDecisions()
+        assertEquals(1, decisions.size)
+        decisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+        }
+    }
+
+    @Test
+    fun `two decisions are generated from two identical and adjacent incomes when forceNewDecision is set`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 3, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertIncome(
+            testAdult_1.id,
+            8000,
+            period.copy(end = period.start.plusMonths(1)).asDateRange(),
+        )
+        insertIncome(
+            testAdult_1.id,
+            8000,
+            period.copy(start = period.start.plusMonths(1).plusDays(1)).asDateRange(),
+            forceNewDecision = true,
+        )
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        val decisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
+        assertEquals(2, decisions.size)
+        decisions[0].let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.start.plusMonths(1), decision.validTo)
+        }
+        decisions[1].let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start.plusMonths(1).plusDays(1), decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+        }
+    }
+
     private fun insertPlacement(
         childId: ChildId,
         period: FiniteDateRange,
@@ -1439,7 +1500,12 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .shuffled() // randomize order to expose assumptions
     }
 
-    private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {
+    private fun insertIncome(
+        adultId: PersonId,
+        amount: Int,
+        period: DateRange,
+        forceNewDecision: Boolean = false,
+    ) {
         db.transaction { tx ->
             tx.insert(
                 DevIncome(
@@ -1463,6 +1529,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                                 )
                         ),
                     modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    forceNewDecision = forceNewDecision,
                 )
             )
         }

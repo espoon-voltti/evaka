@@ -72,6 +72,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         totalExpenses =
                             calculateTotalExpense(it.data, coefficientMultiplierProvider),
                         total = calculateIncomeTotal(it.data, coefficientMultiplierProvider),
+                        forceNewDecision = it.forceNewDecision,
                     )
                 }
                 .toSet(),
@@ -119,6 +120,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
             notes = "",
+            forceNewDecision = false,
         )
 
     private val financeUser =

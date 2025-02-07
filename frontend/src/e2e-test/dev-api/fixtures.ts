@@ -828,6 +828,7 @@ export class Fixture {
       modifiedAt: HelsinkiDateTime.now(),
       isEntrepreneur: false,
       worksAtEcha: false,
+      forceNewDecision: false,
       ...initial
     })
   }

@@ -92,6 +92,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         totalExpenses = 0,
                                         total = 0,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                             ),
                         baseDecision(testChild_3)
@@ -107,6 +108,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         totalExpenses = 0,
                                         total = 0,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                             ),
                         baseDecision(testChild_4)
@@ -120,6 +122,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         totalExpenses = 0,
                                         total = 200000,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                             ),
                         baseDecision(testChild_5)
@@ -133,6 +136,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         totalExpenses = 0,
                                         total = 200000,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                                 partnerId = testAdult_7.id,
                                 partnerIncome =
@@ -143,6 +147,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         totalExpenses = 0,
                                         total = 0,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                             ),
                     )

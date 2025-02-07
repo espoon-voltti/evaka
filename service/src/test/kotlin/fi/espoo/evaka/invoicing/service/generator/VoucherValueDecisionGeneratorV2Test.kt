@@ -103,6 +103,7 @@ private fun createVoucherBasis(): VoucherBasis {
                 totalExpenses = 100000,
                 total = 500000,
                 worksAtECHA = false,
+                forceNewDecision = false,
             ),
         partnerId = PersonId(UUID.randomUUID()),
         partnerIncome =
@@ -113,6 +114,7 @@ private fun createVoucherBasis(): VoucherBasis {
                 totalExpenses = 0,
                 total = 200000,
                 worksAtECHA = false,
+                forceNewDecision = false,
             ),
         child = ChildWithDateOfBirth(id = childId, dateOfBirth = date(1).minusYears(4)),
         placement =
