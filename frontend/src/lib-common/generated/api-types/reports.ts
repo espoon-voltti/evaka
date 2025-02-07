@@ -816,6 +816,7 @@ export interface RawReportRow {
   isWeekday: boolean
   language: string | null
   lastName: string
+  municipalityOfResidence: string
   partDay: boolean
   partWeek: boolean
   placementType: PlacementType

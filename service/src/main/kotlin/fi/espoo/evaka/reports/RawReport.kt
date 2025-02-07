@@ -95,6 +95,7 @@ SELECT
     p.language,
     p.postal_code,
     p.post_office,
+    p.municipality_of_residence,
 
     pl.type as placement_type,
 
@@ -218,4 +219,5 @@ data class RawReportRow(
     val staffDimensioning: Int,
     val isWeekday: Boolean,
     val isHoliday: Boolean,
+    val municipalityOfResidence: String,
 )
