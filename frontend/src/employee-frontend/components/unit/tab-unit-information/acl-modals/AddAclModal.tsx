@@ -9,11 +9,13 @@ import { Action } from 'lib-common/generated/action'
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
@@ -41,6 +43,7 @@ type FormState = {
   selectedEmployee: EmployeeOption | null
   selectedGroups: DaycareGroupResponse[] | null
   hasStaffOccupancyEffect: boolean | null
+  endDate: LocalDate | null
 }
 
 export default React.memo(function AddAclModal({
@@ -50,7 +53,7 @@ export default React.memo(function AddAclModal({
   employees,
   permittedActions
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const [formData, setFormData] = useState<FormState>({
     role: 'STAFF',
@@ -60,7 +63,8 @@ export default React.memo(function AddAclModal({
       'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
     )
       ? false
-      : null
+      : null,
+    endDate: null
   })
 
   const roles: DaycareAclRole[] = useMemo(
@@ -118,7 +122,8 @@ export default React.memo(function AddAclModal({
                     'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
                   )
                     ? formData.hasStaffOccupancyEffect
-                    : null
+                    : null,
+                  endDate: formData.endDate
                 }
               }
             }
@@ -185,6 +190,7 @@ export default React.memo(function AddAclModal({
             />
           </FixedSpaceColumn>
         )}
+
         {permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
             data-qa="coefficient-checkbox"
@@ -199,6 +205,19 @@ export default React.memo(function AddAclModal({
             }}
           />
         )}
+
+        <FixedSpaceColumn spacing="xs">
+          <Label>{`${i18n.unit.accessControl.aclEndDate}`}</Label>
+          <DatePicker
+            data-qa="end-date"
+            date={formData.endDate}
+            onChange={(date) =>
+              setFormData((prev) => ({ ...prev, endDate: date }))
+            }
+            locale={lang}
+            minDate={LocalDate.todayInHelsinkiTz()}
+          />
+        </FixedSpaceColumn>
       </FixedSpaceColumn>
     </MutateFormModal>
   )

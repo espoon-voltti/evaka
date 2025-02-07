@@ -135,6 +135,7 @@ export interface DaycareGroupRole {
 export interface DaycareRole {
   daycareId: DaycareId
   daycareName: string
+  endDate: LocalDate | null
   role: UserRole
 }
 
@@ -253,6 +254,7 @@ export interface EmployeeWithDaycareRoles {
   lastLogin: HelsinkiDateTime | null
   lastName: string
   personalMobileDevices: MobileDevice[]
+  scheduledDaycareRoles: ScheduledDaycareRole[]
   temporaryUnitName: string | null
   updated: HelsinkiDateTime | null
 }
@@ -692,6 +694,17 @@ export interface RestrictedDetails {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.ScheduledDaycareRole
+*/
+export interface ScheduledDaycareRole {
+  daycareId: DaycareId
+  daycareName: string
+  endDate: LocalDate | null
+  role: UserRole
+  startDate: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 */
 export interface SearchEmployeeRequest {
@@ -734,7 +747,9 @@ export interface UpdateWeakLoginCredentialsRequest {
 */
 export interface UpsertEmployeeDaycareRolesRequest {
   daycareIds: DaycareId[]
+  endDate: LocalDate | null
   role: UserRole
+  startDate: LocalDate
 }
 
 
@@ -760,6 +775,14 @@ export function deserializeJsonCreationModificationMetadata(json: JsonOf<Creatio
     createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
     createdFromApplicationCreated: (json.createdFromApplicationCreated != null) ? HelsinkiDateTime.parseIso(json.createdFromApplicationCreated) : null,
     modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
+  }
+}
+
+
+export function deserializeJsonDaycareRole(json: JsonOf<DaycareRole>): DaycareRole {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
   }
 }
 
@@ -794,7 +817,9 @@ export function deserializeJsonEmployeeWithDaycareRoles(json: JsonOf<EmployeeWit
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
+    daycareRoles: json.daycareRoles.map(e => deserializeJsonDaycareRole(e)),
     lastLogin: (json.lastLogin != null) ? HelsinkiDateTime.parseIso(json.lastLogin) : null,
+    scheduledDaycareRoles: json.scheduledDaycareRoles.map(e => deserializeJsonScheduledDaycareRole(e)),
     updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
   }
 }
@@ -982,5 +1007,23 @@ export function deserializeJsonRestrictedDetails(json: JsonOf<RestrictedDetails>
   return {
     ...json,
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
+  }
+}
+
+
+export function deserializeJsonScheduledDaycareRole(json: JsonOf<ScheduledDaycareRole>): ScheduledDaycareRole {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonUpsertEmployeeDaycareRolesRequest(json: JsonOf<UpsertEmployeeDaycareRolesRequest>): UpsertEmployeeDaycareRolesRequest {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }

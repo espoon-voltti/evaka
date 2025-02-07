@@ -176,6 +176,27 @@ export async function deleteEmployeeDaycareRoles(
 
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.deleteEmployeeScheduledDaycareRole
+*/
+export async function deleteEmployeeScheduledDaycareRole(
+  request: {
+    id: EmployeeId,
+    daycareId: DaycareId
+  }
+): Promise<void> {
+  const params = createUrlSearchParams(
+    ['daycareId', request.daycareId]
+  )
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/employees/${request.id}/scheduled-daycare-role`.toString(),
+    method: 'DELETE',
+    params
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployee
 */
 export async function getEmployee(

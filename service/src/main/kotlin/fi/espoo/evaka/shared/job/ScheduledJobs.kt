@@ -17,6 +17,7 @@ import fi.espoo.evaka.assistanceneed.vouchercoefficient.endOutdatedAssistanceNee
 import fi.espoo.evaka.attachment.AttachmentService
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
+import fi.espoo.evaka.daycare.controllers.removeDaycareAclForRole
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
@@ -25,6 +26,7 @@ import fi.espoo.evaka.invoicing.service.NewCustomerIncomeNotification
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.jamix.JamixService
 import fi.espoo.evaka.koski.KoskiUpdateService
+import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.deactivateInactiveEmployees
@@ -32,9 +34,13 @@ import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.sficlient.SfiMessagesClient
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.PasswordBlacklist
+import fi.espoo.evaka.shared.auth.getEndedDaycareAclRows
+import fi.espoo.evaka.shared.auth.upsertAclRowsFromScheduled
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -143,6 +149,14 @@ enum class ScheduledJob(
             retryCount = 1,
         ),
     ),
+    RemoveGuardiansFromAdults(
+        ScheduledJobs::removeGuardiansFromAdults,
+        ScheduledJobSettings(
+            enabled = true,
+            schedule = JobSchedule.daily(LocalTime.of(2, 0)),
+            retryCount = 1,
+        ),
+    ),
     InactivePeopleCleanup(
         ScheduledJobs::inactivePeopleCleanup,
         ScheduledJobSettings(
@@ -218,9 +232,13 @@ enum class ScheduledJob(
         ScheduledJobs::generateReplacementDraftInvoices,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(4, 15))),
     ),
-    ImportPasswordsBlacklists(
+    ImportPasswordBlacklists(
         ScheduledJobs::importPasswordBlacklists,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 20))),
+    ),
+    DeleteEndedAcl(
+        ScheduledJobs::syncAclRows,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 5))),
     ),
 }
 
@@ -247,6 +265,7 @@ class ScheduledJobs(
     private val jamixService: JamixService,
     private val sfiMessagesClient: SfiMessagesClient?,
     private val passwordBlacklist: PasswordBlacklist,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -400,6 +419,22 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.removeOldAsyncJobs(clock.now())
     }
 
+    fun removeGuardiansFromAdults(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    """
+                DELETE FROM guardian g
+                WHERE EXISTS(
+                    SELECT FROM person ch 
+                    WHERE g.child_id = ch.id AND ch.date_of_birth <= ${bind(clock.today().minusYears(18))}
+                )
+            """
+                )
+            }
+        }
+    }
+
     fun inactivePeopleCleanup(db: Database.Connection, clock: EvakaClock) {
         db.transaction { cleanUpInactivePeople(it, clock.today()) }
     }
@@ -475,5 +510,25 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     fun importPasswordBlacklists(db: Database.Connection, clock: EvakaClock) =
         evakaEnv.passwordBlacklistDirectory?.let { directory ->
             passwordBlacklist.importBlacklists(db, Path.of(directory))
+        }
+
+    fun syncAclRows(db: Database.Connection, clock: EvakaClock) =
+        db.transaction { tx ->
+            val now = clock.now()
+            val today = now.toLocalDate()
+
+            tx.getEndedDaycareAclRows(today).forEach {
+                removeDaycareAclForRole(
+                    tx,
+                    asyncJobRunner,
+                    now,
+                    it.daycareId,
+                    it.employeeId,
+                    it.role,
+                )
+            }
+
+            val employeeIds = tx.upsertAclRowsFromScheduled(today)
+            employeeIds.forEach { tx.upsertEmployeeMessageAccount(it) }
         }
 }

@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import LocalDate from '../../local-date'
 import { Id } from '../../id-type'
 import { JsonOf } from '../../json'
 
@@ -84,6 +85,7 @@ export type DailyServiceTimeNotificationId = Id<'DailyServiceTimeNotification'>
 */
 export interface DaycareAclRow {
   employee: DaycareAclRowEmployee
+  endDate: LocalDate | null
   groupIds: GroupId[]
   role: UserRole
 }
@@ -150,6 +152,8 @@ export type FeeAlterationId = Id<'FeeAlteration'>
 export type FeeDecisionId = Id<'FeeDecision'>
 
 export type FeeThresholdsId = Id<'FeeThresholds'>
+
+export type FinanceNoteId = Id<'FinanceNote'>
 
 export type FosterParentId = Id<'FosterParent'>
 
@@ -258,6 +262,19 @@ export type PreschoolAssistanceId = Id<'PreschoolAssistance'>
 
 export type PreschoolTermId = Id<'PreschoolTerm'>
 
+/**
+* Generated from fi.espoo.evaka.shared.auth.ScheduledDaycareAclRow
+*/
+export interface ScheduledDaycareAclRow {
+  email: string | null
+  endDate: LocalDate | null
+  firstName: string
+  id: EmployeeId
+  lastName: string
+  role: UserRole
+  startDate: LocalDate
+}
+
 export type ServiceApplicationId = Id<'ServiceApplication'>
 
 export type ServiceNeedId = Id<'ServiceNeed'>
@@ -302,10 +319,27 @@ export type VoucherValueDecisionId = Id<'VoucherValueDecision'>
 export type ChildId = PersonId
 
 
+export function deserializeJsonDaycareAclRow(json: JsonOf<DaycareAclRow>): DaycareAclRow {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
+  }
+}
+
+
 export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {
   return {
     ...json,
     end: HelsinkiDateTime.parseIso(json.end),
     start: HelsinkiDateTime.parseIso(json.start)
+  }
+}
+
+
+export function deserializeJsonScheduledDaycareAclRow(json: JsonOf<ScheduledDaycareAclRow>): ScheduledDaycareAclRow {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }

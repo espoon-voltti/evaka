@@ -9,12 +9,15 @@ import fi.espoo.evaka.shared.security.Action
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.Tracer
 import java.util.UUID
 
 fun noopTracer(): Tracer = OpenTelemetry.noop().getTracer("evaka-service")
+
+fun noopMeter(): Meter = OpenTelemetry.noop().getMeter("evaka-service")
 
 object Tracing {
     val action = ToStringAttributeKey<Action>("action")

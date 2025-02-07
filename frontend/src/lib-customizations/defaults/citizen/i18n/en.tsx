@@ -86,7 +86,8 @@ const en: Translations = {
     },
     openExpandingInfo: 'Open the details',
     errors: {
-      genericGetError: 'Error in fetching the requested information'
+      genericGetError: 'Error in fetching the requested information',
+      http403Error: 'No access to the requested information'
     },
     today: 'Today',
     datetime: {
@@ -1888,7 +1889,8 @@ const en: Translations = {
           `at least ${v} ${v > 1 ? 'special characters' : 'special character'}`
       },
       unacceptablePassword: 'The password is too easy to guess',
-      usernameConflict: 'The username is already in use'
+      usernameConflict: (username: string): ReactNode =>
+        `The username ${username} is already in use by another person`
     },
     notificationsSection: {
       title: 'Email notifications',

@@ -4,10 +4,11 @@
 
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { combine, isLoading } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import {
   DaycareGroupResponse,
   DaycareResponse
@@ -17,6 +18,7 @@ import {
   DaycareAclRow,
   DaycareId,
   EmployeeId,
+  ScheduledDaycareAclRow,
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import {
@@ -57,7 +59,8 @@ import {
   deleteUnitSupervisorMutation,
   reactivateTemporaryEmployeeMutation,
   temporaryEmployeesQuery,
-  unitAclQuery
+  unitAclQuery,
+  unitScheduledAclQuery
 } from '../queries'
 
 import AddAclModal from './acl-modals/AddAclModal'
@@ -72,6 +75,21 @@ export type DaycareAclRole = Extract<
   | 'SPECIAL_EDUCATION_TEACHER'
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
 >
+
+const roleOrder = (role: UserRole) => {
+  switch (role) {
+    case 'UNIT_SUPERVISOR':
+      return 0
+    case 'SPECIAL_EDUCATION_TEACHER':
+      return 1
+    case 'EARLY_CHILDHOOD_EDUCATION_SECRETARY':
+      return 2
+    case 'STAFF':
+      return 3
+    default:
+      return 999 // not expected
+  }
+}
 
 function GroupListing({
   unitGroups,
@@ -174,6 +192,7 @@ function AclRow({
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}
+      <Td>{row.endDate?.format()}</Td>
       <Td>
         <FixedSpaceRow justifyContent="flex-end">
           {isEditable && (
@@ -216,18 +235,14 @@ function AclTable({
   unitGroups,
   rows,
   onClickEdit,
-  editPermitted,
-  deletePermitted,
-  coefficientPermitted
+  permittedActions
 }: {
   unitId: DaycareId
   dataQa?: string
   unitGroups?: Record<UUID, DaycareGroupResponse>
   rows: DaycareAclRow[]
   onClickEdit: (employeeRow: DaycareAclRow) => void
-  editPermitted?: boolean
-  deletePermitted: boolean
-  coefficientPermitted: boolean
+  permittedActions: Action.Unit[]
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -237,19 +252,44 @@ function AclTable({
       orderBy(
         rows.filter((row) => !row.employee.temporary),
         [
-          (row) =>
-            row.role === 'UNIT_SUPERVISOR'
-              ? 0
-              : row.role === 'SPECIAL_EDUCATION_TEACHER'
-                ? 1
-                : row.role === 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-                  ? 2
-                  : 3,
+          (row) => roleOrder(row.role),
           (row) => row.employee.firstName,
           (row) => row.employee.lastName
         ]
       ),
     [rows]
+  )
+
+  const editPermitted = useMemo(
+    () =>
+      permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
+      permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'),
+    [permittedActions]
+  )
+  const deletePermitted = useCallback(
+    (role: UserRole) => {
+      switch (role) {
+        case 'UNIT_SUPERVISOR':
+          return permittedActions.includes('DELETE_ACL_UNIT_SUPERVISOR')
+        case 'SPECIAL_EDUCATION_TEACHER':
+          return permittedActions.includes(
+            'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
+          )
+        case 'EARLY_CHILDHOOD_EDUCATION_SECRETARY':
+          return permittedActions.includes(
+            'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+          )
+        case 'STAFF':
+          return permittedActions.includes('DELETE_ACL_STAFF')
+        default:
+          return false
+      }
+    },
+    [permittedActions]
+  )
+  const coefficientPermitted = useMemo(
+    () => permittedActions.includes('READ_STAFF_OCCUPANCY_COEFFICIENTS'),
+    [permittedActions]
   )
 
   return (
@@ -259,6 +299,7 @@ function AclTable({
           <Th>{i18n.unit.accessControl.role}</Th>
           <Th>{i18n.common.form.name}</Th>
           {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
+          <Th>{i18n.unit.accessControl.aclEndDate}</Th>
           <ActionsTh />
         </Tr>
       </Thead>
@@ -269,11 +310,59 @@ function AclTable({
             unitId={unitId}
             unitGroups={unitGroups}
             row={row}
-            isDeletable={deletePermitted && row.employee.id !== user?.id}
+            isDeletable={
+              deletePermitted(row.role) && row.employee.id !== user?.id
+            }
             isEditable={!!(editPermitted && unitGroups)}
             coefficientPermitted={coefficientPermitted}
             onClickEdit={() => onClickEdit(row)}
           />
+        ))}
+      </Tbody>
+    </Table>
+  )
+}
+
+function ScheduledAclTable({ rows }: { rows: ScheduledDaycareAclRow[] }) {
+  const { i18n } = useTranslation()
+
+  const orderedRows = useMemo(
+    () =>
+      orderBy(rows, [
+        (row) => roleOrder(row.role),
+        (row) => row.firstName,
+        (row) => row.lastName
+      ]),
+    [rows]
+  )
+
+  return (
+    <Table data-qa="scheduled-acl-table">
+      <Thead>
+        <Tr>
+          <Th>{i18n.unit.accessControl.role}</Th>
+          <Th>{i18n.common.form.name}</Th>
+          <Th>{i18n.unit.accessControl.aclStartDate}</Th>
+          <Th>{i18n.unit.accessControl.aclEndDate}</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {orderedRows.map((row) => (
+          <Tr key={row.id} data-qa={`scheduled-acl-row-${row.id}`}>
+            <Td>
+              <span data-qa="role">{i18n.roles.adRoles[row.role]}</span>
+            </Td>
+            <Td>
+              <FixedSpaceColumn spacing="zero">
+                <span data-qa="name">
+                  {formatName(row.firstName, row.lastName, i18n)}
+                </span>
+                <EmailSpan data-qa="email">{row.email}</EmailSpan>
+              </FixedSpaceColumn>
+            </Td>
+            <Td>{row.startDate.format()}</Td>
+            <Td>{row.endDate?.format()}</Td>
+          </Tr>
         ))}
       </Tbody>
     </Table>
@@ -488,6 +577,9 @@ export default React.memo(function UnitAccessControl({
 
   const employees = useQueryResult(getEmployeesQuery())
   const daycareAclRows = useQueryResult(unitAclQuery({ unitId }))
+  const scheduledDaycareAclRows = useQueryResult(
+    unitScheduledAclQuery({ unitId })
+  )
   const temporaryEmployees = useQueryResult(
     permittedActions.includes('READ_TEMPORARY_EMPLOYEE')
       ? temporaryEmployeesQuery({ unitId })
@@ -609,21 +701,17 @@ export default React.memo(function UnitAccessControl({
               rows={daycareAclRows}
               unitGroups={groups}
               onClickEdit={(row) => setEditedAclRow(row)}
-              editPermitted={
-                permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
-                permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
-              }
-              deletePermitted={permittedActions.includes(
-                'DELETE_ACL_UNIT_SUPERVISOR'
-              )}
-              coefficientPermitted={permittedActions.includes(
-                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
-              )}
+              permittedActions={permittedActions}
             />
           </>
         ))}
 
         <Gap size="XL" />
+
+        <H3 noMargin>{i18n.unit.accessControl.scheduledAclRoles}</H3>
+        {renderResult(scheduledDaycareAclRows, (scheduledDaycareAclRows) => (
+          <ScheduledAclTable rows={scheduledDaycareAclRows} />
+        ))}
 
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
           <H3 noMargin>{i18n.unit.accessControl.temporaryEmployees.title}</H3>

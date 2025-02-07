@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.domain.*
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -98,6 +99,33 @@ class UnitAclController(
         }
     }
 
+    @GetMapping("/employee/daycares/{unitId}/scheduled-acl")
+    fun getScheduledDaycareAcl(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+    ): List<ScheduledDaycareAclRow> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_ACL,
+                        unitId,
+                    )
+                    tx.getScheduledDaycareAclRows(unitId)
+                }
+            }
+            .also {
+                Audit.UnitScheduledAclRead.log(
+                    targetId = AuditId(unitId),
+                    meta = mapOf("count" to it.size),
+                )
+            }
+    }
+
     @DeleteMapping("/employee/daycares/{unitId}/supervisors/{employeeId}")
     fun deleteUnitSupervisor(
         db: Database,
@@ -118,6 +146,7 @@ class UnitAclController(
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(
                     it,
+                    asyncJobRunner,
                     clock.now(),
                     unitId,
                     employeeId,
@@ -148,6 +177,7 @@ class UnitAclController(
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(
                     it,
+                    asyncJobRunner,
                     clock.now(),
                     unitId,
                     employeeId,
@@ -178,6 +208,7 @@ class UnitAclController(
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(
                     it,
+                    asyncJobRunner,
                     clock.now(),
                     unitId,
                     employeeId,
@@ -206,7 +237,14 @@ class UnitAclController(
                     unitId,
                 )
                 validateIsPermanentEmployee(it, employeeId)
-                removeDaycareAclForRole(it, clock.now(), unitId, employeeId, UserRole.STAFF)
+                removeDaycareAclForRole(
+                    it,
+                    asyncJobRunner,
+                    clock.now(),
+                    unitId,
+                    employeeId,
+                    UserRole.STAFF,
+                )
             }
         }
         Audit.UnitAclDelete.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
@@ -227,15 +265,21 @@ class UnitAclController(
         val occupancyCoefficientId =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE_STAFF_GROUP_ACL,
+                        unitId,
+                    )
+                    validateIsPermanentEmployee(tx, employeeId)
+
+                    if (update.endDate?.isBefore(clock.today()) == true) {
+                        throw BadRequest("End date cannot be in the past")
+                    }
+                    tx.updateAclRowEndDate(unitId, employeeId, update.endDate)
+
                     update.groupIds?.let {
-                        accessControl.requirePermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Unit.UPDATE_STAFF_GROUP_ACL,
-                            unitId,
-                        )
-                        validateIsPermanentEmployee(tx, employeeId)
                         tx.syncDaycareGroupAcl(unitId, employeeId, it, clock.now())
                     }
 
@@ -286,7 +330,8 @@ class UnitAclController(
                     val roleAction = getRoleAddAction(aclInfo.role)
                     accessControl.requirePermissionFor(tx, user, clock, roleAction, unitId)
                     validateIsPermanentEmployee(tx, employeeId)
-                    tx.insertDaycareAclRow(unitId, employeeId, aclInfo.role)
+                    tx.deleteScheduledDaycareAclRow(employeeId, unitId)
+                    tx.insertDaycareAclRow(unitId, employeeId, aclInfo.role, aclInfo.update.endDate)
                     tx.upsertEmployeeMessageAccount(employeeId)
                     aclInfo.update.groupIds?.let {
                         accessControl.requirePermissionFor(
@@ -332,7 +377,11 @@ class UnitAclController(
 
     data class FullAclInfo(val role: UserRole, val update: AclUpdate)
 
-    data class AclUpdate(val groupIds: List<GroupId>?, val hasStaffOccupancyEffect: Boolean?)
+    data class AclUpdate(
+        val groupIds: List<GroupId>?,
+        val hasStaffOccupancyEffect: Boolean?,
+        val endDate: LocalDate?,
+    )
 
     fun getRoleAddAction(role: UserRole): Action.Unit =
         when (role) {
@@ -505,7 +554,7 @@ class UnitAclController(
                     Action.Unit.UPDATE_TEMPORARY_EMPLOYEE,
                     unitId,
                 )
-                tx.insertDaycareAclRow(unitId, employeeId, UserRole.STAFF)
+                tx.insertDaycareAclRow(unitId, employeeId, UserRole.STAFF, endDate = null)
                 tx.upsertEmployeeMessageAccount(employeeId)
             }
         }
@@ -584,7 +633,7 @@ class UnitAclController(
             throw Forbidden("All groups must be in unit")
         }
 
-        tx.insertDaycareAclRow(unitId, employeeId, UserRole.STAFF)
+        tx.insertDaycareAclRow(unitId, employeeId, UserRole.STAFF, endDate = null)
         tx.syncDaycareGroupAcl(unitId, employeeId, input.groupIds, now)
 
         tx.upsertEmployeeMessageAccount(employeeId)
@@ -652,24 +701,25 @@ class UnitAclController(
             }
         }
     }
+}
 
-    fun removeDaycareAclForRole(
-        tx: Database.Transaction,
-        now: HelsinkiDateTime,
-        unitId: DaycareId,
-        employeeId: EmployeeId,
-        role: UserRole,
-    ) {
-        tx.syncDaycareGroupAcl(unitId, employeeId, emptyList())
-        tx.deleteDaycareAclRow(unitId, employeeId, role)
-        deactivatePersonalMessageAccountIfNeeded(tx, employeeId)
+fun removeDaycareAclForRole(
+    tx: Database.Transaction,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+    unitId: DaycareId,
+    employeeId: EmployeeId,
+    role: UserRole,
+) {
+    tx.syncDaycareGroupAcl(unitId, employeeId, emptyList())
+    tx.deleteDaycareAclRow(unitId, employeeId, role)
+    deactivatePersonalMessageAccountIfNeeded(tx, employeeId)
 
-        // Delete personal mobile devices after a while, in case the employee is added back to this
-        // or some other unit
-        asyncJobRunner.plan(
-            tx,
-            listOf(AsyncJob.DeletePersonalDevicesIfNeeded(employeeId)),
-            runAt = now.plusHours(1),
-        )
-    }
+    // Delete personal mobile devices after a while, in case the employee is added back to this
+    // or some other unit
+    asyncJobRunner.plan(
+        tx,
+        listOf(AsyncJob.DeletePersonalDevicesIfNeeded(employeeId)),
+        runAt = now.plusHours(1),
+    )
 }

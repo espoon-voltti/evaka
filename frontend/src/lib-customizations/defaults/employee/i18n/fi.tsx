@@ -70,6 +70,7 @@ export const fi = {
     no: 'Ei',
     and: 'Ja',
     loadingFailed: 'Tietojen haku epäonnistui',
+    noAccess: 'Oikeudet puuttuvat',
     edit: 'Muokkaa',
     add: 'Lisää',
     addNew: 'Lisää uusi',
@@ -1691,6 +1692,14 @@ export const fi = {
     partnerInfo:
       'Samassa osoitteessa avio/avoliiton omaisessa suhteessa asuva toinen henkilö',
     partnerAdd: 'Lisää puoliso',
+    financeNotesAndMessages: {
+      title: 'Talouden muistiinpanot ja viestit',
+      addNote: 'Lisää muistiinpano',
+      confirmDelete: 'Haluatko varmasti poistaa muistiinpanon',
+      note: 'Muistiinpano',
+      created: 'Luotu',
+      inEdit: 'Muokattavana'
+    },
     forceManualFeeDecisionsLabel: 'Maksupäätösten lähettäminen',
     forceManualFeeDecisionsChecked: 'Lähetetään aina manuaalisesti',
     forceManualFeeDecisionsUnchecked: 'Automaattisesti, jos mahdollista',
@@ -2151,9 +2160,12 @@ export const fi = {
     accessControl: {
       aclRoles: 'Luvitukset',
       activeAclRoles: 'Aktiiviset luvitukset',
+      scheduledAclRoles: 'Tulevat luvitukset',
       role: 'Rooli',
       name: 'Nimi',
       email: 'Sähköpostiosoite',
+      aclStartDate: 'Luvitus alkaa',
+      aclEndDate: 'Luvitus päättyy',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
       addDaycareAclModal: {
@@ -4699,8 +4711,11 @@ export const fi = {
       globalRoles: 'Järjestelmäroolit',
       unitRoles: {
         title: 'Luvitukset',
+        scheduledRolesTitle: 'Tulevat luvitukset',
         unit: 'Yksikkö',
         role: 'Rooli yksikössä',
+        startDate: 'Luvitus alkaa',
+        endDate: 'Luvitus päättyy',
         deleteConfirm: 'Haluatko poistaa käyttäjän luvituksen?',
         deleteAll: 'Poista kaikki luvitukset',
         deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?',

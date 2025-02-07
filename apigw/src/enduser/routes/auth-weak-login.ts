@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 import { EvakaSessionUser } from '../../shared/auth/index.js'
 import { toRequestHandler } from '../../shared/express.js'
-import { logAuditEvent } from '../../shared/logging.js'
+import { logAuditEvent, logWarn } from '../../shared/logging.js'
 import { RedisClient } from '../../shared/redis-client.js'
 import { citizenWeakLogin } from '../../shared/service-client.js'
 import { Sessions } from '../../shared/session.js'
@@ -45,6 +45,9 @@ export const authWeakLogin = (
           const expirySeconds = 60 * 60
           await redis.multi().incr(key).expire(key, expirySeconds).exec()
         } else {
+          logWarn('Login request hit rate limit', req, {
+            username: body.username
+          })
           res.sendStatus(429)
           return
         }

@@ -83,7 +83,8 @@ export default {
     },
     openExpandingInfo: 'Avaa lisätietokenttä',
     errors: {
-      genericGetError: 'Tietojen hakeminen ei onnistunut'
+      genericGetError: 'Tietojen hakeminen ei onnistunut',
+      http403Error: 'Oikeudet puuttuvat'
     },
     today: 'Tänään',
     datetime: {
@@ -2128,7 +2129,8 @@ export default {
           `vähintään ${v} ${v > 1 ? 'erikoismerkkiä' : 'erikoismerkki'}`
       },
       unacceptablePassword: 'Salasana on liian helposti arvattava',
-      usernameConflict: 'Käyttäjätunnus on jo käytössä'
+      usernameConflict: (username: string): ReactNode =>
+        `Käyttäjätunnus ${username} on jo käytössä toisella henkilöllä`
     },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',

@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { scopedRoles } from 'lib-common/api-types/employee-auth'
-import { boolean, string } from 'lib-common/form/fields'
+import { boolean, localDate, string } from 'lib-common/form/fields'
 import {
   array,
   object,
@@ -25,12 +25,14 @@ import {
   EmployeeId,
   UserRole
 } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import TreeDropdown, {
   sortTreeByText,
   TreeNode
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
@@ -54,7 +56,9 @@ const treeNode = (): Form<DaycareTreeNode, never, DaycareTreeNode, unknown> =>
 const form = transformed(
   object({
     daycareTree: array(treeNode()),
-    role: required(oneOf<UserRole>())
+    role: required(oneOf<UserRole>()),
+    startDate: required(localDate()),
+    endDate: localDate()
   }),
   (res) => {
     const daycareIds = res.daycareTree
@@ -64,9 +68,14 @@ const form = transformed(
 
     if (daycareIds.length === 0) return ValidationError.of('required')
 
+    if (res.endDate && res.endDate.isBefore(res.startDate))
+      return ValidationError.field('endDate', 'dateTooEarly')
+
     return ValidationSuccess.of<UpsertEmployeeDaycareRolesRequest>({
       daycareIds,
-      role: res.role
+      role: res.role,
+      startDate: res.startDate,
+      endDate: res.endDate ?? null
     })
   }
 )
@@ -80,7 +89,8 @@ export default React.memo(function DaycareRolesModal({
   units: Daycare[]
   onClose: () => void
 }) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
+
   const boundForm = useForm(
     form,
     () => ({
@@ -113,12 +123,18 @@ export default React.memo(function DaycareRolesModal({
           domValue: r,
           label: i18n.roles.adRoles[r]
         }))
-      }
+      },
+      startDate: localDate.fromDate(LocalDate.todayInHelsinkiTz(), {
+        minDate: LocalDate.todayInHelsinkiTz()
+      }),
+      endDate: localDate.fromDate(null, {
+        minDate: LocalDate.todayInHelsinkiTz()
+      })
     }),
     i18n.validationErrors
   )
 
-  const { daycareTree, role } = useFormFields(boundForm)
+  const { daycareTree, role, startDate, endDate } = useFormFields(boundForm)
 
   return (
     <MutateFormModal
@@ -143,6 +159,14 @@ export default React.memo(function DaycareRolesModal({
         <FixedSpaceColumn spacing="xs">
           <Label>{i18n.employees.editor.unitRoles.role}</Label>
           <SelectF bind={role} />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="xs">
+          <Label>{i18n.employees.editor.unitRoles.startDate}</Label>
+          <DatePickerF bind={startDate} locale={lang} />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="xs">
+          <Label>{i18n.employees.editor.unitRoles.endDate}</Label>
+          <DatePickerF bind={endDate} locale={lang} />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </MutateFormModal>

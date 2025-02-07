@@ -43,6 +43,7 @@ import { UserContext } from '../state/user'
 import { getLayout, Layouts } from './layouts'
 import FosterChildren from './person-profile/FosterChildren'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
+import PersonFinanceNotesAndMessages from './person-profile/PersonFinanceNotesAndMessages'
 import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'
 import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
 
@@ -135,11 +136,16 @@ const components = {
     PersonApplications,
     'READ_APPLICATIONS'
   ),
-  decisions: requireOneOfPermittedActions(PersonDecisions, 'READ_DECISIONS')
+  decisions: requireOneOfPermittedActions(PersonDecisions, 'READ_DECISIONS'),
+  'notes-and-messages': requireOneOfPermittedActions(
+    PersonFinanceNotesAndMessages,
+    'READ_FINANCE_NOTES'
+  )
 }
 
 const layouts: Layouts<typeof components> = {
   ['ADMIN']: [
+    { component: 'notes-and-messages', open: true },
     { component: 'family-overview', open: true },
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
@@ -168,6 +174,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'voucherValueDecisions', open: false }
   ],
   ['FINANCE_ADMIN']: [
+    { component: 'notes-and-messages', open: true },
     { component: 'family-overview', open: true },
     { component: 'income', open: true },
     { component: 'fee-decisions', open: false },
@@ -180,6 +187,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'fosterChildren', open: false }
   ],
   ['FINANCE_STAFF']: [
+    { component: 'notes-and-messages', open: true },
     { component: 'family-overview', open: true },
     { component: 'fee-decisions', open: false },
     { component: 'invoices', open: false },

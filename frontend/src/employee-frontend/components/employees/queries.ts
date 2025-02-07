@@ -11,6 +11,7 @@ import {
   createSsnEmployee,
   deactivateEmployee,
   deleteEmployeeDaycareRoles,
+  deleteEmployeeScheduledDaycareRole,
   getEmployeeDetails,
   searchEmployees,
   updateEmployeeGlobalRoles,
@@ -35,6 +36,11 @@ export const upsertEmployeeDaycareRolesMutation = q.mutation(
 
 export const deleteEmployeeDaycareRolesMutation = q.mutation(
   deleteEmployeeDaycareRoles,
+  [searchEmployeesQuery.prefix, ({ id }) => employeeDetailsQuery({ id })]
+)
+
+export const deleteEmployeeScheduledDaycareRoleMutation = q.mutation(
+  deleteEmployeeScheduledDaycareRole,
   [searchEmployeesQuery.prefix, ({ id }) => employeeDetailsQuery({ id })]
 )
 

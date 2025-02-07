@@ -615,6 +615,14 @@ export interface DevFamilyContact {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.DevFinanceNote
+*/
+export interface DevFinanceNote {
+  content: string
+  personId: PersonId
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevFosterParent
 */
 export interface DevFosterParent {

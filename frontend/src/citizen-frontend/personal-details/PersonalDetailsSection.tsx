@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
+import { Failure } from 'lib-common/api'
 import { boolean, string } from 'lib-common/form/fields'
 import {
   chained,
@@ -507,6 +508,14 @@ const EmailVerificationForm = React.memo(function EmailVerificationForm({
   )
   const verificationCode = useFormField(form, 'verificationCode')
 
+  const [isUsernameConflict, setUsernameConflict] = useState<boolean>(false)
+  const onFailure = useCallback(
+    (failure: Failure<unknown>) => {
+      setUsernameConflict(failure.statusCode === 409)
+    },
+    [setUsernameConflict]
+  )
+
   return (
     <FixedSpaceColumn>
       <LabelLike>
@@ -541,11 +550,18 @@ const EmailVerificationForm = React.memo(function EmailVerificationForm({
           close={closeInfo}
         />
       )}
+      {isUsernameConflict && (
+        <AlertBox
+          message={i18n.personalDetails.loginDetailsSection.usernameConflict(
+            verification.email
+          )}
+        />
+      )}
       <Gap size="m" />
       <MutateButton
         data-qa="verify-email"
         primary
-        disabled={!form.isValid()}
+        disabled={!form.isValid() || isUsernameConflict}
         text={t.confirmVerification}
         mutation={verifyEmailMutation}
         onClick={() => ({
@@ -562,6 +578,7 @@ const EmailVerificationForm = React.memo(function EmailVerificationForm({
               : t.verifyEmail.toast
           })
         }}
+        onFailure={onFailure}
       />
     </FixedSpaceColumn>
   )

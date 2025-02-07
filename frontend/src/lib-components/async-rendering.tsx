@@ -31,14 +31,19 @@ export interface SpinnerOptions {
   margin?: SpacingSize
 }
 
-export function makeHelpers(useFailureMessage: () => string) {
+interface FailureMessages {
+  generic: string
+  http403: string
+}
+
+export function makeHelpers(useFailureMessage: () => FailureMessages) {
   function UnwrapResult<T>({
     result,
     loading,
     failure,
     children
   }: UnwrapResultProps<T>) {
-    const failureMessage = useFailureMessage()
+    const failureMessages = useFailureMessage()
     return useMemo(() => {
       if (
         result.isLoading ||
@@ -51,13 +56,21 @@ export function makeHelpers(useFailureMessage: () => string) {
       }
       if (result.isFailure) {
         if (failure) return failure()
-        return <ErrorSegment title={failureMessage} />
+        return (
+          <ErrorSegment
+            title={
+              result.statusCode === 403
+                ? failureMessages.http403
+                : failureMessages.generic
+            }
+          />
+        )
       }
       if (!children) {
         return null
       }
       return children(result.value, result.isReloading)
-    }, [failureMessage, result, loading, failure, children])
+    }, [failureMessages, result, loading, failure, children])
   }
 
   interface RenderResultProps<T> {
@@ -75,7 +88,7 @@ export function makeHelpers(useFailureMessage: () => string) {
     renderer,
     spinnerOptions = {}
   }: RenderResultProps<T>) {
-    const failureMessage = useFailureMessage()
+    const failureMessages = useFailureMessage()
     return useMemo(
       () =>
         result.isLoading ? (
@@ -87,13 +100,19 @@ export function makeHelpers(useFailureMessage: () => string) {
           <Relative>
             {result.isSuccess && result.isReloading && <SpinnerOverlay />}
             {result.isFailure ? (
-              <ErrorSegment title={failureMessage} />
+              <ErrorSegment
+                title={
+                  result.statusCode === 403
+                    ? failureMessages.http403
+                    : failureMessages.generic
+                }
+              />
             ) : result.isSuccess ? (
               renderer(result.value, result.isReloading)
             ) : null}
           </Relative>
         ),
-      [result, renderer, failureMessage, spinnerOptions]
+      [result, renderer, failureMessages, spinnerOptions]
     )
   }
 

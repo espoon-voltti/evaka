@@ -272,6 +272,7 @@ fun Database.Transaction.insert(
     row: DevEmployee,
     unitRoles: Map<DaycareId, UserRole> = mapOf(),
     groupAcl: Map<DaycareId, Collection<GroupId>> = mapOf(),
+    endDate: LocalDate? = null,
     now: HelsinkiDateTime = HelsinkiDateTime.now(),
 ) =
     createUpdate {
@@ -288,7 +289,7 @@ RETURNING id
         .also { employeeId ->
             upsertEmployeeUser(employeeId)
             unitRoles.forEach { (daycareId, role) ->
-                insertDaycareAclRow(daycareId, employeeId, role)
+                insertDaycareAclRow(daycareId, employeeId, role, endDate)
             }
             groupAcl.forEach { (daycareId, groups) ->
                 syncDaycareGroupAcl(daycareId, employeeId, groups, now)

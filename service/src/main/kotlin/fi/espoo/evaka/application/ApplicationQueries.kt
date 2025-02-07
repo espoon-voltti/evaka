@@ -1041,13 +1041,15 @@ fun Database.Transaction.updateForm(
 
 fun Database.Transaction.resetCheckedByAdminAndConfidentiality(
     id: ApplicationId,
-    form: ApplicationForm,
     now: HelsinkiDateTime,
     modifiedBy: EvakaUserId,
 ) {
+    val application = fetchApplicationDetails(id) ?: return
+    val form = application.form
     val confidential =
         when {
-            form.child.assistanceNeeded ||
+            application.attachments.isNotEmpty() ||
+                form.child.assistanceNeeded ||
                 form.child.allergies.isNotBlank() ||
                 form.child.diet.isNotBlank() ->
                 true // If any of these fields are filled, the application is always confidential

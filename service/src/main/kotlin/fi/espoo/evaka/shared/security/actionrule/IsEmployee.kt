@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FinanceNoteId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -179,6 +180,18 @@ WHERE employee_id = ${bind(user.id)}
                 """
 SELECT id
 FROM application_note
+WHERE created_by = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun authorOfFinanceNote() =
+        rule<FinanceNoteId> { user, _ ->
+            sql(
+                """
+SELECT id
+FROM finance_note
 WHERE created_by = ${bind(user.id)}
             """
                     .trimIndent()

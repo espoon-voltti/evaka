@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.NewSsnEmployee
+import fi.espoo.evaka.pis.ScheduledDaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -26,6 +27,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -110,21 +112,76 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             )
         }
 
+        val endDate = clock.today().plusMonths(9)
         upsertEmployeeDaycareRoles(
             employee.id,
             listOf(daycare2.id, daycare3.id),
             UserRole.SPECIAL_EDUCATION_TEACHER,
+            startDate = clock.today(),
+            endDate,
         )
 
         assertEquals(
             setOf(
-                DaycareRole(daycare1.id, daycare1.name, UserRole.STAFF),
-                DaycareRole(daycare2.id, daycare2.name, UserRole.SPECIAL_EDUCATION_TEACHER),
-                DaycareRole(daycare3.id, daycare3.name, UserRole.SPECIAL_EDUCATION_TEACHER),
+                DaycareRole(daycare1.id, daycare1.name, UserRole.STAFF, null),
+                DaycareRole(
+                    daycare2.id,
+                    daycare2.name,
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
+                    endDate,
+                ),
+                DaycareRole(daycare3.id, daycare3.name, UserRole.SPECIAL_EDUCATION_TEACHER, endDate),
             ),
             getEmployeeDetails(employee.id).daycareRoles.toSet(),
         )
+        assertEquals(0, getEmployeeDetails(employee.id).scheduledDaycareRoles.size)
         db.read { assertTrue(it.hasActiveMessagingAccount(employee.id)) }
+    }
+
+    @Test
+    fun `admin can schedule employee daycare roles`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val daycare2 = DevDaycare(areaId = careArea.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(employee)
+        }
+
+        val startDate = clock.today().plusMonths(1)
+        val endDate = clock.today().plusMonths(9)
+        upsertEmployeeDaycareRoles(
+            employee.id,
+            listOf(daycare1.id, daycare2.id),
+            UserRole.SPECIAL_EDUCATION_TEACHER,
+            startDate,
+            endDate,
+        )
+
+        assertEquals(0, getEmployeeDetails(employee.id).daycareRoles.size)
+        assertEquals(
+            listOf(
+                ScheduledDaycareRole(
+                    daycare1.id,
+                    daycare1.name,
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
+                    startDate,
+                    endDate,
+                ),
+                ScheduledDaycareRole(
+                    daycare2.id,
+                    daycare2.name,
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
+                    startDate,
+                    endDate,
+                ),
+            ),
+            getEmployeeDetails(employee.id).scheduledDaycareRoles,
+        )
+        db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
     }
 
     @Test
@@ -157,7 +214,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         val updated = getEmployeeDetails(employee.id)
         assertEquals(
-            listOf(DaycareRole(daycare2.id, daycare2.name, UserRole.STAFF)),
+            listOf(DaycareRole(daycare2.id, daycare2.name, UserRole.STAFF, null)),
             updated.daycareRoles,
         )
         assertEquals(
@@ -230,13 +287,24 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun createEmployee(employee: NewEmployee) =
         employeeController.createEmployee(dbInstance(), adminUser, clock, employee)
 
-    fun upsertEmployeeDaycareRoles(id: EmployeeId, daycareIds: List<DaycareId>, role: UserRole) =
+    fun upsertEmployeeDaycareRoles(
+        id: EmployeeId,
+        daycareIds: List<DaycareId>,
+        role: UserRole,
+        startDate: LocalDate,
+        endDate: LocalDate?,
+    ) =
         employeeController.upsertEmployeeDaycareRoles(
             dbInstance(),
             adminUser,
             clock,
             id,
-            EmployeeController.UpsertEmployeeDaycareRolesRequest(daycareIds, role),
+            EmployeeController.UpsertEmployeeDaycareRolesRequest(
+                daycareIds,
+                role,
+                startDate,
+                endDate,
+            ),
         )
 
     fun updateEmployeeGlobalRoles(id: EmployeeId, roles: List<UserRole>) =
