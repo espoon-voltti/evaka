@@ -1150,41 +1150,44 @@ fun Database.Read.getReceiversForNewMessage(
             JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
             WHERE p.start_date > ${bind(today)} OR dgp.start_date > ${bind(today)}
         ), children AS (
-            SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
-            FROM accounts a
-            JOIN realized_placement_all(${bind(today)}) p ON a.daycare_group_id = p.group_id
-            JOIN daycare d ON p.unit_id = d.id
-            JOIN daycare_group g ON p.group_id = g.id
-            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-
+            WITH current_group_receivers AS (
+                SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
+                FROM accounts a
+                JOIN realized_placement_all(${bind(today)}) p ON a.daycare_group_id = p.group_id
+                JOIN daycare d ON p.unit_id = d.id
+                JOIN daycare_group g ON p.group_id = g.id
+                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            ), current_unit_receivers AS (
+                SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
+                FROM accounts a
+                JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
+                JOIN daycare d ON acl.daycare_id = d.id
+                JOIN daycare_group g ON d.id = g.daycare_id
+                JOIN realized_placement_all(${bind(today)}) p ON g.id = p.group_id
+                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            ), starting_group_receivers AS (
+                SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, p.start_date
+                FROM accounts a
+                JOIN starting_children p ON a.daycare_group_id = p.group_id
+                JOIN daycare d ON p.unit_id = d.id
+                JOIN daycare_group g ON p.group_id = g.id
+                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            ), starting_unit_receivers AS (
+                SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, p.start_date
+                FROM accounts a
+                JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
+                JOIN daycare d ON acl.daycare_id = d.id
+                JOIN starting_children p ON d.id = p.unit_id
+                LEFT JOIN daycare_group g ON p.group_id = g.id
+                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            )
+            SELECT * FROM current_group_receivers
             UNION ALL
-
-            SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
-            FROM accounts a
-            JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
-            JOIN daycare d ON acl.daycare_id = d.id
-            JOIN daycare_group g ON d.id = g.daycare_id
-            JOIN realized_placement_all(${bind(today)}) p ON g.id = p.group_id
-            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-            
+            SELECT * FROM current_unit_receivers
             UNION ALL
-
-            SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name, p.start_date
-            FROM accounts a
-            JOIN starting_children p ON a.daycare_group_id = p.group_id
-            JOIN daycare d ON p.unit_id = d.id
-            JOIN daycare_group g ON p.group_id = g.id
-            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-
+            SELECT * FROM starting_group_receivers
             UNION ALL
-
-            SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, p.start_date
-            FROM accounts a
-            JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
-            JOIN daycare d ON acl.daycare_id = d.id
-            JOIN starting_children p ON d.id = p.unit_id
-            LEFT JOIN daycare_group g ON p.group_id = g.id
-            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)  
+            SELECT * FROM starting_unit_receivers
         )
         SELECT DISTINCT
             c.account_id,
@@ -1201,10 +1204,8 @@ fun Database.Read.getReceiversForNewMessage(
         WHERE EXISTS (
             SELECT 1
             FROM guardian g
-            WHERE g.child_id = c.child_id
-
-            UNION ALL
-
+            WHERE g.child_id = c.child_id)
+        OR EXISTS (
             SELECT 1
             FROM foster_parent fp
             WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)} 
@@ -1359,31 +1360,27 @@ WITH sender AS (
         OR pl.group_id = ANY(${bind(currentRecipients[MessageRecipientType.GROUP])})
         OR pl.child_id = ANY(${bind(currentRecipients[MessageRecipientType.CHILD])}))
     AND ${predicate(filterPredicates)}
-    AND EXISTS (
-        SELECT 1
-        FROM child_daycare_acl(${bind(date)})
-        JOIN mobile_device_daycare_acl_view USING (daycare_id)
-        WHERE mobile_device_id = (SELECT sender.employee_id FROM sender)
-        AND child_id = pl.child_id
-
-        UNION ALL
-
-        SELECT 1
-        FROM employee_child_daycare_acl(${bind(date)})
-        WHERE employee_id = (SELECT sender.employee_id FROM sender)
-        AND child_id = pl.child_id
-
-        UNION ALL
-
-        SELECT 1
-        FROM sender
-        WHERE pl.group_id = sender.daycare_group_id
-
-        UNION ALL
-
-        SELECT 1
-        FROM sender
-        WHERE type = 'MUNICIPAL'
+    AND (
+        EXISTS (
+            SELECT 1
+            FROM child_daycare_acl(${bind(date)})
+            JOIN mobile_device_daycare_acl_view USING (daycare_id)
+            WHERE mobile_device_id = (SELECT sender.employee_id FROM sender)
+                AND child_id = pl.child_id
+        ) OR EXISTS (
+            SELECT 1
+            FROM employee_child_daycare_acl(${bind(date)})
+            WHERE employee_id = (SELECT sender.employee_id FROM sender)
+                AND child_id = pl.child_id
+        ) OR EXISTS (
+            SELECT 1
+            FROM sender
+            WHERE pl.group_id = sender.daycare_group_id
+        ) OR EXISTS (
+            SELECT 1
+            FROM sender
+            WHERE type = 'MUNICIPAL'
+        )
     )
     AND 'MESSAGING' = ANY(d.enabled_pilot_features)
 ), starting_children AS (
@@ -1399,22 +1396,20 @@ WITH sender AS (
             OR dgp.daycare_group_id = ANY(${bind(starterRecipients[MessageRecipientType.GROUP])})
             OR pl.child_id = ANY(${bind(starterRecipients[MessageRecipientType.CHILD])}))
     AND ${predicate(filterPredicates)}
-    AND EXISTS (
-        SELECT 1
-        FROM daycare_acl_view acl
-        WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = (SELECT sender.employee_id FROM sender)
-
-        UNION ALL
-
-        SELECT 1
-        FROM sender
-        WHERE dgp.daycare_group_id = sender.daycare_group_id
-
-        UNION ALL
-
-        SELECT 1
-        FROM sender
-        WHERE type = 'MUNICIPAL'
+    AND (
+        EXISTS (
+            SELECT 1
+            FROM daycare_acl_view acl
+            WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = (SELECT sender.employee_id FROM sender)
+        ) OR EXISTS (
+            SELECT 1
+            FROM sender
+            WHERE dgp.daycare_group_id = sender.daycare_group_id
+        ) OR EXISTS (
+            SELECT 1
+            FROM sender
+            WHERE type = 'MUNICIPAL'
+        )
     )
     AND 'MESSAGING' = ANY(d.enabled_pilot_features)
 ), children AS (
