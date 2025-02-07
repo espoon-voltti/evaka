@@ -445,6 +445,7 @@ export const fi = {
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',
       recipientsPlaceholder: 'Valitse...',
+      starters: 'aloittavat',
       subject: {
         heading: 'Otsikko',
         placeholder: 'Kirjoita...'

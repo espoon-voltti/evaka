@@ -1490,7 +1490,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             group1Account,
             "title",
             "content",
-            setOf(person2Account),
+            setOf(SelectableRecipient(person2Account, false)),
             emptyList(),
             clock.now().minusDays(updatedDaysAgo.toLong()),
         )
@@ -1872,7 +1872,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         accountId: MessageAccountId,
         title: String,
         content: String,
-        recipientIds: Set<MessageAccountId>,
+        recipients: Set<SelectableRecipient>,
         recipientNames: List<String>,
         now: HelsinkiDateTime,
     ) {
@@ -1895,7 +1895,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 content,
                 urgent = false,
                 sensitive = false,
-                recipientIds = recipientIds,
+                recipients = recipients,
                 recipientNames = recipientNames,
             ),
         )

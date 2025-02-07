@@ -170,6 +170,13 @@ export class ElementCollection {
   async assertTextsEqual(values: string[]) {
     await waitUntilEqual(() => this.allTexts(), values)
   }
+
+  async assertTextsEqualAnyOrder(values: string[]) {
+    await waitUntilEqual(async () => {
+      const texts = await this.allTexts()
+      return texts.sort()
+    }, values.slice().sort())
+  }
 }
 
 export class Element {
@@ -594,6 +601,7 @@ export class Modal extends Element {
 
 export class TreeDropdown extends Element {
   values = this.findByDataQa('selected-values').findAllByDataQa('value')
+  labels = this.findByDataQa('select-receiver-tree').findAll('label')
 
   private async expanded(): Promise<boolean> {
     return (
@@ -621,6 +629,10 @@ export class TreeDropdown extends Element {
 
   firstOption(): Checkbox {
     return new Checkbox(this.findAll(`[data-qa*="tree-checkbox-"]`).nth(0))
+  }
+
+  optionByLabel(label: string): Element {
+    return this.labels.find(`text=${label}`)
   }
 
   async expandOption(key: string): Promise<void> {

@@ -153,7 +153,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [testCareArea.id, testCareArea2.id],
+      receiverKeys: [`${testCareArea.id}+false`, `${testCareArea2.id}+false`],
       confirmManyRecipients: true
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
@@ -171,7 +171,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [testCareArea.id]
+      receiverKeys: [`${testCareArea.id}+false`]
     })
 
     const sentMessagesPage = await messagesPage.openSentMessages()
@@ -188,7 +188,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [testCareArea.id]
+      receiverKeys: [`${testCareArea.id}+false`]
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 

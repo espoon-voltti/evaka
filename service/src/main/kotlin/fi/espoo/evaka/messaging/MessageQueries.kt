@@ -764,6 +764,8 @@ fun Database.Read.getCitizenReceivers(
         val oooPeriod: FiniteDateRange?,
     )
 
+    val sendNewMessageWeeksBefore = 2L
+
     return createQuery {
             sql(
                 """
@@ -780,34 +782,44 @@ WITH user_account AS (
     FROM user_account acc
     JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> ${bind(today)}
 ), backup_care_placements AS (
-    SELECT p.id, p.unit_id, p.child_id, p.group_id
+    SELECT p.id, p.unit_id, p.child_id, p.group_id, p.start_date
     FROM children c
-    JOIN backup_care p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
+    JOIN backup_care p ON p.child_id = c.child_id AND p.end_date >= ${bind(today)}
     WHERE EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
     )
 ), placements AS (
-    SELECT p.id, p.unit_id, p.child_id
+    SELECT p.id, p.unit_id, p.child_id, p.start_date
     FROM children c
-    JOIN placement p ON p.child_id = c.child_id AND daterange((p.start_date - INTERVAL '2 weeks')::date, p.end_date, '[]') @> ${bind(today)}
+    JOIN placement p ON p.child_id = c.child_id AND p.end_date >= ${bind(today)}
     AND EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
     )
 ),
 relevant_placements AS (
-    SELECT p.id, p.unit_id, p.child_id
+    SELECT p.id, p.unit_id, p.child_id, p.start_date
     FROM placements p
 
     UNION
 
-    SELECT bc.id, bc.unit_id, bc.child_id
+    SELECT bc.id, bc.unit_id, bc.child_id, bc.start_date
     FROM backup_care_placements bc
 ),
 personal_accounts AS (
-    SELECT acc.id, acc_name.name, 'PERSONAL' AS type, p.child_id, acl.role != 'UNIT_SUPERVISOR' AS reply_only, ooo.period AS ooo_period
-    FROM (SELECT DISTINCT unit_id, child_id FROM relevant_placements) p
+    SELECT
+        acc.id,
+        acc_name.name,
+        'PERSONAL' AS type, 
+        p.child_id, 
+        (acl.role != 'UNIT_SUPERVISOR' OR ${bind(today.plusWeeks(sendNewMessageWeeksBefore))} < p.start_date) AS reply_only,
+        ooo.period AS ooo_period
+    FROM (
+        SELECT unit_id, child_id, min(start_date) AS start_date 
+        FROM relevant_placements 
+        GROUP BY unit_id, child_id
+    ) p
     JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
     JOIN message_account acc ON acc.employee_id = acl.employee_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
@@ -820,15 +832,15 @@ personal_accounts AS (
     WHERE active IS TRUE
 ),
 group_accounts AS (
-    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
+    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id, ${bind(today.plusWeeks(sendNewMessageWeeksBefore))} < dgp.start_date AS reply_only
     FROM placements p
-    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND ${bind(today)} BETWEEN (dgp.start_date - INTERVAL '2 weeks')::date AND dgp.end_date
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND dgp.end_date >= ${bind(today)}
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
 
     UNION ALL
 
-    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
+    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id, ${bind(today.plusWeeks(sendNewMessageWeeksBefore))} < p.start_date AS reply_only
     FROM backup_care_placements p
     JOIN daycare_group g ON g.id = p.group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
@@ -853,7 +865,7 @@ citizen_accounts AS (
 mixed_accounts AS (
     SELECT id, name, type, child_id, reply_only, ooo_period FROM personal_accounts
     UNION ALL
-    SELECT id, name, type, child_id, FALSE AS reply_only, null as ooo_period FROM group_accounts
+    SELECT id, name, type, child_id, reply_only, null as ooo_period FROM group_accounts
     UNION ALL
     SELECT id, name, type, child_id, FALSE AS reply_only, null as ooo_period FROM citizen_accounts
 )
@@ -1108,6 +1120,7 @@ data class UnitMessageReceiversResult(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
+    val startDate: LocalDate?,
 )
 
 data class MunicipalMessageReceiversResult(
@@ -1131,23 +1144,50 @@ fun Database.Read.getReceiversForNewMessage(
             WHERE
                 ${predicate(idFilter.forTable("message_account"))} AND
                 type = ANY('{PERSONAL,GROUP}'::message_account_type[])
+        ), starting_children AS (
+            SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, dgp.start_date
+            FROM placement p
+            JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+            WHERE p.start_date > ${bind(today)} OR dgp.start_date > ${bind(today)}
         ), children AS (
-            SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name
-            FROM accounts a
-            JOIN realized_placement_all(${bind(today)}) p ON a.daycare_group_id = p.group_id
-            JOIN daycare d ON p.unit_id = d.id
-            JOIN daycare_group g ON p.group_id = g.id
-            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-
+            WITH current_group_receivers AS (
+                SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
+                FROM accounts a
+                JOIN realized_placement_all(${bind(today)}) p ON a.daycare_group_id = p.group_id
+                JOIN daycare d ON p.unit_id = d.id
+                JOIN daycare_group g ON p.group_id = g.id
+                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            ), current_unit_receivers AS (
+                SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
+                FROM accounts a
+                JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
+                JOIN daycare d ON acl.daycare_id = d.id
+                JOIN daycare_group g ON d.id = g.daycare_id
+                JOIN realized_placement_all(${bind(today)}) p ON g.id = p.group_id
+                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            ), starting_group_receivers AS (
+                SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, p.start_date
+                FROM accounts a
+                JOIN starting_children p ON a.daycare_group_id = p.group_id
+                JOIN daycare d ON p.unit_id = d.id
+                JOIN daycare_group g ON p.group_id = g.id
+                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            ), starting_unit_receivers AS (
+                SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, p.start_date
+                FROM accounts a
+                JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
+                JOIN daycare d ON acl.daycare_id = d.id
+                JOIN starting_children p ON d.id = p.unit_id
+                LEFT JOIN daycare_group g ON p.group_id = g.id
+                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            )
+            SELECT * FROM current_group_receivers
             UNION ALL
-
-            SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name
-            FROM accounts a
-            JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
-            JOIN daycare d ON acl.daycare_id = d.id
-            JOIN daycare_group g ON d.id = g.daycare_id
-            JOIN realized_placement_all(${bind(today)}) p ON g.id = p.group_id
-            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+            SELECT * FROM current_unit_receivers
+            UNION ALL
+            SELECT * FROM starting_group_receivers
+            UNION ALL
+            SELECT * FROM starting_unit_receivers
         )
         SELECT DISTINCT
             c.account_id,
@@ -1156,6 +1196,7 @@ fun Database.Read.getReceiversForNewMessage(
             c.group_id,
             c.group_name,
             c.child_id,
+            c.start_date,
             p.first_name,
             p.last_name
         FROM children c
@@ -1163,10 +1204,8 @@ fun Database.Read.getReceiversForNewMessage(
         WHERE EXISTS (
             SELECT 1
             FROM guardian g
-            WHERE g.child_id = c.child_id
-
-            UNION ALL
-
+            WHERE g.child_id = c.child_id)
+        OR EXISTS (
             SELECT 1
             FROM foster_parent fp
             WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)} 
@@ -1177,8 +1216,9 @@ fun Database.Read.getReceiversForNewMessage(
             }
             .toList<UnitMessageReceiversResult>()
             .groupBy { it.accountId }
-            .map { (accountId, receivers) ->
-                val units = receivers.groupBy { it.unitId to it.unitName }
+            .map { (groupKey, receivers) ->
+                val units =
+                    receivers.groupBy { Triple(it.unitId, it.unitName, it.startDate != null) }
                 val accountReceivers =
                     units.flatMap { (unit, groups) ->
                         val (unitId, unitName) = unit
@@ -1188,11 +1228,12 @@ fun Database.Read.getReceiversForNewMessage(
                                 MessageReceiver.Unit(
                                     id = unitId,
                                     name = unitName,
+                                    hasStarters = groups.any { it.startDate != null },
                                     receivers = getReceiverGroups(groups),
                                 )
                             )
                     }
-                MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
+                MessageReceiversResponse(accountId = groupKey, receivers = accountReceivers)
             }
 
     val municipalReceivers =
@@ -1248,11 +1289,13 @@ private fun getReceiverGroups(
             MessageReceiver.Group(
                 id = groupId,
                 name = groupName,
+                hasStarters = children.any { it.startDate != null },
                 receivers =
                     children.map {
                         MessageReceiver.Child(
                             id = it.childId,
                             name = formatName(it.firstName, it.lastName, true),
+                            startDate = it.startDate,
                         )
                     },
             )
@@ -1264,13 +1307,21 @@ fun Database.Read.getMessageAccountsForRecipients(
     filters: MessageController.PostMessageFilters?,
     date: LocalDate,
 ): List<Pair<MessageAccountId, ChildId?>> {
-    val groupedRecipients = recipients.groupBy { it.type }
-    val areaRecipients = groupedRecipients[MessageRecipientType.AREA]?.map { it.id } ?: listOf()
-    val unitRecipients = groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf()
-    val groupRecipients = groupedRecipients[MessageRecipientType.GROUP]?.map { it.id } ?: listOf()
-    val childRecipients = groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
-    val citizenRecipients =
-        groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
+
+    fun getRecipientIdsByType(
+        recipients: List<MessageRecipient>
+    ): Map<MessageRecipientType, List<Id<*>>> {
+        val recipientMap =
+            MessageRecipientType.values().associateWith { emptyList<Id<*>>() }.toMutableMap()
+        recipients
+            .groupBy { it.type }
+            .forEach { (type, recipients) -> recipientMap[type] = recipients.map { it.id } }
+        return recipientMap.toMap()
+    }
+
+    val recipientsByStartingStatus = recipients.groupBy { it.starter }
+    val starterRecipients = getRecipientIdsByType(recipientsByStartingStatus[true] ?: emptyList())
+    val currentRecipients = getRecipientIdsByType(recipientsByStartingStatus[false] ?: emptyList())
 
     val filterPredicates =
         PredicateSql.allNotNull(
@@ -1298,41 +1349,73 @@ fun Database.Read.getMessageAccountsForRecipients(
                 """
 WITH sender AS (
     SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}
-), children AS (
+), current_children AS (
     SELECT DISTINCT pl.child_id
     FROM realized_placement_all(${bind(date)}) pl
     JOIN daycare d ON pl.unit_id = d.id
     LEFT JOIN person p ON p.id = pl.child_id
     LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
-    WHERE (d.care_area_id = ANY(${bind(areaRecipients)}) OR pl.unit_id = ANY(${bind(unitRecipients)}) OR pl.group_id = ANY(${bind(groupRecipients)}) OR pl.child_id = ANY(${bind(childRecipients)}))
+    WHERE (d.care_area_id = ANY(${bind(currentRecipients[MessageRecipientType.AREA])}) 
+        OR pl.unit_id = ANY(${bind(currentRecipients[MessageRecipientType.UNIT])})
+        OR pl.group_id = ANY(${bind(currentRecipients[MessageRecipientType.GROUP])})
+        OR pl.child_id = ANY(${bind(currentRecipients[MessageRecipientType.CHILD])}))
     AND ${predicate(filterPredicates)}
-    AND EXISTS (
-        SELECT 1
-        FROM child_daycare_acl(${bind(date)})
-        JOIN mobile_device_daycare_acl_view USING (daycare_id)
-        WHERE mobile_device_id = (SELECT sender.employee_id FROM sender)
-        AND child_id = pl.child_id
-
-        UNION ALL
-
-        SELECT 1
-        FROM employee_child_daycare_acl(${bind(date)})
-        WHERE employee_id = (SELECT sender.employee_id FROM sender)
-        AND child_id = pl.child_id
-
-        UNION ALL
-
-        SELECT 1
-        FROM sender
-        WHERE pl.group_id = sender.daycare_group_id
-
-        UNION ALL
-
-        SELECT 1
-        FROM sender
-        WHERE type = 'MUNICIPAL'
+    AND (
+        EXISTS (
+            SELECT 1
+            FROM child_daycare_acl(${bind(date)})
+            JOIN mobile_device_daycare_acl_view USING (daycare_id)
+            WHERE mobile_device_id = (SELECT sender.employee_id FROM sender)
+                AND child_id = pl.child_id
+        ) OR EXISTS (
+            SELECT 1
+            FROM employee_child_daycare_acl(${bind(date)})
+            WHERE employee_id = (SELECT sender.employee_id FROM sender)
+                AND child_id = pl.child_id
+        ) OR EXISTS (
+            SELECT 1
+            FROM sender
+            WHERE pl.group_id = sender.daycare_group_id
+        ) OR EXISTS (
+            SELECT 1
+            FROM sender
+            WHERE type = 'MUNICIPAL'
+        )
     )
     AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+), starting_children AS (
+    SELECT DISTINCT pl.child_id
+    FROM placement pl
+    JOIN daycare d ON pl.unit_id = d.id
+    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id
+    LEFT JOIN person p ON p.id = pl.child_id
+    LEFT JOIN service_need sn ON false
+    WHERE (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)})
+        AND (d.care_area_id = ANY(${bind(starterRecipients[MessageRecipientType.AREA])})
+            OR pl.unit_id = ANY(${bind(starterRecipients[MessageRecipientType.UNIT])})
+            OR dgp.daycare_group_id = ANY(${bind(starterRecipients[MessageRecipientType.GROUP])})
+            OR pl.child_id = ANY(${bind(starterRecipients[MessageRecipientType.CHILD])}))
+    AND ${predicate(filterPredicates)}
+    AND (
+        EXISTS (
+            SELECT 1
+            FROM daycare_acl_view acl
+            WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = (SELECT sender.employee_id FROM sender)
+        ) OR EXISTS (
+            SELECT 1
+            FROM sender
+            WHERE dgp.daycare_group_id = sender.daycare_group_id
+        ) OR EXISTS (
+            SELECT 1
+            FROM sender
+            WHERE type = 'MUNICIPAL'
+        )
+    )
+    AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+), children AS (
+    SELECT child_id FROM current_children
+    UNION
+    SELECT child_id FROM starting_children
 )
 SELECT acc.id AS account_id, c.child_id
 FROM children c
@@ -1351,7 +1434,7 @@ UNION
 SELECT acc.id AS account_id, NULL as child_id
 FROM person p
 JOIN message_account acc ON p.id = acc.person_id
-WHERE p.id = ANY(${bind(citizenRecipients)})
+WHERE p.id = ANY(${bind(currentRecipients[MessageRecipientType.CITIZEN])})
 """
             )
         }

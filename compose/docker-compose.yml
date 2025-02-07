@@ -54,6 +54,7 @@ services:
     environment:
       ROOT: /data
       initialBuckets: "static"
+      JAVA_TOOL_OPTIONS: "-XX:UseSVE=0 -XX:+IgnoreUnrecognizedVMOptions"
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090"]
       interval: 1s

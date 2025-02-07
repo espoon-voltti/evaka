@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -156,16 +157,21 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
         override val id: DaycareId,
         override val name: String,
         val receivers: List<Group>,
+        val hasStarters: Boolean,
     ) : MessageReceiver(MessageRecipientType.UNIT)
 
     data class Group(
         override val id: GroupId,
         override val name: String,
         val receivers: List<Child>,
+        val hasStarters: Boolean,
     ) : MessageReceiver(MessageRecipientType.GROUP)
 
-    data class Child(override val id: ChildId, override val name: String) :
-        MessageReceiver(MessageRecipientType.CHILD)
+    data class Child(
+        override val id: ChildId,
+        override val name: String,
+        val startDate: LocalDate?,
+    ) : MessageReceiver(MessageRecipientType.CHILD)
 
     data class Citizen(override val id: PersonId, override val name: String) :
         MessageReceiver(MessageRecipientType.CITIZEN)
@@ -217,7 +223,11 @@ enum class MessageRecipientType {
     CITIZEN,
 }
 
-data class MessageRecipient(val type: MessageRecipientType, val id: Id<*>) {
+data class MessageRecipient(
+    val type: MessageRecipientType,
+    val id: Id<*>,
+    val starter: Boolean = false,
+) {
     fun toAreaId(): AreaId? = if (type == MessageRecipientType.AREA) AreaId(id.raw) else null
 
     fun toUnitId(): DaycareId? = if (type == MessageRecipientType.UNIT) DaycareId(id.raw) else null
