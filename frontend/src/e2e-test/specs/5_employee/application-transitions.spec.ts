@@ -444,7 +444,7 @@ describe('Application transitions', () => {
         familyWithRestrictedDetailsGuardian.guardian,
         familyWithRestrictedDetailsGuardian.otherGuardian,
         'DAYCARE',
-        'NOT_AGREED'
+        'AGREED'
       ),
       id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
