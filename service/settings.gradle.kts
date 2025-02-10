@@ -3,11 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 rootProject.name = "evaka-service"
+
 include("service-lib")
+
 include("vtjclient")
+
 include("sficlient")
+
 include("evaka-bom")
+
 include("codegen")
+
 include("custom-ktlint-rules")
 
 dependencyResolutionManagement {
