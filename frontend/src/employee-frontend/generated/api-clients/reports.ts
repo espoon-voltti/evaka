@@ -345,14 +345,16 @@ export async function getCustomerFeesReport(
     date: LocalDate,
     areaId?: AreaId | null,
     unitId?: DaycareId | null,
-    decisionType: FinanceDecisionType
+    decisionType: FinanceDecisionType,
+    providerType?: ProviderType | null
   }
 ): Promise<CustomerFeesReportRow[]> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()],
     ['areaId', request.areaId],
     ['unitId', request.unitId],
-    ['decisionType', request.decisionType.toString()]
+    ['decisionType', request.decisionType.toString()],
+    ['providerType', request.providerType?.toString()]
   )
   const { data: json } = await client.request<JsonOf<CustomerFeesReportRow[]>>({
     url: uri`/employee/reports/customer-fees`.toString(),

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -44,7 +45,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `it works with fee decisions`() {
         val date = clock.today()
         val area = DevCareArea()
-        val daycare = DevDaycare(areaId = area.id)
+        val daycare = DevDaycare(areaId = area.id, providerType = ProviderType.MUNICIPAL)
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
@@ -96,6 +97,10 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(expected, getReport(FinanceDecisionType.FEE_DECISION))
         assertEquals(expected, getReport(FinanceDecisionType.FEE_DECISION, areaId = area.id))
         assertEquals(expected, getReport(FinanceDecisionType.FEE_DECISION, unitId = daycare.id))
+        assertEquals(
+            expected,
+            getReport(FinanceDecisionType.FEE_DECISION, providerType = ProviderType.MUNICIPAL),
+        )
         assertEquals(emptyList(), getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION))
         assertEquals(
             emptyList(),
@@ -109,13 +114,17 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             emptyList(),
             getReport(FinanceDecisionType.FEE_DECISION, unitId = DaycareId(UUID.randomUUID())),
         )
+        assertEquals(
+            emptyList(),
+            getReport(FinanceDecisionType.FEE_DECISION, providerType = ProviderType.PRIVATE),
+        )
     }
 
     @Test
     fun `it works with voucher value decisions`() {
         val date = clock.today()
         val area = DevCareArea()
-        val daycare = DevDaycare(areaId = area.id)
+        val daycare = DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE)
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
@@ -174,6 +183,13 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             expected,
             getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION, unitId = daycare.id),
         )
+        assertEquals(
+            expected,
+            getReport(
+                FinanceDecisionType.VOUCHER_VALUE_DECISION,
+                providerType = ProviderType.PRIVATE,
+            ),
+        )
         assertEquals(emptyList(), getReport(FinanceDecisionType.FEE_DECISION))
         assertEquals(
             emptyList(),
@@ -193,6 +209,13 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 unitId = DaycareId(UUID.randomUUID()),
             ),
         )
+        assertEquals(
+            emptyList(),
+            getReport(
+                FinanceDecisionType.VOUCHER_VALUE_DECISION,
+                providerType = ProviderType.MUNICIPAL,
+            ),
+        )
     }
 
     private fun getReport(
@@ -200,6 +223,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         date: LocalDate = clock.today(),
         areaId: AreaId? = null,
         unitId: DaycareId? = null,
+        providerType: ProviderType? = null,
     ) =
         controller.getCustomerFeesReport(
             db = dbInstance(),
@@ -209,5 +233,6 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             areaId = areaId,
             unitId = unitId,
             decisionType = decisionType,
+            providerType = providerType,
         )
 }
