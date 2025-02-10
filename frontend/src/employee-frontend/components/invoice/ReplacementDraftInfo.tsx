@@ -172,9 +172,7 @@ export function ReplacementInfo({
         <div>
           <span data-qa="sent-at">{invoice.sentAt?.format()}</span>
           {' ('}
-          <span data-qa="sent-by">
-            {invoice.sentBy?.name}
-          </span>)
+          <span data-qa="sent-by">{invoice.sentBy?.name}</span>)
         </div>
       </div>
     </FixedSpaceColumn>
