@@ -95,4 +95,72 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Tuple("Toka", false, null),
             )
     }
+
+    @Test
+    fun `municipality of residence is shown correctly`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 10, 23), LocalTime.of(8, 47)))
+
+        val user =
+            db.transaction { tx ->
+                val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+                tx.insert(admin)
+                admin.user
+            }
+
+        db.transaction { tx ->
+            tx.insertServiceNeedOption(snDefaultDaycare)
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+
+            tx.insert(
+                    DevPerson(
+                        firstName = "Kotikunnallinen",
+                        municipalityOfResidence = "Säkkijärvi",
+                    ),
+                    DevPersonType.CHILD,
+                )
+                .also { childId ->
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = unitId,
+                            startDate = clock.today(),
+                            endDate = clock.today(),
+                        )
+                    )
+                }
+
+            tx.insert(
+                    DevPerson(firstName = "Kotikunnaton", municipalityOfResidence = ""),
+                    DevPersonType.CHILD,
+                )
+                .also { childId ->
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = unitId,
+                            startDate = clock.today(),
+                            endDate = clock.today(),
+                        )
+                    )
+                }
+        }
+
+        val rows =
+            rawReportController.getRawReport(
+                dbInstance(),
+                user,
+                clock,
+                clock.today(),
+                clock.today(),
+            )
+
+        assertThat(rows)
+            .extracting({ it.firstName }, { it.municipalityOfResidence })
+            .containsExactlyInAnyOrder(
+                Tuple("Kotikunnallinen", "Säkkijärvi"),
+                Tuple("Kotikunnaton", ""),
+            )
+    }
 }

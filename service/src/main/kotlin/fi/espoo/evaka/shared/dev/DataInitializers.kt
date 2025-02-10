@@ -338,13 +338,13 @@ INSERT INTO person (
     social_security_number, email, verified_email, phone, language, street_address,
     postal_code, post_office, residence_code, nationalities, restricted_details_enabled,
     restricted_details_end_date, invoicing_street_address, invoicing_postal_code, invoicing_post_office,
-    updated_from_vtj, oph_person_oid, duplicate_of, disabled_email_types
+    updated_from_vtj, oph_person_oid, duplicate_of, disabled_email_types, municipality_of_residence
 ) VALUES (
     ${bind(p.id)}, ${bind(p.dateOfBirth)}, ${bind(p.dateOfDeath)}, ${bind(p.firstName)}, ${bind(p.lastName)}, ${bind(p.preferredName)},
     ${bind(p.ssn)}, ${bind(p.email)}, ${bind(p.verifiedEmail)}, ${bind(p.phone)}, ${bind(p.language)}, ${bind(p.streetAddress)},
     ${bind(p.postalCode)}, ${bind(p.postOffice)}, ${bind(p.residenceCode)}, ${bind(p.nationalities)}, ${bind(p.restrictedDetailsEnabled)},
     ${bind(p.restrictedDetailsEndDate)}, ${bind(p.invoicingStreetAddress)}, ${bind(p.invoicingPostalCode)}, ${bind(p.invoicingPostOffice)},
-    ${bind(p.updatedFromVtj)}, ${bind(p.ophPersonOid)}, ${bind(p.duplicateOf)}, ${bind(p.disabledEmailTypes)}
+    ${bind(p.updatedFromVtj)}, ${bind(p.ophPersonOid)}, ${bind(p.duplicateOf)}, ${bind(p.disabledEmailTypes)}, ${bind(p.municipalityOfResidence)}
 )
 RETURNING id
 """
