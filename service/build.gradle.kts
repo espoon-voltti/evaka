@@ -2,18 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import java.util.regex.Pattern
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.util.regex.Pattern
 
 buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath(libs.flyway.database.postgresql)
-    }
+    repositories { mavenCentral() }
+    dependencies { classpath(libs.flyway.database.postgresql) }
 }
 
 plugins {
@@ -38,20 +34,15 @@ sourceSets {
     }
 }
 
-val integrationTestImplementation: Configuration by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-}
+val integrationTestImplementation: Configuration by
+    configurations.getting { extendsFrom(configurations.testImplementation.get()) }
 
-val downloadOnly: Configuration by configurations.creating {
-    isTransitive = false
-}
+val downloadOnly: Configuration by configurations.creating { isTransitive = false }
 
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
 idea {
-    module {
-        testSources = testSources + sourceSets["integrationTest"].kotlin.sourceDirectories
-    }
+    module { testSources = testSources + sourceSets["integrationTest"].kotlin.sourceDirectories }
 }
 
 dependencies {
@@ -80,9 +71,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
-    implementation("org.springframework.ws:spring-ws-security") {
-        exclude("org.opensaml")
-    }
+    implementation("org.springframework.ws:spring-ws-security") { exclude("org.opensaml") }
     implementation("org.springframework.ws:spring-ws-support") {
         exclude("org.eclipse.angus", "angus-mail")
     }
@@ -163,9 +152,7 @@ dependencies {
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") {
-        exclude("org.opensaml")
-    }
+    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") { exclude("org.opensaml") }
 
     implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
@@ -175,9 +162,7 @@ dependencies {
     downloadOnly(libs.dd.java.agent)
 }
 
-allOpen {
-    annotation("org.springframework.boot.test.context.TestConfiguration")
-}
+allOpen { annotation("org.springframework.boot.test.context.TestConfiguration") }
 
 allprojects {
     tasks.withType<JavaCompile> {
@@ -195,9 +180,7 @@ allprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
-        filter {
-            isFailOnNoMatchingTests = false
-        }
+        filter { isFailOnNoMatchingTests = false }
     }
 
     tasks.register("resolveDependencies") {
@@ -206,8 +189,8 @@ allprojects {
             configurations
                 .matching {
                     it.isCanBeResolved &&
-                    // ignore configurations that fetch sources (e.g. Java source code)
-                    !it.name.endsWith("dependencySources", ignoreCase = true)
+                        // ignore configurations that fetch sources (e.g. Java source code)
+                        !it.name.endsWith("dependencySources", ignoreCase = true)
                 }
                 .map {
                     val files = it.resolve()
@@ -224,18 +207,12 @@ allprojects {
     }
 }
 
-tasks.getByName<Jar>("jar") {
-    archiveClassifier.set("")
-}
+tasks.getByName<Jar>("jar") { archiveClassifier.set("") }
 
-tasks.getByName<BootJar>("bootJar") {
-    archiveClassifier.set("boot")
-}
+tasks.getByName<BootJar>("bootJar") { archiveClassifier.set("boot") }
 
 tasks {
-    test {
-        systemProperty("spring.profiles.active", "test")
-    }
+    test { systemProperty("spring.profiles.active", "test") }
 
     register("integrationTest", Test::class) {
         useJUnitPlatform()
@@ -294,10 +271,6 @@ tasks {
     }
 }
 
-ktfmt {
-    kotlinLangStyle()
-}
+ktfmt { kotlinLangStyle() }
 
-ktlint {
-    version.set(libs.versions.ktlint.asProvider().get())
-}
+ktlint { version.set(libs.versions.ktlint.asProvider().get()) }

@@ -25,10 +25,6 @@ dependencies {
     testImplementation("com.pinterest.ktlint:ktlint-test")
 }
 
-ktfmt {
-    kotlinLangStyle()
-}
+ktfmt { kotlinLangStyle() }
 
-ktlint {
-    version.set(libs.versions.ktlint.asProvider().get())
-}
+ktlint { version.set(libs.versions.ktlint.asProvider().get()) }
