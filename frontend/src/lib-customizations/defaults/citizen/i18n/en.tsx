@@ -330,6 +330,7 @@ const en: Translations = {
     absent: 'Absent',
     absentFree: 'Free absence',
     absentPlanned: 'Shift work absence',
+    absentUnknown: 'Unannounced absence',
     absences: {
       SICKLEAVE: 'Absence due to illness',
       PLANNED_ABSENCE: 'Shift work absence'
@@ -390,6 +391,7 @@ const en: Translations = {
     reservationNotRequired: 'Reservation not required',
     termBreak: 'No teaching today',
     reservation: 'Registered attendance',
+    editMultiple: 'Edit multiple days',
     present: 'Present',
     attendance: 'Actual attendance',
     exceedStart: 'Arrived earlier than reported.',

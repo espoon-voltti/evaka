@@ -91,6 +91,7 @@ import { Translations, useLang, useTranslation } from '../localization'
 import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
+import { useCalendarModalState } from './CalendarPage'
 import {
   ChildImageData,
   getChildImages,
@@ -316,6 +317,11 @@ function Edit({
       onClose={onClose}
       leftButton={leftButton}
       rightButton={rightButton}
+      editableChildren={formElems
+        .map((bind, childIndex) =>
+          bind.state.day.branch !== 'readOnly' ? childIndex : -1
+        )
+        .filter((childIndex) => childIndex >= 0)}
     >
       {(childIndex) => {
         const bind = formElems[childIndex]
@@ -355,6 +361,7 @@ interface DayModalProps {
   onClose: () => void
   leftButton: React.ReactNode | undefined
   rightButton: React.ReactNode
+  editableChildren?: number[]
   children?: ((childIndex: number) => React.ReactNode) | undefined
 }
 
@@ -365,6 +372,7 @@ const DayModal = React.memo(function DayModal({
   onClose,
   leftButton,
   rightButton,
+  editableChildren = [],
   children: renderReservation = () => undefined
 }: DayModalProps) {
   const i18n = useTranslation()
@@ -392,6 +400,8 @@ const DayModal = React.memo(function DayModal({
       }),
     [setConfirmationModalState]
   )
+
+  const { openReservationModal } = useCalendarModalState()
 
   return (
     <ModalAccessibilityWrapper>
@@ -526,6 +536,19 @@ const DayModal = React.memo(function DayModal({
                           {i18n.calendar.reservation}
                         </ReservationAttendanceHeading>
                         {renderReservation(childIndex)}
+                        {editableChildren.includes(childIndex) && (
+                          <EditMultipleLink>
+                            <Button
+                              appearance="link"
+                              text={i18n.calendar.editMultiple}
+                              onClick={() =>
+                                openReservationModal(
+                                  new FiniteDateRange(date, date)
+                                )
+                              }
+                            />
+                          </EditMultipleLink>
+                        )}
                         <AttendanceInfo
                           attendances={row.attendances}
                           reservations={row.reservations}
@@ -1088,4 +1111,8 @@ export const WordBreakContainer = styled.div`
 
 const TwoSpanGridItem = styled.div`
   grid-column-end: span 2;
+`
+
+const EditMultipleLink = styled(TwoSpanGridItem)`
+  padding: ${defaultMargins.s} 0;
 `

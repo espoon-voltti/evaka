@@ -14,7 +14,7 @@ dependencies {
         api("ch.qos.logback:logback-classic:1.5.15")
         api("ch.qos.logback:logback-core:1.5.15")
 
-        api("com.auth0:java-jwt:4.4.0")
+        api("com.auth0:java-jwt:4.5.0")
         api("com.github.kagkarlsson:db-scheduler:15.2.0")
         api(libs.fuel)
         api(libs.fuel.jackson)
@@ -32,7 +32,7 @@ dependencies {
         api("org.apache.commons:commons-csv:1.13.0")
         api("org.apache.commons:commons-text:1.13.0")
         api("org.apache.commons:commons-imaging:1.0-alpha3")
-        api("org.apache.tika:tika-core:3.0.0")
+        api("org.apache.tika:tika-core:3.1.0")
         api("org.apache.wss4j:wss4j-ws-security-dom:3.0.4")
         api(libs.bouncycastle.bcpkix)
         api(libs.bouncycastle.bcprov)
@@ -57,7 +57,7 @@ dependencies {
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.18.2"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
-    api(platform("io.opentelemetry:opentelemetry-bom:1.46.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:1.47.0"))
     api(platform("org.apache.cxf:cxf-bom:4.1.0"))
     api(platform("org.jdbi:jdbi3-bom:3.47.0"))
     api(platform(libs.kotlin.bom))

@@ -42,10 +42,6 @@ tasks {
     }
 }
 
-ktfmt {
-    kotlinLangStyle()
-}
+ktfmt { kotlinLangStyle() }
 
-ktlint {
-    version.set(libs.versions.ktlint.asProvider().get())
-}
+ktlint { version.set(libs.versions.ktlint.asProvider().get()) }

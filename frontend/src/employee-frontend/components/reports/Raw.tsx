@@ -176,7 +176,8 @@ export default React.memo(function Raw() {
                 },
                 { label: 'Poissa maksullisesta', key: 'absencePaid' },
                 { label: 'Poissa maksuttomasta', key: 'absenceFree' },
-                { label: 'Henkilöstömitoitus', key: 'staffDimensioning' }
+                { label: 'Henkilöstömitoitus', key: 'staffDimensioning' },
+                { label: 'Kotikunta', key: 'municipalityOfResidence' }
               ]}
               filename={`${
                 i18n.reports.raw.title

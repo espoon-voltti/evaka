@@ -331,6 +331,7 @@ export default {
     absent: 'Poissa',
     absentFree: 'Maksuton poissaolo',
     absentPlanned: 'Vuorotyöpoissaolo',
+    absentUnknown: 'Ilmoittamaton poissaolo',
     absences: {
       SICKLEAVE: 'Sairauspoissaolo',
       PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
@@ -392,6 +393,7 @@ export default {
     reservationNotRequired: 'Ilmoitusta ei tarvita',
     termBreak: 'Ei opetusta tänään',
     reservation: 'Ilmoitettu läsnäolo',
+    editMultiple: 'Muokkaa useampaa päivää',
     present: 'Läsnä',
     attendance: 'Toteutunut läsnäolo',
     exceedStart: 'Saapunut ilmoitettua aikaisemmin.',
