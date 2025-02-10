@@ -390,6 +390,7 @@ const en: Translations = {
     reservationNotRequired: 'Reservation not required',
     termBreak: 'No teaching today',
     reservation: 'Registered attendance',
+    editMultiple: 'Edit multiple days',
     present: 'Present',
     attendance: 'Actual attendance',
     exceedStart: 'Arrived earlier than reported.',
