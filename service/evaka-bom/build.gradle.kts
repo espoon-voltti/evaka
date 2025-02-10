@@ -57,7 +57,7 @@ dependencies {
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.18.2"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
-    api(platform("io.opentelemetry:opentelemetry-bom:1.46.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:1.47.0"))
     api(platform("org.apache.cxf:cxf-bom:4.1.0"))
     api(platform("org.jdbi:jdbi3-bom:3.47.0"))
     api(platform(libs.kotlin.bom))
