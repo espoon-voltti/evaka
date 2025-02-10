@@ -330,6 +330,7 @@ const en: Translations = {
     absent: 'Absent',
     absentFree: 'Free absence',
     absentPlanned: 'Shift work absence',
+    absentUnknown: 'Unannounced absence',
     absences: {
       SICKLEAVE: 'Absence due to illness',
       PLANNED_ABSENCE: 'Shift work absence'
