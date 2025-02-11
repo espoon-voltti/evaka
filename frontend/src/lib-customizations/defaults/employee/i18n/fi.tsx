@@ -4609,7 +4609,7 @@ export const fi = {
       childDob: 'Syntymäaika',
       receivers: 'Vastaanottajat',
       confirmText: 'Lähetä viesti valituille',
-      starters: 'aloittavat'
+      starters: 'aloittavat lapset'
     },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',

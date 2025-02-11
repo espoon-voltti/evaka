@@ -6,6 +6,7 @@ import isEqual from 'lodash/isEqual'
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { sortReceivers } from 'lib-common/api-types/messaging'
 import { boolean, string } from 'lib-common/form/fields'
 import { array, mapped, object, recursive, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
@@ -152,7 +153,10 @@ export default React.memo(function MessageEditor({
         ? {
             recipients: receiversAsSelectorNode(
               accountId,
-              availableRecipients,
+              availableRecipients.map((r) => ({
+                ...r,
+                receivers: sortReceivers(r.receivers)
+              })),
               i18n.messages.messageEditor.starters,
               draft.recipients
             ),
@@ -163,7 +167,10 @@ export default React.memo(function MessageEditor({
         : {
             recipients: receiversAsSelectorNode(
               accountId,
-              availableRecipients,
+              availableRecipients.map((r) => ({
+                ...r,
+                receivers: sortReceivers(r.receivers)
+              })),
               i18n.messages.messageEditor.starters
             ),
             urgent: false,
