@@ -18,6 +18,7 @@ import { MessageContentId } from './shared'
 import { MessageDraftId } from './shared'
 import { MessageId } from './shared'
 import { MessageReceiver } from '../../api-types/messaging'
+import { MessageThreadFolderId } from './shared'
 import { MessageThreadId } from './shared'
 import { PersonId } from './shared'
 import { deserializeMessageReceiver } from '../../api-types/messaging'
@@ -242,6 +243,15 @@ export interface MessageThread {
   title: string
   type: MessageType
   urgent: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageController.MessageThreadFolder
+*/
+export interface MessageThreadFolder {
+  id: MessageThreadFolderId
+  name: string
+  ownerId: MessageAccountId
 }
 
 /**

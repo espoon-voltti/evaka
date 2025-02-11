@@ -24,7 +24,7 @@ import { useTranslation } from '../../state/i18n'
 import { MessageContext } from './MessageContext'
 import { SingleThreadView } from './SingleThreadView'
 import { ThreadList, ThreadListItem } from './ThreadList'
-import { View } from './types-view'
+import { isStandardView, View } from './types-view'
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;
@@ -66,6 +66,7 @@ export default React.memo(function ThreadListContainer({
     messageDrafts,
     messageCopies,
     archivedMessages,
+    messagesInFolder,
     page,
     setPage,
     pages,
@@ -93,6 +94,8 @@ export default React.memo(function ThreadListContainer({
       return messageCopies.value.length > 0
     } else if (view === 'archive' && archivedMessages.isSuccess) {
       return archivedMessages.value.length > 0
+    } else if (!isStandardView(view) && messagesInFolder.isSuccess) {
+      return messagesInFolder.value.length > 0
     } else {
       return false
     }
@@ -102,7 +105,8 @@ export default React.memo(function ThreadListContainer({
     sentMessages,
     messageDrafts,
     messageCopies,
-    archivedMessages
+    archivedMessages,
+    messagesInFolder
   ])
 
   const threadToListItem = useCallback(
@@ -180,6 +184,13 @@ export default React.memo(function ThreadListContainer({
       ),
     [archivedMessages, threadToListItem]
   )
+  const messageFolderItems = useMemo(
+    () =>
+      messagesInFolder.map((value) =>
+        value.map((t) => threadToListItem(t, true, 'folder-message-row'))
+      ),
+    [messagesInFolder, threadToListItem]
+  )
 
   const threadListItems: Result<ThreadListItem[]> = {
     received: receivedMessageItems,
@@ -187,12 +198,13 @@ export default React.memo(function ThreadListContainer({
     drafts: draftMessageItems,
     copies: messageCopyItems,
     archive: messageArchivedItems,
+    folder: messageFolderItems,
     thread: selectedThread
       ? Success.of([
           threadToListItem(selectedThread, true, 'selected-thread-row')
         ])
       : Loading.of<ThreadListItem[]>()
-  }[view]
+  }[isStandardView(view) ? view : 'folder']
 
   if (selectedThread) {
     return (
@@ -208,7 +220,11 @@ export default React.memo(function ThreadListContainer({
 
   return hasMessages ? (
     <MessagesContainer opaque>
-      <H1>{i18n.messages.messageList.titles[view]}</H1>
+      <H1>
+        {isStandardView(view)
+          ? i18n.messages.messageList.titles[view]
+          : view.name}
+      </H1>
       {account.type !== 'PERSONAL' && <H2>{account.name}</H2>}
       <ThreadList
         items={threadListItems}

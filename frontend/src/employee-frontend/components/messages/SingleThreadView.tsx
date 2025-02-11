@@ -50,7 +50,7 @@ import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
 import { replyToThreadMutation } from './queries'
-import { View } from './types-view'
+import { isStandardView, View } from './types-view'
 
 const archiveThreadResult = wrapResult(archiveThread)
 
@@ -288,6 +288,7 @@ export function SingleThreadView({
           </React.Fragment>
         ))}
         {canReply &&
+          isStandardView(view) &&
           ['received', 'thread'].includes(view) &&
           (replyEditorVisible ? (
             <MessageContainer>

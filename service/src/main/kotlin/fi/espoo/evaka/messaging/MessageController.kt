@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -194,6 +195,76 @@ class MessageController(
                             accountAccessLimit,
                         )
                     }
+                }
+            }
+            .also {
+                Audit.MessagingMessagesInFolderRead.log(
+                    targetId = AuditId(accountId),
+                    meta = mapOf("total" to it.total),
+                )
+            }
+    }
+
+    data class MessageThreadFolder(
+        val id: MessageThreadFolderId,
+        val name: String,
+        val ownerId: MessageAccountId,
+    )
+
+    @GetMapping("/employee/messages/folders")
+    fun getFolders(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+    ): List<MessageThreadFolder> {
+        return db.connect { dbc ->
+                dbc.read {
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    it.createQuery {
+                            sql(
+                                """
+                    SELECT mtf.id, mtf.name, mtf.owner_id
+                    FROM message_thread_folder mtf
+                    JOIN message_account acc ON mtf.owner_id = acc.id
+                    WHERE ${predicate(filter.forTable("acc"))}
+                """
+                            )
+                        }
+                        .toList<MessageThreadFolder>()
+                }
+            }
+            .also { Audit.MessagingMessageFoldersRead.log() }
+    }
+
+    @GetMapping("/employee/messages/{accountId}/folders/{folderId}")
+    fun getMessagesInFolder(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable folderId: MessageThreadFolderId,
+        @RequestParam page: Int,
+    ): PagedMessageThreads {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read {
+                    val accountAccessLimit = it.getAccountAccessLimit(accountId, user.id)
+
+                    it.getReceivedThreads(
+                        accountId,
+                        pageSize = 20,
+                        page,
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName,
+                        folderId,
+                        accountAccessLimit,
+                    )
                 }
             }
             .also {

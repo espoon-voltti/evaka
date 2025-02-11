@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isEqual from 'lodash/isEqual'
 import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
 
@@ -14,7 +15,7 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
-import { AccountView, View } from './types-view'
+import { AccountView, isStandardView, View } from './types-view'
 
 export const MessageBoxRow = styled.div<{ active: boolean }>`
   cursor: pointer;
@@ -41,7 +42,9 @@ export default function MessageBox({
   const { i18n } = useTranslation()
   const { unreadCountsByAccount } = useContext(MessageContext)
   const active =
-    view === activeView?.view && account.id === activeView.account.id
+    !!activeView &&
+    isEqual(view, activeView.view) &&
+    account.id === activeView.account.id
   const unreadCount = unreadCountsByAccount
     .map((unreadCounts) => {
       if (view === 'received') {
@@ -68,9 +71,11 @@ export default function MessageBox({
     <MessageBoxRow
       onClick={onClick}
       active={active}
-      data-qa={`message-box-row-${view}`}
+      data-qa={`message-box-row-${isStandardView(view) ? view : view.id}`}
     >
-      {i18n.messages.messageBoxes.names[view]}{' '}
+      {isStandardView(view)
+        ? i18n.messages.messageBoxes.names[view]
+        : view.name}{' '}
       {unreadCount > 0 && (
         <RoundIconWithMargin
           content={String(unreadCount)}

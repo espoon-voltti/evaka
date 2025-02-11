@@ -193,6 +193,8 @@ export type MessageDraftId = Id<'MessageDraft'>
 
 export type MessageId = Id<'Message'>
 
+export type MessageThreadFolderId = Id<'MessageThreadFolder'>
+
 export type MessageThreadId = Id<'MessageThread'>
 
 export type MobileDeviceId = Id<'MobileDevice'>

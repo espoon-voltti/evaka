@@ -368,6 +368,7 @@ enum class Audit(
     MessagingReceivedMessagesRead,
     MessagingReceivedMessageCopiesRead,
     MessagingMessagesInFolderRead,
+    MessagingMessageFoldersRead,
     MessagingSentMessagesRead,
     MessagingNewMessagePreflightCheck,
     MessagingNewMessageWrite,
