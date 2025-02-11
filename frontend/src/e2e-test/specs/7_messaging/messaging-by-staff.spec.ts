@@ -266,11 +266,11 @@ describe('Sending and receiving messages', () => {
       testDaycareGroup.name,
       `${testChild.lastName} ${testChild.firstName}`,
       `${testChild2.lastName} ${testChild2.firstName}`,
-      `${testPreschool.name} (aloittavat)`,
-      `${preschoolGroup.name} (aloittavat)`,
+      `${testPreschool.name} (aloittavat lapset)`,
+      `${preschoolGroup.name} (aloittavat lapset)`,
       starterChildLabel
     ]
-    expect(labels.sort()).toEqual(expectedReceiverNames.sort())
+    expect(labels).toEqual(expectedReceiverNames)
 
     // Send a message to a starter child -> selects the whole unit
     await receiverSelector.optionByLabel(starterChildLabel).click()
@@ -327,7 +327,7 @@ describe('Sending and receiving messages', () => {
     }).save()
     await createMessageAccounts()
 
-    // Verify that available recipients contain current placements and starters
+    // Verify that available recipients contain the starters
     staffPage = await Page.open({ mockedTime: mockedDateAt10 })
     await employeeLogin(staffPage, futureStaff)
     await staffPage.goto(`${config.employeeUrl}/messages`)
@@ -338,15 +338,15 @@ describe('Sending and receiving messages', () => {
     await receiverSelector.expandAll()
     const labels = await receiverSelector.labels.allTexts()
     const expectedReceiverNames = [
-      `${secondGroup.name} (aloittavat)`,
+      `${secondGroup.name} (aloittavat lapset)`,
       `${testChild.lastName} ${testChild.firstName} (${mockedDate.addYears(1).addDays(1).format()})`,
       `${testChild2.lastName} ${testChild2.firstName} (${mockedDate.addYears(1).addDays(1).format()})`
     ]
-    expect(labels.sort()).toEqual(expectedReceiverNames.sort())
+    expect(labels).toEqual(expectedReceiverNames)
 
     // Send a message to a starter group (contains 2 children)
     await receiverSelector
-      .optionByLabel(`${secondGroup.name} (aloittavat)`)
+      .optionByLabel(`${secondGroup.name} (aloittavat lapset)`)
       .click()
     await receiverSelector.close()
     await messageEditor.inputTitle.fill('Aloittavalle otsikko')
