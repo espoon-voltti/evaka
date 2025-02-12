@@ -459,6 +459,7 @@ class ApplicationStateService(
             runAt = clock.now(),
         )
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
 
         tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
@@ -471,8 +472,6 @@ class ApplicationStateService(
                 )
             }
         }
-
-        tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
 
         Audit.ApplicationVerify.log(targetId = AuditId(applicationId))
     }
