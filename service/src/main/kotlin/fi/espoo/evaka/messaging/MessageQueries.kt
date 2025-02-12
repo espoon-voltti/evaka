@@ -122,28 +122,44 @@ WHERE rec.message_id = msg.id
         .execute()
 }
 
+fun Database.Transaction.moveThreadToFolder(
+    accountId: MessageAccountId,
+    threadId: MessageThreadId,
+    folderId: MessageThreadFolderId,
+) = execute {
+    sql(
+        """
+            UPDATE message_thread_participant 
+            SET folder_id = ${bind(folderId)} 
+            WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(accountId)}
+                AND EXISTS (
+                    SELECT FROM message_thread_folder mtf 
+                    WHERE mtf.id = ${bind(folderId)} AND mtf.owner_id = ${bind(accountId)}
+                )
+        """
+    )
+}
+
 fun Database.Transaction.archiveThread(
     accountId: MessageAccountId,
     threadId: MessageThreadId,
 ): Int {
-    var archiveFolderId = getArchiveFolderId(accountId)
-    if (archiveFolderId == null) {
-        archiveFolderId =
-            createUpdate {
+    val archiveFolderId =
+        getArchiveFolderId(accountId)
+            ?: createUpdate {
                     sql(
-                        "INSERT INTO message_thread_folder (owner_id, name) VALUES (${bind(accountId)}, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
+                        """
+                            INSERT INTO message_thread_folder (owner_id, name) 
+                            VALUES (${bind(accountId)}, 'ARCHIVE') 
+                            ON CONFLICT DO NOTHING 
+                            RETURNING id
+                        """
                     )
                 }
                 .executeAndReturnGeneratedKeys()
                 .exactlyOne<MessageThreadFolderId>()
-    }
 
-    return createUpdate {
-            sql(
-                "UPDATE message_thread_participant SET folder_id = ${bind(archiveFolderId)} WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(accountId)}"
-            )
-        }
-        .execute()
+    return moveThreadToFolder(accountId, threadId, archiveFolderId)
 }
 
 fun Database.Transaction.insertMessage(

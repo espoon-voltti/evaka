@@ -236,7 +236,7 @@ class MessageController(
                     SELECT mtf.id, mtf.name, mtf.owner_id
                     FROM message_thread_folder mtf
                     JOIN message_account acc ON mtf.owner_id = acc.id
-                    WHERE ${predicate(filter.forTable("acc"))}
+                    WHERE ${predicate(filter.forTable("acc"))} AND mtf.name != 'ARCHIVE'
                 """
                             )
                         }
@@ -924,6 +924,22 @@ class MessageController(
             dbc.transaction { it.archiveThread(accountId, threadId) }
         }
         Audit.MessagingArchiveMessageWrite.log(targetId = AuditId(listOf(accountId, threadId)))
+    }
+
+    @PutMapping("/employee/messages/{accountId}/threads/{threadId}/move-to-folder/{folderId}")
+    fun moveThreadToFolder(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId,
+        @PathVariable folderId: MessageThreadFolderId,
+    ) {
+        db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { it.moveThreadToFolder(accountId, threadId, folderId) }
+        }
+        Audit.MessagingChangeFolder.log(targetId = AuditId(listOf(accountId, threadId, folderId)))
     }
 
     @GetMapping("/employee/messages/receivers")

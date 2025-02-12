@@ -15,7 +15,7 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
-import { AccountView, isStandardView, View } from './types-view'
+import { AccountView, isFolderView, isStandardView, View } from './types-view'
 
 export const MessageBoxRow = styled.div<{ active: boolean }>`
   cursor: pointer;
@@ -59,7 +59,7 @@ export default function MessageBox({
             ?.unreadCopyCount ?? 0
         )
       }
-      if (!isStandardView(view)) {
+      if (isFolderView(view)) {
         return (
           unreadCounts.find(({ accountId }) => accountId === account.id)
             ?.unreadCountByFolder?.[view.id] ?? 0

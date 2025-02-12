@@ -4609,6 +4609,11 @@ export const fi = {
     emptyInbox: 'Tämä kansio on tyhjä',
     replyToThread: 'Vastaa viestiin',
     archiveThread: 'Arkistoi viestiketju',
+    changeFolder: {
+      button: 'Vaihda kansiota',
+      modalTitle: 'Valitse kansio',
+      modalOk: 'Siirrä kansioon'
+    },
     unitList: {
       title: 'Yksiköt'
     },

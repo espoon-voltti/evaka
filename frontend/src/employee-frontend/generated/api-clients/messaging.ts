@@ -349,6 +349,24 @@ export async function markThreadRead(
 
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.moveThreadToFolder
+*/
+export async function moveThreadToFolder(
+  request: {
+    accountId: MessageAccountId,
+    threadId: MessageThreadId,
+    folderId: MessageThreadFolderId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/messages/${request.accountId}/threads/${request.threadId}/move-to-folder/${request.folderId}`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageController.replyToThread
 */
 export async function replyToThread(

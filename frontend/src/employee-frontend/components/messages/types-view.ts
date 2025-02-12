@@ -25,6 +25,10 @@ export const isStandardView = (
   view: MessageThreadFolder | string
 ): view is StandardView => views.some((v) => view === v)
 
+export const isFolderView = (
+  view: MessageThreadFolder | string
+): view is MessageThreadFolder => !isStandardView(view)
+
 export interface AccountView {
   account: MessageAccount
   view: View
