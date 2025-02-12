@@ -80,10 +80,7 @@ export default function GroupMessageAccountList({
         const accountUnreadCounts = counts.find(
           (a) => a.accountId === acc.account.id
         )
-        return accountUnreadCounts
-          ? accountUnreadCounts.unreadCount +
-              accountUnreadCounts.unreadCopyCount
-          : 0
+        return accountUnreadCounts ? accountUnreadCounts.totalUnreadCount : 0
       })
       .getOrElse(0) === 0
 

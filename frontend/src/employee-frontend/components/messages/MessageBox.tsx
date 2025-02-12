@@ -59,6 +59,12 @@ export default function MessageBox({
             ?.unreadCopyCount ?? 0
         )
       }
+      if (!isStandardView(view)) {
+        return (
+          unreadCounts.find(({ accountId }) => accountId === account.id)
+            ?.unreadCountByFolder?.[view.id] ?? 0
+        )
+      }
 
       return 0
     })

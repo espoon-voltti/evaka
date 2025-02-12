@@ -32,25 +32,48 @@ sealed class AccountAccessLimit {
 
 fun Database.Read.getUnreadMessagesCounts(
     idFilter: AccessControlFilter<MessageAccountId>
-): Set<UnreadCountByAccount> =
-    createQuery {
-            sql(
-                """
-        SELECT
-            acc.id as account_id,
-            count(*) FILTER (WHERE mtp.folder_id IS NULL AND NOT mt.is_copy) AS unread_count,
-            count(*) FILTER (WHERE mtp.folder_id IS NULL AND mt.is_copy) AS unread_copy_count
+): Set<UnreadCountByAccount> {
+    data class RawData(
+        val accountId: MessageAccountId,
+        val isCopy: Boolean,
+        val folderId: MessageThreadFolderId?,
+        val count: Int,
+    )
+
+    val data =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            acc.id as account_id, 
+            coalesce(mt.is_copy, false) as is_copy, 
+            mtp.folder_id, 
+            count(mt.id) AS count
         FROM message_account acc
         LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id AND mr.read_at IS NULL
         LEFT JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
         WHERE ${predicate(idFilter.forTable("acc"))}
-        GROUP BY acc.id
+        GROUP BY acc.id, mt.is_copy, mtp.folder_id
         """
+                )
+            }
+            .toList<RawData>()
+
+    return data
+        .groupBy { it.accountId }
+        .map { (accountId, counts) ->
+            UnreadCountByAccount(
+                accountId = accountId,
+                unreadCount = counts.find { !it.isCopy && it.folderId == null }?.count ?: 0,
+                unreadCopyCount = counts.find { it.isCopy && it.folderId == null }?.count ?: 0,
+                unreadCountByFolder =
+                    counts.filter { it.folderId != null }.associate { it.folderId!! to it.count },
             )
         }
         .toSet()
+}
 
 fun Database.Read.getUnreadMessagesCountsByDaycare(
     daycareId: DaycareId

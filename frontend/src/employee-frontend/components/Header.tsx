@@ -206,11 +206,7 @@ export default React.memo(function Header() {
               const accountCounts = counts.find(
                 (c) => c.accountId === accountId
               )
-              return (
-                sum +
-                (accountCounts?.unreadCount ?? 0) +
-                (accountCounts?.unreadCopyCount ?? 0)
-              )
+              return sum + (accountCounts?.totalUnreadCount ?? 0)
             },
             0
           )

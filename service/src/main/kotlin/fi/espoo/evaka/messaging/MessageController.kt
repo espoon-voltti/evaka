@@ -30,7 +30,11 @@ data class UnreadCountByAccount(
     val accountId: MessageAccountId,
     val unreadCopyCount: Int,
     val unreadCount: Int,
-)
+    val unreadCountByFolder: Map<MessageThreadFolderId, Int>,
+) {
+    val totalUnreadCount: Int
+        get() = unreadCount + unreadCopyCount + unreadCountByFolder.values.sum()
+}
 
 data class UnreadCountByAccountAndGroup(
     val accountId: MessageAccountId,

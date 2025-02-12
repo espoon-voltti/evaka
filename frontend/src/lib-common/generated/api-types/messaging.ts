@@ -398,8 +398,10 @@ export interface ThreadReply {
 */
 export interface UnreadCountByAccount {
   accountId: MessageAccountId
+  totalUnreadCount: number
   unreadCopyCount: number
   unreadCount: number
+  unreadCountByFolder: Partial<Record<MessageThreadFolderId, number>>
 }
 
 /**
