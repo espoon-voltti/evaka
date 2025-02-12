@@ -399,13 +399,15 @@ export const CitizenAttachmentsWithUpload = React.memo(
     return (
       <>
         {incomeStatementAttachmentTypes.map((attachmentType) =>
-          requiredAttachments.has(attachmentType) ? (
+          requiredAttachments.has(attachmentType) ||
+          attachmentType === 'OTHER' ? (
             <AttachmentSection
               key={attachmentType}
               attachmentType={attachmentType}
               showFormErrors={false}
               attachmentHandler={attachmentHandler}
               labelKey="attachmentNames"
+              optional={attachmentType === 'OTHER'}
             />
           ) : null
         )}
