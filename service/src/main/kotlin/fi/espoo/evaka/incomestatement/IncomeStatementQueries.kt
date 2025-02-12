@@ -288,7 +288,9 @@ fun Database.Read.readIncomeStatementsForPerson(
     pageSize: Int,
 ): PagedIncomeStatements {
     val isCitizen = user is AuthenticatedUser.Citizen
-    return createQuery { queryByPerson(personId, isCitizen, pageSize, (page - 1) * pageSize) }
+    return createQuery {
+            queryByPerson(personId, isCitizen, limit = pageSize, offset = (page - 1) * pageSize)
+        }
         .mapToPaged(::PagedIncomeStatements, pageSize) { mapIncomeStatement(isCitizen = isCitizen) }
 }
 

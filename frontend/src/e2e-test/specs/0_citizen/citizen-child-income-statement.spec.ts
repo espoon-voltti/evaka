@@ -17,7 +17,6 @@ import {
   createDaycarePlacements,
   resetServiceState,
   updateIncomeStatementHandled
-  // updateIncomeStatementHandled
 } from '../../generated/api-clients'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'

@@ -344,8 +344,9 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         // TODO: `attachmentType` is nullable for backwards compatibility. It can be made
-        // non-nullable when all income statements with untyped attachments have been marked
-        // as handled and cannot be edited anymore.
+        // non-nullable when all income statements with untyped attachments cannot be edited
+        // anymore, i.e. they have been sent and marked as handled. At some point we could
+        // delete all drafts that are old enough.
         return db.connect { dbc ->
                 if (incomeStatementId != null) {
                     dbc.read {

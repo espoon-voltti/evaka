@@ -2482,7 +2482,7 @@ export default {
         UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäivärahasta',
         LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuesta',
         ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
-        JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
+        JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvauksesta',
         REWARD_OR_BONUS: 'Palkkatosite bonuksesta tai/ja palkkiosta',
         RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
         BASIC_INCOME: 'Päätös perustulosta',
@@ -2525,7 +2525,8 @@ export default {
         UNEMPLOYMENT_ALLOWANCE: 'Lisää päätös työttömyyspäivärahasta',
         LABOUR_MARKET_SUBSIDY: 'Lisää päätös työmarkkinatuesta',
         ADJUSTED_DAILY_ALLOWANCE: 'Lisää päätös päivärahasta',
-        JOB_ALTERNATION_COMPENSATION: 'Lisää tosite vuorotteluvapaakorvaus',
+        JOB_ALTERNATION_COMPENSATION:
+          'Lisää tosite vuorotteluvapaakorvauksesta',
         REWARD_OR_BONUS: 'Lisää palkkatosite bonuksesta tai/ja palkkiosta',
         RELATIVE_CARE_SUPPORT: 'Lisää päätös omaishoidontuesta',
         BASIC_INCOME: 'Lisää päätös perustulosta',
