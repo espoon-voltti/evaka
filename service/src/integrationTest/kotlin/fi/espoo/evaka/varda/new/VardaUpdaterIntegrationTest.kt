@@ -1461,6 +1461,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
                     sentDate = applicationDate1,
+                    preferredUnit = unit1,
                 )
                 .let { applicationDetails ->
                     tx.insertTestDecision(
@@ -1484,6 +1485,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
                     sentDate = applicationDate1.minusDays(1),
+                    preferredUnit = unit1,
                 )
                 .let { applicationDetails ->
                     tx.insertTestDecision(
@@ -1507,6 +1509,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
                     sentDate = applicationDate2,
+                    preferredUnit = unit1,
                 )
                 .let { applicationDetails ->
                     tx.insertTestDecision(
@@ -1529,6 +1532,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
                     sentDate = applicationDate3,
+                    preferredUnit = unit2,
                 )
                 .let { applicationDetails ->
                     tx.insertTestDecision(

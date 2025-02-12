@@ -15,7 +15,6 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -32,7 +31,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.test.validPreschoolApplication
+import fi.espoo.evaka.test.getValidPreschoolApplication
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
@@ -42,8 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 data class ManualDuplicationReportTestData(
     val areaId: AreaId,
-    val daycareId: DaycareId,
-    val preschoolId: DaycareId,
+    val daycare: DevDaycare,
+    val preschool: DevDaycare,
 )
 
 internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -65,34 +64,32 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
             tx.insert(testGuardian, DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(testGuardian.id, testChild.id))
             val areaId = tx.insert(DevCareArea())
-            val preschoolId =
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        type = setOf(CareType.PRESCHOOL),
-                        openingDate = mockToday.today(),
-                    )
+            val preschool =
+                DevDaycare(
+                    areaId = areaId,
+                    type = setOf(CareType.PRESCHOOL),
+                    openingDate = mockToday.today(),
                 )
-            val daycareId =
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        type = setOf(CareType.CENTRE),
-                        openingDate = mockToday.today(),
-                    )
+            tx.insert(preschool)
+            val daycare =
+                DevDaycare(
+                    areaId = areaId,
+                    type = setOf(CareType.CENTRE),
+                    openingDate = mockToday.today(),
                 )
+            tx.insert(daycare)
 
             addAcceptedPreschoolApplicationWithDecisions(
                 tx = tx,
                 child = testChild,
                 guardian = testGuardian,
-                preschoolId = preschoolId,
-                daycareId = daycareId,
+                preschool = preschool,
+                daycare = daycare,
                 sentDate = testRootTime.toLocalDate(),
                 transferDecisionType = DecisionType.PRESCHOOL_DAYCARE,
             )
 
-            ManualDuplicationReportTestData(areaId, daycareId, preschoolId)
+            ManualDuplicationReportTestData(areaId, daycare, preschool)
         }
     }
 
@@ -102,8 +99,8 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
         guardian: DevPerson,
         sentDate: LocalDate,
         transferDecisionType: DecisionType,
-        preschoolId: DaycareId,
-        daycareId: DaycareId = preschoolId,
+        preschool: DevDaycare,
+        daycare: DevDaycare = preschool,
     ) {
         val applicationId = ApplicationId(UUID.randomUUID())
 
@@ -119,14 +116,16 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
             sentDate = sentDate,
             dueDate = null,
             document =
-                DaycareFormV0.fromApplication2(validPreschoolApplication)
+                DaycareFormV0.fromApplication2(
+                        getValidPreschoolApplication(preferredUnit = preschool)
+                    )
                     .copy(child = Child(dateOfBirth = child.dateOfBirth)),
         )
 
         tx.insertTestDecision(
             TestDecision(
                 createdBy = EvakaUserId(admin.id.raw),
-                unitId = preschoolId,
+                unitId = preschool.id,
                 applicationId = applicationId,
                 type = DecisionType.PRESCHOOL,
                 startDate = testRootTime.toLocalDate(),
@@ -138,7 +137,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
         tx.insertTestDecision(
             TestDecision(
                 createdBy = EvakaUserId(admin.id.raw),
-                unitId = daycareId,
+                unitId = daycare.id,
                 applicationId = applicationId,
                 type = transferDecisionType,
                 startDate = testRootTime.toLocalDate(),
@@ -163,8 +162,8 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(1, duplicationNeeds.size)
         assertEquals(testChild.id, duplicationNeeds[0].childId)
-        assertEquals(testData.daycareId, duplicationNeeds[0].connectedDaycareId)
-        assertEquals(testData.preschoolId, duplicationNeeds[0].preschoolDaycareId)
+        assertEquals(testData.daycare.id, duplicationNeeds[0].connectedDaycareId)
+        assertEquals(testData.preschool.id, duplicationNeeds[0].preschoolDaycareId)
     }
 
     @Test
@@ -184,8 +183,8 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(1, duplicatedCases.size)
         assertEquals(testChild.id, duplicatedCases[0].childId)
-        assertEquals(testData.daycareId, duplicatedCases[0].connectedDaycareId)
-        assertEquals(testData.preschoolId, duplicatedCases[0].preschoolDaycareId)
+        assertEquals(testData.daycare.id, duplicatedCases[0].connectedDaycareId)
+        assertEquals(testData.preschool.id, duplicatedCases[0].preschoolDaycareId)
     }
 
     @Test
@@ -199,7 +198,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 tx = tx,
                 child = testChild,
                 guardian = testGuardian,
-                preschoolId = testData.preschoolId,
+                preschool = testData.preschool,
                 sentDate = laterDecisionDate,
                 transferDecisionType = DecisionType.PRESCHOOL_CLUB,
             )
@@ -228,7 +227,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 tx = tx,
                 child = testChild,
                 guardian = testGuardian,
-                preschoolId = testData.preschoolId,
+                preschool = testData.preschool,
                 sentDate = laterDecisionDate,
                 transferDecisionType = DecisionType.PRESCHOOL_CLUB,
             )
@@ -246,8 +245,8 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(1, duplicatedCases.size)
         assertEquals(testChild.id, duplicatedCases[0].childId)
-        assertEquals(testData.daycareId, duplicatedCases[0].connectedDaycareId)
-        assertEquals(testData.preschoolId, duplicatedCases[0].preschoolDaycareId)
+        assertEquals(testData.daycare.id, duplicatedCases[0].connectedDaycareId)
+        assertEquals(testData.preschool.id, duplicatedCases[0].preschoolDaycareId)
     }
 
     @Test
@@ -255,23 +254,21 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
         val testData = initTestData()
         val laterDecisionDate = testRootTime.toLocalDate().plusDays(7)
 
-        val transferDaycareId = DaycareId(UUID.randomUUID())
-        db.transaction { tx ->
-            tx.insert(
-                DevDaycare(
-                    id = transferDaycareId,
-                    areaId = testData.areaId,
-                    type = setOf(CareType.CENTRE),
-                    openingDate = mockToday.today(),
-                )
+        val transferDaycare =
+            DevDaycare(
+                areaId = testData.areaId,
+                type = setOf(CareType.CENTRE),
+                openingDate = mockToday.today(),
             )
+        db.transaction { tx ->
+            tx.insert(transferDaycare)
             // add another overlapping application + decisions that do constitute a duplication need
             addAcceptedPreschoolApplicationWithDecisions(
                 tx = tx,
                 child = testChild,
                 guardian = testGuardian,
-                preschoolId = testData.preschoolId,
-                daycareId = transferDaycareId,
+                preschool = testData.preschool,
+                daycare = transferDaycare,
                 sentDate = laterDecisionDate,
                 transferDecisionType = DecisionType.PRESCHOOL_DAYCARE,
             )
@@ -287,7 +284,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(1, duplicationNeeds.size)
         assertEquals(testChild.id, duplicationNeeds[0].childId)
-        assertEquals(transferDaycareId, duplicationNeeds[0].connectedDaycareId)
-        assertEquals(testData.preschoolId, duplicationNeeds[0].preschoolDaycareId)
+        assertEquals(transferDaycare.id, duplicationNeeds[0].connectedDaycareId)
+        assertEquals(testData.preschool.id, duplicationNeeds[0].preschoolDaycareId)
     }
 }
