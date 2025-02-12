@@ -12,6 +12,7 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -296,9 +297,20 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
           <Gap size="s" />
 
-          <strong>
-            {t.applications.editor.serviceNeed.shiftCare.attachmentsSubtitle}
-          </strong>
+          <AdaptiveFlex>
+            <strong>
+              {t.applications.editor.serviceNeed.shiftCare.attachmentsSubtitle}
+            </strong>
+            {verificationRequested &&
+              errors.shiftCareAttachments?.arrayErrors && (
+                <AlertBox
+                  message={
+                    t.validationErrors[errors.shiftCareAttachments.arrayErrors]
+                  }
+                  thin
+                />
+              )}
+          </AdaptiveFlex>
 
           <Gap size="s" />
 
