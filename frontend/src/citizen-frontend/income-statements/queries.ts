@@ -2,22 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
   createChildIncomeStatement,
   createIncomeStatement,
   deleteIncomeStatement,
-  getChildIncomeStatement,
   getChildIncomeStatementStartDates,
   getChildIncomeStatements,
   getIncomeStatement,
   getIncomeStatementChildren,
   getIncomeStatementStartDates,
   getIncomeStatements,
-  removeChildIncomeStatement,
-  updateChildIncomeStatement,
-  updateIncomeStatement
+  updateIncomeStatement,
+  updateSentIncomeStatement
 } from '../generated/api-clients/incomestatement'
 
 const q = new Queries()
@@ -40,6 +39,14 @@ export const updateIncomeStatementMutation = q.mutation(updateIncomeStatement, [
   incomeStatementsQuery.prefix
 ])
 
+export const updateSentIncomeStatementMutation = q.mutation(
+  updateSentIncomeStatement,
+  [
+    incomeStatementsQuery.prefix,
+    ({ incomeStatementId }) => incomeStatementQuery({ incomeStatementId })
+  ]
+)
+
 export const deleteIncomeStatementMutation = q.mutation(deleteIncomeStatement, [
   incomeStatementsQuery.prefix
 ])
@@ -55,8 +62,6 @@ export const childIncomeStatementsQuery = q.prefixedQuery(
   ({ childId }) => childId
 )
 
-export const childIncomeStatementQuery = q.query(getChildIncomeStatement)
-
 export const childIncomeStatementStartDatesQuery = q.query(
   getChildIncomeStatementStartDates
 )
@@ -66,12 +71,9 @@ export const createChildIncomeStatementMutation = q.mutation(
   [({ childId }) => childIncomeStatementsQuery.prefix(childId)]
 )
 
-export const updateChildIncomeStatementMutation = q.mutation(
-  updateChildIncomeStatement,
-  [({ childId }) => childIncomeStatementsQuery.prefix(childId)]
-)
-
-export const deleteChildIncomeStatementMutation = q.mutation(
-  removeChildIncomeStatement,
-  [({ childId }) => childIncomeStatementsQuery.prefix(childId)]
-)
+export const deleteChildIncomeStatementMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(deleteIncomeStatement, [
+  incomeStatementsQuery.prefix,
+  ({ childId }) => childIncomeStatementsQuery.prefix(childId)
+])

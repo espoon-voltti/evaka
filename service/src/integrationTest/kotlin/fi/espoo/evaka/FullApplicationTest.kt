@@ -10,7 +10,7 @@ import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.isSuccessful
-import fi.espoo.evaka.attachment.AttachmentType
+import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -103,7 +103,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     fun uploadAttachment(
         applicationId: ApplicationId,
         user: AuthenticatedUser,
-        type: AttachmentType = AttachmentType.URGENCY,
+        type: ApplicationAttachmentType = ApplicationAttachmentType.URGENCY,
     ): Boolean {
         val path =
             if (user is AuthenticatedUser.Citizen)

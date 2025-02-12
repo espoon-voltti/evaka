@@ -389,8 +389,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
     }
 
     @Test
-    fun `create an income statement with an attachment`() {
-        val attachmentId = uploadAttachment()
+    fun `create an income statement with attachments`() {
+        val attachmentId1 =
+            uploadAttachment(attachmentType = IncomeStatementAttachmentType.PAYSLIP_GROSS)
+        val attachmentId2 = uploadAttachment(attachmentType = IncomeStatementAttachmentType.OTHER)
 
         createIncomeStatement(
             IncomeStatementBody.Income(
@@ -407,7 +409,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
-                attachmentIds = listOf(attachmentId),
+                attachmentIds = listOf(attachmentId1, attachmentId2),
             )
         )
 
@@ -438,11 +440,52 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     handledAt = null,
-                    attachments = listOf(idToAttachment(attachmentId)),
+                    attachments =
+                        listOf(
+                            idToAttachment(
+                                attachmentId1,
+                                IncomeStatementAttachmentType.PAYSLIP_GROSS,
+                            ),
+                            idToAttachment(attachmentId2, IncomeStatementAttachmentType.OTHER),
+                        ),
                 )
             ),
             incomeStatements,
         )
+    }
+
+    @Test
+    fun `create an income statement with an untyped attachment`() {
+        val attachmentId = uploadAttachment(attachmentType = null)
+
+        createIncomeStatement(
+            IncomeStatementBody.Income(
+                startDate = LocalDate.of(2021, 4, 3),
+                endDate = LocalDate.of(2022, 4, 1),
+                gross =
+                    Gross(
+                        incomeSource = IncomeSource.ATTACHMENTS,
+                        estimatedMonthlyIncome = 1500,
+                        otherIncome = setOf(),
+                        otherIncomeInfo = "",
+                    ),
+                entrepreneur = null,
+                student = false,
+                alimonyPayer = true,
+                otherInfo = "foo bar",
+                attachmentIds = listOf(attachmentId),
+            )
+        )
+
+        val incomeStatements = getIncomeStatements().data
+        assertEquals(1, incomeStatements.size)
+        incomeStatements.first().also {
+            val incomeStatement = it as IncomeStatement.Income
+            assertEquals(
+                listOf(idToAttachment(attachmentId, attachmentType = null)),
+                incomeStatement.attachments,
+            )
+        }
     }
 
     @Test
@@ -677,9 +720,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
         )
 
         // attachments and otherInfo can be still updated after sending
-        val update2 =
-            update1.copy(otherInfo = "hello", attachmentIds = listOf(attachment1, attachment3))
-        updateIncomeStatement(id = original.id, body = update2, draft = false)
+        updateSentIncomeStatement(
+            id = original.id,
+            body =
+                IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody(
+                    otherInfo = "hello",
+                    attachmentIds = listOf(attachment1, attachment3),
+                ),
+        )
         getIncomeStatement(original.id).let {
             assertEquals("hello", (it as IncomeStatement.Income).otherInfo)
             assertEquals(
@@ -688,9 +736,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
             )
         }
 
-        // other fields cannot be updated after sending
-        val update3 = update2.copy(alimonyPayer = true)
-        assertThrows<BadRequest> {
+        // full update is not allowed after sending
+        val update3 = update1.copy(alimonyPayer = true)
+        assertThrows<Forbidden> {
             updateIncomeStatement(id = original.id, body = update3, draft = false)
         }
     }
@@ -706,6 +754,16 @@ class IncomeStatementControllerCitizenIntegrationTest :
         val id = getIncomeStatements().data.first().id
 
         markIncomeStatementHandled(id, employee.id, "foooooo")
+
+        assertThrows<Forbidden> {
+            updateSentIncomeStatement(
+                id,
+                IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody(
+                    otherInfo = "hello",
+                    attachmentIds = listOf(),
+                ),
+            )
+        }
 
         assertThrows<Forbidden> {
             updateIncomeStatement(
@@ -976,22 +1034,41 @@ WHERE id = ${bind(id)}
         )
     }
 
+    private fun updateSentIncomeStatement(
+        id: IncomeStatementId,
+        body: IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody,
+    ) {
+        incomeStatementControllerCitizen.updateSentIncomeStatement(
+            dbInstance(),
+            citizen,
+            clock,
+            id,
+            body,
+        )
+    }
+
     private fun deleteIncomeStatement(id: IncomeStatementId) {
         incomeStatementControllerCitizen.deleteIncomeStatement(dbInstance(), citizen, clock, id)
     }
 
-    private fun uploadAttachment(user: AuthenticatedUser.Citizen = citizen): AttachmentId {
+    private fun uploadAttachment(
+        user: AuthenticatedUser.Citizen = citizen,
+        attachmentType: IncomeStatementAttachmentType? = IncomeStatementAttachmentType.OTHER,
+    ): AttachmentId {
         return attachmentsController.uploadIncomeStatementAttachmentCitizen(
             dbInstance(),
             user,
             clock,
             incomeStatementId = null,
+            attachmentType = attachmentType,
             file = MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }
 
-    private fun idToAttachment(id: AttachmentId) =
-        Attachment(id, "evaka-logo.png", "image/png", false)
+    private fun idToAttachment(
+        id: AttachmentId,
+        attachmentType: IncomeStatementAttachmentType? = IncomeStatementAttachmentType.OTHER,
+    ) = IncomeStatementAttachment(id, "evaka-logo.png", "image/png", attachmentType, false)
 
     private fun uploadAttachmentAsEmployee(
         user: AuthenticatedUser.Employee,
@@ -1002,6 +1079,7 @@ WHERE id = ${bind(id)}
             user,
             clock,
             incomeStatementId,
+            IncomeStatementAttachmentType.OTHER,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }

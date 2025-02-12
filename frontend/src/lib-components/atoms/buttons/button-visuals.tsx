@@ -119,6 +119,7 @@ const StyledButton = styled.button<{
     p.$appearance === 'link'
       ? css`
           text-decoration: underline;
+          text-align: unset;
 
           &:focus {
             outline: none;

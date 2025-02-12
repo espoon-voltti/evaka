@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
 import fi.espoo.evaka.application.ApplicationStatus.SENT
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -222,12 +221,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
-            type = AttachmentType.URGENCY,
+            type = ApplicationAttachmentType.URGENCY,
         )
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
-            type = AttachmentType.EXTENDED_CARE,
+            type = ApplicationAttachmentType.EXTENDED_CARE,
         )
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -256,11 +255,15 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
         assertEquals(
             0,
-            afterClearingUrgency.attachments.filter { it.type == AttachmentType.URGENCY }.size,
+            afterClearingUrgency.attachments
+                .filter { it.type == ApplicationAttachmentType.URGENCY }
+                .size,
         )
         assertEquals(
             1,
-            afterClearingUrgency.attachments.filter { it.type == AttachmentType.EXTENDED_CARE }.size,
+            afterClearingUrgency.attachments
+                .filter { it.type == ApplicationAttachmentType.EXTENDED_CARE }
+                .size,
         )
     }
 
@@ -274,12 +277,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
-            type = AttachmentType.URGENCY,
+            type = ApplicationAttachmentType.URGENCY,
         )
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
-            type = AttachmentType.EXTENDED_CARE,
+            type = ApplicationAttachmentType.EXTENDED_CARE,
         )
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -307,11 +310,15 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
         assertEquals(
             0,
-            afterClearingUrgency.attachments.filter { it.type == AttachmentType.URGENCY }.size,
+            afterClearingUrgency.attachments
+                .filter { it.type == ApplicationAttachmentType.URGENCY }
+                .size,
         )
         assertEquals(
             1,
-            afterClearingUrgency.attachments.filter { it.type == AttachmentType.EXTENDED_CARE }.size,
+            afterClearingUrgency.attachments
+                .filter { it.type == ApplicationAttachmentType.EXTENDED_CARE }
+                .size,
         )
     }
 
@@ -325,12 +332,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
-            type = AttachmentType.URGENCY,
+            type = ApplicationAttachmentType.URGENCY,
         )
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
-            type = AttachmentType.EXTENDED_CARE,
+            type = ApplicationAttachmentType.EXTENDED_CARE,
         )
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -364,12 +371,14 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
         assertEquals(
             1,
-            afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size,
+            afterClearingShiftCare.attachments
+                .filter { it.type == ApplicationAttachmentType.URGENCY }
+                .size,
         )
         assertEquals(
             0,
             afterClearingShiftCare.attachments
-                .filter { it.type == AttachmentType.EXTENDED_CARE }
+                .filter { it.type == ApplicationAttachmentType.EXTENDED_CARE }
                 .size,
         )
     }
@@ -384,12 +393,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
-            type = AttachmentType.URGENCY,
+            type = ApplicationAttachmentType.URGENCY,
         )
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
-            type = AttachmentType.EXTENDED_CARE,
+            type = ApplicationAttachmentType.EXTENDED_CARE,
         )
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -423,12 +432,14 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
         assertEquals(
             1,
-            afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size,
+            afterClearingShiftCare.attachments
+                .filter { it.type == ApplicationAttachmentType.URGENCY }
+                .size,
         )
         assertEquals(
             0,
             afterClearingShiftCare.attachments
-                .filter { it.type == AttachmentType.EXTENDED_CARE }
+                .filter { it.type == ApplicationAttachmentType.EXTENDED_CARE }
                 .size,
         )
     }

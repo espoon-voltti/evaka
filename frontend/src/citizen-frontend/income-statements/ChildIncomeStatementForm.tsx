@@ -6,12 +6,9 @@ import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
-import {
-  AttachmentId,
-  IncomeStatementId
-} from 'lib-common/generated/api-types/shared'
+import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import { numAttachments } from 'lib-common/income-statements'
 import LocalDate from 'lib-common/local-date'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -33,27 +30,19 @@ import { useLang, useTranslation } from '../localization'
 
 import ChildIncomeStatementAttachments from './ChildIncomeStatementAttachments'
 import {
+  AttachmentSection,
+  makeAttachmentHandler
+} from './IncomeStatementAttachments'
+import {
   ActionContainer,
   AssureCheckbox,
   IncomeStatementFormAPI,
   LabelError,
   SetStateCallback,
-  useFieldDispatch
+  useFieldDispatch,
+  useFieldSetState
 } from './IncomeStatementComponents'
 import * as Form from './types/form'
-
-interface Props {
-  incomeStatementId: IncomeStatementId | undefined
-  status: IncomeStatementStatus
-  formData: Form.IncomeStatementForm
-  showFormErrors: boolean
-  otherStartDates: LocalDate[]
-  draftSaveEnabled: boolean
-  onChange: SetStateCallback<Form.IncomeStatementForm>
-  onSave: (draft: boolean) => Promise<Result<unknown>> | undefined
-  onSuccess: () => void
-  onCancel: () => void
-}
 
 const OtherInfoContainer = styled.div`
   max-width: 716px;
@@ -62,50 +51,55 @@ const OtherInfoContainer = styled.div`
 const ChildIncome = React.memo(function ChildIncome({
   incomeStatementId,
   formData,
+  showFormErrors,
   onChange
 }: {
   incomeStatementId: IncomeStatementId | undefined
+  showFormErrors: boolean
   formData: Form.IncomeStatementForm
   onChange: SetStateCallback<Form.IncomeStatementForm>
 }) {
   const t = useTranslation()
 
-  const onAttachmentUploaded = useCallback(
-    (attachment: Attachment) =>
-      onChange((prev) => ({
-        ...prev,
-        attachments: [...prev.attachments, attachment]
-      })),
-    [onChange]
-  )
-
-  const onAttachmentDeleted = useCallback(
-    (id: AttachmentId) =>
-      onChange((prev) => ({
-        ...prev,
-        attachments: prev.attachments.filter((a) => a.id !== id)
-      })),
-    [onChange]
+  const onAttachmentChange = useFieldSetState(onChange, 'attachments')
+  const attachmentHandler = useMemo(
+    () =>
+      makeAttachmentHandler(
+        incomeStatementId,
+        formData.attachments,
+        onAttachmentChange
+      ),
+    [formData.attachments, incomeStatementId, onAttachmentChange]
   )
 
   const onOtherInfoChanged = useFieldDispatch(onChange, 'otherInfo')
 
   return (
     <>
-      <Label>{t.income.childIncome.childAttachments}</Label>
-      <Gap size="s" />
-      {formData.childIncome && formData.attachments.length === 0 && (
+      {attachmentHandler ? (
+        <AttachmentSection
+          attachmentType="CHILD_INCOME"
+          showFormErrors={showFormErrors}
+          attachmentHandler={attachmentHandler}
+        />
+      ) : (
         <>
-          <LabelError text={t.components.fileUpload.input.title} />
-          <Gap size="L" />
+          <Label>{t.income.childIncome.childAttachments}</Label>
+          <Gap size="s" />
+          {formData.childIncome &&
+            numAttachments(formData.attachments) === 0 && (
+              <>
+                <LabelError text={t.components.fileUpload.input.title} />
+                <Gap size="L" />
+              </>
+            )}
+          <ChildIncomeStatementAttachments
+            incomeStatementId={incomeStatementId}
+            attachments={formData.attachments}
+            onChange={onAttachmentChange}
+          />
         </>
       )}
-      <ChildIncomeStatementAttachments
-        incomeStatementId={incomeStatementId}
-        attachments={formData.attachments}
-        onUploaded={onAttachmentUploaded}
-        onDeleted={onAttachmentDeleted}
-      />
 
       <Gap size="L" />
 
@@ -137,14 +131,12 @@ const ChildIncomeTimeRangeSelection = React.memo(
       formData,
       isValidStartDate,
       showFormErrors,
-      onChange,
-      readOnly
+      onChange
     }: {
       formData: ChildIncomeTypeSelectionData
       isValidStartDate: (date: LocalDate) => boolean
       showFormErrors: boolean
       onChange: SetStateCallback<Form.IncomeStatementForm>
-      readOnly: boolean
     },
     ref: React.ForwardedRef<HTMLDivElement>
   ) {
@@ -180,42 +172,32 @@ const ChildIncomeTimeRangeSelection = React.memo(
               {t.income.incomeType.startDate} *
             </Label>
             <Gap size="xs" />
-            {readOnly ? (
-              <span>{formData.startDate?.format() ?? '-'}</span>
-            ) : (
-              <DatePicker
-                id="start-date"
-                date={formData.startDate}
-                onChange={onStartDateChanged}
-                info={startDateInputInfo}
-                hideErrorsBeforeTouched={!showFormErrors}
-                locale={lang}
-                isInvalidDate={(d) =>
-                  isValidStartDate(d)
-                    ? null
-                    : t.validationErrors.unselectableDate
-                }
-                data-qa="start-date"
-                required={true}
-              />
-            )}
+            <DatePicker
+              id="start-date"
+              date={formData.startDate}
+              onChange={onStartDateChanged}
+              info={startDateInputInfo}
+              hideErrorsBeforeTouched={!showFormErrors}
+              locale={lang}
+              isInvalidDate={(d) =>
+                isValidStartDate(d) ? null : t.validationErrors.unselectableDate
+              }
+              data-qa="start-date"
+              required={true}
+            />
           </div>
           <div>
             <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
             <Gap size="xs" />
-            {readOnly ? (
-              <span>{formData.endDate?.format() ?? '-'}</span>
-            ) : (
-              <DatePicker
-                id="end-date"
-                date={formData.endDate}
-                onChange={onEndDateChanged}
-                minDate={formData.startDate ?? undefined}
-                hideErrorsBeforeTouched
-                locale={lang}
-                data-qa="end-date"
-              />
-            )}
+            <DatePicker
+              id="end-date"
+              date={formData.endDate}
+              onChange={onEndDateChanged}
+              minDate={formData.startDate ?? undefined}
+              hideErrorsBeforeTouched
+              locale={lang}
+              data-qa="end-date"
+            />
           </div>
         </FixedSpaceRow>
       </FixedSpaceColumn>
@@ -232,6 +214,19 @@ const ResponsiveFixedSpaceRow = styled(FixedSpaceRow)`
 const Confidential = styled.div`
   flex: 0 0 auto;
 `
+
+interface Props {
+  incomeStatementId: IncomeStatementId | undefined
+  status: IncomeStatementStatus
+  formData: Form.IncomeStatementForm
+  showFormErrors: boolean
+  otherStartDates: LocalDate[]
+  draftSaveEnabled: boolean
+  onChange: SetStateCallback<Form.IncomeStatementForm>
+  onSave: (draft: boolean) => Promise<Result<unknown>> | undefined
+  onSuccess: () => void
+  onCancel: () => void
+}
 
 export default React.memo(
   React.forwardRef(function ChildIncomeStatementForm(
@@ -251,8 +246,6 @@ export default React.memo(
   ) {
     const t = useTranslation()
     const scrollTarget = useRef<HTMLDivElement>(null)
-
-    const limitedEditing = status !== 'DRAFT'
 
     const isValidStartDate = useCallback(
       (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date)),
@@ -282,7 +275,7 @@ export default React.memo(
       }
     }))
 
-    const sendButtonEnabled = formData.attachments.length > 0 && formData.assure
+    const sendButtonEnabled = formData.assure
 
     return (
       <>
@@ -306,12 +299,12 @@ export default React.memo(
               isValidStartDate={isValidStartDate}
               showFormErrors={showFormErrors}
               onChange={onChange}
-              readOnly={limitedEditing}
               ref={scrollTarget}
             />
             <Gap size="L" />
             <ChildIncome
               incomeStatementId={incomeStatementId}
+              showFormErrors={showFormErrors}
               formData={formData}
               onChange={onChange}
             />

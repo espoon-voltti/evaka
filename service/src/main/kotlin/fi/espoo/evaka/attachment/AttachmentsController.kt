@@ -7,8 +7,10 @@ package fi.espoo.evaka.attachment
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
 import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.messaging.findMessageAccountIdByDraftId
@@ -66,7 +68,7 @@ class AttachmentsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestParam type: AttachmentType,
+        @RequestParam type: ApplicationAttachmentType,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
@@ -108,6 +110,7 @@ class AttachmentsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
+        @RequestParam attachmentType: IncomeStatementAttachmentType,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
@@ -126,6 +129,7 @@ class AttachmentsController(
                     clock,
                     AttachmentParent.IncomeStatement(incomeStatementId),
                     file,
+                    attachmentType,
                 )
             }
             .also { attachmentId ->
@@ -298,7 +302,7 @@ class AttachmentsController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestParam type: AttachmentType,
+        @RequestParam type: ApplicationAttachmentType,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         val attachTo = AttachmentParent.Application(applicationId)
@@ -336,8 +340,13 @@ class AttachmentsController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId?,
+        @RequestParam attachmentType: IncomeStatementAttachmentType?,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
+        // TODO: `attachmentType` is nullable for backwards compatibility. It can be made
+        // non-nullable when all income statements with untyped attachments cannot be edited
+        // anymore, i.e. they have been sent and marked as handled. At some point we could
+        // delete all drafts that are old enough.
         return db.connect { dbc ->
                 if (incomeStatementId != null) {
                     dbc.read {
@@ -355,7 +364,7 @@ class AttachmentsController(
                         AttachmentParent.IncomeStatement(incomeStatementId)
                     else AttachmentParent.None
 
-                handleFileUpload(dbc, user, clock, attachTo, file)
+                handleFileUpload(dbc, user, clock, attachTo, file, attachmentType)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
@@ -466,13 +475,13 @@ class AttachmentsController(
             }
             .last()
 
-    private fun handleFileUpload(
+    private fun <T : Enum<T>> handleFileUpload(
         dbc: Database.Connection,
         user: AuthenticatedUser,
         clock: EvakaClock,
         attachTo: AttachmentParent,
         file: MultipartFile,
-        type: AttachmentType? = null,
+        type: T? = null,
         onSuccess: ((tx: Database.Transaction) -> Unit)? = null,
     ): AttachmentId {
         if (user is AuthenticatedUser.Citizen) {

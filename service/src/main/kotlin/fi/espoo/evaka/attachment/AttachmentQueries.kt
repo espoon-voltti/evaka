@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attachment
 
+import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -88,13 +89,13 @@ data class AttachmentForeignKeys(
     }
 }
 
-fun Database.Transaction.insertAttachment(
+fun <T : Enum<T>> Database.Transaction.insertAttachment(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     name: String,
     contentType: String,
     attachTo: AttachmentParent,
-    type: AttachmentType?,
+    type: T?,
 ): AttachmentId {
     check(AttachmentForeignKeys.idFieldCount == 8) {
         "Unexpected AttachmentForeignKeys field count"
@@ -176,7 +177,7 @@ fun Database.Read.getAttachment(id: AttachmentId): Pair<Attachment, AttachmentPa
 
 fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
-    type: AttachmentType,
+    type: ApplicationAttachmentType,
     userId: EvakaUserId,
 ): List<AttachmentId> =
     createQuery {

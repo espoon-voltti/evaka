@@ -2,31 +2,58 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
+import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
+
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
   Checkbox,
-  FileInput,
   Page,
   TextInput,
   Element,
   ElementCollection,
-  EnvType
+  EnvType,
+  FileUpload
 } from '../../utils/page'
 
 export class CitizenChildIncomeStatementViewPage {
   startDate: Element
   otherInfo: Element
+
   constructor(private readonly page: Page) {
     this.startDate = page.findByDataQa('start-date')
     this.otherInfo = page.findByDataQa('other-info')
   }
 
-  async waitUntilReady() {
-    await this.startDate.waitUntilVisible()
+  async assertAttachmentExists(
+    attachmentType: IncomeStatementAttachmentType,
+    name: string
+  ) {
+    await this.page
+      .findByDataQa(`attachments-${attachmentType}`)
+      .findByDataQa(`file-${name}`)
+      .waitUntilVisible()
   }
 
-  async assertOtherInfo(expected: string) {
-    await this.otherInfo.assertTextEquals(expected)
+  async clickGoBack() {
+    await this.page.findText('Palaa').click()
+  }
+}
+
+export class CitizenChildIncomeStatementEditSentPage {
+  startDate: Element
+  otherInfoInput: TextInput
+  attachment: FileUpload
+  saveButton: Element
+
+  constructor(private readonly page: Page) {
+    this.startDate = page.findByDataQa('start-date')
+    this.otherInfoInput = new TextInput(page.findByDataQa('other-info'))
+    this.attachment = new FileUpload(
+      page.find('#attachment-section-CHILD_INCOME')
+    )
+    this.saveButton = page.findByDataQa('save-btn')
   }
 
   async assertAttachmentExists(name: string) {
@@ -49,49 +76,25 @@ export class CitizenChildIncomeStatementViewPage {
 export class CitizenChildIncomeStatementEditPage {
   startDateInput: TextInput
   otherInfoInput: TextInput
+  attachments: FileUpload
   assure: Checkbox
-  saveButton: Element
+  sendButton: Element
   saveDraftButton: Element
-  constructor(private readonly page: Page) {
+
+  constructor(readonly page: Page) {
     this.startDateInput = new TextInput(page.findByDataQa('start-date'))
     this.otherInfoInput = new TextInput(page.findByDataQa('other-info'))
+    this.attachments = new FileUpload(
+      page.find('#attachment-section-CHILD_INCOME')
+    )
     this.assure = new Checkbox(page.findByDataQa('assure-checkbox'))
-    this.saveButton = page.findByDataQa('save-btn')
+    this.sendButton = page.findByDataQa('save-btn')
     this.saveDraftButton = page.findByDataQa('save-draft-btn')
-  }
-
-  async waitUntilReady() {
-    await this.otherInfoInput.waitUntilVisible()
   }
 
   async setValidFromDate(date: string) {
     await this.startDateInput.fill(date)
     await this.startDateInput.press('Enter')
-  }
-
-  async fillOtherInfo(text: string) {
-    await this.otherInfoInput.fill(text)
-  }
-
-  async selectAssure() {
-    await this.assure.check()
-  }
-
-  async saveDraft() {
-    await this.saveDraftButton.click()
-  }
-
-  async save() {
-    await this.saveButton.click()
-  }
-
-  async uploadAttachment(filePath: string, fileName: string) {
-    await new FileInput(
-      this.page.findByDataQa('btn-upload-file')
-    ).setInputFiles(filePath)
-    await this.page
-      .findByDataQa(`file-delete-button-${fileName}`)
-      .waitUntilVisible()
   }
 }
 
@@ -99,6 +102,7 @@ export class CitizenChildIncomeStatementListPage {
   private childIncomeStatementsSection: Element
   private childIncomeStatementsList: Element
   private childIncomeStatementRows: ElementCollection
+
   constructor(
     private readonly page: Page,
     private readonly nth: number,
@@ -123,9 +127,7 @@ export class CitizenChildIncomeStatementListPage {
     await this.childIncomeStatementsSection
       .find('[data-qa="new-child-income-statement-btn"]')
       .click()
-    const isPage = new CitizenChildIncomeStatementEditPage(this.page)
-    await isPage.waitUntilReady()
-    return isPage
+    return new CitizenChildIncomeStatementEditPage(this.page)
   }
 
   async assertChildName(expectedName: string) {
@@ -158,14 +160,12 @@ export class CitizenChildIncomeStatementListPage {
     await waitUntilEqual(() => this.childIncomeStatementRows.count(), expected)
   }
 
-  async clickEditChildIncomeStatement(nth: number) {
-    await this.childIncomeStatementRows
+  async incomeStatementId(nth: number) {
+    const href = await this.childIncomeStatementRows
       .nth(nth)
-      .findByDataQa('edit-income-statement')
-      .click()
-    const isPage = new CitizenChildIncomeStatementEditPage(this.page)
-    await isPage.waitUntilReady()
-    return isPage
+      .findByDataQa('view-income-statement')
+      .getAttribute('href')
+    return fromUuid<IncomeStatementId>(href!.split('/').at(-2)!)
   }
 
   async deleteChildIncomeStatement(nth: number) {
@@ -176,13 +176,27 @@ export class CitizenChildIncomeStatementListPage {
     await this.page.findAll('[data-qa="modal-okBtn"]').nth(0).click()
   }
 
-  async clickViewChildIncomeStatement(nth: number) {
+  async editChildDraftIncomeStatement(nth: number) {
+    await this.childIncomeStatementRows
+      .nth(nth)
+      .findByDataQa('edit-income-statement-DRAFT')
+      .click()
+    return new CitizenChildIncomeStatementEditPage(this.page)
+  }
+
+  async editChildSentIncomeStatement(nth: number) {
+    await this.childIncomeStatementRows
+      .nth(nth)
+      .findByDataQa('edit-income-statement-SENT')
+      .click()
+    return new CitizenChildIncomeStatementEditSentPage(this.page)
+  }
+
+  async viewChildHandledIncomeStatement(nth: number) {
     await this.childIncomeStatementRows
       .nth(nth)
       .findByDataQa('view-income-statement')
       .click()
-    const isPage = new CitizenChildIncomeStatementViewPage(this.page)
-    await isPage.waitUntilReady()
-    return isPage
+    return new CitizenChildIncomeStatementViewPage(this.page)
   }
 }

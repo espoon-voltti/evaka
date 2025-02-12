@@ -7,8 +7,8 @@ package fi.espoo.evaka.attachments
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.application.ApplicationStatus
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.shared.ApplicationId
@@ -98,7 +98,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private fun uploadApplicationAttachment(
         applicationId: ApplicationId,
-        type: AttachmentType = AttachmentType.URGENCY,
+        type: ApplicationAttachmentType = ApplicationAttachmentType.URGENCY,
     ): Boolean {
         return uploadAttachment(
             "/citizen/attachments/applications/$applicationId",

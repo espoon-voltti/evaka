@@ -2113,6 +2113,49 @@ export const fi = {
       title: 'Käsittelijän muistiinpanot',
       handled: 'Käsitelty',
       handlerNote: 'Muistiinpano (sisäinen)'
+    },
+    attachmentNames: {
+      OTHER: 'Muu liite',
+      PENSION: 'Päätös eläkkeestä',
+      ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
+      SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
+      PARENTAL_ALLOWANCE: 'Päätös äitiys- tai vanhempainrahasta',
+      HOME_CARE_ALLOWANCE: 'Päätös kotihoidontuesta',
+      FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
+      ALIMONY: 'Elatussopimus tai päätös elatustuesta',
+      UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäivärahasta',
+      LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuesta',
+      ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
+      JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
+      REWARD_OR_BONUS: 'Palkkatosite bonuksesta tai/ja palkkiosta',
+      RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
+      BASIC_INCOME: 'Päätös perustulosta',
+      FOREST_INCOME: 'Tosite metsätulosta',
+      FAMILY_CARE_COMPENSATION: 'Tositteet perhehoidon palkkioista',
+      REHABILITATION: 'Päätös kuntoutustuesta tai kuntoutusrahasta',
+      EDUCATION_ALLOWANCE: 'Päätös koulutuspäivärahasta',
+      GRANT: 'Tosite apurahasta',
+      APPRENTICESHIP_SALARY: 'Tosite oppisopimuskoulutuksen palkkatuloista',
+      ACCIDENT_INSURANCE_COMPENSATION:
+        'Tosite tapaturmavakuutuksen korvauksesta',
+      OTHER_INCOME: 'Liitteet muista tuloista',
+      ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
+      INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
+      RENTAL_INCOME: 'Tositteet vuokratuloista ja vastikkeesta',
+      PAYSLIP_GROSS: 'Viimeisin palkkakuitti',
+      STARTUP_GRANT: 'Starttirahapäätös',
+      ACCOUNTANT_REPORT_PARTNERSHIP:
+        'Kirjanpitäjän selvitys palkasta ja luontoiseduista',
+      PAYSLIP_LLC: 'Viimeisin palkkakuitti',
+      ACCOUNTANT_REPORT_LLC:
+        'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
+      PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED:
+        'Tulos- ja taselaskelma tai veropäätös',
+      PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP: 'Tulos- ja taselaskelma',
+      SALARY: 'Maksutositteet palkoista ja työkorvauksista',
+      PROOF_OF_STUDIES:
+        'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta',
+      CHILD_INCOME: 'Tositteet lapsen tuloista'
     }
   },
   units: {
