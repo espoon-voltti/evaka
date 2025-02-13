@@ -491,3 +491,4 @@ V492__finance_note.sql
 V493__acl_end_date.sql
 V494__daycare_acl_schedule.sql
 V495__draft_message_recipients.sql
+V496__staff_attendance_integration_feature.sql

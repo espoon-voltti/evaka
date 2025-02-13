@@ -4998,7 +4998,8 @@ export const fi = {
       PLACEMENT_TERMINATION: 'Paikan irtisanominen',
       REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo',
       PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot',
-      SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset'
+      SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset',
+      STAFF_ATTENDANCE_INTEGRATION: 'Työvuoro-suunnittelu-integraatio'
     }
   },
   roles: {
