@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.Attachment
+import fi.espoo.evaka.messaging.MessageController.MessageThreadFolder
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -29,6 +30,31 @@ sealed class AccountAccessLimit {
 
     data class AvailableFrom(val date: LocalDate) : AccountAccessLimit()
 }
+
+fun Database.Read.getFolders(filter: AccessControlFilter<MessageAccountId>) =
+    createQuery {
+            sql(
+                """
+            SELECT mtf.id, mtf.name, mtf.owner_id
+            FROM message_thread_folder mtf
+            JOIN message_account acc ON mtf.owner_id = acc.id
+            WHERE ${predicate(filter.forTable("acc"))} AND mtf.name != 'ARCHIVE'
+        """
+            )
+        }
+        .toList<MessageThreadFolder>()
+
+fun Database.Read.getFolder(id: MessageThreadFolderId) =
+    createQuery {
+            sql(
+                """
+            SELECT mtf.id, mtf.name, mtf.owner_id
+            FROM message_thread_folder mtf
+            WHERE mtf.id = ${bind(id)} AND mtf.name != 'ARCHIVE'
+        """
+            )
+        }
+        .exactlyOneOrNull<MessageThreadFolder>()
 
 fun Database.Read.getUnreadMessagesCounts(
     idFilter: AccessControlFilter<MessageAccountId>
@@ -250,12 +276,13 @@ fun Database.Transaction.upsertSenderThreadParticipants(
     senderId: MessageAccountId,
     threadIds: List<MessageThreadId>,
     now: HelsinkiDateTime,
+    initialFolder: MessageThreadFolderId? = null,
 ) {
     executeBatch(threadIds) {
         sql(
             """
-INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
-VALUES (${bind { threadId -> threadId }}, ${bind(senderId)}, ${bind(now)}, ${bind(now)})
+INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp, folder_id)
+VALUES (${bind { threadId -> threadId }}, ${bind(senderId)}, ${bind(now)}, ${bind(now)}, ${bind(initialFolder)})
 ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = ${bind(now)}, last_sent_timestamp = ${bind(now)}
 """
         )

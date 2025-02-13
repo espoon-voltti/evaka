@@ -65,12 +65,17 @@ export async function archiveThread(
 export async function createMessage(
   request: {
     accountId: MessageAccountId,
+    initialFolder?: MessageThreadFolderId | null,
     body: PostMessageBody
   }
 ): Promise<CreateMessageResponse> {
+  const params = createUrlSearchParams(
+    ['initialFolder', request.initialFolder]
+  )
   const { data: json } = await client.request<JsonOf<CreateMessageResponse>>({
     url: uri`/employee/messages/${request.accountId}`.toString(),
     method: 'POST',
+    params,
     data: request.body satisfies JsonCompatible<PostMessageBody>
   })
   return json

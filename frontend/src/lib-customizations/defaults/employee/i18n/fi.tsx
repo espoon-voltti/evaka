@@ -4719,6 +4719,7 @@ export const fi = {
         }
       },
       title: 'Otsikko',
+      setFolder: 'Siirrä kansioon',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
       sending: 'Lähetetään'

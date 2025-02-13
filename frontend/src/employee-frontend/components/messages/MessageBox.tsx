@@ -4,7 +4,7 @@
 
 import isEqual from 'lodash/isEqual'
 import React, { useCallback, useContext } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -17,9 +17,15 @@ import { useTranslation } from '../../state/i18n'
 import { MessageContext } from './MessageContext'
 import { AccountView, isFolderView, isStandardView, View } from './types-view'
 
-export const MessageBoxRow = styled.div<{ active: boolean }>`
+export const MessageBoxRow = styled.div<{ active: boolean; $folder: boolean }>`
   cursor: pointer;
   padding: 12px ${defaultMargins.m};
+  ${(p) =>
+    p.$folder
+      ? css`
+          padding-left: 44px;
+        `
+      : ''}
   font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
   background-color: ${(p) => (p.active ? colors.main.m4 : 'unset')};
 `
@@ -77,6 +83,7 @@ export default function MessageBox({
     <MessageBoxRow
       onClick={onClick}
       active={active}
+      $folder={isFolderView(view)}
       data-qa={`message-box-row-${isStandardView(view) ? view : view.id}`}
     >
       {isStandardView(view)

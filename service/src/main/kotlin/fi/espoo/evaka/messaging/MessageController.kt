@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.security.actionrule.forTable
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -230,17 +229,7 @@ class MessageController(
                             clock,
                             Action.MessageAccount.ACCESS,
                         )
-                    it.createQuery {
-                            sql(
-                                """
-                    SELECT mtf.id, mtf.name, mtf.owner_id
-                    FROM message_thread_folder mtf
-                    JOIN message_account acc ON mtf.owner_id = acc.id
-                    WHERE ${predicate(filter.forTable("acc"))} AND mtf.name != 'ARCHIVE'
-                """
-                            )
-                        }
-                        .toList<MessageThreadFolder>()
+                    it.getFolders(filter)
                 }
             }
             .also { Audit.MessagingMessageFoldersRead.log() }
@@ -563,8 +552,10 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
+        @RequestParam initialFolder: MessageThreadFolderId?,
         @RequestBody body: PostMessageBody,
-    ): CreateMessageResponse = createMessage(db, user as AuthenticatedUser, clock, accountId, body)
+    ): CreateMessageResponse =
+        createMessage(db, user as AuthenticatedUser, clock, accountId, body, initialFolder)
 
     @PostMapping("/employee-mobile/messages/{accountId}")
     fun createMessage(
@@ -579,8 +570,9 @@ class MessageController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @RequestBody body: PostMessageBody,
+        accountId: MessageAccountId,
+        body: PostMessageBody,
+        initialFolder: MessageThreadFolderId? = null,
     ): CreateMessageResponse {
         if (body.recipients.isEmpty()) {
             throw BadRequest("Message must have at least one recipient")
@@ -657,6 +649,7 @@ class MessageController(
                             attachments = body.attachmentIds,
                             relatedApplication = body.relatedApplicationId,
                             filters = body.filters,
+                            initialFolder = initialFolder,
                         )
                     if (body.draftId != null) {
                         tx.deleteDraft(accountId = accountId, draftId = body.draftId)
