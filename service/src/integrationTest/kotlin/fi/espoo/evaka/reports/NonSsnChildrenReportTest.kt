@@ -18,10 +18,10 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.varda.new.Henkilo
-import fi.espoo.evaka.varda.new.VardaUpdater
-import fi.espoo.evaka.varda.new.addNewChildrenForVardaUpdate
-import fi.espoo.evaka.varda.new.setVardaUpdateSuccess
+import fi.espoo.evaka.varda.Henkilo
+import fi.espoo.evaka.varda.VardaUpdater
+import fi.espoo.evaka.varda.addNewChildrenForVardaUpdate
+import fi.espoo.evaka.varda.setVardaUpdateSuccess
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID

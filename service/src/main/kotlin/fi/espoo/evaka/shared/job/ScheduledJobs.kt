@@ -45,7 +45,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.titania.cleanTitaniaErrors
-import fi.espoo.evaka.varda.new.VardaUpdateServiceNew
+import fi.espoo.evaka.varda.VardaUpdateService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.time.LocalTime
@@ -247,7 +247,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class ScheduledJobs(
     // private val vardaService: VardaService, // Use this once varda fixes MA003 retry glitch
-    private val vardaUpdateServiceNew: VardaUpdateServiceNew,
+    private val vardaUpdateService: VardaUpdateService,
     private val evakaEnv: EvakaEnv,
     private val vardaEnv: VardaEnv,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
@@ -367,8 +367,8 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
-        vardaUpdateServiceNew.updateUnits(db, clock)
-        vardaUpdateServiceNew.planChildrenUpdate(db, clock)
+        vardaUpdateService.updateUnits(db, clock)
+        vardaUpdateService.planChildrenUpdate(db, clock)
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {

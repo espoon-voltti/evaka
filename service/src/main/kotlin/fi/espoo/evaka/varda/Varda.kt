@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.varda.new
+package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.varda.VardaUnitProviderType
 import java.net.URI
 import java.time.LocalDate
 
@@ -237,15 +236,16 @@ data class Maksutieto(
             lahdejarjestelma = lahdejarjestelma,
             lapsi = lapsi,
             huoltajat =
-                huoltajat.map {
-                    // Avoid sending both henkilotunnus and henkilo_oid, which would cause Varda to
-                    // reject the request with error HE004
-                    if (it.henkilotunnus != null && it.henkilo_oid != null) {
-                        it.copy(henkilo_oid = null)
-                    } else {
-                        it
-                    }
-                },
+                huoltajat
+                    .map { // Avoid sending both henkilotunnus and henkilo_oid, which would cause
+                           // Varda to
+                        // reject the request with error HE004
+                        if (it.henkilotunnus != null && it.henkilo_oid != null) {
+                            it.copy(henkilo_oid = null)
+                        } else {
+                            it
+                        }
+                    },
             alkamis_pvm = alkamis_pvm,
             paattymis_pvm = paattymis_pvm,
             maksun_peruste_koodi = maksun_peruste_koodi,
