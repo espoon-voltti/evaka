@@ -555,7 +555,7 @@ class MessageController(
         @RequestParam initialFolder: MessageThreadFolderId?,
         @RequestBody body: PostMessageBody,
     ): CreateMessageResponse =
-        createMessage(db, user as AuthenticatedUser, clock, accountId, body, initialFolder)
+        createMessageShared(db, user as AuthenticatedUser, clock, accountId, body, initialFolder)
 
     @PostMapping("/employee-mobile/messages/{accountId}")
     fun createMessage(
@@ -564,9 +564,10 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody,
-    ): CreateMessageResponse = createMessage(db, user as AuthenticatedUser, clock, accountId, body)
+    ): CreateMessageResponse =
+        createMessageShared(db, user as AuthenticatedUser, clock, accountId, body)
 
-    private fun createMessage(
+    private fun createMessageShared(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

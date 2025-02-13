@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -1732,6 +1733,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         relatedApplicationId: ApplicationId? = null,
         sensitive: Boolean = false,
         filters: MessageController.PostMessageFilters? = null,
+        initialFolder: MessageThreadFolderId? = null,
     ): MessageContentId? {
         val messageContentId =
             messageController
@@ -1740,6 +1742,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user,
                     MockEvakaClock(now),
                     sender,
+                    initialFolder,
                     MessageController.PostMessageBody(
                         title = title,
                         content = message,
