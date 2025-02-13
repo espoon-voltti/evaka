@@ -260,10 +260,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 otherInfo = "",
                 attachments =
                     listOf(
-                        Attachment(
+                        IncomeStatementAttachment(
                             id = attachmentId,
                             name = "evaka-logo.png",
                             contentType = "image/png",
+                            type = IncomeStatementAttachmentType.OTHER,
                             uploadedByEmployee = true,
                         )
                     ),
@@ -294,7 +295,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         return db.transaction { tx ->
             tx.insert(incomeStatement)
-            tx.readIncomeStatementForPerson(employee.user, personId, incomeStatement.id)!!
+            tx.readIncomeStatement(employee.user, incomeStatement.id)!!
         }
     }
 
@@ -319,7 +320,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         return db.transaction { tx ->
             tx.insert(incomeStatement)
-            tx.readIncomeStatementForPerson(employee.user, personId, incomeStatement.id)!!
+            tx.readIncomeStatement(employee.user, incomeStatement.id)!!
         }
     }
 
@@ -1604,7 +1605,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             dbInstance(),
             employee.user,
             MockEvakaClock(now),
-            citizenId,
             id,
         )
     }
@@ -1660,6 +1660,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             employee.user,
             MockEvakaClock(now),
             id,
+            IncomeStatementAttachmentType.OTHER,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }

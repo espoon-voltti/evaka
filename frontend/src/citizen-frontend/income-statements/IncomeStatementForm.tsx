@@ -12,18 +12,15 @@ import {
   validateIf,
   validInt
 } from 'lib-common/form-validation'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   IncomeStatementStatus,
   OtherIncome,
   otherIncomes
 } from 'lib-common/generated/api-types/incomestatement'
-import {
-  AttachmentId,
-  IncomeStatementId
-} from 'lib-common/generated/api-types/shared'
+import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { scrollToRef } from 'lib-common/utils/scrolling'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -41,25 +38,39 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { fontWeights, H1, H2, H3, Label, P } from 'lib-components/typography'
+import {
+  fontWeights,
+  H1,
+  H2,
+  H3,
+  H4,
+  Label,
+  P
+} from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
-import IncomeStatementAttachments from './IncomeStatementAttachments'
+import {
+  IncomeStatementUntypedAttachments,
+  IncomeStatementMissingAttachments,
+  makeAttachmentHandler,
+  AttachmentHandler,
+  AttachmentSection
+} from './IncomeStatementAttachments'
 import {
   ActionContainer,
   AssureCheckbox,
   identity,
   IncomeStatementFormAPI,
   LabelError,
+  LabelWithError,
   SetStateCallback,
   useFieldDispatch,
   useFieldSetState
 } from './IncomeStatementComponents'
-import { AttachmentType } from './types/common'
 import * as Form from './types/form'
 
 interface Props {
@@ -95,9 +106,6 @@ export default React.memo(
     const onGrossChange = useFieldSetState(onChange, 'gross')
     const onEntrepreneurChange = useFieldSetState(onChange, 'entrepreneur')
     const scrollTarget = useRef<HTMLElement>(null)
-
-    // after sending only attachments and additional info are editable
-    const limitedEditing = status !== 'DRAFT'
 
     const isValidStartDate = useCallback(
       (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date)),
@@ -166,24 +174,20 @@ export default React.memo(
     const showOtherInfo =
       formData.gross.selected || formData.entrepreneur.selected
 
-    const requiredAttachments = useRequiredAttachments(formData)
-
-    const onAttachmentUploaded = useCallback(
-      (attachment: Attachment) =>
-        onChange((prev) => ({
-          ...prev,
-          attachments: [...prev.attachments, attachment]
-        })),
-      [onChange]
+    const requiredAttachments = useMemo(
+      () => Form.computeRequiredAttachments(formData),
+      [formData]
     )
 
-    const onAttachmentDeleted = useCallback(
-      (id: AttachmentId) =>
-        onChange((prev) => ({
-          ...prev,
-          attachments: prev.attachments.filter((a) => a.id !== id)
-        })),
-      [onChange]
+    const onAttachmentChange = useFieldSetState(onChange, 'attachments')
+    const attachmentHandler = useMemo(
+      () =>
+        makeAttachmentHandler(
+          incomeStatementId,
+          formData.attachments,
+          onAttachmentChange
+        ),
+      [formData.attachments, incomeStatementId, onAttachmentChange]
     )
 
     const sendButtonEnabled = useMemo(
@@ -217,7 +221,6 @@ export default React.memo(
             showFormErrors={showFormErrors}
             onChange={onChange}
             onSelect={onSelectIncomeType}
-            readOnly={limitedEditing}
             ref={scrollTarget}
           />
           {formData.gross.selected && (
@@ -227,7 +230,7 @@ export default React.memo(
                 formData={formData.gross}
                 showFormErrors={showFormErrors}
                 onChange={onGrossChange}
-                readOnly={limitedEditing}
+                attachmentHandler={attachmentHandler}
               />
             </>
           )}
@@ -238,7 +241,7 @@ export default React.memo(
                 formData={formData.entrepreneur}
                 showFormErrors={showFormErrors}
                 onChange={onEntrepreneurChange}
-                readOnly={limitedEditing}
+                attachmentHandler={attachmentHandler}
               />
             </>
           )}
@@ -248,16 +251,48 @@ export default React.memo(
               <OtherInfo
                 formData={otherIncomeFormData}
                 onChange={onChange}
-                limitedEditing={limitedEditing}
+                showFormErrors={showFormErrors}
+                attachmentHandler={attachmentHandler}
               />
               <Gap size="L" />
-              <IncomeStatementAttachments
-                incomeStatementId={incomeStatementId}
-                requiredAttachments={requiredAttachments}
-                attachments={formData.attachments}
-                onUploaded={onAttachmentUploaded}
-                onDeleted={onAttachmentDeleted}
-              />
+              {attachmentHandler ? (
+                <IncomeStatementMissingAttachments
+                  requiredAttachments={requiredAttachments}
+                  attachmentHandler={attachmentHandler}
+                />
+              ) : (
+                <ContentArea opaque paddingVertical="L">
+                  <FixedSpaceColumn spacing="zero">
+                    <H3 noMargin>{t.income.attachments.title}</H3>
+                    <Gap size="s" />
+                    <P noMargin>{t.income.attachments.description}</P>
+                    <Gap size="L" />
+                    {requiredAttachments.size > 0 && (
+                      <>
+                        <H4 noMargin>{t.income.attachments.required.title}</H4>
+                        <Gap size="s" />
+                        <UnorderedList data-qa="required-attachments">
+                          {[...requiredAttachments].map((attachmentType) => (
+                            <li key={attachmentType}>
+                              {
+                                t.income.attachments.attachmentNames[
+                                  attachmentType
+                                ]
+                              }
+                            </li>
+                          ))}
+                        </UnorderedList>
+                        <Gap size="L" />
+                      </>
+                    )}
+                    <IncomeStatementUntypedAttachments
+                      incomeStatementId={incomeStatementId}
+                      attachments={formData.attachments}
+                      onChange={onAttachmentChange}
+                    />
+                  </FixedSpaceColumn>
+                </ContentArea>
+              )}
             </>
           )}
           <Gap />
@@ -324,8 +359,7 @@ const IncomeTypeSelection = React.memo(
       isValidStartDate,
       showFormErrors,
       onChange,
-      onSelect,
-      readOnly
+      onSelect
     }: {
       formData: IncomeTypeSelectionData
       isValidStartDate: (date: LocalDate) => boolean
@@ -335,7 +369,6 @@ const IncomeTypeSelection = React.memo(
         incomeType: 'highestFee' | 'gross' | 'entrepreneur',
         value: boolean
       ) => void
-      readOnly: boolean
     },
     ref: React.ForwardedRef<HTMLElement>
   ) {
@@ -414,7 +447,11 @@ const IncomeTypeSelection = React.memo(
           <Gap size="s" />
           {showFormErrors && (
             <>
-              <AlertBox noMargin message={t.income.errors.invalidForm} />
+              <AlertBox
+                noMargin
+                message={t.income.errors.invalidForm}
+                data-qa="invalid-form"
+              />
               <Gap size="s" />
             </>
           )}
@@ -426,48 +463,40 @@ const IncomeTypeSelection = React.memo(
                 {t.income.incomeType.startDate} *
               </Label>
               <Gap size="xs" />
-              {readOnly ? (
-                <span>{formData.startDate?.format() ?? '-'}</span>
-              ) : (
-                <DatePicker
-                  id="start-date"
-                  data-qa="income-start-date"
-                  date={formData.startDate}
-                  onChange={onStartDateChange}
-                  info={startDateInputInfo}
-                  hideErrorsBeforeTouched={!showFormErrors}
-                  locale={lang}
-                  required={true}
-                  isInvalidDate={(d) =>
-                    isValidStartDate(d)
-                      ? null
-                      : t.validationErrors.unselectableDate
-                  }
-                />
-              )}
+              <DatePicker
+                id="start-date"
+                data-qa="income-start-date"
+                date={formData.startDate}
+                onChange={onStartDateChange}
+                info={startDateInputInfo}
+                hideErrorsBeforeTouched={!showFormErrors}
+                locale={lang}
+                required={true}
+                isInvalidDate={(d) =>
+                  isValidStartDate(d)
+                    ? null
+                    : t.validationErrors.unselectableDate
+                }
+              />
             </div>
             <div>
               <Label htmlFor="end-date">{`${t.income.incomeType.endDate}${isEndDateRequired ? ' *' : ''}`}</Label>
               <Gap size="xs" />
-              {readOnly ? (
-                <div>{formData.endDate?.format() ?? '-'}</div>
-              ) : (
-                <DatePicker
-                  id="end-date"
-                  data-qa="income-end-date"
-                  date={formData.endDate}
-                  onChange={onEndDateChange}
-                  minDate={formData.startDate ?? undefined}
-                  hideErrorsBeforeTouched={false}
-                  locale={lang}
-                  info={endDateInputInfo}
-                  isInvalidDate={(d) =>
-                    errorToInputInfo(validateEndDate(d), t.validationErrors)
-                      ?.text || null
-                  }
-                  required={isEndDateRequired}
-                />
-              )}
+              <DatePicker
+                id="end-date"
+                data-qa="income-end-date"
+                date={formData.endDate}
+                onChange={onEndDateChange}
+                minDate={formData.startDate ?? undefined}
+                hideErrorsBeforeTouched={false}
+                locale={lang}
+                info={endDateInputInfo}
+                isInvalidDate={(d) =>
+                  errorToInputInfo(validateEndDate(d), t.validationErrors)
+                    ?.text || null
+                }
+                required={isEndDateRequired}
+              />
             </div>
           </FixedSpaceRow>
           {invalidDateRange && (
@@ -489,8 +518,7 @@ const IncomeTypeSelection = React.memo(
             label={t.income.incomeType.agreeToHighestFee}
             data-qa="highest-fee-checkbox"
             checked={formData.highestFeeSelected}
-            onChange={readOnly ? undefined : onSelectHighestFee}
-            disabled={readOnly}
+            onChange={onSelectHighestFee}
           />
           {formData.highestFeeSelected && (
             <>
@@ -505,16 +533,16 @@ const IncomeTypeSelection = React.memo(
             label={t.income.incomeType.grossIncome}
             checked={formData.grossSelected}
             data-qa="gross-income-checkbox"
-            disabled={formData.highestFeeSelected || readOnly}
-            onChange={readOnly ? undefined : onSelectGross}
+            disabled={formData.highestFeeSelected}
+            onChange={onSelectGross}
           />
           <Gap size="s" />
           <Checkbox
             label={t.income.incomeType.entrepreneurIncome}
             checked={formData.entrepreneurSelected}
             data-qa="entrepreneur-income-checkbox"
-            disabled={formData.highestFeeSelected || readOnly}
-            onChange={readOnly ? undefined : onSelectEntrepreneur}
+            disabled={formData.highestFeeSelected}
+            onChange={onSelectEntrepreneur}
           />
         </FixedSpaceColumn>
       </ContentArea>
@@ -526,12 +554,12 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
   formData,
   showFormErrors,
   onChange,
-  readOnly
+  attachmentHandler
 }: {
   formData: Form.Gross
   showFormErrors: boolean
   onChange: SetStateCallback<Form.Gross>
-  readOnly: boolean
+  attachmentHandler: AttachmentHandler | undefined
 }) {
   const t = useTranslation()
 
@@ -560,27 +588,29 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
           label={t.income.incomesRegisterConsent}
           data-qa="incomes-register-consent-checkbox"
           checked={formData.incomeSource === 'INCOMES_REGISTER'}
-          onChange={
-            readOnly
-              ? undefined
-              : () => onIncomeSourceChange('INCOMES_REGISTER')
-          }
-          disabled={readOnly}
+          onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
         />
         <Gap size="s" />
         <Radio
           label={t.income.grossIncome.provideAttachments}
           checked={formData.incomeSource === 'ATTACHMENTS'}
-          onChange={
-            readOnly ? undefined : () => onIncomeSourceChange('ATTACHMENTS')
-          }
-          disabled={readOnly}
+          onChange={() => onIncomeSourceChange('ATTACHMENTS')}
         />
         <Gap size="s" />
         <InfoBox
           message={t.income.grossIncome.attachmentsVerificationInfo}
           thin
         />
+        {formData.incomeSource === 'ATTACHMENTS' && (
+          <>
+            <Gap size="s" />
+            <AttachmentSection
+              attachmentType="PAYSLIP_GROSS"
+              attachmentHandler={attachmentHandler}
+              showFormErrors={showFormErrors}
+            />
+          </>
+        )}
         <Gap size="L" />
         <Label>{t.income.grossIncome.estimate}</Label>
         <Gap size="m" />
@@ -593,8 +623,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
               id="estimated-monthly-income"
               data-qa="gross-monthly-income-estimate"
               value={formData.estimatedMonthlyIncome}
-              onChange={readOnly ? undefined : onEstimatedMonthlyIncomeChange}
-              readonly={readOnly}
+              onChange={onEstimatedMonthlyIncomeChange}
               hideErrorsBeforeTouched={!showFormErrors}
               info={errorToInputInfo(
                 validate(formData.estimatedMonthlyIncome, required, validInt),
@@ -609,27 +638,25 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
         {t.income.grossIncome.otherIncomeDescription}
         <Gap size="s" />
         <OtherIncomeWrapper>
-          {!readOnly ? (
-            <MultiSelect
-              value={formData.otherIncome}
-              options={otherIncomes}
-              getOptionId={identity}
-              getOptionLabel={(option: OtherIncome) =>
-                t.income.grossIncome.otherIncomeTypes[option]
-              }
-              onChange={onOtherIncomeChange}
-              placeholder={t.income.grossIncome.choosePlaceholder}
-            />
-          ) : formData.otherIncome.length > 0 ? (
-            <span>
-              {formData.otherIncome
-                .map((opt) => t.income.grossIncome.otherIncomeTypes[opt])
-                .join(', ')}
-            </span>
-          ) : (
-            <span>-</span>
-          )}
+          <MultiSelect
+            value={formData.otherIncome}
+            options={otherIncomes}
+            getOptionId={identity}
+            getOptionLabel={(option: OtherIncome) =>
+              t.income.grossIncome.otherIncomeTypes[option]
+            }
+            onChange={onOtherIncomeChange}
+            placeholder={t.income.grossIncome.choosePlaceholder}
+          />
         </OtherIncomeWrapper>
+        {formData.otherIncome.map((incomeType) => (
+          <AttachmentSection
+            key={incomeType}
+            attachmentType={incomeType}
+            showFormErrors={showFormErrors}
+            attachmentHandler={attachmentHandler}
+          />
+        ))}
         {formData.otherIncome.length > 0 && (
           <>
             <Gap size="s" />
@@ -639,8 +666,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             <Gap size="s" />
             <InputField
               value={formData.otherIncomeInfo}
-              onChange={readOnly ? undefined : onOtherIncomeInfoChange}
-              readonly={readOnly}
+              onChange={onOtherIncomeInfoChange}
             />
           </>
         )}
@@ -654,12 +680,12 @@ const EntrepreneurIncomeSelection = React.memo(
     formData,
     showFormErrors,
     onChange,
-    readOnly
+    attachmentHandler
   }: {
     formData: Form.Entrepreneur
     showFormErrors: boolean
     onChange: SetStateCallback<Form.Entrepreneur>
-    readOnly: boolean
+    attachmentHandler: AttachmentHandler | undefined
   }) {
     const t = useTranslation()
     const [lang] = useLang()
@@ -723,38 +749,32 @@ const EntrepreneurIncomeSelection = React.memo(
             label={t.income.entrepreneurIncome.fullTime}
             data-qa="entrepreneur-full-time-option"
             checked={formData.fullTime === true}
-            onChange={readOnly ? undefined : () => onFullTimeChange(true)}
-            disabled={readOnly}
+            onChange={() => onFullTimeChange(true)}
           />
           <Gap size="s" />
           <Radio
             label={t.income.entrepreneurIncome.partTime}
             data-qa="entrepreneur-part-time-option"
             checked={formData.fullTime === false}
-            onChange={readOnly ? undefined : () => onFullTimeChange(false)}
-            disabled={readOnly}
+            onChange={() => onFullTimeChange(false)}
           />
           <Gap size="L" />
           <Label htmlFor="entrepreneur-start-date">
             {t.income.entrepreneurIncome.startOfEntrepreneurship} *
           </Label>
           <Gap size="s" />
-          {readOnly ? (
-            <span>{formData.startOfEntrepreneurship?.format() ?? '-'}</span>
-          ) : (
-            <DatePicker
-              id="entrepreneur-start-date"
-              data-qa="entrepreneur-start-date"
-              date={formData.startOfEntrepreneurship}
-              onChange={onStartOfEntrepreneurshipChange}
-              locale={lang}
-              info={errorToInputInfo(
-                formData.startOfEntrepreneurship ? undefined : 'validDate',
-                t.validationErrors
-              )}
-              hideErrorsBeforeTouched={!showFormErrors}
-            />
-          )}
+          <DatePicker
+            id="entrepreneur-start-date"
+            data-qa="entrepreneur-start-date"
+            date={formData.startOfEntrepreneurship}
+            onChange={onStartOfEntrepreneurshipChange}
+            locale={lang}
+            info={errorToInputInfo(
+              formData.startOfEntrepreneurship ? undefined : 'validDate',
+              t.validationErrors
+            )}
+            hideErrorsBeforeTouched={!showFormErrors}
+          />
           <Gap size="L" />
           <Label htmlFor="entrepreneur-company-name">
             {t.income.entrepreneurIncome.companyName}
@@ -766,7 +786,6 @@ const EntrepreneurIncomeSelection = React.memo(
                 id="entrepreneur-company-name"
                 value={formData.companyName}
                 onChange={onCompanyNameChange}
-                readonly={readOnly}
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>
@@ -781,7 +800,6 @@ const EntrepreneurIncomeSelection = React.memo(
                 id="entrepreneur-business-id"
                 value={formData.businessId}
                 onChange={onBusinessIdChange}
-                readonly={readOnly}
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>
@@ -796,20 +814,14 @@ const EntrepreneurIncomeSelection = React.memo(
             label={t.income.entrepreneurIncome.yes}
             data-qa="entrepreneur-spouse-yes"
             checked={formData.spouseWorksInCompany === true}
-            onChange={
-              readOnly ? undefined : () => onSpouseWorksInCompanyChange(true)
-            }
-            disabled={readOnly}
+            onChange={() => onSpouseWorksInCompanyChange(true)}
           />
           <Gap size="s" />
           <Radio
             label={t.income.entrepreneurIncome.no}
             data-qa="entrepreneur-spouse-no"
             checked={formData.spouseWorksInCompany === false}
-            onChange={
-              readOnly ? undefined : () => onSpouseWorksInCompanyChange(false)
-            }
-            disabled={readOnly}
+            onChange={() => onSpouseWorksInCompanyChange(false)}
           />
           <Gap size="L" />
           <Label>{t.income.entrepreneurIncome.startupGrantLabel}</Label>
@@ -818,9 +830,15 @@ const EntrepreneurIncomeSelection = React.memo(
             label={t.income.entrepreneurIncome.startupGrant}
             data-qa="entrepreneur-startup-grant"
             checked={formData.startupGrant}
-            onChange={readOnly ? undefined : onStartupGrantChange}
-            disabled={readOnly}
+            onChange={onStartupGrantChange}
           />
+          {formData.startupGrant && (
+            <AttachmentSection
+              attachmentType="STARTUP_GRANT"
+              showFormErrors={showFormErrors}
+              attachmentHandler={attachmentHandler}
+            />
+          )}
           <Gap size="L" />
           <Label>{t.income.entrepreneurIncome.checkupLabel}</Label>
           <Gap size="s" />
@@ -828,8 +846,7 @@ const EntrepreneurIncomeSelection = React.memo(
             label={t.income.entrepreneurIncome.checkupConsent}
             data-qa="entrepreneur-checkup-consent"
             checked={formData.checkupConsent}
-            onChange={readOnly ? undefined : onCheckupConsentChange}
-            disabled={readOnly}
+            onChange={onCheckupConsentChange}
           />
           <Gap size="XL" />
           <H3 noMargin>{t.income.entrepreneurIncome.companyInfo}</H3>
@@ -850,8 +867,7 @@ const EntrepreneurIncomeSelection = React.memo(
             label={t.income.entrepreneurIncome.selfEmployed}
             data-qa="entrepreneur-self-employed"
             checked={formData.selfEmployed.selected}
-            onChange={readOnly ? undefined : onSelfEmployedSelectedChange}
-            disabled={readOnly}
+            onChange={onSelfEmployedSelectedChange}
           />
           {formData.selfEmployed.selected && (
             <>
@@ -860,7 +876,7 @@ const EntrepreneurIncomeSelection = React.memo(
                 formData={formData.selfEmployed}
                 showFormErrors={showFormErrors}
                 onChange={onSelfEmployedChange}
-                readOnly={readOnly}
+                attachmentHandler={attachmentHandler}
               />
             </>
           )}
@@ -869,8 +885,7 @@ const EntrepreneurIncomeSelection = React.memo(
             label={t.income.entrepreneurIncome.limitedCompany}
             data-qa="entrepreneur-llc"
             checked={formData.limitedCompany.selected}
-            onChange={readOnly ? undefined : onLimitedCompanySelectedChange}
-            disabled={readOnly}
+            onChange={onLimitedCompanySelectedChange}
           />
           {formData.limitedCompany.selected && (
             <>
@@ -879,7 +894,7 @@ const EntrepreneurIncomeSelection = React.memo(
                 formData={formData.limitedCompany}
                 showFormErrors={showFormErrors}
                 onChange={onLimitedCompanyChange}
-                readOnly={readOnly}
+                attachmentHandler={attachmentHandler}
               />
             </>
           )}
@@ -888,13 +903,24 @@ const EntrepreneurIncomeSelection = React.memo(
             label={t.income.entrepreneurIncome.partnership}
             data-qa="entrepreneur-partnership"
             checked={formData.partnership}
-            onChange={readOnly ? undefined : onPartnershipChange}
-            disabled={readOnly}
+            onChange={onPartnershipChange}
           />
           {formData.partnership && (
             <>
               <Gap size="s" />
-              <Indent>{t.income.entrepreneurIncome.partnershipInfo}</Indent>
+              <Indent>
+                <P noMargin>{t.income.entrepreneurIncome.partnershipInfo}</P>
+                <AttachmentSection
+                  attachmentType="PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP"
+                  showFormErrors={showFormErrors}
+                  attachmentHandler={attachmentHandler}
+                />
+                <AttachmentSection
+                  attachmentType="ACCOUNTANT_REPORT_PARTNERSHIP"
+                  showFormErrors={showFormErrors}
+                  attachmentHandler={attachmentHandler}
+                />
+              </Indent>
             </>
           )}
           <Gap size="m" />
@@ -902,14 +928,20 @@ const EntrepreneurIncomeSelection = React.memo(
             label={t.income.entrepreneurIncome.lightEntrepreneur}
             data-qa="entrepreneur-light-entrepreneur"
             checked={formData.lightEntrepreneur}
-            onChange={readOnly ? undefined : onLightEntrepreneurChange}
-            disabled={readOnly}
+            onChange={onLightEntrepreneurChange}
           />
           {formData.lightEntrepreneur && (
             <>
               <Gap size="s" />
               <Indent>
-                {t.income.entrepreneurIncome.lightEntrepreneurInfo}
+                <P noMargin>
+                  {t.income.entrepreneurIncome.lightEntrepreneurInfo}
+                </P>
+                <AttachmentSection
+                  attachmentType="SALARY"
+                  showFormErrors={showFormErrors}
+                  attachmentHandler={attachmentHandler}
+                />
               </Indent>
             </>
           )}
@@ -922,7 +954,6 @@ const EntrepreneurIncomeSelection = React.memo(
                 formData={formData.accountant}
                 showFormErrors={showFormErrors}
                 onChange={onAccountantChange}
-                readOnly={readOnly}
               />
             </>
           )}
@@ -937,12 +968,12 @@ const SelfEmployedIncomeSelection = React.memo(
     formData,
     showFormErrors,
     onChange,
-    readOnly
+    attachmentHandler
   }: {
     formData: Form.SelfEmployed
     showFormErrors: boolean
     onChange: SetStateCallback<Form.SelfEmployed>
-    readOnly: boolean
+    attachmentHandler: AttachmentHandler | undefined
   }) {
     const t = useTranslation()
     const [lang] = useLang()
@@ -970,15 +1001,21 @@ const SelfEmployedIncomeSelection = React.memo(
             label={t.income.selfEmployed.attachments}
             data-qa="self-employed-attachments"
             checked={formData.attachments}
-            onChange={readOnly ? undefined : onAttachmentsChange}
-            disabled={readOnly}
+            onChange={onAttachmentsChange}
           />
+          {formData.attachments && (
+            <AttachmentSection
+              attachmentType="PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED"
+              showFormErrors={showFormErrors}
+              attachmentHandler={attachmentHandler}
+              dense
+            />
+          )}
           <Checkbox
             label={t.income.selfEmployed.estimatedIncome}
             data-qa="self-employed-estimated-income"
             checked={formData.estimation}
-            onChange={readOnly ? undefined : onEstimationChange}
-            disabled={readOnly}
+            onChange={onEstimationChange}
           />
           <Indent>
             <FixedSpaceFlexWrap>
@@ -989,13 +1026,8 @@ const SelfEmployedIncomeSelection = React.memo(
                 <InputField
                   id="estimated-monthly-income"
                   value={formData.estimatedMonthlyIncome}
-                  onFocus={
-                    readOnly ? undefined : () => onEstimationChange(true)
-                  }
-                  onChange={
-                    readOnly ? undefined : onEstimatedMonthlyIncomeChange
-                  }
-                  readonly={readOnly}
+                  onFocus={() => onEstimationChange(true)}
+                  onChange={onEstimatedMonthlyIncomeChange}
                   hideErrorsBeforeTouched={!showFormErrors}
                   info={errorToInputInfo(
                     validateIf(
@@ -1013,39 +1045,31 @@ const SelfEmployedIncomeSelection = React.memo(
                   {t.income.selfEmployed.timeRange}
                 </Label>
                 <FixedSpaceRow>
-                  {readOnly ? (
-                    <span>{formData.incomeStartDate?.format() ?? ''}</span>
-                  ) : (
-                    <DatePicker
-                      id="income-start-date"
-                      date={formData.incomeStartDate}
-                      onFocus={() => onEstimationChange(true)}
-                      onChange={onIncomeStartDateChange}
-                      locale={lang}
-                      hideErrorsBeforeTouched={!showFormErrors}
-                      info={errorToInputInfo(
-                        validateIf(
-                          formData.estimation,
-                          formData.incomeStartDate,
-                          required
-                        ),
-                        t.validationErrors
-                      )}
-                    />
-                  )}
+                  <DatePicker
+                    id="income-start-date"
+                    date={formData.incomeStartDate}
+                    onFocus={() => onEstimationChange(true)}
+                    onChange={onIncomeStartDateChange}
+                    locale={lang}
+                    hideErrorsBeforeTouched={!showFormErrors}
+                    info={errorToInputInfo(
+                      validateIf(
+                        formData.estimation,
+                        formData.incomeStartDate,
+                        required
+                      ),
+                      t.validationErrors
+                    )}
+                  />
                   <span>{' - '}</span>
-                  {readOnly ? (
-                    <span>{formData.incomeEndDate?.format() ?? ''}</span>
-                  ) : (
-                    <DatePicker
-                      date={formData.incomeEndDate}
-                      onFocus={() => onEstimationChange(true)}
-                      onChange={onIncomeEndDateChange}
-                      locale={lang}
-                      minDate={formData.incomeStartDate ?? undefined}
-                      hideErrorsBeforeTouched={!showFormErrors}
-                    />
-                  )}
+                  <DatePicker
+                    date={formData.incomeEndDate}
+                    onFocus={() => onEstimationChange(true)}
+                    onChange={onIncomeEndDateChange}
+                    locale={lang}
+                    minDate={formData.incomeStartDate ?? undefined}
+                    hideErrorsBeforeTouched={!showFormErrors}
+                  />
                 </FixedSpaceRow>
               </FixedSpaceColumn>
             </FixedSpaceFlexWrap>
@@ -1061,12 +1085,12 @@ const LimitedCompanyIncomeSelection = React.memo(
     formData,
     showFormErrors,
     onChange,
-    readOnly
+    attachmentHandler
   }: {
     formData: Form.LimitedCompany
     showFormErrors: boolean
     onChange: SetStateCallback<Form.LimitedCompany>
-    readOnly: boolean
+    attachmentHandler: AttachmentHandler | undefined
   }) {
     const t = useTranslation()
 
@@ -1079,26 +1103,33 @@ const LimitedCompanyIncomeSelection = React.memo(
           {showFormErrors && formData.incomeSource === null && (
             <LabelError text={t.income.errors.choose} />
           )}
+          <Gap size="xs" />
+          <AttachmentSection
+            attachmentType="ACCOUNTANT_REPORT_LLC"
+            showFormErrors={showFormErrors}
+            attachmentHandler={attachmentHandler}
+            dense
+          />
           <Radio
             label={t.income.limitedCompany.incomesRegister}
             data-qa="llc-incomes-register"
             checked={formData.incomeSource === 'INCOMES_REGISTER'}
-            onChange={
-              readOnly
-                ? undefined
-                : () => onIncomeSourceChange('INCOMES_REGISTER')
-            }
-            disabled={readOnly}
+            onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
           />
           <Radio
             label={t.income.limitedCompany.attachments}
             data-qa="llc-attachments"
             checked={formData.incomeSource === 'ATTACHMENTS'}
-            onChange={
-              readOnly ? undefined : () => onIncomeSourceChange('ATTACHMENTS')
-            }
-            disabled={readOnly}
+            onChange={() => onIncomeSourceChange('ATTACHMENTS')}
           />
+          {formData.incomeSource === 'ATTACHMENTS' && (
+            <AttachmentSection
+              attachmentType="PAYSLIP_LLC"
+              showFormErrors={showFormErrors}
+              attachmentHandler={attachmentHandler}
+              dense
+            />
+          )}
         </FixedSpaceColumn>
       </Indent>
     )
@@ -1108,13 +1139,11 @@ const LimitedCompanyIncomeSelection = React.memo(
 const Accounting = React.memo(function Accounting({
   formData,
   showFormErrors,
-  onChange,
-  readOnly
+  onChange
 }: {
   formData: Form.Accountant
   showFormErrors: boolean
   onChange: SetStateCallback<Form.Accountant>
-  readOnly: boolean
 }) {
   const tr = useTranslation()
   const t = tr.income.accounting
@@ -1135,8 +1164,7 @@ const Accounting = React.memo(function Accounting({
           data-qa="accountant-name"
           width="L"
           value={formData.name}
-          onChange={readOnly ? undefined : onNameChange}
-          readonly={readOnly}
+          onChange={onNameChange}
           hideErrorsBeforeTouched={!showFormErrors}
           info={errorToInputInfo(
             validate(formData.name, required),
@@ -1150,8 +1178,7 @@ const Accounting = React.memo(function Accounting({
           data-qa="accountant-phone"
           width="L"
           value={formData.phone}
-          onChange={readOnly ? undefined : onPhoneChange}
-          readonly={readOnly}
+          onChange={onPhoneChange}
           hideErrorsBeforeTouched={!showFormErrors}
           info={errorToInputInfo(
             validate(formData.phone, required),
@@ -1165,8 +1192,7 @@ const Accounting = React.memo(function Accounting({
           data-qa="accountant-email"
           width="L"
           value={formData.email}
-          onChange={readOnly ? undefined : onEmailChange}
-          readonly={readOnly}
+          onChange={onEmailChange}
           hideErrorsBeforeTouched={!showFormErrors}
           info={errorToInputInfo(
             validate(formData.email, required),
@@ -1179,8 +1205,7 @@ const Accounting = React.memo(function Accounting({
           placeholder={t.addressPlaceholder}
           width="L"
           value={formData.address}
-          onChange={readOnly ? undefined : onAddressChange}
-          readonly={readOnly}
+          onChange={onAddressChange}
         />
       </ListGrid>
     </>
@@ -1196,11 +1221,13 @@ interface OtherInfoFormData {
 const OtherInfo = React.memo(function OtherInfo({
   formData,
   onChange,
-  limitedEditing
+  showFormErrors,
+  attachmentHandler
 }: {
   formData: OtherInfoFormData
   onChange: SetStateCallback<Form.IncomeStatementForm>
-  limitedEditing: boolean
+  showFormErrors: boolean
+  attachmentHandler: AttachmentHandler | undefined
 }) {
   const t = useTranslation()
 
@@ -1219,9 +1246,15 @@ const OtherInfo = React.memo(function OtherInfo({
           label={t.income.moreInfo.student}
           data-qa="student"
           checked={formData.student}
-          onChange={limitedEditing ? undefined : onStudentChange}
-          disabled={limitedEditing}
+          onChange={onStudentChange}
         />
+        {formData.student && (
+          <AttachmentSection
+            attachmentType="PROOF_OF_STUDIES"
+            showFormErrors={showFormErrors}
+            attachmentHandler={attachmentHandler}
+          />
+        )}
         <Gap size="s" />
         <P noMargin>{t.income.moreInfo.studentInfo}</P>
         <Gap size="L" />
@@ -1231,9 +1264,15 @@ const OtherInfo = React.memo(function OtherInfo({
           label={t.income.moreInfo.alimony}
           data-qa="alimony-payer"
           checked={formData.alimonyPayer}
-          onChange={limitedEditing ? undefined : onAlimonyPayerChange}
-          disabled={limitedEditing}
+          onChange={onAlimonyPayerChange}
         />
+        {formData.alimonyPayer && (
+          <AttachmentSection
+            attachmentType="ALIMONY_PAYOUT"
+            showFormErrors={showFormErrors}
+            attachmentHandler={attachmentHandler}
+          />
+        )}
         <Gap size="L" />
         <Label htmlFor="more-info">{t.income.moreInfo.otherInfoLabel}</Label>
         <Gap size="s" />
@@ -1242,66 +1281,17 @@ const OtherInfo = React.memo(function OtherInfo({
           value={formData.otherInfo}
           onChange={onOtherInfoChange}
         />
+        <AttachmentSection
+          attachmentType="OTHER"
+          showFormErrors={showFormErrors}
+          attachmentHandler={attachmentHandler}
+          infoText={t.income.moreInfo.otherAttachmentInfo}
+          optional
+        />
       </FixedSpaceColumn>
     </ContentArea>
   )
 })
-
-export function useRequiredAttachments(
-  formData: Form.IncomeStatementForm
-): Set<AttachmentType> {
-  const { gross, entrepreneur, alimonyPayer, student } = formData
-
-  return useMemo(() => {
-    const result = new Set<AttachmentType>()
-    if (gross.selected) {
-      if (gross.incomeSource === 'ATTACHMENTS') result.add('PAYSLIP')
-      if (gross.otherIncome)
-        gross.otherIncome.forEach((item) => result.add(item))
-    }
-    if (entrepreneur.selected) {
-      if (entrepreneur.startupGrant) result.add('STARTUP_GRANT')
-      if (
-        entrepreneur.selfEmployed.selected &&
-        !entrepreneur.selfEmployed.estimation
-      ) {
-        result.add('PROFIT_AND_LOSS_STATEMENT')
-      }
-      if (entrepreneur.limitedCompany.selected) {
-        if (entrepreneur.limitedCompany.incomeSource === 'ATTACHMENTS') {
-          result.add('PAYSLIP')
-        }
-        result.add('ACCOUNTANT_REPORT_LLC')
-      }
-      if (entrepreneur.partnership) {
-        result.add('PROFIT_AND_LOSS_STATEMENT').add('ACCOUNTANT_REPORT')
-      }
-      if (entrepreneur.lightEntrepreneur) {
-        result.add('SALARY')
-      }
-    }
-    if (gross.selected || entrepreneur.selected) {
-      if (student) result.add('PROOF_OF_STUDIES')
-      if (alimonyPayer) result.add('ALIMONY_PAYOUT')
-    }
-
-    return result
-  }, [
-    alimonyPayer,
-    entrepreneur.lightEntrepreneur,
-    entrepreneur.limitedCompany.incomeSource,
-    entrepreneur.limitedCompany.selected,
-    entrepreneur.partnership,
-    entrepreneur.selected,
-    entrepreneur.selfEmployed.estimation,
-    entrepreneur.selfEmployed.selected,
-    entrepreneur.startupGrant,
-    gross.incomeSource,
-    gross.otherIncome,
-    gross.selected,
-    student
-  ])
-}
 
 const HighestFeeInfo = styled(P).attrs({ noMargin: true })`
   margin-left: ${defaultMargins.XL};
@@ -1332,20 +1322,3 @@ const ResponsiveFixedSpaceRow = styled(FixedSpaceRow)`
 const Confidential = styled.div`
   flex: 0 0 auto;
 `
-
-const LabelWithError = React.memo(function LabelWithError({
-  label,
-  showError,
-  errorText
-}: {
-  label: string
-  showError: boolean
-  errorText: string
-}) {
-  return (
-    <FixedSpaceRow>
-      <Label>{label}</Label>
-      {showError ? <LabelError text={errorText} /> : null}
-    </FixedSpaceRow>
-  )
-})

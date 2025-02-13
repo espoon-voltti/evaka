@@ -25,16 +25,6 @@ export interface Accountant {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.Attachment
-*/
-export interface Attachment {
-  contentType: string
-  id: AttachmentId
-  name: string
-  uploadedByEmployee: boolean
-}
-
-/**
 * Generated from fi.espoo.evaka.incomestatement.ChildBasicInfo
 */
 export interface ChildBasicInfo {
@@ -94,7 +84,7 @@ export namespace IncomeStatement {
   */
   export interface ChildIncome {
     type: 'CHILD_INCOME'
-    attachments: Attachment[]
+    attachments: IncomeStatementAttachment[]
     createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     firstName: string
@@ -135,7 +125,7 @@ export namespace IncomeStatement {
   export interface Income {
     type: 'INCOME'
     alimonyPayer: boolean
-    attachments: Attachment[]
+    attachments: IncomeStatementAttachment[]
     createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     entrepreneur: Entrepreneur | null
@@ -160,6 +150,61 @@ export namespace IncomeStatement {
 */
 export type IncomeStatement = IncomeStatement.ChildIncome | IncomeStatement.HighestFee | IncomeStatement.Income
 
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementAttachment
+*/
+export interface IncomeStatementAttachment {
+  contentType: string
+  id: AttachmentId
+  name: string
+  type: IncomeStatementAttachmentType | null
+  uploadedByEmployee: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
+*/
+export const incomeStatementAttachmentTypes = [
+  'PAYSLIP_GROSS',
+  'PENSION',
+  'ADULT_EDUCATION_ALLOWANCE',
+  'SICKNESS_ALLOWANCE',
+  'PARENTAL_ALLOWANCE',
+  'HOME_CARE_ALLOWANCE',
+  'FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE',
+  'ALIMONY',
+  'INTEREST_AND_INVESTMENT_INCOME',
+  'RENTAL_INCOME',
+  'UNEMPLOYMENT_ALLOWANCE',
+  'LABOUR_MARKET_SUBSIDY',
+  'ADJUSTED_DAILY_ALLOWANCE',
+  'JOB_ALTERNATION_COMPENSATION',
+  'REWARD_OR_BONUS',
+  'RELATIVE_CARE_SUPPORT',
+  'BASIC_INCOME',
+  'FOREST_INCOME',
+  'FAMILY_CARE_COMPENSATION',
+  'REHABILITATION',
+  'EDUCATION_ALLOWANCE',
+  'GRANT',
+  'APPRENTICESHIP_SALARY',
+  'ACCIDENT_INSURANCE_COMPENSATION',
+  'OTHER_INCOME',
+  'STARTUP_GRANT',
+  'PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED',
+  'ACCOUNTANT_REPORT_LLC',
+  'PAYSLIP_LLC',
+  'ACCOUNTANT_REPORT_PARTNERSHIP',
+  'PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP',
+  'SALARY',
+  'PROOF_OF_STUDIES',
+  'ALIMONY_PAYOUT',
+  'OTHER',
+  'CHILD_INCOME'
+] as const
+
+export type IncomeStatementAttachmentType = typeof incomeStatementAttachmentTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
@@ -335,6 +380,14 @@ export interface SelfEmployed {
 export interface SetIncomeStatementHandledBody {
   handled: boolean
   handlerNote: string
+}
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody
+*/
+export interface UpdateSentIncomeStatementBody {
+  attachmentIds: AttachmentId[]
+  otherInfo: string
 }
 
 

@@ -1649,6 +1649,7 @@ sealed interface Action {
     enum class IncomeStatement(
         override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>
     ) : ScopedAction<IncomeStatementId> {
+        READ(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         UPDATE_HANDLED(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         UPLOAD_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 

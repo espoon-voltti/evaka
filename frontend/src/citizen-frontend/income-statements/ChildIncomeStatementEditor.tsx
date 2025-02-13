@@ -26,10 +26,10 @@ import { renderResult } from '../async-rendering'
 import ChildIncomeStatementForm from './ChildIncomeStatementForm'
 import { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import {
-  childIncomeStatementQuery,
   childIncomeStatementStartDatesQuery,
   createChildIncomeStatementMutation,
-  updateChildIncomeStatementMutation
+  incomeStatementQuery,
+  updateIncomeStatementMutation
 } from './queries'
 import { fromBody } from './types/body'
 import * as Form from './types/form'
@@ -47,9 +47,7 @@ function useInitialEditorState(
   id: IncomeStatementId | undefined
 ): Result<EditorState> {
   const incomeStatement = useQueryResult(
-    id
-      ? childIncomeStatementQuery({ childId, incomeStatementId: id })
-      : constantQuery(null)
+    id ? incomeStatementQuery({ incomeStatementId: id }) : constantQuery(null)
   )
   const startDates = useQueryResult(
     childIncomeStatementStartDatesQuery({ childId })
@@ -110,8 +108,8 @@ export default React.memo(function ChildIncomeStatementEditor() {
   const { mutateAsync: createChildIncomeStatement } = useMutationResult(
     createChildIncomeStatementMutation
   )
-  const { mutateAsync: updateChildIncomeStatement } = useMutationResult(
-    updateChildIncomeStatementMutation
+  const { mutateAsync: updateIncomeStatement } = useMutationResult(
+    updateIncomeStatementMutation
   )
 
   const draftBody = useMemo(
@@ -127,12 +125,16 @@ export default React.memo(function ChildIncomeStatementEditor() {
   return renderResult(
     combine(state, draftBody, validatedBody),
     ([{ status, formData, startDates }, draftBody, validatedBody]) => {
+      if (status !== 'DRAFT') {
+        navigateToList()
+        return null
+      }
+
       const save = (draft: boolean) => {
         const body = draft ? draftBody : validatedBody
         if (body) {
           if (incomeStatementId) {
-            return updateChildIncomeStatement({
-              childId,
+            return updateIncomeStatement({
               incomeStatementId,
               body,
               draft

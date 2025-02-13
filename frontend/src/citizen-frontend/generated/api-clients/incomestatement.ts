@@ -13,6 +13,7 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PagedIncomeStatements } from 'lib-common/generated/api-types/incomestatement'
 import { PersonId } from 'lib-common/generated/api-types/shared'
+import { UpdateSentIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonIncomeStatement } from 'lib-common/generated/api-types/incomestatement'
@@ -78,23 +79,6 @@ export async function deleteIncomeStatement(
     method: 'DELETE'
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getChildIncomeStatement
-*/
-export async function getChildIncomeStatement(
-  request: {
-    childId: PersonId,
-    incomeStatementId: IncomeStatementId
-  }
-): Promise<IncomeStatement> {
-  const { data: json } = await client.request<JsonOf<IncomeStatement>>({
-    url: uri`/citizen/income-statements/child/${request.childId}/${request.incomeStatementId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonIncomeStatement(json)
 }
 
 
@@ -196,47 +180,6 @@ export async function getIncomeStatements(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.removeChildIncomeStatement
-*/
-export async function removeChildIncomeStatement(
-  request: {
-    childId: PersonId,
-    id: IncomeStatementId
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/citizen/income-statements/child/${request.childId}/${request.id}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.updateChildIncomeStatement
-*/
-export async function updateChildIncomeStatement(
-  request: {
-    childId: PersonId,
-    incomeStatementId: IncomeStatementId,
-    draft: boolean,
-    body: IncomeStatementBody
-  }
-): Promise<void> {
-  const params = createUrlSearchParams(
-    ['draft', request.draft.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/citizen/income-statements/child/${request.childId}/${request.incomeStatementId}`.toString(),
-    method: 'PUT',
-    params,
-    data: request.body satisfies JsonCompatible<IncomeStatementBody>
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.updateIncomeStatement
 */
 export async function updateIncomeStatement(
@@ -254,6 +197,24 @@ export async function updateIncomeStatement(
     method: 'PUT',
     params,
     data: request.body satisfies JsonCompatible<IncomeStatementBody>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.updateSentIncomeStatement
+*/
+export async function updateSentIncomeStatement(
+  request: {
+    incomeStatementId: IncomeStatementId,
+    body: UpdateSentIncomeStatementBody
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/income-statements/${request.incomeStatementId}/update-sent`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<UpdateSentIncomeStatementBody>
   })
   return json
 }

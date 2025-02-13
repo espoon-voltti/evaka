@@ -384,6 +384,9 @@ export class FileInput extends Element {
   }
 }
 
+export const testFileName = 'test_file.png'
+export const testFilePath = `src/e2e-test/assets/${testFileName}`
+
 export class FileUpload extends Element {
   #input = new FileInput(this.findByDataQa('btn-upload-file'))
   #uploadedFilesContainer = this.findByDataQa('uploaded-files')
@@ -398,6 +401,10 @@ export class FileUpload extends Element {
         `:nth-child(${fileCountBefore + 1}) [data-qa="file-download-button"]`
       )
       .waitUntilVisible()
+  }
+
+  async uploadTestFile() {
+    await this.upload(testFilePath)
   }
 }
 

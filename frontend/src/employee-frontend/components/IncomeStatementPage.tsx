@@ -15,12 +15,18 @@ import {
   EstimatedIncome,
   Gross,
   IncomeStatement,
+  IncomeStatementAttachment,
+  IncomeStatementAttachmentType,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
 import {
   IncomeStatementId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
+import {
+  numAttachments,
+  toIncomeStatementAttachments
+} from 'lib-common/income-statements'
 import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -29,6 +35,7 @@ import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -64,8 +71,8 @@ export default React.memo(function IncomeStatementPage() {
     [personId]
   )
   const [incomeStatement, loadIncomeStatement] = useApiState(
-    () => getIncomeStatementResult({ personId, incomeStatementId }),
-    [personId, incomeStatementId]
+    () => getIncomeStatementResult({ incomeStatementId }),
+    [incomeStatementId]
   )
 
   const onUpdateHandled = useCallback(
@@ -406,25 +413,51 @@ function ChildIncomeInfo({
   )
 }
 
-function CitizenAttachments({ attachments }: { attachments: Attachment[] }) {
+const CitizenAttachments = React.memo(function CitizenAttachments({
+  attachments
+}: {
+  attachments: IncomeStatementAttachment[]
+}) {
   const { i18n } = useTranslation()
+  const incomeStatementAttachments = toIncomeStatementAttachments(attachments)
+  const noAttachments = numAttachments(incomeStatementAttachments) === 0
   return (
     <>
       <H2>{i18n.incomeStatement.citizenAttachments.title}</H2>
-      {attachments.length === 0 ? (
+      {noAttachments ? (
         <p data-qa="no-attachments">
           {i18n.incomeStatement.citizenAttachments.noAttachments}
         </p>
-      ) : (
+      ) : !incomeStatementAttachments.typed ? (
         <Row
           label={`${i18n.incomeStatement.attachments}:`}
           value={<UploadedFiles files={attachments} />}
           dataQa="attachments"
         />
+      ) : (
+        <Table>
+          <Tbody>
+            {Object.entries(incomeStatementAttachments.attachmentsByType).map(
+              ([type, attachments]) => {
+                const attachmentType = type as IncomeStatementAttachmentType
+                return (
+                  <Tr key={attachmentType}>
+                    <Td>
+                      {i18n.incomeStatement.attachmentNames[attachmentType]}
+                    </Td>
+                    <Td>
+                      <UploadedFiles files={attachments} />
+                    </Td>
+                  </Tr>
+                )
+              }
+            )}
+          </Tbody>
+        </Table>
       )}
     </>
   )
-}
+})
 
 function UploadedFiles({ files }: { files: Attachment[] }) {
   return (
@@ -463,7 +496,7 @@ function EmployeeAttachments({
       <P>{i18n.incomeStatement.employeeAttachments.description}</P>
       <FileUpload
         files={attachments}
-        uploadHandler={incomeStatementAttachment(incomeStatementId)}
+        uploadHandler={incomeStatementAttachment(incomeStatementId, 'OTHER')}
         onUploaded={onUploaded}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}

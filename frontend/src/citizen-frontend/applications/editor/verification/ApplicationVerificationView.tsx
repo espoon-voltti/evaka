@@ -15,13 +15,16 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faInfo } from 'lib-icons'
 
 import BasicsSection from '../../../applications/editor/verification/BasicsSection'
 import UnitPreferenceSection from '../../../applications/editor/verification/UnitPreferenceSection'
 import { useTranslation } from '../../../localization'
+import {
+  getShiftCareAttachmentsValidStatus,
+  getUrgencyAttachmentValidStatus
+} from '../validations'
 
 import AdditionalDetailsSection from './AdditionalDetailsSection'
 import ContactInfoSection from './ContactInfoSection'
@@ -52,14 +55,18 @@ export default React.memo(function ApplicationVerificationViewDaycare({
 }: DaycareApplicationVerificationViewProps) {
   const t = useTranslation()
   const missingUrgencyAttachments =
-    formData.serviceNeed.urgent &&
-    formData.serviceNeed.urgencyAttachments.length === 0 &&
-    featureFlags.urgencyAttachments
+    getUrgencyAttachmentValidStatus(
+      formData.serviceNeed.urgent,
+      formData.serviceNeed.urgencyAttachments
+    ) === 'notify'
+  const missingShiftCareAttachments =
+    getShiftCareAttachmentsValidStatus(
+      formData.serviceNeed.shiftCare,
+      formData.serviceNeed.shiftCareAttachments
+    ) === 'notify'
 
   const missingAttachments =
-    missingUrgencyAttachments ||
-    (formData.serviceNeed.shiftCare &&
-      formData.serviceNeed.shiftCareAttachments.length === 0)
+    missingUrgencyAttachments || missingShiftCareAttachments
   return (
     <Container>
       <ContentArea opaque>
@@ -83,15 +90,11 @@ export default React.memo(function ApplicationVerificationViewDaycare({
                     {t.applications.editor.verification.attachmentBox.urgency}
                   </li>
                 )}
-                {formData.serviceNeed.shiftCare &&
-                  formData.serviceNeed.shiftCareAttachments.length === 0 && (
-                    <li>
-                      {
-                        t.applications.editor.verification.attachmentBox
-                          .shiftCare
-                      }
-                    </li>
-                  )}
+                {missingShiftCareAttachments && (
+                  <li>
+                    {t.applications.editor.verification.attachmentBox.shiftCare}
+                  </li>
+                )}
               </ul>
               <P>
                 <a href="#" onClick={closeVerification} role="button">

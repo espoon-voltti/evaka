@@ -69,6 +69,7 @@ import fi.espoo.evaka.holidayperiod.createOpenRangesQuestionnaire
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.incomestatement.updateIncomeStatementHandled
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
@@ -164,6 +165,7 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.HtmlSafe
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
@@ -584,6 +586,32 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/income-statement")
     fun createIncomeStatement(db: Database, @RequestBody body: DevIncomeStatement) {
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    }
+
+    data class UpdateIncomeStatementHandledBody(
+        val employeeId: EmployeeId,
+        val incomeStatementId: IncomeStatementId,
+        val note: String,
+        val handled: Boolean,
+    )
+
+    @PostMapping("/income-statement/update-handled")
+    fun updateIncomeStatementHandled(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody body: UpdateIncomeStatementHandledBody,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                it.updateIncomeStatementHandled(
+                    AuthenticatedUser.Employee(body.employeeId, setOf()),
+                    clock.now(),
+                    body.incomeStatementId,
+                    body.note,
+                    body.handled,
+                )
+            }
+        }
     }
 
     @PostMapping("/income")

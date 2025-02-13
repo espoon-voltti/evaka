@@ -1119,6 +1119,16 @@ export interface SfiMessage {
 export type StaffAttendancePlanId = Id<'StaffAttendancePlan'>
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.UpdateIncomeStatementHandledBody
+*/
+export interface UpdateIncomeStatementHandledBody {
+  employeeId: EmployeeId
+  handled: boolean
+  incomeStatementId: IncomeStatementId
+  note: string
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 */
 export interface VoucherValueDecision {

@@ -29,14 +29,14 @@ class AttachmentService(
     }
 
     /** Saves an attachment to both S3 and the database */
-    fun saveOrphanAttachment(
+    fun <T : Enum<T>> saveOrphanAttachment(
         dbc: Database.Connection,
         user: AuthenticatedUser,
         clock: EvakaClock,
         fileName: String,
         bytes: ByteArray,
         contentType: String,
-        type: AttachmentType? = null,
+        type: T? = null,
     ): AttachmentId {
         val id =
             dbc.transaction { tx ->

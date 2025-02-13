@@ -62,12 +62,11 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             }
     }
 
-    @GetMapping("/person/{personId}/{incomeStatementId}")
+    @GetMapping("/{incomeStatementId}")
     fun getIncomeStatement(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         return db.connect { dbc ->
@@ -76,17 +75,13 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Person.READ_INCOME_STATEMENTS,
-                        personId,
+                        Action.IncomeStatement.READ,
+                        incomeStatementId,
                     )
-                    tx.readIncomeStatementForPerson(
-                        user = user,
-                        personId = personId,
-                        incomeStatementId = incomeStatementId,
-                    )
+                    tx.readIncomeStatement(user = user, incomeStatementId = incomeStatementId)
                 } ?: throw NotFound("No such income statement")
             }
-            .also { Audit.IncomeStatementReadOfPerson.log(targetId = AuditId(incomeStatementId)) }
+            .also { Audit.IncomeStatementRead.log(targetId = AuditId(incomeStatementId)) }
     }
 
     data class SetIncomeStatementHandledBody(val handled: Boolean, val handlerNote: String)

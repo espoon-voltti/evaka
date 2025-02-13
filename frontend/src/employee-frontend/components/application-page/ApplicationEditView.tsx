@@ -14,14 +14,12 @@ import { swapElements } from 'lib-common/array'
 import DateRange from 'lib-common/date-range'
 import {
   Address,
+  ApplicationAttachmentType,
   ApplicationDetails,
   FutureAddress,
   PersonBasics
 } from 'lib-common/generated/api-types/application'
-import {
-  Attachment,
-  AttachmentType
-} from 'lib-common/generated/api-types/attachment'
+import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -188,7 +186,7 @@ export default React.memo(function ApplicationEditView({
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
   const onAttachmentUploaded = useCallback(
-    (type: AttachmentType) => (attachment: Attachment) =>
+    (type: ApplicationAttachmentType) => (attachment: Attachment) =>
       setApplication(
         (prev) =>
           prev && {

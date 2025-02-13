@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.application
 
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPersonById
@@ -146,13 +145,19 @@ data class ApplicationDetails(
         }
 }
 
+enum class ApplicationAttachmentType {
+    URGENCY,
+    EXTENDED_CARE,
+    SERVICE_WORKER_ATTACHMENT,
+}
+
 data class ApplicationAttachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
     val updated: HelsinkiDateTime,
     val receivedAt: HelsinkiDateTime,
-    val type: AttachmentType,
+    val type: ApplicationAttachmentType,
     val uploadedByEmployee: EmployeeId?,
     val uploadedByPerson: PersonId?,
 )

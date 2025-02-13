@@ -10,6 +10,7 @@ import LocalDate from 'lib-common/local-date'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
@@ -127,12 +128,25 @@ export default React.memo(function PreferredStartSubSection({
               <>
                 <Gap size="s" />
 
-                <strong>
-                  {
-                    t.applications.editor.serviceNeed.urgent.attachmentsMessage
-                      .subtitle
-                  }
-                </strong>
+                <AdaptiveFlex>
+                  <strong>
+                    {
+                      t.applications.editor.serviceNeed.urgent
+                        .attachmentsMessage.subtitle
+                    }
+                  </strong>
+                  {verificationRequested &&
+                    errors.urgencyAttachments?.arrayErrors && (
+                      <AlertBox
+                        message={
+                          t.validationErrors[
+                            errors.urgencyAttachments.arrayErrors
+                          ]
+                        }
+                        thin
+                      />
+                    )}
+                </AdaptiveFlex>
 
                 <Gap size="s" />
 

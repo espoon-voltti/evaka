@@ -286,6 +286,11 @@ interface BaseFeatureFlags {
   multiSelectDeparture?: boolean
 
   /**
+   * Missing attachments as an error
+   */
+  requireAttachments?: boolean
+
+  /**
    * Enable support for citizen weak login
    */
   weakLogin?: boolean

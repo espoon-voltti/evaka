@@ -33,6 +33,14 @@ export function scrollToRef(
   )
 }
 
+export function scrollToElement(
+  element: HTMLElement,
+  timeout = 0,
+  blockPosition: ScrollLogicalPosition = 'start'
+) {
+  scrollIntoViewWithTimeout(() => element, timeout, blockPosition)
+}
+
 export function scrollRefIntoView(
   ref: MutableRefObject<HTMLElement | null>,
   timeout = 0,

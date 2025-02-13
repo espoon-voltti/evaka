@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.db.Row
@@ -39,9 +40,25 @@ enum class IncomeStatementType : DatabaseEnum {
     override val sqlType: String = "income_statement_type"
 }
 
-private fun selectQuery(single: Boolean, isCitizen: Boolean): String {
-    // language=SQL
-    return """
+private fun selectQuery(
+    isCitizen: Boolean,
+    extraPredicate: Predicate,
+    ordering: QuerySql = QuerySql { sql("") },
+) = QuerySql {
+    val attachmentVisibility =
+        if (isCitizen) {
+            Predicate { where("$it.type <> 'EMPLOYEE'") }
+        } else {
+            Predicate.alwaysTrue()
+        }
+    val statusVisibility =
+        if (isCitizen) {
+            Predicate.alwaysTrue()
+        } else {
+            Predicate { where("$it.status <> 'DRAFT'") }
+        }
+    sql(
+        """
 SELECT
     ist.id,
     ist.person_id,
@@ -85,23 +102,35 @@ SELECT
         'id', id, 
         'name', name,
         'contentType', content_type,
+        'type', CASE WHEN type = '' THEN NULL ELSE type END,
         'uploadedByEmployee', uploaded_by_employee
       )), '[]'::jsonb) FROM (
-        SELECT a.id, a.name, content_type, eu.type = 'EMPLOYEE' AS uploaded_by_employee
+        SELECT a.id, a.name, a.content_type, a.type, eu.type = 'EMPLOYEE' AS uploaded_by_employee
         FROM attachment a
         JOIN evaka_user eu ON a.uploaded_by = eu.id
         WHERE a.income_statement_id = ist.id 
-        ${if (isCitizen) "AND eu.type != 'EMPLOYEE'" else ""}
+        AND ${predicate(attachmentVisibility.forTable("eu"))}
         ORDER BY a.created
     ) s) AS attachments,
-   COUNT(*) OVER () AS count
+    COUNT(*) OVER () AS count
 FROM income_statement ist 
-    JOIN person p ON p.id = ist.person_id
-WHERE person_id = :personId
-${if (!isCitizen) "AND ist.status != 'DRAFT'" else ""}
-${if (single) "AND ist.id = :id" else "ORDER BY start_date DESC LIMIT :limit OFFSET :offset"}
-        """
+JOIN person p ON p.id = ist.person_id
+WHERE ${predicate(statusVisibility.forTable("ist"))}
+AND ${predicate(extraPredicate.forTable("ist"))}
+${subquery(ordering)}
+"""
+    )
 }
+
+fun queryById(id: IncomeStatementId, isCitizen: Boolean) =
+    selectQuery(isCitizen, Predicate { where("ist.id = ${bind(id)}") })
+
+fun queryByPerson(personId: PersonId, isCitizen: Boolean, limit: Int, offset: Int) =
+    selectQuery(
+        isCitizen,
+        Predicate { where("ist.person_id = ${bind(personId)}") },
+        QuerySql { sql("ORDER BY start_date DESC LIMIT ${bind(limit)} OFFSET ${bind(offset)}") },
+    )
 
 private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
     val id = column<IncomeStatementId>("id")
@@ -259,24 +288,18 @@ fun Database.Read.readIncomeStatementsForPerson(
     pageSize: Int,
 ): PagedIncomeStatements {
     val isCitizen = user is AuthenticatedUser.Citizen
-    @Suppress("DEPRECATION")
-    return createQuery(selectQuery(single = false, isCitizen = isCitizen))
-        .bind("personId", personId)
-        .bind("offset", (page - 1) * pageSize)
-        .bind("limit", pageSize)
+    return createQuery {
+            queryByPerson(personId, isCitizen, limit = pageSize, offset = (page - 1) * pageSize)
+        }
         .mapToPaged(::PagedIncomeStatements, pageSize) { mapIncomeStatement(isCitizen = isCitizen) }
 }
 
-fun Database.Read.readIncomeStatementForPerson(
+fun Database.Read.readIncomeStatement(
     user: AuthenticatedUser,
-    personId: PersonId,
     incomeStatementId: IncomeStatementId,
 ): IncomeStatement? {
     val isCitizen = user is AuthenticatedUser.Citizen
-    @Suppress("DEPRECATION")
-    return createQuery(selectQuery(single = true, isCitizen = isCitizen))
-        .bind("personId", personId)
-        .bind("id", incomeStatementId)
+    return createQuery { queryById(incomeStatementId, isCitizen) }
         .exactlyOneOrNull { mapIncomeStatement(isCitizen = isCitizen) }
 }
 
@@ -518,6 +541,25 @@ WHERE id = :id
         .bind("sentAt", if (draft) null else now)
         .also { it.bindIncomeStatementBody(body) }
         .updateExactlyOne()
+}
+
+fun Database.Transaction.updateIncomeStatementOtherInfo(
+    incomeStatementId: IncomeStatementId,
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
+    otherInfo: String,
+) {
+    execute {
+        sql(
+            """
+UPDATE income_statement
+SET modified_at = ${bind(now)},
+    modified_by = ${bind(userId)},
+    other_info = ${bind(otherInfo)}
+WHERE id = ${bind(incomeStatementId)}
+"""
+        )
+    }
 }
 
 fun Database.Transaction.updateIncomeStatementHandled(

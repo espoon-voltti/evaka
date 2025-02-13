@@ -7,8 +7,10 @@ import React, { useCallback } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { tabletMin } from 'lib-components/breakpoints'
-import { fontWeights } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { fontWeights, Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fasExclamationTriangle } from 'lib-icons'
 
 export type SetStateCallback<T> = (fn: (prev: T) => T) => void
@@ -30,6 +32,23 @@ export function useFieldDispatch<T, K extends keyof T>(
   const setState = useFieldSetState(onChange, key)
   return useCallback((value: T[K]) => setState(() => value), [setState])
 }
+
+export const LabelWithError = React.memo(function LabelWithError({
+  label,
+  showError,
+  errorText
+}: {
+  label: string
+  showError: boolean
+  errorText: string
+}) {
+  return (
+    <FixedSpaceRow>
+      <Label>{label}</Label>
+      {showError ? <LabelError text={errorText} /> : null}
+    </FixedSpaceRow>
+  )
+})
 
 export function identity<T>(value: T): T {
   return value
@@ -94,4 +113,36 @@ export const LabelError = styled(
   > :first-child {
     margin-right: ${defaultMargins.xs};
   }
+`
+
+export const Row = React.memo(function Row({
+  label,
+  light,
+  value,
+  translate,
+  'data-qa': dataQa
+}: {
+  label: string
+  light?: boolean
+  value: React.ReactNode
+  translate?: 'yes' | 'no'
+  'data-qa'?: string
+}) {
+  return (
+    <>
+      <ListGrid>
+        <LabelColumn light={light}>{label}</LabelColumn>
+        <div translate={translate} data-qa={dataQa}>
+          {value}
+        </div>
+      </ListGrid>
+      <Gap size="s" />
+    </>
+  )
+})
+
+const LabelColumn = styled(Label)<{ light?: boolean }>`
+  flex: 0 0 auto;
+  width: 250px;
+  ${(p) => (p.light ? 'font-weight: 400;' : '')}
 `

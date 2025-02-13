@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
+
 import {
   Checkbox,
   Page,
@@ -9,14 +11,16 @@ import {
   TextInput,
   Element,
   ElementCollection,
-  EnvType
+  EnvType,
+  FileUpload
 } from '../../utils/page'
 
 export default class CitizenIncomePage {
-  requiredAttachments: Element
+  missingAttachments: Element
   rows: ElementCollection
   assureCheckBox: Checkbox
   #entrepreneurDate: TextInput
+  invalidForm: Element
   validFromDate: TextInput
   validToDate: TextInput
   incomeStartDateInfo: Element
@@ -26,7 +30,7 @@ export default class CitizenIncomePage {
     private readonly page: Page,
     env: EnvType
   ) {
-    this.requiredAttachments = page.findByDataQa('required-attachments')
+    this.missingAttachments = page.findByDataQa('missing-attachments')
     this.rows = page
       .findByDataQa(
         env === 'desktop' ? 'income-statements-table' : 'income-statements-list'
@@ -36,6 +40,7 @@ export default class CitizenIncomePage {
     this.#entrepreneurDate = new TextInput(
       page.findByDataQa('entrepreneur-start-date')
     )
+    this.invalidForm = page.findByDataQa('invalid-form')
     this.validFromDate = new TextInput(page.findByDataQa('income-start-date'))
     this.validToDate = new TextInput(page.findByDataQa('income-end-date'))
     this.incomeStartDateInfo = page.findByDataQa('income-start-date-info')
@@ -66,6 +71,14 @@ export default class CitizenIncomePage {
   async setValidToDate(date: string) {
     await this.validToDate.fill(date)
     await this.page.findByDataQa('title').click()
+  }
+
+  #missingAttachment(attachmentType: IncomeStatementAttachmentType) {
+    return this.missingAttachments.findByDataQa(`attachment-${attachmentType}`)
+  }
+
+  async assertMissingAttachment(attachmentType: IncomeStatementAttachmentType) {
+    await this.#missingAttachment(attachmentType).waitUntilVisible()
   }
 
   async saveDraft() {
@@ -121,6 +134,10 @@ export default class CitizenIncomePage {
     } else {
       await elem.uncheck()
     }
+  }
+
+  attachmentInput(type: IncomeStatementAttachmentType) {
+    return new FileUpload(this.page.find(`#attachment-section-${type}`))
   }
 
   async toggleEntrepreneurStartupGrant(check: boolean) {

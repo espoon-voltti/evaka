@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.application.notes.getServiceWorkerApplicationNote
 import fi.espoo.evaka.application.notes.updateServiceWorkerApplicationNote
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
@@ -356,14 +355,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             uploadAttachment(
                 applicationId,
                 AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                AttachmentType.EXTENDED_CARE,
+                ApplicationAttachmentType.EXTENDED_CARE,
             )
         )
         assertTrue(
             uploadAttachment(
                 applicationId,
                 AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                AttachmentType.URGENCY,
+                ApplicationAttachmentType.URGENCY,
             )
         )
 
@@ -374,12 +373,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE attachment SET received_at = ${bind(now.plusWeeks(1))} WHERE type = ${bind(AttachmentType.EXTENDED_CARE)} AND application_id = ${bind(applicationId)}"
+                    "UPDATE attachment SET received_at = ${bind(now.plusWeeks(1))} WHERE type = ${bind(ApplicationAttachmentType.EXTENDED_CARE)} AND application_id = ${bind(applicationId)}"
                 )
             }
             tx.execute {
                 sql(
-                    "UPDATE attachment SET received_at = ${bind(now.plusDays(3))} WHERE type = ${bind(AttachmentType.URGENCY)} AND application_id = ${bind(applicationId)}"
+                    "UPDATE attachment SET received_at = ${bind(now.plusDays(3))} WHERE type = ${bind(ApplicationAttachmentType.URGENCY)} AND application_id = ${bind(applicationId)}"
                 )
             }
         }

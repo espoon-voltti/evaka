@@ -168,20 +168,15 @@ fun createValidatedIncomeStatement(
     val incomeStatementId = tx.insertIncomeStatement(user.evakaUserId, now, personId, body, draft)
 
     when (body) {
-        is IncomeStatementBody.Income ->
-            tx.associateOrphanAttachments(
-                user.evakaUserId,
-                AttachmentParent.IncomeStatement(incomeStatementId),
-                body.attachmentIds,
-            )
-        is IncomeStatementBody.ChildIncome -> {
-            tx.associateOrphanAttachments(
-                user.evakaUserId,
-                AttachmentParent.IncomeStatement(incomeStatementId),
-                body.attachmentIds,
-            )
-        }
-        else -> {}
+        is IncomeStatementBody.Income -> body.attachmentIds
+        is IncomeStatementBody.ChildIncome -> body.attachmentIds
+        else -> null
+    }?.also { attachmentIds ->
+        tx.associateOrphanAttachments(
+            user.evakaUserId,
+            AttachmentParent.IncomeStatement(incomeStatementId),
+            attachmentIds,
+        )
     }
 
     return incomeStatementId
@@ -192,10 +187,66 @@ private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean 
     estimatedIncome?.incomeEndDate == null ||
         estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
 
-data class Attachment(
+// These are ordered by the order in which they are viewed in the frontend
+@ConstList("incomeStatementAttachmentTypes")
+enum class IncomeStatementAttachmentType {
+    PAYSLIP_GROSS,
+
+    // These are the entries of `OtherIncome` in no particular order
+    PENSION,
+    ADULT_EDUCATION_ALLOWANCE,
+    SICKNESS_ALLOWANCE,
+    PARENTAL_ALLOWANCE,
+    HOME_CARE_ALLOWANCE,
+    FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE,
+    ALIMONY,
+    INTEREST_AND_INVESTMENT_INCOME,
+    RENTAL_INCOME,
+    UNEMPLOYMENT_ALLOWANCE,
+    LABOUR_MARKET_SUBSIDY,
+    ADJUSTED_DAILY_ALLOWANCE,
+    JOB_ALTERNATION_COMPENSATION,
+    REWARD_OR_BONUS,
+    RELATIVE_CARE_SUPPORT,
+    BASIC_INCOME,
+    FOREST_INCOME,
+    FAMILY_CARE_COMPENSATION,
+    REHABILITATION,
+    EDUCATION_ALLOWANCE,
+    GRANT,
+    APPRENTICESHIP_SALARY,
+    ACCIDENT_INSURANCE_COMPENSATION,
+    OTHER_INCOME,
+    STARTUP_GRANT,
+
+    // Self-employed
+    PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED,
+
+    // Limited company
+    ACCOUNTANT_REPORT_LLC,
+    PAYSLIP_LLC,
+
+    // Partnership
+    ACCOUNTANT_REPORT_PARTNERSHIP,
+    PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP,
+
+    // Light entrepreneur
+    SALARY,
+
+    // Other info
+    PROOF_OF_STUDIES,
+    ALIMONY_PAYOUT,
+    OTHER,
+
+    // Child's income statement only has one attachment type
+    CHILD_INCOME,
+}
+
+data class IncomeStatementAttachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
+    val type: IncomeStatementAttachmentType?,
     val uploadedByEmployee: Boolean,
 )
 
@@ -249,7 +300,7 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val handledAt: HelsinkiDateTime?,
         override val status: IncomeStatementStatus,
         override val handlerNote: String,
-        val attachments: List<Attachment>,
+        val attachments: List<IncomeStatementAttachment>,
     ) : IncomeStatement(IncomeStatementType.INCOME)
 
     @JsonTypeName("CHILD_INCOME")
@@ -267,6 +318,6 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val handledAt: HelsinkiDateTime?,
         override val status: IncomeStatementStatus,
         override val handlerNote: String,
-        val attachments: List<Attachment>,
+        val attachments: List<IncomeStatementAttachment>,
     ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)
 }

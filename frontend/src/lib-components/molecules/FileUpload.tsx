@@ -109,13 +109,14 @@ interface FileUploadProps<T> {
   slimSingleFile?: boolean
   allowedFileTypes?: FileType[]
   buttonText?: string
+  id?: string
 }
 
 const FileUploadContainer = styled.div<{
-  slim: boolean
+  $slim: boolean
 }>`
   display: flex;
-  flex-direction: ${(p) => (p.slim ? 'column' : 'row')};
+  flex-direction: ${(p) => (p.$slim ? 'column' : 'row')};
   flex-wrap: wrap;
   align-items: flex-start;
 `
@@ -336,7 +337,8 @@ function FileUpload<T>({
   disabled = false,
   'data-qa': dataQa,
   allowedFileTypes = defaultAllowedFileTypes,
-  buttonText
+  buttonText,
+  id
 }: FileUploadProps<T>) {
   const i18n = useTranslations().fileUpload
 
@@ -535,7 +537,7 @@ function FileUpload<T>({
   )
 
   return (
-    <FileUploadContainer data-qa={dataQa} slim={slim}>
+    <FileUploadContainer data-qa={dataQa} $slim={slim} id={id}>
       {slimSingleFile ? (
         uploadedFiles.length > 0 ? (
           <></>

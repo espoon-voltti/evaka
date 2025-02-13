@@ -49,6 +49,7 @@ const sv: Translations = {
     add: 'Lägg till',
     show: 'Visa',
     hide: 'Gömma',
+    write: 'Skriv',
     yes,
     no,
     yesno: (value: boolean): string => (value ? yes : no),
@@ -2462,7 +2463,9 @@ const sv: Translations = {
       deductions: 'Avdrag',
       alimony:
         'Jag betalar underhållsbidrag. Jag bifogar en kopia av betalningsverifikatet.',
-      otherInfoLabel: 'Mer information om inkomstuppgifter'
+      otherInfoLabel: 'Mer information om inkomstuppgifter',
+      otherAttachmentInfo:
+        'Om du har andra bilagor som gäller dina inkomster eller avgifter för småbarnspedagogik, kan du bifoga dem här.'
     },
     attachments: {
       title: 'Bilagor som rör inkomsterna och avgifterna för småbarnspedagogik',
@@ -2471,7 +2474,10 @@ const sv: Translations = {
       required: {
         title: 'Obligatoriska bilagor'
       },
+      missingAttachments: 'Saknade bilagor',
+      noMissingAttachments: 'Inga saknade bilagor',
       attachmentNames: {
+        OTHER: 'Övrig bilaga',
         PENSION: 'Beslut om pension',
         ADULT_EDUCATION_ALLOWANCE: 'Beslut om vuxenutbildningsstöd',
         SICKNESS_ALLOWANCE: 'Beslut om sjukdagpenning',
@@ -2501,16 +2507,73 @@ const sv: Translations = {
         INTEREST_AND_INVESTMENT_INCOME:
           'Verifikat över ränte- och dividendinkomster',
         RENTAL_INCOME: 'Verifikat över hyresinkomster',
-        PAYSLIP: 'Senaste lönekvitto',
+        PAYSLIP_GROSS: 'Senaste lönekvitto',
         STARTUP_GRANT: 'Beslut om startpeng',
-        ACCOUNTANT_REPORT: 'Bokförarens utredning av lön och naturaförmåner',
+        ACCOUNTANT_REPORT_PARTNERSHIP:
+          'Bokförarens utredning av lön och naturaförmåner',
+        PAYSLIP_LLC: 'Senaste lönekvitto',
         ACCOUNTANT_REPORT_LLC:
           'Bokförarens utredning av naturaförmåner och dividender',
-        PROFIT_AND_LOSS_STATEMENT: 'Resultaträkning och balansräkning',
+        PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED:
+          'Resultaträkning och balansräkning eller beskattningsbeslut',
+        PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP:
+          'Resultaträkning och balansräkning',
         SALARY: 'Utbetalningsspecifikationer av lön och annan arbetsersättning',
         PROOF_OF_STUDIES:
           'Studieintyg eller beslut om arbetslöshetskassans studieförmån / sysselsättningsfondens utbildningsstöd',
         CHILD_INCOME: 'Kvitton på barnets inkomster'
+      },
+      addAttachment: {
+        OTHER: 'Lägg till övrig bilaga',
+        PENSION: 'Lägg till beslut om pension',
+        ADULT_EDUCATION_ALLOWANCE: 'Lägg till beslut om vuxenutbildningsstöd',
+        SICKNESS_ALLOWANCE: 'Lägg till beslut om sjukdagpenning',
+        PARENTAL_ALLOWANCE:
+          'Lägg till beslut om moderskaps- eller föräldrapenning',
+        HOME_CARE_ALLOWANCE: 'Lägg till beslut om hemvårdsstöd',
+        FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
+          'Lägg till beslut om vårdpenning',
+        ALIMONY: 'Lägg till underhållsavtal eller beslut om underhållsstöd',
+        UNEMPLOYMENT_ALLOWANCE: 'Lägg till beslut om arbetslöshetsdagpenning',
+        LABOUR_MARKET_SUBSIDY: 'Lägg till beslut om arbetsmarknadsstöd',
+        ADJUSTED_DAILY_ALLOWANCE: 'Lägg till beslut om dagpenning',
+        JOB_ALTERNATION_COMPENSATION:
+          'Lägg till verifikat över alterneringsersättning',
+        REWARD_OR_BONUS: 'Lägg till nytt löneintyg eller lönekvitto med bonus',
+        RELATIVE_CARE_SUPPORT: 'Lägg till beslut om stöd för närståendevård',
+        BASIC_INCOME: 'Lägg till beslut om basinkomst',
+        FOREST_INCOME: 'Lägg till verifikat över skogsinkomst',
+        FAMILY_CARE_COMPENSATION:
+          'Lägg till verifikat över arvoden för familjevård',
+        REHABILITATION:
+          'Lägg till beslut om rehabiliteringsstöd eller rehabiliteringspenning',
+        EDUCATION_ALLOWANCE: 'Lägg till beslut om utbildningsdagpenning',
+        GRANT: 'Lägg till verifikat över stipendium',
+        APPRENTICESHIP_SALARY:
+          'Lägg till verifikat över inkomster från läroavtalsutbildning',
+        ACCIDENT_INSURANCE_COMPENSATION:
+          'Lägg till verifikat över ersättning från olycksfallsförsäkring',
+        OTHER_INCOME: 'Lägg till bilagor om övriga inkomster',
+        ALIMONY_PAYOUT: 'Lägg till betalningsverifikat för underhållsbidrag',
+        INTEREST_AND_INVESTMENT_INCOME:
+          'Lägg till verifikat över ränte- och dividendinkomster',
+        RENTAL_INCOME: 'Lägg till verifikat över hyresinkomster',
+        PAYSLIP_GROSS: 'Lägg till senaste lönekvitto',
+        STARTUP_GRANT: 'Lägg till beslut om startpeng',
+        ACCOUNTANT_REPORT_PARTNERSHIP:
+          'Lägg till bokförarens utredning av lön och naturaförmåner',
+        PAYSLIP_LLC: 'Lägg till senaste lönekvitto',
+        ACCOUNTANT_REPORT_LLC:
+          'Lägg till bokförarens utredning av naturaförmåner och dividender',
+        PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED:
+          'Lägg till resultaträkning och balansräkning eller beskattningsbeslut',
+        PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP:
+          'Lägg till resultaträkning och balansräkning',
+        SALARY:
+          'Lägg till utbetalningsspecifikationer av lön och annan arbetsersättning',
+        PROOF_OF_STUDIES:
+          'Lägg till studieintyg eller beslut om arbetslöshetskassans studieförmån / sysselsättningsfondens utbildningsstöd',
+        CHILD_INCOME: 'Lägg till kvitton på barnets inkomster'
       }
     },
     assure: (
@@ -2522,7 +2585,8 @@ const sv: Translations = {
       choose: 'Välj ett alternativ',
       chooseAtLeastOne: 'Välj minst ett alternativ',
       deleteFailed: 'Inkomstutredningen kunde inte raderas',
-      dateRangeInvalid: 'Inkomstuppgifter kan vara giltiga i högst ett år'
+      dateRangeInvalid: 'Inkomstuppgifter kan vara giltiga i högst ett år',
+      attachmentMissing: 'Bilaga saknas'
     },
     table: {
       title: 'Inkomstutredningar',

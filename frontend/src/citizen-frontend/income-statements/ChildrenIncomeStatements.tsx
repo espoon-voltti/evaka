@@ -58,12 +58,9 @@ const ChildIncomeStatementsContainer = styled.div`
   border-width: 1px 0 0 0;
 `
 
-function getLink(
-  childId: ChildId,
-  id: IncomeStatementId,
-  mode: 'view' | 'edit'
-) {
-  return `/child-income/${childId}/${id}/${mode === 'edit' ? 'edit' : ''}`
+function getLink(childId: ChildId, { id, status }: IncomeStatement) {
+  const suffix = status === 'DRAFT' ? 'edit' : ''
+  return `/child-income/${childId}/${id}/${suffix}`
 }
 
 interface TableOrListProps {
@@ -95,7 +92,7 @@ const ChildIncomeStatementsTable = React.memo(
             <Tr key={item.id} data-qa="child-income-statement-row">
               <Td>
                 <Link
-                  to={getLink(childId, item.id, 'view')}
+                  to={getLink(childId, item)}
                   data-qa="view-income-statement"
                 >
                   {item.startDate.format()} - {item.endDate?.format()}
@@ -113,7 +110,7 @@ const ChildIncomeStatementsTable = React.memo(
                     <Dimmed>{t.income.table.handled}</Dimmed>
                   ) : (
                     <>
-                      <Link to={getLink(childId, item.id, 'edit')}>
+                      <Link to={getLink(childId, item)}>
                         <Button
                           appearance="inline"
                           icon={faPen}
@@ -123,7 +120,7 @@ const ChildIncomeStatementsTable = React.memo(
                               : t.income.table.actions.addDetails
                           }
                           onClick={noop}
-                          data-qa="edit-income-statement"
+                          data-qa={`edit-income-statement-${item.status}`}
                         />
                       </Link>
                       <Button
@@ -181,18 +178,17 @@ const ChildIncomeStatementsList = React.memo(
                 {t.income.table.sentAt}:{' '}
                 {item.sentAt?.toLocalDate()?.format() ?? '-'}
               </div>
-              <Link to={getLink(childId, item.id, 'view')}>
+              <Link to={getLink(childId, item)} data-qa="view-income-statement">
                 <Button
                   appearance="inline"
                   icon={faFile}
                   text={t.income.table.actions.view}
                   onClick={noop}
-                  data-qa="view-income-statement"
                 />
               </Link>
               {item.status !== 'HANDLED' && (
                 <>
-                  <Link to={getLink(childId, item.id, 'edit')}>
+                  <Link to={getLink(childId, item)}>
                     <Button
                       appearance="inline"
                       icon={faPen}
@@ -202,7 +198,7 @@ const ChildIncomeStatementsList = React.memo(
                           : t.income.table.actions.addDetails
                       }
                       onClick={noop}
-                      data-qa="edit-income-statement"
+                      data-qa={`edit-income-statement-${item.status}`}
                     />
                   </Link>
                   <Button
@@ -245,14 +241,14 @@ const ChildIncomeStatements = React.memo(function ChildIncomeStatements({
     status: 'row-not-selected'
   })
 
-  const { mutateAsync: deleteChildIncomeStatement } = useMutation(
+  const { mutateAsync: deleteIncomeStatement } = useMutation(
     deleteChildIncomeStatementMutation
   )
 
   const onDelete = useCallback(
     (id: IncomeStatementId) => {
       setDeletionState({ status: 'deleting', rowToDelete: id })
-      deleteChildIncomeStatement({ childId, id })
+      deleteIncomeStatement({ childId, id })
         .then(() => {
           setDeletionState({ status: 'row-not-selected' })
         })
@@ -264,7 +260,7 @@ const ChildIncomeStatements = React.memo(function ChildIncomeStatements({
           })
         })
     },
-    [childId, deleteChildIncomeStatement, setErrorMessage, t]
+    [deleteIncomeStatement, childId, setErrorMessage, t]
   )
 
   return (

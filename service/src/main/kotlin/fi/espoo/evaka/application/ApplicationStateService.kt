@@ -20,7 +20,6 @@ import fi.espoo.evaka.application.notes.getServiceWorkerApplicationNote
 import fi.espoo.evaka.application.notes.updateServiceWorkerApplicationNote
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.attachment.dissociateAttachmentsByApplicationAndType
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
@@ -460,6 +459,7 @@ class ApplicationStateService(
             runAt = clock.now(),
         )
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
 
         tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
@@ -472,8 +472,6 @@ class ApplicationStateService(
                 )
             }
         }
-
-        tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
 
         Audit.ApplicationVerify.log(targetId = AuditId(applicationId))
     }
@@ -1087,7 +1085,7 @@ class ApplicationStateService(
         if (!updatedForm.preferences.urgent) {
             tx.dissociateAttachmentsByApplicationAndType(
                 applicationId,
-                AttachmentType.URGENCY,
+                ApplicationAttachmentType.URGENCY,
                 user.evakaUserId,
             )
         }
@@ -1095,7 +1093,7 @@ class ApplicationStateService(
         if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
             tx.dissociateAttachmentsByApplicationAndType(
                 applicationId,
-                AttachmentType.EXTENDED_CARE,
+                ApplicationAttachmentType.EXTENDED_CARE,
                 user.evakaUserId,
             )
         }
@@ -1163,7 +1161,7 @@ class ApplicationStateService(
         if (!updatedForm.preferences.urgent) {
             tx.dissociateAttachmentsByApplicationAndType(
                 applicationId,
-                AttachmentType.URGENCY,
+                ApplicationAttachmentType.URGENCY,
                 userId,
             )
         }
@@ -1171,7 +1169,7 @@ class ApplicationStateService(
         if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
             tx.dissociateAttachmentsByApplicationAndType(
                 applicationId,
-                AttachmentType.EXTENDED_CARE,
+                ApplicationAttachmentType.EXTENDED_CARE,
                 userId,
             )
         }
