@@ -104,6 +104,30 @@ export function createSamlIntegration<T extends SessionType>(
     return samlMessage.profile
   }
 
+  const validateSamlLogoutMessage = async (
+    req: express.Request
+  ): Promise<Profile | null> => {
+    let samlMessage: { profile: Profile | null; loggedOut: boolean }
+    if (req.method === 'GET') {
+      const originalQuery = url.parse(req.url).query ?? ''
+      samlMessage = await saml.validateRedirectAsync(req.query, originalQuery)
+    } else if (req.method === 'POST') {
+      samlMessage = isSamlPostRequest(req)
+        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await saml.validatePostRequestAsync(req.body)
+        : // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await saml.validatePostResponseAsync(req.body)
+    } else {
+      throw new SamlError(`Unsupported HTTP method ${req.method}`)
+    }
+    if (!samlMessage.loggedOut) {
+      throw new SamlError(
+        'Invalid SAML message type: expected logout request/response'
+      )
+    }
+    return samlMessage.profile
+  }
+
   const login: AsyncRequestHandler = async (req, res) => {
     logAuditEvent(eventCode('sign_in_started'), req, 'Login endpoint called')
     try {
@@ -234,33 +258,15 @@ export function createSamlIntegration<T extends SessionType>(
   const logoutCallback: AsyncRequestHandler = async (req, res) => {
     logAuditEvent(eventCode('sign_out'), req, 'Logout callback called')
 
-    let samlMessage: { profile: Profile | null; loggedOut: boolean }
-    if (req.method === 'GET') {
-      const originalQuery = url.parse(req.url).query ?? ''
-      samlMessage = await saml.validateRedirectAsync(req.query, originalQuery)
-    } else if (req.method === 'POST') {
-      samlMessage = isSamlPostRequest(req)
-        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          await saml.validatePostRequestAsync(req.body)
-        : // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          await saml.validatePostResponseAsync(req.body)
-    } else {
-      throw new SamlError(`Unsupported HTTP method ${req.method}`)
-    }
-    if (!samlMessage.loggedOut) {
-      throw new SamlError(
-        'Invalid SAML message type: expected logout request/response'
-      )
-    }
-
     try {
+      const profile = await validateSamlLogoutMessage(req)
       let url: string
       // There are two scenarios:
       // 1. IDP-initiated logout, and we've just received a logout request -> profile is not null, the SAML transaction
       // is still in progress, and we should redirect the user back to the IDP
       // 2. SP-initiated logout, and we've just received a logout response -> profile is null, the SAML transaction
       // is complete, and we should redirect the user to some meaningful page
-      if (samlMessage.profile) {
+      if (profile) {
         let user: unknown
         const sessionUser = sessions.getUser(req)
         if (sessionUser) {
@@ -271,16 +277,16 @@ export function createSamlIntegration<T extends SessionType>(
         } else {
           // We're possibly doing SLO without a real session (e.g. browser has
           // 3rd party cookies disabled)
-          const logoutToken = createLogoutToken(samlMessage.profile)
+          const logoutToken = createLogoutToken(profile)
           const sessionUser = await sessions.logoutWithToken(logoutToken)
           const userId = SamlProfileIdSchema.safeParse(sessionUser)
           user = userId.success ? userId.data : undefined
         }
-        const profileId = SamlProfileIdSchema.safeParse(samlMessage.profile)
+        const profileId = SamlProfileIdSchema.safeParse(profile)
         const success = profileId.success && _.isEqual(user, profileId.data)
 
         url = await saml.getLogoutResponseUrlAsync(
-          samlMessage.profile,
+          profile,
           // not validated, because the value and its format are specified by the IDP and we're supposed to
           // just pass it back
           getRawUnvalidatedRelayState(req) ?? '',
