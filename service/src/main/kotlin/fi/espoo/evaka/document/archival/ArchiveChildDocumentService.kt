@@ -53,9 +53,8 @@ class ArchiveChildDocumentService(
         val documentContent = documentClient.get(originalLocation)
 
         val masterId =
-            "yleinen" // TODO ei varmuudella tiedossa. Muissa Särmä integraatioissa käytetty esim.
-        // "taloushallinto"
-        // tai "paatoksenteko"
+            "yleinen" // TODO ei vielä varmuudella tiedossa. Muissa Särmä integraatioissa käytetty
+        // esim. "taloushallinto" tai "paatoksenteko"
         val classId =
             "12.01.SL1.RT34" // Arvo perustuu Evaka_Särmä_metatietomääritykset.xlsx -tiedostoon
         val virtualArchiveId =
@@ -69,8 +68,9 @@ class ArchiveChildDocumentService(
             logger.info { "Successfully archived document $documentId" }
         } else {
             logger.error {
-                "Failed to archive document $documentId. Response code: $responseCode, Response body: ${responseBody?.string() ?: "No response body"}"
+                "Failed to archive document $documentId. Response code: $responseCode, Response body: ${responseBody ?: "No response body"}"
             }
+            throw RuntimeException("Failed to archive document $documentId")
         }
     }
 }

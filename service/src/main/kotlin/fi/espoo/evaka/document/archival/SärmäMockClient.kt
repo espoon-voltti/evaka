@@ -6,11 +6,13 @@ package fi.espoo.evaka.document.archival
 
 import fi.espoo.evaka.s3.Document
 
-interface SärmäClientInterface {
-    fun putDocument(
+class SärmäMockClient : SärmäClientInterface {
+    override fun putDocument(
         documentContent: Document,
         masterId: String,
         classId: String,
         virtualArchiveId: String,
-    ): Pair<Int, String?>
+    ): Pair<Int, String?> {
+        return Pair(200, "OK")
+    }
 }

@@ -488,6 +488,7 @@ class ChildDocumentController(
                         tx = tx,
                         payloads = listOf(AsyncJob.ArchiveChildDocument(documentId)),
                         runAt = clock.now(),
+                        retryCount = 1,
                     )
                 }
             }

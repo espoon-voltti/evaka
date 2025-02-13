@@ -65,6 +65,7 @@ evaka:
           type: JKS
     särmä:
       enabled: true
+      use_mock_client: true
       url: https://eoy3xw8tftt5shn.m.pipedream.net/archive-core
   not_for_prod:
     force_unpublish_document_template_enabled: true

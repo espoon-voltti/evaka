@@ -687,10 +687,15 @@ private fun snakeCaseName(job: Enum<*>): String =
 
 data class ArchiveEnv(
     /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core */
-    val url: URI
+    val url: URI,
+    val useMockClient: Boolean,
 ) {
+
     companion object {
         fun fromEnvironment(env: Environment) =
-            ArchiveEnv(url = URI.create(env.lookup("evaka.integration.särmä.url")))
+            ArchiveEnv(
+                url = URI.create(env.lookup("evaka.integration.särmä.url")),
+                useMockClient = env.lookup("evaka.integration.särmä.use_mock_client") ?: false,
+            )
     }
 }

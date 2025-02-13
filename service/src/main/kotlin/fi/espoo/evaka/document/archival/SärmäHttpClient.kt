@@ -10,10 +10,8 @@ import java.time.Duration
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.springframework.stereotype.Component
 
-@Component
-class SärmäClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInterface {
+class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInterface {
     private val httpClient =
         OkHttpClient.Builder()
             .connectTimeout(Duration.ofMinutes(1))
@@ -26,7 +24,7 @@ class SärmäClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInterfac
         masterId: String,
         classId: String,
         virtualArchiveId: String,
-    ): Pair<Int, ResponseBody?> {
+    ): Pair<Int, String?> {
         if (archiveEnv == null) {
             throw IllegalStateException("Archive environment not configured")
         }
@@ -59,8 +57,6 @@ class SärmäClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInterfac
             httpClient
                 .newCall(Request.Builder().url(endpointUrl).post(requestBody).build())
                 .execute()
-        val responseCode = response.code
-        val responseBody = response.body
-        return Pair(responseCode, responseBody)
+        return Pair(response.code, response.body?.string())
     }
 }
