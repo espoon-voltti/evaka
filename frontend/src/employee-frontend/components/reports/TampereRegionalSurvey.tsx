@@ -350,6 +350,12 @@ export default React.memo(function TampereRegionalSurveyReport() {
                       key: 'preschoolDaycareUnitCareCount'
                     },
                     {
+                      label:
+                        t.yearlyStatisticsColumns
+                          .preschoolDaycareSchoolCareCount,
+                      key: 'preschoolDaycareSchoolCareCount'
+                    },
+                    {
                       label: t.yearlyStatisticsColumns.preschoolFamilyCareCount,
                       key: 'preschoolDaycareFamilyCareCount'
                     },

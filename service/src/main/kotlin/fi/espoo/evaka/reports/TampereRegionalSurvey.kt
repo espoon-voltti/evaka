@@ -22,6 +22,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class TampereRegionalSurvey(private val accessControl: AccessControl) {
+
+    private val preschoolDaycarePredicate = Predicate { where("$it.type && '{CENTRE}'") }
+
+    private val preschoolSchoolPredicate = Predicate {
+        where("$it.type && '{PRESCHOOL}' && NOT ($it.type && '{CENTRE}')")
+    }
+
     @GetMapping("/employee/reports/tampere-regional-survey/monthly-statistics")
     fun getTampereRegionalSurveyMonthlyStatistics(
         db: Database,
@@ -316,7 +323,19 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val preschoolDaycareUnitCare =
                         tx.getPlacementCount(
                             statDay = yearlyStatDay,
-                            daycarePred = Predicate { where("$it.type && '{CENTRE}'") },
+                            daycarePred = preschoolDaycarePredicate,
+                            placementPred =
+                                Predicate {
+                                    where(
+                                        "$it.type = ANY ('{PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')"
+                                    )
+                                },
+                        )
+
+                    val preschoolDaycareSchoolCare =
+                        tx.getPlacementCount(
+                            statDay = yearlyStatDay,
+                            daycarePred = preschoolSchoolPredicate,
                             placementPred =
                                 Predicate {
                                     where(
@@ -372,6 +391,8 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                                         preschoolDaycareFamilyCare.placementCount,
                                     preschoolDaycareUnitCareCount =
                                         preschoolDaycareUnitCare.placementCount,
+                                    preschoolDaycareSchoolCareCount =
+                                        preschoolDaycareSchoolCare.placementCount,
                                     voucherGeneralAssistanceCount =
                                         voucherAssistanceCounts.generalSupportWithDecisionCount,
                                     voucherSpecialAssistanceCount =
@@ -465,6 +486,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
         val municipal5YearOldCount: Int,
         val familyCare5YearOldCount: Int,
         val preschoolDaycareUnitCareCount: Int,
+        val preschoolDaycareSchoolCareCount: Int,
         val preschoolDaycareFamilyCareCount: Int,
         val voucherGeneralAssistanceCount: Int,
         val voucherSpecialAssistanceCount: Int,

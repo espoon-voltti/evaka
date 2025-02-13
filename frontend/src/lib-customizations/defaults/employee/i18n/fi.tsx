@@ -4370,7 +4370,9 @@ export const fi = {
         familyCare5YearOldCount: '5-vuotiaat perhepäivähoidossa',
         club5YearOldCount: '5-vuotiaat kerhossa',
         preschoolDaycareUnitCareCount:
-          'Täydentävän varhaiskasvatuksen lapset yksiköissä',
+          'Täydentävän varhaiskasvatuksen lapset vaka-yksiköissä',
+        preschoolDaycareSchoolCareCount:
+          'Täydentävän varhaiskasvatuksen lapset kouluissa',
         preschoolFamilyCareCount:
           'Täydentävän varhaiskasvatuksen lapset perhepäivähoidossa',
         voucherGeneralAssistanceCount:
