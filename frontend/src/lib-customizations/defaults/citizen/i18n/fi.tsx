@@ -2341,7 +2341,7 @@ export default {
       estimatedMonthlyIncome: 'Keskimääräiset tulot sisältäen lomarahat, €/kk',
       otherIncome: 'Muut tulot',
       otherIncomeDescription:
-        'Mikäli sinulla on muita tuloja, tulee niistä toimittaa tositteet liitteenä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
+        'Mikäli sinulla on muita tuloja, tulee niistä toimittaa tositteet liitteenä.',
       choosePlaceholder: 'Valitse',
       otherIncomeTypes: {
         PENSION: 'Eläke',
@@ -2376,16 +2376,8 @@ export default {
     },
     entrepreneurIncome: {
       title: 'Yrittäjän tulotietojen täyttäminen',
-      description: (
-        <>
-          Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle
-          yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat. Toimita
-          tarkemmat yrityskohtaiset tiedot liitteinä.
-          <br />
-          Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta
-          “Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet”.
-        </>
-      ),
+      description:
+        'Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat.',
       fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
       fullTime: 'Päätoimista',
       partTime: 'Sivutoimista',
