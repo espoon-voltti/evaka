@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.job
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ScheduledJobsEnv
-import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
@@ -145,7 +144,7 @@ enum class ScheduledJob(
         ScheduledJobs::vardaUpdate,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 0 23 * * 2,3,6,7"), // tue, wed, sat, sun @ 23 pm
+            schedule = JobSchedule.daily(LocalTime.of(23, 0)),
             retryCount = 1,
         ),
     ),
@@ -246,10 +245,8 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class ScheduledJobs(
-    // private val vardaService: VardaService, // Use this once varda fixes MA003 retry glitch
     private val vardaUpdateService: VardaUpdateService,
     private val evakaEnv: EvakaEnv,
-    private val vardaEnv: VardaEnv,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val invoiceGenerator: InvoiceGenerator,
