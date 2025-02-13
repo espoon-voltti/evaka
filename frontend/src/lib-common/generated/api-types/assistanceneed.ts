@@ -221,12 +221,15 @@ export interface AssistanceNeedDecisionResponse {
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 */
-export type AssistanceNeedDecisionStatus =
-  | 'DRAFT'
-  | 'NEEDS_WORK'
-  | 'ACCEPTED'
-  | 'REJECTED'
-  | 'ANNULLED'
+export const assistanceNeedDecisionStatuses = [
+  'DRAFT',
+  'NEEDS_WORK',
+  'ACCEPTED',
+  'REJECTED',
+  'ANNULLED'
+] as const
+
+export type AssistanceNeedDecisionStatus = typeof assistanceNeedDecisionStatuses[number]
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecision
