@@ -152,9 +152,10 @@ fun Database.Transaction.moveThreadToFolder(
     accountId: MessageAccountId,
     threadId: MessageThreadId,
     folderId: MessageThreadFolderId,
-) = execute {
-    sql(
-        """
+) =
+    createUpdate {
+            sql(
+                """
             UPDATE message_thread_participant 
             SET folder_id = ${bind(folderId)} 
             WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(accountId)}
@@ -163,13 +164,11 @@ fun Database.Transaction.moveThreadToFolder(
                     WHERE mtf.id = ${bind(folderId)} AND mtf.owner_id = ${bind(accountId)}
                 )
         """
-    )
-}
+            )
+        }
+        .updateExactlyOne()
 
-fun Database.Transaction.archiveThread(
-    accountId: MessageAccountId,
-    threadId: MessageThreadId,
-): Int {
+fun Database.Transaction.archiveThread(accountId: MessageAccountId, threadId: MessageThreadId) {
     val archiveFolderId =
         getArchiveFolderId(accountId)
             ?: createUpdate {

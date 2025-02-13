@@ -1068,6 +1068,122 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `service worker can move a thread to a folder`() {
+        val folder1 = DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Eteläinen")
+        val folder2 = DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Pohjoinen")
+        val folderOther =
+            DevMessageThreadFolder(owner = messagerAccount, name = "Toisen käyttäjän kansio")
+        db.transaction { tx ->
+            tx.insert(folder1)
+            tx.insert(folder2)
+            tx.insert(folderOther)
+        }
+
+        assertEquals(
+            setOf(
+                MessageController.MessageThreadFolder(
+                    id = folder1.id,
+                    ownerId = folder1.owner,
+                    name = folder1.name,
+                ),
+                MessageController.MessageThreadFolder(
+                    id = folder2.id,
+                    ownerId = folder2.owner,
+                    name = folder2.name,
+                ),
+            ),
+            getFolders(serviceWorker).toSet(),
+        )
+
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    type = ApplicationType.DAYCARE,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                )
+            }
+
+        postNewThread(
+            title = "Vastaa heti",
+            message = "Tähän viestiin pitäisi pystyä vastaamaan",
+            messageType = MessageType.MESSAGE,
+            sender = serviceWorkerAccount,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+            user = serviceWorker,
+            relatedApplicationId = applicationId,
+            initialFolder = folder1.id,
+        )
+
+        assertEquals(
+            1,
+            getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker).data.size,
+        )
+        val threadId =
+            getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker).data.first().id
+        assertEquals(
+            0,
+            getMessagesInFolder(serviceWorkerAccount, folder2.id, serviceWorker).data.size,
+        )
+
+        val thread = getRegularMessageThreads(person1)[0]
+        replyToMessage(
+            messageId = thread.messages.first().id,
+            content = "Vastaus",
+            recipientAccountIds = setOf(serviceWorkerAccount),
+            user = person1,
+            now = clock.now(),
+        )
+
+        assertEquals(
+            UnreadCountByAccount(
+                accountId = serviceWorkerAccount,
+                unreadCount = 0,
+                unreadCopyCount = 0,
+                unreadCountByFolder = mapOf(folder1.id to 1),
+            ),
+            unreadMessagesCounts(serviceWorkerAccount, serviceWorker),
+        )
+        assertEquals(
+            1,
+            getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker).data.size,
+        )
+        assertEquals(
+            2,
+            getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker)
+                .data
+                .first()
+                .messages
+                .size,
+        )
+
+        moveThreadToFolder(serviceWorkerAccount, threadId, folder2.id, serviceWorker)
+
+        assertEquals(
+            UnreadCountByAccount(
+                accountId = serviceWorkerAccount,
+                unreadCount = 0,
+                unreadCopyCount = 0,
+                unreadCountByFolder = mapOf(folder2.id to 1),
+            ),
+            unreadMessagesCounts(serviceWorkerAccount, serviceWorker),
+        )
+        assertEquals(
+            0,
+            getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker).data.size,
+        )
+        assertEquals(
+            1,
+            getMessagesInFolder(serviceWorkerAccount, folder2.id, serviceWorker).data.size,
+        )
+
+        assertThrows<NotFound> {
+            moveThreadToFolder(serviceWorkerAccount, threadId, folderOther.id, serviceWorker)
+        }
+    }
+
+    @Test
     fun `service workers cannot send messages without a related application ID`() {
         // when a message thread related to an application is created
         assertThrows<BadRequest> {
@@ -1981,6 +2097,50 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .find { it.accountId == accountId }
             ?.unreadCount ?: throw Exception("No unread count for account $accountId")
     }
+
+    private fun unreadMessagesCounts(
+        accountId: MessageAccountId,
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = readTime,
+    ): UnreadCountByAccount {
+        return messageController.getUnreadMessages(dbInstance(), user, MockEvakaClock(now)).find {
+            it.accountId == accountId
+        } ?: throw Exception("No unread counts for account $accountId")
+    }
+
+    private fun getFolders(user: AuthenticatedUser.Employee, now: HelsinkiDateTime = readTime) =
+        messageController.getFolders(dbInstance(), user, MockEvakaClock(now))
+
+    private fun getMessagesInFolder(
+        accountId: MessageAccountId,
+        folderId: MessageThreadFolderId,
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = readTime,
+    ) =
+        messageController.getMessagesInFolder(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            accountId,
+            folderId,
+            page = 1,
+        )
+
+    private fun moveThreadToFolder(
+        accountId: MessageAccountId,
+        threadId: MessageThreadId,
+        folderId: MessageThreadFolderId,
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = readTime,
+    ) =
+        messageController.moveThreadToFolder(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            accountId,
+            threadId,
+            folderId,
+        )
 
     private fun disableAsyncJobRunning(f: () -> Unit) {
         asyncJobRunningEnabled = false

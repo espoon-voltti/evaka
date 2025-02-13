@@ -166,6 +166,8 @@ import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
@@ -2265,6 +2267,12 @@ data class DevServiceApplication(
     val decidedBy: EmployeeId? = null,
     val decidedAt: HelsinkiDateTime? = null,
     val rejectedReason: String? = null,
+)
+
+data class DevMessageThreadFolder(
+    val id: MessageThreadFolderId = MessageThreadFolderId(UUID.randomUUID()),
+    val owner: MessageAccountId,
+    val name: String,
 )
 
 data class DevUpsertStaffOccupancyCoefficient(
