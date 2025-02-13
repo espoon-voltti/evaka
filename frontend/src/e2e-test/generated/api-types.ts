@@ -674,6 +674,7 @@ export interface DevGuardian {
 export interface DevIncome {
   data: Partial<Record<string, IncomeValue>>
   effect: IncomeEffect
+  forceNewDecision: boolean
   id: IncomeId
   isEntrepreneur: boolean
   modifiedAt: HelsinkiDateTime

@@ -163,14 +163,22 @@ enum class VoucherValueDecisionDifference(
         setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
     }),
     INCOME({ d1, d2 ->
-        setOf(
-            d1.headOfFamilyIncome?.effectiveComparable(),
-            d1.partnerIncome?.effectiveComparable(),
-        ) ==
+        val incomesEqual =
             setOf(
-                d2.headOfFamilyIncome?.effectiveComparable(),
-                d2.partnerIncome?.effectiveComparable(),
-            ) && d1.childIncome?.effectiveComparable() == d2.childIncome?.effectiveComparable()
+                d1.headOfFamilyIncome?.effectiveComparable(),
+                d1.partnerIncome?.effectiveComparable(),
+            ) ==
+                setOf(
+                    d2.headOfFamilyIncome?.effectiveComparable(),
+                    d2.partnerIncome?.effectiveComparable(),
+                ) && d1.childIncome?.effectiveComparable() == d2.childIncome?.effectiveComparable()
+
+        val forceNewDecision =
+            d2.headOfFamilyIncome?.forceNewDecision == true ||
+                d2.partnerIncome?.forceNewDecision == true ||
+                d2.childIncome?.forceNewDecision == true
+
+        incomesEqual && !forceNewDecision
     }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),

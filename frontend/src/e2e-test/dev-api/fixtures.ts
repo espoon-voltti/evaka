@@ -828,6 +828,7 @@ export class Fixture {
       modifiedAt: HelsinkiDateTime.now(),
       isEntrepreneur: false,
       worksAtEcha: false,
+      forceNewDecision: false,
       ...initial
     })
   }
@@ -3168,7 +3169,8 @@ export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
   total: total,
   totalExpenses: 0,
   totalIncome: total,
-  worksAtECHA: false
+  worksAtECHA: false,
+  forceNewDecision: false
 })
 
 const nullUUID = evakaUserId(fromUuid('00000000-0000-0000-0000-000000000000'))

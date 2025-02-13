@@ -2784,6 +2784,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         totalExpenses = 0,
                         total = 0,
                         worksAtECHA = false,
+                        forceNewDecision = false,
                     ),
                 children =
                     listOf(
@@ -2826,7 +2827,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `decision is generated correctly from two identical and concurrent placements`() {
+    fun `decision is generated correctly from two identical and adjacent placements`() {
         val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(
@@ -2858,6 +2859,67 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(28900, child.fee)
             }
         }
+    }
+
+    @Test
+    fun `only one decision is generated from two identical and adjacent incomes`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(
+            testAdult_1.id,
+            8000,
+            period.copy(end = period.start.plusMonths(1)).asDateRange(),
+        )
+        insertIncome(
+            testAdult_1.id,
+            8000,
+            period.copy(start = period.start.plusMonths(1).plusDays(1)).asDateRange(),
+        )
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        val feeDecisions = getAllFeeDecisions()
+        assertEquals(1, feeDecisions.size)
+        feeDecisions.first().let { decision ->
+            assertEquals(FeeDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+        }
+    }
+
+    @Test
+    fun `two decisions are generated from two identical and adjacent incomes when forceNewDecision is set`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(
+            testAdult_1.id,
+            8000,
+            period.copy(end = period.start.plusMonths(1)).asDateRange(),
+        )
+        insertIncome(
+            testAdult_1.id,
+            8000,
+            period.copy(start = period.start.plusMonths(1).plusDays(1)).asDateRange(),
+            forceNewDecision = true,
+        )
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        val feeDecisions = getAllFeeDecisions().sortedBy { it.validFrom }
+        assertEquals(2, feeDecisions.size)
+        feeDecisions[0].let { decision ->
+            assertEquals(FeeDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.start.plusMonths(1), decision.validTo)
+        }
+        feeDecisions[1].let { decision ->
+            assertEquals(FeeDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start.plusMonths(1).plusDays(1), decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+        }
+        assertEquals(feeDecisions[0].totalFee, feeDecisions[1].totalFee)
     }
 
     @Test
@@ -3322,6 +3384,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         amount: Int,
         period: DateRange,
         effect: IncomeEffect = IncomeEffect.INCOME,
+        forceNewDecision: Boolean = false,
     ) {
         db.transaction { tx ->
             tx.insert(
@@ -3346,6 +3409,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                 )
                         ),
                     modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    forceNewDecision = forceNewDecision,
                 )
             )
         }

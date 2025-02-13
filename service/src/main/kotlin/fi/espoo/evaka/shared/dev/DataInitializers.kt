@@ -521,14 +521,15 @@ data class DevIncome(
     val worksAtEcha: Boolean = false,
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUserId,
+    val forceNewDecision: Boolean = false,
 )
 
 fun Database.Transaction.insert(row: DevIncome): IncomeId =
     createUpdate {
             sql(
                 """
-INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, created_at, created_by, modified_at, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bindJson(row.data)}, ${bind(row.effect)}::income_effect, ${bind(row.isEntrepreneur)}, ${bind(row.worksAtEcha)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
+INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, created_at, created_by, modified_at, modified_by, force_new_decision)
+VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bindJson(row.data)}, ${bind(row.effect)}::income_effect, ${bind(row.isEntrepreneur)}, ${bind(row.worksAtEcha)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.forceNewDecision)})
 """
             )
         }

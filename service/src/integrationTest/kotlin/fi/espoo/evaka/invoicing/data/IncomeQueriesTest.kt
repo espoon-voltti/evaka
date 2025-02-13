@@ -69,6 +69,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
             notes = "",
+            forceNewDecision = false,
         )
     private val clock = MockEvakaClock(2023, 1, 7, 14, 0)
 

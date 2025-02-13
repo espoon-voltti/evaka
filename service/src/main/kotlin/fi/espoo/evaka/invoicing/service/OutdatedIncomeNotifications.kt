@@ -173,6 +173,7 @@ class OutdatedIncomeNotifications(
                             validTo = null,
                             data = emptyMap(),
                             notes = "Created automatically because previous income expired",
+                            forceNewDecision = false,
                         ),
                     createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )

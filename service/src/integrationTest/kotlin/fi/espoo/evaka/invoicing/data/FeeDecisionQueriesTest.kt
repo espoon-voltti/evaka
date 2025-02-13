@@ -424,6 +424,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalExpenses = 0,
                                         total = 0,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                             ),
                         baseDecision(testChild_3)
@@ -439,6 +440,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalExpenses = 0,
                                         total = 0,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                             ),
                         baseDecision(testChild_4)
@@ -452,6 +454,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalExpenses = 0,
                                         total = 200000,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                             ),
                         baseDecision(testChild_5)
@@ -465,6 +468,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalExpenses = 0,
                                         total = 200000,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                                 partnerId = testAdult_7.id,
                                 partnerIncome =
@@ -475,6 +479,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalExpenses = 0,
                                         total = 0,
                                         worksAtECHA = false,
+                                        forceNewDecision = false,
                                     ),
                             ),
                     )

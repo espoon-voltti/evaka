@@ -173,6 +173,7 @@ private fun createFeeBasis(): FeeBasis {
                 totalExpenses = 100000,
                 total = 500000,
                 worksAtECHA = false,
+                forceNewDecision = false,
             ),
         partnerId = PersonId(UUID.randomUUID()),
         partnerIncome =
@@ -183,6 +184,7 @@ private fun createFeeBasis(): FeeBasis {
                 totalExpenses = 0,
                 total = 200000,
                 worksAtECHA = false,
+                forceNewDecision = false,
             ),
         children =
             listOf(
