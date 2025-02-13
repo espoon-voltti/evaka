@@ -356,10 +356,8 @@ class VardaUpdater(
             client.getOrCreateHenkilo(
                 VardaReadClient.GetOrCreateHenkiloRequest(
                     etunimet = evakaHenkilo.etunimet,
-                    sukunimi =
-                        evakaHenkilo
-                            .sukunimi, // Avoid sending both henkilotunnus and henkilo_oid (error
-                                       // code HE004)
+                    sukunimi = evakaHenkilo.sukunimi,
+                    // Avoid sending both henkilotunnus and henkilo_oid (error code HE004)
                     henkilotunnus = evakaHenkilo.henkilotunnus,
                     henkilo_oid =
                         evakaHenkilo.henkilo_oid.takeIf { evakaHenkilo.henkilotunnus == null },

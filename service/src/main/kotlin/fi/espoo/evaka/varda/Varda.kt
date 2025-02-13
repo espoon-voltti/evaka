@@ -236,16 +236,15 @@ data class Maksutieto(
             lahdejarjestelma = lahdejarjestelma,
             lapsi = lapsi,
             huoltajat =
-                huoltajat
-                    .map { // Avoid sending both henkilotunnus and henkilo_oid, which would cause
-                           // Varda to
-                        // reject the request with error HE004
-                        if (it.henkilotunnus != null && it.henkilo_oid != null) {
-                            it.copy(henkilo_oid = null)
-                        } else {
-                            it
-                        }
-                    },
+                huoltajat.map {
+                    // Avoid sending both henkilotunnus and henkilo_oid, which would cause Varda to
+                    // reject the request with error HE004
+                    if (it.henkilotunnus != null && it.henkilo_oid != null) {
+                        it.copy(henkilo_oid = null)
+                    } else {
+                        it
+                    }
+                },
             alkamis_pvm = alkamis_pvm,
             paattymis_pvm = paattymis_pvm,
             maksun_peruste_koodi = maksun_peruste_koodi,
