@@ -94,6 +94,7 @@ class EnvConfig {
             false -> null
         }
 
+    @Bean
     fun nekkuEnv(evakaEnv: EvakaEnv, env: Environment): NekkuEnv? =
         when (evakaEnv.nekkuEnabled) {
             true -> NekkuEnv.fromEnvironment(env)
