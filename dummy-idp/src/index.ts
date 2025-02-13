@@ -34,7 +34,13 @@ app.get('/health', (_, res) => {
 app.post('/idp/users/clear', clearUsers)
 app.post('/idp/users', express.json(), upsertUser)
 
-app.get('/idp/sso', samlSingleSignOnRoute)
+app.get(
+  '/idp/sso',
+  (req, res, next) => {
+    req.query.action === 'destroy' ? req.session.regenerate(next) : next()
+  },
+  samlSingleSignOnRoute
+)
 app.get('/idp/sso-login-confirm', samlSingleSignOnConfirmRoute)
 app.get('/idp/sso-login-finish', samlSingleSignOnFinishRoute)
 app.get('/idp/slo', samlSingleLogoutRoute)

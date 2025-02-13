@@ -122,7 +122,15 @@ const confirmHandler: express.RequestHandler = (req, res) => {
   return renderSamlFormPage(req, res, {
     uri: `${req.baseUrl}/idp/sso-login-finish`,
     bodyHtml: html`
-      <button type="submit">Jatka</button>
+      <button name="action" value="login" type="submit">Jatka</button>
+      <button
+        name="action"
+        value="destroy"
+        formaction="${req.baseUrl}/idp/sso"
+        type="submit"
+      >
+        Vaihda käyttäjää
+      </button>
       <h2>Välitettävät tiedot:</h2>
       <table>
         ${attrs}
