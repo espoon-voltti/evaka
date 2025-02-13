@@ -112,7 +112,8 @@ export default class MessagesPage {
   }
 
   async deleteFirstThread() {
-    await this.receivedMessage.findByDataQa('delete-thread-btn').click()
+    await this.receivedMessage.findByDataQa('thread-menu').click()
+    await this.receivedMessage.findByDataQa('menu-item-archive').click()
   }
 
   async assertMessageContent(index: number, content: string) {

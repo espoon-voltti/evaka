@@ -94,6 +94,7 @@ export function ThreadList({
             </TypeAndDate>
             {}
             <EllipsisMenu
+              data-qa="thread-menu"
               items={[
                 ...(onChangeFolder
                   ? [
