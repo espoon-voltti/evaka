@@ -112,7 +112,7 @@ class MessageService(
         filters: MessageController.PostMessageFilters?,
         initialFolder: MessageThreadFolderId? = null,
     ): MessageContentId? {
-        if (initialFolder !== null) {
+        if (initialFolder != null) {
             tx.getFolder(initialFolder)?.takeIf { it.ownerId == sender }
                 ?: throw NotFound("Folder not found")
         }

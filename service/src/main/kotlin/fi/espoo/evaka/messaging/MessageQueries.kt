@@ -459,6 +459,7 @@ fun Database.Read.getThreads(
     page: Int,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    folderId: MessageThreadFolderId? = null,
 ): PagedMessageThreads {
     val threads =
         createQuery {
@@ -487,7 +488,7 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 LEFT JOIN application a ON t.application_id = a.id
-WHERE tp.participant_id = ${bind(accountId)} AND tp.folder_id IS NULL
+WHERE tp.participant_id = ${bind(accountId)} AND tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)}
 AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}

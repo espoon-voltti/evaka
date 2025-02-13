@@ -247,16 +247,13 @@ class MessageController(
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
-                    val accountAccessLimit = it.getAccountAccessLimit(accountId, user.id)
-
-                    it.getReceivedThreads(
+                    it.getThreads(
                         accountId,
                         pageSize = 20,
                         page,
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
                         folderId,
-                        accountAccessLimit,
                     )
                 }
             }
