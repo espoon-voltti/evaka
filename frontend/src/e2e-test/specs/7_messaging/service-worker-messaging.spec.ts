@@ -182,6 +182,29 @@ describe('Service Worker Messaging', () => {
       await citizenMessagesPage.assertOpenReplyEditorButtonIsHidden()
     })
 
+    it('service worker can organize threads in folders', async () => {
+      // Service worker sends a message regarding an application
+      await openStaffPage(mockedTime, serviceWorker)
+      const applReadView = new ApplicationReadView(staffPage)
+      await applReadView.navigateToApplication(applicationFixtureId)
+      const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = messagesPage.getMessageEditor()
+      await messageEditor.inputContent.fill('message')
+      await messageEditor.folderSelection.selectOption({ label: 'Kansio 1' })
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
+
+      const folderMessagesPage = await messagesPage.openFolder('Kansio 1')
+      await folderMessagesPage.messages.assertCount(1)
+
+      await folderMessagesPage.moveFirstThread('Kansio 2')
+
+      await folderMessagesPage.messages.assertCount(0)
+      await messagesPage.openFolder('Kansio 2')
+      await folderMessagesPage.messages.assertCount(1)
+    })
+
     it('should prefill the receiver and title fields when sending a new message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)

@@ -726,11 +726,21 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                         "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'MUNICIPAL') ON CONFLICT DO NOTHING"
                     )
                 }
-                tx.execute {
-                    sql(
-                        "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING"
-                    )
-                }
+                tx.createUpdate {
+                        sql(
+                            "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING RETURNING id"
+                        )
+                    }
+                    .executeAndReturnGeneratedKeys()
+                    .exactlyOneOrNull<MessageAccountId>()
+                    ?.also { serviceWorkerAccount ->
+                        tx.insert(
+                            DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Kansio 1")
+                        )
+                        tx.insert(
+                            DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Kansio 2")
+                        )
+                    }
             }
         }
     }

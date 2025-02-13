@@ -84,7 +84,7 @@ export default function MessageBox({
       onClick={onClick}
       active={active}
       $folder={isFolderView(view)}
-      data-qa={`message-box-row-${isStandardView(view) ? view : view.id}`}
+      data-qa={`message-box-row-${isStandardView(view) ? view : view.name}`}
     >
       {isStandardView(view)
         ? i18n.messages.messageBoxes.names[view]

@@ -179,24 +179,28 @@ function Accounts({ setReceivers }: AccountsProps) {
               selectAccount={selectAccount}
             />
           ))}
-          <FoldersHeader>
-            {i18n.messages.sidePanel.serviceWorkerFolders}
-          </FoldersHeader>
-          {folders
-            .map((res) =>
-              res.filter((f) => f.ownerId === serviceWorkerAccount.account.id)
-            )
-            .getOrElse([])
-            .map((folder) => (
-              <MessageBox
-                key={folder.id}
-                view={folder}
-                account={serviceWorkerAccount.account}
-                unitId={null}
-                activeView={selectedAccount}
-                selectAccount={selectAccount}
-              />
-            ))}
+          {folders.isSuccess &&
+            folders.value.filter(
+              (f) => f.ownerId === serviceWorkerAccount.account.id
+            ).length > 0 && (
+              <>
+                <FoldersHeader>
+                  {i18n.messages.sidePanel.serviceWorkerFolders}
+                </FoldersHeader>
+                {folders.value
+                  .filter((f) => f.ownerId === serviceWorkerAccount.account.id)
+                  .map((folder) => (
+                    <MessageBox
+                      key={folder.id}
+                      view={folder}
+                      account={serviceWorkerAccount.account}
+                      unitId={null}
+                      activeView={selectedAccount}
+                      selectAccount={selectAccount}
+                    />
+                  ))}
+              </>
+            )}
         </AccountSection>
       )}
 

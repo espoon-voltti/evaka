@@ -308,6 +308,7 @@ const FolderChangeModal = React.memo(function FolderChangeModal({
   const [folder, setFolder] = useState<MessageThreadFolder | null>(null)
   return (
     <AsyncFormModal
+      data-qa="change-folder-modal"
       title={i18n.messages.changeFolder.modalTitle}
       resolveAction={() =>
         folder
@@ -334,6 +335,7 @@ const FolderChangeModal = React.memo(function FolderChangeModal({
         getItemLabel={(item) => item.name}
         getItemValue={(item) => item.id}
         placeholder={i18n.common.select}
+        data-qa="folder-select"
       />
     </AsyncFormModal>
   )

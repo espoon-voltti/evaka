@@ -13,7 +13,8 @@ import {
   Combobox,
   TreeDropdown,
   Element,
-  ElementCollection
+  ElementCollection,
+  Select
 } from '../../../utils/page'
 
 export default class MessagesPage {
@@ -55,6 +56,11 @@ export default class MessagesPage {
   async openSentMessages(nth = 0) {
     await this.page.findAllByDataQa('message-box-row-sent').nth(nth).click()
     return new SentMessagesPage(this.page)
+  }
+
+  async openFolder(name: string) {
+    await this.page.findByDataQa(`message-box-row-${name}`).click()
+    return new FolderMessagesPage(this.page)
   }
 
   #messageContent = (index = 0) =>
@@ -174,6 +180,22 @@ export class SentMessagesPage {
   }
 }
 
+export class FolderMessagesPage {
+  messages: ElementCollection
+  constructor(private readonly page: Page) {
+    this.messages = page.findAllByDataQa('folder-message-row')
+  }
+
+  async moveFirstThread(folderName: string) {
+    await this.messages.first().findByDataQa('thread-menu').click()
+    await this.messages.first().findByDataQa('menu-item-change-folder').click()
+    const modal = this.page.findByDataQa('change-folder-modal')
+    const select = new Select(modal.findByDataQa('folder-select'))
+    await select.selectOption({ label: folderName })
+    await modal.findByDataQa('modal-okBtn').click()
+  }
+}
+
 export class SentMessagePage {
   constructor(private readonly page: Page) {}
 
@@ -187,6 +209,7 @@ export class MessageEditor extends Element {
 
   inputTitle = new TextInput(this.findByDataQa('input-title'))
   inputContent = new TextInput(this.findByDataQa('input-content'))
+  folderSelection = new Select(this.findByDataQa('select-folder'))
   senderSelection = new Combobox(this.findByDataQa('select-sender'))
   receiverSelection = new TreeDropdown(this.findByDataQa('select-receiver'))
   urgent = new Checkbox(this.findByDataQa('checkbox-urgent'))

@@ -782,6 +782,7 @@ export default React.memo(function MessageEditor({
                     placeholder="Ei kansiota"
                     getItemValue={(item) => item.id}
                     getItemLabel={(item) => item.name}
+                    data-qa="select-folder"
                   />
                 </HorizontalField>
               </>
