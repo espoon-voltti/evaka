@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -19,7 +19,6 @@ import {
   IncomeStatementAttachments,
   numAttachments
 } from 'lib-common/income-statements'
-import { scrollToElement } from 'lib-common/utils/scrolling'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -45,7 +44,7 @@ import {
   SetStateCallback
 } from './IncomeStatementComponents'
 
-function attachmentSectionId(type: IncomeStatementAttachmentType): string {
+function attachmentSectionDataQa(type: IncomeStatementAttachmentType): string {
   return `attachment-section-${type}`
 }
 
@@ -58,80 +57,104 @@ export interface AttachmentHandler {
     onDeleted: (id: AttachmentId) => void
     getDownloadUrl: (id: AttachmentId) => string
   }
+  setElement: (
+    attachmentType: IncomeStatementAttachmentType,
+    el: HTMLElement | null
+  ) => void
+  focus: (attachmentType: IncomeStatementAttachmentType) => void
 }
 
 /** Returns `undefined` if the income statement contains old untyped attachments */
-export function makeAttachmentHandler(
+export function useAttachmentHandler(
   id: IncomeStatementId | undefined,
   attachments: IncomeStatementAttachments,
   onChange: SetStateCallback<IncomeStatementAttachments>
 ): AttachmentHandler | undefined {
-  if (!attachments.typed) {
-    // Has untyped attachments
-    return undefined
-  }
-  const { attachmentsByType } = attachments
-  return {
-    hasAttachment: (attachmentType: IncomeStatementAttachmentType) =>
-      !!attachmentsByType[attachmentType]?.length,
-    fileUploadProps: (attachmentType: IncomeStatementAttachmentType) => {
-      const files = attachmentsByType[attachmentType] ?? []
-      return {
-        files,
-        uploadHandler: incomeStatementAttachment(id, attachmentType),
-        onUploaded: (attachment: Attachment) => {
-          onChange((prev) => {
-            // Should not happen
-            if (!prev.typed) return prev
+  const refs = useRef<
+    Partial<Record<IncomeStatementAttachmentType, HTMLElement>>
+  >({})
+  return useMemo(() => {
+    if (!attachments.typed) {
+      // Has untyped attachments
+      return undefined
+    }
+    const { attachmentsByType } = attachments
+    return {
+      hasAttachment: (attachmentType: IncomeStatementAttachmentType) =>
+        !!attachmentsByType[attachmentType]?.length,
+      fileUploadProps: (attachmentType: IncomeStatementAttachmentType) => {
+        const files = attachmentsByType[attachmentType] ?? []
+        return {
+          files,
+          uploadHandler: incomeStatementAttachment(id, attachmentType),
+          onUploaded: (attachment: Attachment) => {
+            onChange((prev) => {
+              // Should not happen
+              if (!prev.typed) return prev
 
-            const { attachmentsByType } = prev
-            if (attachmentsByType[attachmentType]) {
-              return {
-                ...prev,
-                attachmentsByType: {
-                  ...attachmentsByType,
-                  [attachmentType]: [
-                    ...attachmentsByType[attachmentType],
-                    attachment
-                  ]
+              const { attachmentsByType } = prev
+              if (attachmentsByType[attachmentType]) {
+                return {
+                  ...prev,
+                  attachmentsByType: {
+                    ...attachmentsByType,
+                    [attachmentType]: [
+                      ...attachmentsByType[attachmentType],
+                      attachment
+                    ]
+                  }
+                }
+              } else {
+                return {
+                  ...prev,
+                  attachmentsByType: {
+                    ...attachmentsByType,
+                    [attachmentType]: [attachment]
+                  }
                 }
               }
-            } else {
-              return {
-                ...prev,
-                attachmentsByType: {
-                  ...attachmentsByType,
-                  [attachmentType]: [attachment]
-                }
-              }
-            }
-          })
-        },
-        onDeleted: (id: AttachmentId) => {
-          onChange((prev) => {
-            // Should not happen
-            if (!prev.typed) return prev
+            })
+          },
+          onDeleted: (id: AttachmentId) => {
+            onChange((prev) => {
+              // Should not happen
+              if (!prev.typed) return prev
 
-            const { attachmentsByType } = prev
-            if (attachmentsByType[attachmentType]) {
-              return {
-                ...prev,
-                attachmentsByType: {
-                  ...attachmentsByType,
-                  [attachmentType]: attachmentsByType[attachmentType].filter(
-                    (a) => a.id !== id
-                  )
+              const { attachmentsByType } = prev
+              if (attachmentsByType[attachmentType]) {
+                return {
+                  ...prev,
+                  attachmentsByType: {
+                    ...attachmentsByType,
+                    [attachmentType]: attachmentsByType[attachmentType].filter(
+                      (a) => a.id !== id
+                    )
+                  }
                 }
+              } else {
+                return prev
               }
-            } else {
-              return prev
-            }
-          })
-        },
-        getDownloadUrl: () => ''
+            })
+          },
+          getDownloadUrl: () => ''
+        }
+      },
+      setElement: (
+        attachmentType: IncomeStatementAttachmentType,
+        el: HTMLElement | null
+      ) => {
+        if (el) {
+          refs.current[attachmentType] = el
+        } else {
+          delete refs.current[attachmentType]
+        }
+      },
+      focus: (attachmentType: IncomeStatementAttachmentType) => {
+        const element = refs.current[attachmentType]
+        if (element) element.focus()
       }
     }
-  }
+  }, [attachments, id, onChange])
 }
 
 export const AttachmentSection = React.memo(function AttachmentSection({
@@ -176,7 +199,8 @@ export const AttachmentSection = React.memo(function AttachmentSection({
       {labelAndInfo}
       {!dense && <Gap size="xs" />}
       <FileUpload
-        id={attachmentSectionId(attachmentType)}
+        ref={(el) => attachmentHandler.setElement(attachmentType, el)}
+        data-qa={attachmentSectionDataQa(attachmentType)}
         {...fileUploadProps(attachmentType)}
       />
     </>
@@ -209,12 +233,7 @@ export const IncomeStatementMissingAttachments = React.memo(
                   <Button
                     appearance="link"
                     onClick={() => {
-                      const element = document.getElementById(
-                        attachmentSectionId(attachmentType)
-                      )
-                      if (element) {
-                        scrollToElement(element, 0, 'center')
-                      }
+                      attachmentHandler.focus(attachmentType)
                     }}
                     text={t.income.attachments.attachmentNames[attachmentType]}
                   />
@@ -373,14 +392,10 @@ export const CitizenAttachmentsWithUpload = React.memo(
     onChange: SetStateCallback<IncomeStatementAttachments>
   }) {
     const t = useTranslation()
-    const attachmentHandler = useMemo(
-      () =>
-        makeAttachmentHandler(
-          incomeStatementId,
-          incomeStatementAttachments,
-          onChange
-        ),
-      [incomeStatementAttachments, incomeStatementId, onChange]
+    const attachmentHandler = useAttachmentHandler(
+      incomeStatementId,
+      incomeStatementAttachments,
+      onChange
     )
 
     if (!incomeStatementAttachments.typed) {

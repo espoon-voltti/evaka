@@ -56,9 +56,9 @@ import { useLang, useTranslation } from '../localization'
 import {
   IncomeStatementUntypedAttachments,
   IncomeStatementMissingAttachments,
-  makeAttachmentHandler,
   AttachmentHandler,
-  AttachmentSection
+  AttachmentSection,
+  useAttachmentHandler
 } from './IncomeStatementAttachments'
 import {
   ActionContainer,
@@ -180,14 +180,10 @@ export default React.memo(
     )
 
     const onAttachmentChange = useFieldSetState(onChange, 'attachments')
-    const attachmentHandler = useMemo(
-      () =>
-        makeAttachmentHandler(
-          incomeStatementId,
-          formData.attachments,
-          onAttachmentChange
-        ),
-      [formData.attachments, incomeStatementId, onAttachmentChange]
+    const attachmentHandler = useAttachmentHandler(
+      incomeStatementId,
+      formData.attachments,
+      onAttachmentChange
     )
 
     const sendButtonEnabled = useMemo(

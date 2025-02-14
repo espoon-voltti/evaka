@@ -31,7 +31,7 @@ import { useLang, useTranslation } from '../localization'
 import ChildIncomeStatementAttachments from './ChildIncomeStatementAttachments'
 import {
   AttachmentSection,
-  makeAttachmentHandler
+  useAttachmentHandler
 } from './IncomeStatementAttachments'
 import {
   ActionContainer,
@@ -62,14 +62,10 @@ const ChildIncome = React.memo(function ChildIncome({
   const t = useTranslation()
 
   const onAttachmentChange = useFieldSetState(onChange, 'attachments')
-  const attachmentHandler = useMemo(
-    () =>
-      makeAttachmentHandler(
-        incomeStatementId,
-        formData.attachments,
-        onAttachmentChange
-      ),
-    [formData.attachments, incomeStatementId, onAttachmentChange]
+  const attachmentHandler = useAttachmentHandler(
+    incomeStatementId,
+    formData.attachments,
+    onAttachmentChange
   )
 
   const onOtherInfoChanged = useFieldDispatch(onChange, 'otherInfo')
