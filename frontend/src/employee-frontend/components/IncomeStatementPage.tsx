@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -16,7 +16,7 @@ import {
   Gross,
   IncomeStatement,
   IncomeStatementAttachment,
-  IncomeStatementAttachmentType,
+  incomeStatementAttachmentTypes,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
 import {
@@ -27,6 +27,10 @@ import {
   numAttachments,
   toIncomeStatementAttachments
 } from 'lib-common/income-statements/attachments'
+import {
+  computeRequiredAttachments,
+  fromIncomeStatement
+} from 'lib-common/income-statements/form'
 import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -189,6 +193,7 @@ function IncomeInfo({
       />
       <HorizontalLine />
       <CitizenAttachments
+        incomeStatement={incomeStatement}
         attachments={incomeStatement.attachments.filter(
           (attachment) => !attachment.uploadedByEmployee
         )}
@@ -405,6 +410,7 @@ function ChildIncomeInfo({
       />
       <HorizontalLine />
       <CitizenAttachments
+        incomeStatement={incomeStatement}
         attachments={incomeStatement.attachments.filter(
           (attachment) => !attachment.uploadedByEmployee
         )}
@@ -414,12 +420,18 @@ function ChildIncomeInfo({
 }
 
 const CitizenAttachments = React.memo(function CitizenAttachments({
+  incomeStatement,
   attachments
 }: {
+  incomeStatement: IncomeStatement
   attachments: IncomeStatementAttachment[]
 }) {
   const { i18n } = useTranslation()
   const incomeStatementAttachments = toIncomeStatementAttachments(attachments)
+  const requiredAttachments = useMemo(
+    () => computeRequiredAttachments(fromIncomeStatement(incomeStatement)),
+    [incomeStatement]
+  )
   const noAttachments = numAttachments(incomeStatementAttachments) === 0
   return (
     <>
@@ -437,21 +449,34 @@ const CitizenAttachments = React.memo(function CitizenAttachments({
       ) : (
         <Table>
           <Tbody>
-            {Object.entries(incomeStatementAttachments.attachmentsByType).map(
-              ([type, attachments]) => {
-                const attachmentType = type as IncomeStatementAttachmentType
+            {incomeStatementAttachmentTypes.map((attachmentType) => {
+              const attachments =
+                incomeStatementAttachments.attachmentsByType[attachmentType]
+              const attachmentMissing = !attachments?.length
+
+              if (
+                attachmentMissing &&
+                !requiredAttachments.has(attachmentType)
+              ) {
+                return null
+              } else {
                 return (
                   <Tr key={attachmentType}>
                     <Td>
                       {i18n.incomeStatement.attachmentNames[attachmentType]}
                     </Td>
                     <Td>
-                      <UploadedFiles files={attachments} />
+                      {attachmentMissing ? (
+                        i18n.incomeStatement.citizenAttachments
+                          .attachmentMissing
+                      ) : (
+                        <UploadedFiles files={attachments} />
+                      )}
                     </Td>
                   </Tr>
                 )
               }
-            )}
+            })}
           </Tbody>
         </Table>
       )}
