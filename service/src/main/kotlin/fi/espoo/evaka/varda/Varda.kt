@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.varda.new
+package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.varda.VardaUnitProviderType
 import java.net.URI
 import java.time.LocalDate
 

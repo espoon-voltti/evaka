@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.varda.new
+package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import fi.espoo.evaka.daycare.domain.ProviderType

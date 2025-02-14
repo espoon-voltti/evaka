@@ -21,6 +21,9 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.varda.VardaUpdateService
+import fi.espoo.evaka.varda.VardaUpdater
+import fi.espoo.evaka.varda.getVardaUpdateChildIds
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -28,7 +31,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired lateinit var vardaUpdateService: VardaUpdateServiceNew
+    @Autowired lateinit var vardaUpdateService: VardaUpdateService
     @Autowired lateinit var ophEnv: OphEnv
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(12, 0))

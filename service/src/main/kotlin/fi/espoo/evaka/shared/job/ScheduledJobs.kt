@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.job
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ScheduledJobsEnv
-import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
@@ -45,7 +44,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.titania.cleanTitaniaErrors
-import fi.espoo.evaka.varda.new.VardaUpdateServiceNew
+import fi.espoo.evaka.varda.VardaUpdateService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.time.LocalTime
@@ -145,7 +144,7 @@ enum class ScheduledJob(
         ScheduledJobs::vardaUpdate,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 0 23 * * 2,3,6,7"), // tue, wed, sat, sun @ 23 pm
+            schedule = JobSchedule.daily(LocalTime.of(23, 0)),
             retryCount = 1,
         ),
     ),
@@ -246,10 +245,8 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class ScheduledJobs(
-    // private val vardaService: VardaService, // Use this once varda fixes MA003 retry glitch
-    private val vardaUpdateServiceNew: VardaUpdateServiceNew,
+    private val vardaUpdateService: VardaUpdateService,
     private val evakaEnv: EvakaEnv,
-    private val vardaEnv: VardaEnv,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val invoiceGenerator: InvoiceGenerator,
@@ -367,8 +364,8 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
-        vardaUpdateServiceNew.updateUnits(db, clock)
-        vardaUpdateServiceNew.planChildrenUpdate(db, clock)
+        vardaUpdateService.updateUnits(db, clock)
+        vardaUpdateService.planChildrenUpdate(db, clock)
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {

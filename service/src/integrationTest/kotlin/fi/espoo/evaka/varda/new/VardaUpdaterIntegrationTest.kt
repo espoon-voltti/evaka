@@ -40,6 +40,17 @@ import fi.espoo.evaka.snDaycareFullDayPartWeek25
 import fi.espoo.evaka.snDaycarePartDay25
 import fi.espoo.evaka.snDefaultTemporaryPartDayDaycare
 import fi.espoo.evaka.snPreschoolDaycarePartDay35to45
+import fi.espoo.evaka.varda.DryRunClient
+import fi.espoo.evaka.varda.Henkilo
+import fi.espoo.evaka.varda.Huoltaja
+import fi.espoo.evaka.varda.Lapsi
+import fi.espoo.evaka.varda.Maksutieto
+import fi.espoo.evaka.varda.VardaReadClient
+import fi.espoo.evaka.varda.VardaUpdater
+import fi.espoo.evaka.varda.VardaWriteClient
+import fi.espoo.evaka.varda.Varhaiskasvatuspaatos
+import fi.espoo.evaka.varda.Varhaiskasvatussuhde
+import fi.espoo.evaka.varda.getVardaUpdateState
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalTime

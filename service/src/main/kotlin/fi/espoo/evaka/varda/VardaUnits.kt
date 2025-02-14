@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.varda.new.VardaEntity
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.LocalDate

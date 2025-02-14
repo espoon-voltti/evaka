@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.varda.new
+package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.OphEnv
@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.varda.updateUnits
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
@@ -42,7 +41,7 @@ val VARDA_START_DATE: LocalDate = LocalDate.of(2019, 1, 1)
 val VARDA_FEE_START_DATE: LocalDate = LocalDate.of(2019, 9, 1)
 
 @Service
-class VardaUpdateServiceNew(
+class VardaUpdateService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     jsonMapper: JsonMapper,
     private val ophEnv: OphEnv,

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.varda.new
+package fi.espoo.evaka.varda
 
 import java.net.URI
 
