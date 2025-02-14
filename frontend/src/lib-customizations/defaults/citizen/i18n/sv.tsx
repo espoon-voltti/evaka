@@ -2345,7 +2345,7 @@ const sv: Translations = {
         'Genomsnittliga inkomster inklusive semesterpenning, €/månad',
       otherIncome: 'Övriga inkomster',
       otherIncomeDescription:
-        'Om du har några andra inkomster, ska du lämna in uppgifterna som bilaga. En lista över nödvändiga bilagor finns längst ner på blanketten under: Bilagor som rör inkomsterna och avgifterna för småbarnspedagogik.',
+        'Om du har några andra inkomster, ska du lämna in uppgifterna som bilaga.',
       choosePlaceholder: 'Välj',
       otherIncomeTypes: {
         PENSION: 'Pension',
@@ -2381,17 +2381,8 @@ const sv: Translations = {
     },
     entrepreneurIncome: {
       title: 'Att fylla i företagarens inkomstuppgifter',
-      description: (
-        <>
-          Med denna blankett kan du vid behov fylla i uppgifterna för flera
-          företag genom att välja de punkter som gäller alla dina företag.
-          Skicka mer detaljerade företagsspecifika uppgifter som bilaga.
-          <br />
-          En lista över obligatoriska bilagor finns längst ner på blanketten
-          under ”Bilagor som rör inkomsterna och avgifterna för
-          småbarnspedagogik”.
-        </>
-      ),
+      description:
+        'Med denna blankett kan du vid behov fylla i uppgifterna för flera företag genom att välja de punkter som gäller alla dina företag.',
       fullTimeLabel: 'Är företagsverksamheten en huvudsyssla eller bisyssla?',
       fullTime: 'Huvudsyssla',
       partTime: 'Bisyssla',

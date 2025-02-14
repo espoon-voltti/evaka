@@ -77,6 +77,7 @@ export interface AssistanceNeedDecisionsReportRow {
   childName: string
   decisionMade: LocalDate | null
   decisionNumber: number
+  expired: boolean
   id: UUID
   isOpened: boolean | null
   preschool: boolean

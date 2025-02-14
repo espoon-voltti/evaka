@@ -48,7 +48,12 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
                             Action.AssistanceNeedPreschoolDecision.READ_IN_REPORT,
                         )
 
-                    it.getDecisionRows(user.evakaUserId, filterDaycare, filterPreschool)
+                    it.getDecisionRows(
+                        userId = user.evakaUserId,
+                        idFilterDaycare = filterDaycare,
+                        idFilterPreschool = filterPreschool,
+                        today = clock.today(),
+                    )
                 }
             }
             .also { Audit.AssistanceNeedDecisionsReportRead.log(meta = mapOf("count" to it.size)) }
@@ -84,6 +89,7 @@ private fun Database.Read.getDecisionRows(
     userId: EvakaUserId,
     idFilterDaycare: AccessControlFilter<AssistanceNeedDecisionId>,
     idFilterPreschool: AccessControlFilter<AssistanceNeedPreschoolDecisionId>,
+    today: LocalDate,
 ): List<AssistanceNeedDecisionsReportRow> =
     createQuery {
             sql(
@@ -91,7 +97,11 @@ private fun Database.Read.getDecisionRows(
 WITH decisions AS (
     SELECT 
         id, decision_number, false as preschool, status, sent_for_decision, decision_made,
-        child_id, selected_unit, decision_maker_employee_id, decision_maker_has_opened
+        child_id, selected_unit, decision_maker_employee_id, decision_maker_has_opened,
+        (CASE 
+            WHEN validity_period IS NOT NULL AND NOT upper_inf(validity_period)
+            THEN upper(validity_period) - interval '1 day' 
+        END) AS valid_to
     FROM assistance_need_decision ad
     WHERE sent_for_decision IS NOT NULL
     AND (${predicate(idFilterDaycare.forTable("ad"))})
@@ -100,20 +110,21 @@ WITH decisions AS (
     
     SELECT 
         id, decision_number, true as preschool, status, sent_for_decision, decision_made,
-        child_id, selected_unit, decision_maker_employee_id, decision_maker_has_opened
+        child_id, selected_unit, decision_maker_employee_id, decision_maker_has_opened,
+        valid_to
     FROM assistance_need_preschool_decision apd
     WHERE sent_for_decision IS NOT NULL
     AND (${predicate(idFilterPreschool.forTable("apd"))})
 )
 SELECT ad.id, ad.decision_number, ad.preschool, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
     care_area.name care_area_name, daycare.name unit_name, decision_made, status,
-    (CASE WHEN decision_maker_employee_id = ${bind(userId)} THEN decision_maker_has_opened END) is_opened
+    (CASE WHEN decision_maker_employee_id = ${bind(userId)} THEN decision_maker_has_opened END) is_opened,
+    (ad.valid_to IS NOT NULL AND ad.valid_to < ${bind(today)}) as expired
 FROM decisions ad
 JOIN person child ON child.id = ad.child_id
 JOIN daycare ON daycare.id = ad.selected_unit
 JOIN care_area ON care_area.id = daycare.care_area_id
         """
-                    .trimIndent()
             )
         }
         .toList<AssistanceNeedDecisionsReportRow>()
@@ -129,6 +140,7 @@ data class AssistanceNeedDecisionsReportRow(
     val decisionMade: LocalDate?,
     val status: AssistanceNeedDecisionStatus,
     val isOpened: Boolean?,
+    val expired: Boolean,
 )
 
 private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int {

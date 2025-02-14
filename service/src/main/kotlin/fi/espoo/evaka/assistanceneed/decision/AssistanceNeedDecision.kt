@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.assistanceneed.decision
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.AssistanceNeedDecisionGuardianId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
@@ -124,6 +125,7 @@ data class AssistanceNeedDecisionBasics(
     val created: HelsinkiDateTime,
 )
 
+@ConstList("assistanceNeedDecisionStatuses")
 enum class AssistanceNeedDecisionStatus : DatabaseEnum {
     DRAFT,
     NEEDS_WORK,

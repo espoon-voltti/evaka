@@ -92,6 +92,7 @@ const StickyTitleRow = styled(TitleRow)`
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
   white-space: pre-line;
+  word-break: break-word;
 `
 
 function SingleMessage({

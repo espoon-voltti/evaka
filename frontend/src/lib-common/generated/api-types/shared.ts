@@ -249,7 +249,8 @@ export const pilotFeatures = [
   'PLACEMENT_TERMINATION',
   'REALTIME_STAFF_ATTENDANCE',
   'PUSH_NOTIFICATIONS',
-  'SERVICE_APPLICATIONS'
+  'SERVICE_APPLICATIONS',
+  'STAFF_ATTENDANCE_INTEGRATION'
 ] as const
 
 export type PilotFeature = typeof pilotFeatures[number]

@@ -3674,6 +3674,9 @@ export const fi = {
       sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
       decisionMade: 'Päätös tehty',
       status: 'Tila',
+      statusFilter: 'Näytettävät tilat',
+      otherFilters: 'Muut valinnat',
+      showExpired: 'Näytä päättyneet tuen päätökset',
       returnForEditModal: {
         title: 'Palautetaanko päätös korjattavaksi?',
         okBtn: 'Palauta korjattavaksi',
@@ -4992,11 +4995,12 @@ export const fi = {
       MOBILE: 'Mobiili',
       RESERVATIONS: 'Varaukset',
       VASU_AND_PEDADOC: 'Pedagogiset asiakirjat ja pedagoginen dokumentointi',
-      MOBILE_MESSAGING: 'Mobiili-viestintä',
+      MOBILE_MESSAGING: 'Mobiili­viestintä',
       PLACEMENT_TERMINATION: 'Paikan irtisanominen',
       REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo',
       PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot',
-      SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset'
+      SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset',
+      STAFF_ATTENDANCE_INTEGRATION: 'Työvuoro­suunnittelu­integraatio'
     }
   },
   roles: {

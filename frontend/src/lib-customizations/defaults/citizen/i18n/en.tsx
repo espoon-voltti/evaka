@@ -2100,7 +2100,7 @@ const en: Translations = {
         'Average earnings including holiday bonus, €/month',
       otherIncome: 'Other income',
       otherIncomeDescription:
-        'If you have other income, it must be itemised in an attachment. A list of the required attachments can be found at the bottom of the form under: Attachments related to income and early childhood education fees.',
+        'If you have other income, it must be itemised in an attachment.',
       choosePlaceholder: 'Select',
       otherIncomeTypes: {
         PENSION: 'Pension',
@@ -2135,17 +2135,8 @@ const en: Translations = {
     },
     entrepreneurIncome: {
       title: "Filling in the entrepreneur's income information",
-      description: (
-        <>
-          If necessary, you can fill in the information for more than one
-          company by ticking the boxes that apply to all of your companies.
-          Please provide more detailed company-specific information as
-          attachments.
-          <br />A list of the required attachments can be found at the bottom of
-          the form under &quot;Attachments related to income and early childhood
-          education fees&quot;.
-        </>
-      ),
+      description:
+        'If necessary, you can fill in the information for more than one company by ticking the boxes that apply to all of your companies.',
       fullTimeLabel: 'Are the business activities full-time or part-time?',
       fullTime: 'Full-time',
       partTime: 'Part-time',
