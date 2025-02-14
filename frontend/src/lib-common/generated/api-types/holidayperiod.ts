@@ -17,7 +17,7 @@ import { Translatable } from './shared'
 * Generated from fi.espoo.evaka.holidayperiod.ActiveQuestionnaire
 */
 export interface ActiveQuestionnaire {
-  eligibleChildren: PersonId[]
+  eligibleChildren: Partial<Record<PersonId, FiniteDateRange[]>>
   previousAnswers: HolidayQuestionnaireAnswer[]
   questionnaire: HolidayQuestionnaire
 }
@@ -207,6 +207,9 @@ export type QuestionnaireType =
 export function deserializeJsonActiveQuestionnaire(json: JsonOf<ActiveQuestionnaire>): ActiveQuestionnaire {
   return {
     ...json,
+    eligibleChildren: Object.fromEntries(Object.entries(json.eligibleChildren).map(
+      ([k, v]) => [k, v !== undefined ? v.map(e => FiniteDateRange.parseJson(e)) : v]
+    )),
     previousAnswers: json.previousAnswers.map(e => deserializeJsonHolidayQuestionnaireAnswer(e)),
     questionnaire: deserializeJsonHolidayQuestionnaire(json.questionnaire)
   }

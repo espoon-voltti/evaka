@@ -10,6 +10,8 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.absence.upsertFullDayAbsences
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getConsecutivePlacementRanges
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteAbsencesCreatedFromQuestionnaire
 import fi.espoo.evaka.reservations.getReservableRange
@@ -34,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController
 
 data class ActiveQuestionnaire(
     val questionnaire: HolidayQuestionnaire,
-    val eligibleChildren: List<ChildId>,
+    val eligibleChildren: Map<ChildId, List<FiniteDateRange>>,
     val previousAnswers: List<HolidayQuestionnaireAnswer>,
 )
 
@@ -86,18 +88,8 @@ class HolidayPeriodControllerCitizen(
                                 tx.getActiveOpenRangesQuestionnaire(clock.today())
                         } ?: return@read listOf()
 
-                    val continuousPlacementPeriod =
-                        activeQuestionnaire.conditions.continuousPlacement
                     val eligibleChildren =
-                        if (continuousPlacementPeriod != null) {
-                            tx.getChildrenWithContinuousPlacement(
-                                clock.today(),
-                                user.id,
-                                continuousPlacementPeriod,
-                            )
-                        } else {
-                            tx.getUserChildIds(clock.today(), user.id)
-                        }
+                        getEligibleChildren(tx, user, clock.today(), activeQuestionnaire)
                     if (eligibleChildren.isEmpty()) {
                         listOf()
                     } else {
@@ -108,7 +100,7 @@ class HolidayPeriodControllerCitizen(
                                 previousAnswers =
                                     tx.getQuestionnaireAnswers(
                                         activeQuestionnaire.id,
-                                        eligibleChildren,
+                                        eligibleChildren.keys.toList(),
                                     ),
                             )
                         )
@@ -144,14 +136,13 @@ class HolidayPeriodControllerCitizen(
                         if (!it.active.includes(today))
                             throw BadRequest("Questionnaire is not open")
                     } ?: throw BadRequest("Questionnaire not found")
-                validateEligibility(questionnaire, tx, today, user, childIds, body, null)
-
-                val invalidPeriod =
-                    body.fixedPeriods.values.find { !questionnaire.periodOptions.contains(it) }
-
-                if (invalidPeriod != null) {
-                    throw BadRequest("Invalid option provided ($invalidPeriod)")
-                }
+                validate(
+                    questionnaire,
+                    tx,
+                    today,
+                    user,
+                    body.fixedPeriods.mapValues { (_, period) -> period?.let { listOf(it) } },
+                )
 
                 val absences =
                     body.fixedPeriods.entries.flatMap { (childId, period) ->
@@ -203,18 +194,7 @@ class HolidayPeriodControllerCitizen(
                         if (!it.active.includes(today))
                             throw BadRequest("Questionnaire is not open")
                     } ?: throw BadRequest("Questionnaire not found")
-                validateEligibility(questionnaire, tx, today, user, childIds, null, body)
-
-                val invalidRanges =
-                    body.openRanges.values.find { ranges ->
-                        ranges.any { it.start < questionnaire.period.start } ||
-                            ranges.any { it.end > questionnaire.period.end } ||
-                            ranges.any { range -> ranges.any { it != range && it.overlaps(range) } }
-                    }
-
-                if (invalidRanges != null) {
-                    throw BadRequest("Invalid option provided ($invalidRanges)")
-                }
+                validate(questionnaire, tx, today, user, body.openRanges)
 
                 val absences =
                     body.openRanges.entries.flatMap { (childId, ranges) ->
@@ -248,30 +228,68 @@ class HolidayPeriodControllerCitizen(
         Audit.HolidayAbsenceCreate.log(targetId = AuditId(id), objectId = AuditId(childIds.toSet()))
     }
 
-    private fun validateEligibility(
+    private fun validate(
         questionnaire: HolidayQuestionnaire,
         tx: Database.Transaction,
         today: LocalDate,
         user: AuthenticatedUser.Citizen,
-        childIds: Set<ChildId>,
-        fixedBody: FixedPeriodsBody?,
-        openBody: OpenRangesBody?,
+        data: Map<ChildId, List<FiniteDateRange>?>,
     ) {
-        if (questionnaire.conditions.continuousPlacement != null) {
-            val eligibleChildren =
-                tx.getChildrenWithContinuousPlacement(
-                    today,
-                    user.id,
-                    questionnaire.conditions.continuousPlacement!!,
-                )
-            if (
-                childIds.any {
-                    (fixedBody?.fixedPeriods?.get(it) != null && !eligibleChildren.contains(it)) ||
-                        (openBody?.openRanges?.get(it) != null && !eligibleChildren.contains(it))
+        val eligibleChildren = getEligibleChildren(tx, user, today, questionnaire)
+        val invalid =
+            data
+                .mapNotNull { (childId, periods) ->
+                    if (periods == null) {
+                        return@mapNotNull null
+                    }
+                    val validPeriods =
+                        eligibleChildren[childId] ?: return@mapNotNull childId to periods
+                    val invalidPeriods =
+                        periods.filterNot { period ->
+                            validPeriods.any { validPeriod -> validPeriod.contains(period) }
+                        }
+                    if (invalidPeriods.isNotEmpty()) childId to invalidPeriods else null
                 }
-            ) {
-                throw BadRequest("Some children are not eligible to answer")
+                .toMap()
+        if (invalid.isNotEmpty()) {
+            throw BadRequest(
+                "Some children are not eligible to answer or invalid option provided ($invalid)"
+            )
+        }
+    }
+
+    private fun getEligibleChildren(
+        tx: Database.Read,
+        user: AuthenticatedUser.Citizen,
+        date: LocalDate,
+        questionnaire: HolidayQuestionnaire,
+    ): Map<ChildId, List<FiniteDateRange>> {
+        val continuousPlacementPeriod = questionnaire.conditions.continuousPlacement
+        val eligibleChildren =
+            if (continuousPlacementPeriod != null) {
+                tx.getChildrenWithContinuousPlacement(date, user.id, continuousPlacementPeriod)
+            } else {
+                tx.getUserChildIds(date, user.id)
             }
+        return when (questionnaire) {
+            is HolidayQuestionnaire.FixedPeriodQuestionnaire -> {
+                val periodOptions = questionnaire.periodOptions
+                val min = periodOptions.minOf { it.start }
+                val max = periodOptions.maxOf { it.end }
+                val placementRangesByChild =
+                    tx.getConsecutivePlacementRanges(
+                        eligibleChildren,
+                        PlacementType.invoiced,
+                        FiniteDateRange(min, max),
+                    )
+                eligibleChildren.associateWith { childId ->
+                    placementRangesByChild[childId]?.let { placementRanges ->
+                        periodOptions.filter { option -> placementRanges.contains(option) }
+                    } ?: emptyList()
+                }
+            }
+            is HolidayQuestionnaire.OpenRangesQuestionnaire ->
+                eligibleChildren.associateWith { listOf(questionnaire.period) }
         }
     }
 

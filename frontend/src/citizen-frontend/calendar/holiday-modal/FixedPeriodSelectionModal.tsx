@@ -45,7 +45,7 @@ interface Props {
   close: () => void
   questionnaire: HolidayQuestionnaire.FixedPeriodQuestionnaire
   availableChildren: ReservationChild[]
-  eligibleChildren: ChildId[]
+  eligibleChildren: Partial<Record<ChildId, FiniteDateRange[]>>
   previousAnswers: HolidayQuestionnaireAnswer[]
 }
 
@@ -107,10 +107,10 @@ export default React.memo(function FixedPeriodSelectionModal({
                   ? ` ${duplicateChildInfo[child.id]}`
                   : ''}
               </H2>
-              {eligibleChildren.includes(child.id) ? (
+              {eligibleChildren[child.id] !== undefined ? (
                 <PeriodSelector
                   label={questionnaire.periodOptionLabel[lang]}
-                  options={questionnaire.periodOptions}
+                  options={eligibleChildren[child.id]!}
                   value={fixedPeriods[child.id] ?? null}
                   onSelectPeriod={selectPeriod(child.id)}
                 />

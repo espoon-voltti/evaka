@@ -45,7 +45,7 @@ interface Props {
   close: () => void
   questionnaire: HolidayQuestionnaire.OpenRangesQuestionnaire
   availableChildren: ReservationChild[]
-  eligibleChildren: ChildId[]
+  eligibleChildren: Partial<Record<ChildId, FiniteDateRange[]>>
   previousAnswers: HolidayQuestionnaireAnswer[]
 }
 
@@ -111,7 +111,7 @@ export default React.memo(function OpenRangesSelectionModal({
                   ? ` ${duplicateChildInfo[child.id]}`
                   : ''}
               </H2>
-              {eligibleChildren.includes(child.id) ? (
+              {eligibleChildren[child.id] !== undefined ? (
                 <RangeSelector
                   period={questionnaire.period}
                   value={openRanges[child.id] ?? []}

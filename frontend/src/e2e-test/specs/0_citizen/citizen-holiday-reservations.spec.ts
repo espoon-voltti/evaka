@@ -388,4 +388,57 @@ describe('Holiday periods and questionnaires', () => {
       await dayView.assertNoReservation(child2.id)
     })
   })
+
+  test('Holiday period options are selectable based on placement duration', async () => {
+    await holidayQuestionnaireFixture().save()
+    const child2 = await setupAnotherChild(
+      LocalDate.of(2035, 12, 19),
+      LocalDate.of(2036, 1, 1)
+    )
+
+    await enduserLogin(page, guardian)
+    await new CitizenHeader(page).selectTab('calendar')
+    const calendar = new CitizenCalendarPage(page, 'desktop')
+    const holidayModal = await calendar.openHolidayModal()
+
+    await holidayModal.assertOptions(child, [
+      'Ei maksutonta poissaoloa',
+      '18.12.2035 - 25.12.2035',
+      '26.12.2035 - 01.01.2036',
+      '02.01.2036 - 08.01.2036'
+    ])
+    await holidayModal.assertOptions(child2, [
+      'Ei maksutonta poissaoloa',
+      '26.12.2035 - 01.01.2036'
+    ])
+    await holidayModal.markHolidays([
+      {
+        child,
+        option: '02.01.2036 - 08.01.2036'
+      },
+      {
+        child: child2,
+        option: '26.12.2035 - 01.01.2036'
+      }
+    ])
+
+    await calendar.assertDay(LocalDate.of(2035, 12, 27), [
+      { childIds: [child.id], text: 'Ilmoitus puuttuu' },
+      { childIds: [child2.id], text: 'Maksuton poissaolo' }
+    ])
+    await calendar.assertDay(LocalDate.of(2036, 1, 2), [
+      { childIds: [child.id], text: 'Maksuton poissaolo' }
+    ])
+
+    const dayView1 = await calendar.openDayView(LocalDate.of(2035, 12, 27))
+    await dayView1.assertNoReservation(child.id)
+    await dayView1.assertAbsence(
+      child2.id,
+      'Henkilökunnan merkitsemä poissaolo'
+    )
+    await dayView1.close()
+    const dayView2 = await calendar.openDayView(LocalDate.of(2036, 1, 2))
+    await dayView2.assertAbsence(child.id, 'Henkilökunnan merkitsemä poissaolo')
+    await dayView2.close()
+  })
 })
