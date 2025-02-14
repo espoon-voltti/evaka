@@ -118,6 +118,7 @@ function GroupListing({
 function AclRow({
   unitId,
   row,
+  scheduledRow,
   isEditable,
   isDeletable,
   coefficientPermitted,
@@ -126,6 +127,7 @@ function AclRow({
 }: {
   unitId: DaycareId
   row: DaycareAclRow
+  scheduledRow: ScheduledDaycareAclRow | undefined
   isEditable: boolean
   isDeletable: boolean
   coefficientPermitted: boolean
@@ -147,6 +149,12 @@ function AclRow({
           : row.role === 'STAFF' && !row.employee.temporary
             ? deleteStaffMutation
             : null
+
+  const roleChangeDate =
+    scheduledRow &&
+    (row.endDate === null || scheduledRow.startDate <= row.endDate.addDays(1))
+      ? scheduledRow.startDate.subDays(1)
+      : null
 
   return (
     <Tr data-qa={`acl-row-${row.employee.id}`}>
@@ -192,7 +200,9 @@ function AclRow({
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}
-      <Td>{row.endDate?.format()}</Td>
+      <Td>
+        {roleChangeDate ? `${roleChangeDate.format()}*` : row.endDate?.format()}
+      </Td>
       <Td>
         <FixedSpaceRow justifyContent="flex-end">
           {isEditable && (
@@ -234,6 +244,7 @@ function AclTable({
   dataQa = 'acl-table',
   unitGroups,
   rows,
+  scheduledRows,
   onClickEdit,
   permittedActions
 }: {
@@ -241,6 +252,7 @@ function AclTable({
   dataQa?: string
   unitGroups?: Record<UUID, DaycareGroupResponse>
   rows: DaycareAclRow[]
+  scheduledRows: ScheduledDaycareAclRow[]
   onClickEdit: (employeeRow: DaycareAclRow) => void
   permittedActions: Action.Unit[]
 }) {
@@ -310,6 +322,7 @@ function AclTable({
             unitId={unitId}
             unitGroups={unitGroups}
             row={row}
+            scheduledRow={scheduledRows.find((sr) => sr.id === row.employee.id)}
             isDeletable={
               deletePermitted(row.role) && row.employee.id !== user?.id
             }
@@ -323,7 +336,13 @@ function AclTable({
   )
 }
 
-function ScheduledAclTable({ rows }: { rows: ScheduledDaycareAclRow[] }) {
+function ScheduledAclTable({
+  rows,
+  currentRows
+}: {
+  rows: ScheduledDaycareAclRow[]
+  currentRows: DaycareAclRow[]
+}) {
   const { i18n } = useTranslation()
 
   const orderedRows = useMemo(
@@ -347,23 +366,33 @@ function ScheduledAclTable({ rows }: { rows: ScheduledDaycareAclRow[] }) {
         </Tr>
       </Thead>
       <Tbody>
-        {orderedRows.map((row) => (
-          <Tr key={row.id} data-qa={`scheduled-acl-row-${row.id}`}>
-            <Td>
-              <span data-qa="role">{i18n.roles.adRoles[row.role]}</span>
-            </Td>
-            <Td>
-              <FixedSpaceColumn spacing="zero">
-                <span data-qa="name">
-                  {formatName(row.firstName, row.lastName, i18n)}
-                </span>
-                <EmailSpan data-qa="email">{row.email}</EmailSpan>
-              </FixedSpaceColumn>
-            </Td>
-            <Td>{row.startDate.format()}</Td>
-            <Td>{row.endDate?.format()}</Td>
-          </Tr>
-        ))}
+        {orderedRows.map((row) => {
+          const isRoleChange = currentRows.some(
+            (r) =>
+              r.employee.id === row.id &&
+              (r.endDate === null || r.endDate >= row.startDate.subDays(1))
+          )
+          return (
+            <Tr key={row.id} data-qa={`scheduled-acl-row-${row.id}`}>
+              <Td>
+                <span data-qa="role">{i18n.roles.adRoles[row.role]}</span>
+              </Td>
+              <Td>
+                <FixedSpaceColumn spacing="zero">
+                  <span data-qa="name">
+                    {formatName(row.firstName, row.lastName, i18n)}
+                  </span>
+                  <EmailSpan data-qa="email">{row.email}</EmailSpan>
+                </FixedSpaceColumn>
+              </Td>
+              <Td>
+                {row.startDate.format()}
+                {isRoleChange && '*'}
+              </Td>
+              <Td>{row.endDate?.format()}</Td>
+            </Tr>
+          )
+        })}
       </Tbody>
     </Table>
   )
@@ -694,24 +723,37 @@ export default React.memo(function UnitAccessControl({
           )}
         </FixedSpaceRow>
 
-        {renderResult(daycareAclRows, (daycareAclRows) => (
-          <>
-            <AclTable
-              unitId={unitId}
-              rows={daycareAclRows}
-              unitGroups={groups}
-              onClickEdit={(row) => setEditedAclRow(row)}
-              permittedActions={permittedActions}
-            />
-          </>
-        ))}
+        {renderResult(
+          combine(daycareAclRows, scheduledDaycareAclRows),
+          ([daycareAclRows, scheduledDaycareAclRows]) => (
+            <>
+              <AclTable
+                unitId={unitId}
+                rows={daycareAclRows}
+                scheduledRows={scheduledDaycareAclRows}
+                unitGroups={groups}
+                onClickEdit={(row) => setEditedAclRow(row)}
+                permittedActions={permittedActions}
+              />
+            </>
+          )
+        )}
+        <span>*{i18n.unit.accessControl.roleChange}</span>
 
         <Gap size="XL" />
 
         <H3 noMargin>{i18n.unit.accessControl.scheduledAclRoles}</H3>
-        {renderResult(scheduledDaycareAclRows, (scheduledDaycareAclRows) => (
-          <ScheduledAclTable rows={scheduledDaycareAclRows} />
-        ))}
+        {renderResult(
+          combine(daycareAclRows, scheduledDaycareAclRows),
+          ([daycareAclRows, scheduledDaycareAclRows]) => (
+            <ScheduledAclTable
+              rows={scheduledDaycareAclRows}
+              currentRows={daycareAclRows}
+            />
+          )
+        )}
+
+        <Gap size="XL" />
 
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
           <H3 noMargin>{i18n.unit.accessControl.temporaryEmployees.title}</H3>

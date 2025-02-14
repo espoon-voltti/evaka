@@ -2203,6 +2203,7 @@ export const fi = {
     accessControl: {
       aclRoles: 'Luvitukset',
       activeAclRoles: 'Aktiiviset luvitukset',
+      roleChange: 'Roolin vaihto',
       scheduledAclRoles: 'Tulevat luvitukset',
       role: 'Rooli',
       name: 'Nimi',
