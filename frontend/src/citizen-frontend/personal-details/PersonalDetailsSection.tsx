@@ -108,7 +108,7 @@ export default React.memo(function PersonalDetailsSection({
     | { type: 'mismatch' | 'unverified'; email: string }
     | undefined = emailVerificationStatus.email
     ? user.weakLoginUsername
-      ? user.weakLoginUsername !== emailVerificationStatus.email
+      ? user.weakLoginUsername !== emailVerificationStatus.email.toLowerCase()
         ? { type: 'mismatch', email: emailVerificationStatus.email }
         : undefined
       : emailVerificationStatus.email !== emailVerificationStatus.verifiedEmail

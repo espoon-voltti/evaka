@@ -104,9 +104,9 @@ fun Database.Transaction.syncWeakLoginUsername(now: HelsinkiDateTime, personId: 
         sql(
             """
 UPDATE citizen_user
-SET username = verified_email, username_updated_at = ${bind(now)}
-FROM (SELECT id, verified_email FROM person WHERE id = ${bind(personId)}) target
-WHERE citizen_user.id = target.id AND verified_email IS NOT NULL AND verified_email != username
+SET username = new_username, username_updated_at = ${bind(now)}
+FROM (SELECT id, lower(verified_email) AS new_username FROM person WHERE id = ${bind(personId)}) target
+WHERE citizen_user.id = target.id AND new_username IS NOT NULL AND new_username != username
 """
         )
     }
