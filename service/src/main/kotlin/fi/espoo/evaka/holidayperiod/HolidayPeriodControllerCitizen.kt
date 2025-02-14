@@ -276,14 +276,16 @@ class HolidayPeriodControllerCitizen(
                 val periodOptions = questionnaire.periodOptions
                 val min = periodOptions.minOf { it.start }
                 val max = periodOptions.maxOf { it.end }
+                val placementRangesByChild =
+                    tx.getConsecutivePlacementRanges(
+                        eligibleChildren,
+                        PlacementType.invoiced,
+                        FiniteDateRange(min, max),
+                    )
                 eligibleChildren.associateWith { childId ->
-                    val placementRanges =
-                        tx.getConsecutivePlacementRanges(
-                            childId,
-                            PlacementType.invoiced,
-                            FiniteDateRange(min, max),
-                        )
-                    periodOptions.filter { option -> placementRanges.contains(option) }
+                    placementRangesByChild[childId]?.let { placementRanges ->
+                        periodOptions.filter { option -> placementRanges.contains(option) }
+                    } ?: emptyList()
                 }
             }
             is HolidayQuestionnaire.OpenRangesQuestionnaire ->

@@ -890,23 +890,24 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
         .exactlyOne<Boolean>()
 
 fun Database.Read.getConsecutivePlacementRanges(
-    childId: ChildId,
+    childIds: List<ChildId>,
     types: List<PlacementType>,
     period: FiniteDateRange,
-): DateSet =
+): Map<ChildId, DateSet> =
     createQuery {
             sql(
                 """
-SELECT range_agg(daterange(start_date, end_date, '[]'))
+SELECT child_id, range_agg(daterange(start_date, end_date, '[]')) AS ranges
 FROM placement
-WHERE child_id = ${bind(childId)}
+WHERE child_id = ANY (${bind(childIds)})
   AND type = ANY (${bind(types)})
   AND end_date >= ${bind(period.start)}
   AND start_date <= ${bind(period.end)}
+GROUP BY child_id
 """
             )
         }
-        .exactlyOneOrNull<DateSet>() ?: DateSet.empty()
+        .toMap { columnPair<ChildId, DateSet>("child_id", "ranges") }
 
 fun Database.Transaction.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
     childId: ChildId,
