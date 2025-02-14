@@ -17,10 +17,10 @@ export class MockStrongAuthPage {
   constructor(private readonly page: Page) {}
 
   async login(ssn: string) {
-    const checkbox = this.page.find(`[id="${ssn}"]`)
-    await checkbox.click()
-    const submit = this.page.find('button')
-    await submit.click()
+    await this.page.find(`[id="${ssn}"]`).locator.check()
+    await this.page.find('[type=submit]').findText('Kirjaudu').click()
+    await this.page.find('[type=submit]').findText('Jatka').click()
+    await this.page.findByDataQa('header-city-logo').waitUntilVisible()
     return new CitizenMessagesPage(this.page)
   }
 }

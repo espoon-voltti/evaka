@@ -438,7 +438,14 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
         EVAKA_SERVICE_URL: 'http://localhost:8888',
 
         AD_MOCK: true,
-        SFI_MODE: 'mock',
+        SFI_MODE: isLocal ? 'test' : 'mock',
+        SFI_SAML_CALLBACK_URL:
+          'http://localhost:9099/api/application/auth/saml/login/callback',
+        SFI_SAML_ENTRYPOINT: 'http://localhost:9090/idp/sso',
+        SFI_SAML_LOGOUT_URL: 'http://localhost:9090/idp/slo',
+        SFI_SAML_ISSUER: 'http://localhost:9099/api/application/auth/saml/',
+        SFI_SAML_PUBLIC_CERT: ['config/test-cert/dummy-idp.pem'],
+        SFI_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem',
 
         EVAKA_SAML_CALLBACK_URL:
           'http://localhost:9099/api/employee/auth/ad/login/callback',

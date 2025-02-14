@@ -49,6 +49,7 @@ services:
     depends_on:
       - redis
       - evaka-srv
+      - dummy-idp
     volumes:
       - ../apigw/config/test-cert:/home/evaka/test-cert
     environment:

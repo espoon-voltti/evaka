@@ -12,31 +12,14 @@ export async function enduserLogin(page: Page, person: DevPerson) {
     throw new Error('Person does not have an SSN: cannot login')
   }
 
-  const authUrl = `${config.apiUrl}/citizen/auth/sfi/login/callback?RelayState=%2Fapplications`
-  if (!page.url.startsWith(config.enduserUrl)) {
-    // We must be in the correct domain to be able to fetch()
-    await page.goto(config.enduserLoginUrl)
-  }
-
-  await page.page.evaluate(
-    ({ ssn, authUrl }: { ssn: string; authUrl: string }) => {
-      const params = new URLSearchParams()
-      params.append('preset', ssn)
-      return fetch(authUrl, {
-        method: 'POST',
-        body: params,
-        redirect: 'manual'
-      }).then((response) => {
-        if (response.status >= 400) {
-          throw new Error(
-            `Fetch to {authUrl} failed with status ${response.status}`
-          )
-        }
-      })
-    },
-    { ssn: person.ssn, authUrl }
+  await page.goto(
+    `${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2Fapplications`
   )
-  await page.goto(config.enduserUrl + '/applications')
+  await page.find(`[id="${person.ssn}"]`).locator.check()
+  await page.find('[type=submit]').findText('Kirjaudu').click()
+  await page.find('[type=submit]').findText('Jatka').click()
+
+  await page.findByDataQa('header-city-logo').waitUntilVisible()
 }
 
 export async function enduserLoginWeak(
