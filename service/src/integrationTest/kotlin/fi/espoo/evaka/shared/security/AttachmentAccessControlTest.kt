@@ -11,6 +11,8 @@ import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -19,14 +21,26 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
-import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDateTime
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class AttachmentAccessControlTest : AccessControlTest() {
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
+
+    private val area = DevCareArea()
+    private val unit = DevDaycare(areaId = area.id)
+
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+        }
+    }
 
     @Test
     fun `HasGlobalRole andAttachmentWasUploadedByAnyEmployee`() {
@@ -112,7 +126,10 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     guardianId = guardianId,
                     childId = childId,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                    document =
+                        DaycareFormV0.fromApplication2(
+                            getValidDaycareApplication(preferredUnit = unit)
+                        ),
                 )
             tx.insertAttachment(
                 user,

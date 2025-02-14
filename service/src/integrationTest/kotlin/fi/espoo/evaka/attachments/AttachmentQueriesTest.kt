@@ -19,6 +19,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncome
@@ -28,7 +30,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.test.getValidDaycareApplication
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -46,6 +48,10 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
+            val area = DevCareArea()
+            tx.insert(area)
+            val daycare = DevDaycare(areaId = area.id)
+            tx.insert(daycare)
             guardian =
                 AuthenticatedUser.Citizen(
                     tx.insert(DevPerson(), DevPersonType.ADULT),
@@ -61,7 +67,10 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         type = ApplicationType.DAYCARE,
                         childId = child,
                         guardianId = guardian.id,
-                        document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                        document =
+                            DaycareFormV0.fromApplication2(
+                                getValidDaycareApplication(preferredUnit = daycare)
+                            ),
                     )
                 )
             income =

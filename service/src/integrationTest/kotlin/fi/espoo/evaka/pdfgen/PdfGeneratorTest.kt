@@ -47,7 +47,7 @@ import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
-import fi.espoo.evaka.test.validPreschoolApplication
+import fi.espoo.evaka.test.getValidPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -64,7 +64,7 @@ import org.springframework.context.annotation.Bean
 
 val logger = KotlinLogging.logger {}
 
-private val application = validPreschoolApplication
+private val application = getValidPreschoolApplication()
 private val transferApplication = application.copy(transferApplication = true)
 
 private val daycareTransferDecision =

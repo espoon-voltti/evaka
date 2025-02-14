@@ -37,7 +37,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
-import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertFalse
@@ -68,7 +68,8 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
         db.transaction {
             employeeId = it.insert(DevEmployee())
             val areaId = it.insert(DevCareArea(name = "Test area"))
-            daycareId = it.insert(DevDaycare(areaId = areaId))
+            val daycare = DevDaycare(areaId = areaId)
+            daycareId = it.insert(daycare)
             groupId = it.insert(DevDaycareGroup(daycareId = daycareId))
             guardianId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
             childId = it.insert(DevPerson(), DevPersonType.CHILD)
@@ -87,7 +88,10 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                     childId = childId,
                     guardianId = guardianId,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                    document =
+                        DaycareFormV0.fromApplication2(
+                            getValidDaycareApplication(preferredUnit = daycare)
+                        ),
                 )
             decisionId =
                 it.insertTestDecision(
