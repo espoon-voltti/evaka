@@ -10,7 +10,11 @@ import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import {
   collectAttachmentIds,
   toIncomeStatementAttachments
-} from 'lib-common/income-statements'
+} from 'lib-common/income-statements/attachments'
+import {
+  computeRequiredAttachments,
+  fromIncomeStatement
+} from 'lib-common/income-statements/form'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -36,7 +40,6 @@ import {
   incomeStatementQuery,
   updateSentIncomeStatementMutation
 } from './queries'
-import { computeRequiredAttachments, fromIncomeStatement } from './types/form'
 
 export default React.memo(function ChildIncomeStatementView() {
   const incomeStatementId =

@@ -18,6 +18,7 @@ import {
   otherIncomes
 } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import * as Form from 'lib-common/income-statements/form'
 import LocalDate from 'lib-common/local-date'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
@@ -71,7 +72,6 @@ import {
   useFieldDispatch,
   useFieldSetState
 } from './IncomeStatementComponents'
-import * as Form from './types/form'
 
 interface Props {
   incomeStatementId: IncomeStatementId | undefined

@@ -12,6 +12,9 @@ import {
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
+import { fromBody } from 'lib-common/income-statements/body'
+import * as Form from 'lib-common/income-statements/form'
+import { emptyIncomeStatementForm } from 'lib-common/income-statements/form'
 import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
@@ -31,9 +34,6 @@ import {
   incomeStatementQuery,
   updateIncomeStatementMutation
 } from './queries'
-import { fromBody } from './types/body'
-import * as Form from './types/form'
-import { emptyIncomeStatementForm } from './types/form'
 
 interface EditorState {
   id: string | undefined

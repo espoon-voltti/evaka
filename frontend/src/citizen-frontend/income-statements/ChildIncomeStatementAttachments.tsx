@@ -9,7 +9,7 @@ import {
   AttachmentId,
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
-import { IncomeStatementAttachments } from 'lib-common/income-statements'
+import { IncomeStatementAttachments } from 'lib-common/income-statements/attachments'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 

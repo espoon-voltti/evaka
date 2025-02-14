@@ -8,7 +8,8 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
-import { numAttachments } from 'lib-common/income-statements'
+import { numAttachments } from 'lib-common/income-statements/attachments'
+import * as Form from 'lib-common/income-statements/form'
 import LocalDate from 'lib-common/local-date'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -42,7 +43,6 @@ import {
   useFieldDispatch,
   useFieldSetState
 } from './IncomeStatementComponents'
-import * as Form from './types/form'
 
 const OtherInfoContainer = styled.div`
   max-width: 716px;

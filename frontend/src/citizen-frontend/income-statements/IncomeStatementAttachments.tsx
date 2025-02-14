@@ -18,7 +18,7 @@ import {
 import {
   IncomeStatementAttachments,
   numAttachments
-} from 'lib-common/income-statements'
+} from 'lib-common/income-statements/attachments'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'

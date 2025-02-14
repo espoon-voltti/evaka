@@ -26,7 +26,7 @@ import {
 import {
   numAttachments,
   toIncomeStatementAttachments
-} from 'lib-common/income-statements'
+} from 'lib-common/income-statements/attachments'
 import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
