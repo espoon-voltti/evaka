@@ -1173,7 +1173,9 @@ export interface YearlyStatisticsResult {
   municipalSpecialAssistanceCount: number
   preschoolDaycareFamilyCareCount: number
   preschoolDaycareSchoolCareCount: number
+  preschoolDaycareSchoolShiftCareCount: number
   preschoolDaycareUnitCareCount: number
+  preschoolDaycareUnitShiftCareCount: number
   purchased5YearOldCount: number
   voucher5YearOldCount: number
   voucherAssistanceCount: number

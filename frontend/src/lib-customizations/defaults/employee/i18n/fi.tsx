@@ -4373,8 +4373,12 @@ export const fi = {
           'Täydentävän varhaiskasvatuksen lapset vaka-yksiköissä',
         preschoolDaycareSchoolCareCount:
           'Täydentävän varhaiskasvatuksen lapset kouluissa',
-        preschoolFamilyCareCount:
+        preschoolDaycareFamilyCareCount:
           'Täydentävän varhaiskasvatuksen lapset perhepäivähoidossa',
+        preschoolDaycareUnitShiftCareCount:
+          'Täydentävän varhaiskasvatuksen vuorohoidon lapset vaka-yksiköissä',
+        preschoolDaycareSchoolShiftCareCount:
+          'Täydentävän varhaiskasvatuksen vuorohoidon lapset kouluissa',
         voucherGeneralAssistanceCount:
           'Yleisen tuen lapsimäärä (palveluseteli)',
         voucherSpecialAssistanceCount:

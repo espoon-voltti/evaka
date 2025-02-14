@@ -356,8 +356,22 @@ export default React.memo(function TampereRegionalSurveyReport() {
                       key: 'preschoolDaycareSchoolCareCount'
                     },
                     {
-                      label: t.yearlyStatisticsColumns.preschoolFamilyCareCount,
+                      label:
+                        t.yearlyStatisticsColumns
+                          .preschoolDaycareFamilyCareCount,
                       key: 'preschoolDaycareFamilyCareCount'
+                    },
+                    {
+                      label:
+                        t.yearlyStatisticsColumns
+                          .preschoolDaycareSchoolShiftCareCount,
+                      key: 'preschoolDaycareSchoolShiftCareCount'
+                    },
+                    {
+                      label:
+                        t.yearlyStatisticsColumns
+                          .preschoolDaycareUnitShiftCareCount,
+                      key: 'preschoolDaycareUnitShiftCareCount'
                     },
                     {
                       label:
