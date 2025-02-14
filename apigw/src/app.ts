@@ -321,6 +321,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       redisClient
     )
   )
+  router.all('/citizen/auth/*', (_, res) => res.redirect('/'))
   router.use('/citizen/public/map-api', mapRoutes)
   router.all('/citizen/public/*', citizenProxy)
   router.all('/citizen/*', citizenSessions.requireAuthentication, citizenProxy)
@@ -341,6 +342,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
 
   router.use('/employee/', employeeSessions.middleware)
   router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
+  router.all('/employee/auth/*', (_, res) => res.redirect('/employee'))
   router.all('/employee/public/*', employeeProxy)
   router.all(
     '/employee/*',
@@ -375,6 +377,9 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     employeeMobileSessions.requireAuthentication,
     express.json(),
     pinLogoutRequestHandler(employeeMobileSessions, redisClient)
+  )
+  router.all('/employee-mobile/auth/*', (_, res) =>
+    res.redirect('/employee/mobile')
   )
   router.all('/employee-mobile/public/*', employeeMobileProxy)
   router.all(

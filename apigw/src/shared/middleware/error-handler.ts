@@ -19,7 +19,6 @@ interface LogResponse {
 export const errorHandler: (v: boolean) => ErrorRequestHandler =
   (includeErrorMessage: boolean) => (error, req, res, next) => {
     if (error instanceof InvalidAntiCsrfToken) {
-      logError('Anti-CSRF token error', req, undefined, error)
       if (!res.headersSent) {
         res
           .status(403)
