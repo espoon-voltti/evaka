@@ -395,6 +395,7 @@ describe('Employee - Child documents', () => {
     await row2.openLink.click()
     const childDocument2 = new ChildDocumentPage(page)
     await childDocument2.archiveButton.click()
+    await childDocument2.archiveButton.waitUntilIdle()
     await runJobs({ mockedTime: now })
 
     await page.reload()
