@@ -2212,6 +2212,7 @@ export const fi = {
       aclEndDate: 'Luvitus päättyy',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
+      removeScheduledConfirmation: 'Haluatko poistaa tulevan luvituksen?',
       addDaycareAclModal: {
         title: 'Lisää luvitus',
         role: 'Valitse rooli',

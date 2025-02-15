@@ -250,6 +250,30 @@ class UnitAclController(
         Audit.UnitAclDelete.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
     }
 
+    @DeleteMapping("/employee/daycares/{unitId}/scheduled/{employeeId}")
+    fun deleteScheduledAcl(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @PathVariable employeeId: EmployeeId,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Unit.DELETE_ACL_SCHEDULED,
+                    unitId,
+                )
+                validateIsPermanentEmployee(it, employeeId)
+                it.deleteScheduledDaycareAclRow(employeeId, unitId)
+            }
+        }
+        Audit.UnitAclDeleteScheduled.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
+    }
+
     @PutMapping("/employee/daycares/{unitId}/staff/{employeeId}/groups")
     fun updateGroupAclWithOccupancyCoefficient(
         db: Database,

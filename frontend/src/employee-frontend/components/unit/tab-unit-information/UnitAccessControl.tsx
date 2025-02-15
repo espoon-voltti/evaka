@@ -52,6 +52,7 @@ import { formatName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
 import {
   deleteEarlyChildhoodEducationSecretaryMutation,
+  deleteScheduledAclMutation,
   deleteSpecialEducationTeacherMutation,
   deleteStaffMutation,
   deleteTemporaryEmployeeAclMutation,
@@ -337,11 +338,15 @@ function AclTable({
 }
 
 function ScheduledAclTable({
+  unitId,
   rows,
-  currentRows
+  currentRows,
+  permittedActions
 }: {
+  unitId: DaycareId
   rows: ScheduledDaycareAclRow[]
   currentRows: DaycareAclRow[]
+  permittedActions: Action.Unit[]
 }) {
   const { i18n } = useTranslation()
 
@@ -363,6 +368,7 @@ function ScheduledAclTable({
           <Th>{i18n.common.form.name}</Th>
           <Th>{i18n.unit.accessControl.aclStartDate}</Th>
           <Th>{i18n.unit.accessControl.aclEndDate}</Th>
+          <Th />
         </Tr>
       </Thead>
       <Tbody>
@@ -390,6 +396,20 @@ function ScheduledAclTable({
                 {isRoleChange && '*'}
               </Td>
               <Td>{row.endDate?.format()}</Td>
+              <Td>
+                {permittedActions.includes('DELETE_ACL_SCHEDULED') && (
+                  <ConfirmedMutation
+                    buttonStyle="ICON"
+                    icon={faTrash}
+                    buttonAltText={i18n.common.remove}
+                    confirmationTitle={
+                      i18n.unit.accessControl.removeScheduledConfirmation
+                    }
+                    mutation={deleteScheduledAclMutation}
+                    onClick={() => ({ unitId, employeeId: row.id })}
+                  />
+                )}
+              </Td>
             </Tr>
           )
         })}
@@ -752,8 +772,10 @@ export default React.memo(function UnitAccessControl({
           combine(daycareAclRows, scheduledDaycareAclRows),
           ([daycareAclRows, scheduledDaycareAclRows]) => (
             <ScheduledAclTable
+              unitId={unitId}
               rows={scheduledDaycareAclRows}
               currentRows={daycareAclRows}
+              permittedActions={permittedActions}
             />
           )
         )}

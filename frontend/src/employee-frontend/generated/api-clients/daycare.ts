@@ -760,6 +760,23 @@ export async function deleteEarlyChildhoodEducationSecretary(
 
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteScheduledAcl
+*/
+export async function deleteScheduledAcl(
+  request: {
+    unitId: DaycareId,
+    employeeId: EmployeeId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/daycares/${request.unitId}/scheduled/${request.employeeId}`.toString(),
+    method: 'DELETE'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteSpecialEducationTeacher
 */
 export async function deleteSpecialEducationTeacher(
