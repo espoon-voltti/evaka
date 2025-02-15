@@ -738,6 +738,7 @@ export default React.memo(function UnitAccessControl({
             </>
           )
         )}
+        <Gap size="xs" />
         <span>*{i18n.unit.accessControl.roleChange}</span>
 
         <Gap size="XL" />

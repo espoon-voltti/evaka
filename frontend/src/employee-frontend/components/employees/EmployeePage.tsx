@@ -192,33 +192,50 @@ const EmployeePage = React.memo(function EmployeePage({
           </Tr>
         </Thead>
         <Tbody>
-          {sortedRoles.map(({ daycareId, daycareName, role, endDate }) => (
-            <Tr key={`${daycareId}/${role}`}>
-              <Td>
-                <Link to={`/units/${daycareId}`}>{daycareName}</Link>
-              </Td>
-              <Td>{i18n.roles.adRoles[role]}</Td>
-              <Td>{endDate?.format() ?? '-'}</Td>
-              <Td>
-                <ConfirmedMutation
-                  buttonStyle="ICON"
-                  icon={faTrash}
-                  buttonAltText={i18n.common.remove}
-                  confirmationTitle={
-                    i18n.employees.editor.unitRoles.deleteConfirm
-                  }
-                  mutation={deleteEmployeeDaycareRolesMutation}
-                  onClick={() => ({
-                    id: employee.id,
-                    daycareId: daycareId
-                  })}
-                  disabled={editingGlobalRoles}
-                />
-              </Td>
-            </Tr>
-          ))}
+          {sortedRoles.map(({ daycareId, daycareName, role, endDate }) => {
+            const scheduledRow = sortedScheduledRoles.find(
+              (r) => r.daycareId === daycareId
+            )
+            const roleChangeDate =
+              scheduledRow &&
+              (endDate === null || scheduledRow.startDate <= endDate.addDays(1))
+                ? scheduledRow.startDate.subDays(1)
+                : null
+
+            return (
+              <Tr key={`${daycareId}/${role}`}>
+                <Td>
+                  <Link to={`/units/${daycareId}`}>{daycareName}</Link>
+                </Td>
+                <Td>{i18n.roles.adRoles[role]}</Td>
+                <Td>
+                  {roleChangeDate
+                    ? `${roleChangeDate.format()}*`
+                    : endDate?.format()}
+                </Td>
+                <Td>
+                  <ConfirmedMutation
+                    buttonStyle="ICON"
+                    icon={faTrash}
+                    buttonAltText={i18n.common.remove}
+                    confirmationTitle={
+                      i18n.employees.editor.unitRoles.deleteConfirm
+                    }
+                    mutation={deleteEmployeeDaycareRolesMutation}
+                    onClick={() => ({
+                      id: employee.id,
+                      daycareId: daycareId
+                    })}
+                    disabled={editingGlobalRoles}
+                  />
+                </Td>
+              </Tr>
+            )
+          })}
         </Tbody>
       </Table>
+      <Gap size="xs" />
+      <span>*{i18n.unit.accessControl.roleChange}</span>
 
       <Gap />
 
@@ -237,32 +254,42 @@ const EmployeePage = React.memo(function EmployeePage({
         </Thead>
         <Tbody>
           {sortedScheduledRoles.map(
-            ({ daycareId, daycareName, role, startDate, endDate }) => (
-              <Tr key={`${daycareId}/${role}`}>
-                <Td>
-                  <Link to={`/units/${daycareId}`}>{daycareName}</Link>
-                </Td>
-                <Td>{i18n.roles.adRoles[role]}</Td>
-                <Td>{startDate.format()}</Td>
-                <Td>{endDate?.format() ?? '-'}</Td>
-                <Td>
-                  <ConfirmedMutation
-                    buttonStyle="ICON"
-                    icon={faTrash}
-                    buttonAltText={i18n.common.remove}
-                    confirmationTitle={
-                      i18n.employees.editor.unitRoles.deleteConfirm
-                    }
-                    mutation={deleteEmployeeScheduledDaycareRoleMutation}
-                    onClick={() => ({
-                      id: employee.id,
-                      daycareId: daycareId
-                    })}
-                    disabled={editingGlobalRoles}
-                  />
-                </Td>
-              </Tr>
-            )
+            ({ daycareId, daycareName, role, startDate, endDate }) => {
+              const isRoleChange = sortedRoles.some(
+                (r) =>
+                  r.daycareId === daycareId &&
+                  (r.endDate === null || r.endDate >= startDate.subDays(1))
+              )
+              return (
+                <Tr key={`${daycareId}/${role}`}>
+                  <Td>
+                    <Link to={`/units/${daycareId}`}>{daycareName}</Link>
+                  </Td>
+                  <Td>{i18n.roles.adRoles[role]}</Td>
+                  <Td>
+                    {startDate.format()}
+                    {isRoleChange && '*'}
+                  </Td>
+                  <Td>{endDate?.format() ?? '-'}</Td>
+                  <Td>
+                    <ConfirmedMutation
+                      buttonStyle="ICON"
+                      icon={faTrash}
+                      buttonAltText={i18n.common.remove}
+                      confirmationTitle={
+                        i18n.employees.editor.unitRoles.deleteConfirm
+                      }
+                      mutation={deleteEmployeeScheduledDaycareRoleMutation}
+                      onClick={() => ({
+                        id: employee.id,
+                        daycareId: daycareId
+                      })}
+                      disabled={editingGlobalRoles}
+                    />
+                  </Td>
+                </Tr>
+              )
+            }
           )}
         </Tbody>
       </Table>
