@@ -4771,7 +4771,16 @@ export const fi = {
         deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?',
         addRoles: 'Lisää luvituksia',
         addRolesModalTitle: 'Uusi luvitus',
-        units: 'Yksiköt'
+        units: 'Yksiköt',
+        warnings: {
+          hasCurrent: 'Henkilöllä on jo luvituksia seuraavissa yksiköissä',
+          hasScheduled:
+            'Henkilöllä on jo tulevia luvituksia seuraavissa yksiköissä',
+          currentEnding: (date: LocalDate) =>
+            `Päällekkäiset luvitukset korvataan ${date.format()} alkaen.`,
+          currentRemoved: 'Nämä luvitukset poistetaan.',
+          scheduledRemoved: 'Nämä tulevat luvitukset poistetaan.'
+        }
       },
       mobile: {
         title: 'Henkilökohtaiset mobiililaitteet',

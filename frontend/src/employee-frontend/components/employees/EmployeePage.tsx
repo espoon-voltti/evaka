@@ -124,7 +124,7 @@ const EmployeePage = React.memo(function EmployeePage({
     <div>
       {rolesModalOpen && (
         <DaycareRolesModal
-          employeeId={employee.id}
+          employee={employee}
           units={units}
           onClose={() => setRolesModalOpen(false)}
         />
