@@ -686,19 +686,23 @@ export default React.memo(function UnitAccessControl({
           />
         ))}
 
-      {renderResult(candidateEmployees, (candidateEmployees) => (
-        <>
-          {addAclModalOpen && (
-            <AddAclModal
-              onClose={() => setAddAclModalOpen(false)}
-              employees={candidateEmployees}
-              unitId={unitId}
-              groups={groups}
-              permittedActions={permittedActions}
-            />
-          )}
-        </>
-      ))}
+      {renderResult(
+        combine(candidateEmployees, scheduledDaycareAclRows),
+        ([candidateEmployees, scheduledDaycareAclRows]) => (
+          <>
+            {addAclModalOpen && (
+              <AddAclModal
+                onClose={() => setAddAclModalOpen(false)}
+                employees={candidateEmployees}
+                unitId={unitId}
+                groups={groups}
+                permittedActions={permittedActions}
+                scheduledAclRows={scheduledDaycareAclRows}
+              />
+            )}
+          </>
+        )
+      )}
 
       {addTemporaryEmployeeModalOpen && (
         <AddTemporaryEmployeeModal

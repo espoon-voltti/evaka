@@ -2215,7 +2215,9 @@ export const fi = {
       addDaycareAclModal: {
         title: 'Lisää luvitus',
         role: 'Valitse rooli',
-        employees: 'Valitse henkilö'
+        employees: 'Valitse henkilö',
+        scheduledAclWarning:
+          'Henkilöllä on tuleva luvitus tässä yksikössä. Tuleva luvitus poistetaan.'
       },
       editDaycareAclModal: {
         title: 'Muokkaa luvitusta'
