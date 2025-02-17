@@ -4613,12 +4613,18 @@ export const fi = {
     emptyInbox: 'Tämä kansio on tyhjä',
     replyToThread: 'Vastaa viestiin',
     archiveThread: 'Arkistoi viestiketju',
+    changeFolder: {
+      button: 'Vaihda kansiota',
+      modalTitle: 'Valitse kansio',
+      modalOk: 'Siirrä kansioon'
+    },
     unitList: {
       title: 'Yksiköt'
     },
     sidePanel: {
       municipalMessages: 'Kunnan tiedotteet',
       serviceWorkerMessages: 'Palveluohjauksen viestit',
+      serviceWorkerFolders: 'Palveluohjauksen kansiot',
       ownMessages: 'Omat viestit',
       groupsMessages: 'Ryhmien viestit',
       noAccountAccess:
@@ -4717,6 +4723,7 @@ export const fi = {
         }
       },
       title: 'Otsikko',
+      setFolder: 'Siirrä kansioon',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
       sending: 'Lähetetään'

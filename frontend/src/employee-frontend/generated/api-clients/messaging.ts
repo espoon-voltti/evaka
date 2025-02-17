@@ -15,6 +15,8 @@ import { MessageDraftId } from 'lib-common/generated/api-types/shared'
 import { MessageId } from 'lib-common/generated/api-types/shared'
 import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { MessageThreadFolder } from 'lib-common/generated/api-types/messaging'
+import { MessageThreadFolderId } from 'lib-common/generated/api-types/shared'
 import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { PagedMessageCopies } from 'lib-common/generated/api-types/messaging'
 import { PagedMessageThreads } from 'lib-common/generated/api-types/messaging'
@@ -63,12 +65,17 @@ export async function archiveThread(
 export async function createMessage(
   request: {
     accountId: MessageAccountId,
+    initialFolder?: MessageThreadFolderId | null,
     body: PostMessageBody
   }
 ): Promise<CreateMessageResponse> {
+  const params = createUrlSearchParams(
+    ['initialFolder', request.initialFolder]
+  )
   const { data: json } = await client.request<JsonOf<CreateMessageResponse>>({
     url: uri`/employee/messages/${request.accountId}`.toString(),
     method: 'POST',
+    params,
     data: request.body satisfies JsonCompatible<PostMessageBody>
   })
   return json
@@ -160,6 +167,18 @@ export async function getDraftMessages(
 
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.getFolders
+*/
+export async function getFolders(): Promise<MessageThreadFolder[]> {
+  const { data: json } = await client.request<JsonOf<MessageThreadFolder[]>>({
+    url: uri`/employee/messages/folders`.toString(),
+    method: 'GET'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageController.getMessageCopies
 */
 export async function getMessageCopies(
@@ -177,6 +196,28 @@ export async function getMessageCopies(
     params
   })
   return deserializeJsonPagedMessageCopies(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageController.getMessagesInFolder
+*/
+export async function getMessagesInFolder(
+  request: {
+    accountId: MessageAccountId,
+    folderId: MessageThreadFolderId,
+    page: number
+  }
+): Promise<PagedMessageThreads> {
+  const params = createUrlSearchParams(
+    ['page', request.page.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
+    url: uri`/employee/messages/${request.accountId}/folders/${request.folderId}`.toString(),
+    method: 'GET',
+    params
+  })
+  return deserializeJsonPagedMessageThreads(json)
 }
 
 
@@ -306,6 +347,24 @@ export async function markThreadRead(
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/messages/${request.accountId}/threads/${request.threadId}/read`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageController.moveThreadToFolder
+*/
+export async function moveThreadToFolder(
+  request: {
+    accountId: MessageAccountId,
+    threadId: MessageThreadId,
+    folderId: MessageThreadFolderId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/messages/${request.accountId}/threads/${request.threadId}/move-to-folder/${request.folderId}`.toString(),
     method: 'PUT'
   })
   return json

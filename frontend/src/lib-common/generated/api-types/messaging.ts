@@ -18,6 +18,7 @@ import { MessageContentId } from './shared'
 import { MessageDraftId } from './shared'
 import { MessageId } from './shared'
 import { MessageReceiver } from '../../api-types/messaging'
+import { MessageThreadFolderId } from './shared'
 import { MessageThreadId } from './shared'
 import { PersonId } from './shared'
 import { deserializeMessageReceiver } from '../../api-types/messaging'
@@ -245,6 +246,15 @@ export interface MessageThread {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.MessageThreadFolder
+*/
+export interface MessageThreadFolder {
+  id: MessageThreadFolderId
+  name: string
+  ownerId: MessageAccountId
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageType
 */
 export type MessageType =
@@ -388,8 +398,10 @@ export interface ThreadReply {
 */
 export interface UnreadCountByAccount {
   accountId: MessageAccountId
+  totalUnreadCount: number
   unreadCopyCount: number
   unreadCount: number
+  unreadCountByFolder: Partial<Record<MessageThreadFolderId, number>>
 }
 
 /**

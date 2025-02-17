@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isEqual from 'lodash/isEqual'
 import React, { useCallback, useContext } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -14,11 +15,17 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
-import { AccountView, View } from './types-view'
+import { AccountView, isFolderView, isStandardView, View } from './types-view'
 
-export const MessageBoxRow = styled.div<{ active: boolean }>`
+export const MessageBoxRow = styled.div<{ active: boolean; $folder: boolean }>`
   cursor: pointer;
   padding: 12px ${defaultMargins.m};
+  ${(p) =>
+    p.$folder
+      ? css`
+          padding-left: 44px;
+        `
+      : ''}
   font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
   background-color: ${(p) => (p.active ? colors.main.m4 : 'unset')};
 `
@@ -41,7 +48,9 @@ export default function MessageBox({
   const { i18n } = useTranslation()
   const { unreadCountsByAccount } = useContext(MessageContext)
   const active =
-    view === activeView?.view && account.id === activeView.account.id
+    !!activeView &&
+    isEqual(view, activeView.view) &&
+    account.id === activeView.account.id
   const unreadCount = unreadCountsByAccount
     .map((unreadCounts) => {
       if (view === 'received') {
@@ -56,6 +65,12 @@ export default function MessageBox({
             ?.unreadCopyCount ?? 0
         )
       }
+      if (isFolderView(view)) {
+        return (
+          unreadCounts.find(({ accountId }) => accountId === account.id)
+            ?.unreadCountByFolder?.[view.id] ?? 0
+        )
+      }
 
       return 0
     })
@@ -68,9 +83,12 @@ export default function MessageBox({
     <MessageBoxRow
       onClick={onClick}
       active={active}
-      data-qa={`message-box-row-${view}`}
+      $folder={isFolderView(view)}
+      data-qa={`message-box-row-${isStandardView(view) ? view : view.name}`}
     >
-      {i18n.messages.messageBoxes.names[view]}{' '}
+      {isStandardView(view)
+        ? i18n.messages.messageBoxes.names[view]
+        : view.name}{' '}
       {unreadCount > 0 && (
         <RoundIconWithMargin
           content={String(unreadCount)}

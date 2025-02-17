@@ -70,6 +70,14 @@ const AccountHeader = styled.div`
   font-weight: ${fontWeights.semibold};
 `
 
+const FoldersHeader = styled.div`
+  padding: 12px ${defaultMargins.m};
+  color: ${colors.grayscale.g70};
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: ${fontWeights.semibold};
+`
+
 const NoAccounts = styled.div`
   padding: ${defaultMargins.s};
 `
@@ -90,6 +98,7 @@ function Accounts({ setReceivers }: AccountsProps) {
     selectedAccount,
     municipalAccount,
     serviceWorkerAccount,
+    folders,
     personalAccount,
     groupAccounts,
     unitOptions,
@@ -170,6 +179,28 @@ function Accounts({ setReceivers }: AccountsProps) {
               selectAccount={selectAccount}
             />
           ))}
+          {folders.isSuccess &&
+            folders.value.filter(
+              (f) => f.ownerId === serviceWorkerAccount.account.id
+            ).length > 0 && (
+              <>
+                <FoldersHeader>
+                  {i18n.messages.sidePanel.serviceWorkerFolders}
+                </FoldersHeader>
+                {folders.value
+                  .filter((f) => f.ownerId === serviceWorkerAccount.account.id)
+                  .map((folder) => (
+                    <MessageBox
+                      key={folder.id}
+                      view={folder}
+                      account={serviceWorkerAccount.account}
+                      unitId={null}
+                      activeView={selectedAccount}
+                      selectAccount={selectAccount}
+                    />
+                  ))}
+              </>
+            )}
         </AccountSection>
       )}
 

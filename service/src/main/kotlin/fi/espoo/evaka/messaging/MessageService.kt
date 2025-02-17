@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -109,7 +110,13 @@ class MessageService(
         attachments: Set<AttachmentId>,
         relatedApplication: ApplicationId?,
         filters: MessageController.PostMessageFilters?,
+        initialFolder: MessageThreadFolderId? = null,
     ): MessageContentId? {
+        if (initialFolder != null) {
+            tx.getFolder(initialFolder)?.takeIf { it.ownerId == sender }
+                ?: throw NotFound("Folder not found")
+        }
+
         val messageRecipients =
             tx.getMessageAccountsForRecipients(sender, recipients, filters, now.toLocalDate())
         if (messageRecipients.isEmpty()) return null
@@ -174,6 +181,7 @@ class MessageService(
             senderId = sender,
             threadIds = threadAndMessageIds.map { (threadId, _) -> threadId },
             now = now,
+            initialFolder = initialFolder,
         )
         tx.insertRecipients(
             recipientGroupsWithMessageIds.map { (ids, recipients) ->

@@ -68,6 +68,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
+import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.ParentshipId
@@ -1562,6 +1563,18 @@ fun Database.Transaction.insert(row: DevPreschoolTerm): PreschoolTermId =
                 """
 INSERT INTO preschool_term (id, finnish_preschool, swedish_preschool, extended_term, application_period, term_breaks) 
 VALUES (${bind(row.id)}, ${bind(row.finnishPreschool)}, ${bind(row.swedishPreschool)}, ${bind(row.extendedTerm)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(row: DevMessageThreadFolder): MessageThreadFolderId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO message_thread_folder (id, owner_id, name) 
+VALUES (${bind(row.id)}, ${bind(row.owner)}, ${bind(row.name)})
 """
             )
         }

@@ -20,7 +20,8 @@ import {
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import {
   MessageAccountId,
-  MessageDraftId
+  MessageDraftId,
+  MessageThreadFolderId
 } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
@@ -64,6 +65,7 @@ export default React.memo(function MessagesPage({
 }) {
   const {
     accounts,
+    folders,
     selectedDraft,
     setSelectedDraft,
     selectedAccount,
@@ -118,10 +120,15 @@ export default React.memo(function MessagesPage({
   }, [setSelectedDraft])
 
   const onSend = useCallback(
-    (accountId: MessageAccountId, messageBody: PostMessageBody) => {
+    (
+      accountId: MessageAccountId,
+      messageBody: PostMessageBody,
+      initialFolder: MessageThreadFolderId | null
+    ) => {
       setSending(true)
       void createMessageResult({
         accountId,
+        initialFolder,
         body: {
           ...messageBody,
           relatedApplicationId
@@ -228,6 +235,7 @@ export default React.memo(function MessagesPage({
         {selectedAccount?.view && <MessageList {...selectedAccount} />}
         {showEditor &&
           accounts.isSuccess &&
+          folders.isSuccess &&
           prefilledOrReceivers &&
           selectedAccount && (
             <MessageEditor
@@ -242,6 +250,7 @@ export default React.memo(function MessagesPage({
                 initDraftMessageResult({ accountId })
               }
               accounts={accounts.value}
+              folders={folders.value}
               onClose={onHide}
               onDiscard={onDiscard}
               onSend={onSend}

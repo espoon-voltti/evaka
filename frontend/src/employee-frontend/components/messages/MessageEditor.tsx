@@ -15,13 +15,15 @@ import {
   AuthorizedMessageAccount,
   DraftContent,
   MessageReceiversResponse,
+  MessageThreadFolder,
   PostMessageBody,
   PostMessageFilters,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import {
   MessageAccountId,
-  MessageDraftId
+  MessageDraftId,
+  MessageThreadFolderId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -32,6 +34,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import TreeDropdown, {
   TreeNode
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
@@ -187,9 +190,14 @@ interface Props {
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
   initDraftRaw: (accountId: MessageAccountId) => Promise<Result<MessageDraftId>>
   accounts: AuthorizedMessageAccount[]
+  folders: MessageThreadFolder[]
   onClose: (didChanges: boolean) => void
   onDiscard: (accountId: MessageAccountId, draftId: MessageDraftId) => void
-  onSend: (accountId: MessageAccountId, msg: PostMessageBody) => void
+  onSend: (
+    accountId: MessageAccountId,
+    msg: PostMessageBody,
+    initialFolder: MessageThreadFolderId | null
+  ) => void
   saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
   saveMessageAttachment: (draftId: UUID) => UploadHandler
   sending: boolean
@@ -203,6 +211,7 @@ export default React.memo(function MessageEditor({
   getAttachmentUrl,
   initDraftRaw,
   accounts,
+  folders,
   onClose,
   onDiscard,
   onSend,
@@ -233,6 +242,8 @@ export default React.memo(function MessageEditor({
   const [message, setMessage] = useState<Message>(() =>
     getInitialMessage(draftContent, defaultSender, defaultTitle)
   )
+  const [initialFolder, setInitialFolder] =
+    useState<MessageThreadFolder | null>(null)
   const [uploadStatus, setUploadStatus] =
     useState<UploadStatus>(initialUploadStatus)
   const [filters, setFilters] = useState<Filters>(() => getEmptyFilters())
@@ -405,18 +416,22 @@ export default React.memo(function MessageEditor({
       ...rest
     } = message
     const attachmentIds = attachments.map(({ id }) => id)
-    onSend(senderId, {
-      ...rest,
-      attachmentIds,
-      draftId,
-      recipients: selectedReceivers.map(
-        ({ messageRecipient }) => messageRecipient
-      ),
-      recipientNames: selectedReceivers.map(({ text: name }) => name),
-      relatedApplicationId: null,
-      filters: filters
-    })
-  }, [onSend, message, selectedReceivers, draftId, filters])
+    onSend(
+      senderId,
+      {
+        ...rest,
+        attachmentIds,
+        draftId,
+        recipients: selectedReceivers.map(
+          ({ messageRecipient }) => messageRecipient
+        ),
+        recipientNames: selectedReceivers.map(({ text: name }) => name),
+        relatedApplicationId: null,
+        filters: filters
+      },
+      initialFolder?.id ?? null
+    )
+  }, [onSend, message, selectedReceivers, draftId, filters, initialFolder])
 
   const onCloseHandler = useCallback(() => {
     if (draftWasModified && draftState === 'dirty') {
@@ -755,6 +770,23 @@ export default React.memo(function MessageEditor({
                 data-qa="input-title"
               />
             </HorizontalField>
+            {folders.length > 0 && (
+              <>
+                <Gap size="s" />
+                <HorizontalField>
+                  <Bold>{i18n.messages.messageEditor.setFolder}</Bold>
+                  <Select
+                    items={folders}
+                    selectedItem={initialFolder}
+                    onChange={setInitialFolder}
+                    placeholder="Ei kansiota"
+                    getItemValue={(item) => item.id}
+                    getItemLabel={(item) => item.name}
+                    data-qa="select-folder"
+                  />
+                </HorizontalField>
+              </>
+            )}
             {!expandedView && !simpleMode && (
               <>
                 <Gap size="s" />

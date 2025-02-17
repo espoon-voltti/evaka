@@ -29,7 +29,11 @@ data class UnreadCountByAccount(
     val accountId: MessageAccountId,
     val unreadCopyCount: Int,
     val unreadCount: Int,
-)
+    val unreadCountByFolder: Map<MessageThreadFolderId, Int>,
+) {
+    val totalUnreadCount: Int
+        get() = unreadCount + unreadCopyCount + unreadCountByFolder.values.sum()
+}
 
 data class UnreadCountByAccountAndGroup(
     val accountId: MessageAccountId,
@@ -194,6 +198,63 @@ class MessageController(
                             accountAccessLimit,
                         )
                     }
+                }
+            }
+            .also {
+                Audit.MessagingMessagesInFolderRead.log(
+                    targetId = AuditId(accountId),
+                    meta = mapOf("total" to it.total),
+                )
+            }
+    }
+
+    data class MessageThreadFolder(
+        val id: MessageThreadFolderId,
+        val name: String,
+        val ownerId: MessageAccountId,
+    )
+
+    @GetMapping("/employee/messages/folders")
+    fun getFolders(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+    ): List<MessageThreadFolder> {
+        return db.connect { dbc ->
+                dbc.read {
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    it.getFolders(filter)
+                }
+            }
+            .also { Audit.MessagingMessageFoldersRead.log() }
+    }
+
+    @GetMapping("/employee/messages/{accountId}/folders/{folderId}")
+    fun getMessagesInFolder(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable folderId: MessageThreadFolderId,
+        @RequestParam page: Int,
+    ): PagedMessageThreads {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read {
+                    it.getThreads(
+                        accountId,
+                        pageSize = 20,
+                        page,
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName,
+                        folderId,
+                    )
                 }
             }
             .also {
@@ -488,8 +549,10 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
+        @RequestParam initialFolder: MessageThreadFolderId?,
         @RequestBody body: PostMessageBody,
-    ): CreateMessageResponse = createMessage(db, user as AuthenticatedUser, clock, accountId, body)
+    ): CreateMessageResponse =
+        createMessageShared(db, user as AuthenticatedUser, clock, accountId, body, initialFolder)
 
     @PostMapping("/employee-mobile/messages/{accountId}")
     fun createMessage(
@@ -498,14 +561,16 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody,
-    ): CreateMessageResponse = createMessage(db, user as AuthenticatedUser, clock, accountId, body)
+    ): CreateMessageResponse =
+        createMessageShared(db, user as AuthenticatedUser, clock, accountId, body)
 
-    private fun createMessage(
+    private fun createMessageShared(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @RequestBody body: PostMessageBody,
+        accountId: MessageAccountId,
+        body: PostMessageBody,
+        initialFolder: MessageThreadFolderId? = null,
     ): CreateMessageResponse {
         if (body.recipients.isEmpty()) {
             throw BadRequest("Message must have at least one recipient")
@@ -582,6 +647,7 @@ class MessageController(
                             attachments = body.attachmentIds,
                             relatedApplication = body.relatedApplicationId,
                             filters = body.filters,
+                            initialFolder = initialFolder,
                         )
                     if (body.draftId != null) {
                         tx.deleteDraft(accountId = accountId, draftId = body.draftId)
@@ -849,6 +915,22 @@ class MessageController(
             dbc.transaction { it.archiveThread(accountId, threadId) }
         }
         Audit.MessagingArchiveMessageWrite.log(targetId = AuditId(listOf(accountId, threadId)))
+    }
+
+    @PutMapping("/employee/messages/{accountId}/threads/{threadId}/move-to-folder/{folderId}")
+    fun moveThreadToFolder(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId,
+        @PathVariable folderId: MessageThreadFolderId,
+    ) {
+        db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { it.moveThreadToFolder(accountId, threadId, folderId) }
+        }
+        Audit.MessagingChangeFolder.log(targetId = AuditId(listOf(accountId, threadId, folderId)))
     }
 
     @GetMapping("/employee/messages/receivers")

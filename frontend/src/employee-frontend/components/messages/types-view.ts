@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageAccount } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageAccount,
+  MessageThreadFolder
+} from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 
 const views = [
@@ -13,10 +16,18 @@ const views = [
   'archive',
   'thread'
 ] as const
-export type View = (typeof views)[number]
 
-export const isValidView = (view: string): view is View =>
-  views.some((v) => view === v)
+export type StandardView = (typeof views)[number]
+
+export type View = StandardView | MessageThreadFolder
+
+export const isStandardView = (
+  view: MessageThreadFolder | string
+): view is StandardView => views.some((v) => view === v)
+
+export const isFolderView = (
+  view: MessageThreadFolder | string
+): view is MessageThreadFolder => !isStandardView(view)
 
 export interface AccountView {
   account: MessageAccount
@@ -24,21 +35,21 @@ export interface AccountView {
   unitId: UUID | null
 }
 
-export const municipalMessageBoxes: View[] = ['sent', 'drafts']
-export const serviceWorkerMessageBoxes: View[] = [
+export const municipalMessageBoxes: StandardView[] = ['sent', 'drafts']
+export const serviceWorkerMessageBoxes: StandardView[] = [
   'received',
   'sent',
   'drafts',
   'archive'
 ]
-export const personalMessageBoxes: View[] = [
+export const personalMessageBoxes: StandardView[] = [
   'received',
   'sent',
   'drafts',
   'copies',
   'archive'
 ]
-export const groupMessageBoxes: View[] = [
+export const groupMessageBoxes: StandardView[] = [
   'received',
   'sent',
   'drafts',

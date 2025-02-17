@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -232,12 +233,14 @@ class MessageNotificationEmailServiceIntegrationTest :
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         type: MessageType = MessageType.MESSAGE,
+        initialFolder: MessageThreadFolderId? = null,
     ) =
         messageController.createMessage(
             dbInstance(),
             user,
             clock,
             sender,
+            initialFolder,
             MessageController.PostMessageBody(
                 title = "Juhannus/Midsommar/Midsummer",
                 content = "Juhannus tulee pian",

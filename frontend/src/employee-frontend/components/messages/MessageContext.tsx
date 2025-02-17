@@ -25,18 +25,20 @@ import {
   MessageCopy,
   PagedMessageThreads,
   PagedSentMessages,
-  PagedMessageCopies
+  PagedMessageCopies,
+  MessageThreadFolder
 } from 'lib-common/generated/api-types/messaging'
 import {
   ApplicationId,
   DaycareId,
   MessageAccountId,
   MessageId,
+  MessageThreadFolderId,
   MessageThreadId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { fromNullableUuid, fromUuid } from 'lib-common/id-type'
+import { fromNullableUuid, fromUuid, tryFromUuid } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
@@ -53,20 +55,22 @@ import { client } from '../../api/client'
 import {
   getAccountsByUser,
   getArchivedMessages,
+  getMessagesInFolder,
   getDraftMessages,
   getMessageCopies,
   getReceivedMessages,
   getSentMessages,
   getThread,
   getUnreadMessages,
-  markThreadRead
+  markThreadRead,
+  getFolders
 } from '../../generated/api-clients/messaging'
 import { UserContext } from '../../state/user'
 
 import {
   AccountView,
   groupMessageBoxes,
-  isValidView,
+  isStandardView,
   municipalMessageBoxes,
   personalMessageBoxes,
   serviceWorkerMessageBoxes
@@ -75,6 +79,8 @@ import {
 const getMessageCopiesResult = wrapResult(getMessageCopies)
 const getDraftMessagesResult = wrapResult(getDraftMessages)
 const getArchivedMessagesResult = wrapResult(getArchivedMessages)
+const getMessagesInFolderResult = wrapResult(getMessagesInFolder)
+const getFoldersResult = wrapResult(getFolders)
 const getAccountsByUserResult = wrapResult(getAccountsByUser)
 const getReceivedMessagesResult = wrapResult(getReceivedMessages)
 const getSentMessagesResult = wrapResult(getSentMessages)
@@ -106,6 +112,8 @@ export interface MessagesState {
   messageDrafts: Result<DraftContent[]>
   messageCopies: Result<MessageCopy[]>
   archivedMessages: Result<MessageThread[]>
+  messagesInFolder: Result<MessageThread[]>
+  folders: Result<MessageThreadFolder[]>
   setSelectedThread: (threadId: UUID) => void
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
@@ -144,6 +152,8 @@ const defaultState: MessagesState = {
   messageDrafts: Loading.of(),
   messageCopies: Loading.of(),
   archivedMessages: Loading.of(),
+  messagesInFolder: Loading.of(),
+  folders: Loading.of(),
   setSelectedThread: () => undefined,
   selectedThread: undefined,
   selectThread: () => undefined,
@@ -236,11 +246,40 @@ export const MessageContextProvider = React.memo(
       ]
     )
 
+    const [page, setPage] = useState<number>(1)
+    const [pages, setPages] = useState<number>()
+    const [receivedMessages, setReceivedMessages] = useState<
+      Result<MessageThread[]>
+    >(Loading.of())
+    const [messageDrafts, setMessageDrafts] = useState<Result<DraftContent[]>>(
+      Loading.of()
+    )
+    const [sentMessages, setSentMessages] = useState<Result<SentMessage[]>>(
+      Loading.of()
+    )
+    const [messageCopies, setMessageCopies] = useState<Result<MessageCopy[]>>(
+      Loading.of()
+    )
+    const [archivedMessages, setArchivedMessages] = useState<
+      Result<MessageThread[]>
+    >(Loading.of())
+    const [messagesInFolder, setMessagesInFolder] = useState<
+      Result<MessageThread[]>
+    >(Loading.of())
+
     const [accounts] = useApiState(
       () =>
         user?.accessibleFeatures.messages
           ? getAccountsByUserResult()
           : Promise.resolve(Loading.of<AuthorizedMessageAccount[]>()),
+      [user]
+    )
+
+    const [folders] = useApiState(
+      () =>
+        user?.accessibleFeatures.messages
+          ? getFoldersResult()
+          : Promise.resolve(Loading.of<MessageThreadFolder[]>()),
       [user]
     )
 
@@ -317,15 +356,27 @@ export const MessageContextProvider = React.memo(
             accounts.find((a) => a.account.id === accountId)?.account
         )
         .getOrElse(undefined)
-      if (messageBox && isValidView(messageBox) && account) {
+      if (messageBox && account) {
         return {
           account,
-          view: messageBox,
+          view: isStandardView(messageBox)
+            ? messageBox
+            : folders
+                .map(
+                  (res) =>
+                    res.find(
+                      (f) =>
+                        f.id ===
+                          tryFromUuid<MessageThreadFolderId>(messageBox) &&
+                        f.ownerId === account.id
+                    ) ?? 'received'
+                )
+                .getOrElse('received'),
           unitId
         }
       }
       return undefined
-    }, [accountId, accounts, messageBox, unitId])
+    }, [accountId, accounts, messageBox, unitId, folders])
 
     const accountAllowsNewMessage = useCallback(
       () => selectedAccount?.account.type !== 'SERVICE_WORKER',
@@ -335,24 +386,6 @@ export const MessageContextProvider = React.memo(
     const [selectedDraft, setSelectedDraft] = useState(
       defaultState.selectedDraft
     )
-
-    const [page, setPage] = useState<number>(1)
-    const [pages, setPages] = useState<number>()
-    const [receivedMessages, setReceivedMessages] = useState<
-      Result<MessageThread[]>
-    >(Loading.of())
-    const [messageDrafts, setMessageDrafts] = useState<Result<DraftContent[]>>(
-      Loading.of()
-    )
-    const [sentMessages, setSentMessages] = useState<Result<SentMessage[]>>(
-      Loading.of()
-    )
-    const [messageCopies, setMessageCopies] = useState<Result<MessageCopy[]>>(
-      Loading.of()
-    )
-    const [archivedMessages, setArchivedMessages] = useState<
-      Result<MessageThread[]>
-    >(Loading.of())
 
     const setReceivedMessagesResult = useCallback(
       (result: Result<PagedMessageThreads>) => {
@@ -419,6 +452,24 @@ export const MessageContextProvider = React.memo(
       setArchivedMessagesResult
     )
 
+    const setMessagesInFolderResult = useCallback(
+      (result: Result<PagedMessageThreads>) => {
+        setMessagesInFolder(result.map((r) => r.data))
+        if (result.isSuccess) {
+          setPages(result.value.pages)
+        }
+      },
+      []
+    )
+    const loadMessagesInFolder = useRestApi(
+      (
+        accountId: MessageAccountId,
+        folderId: MessageThreadFolderId,
+        page: number
+      ) => getMessagesInFolderResult({ accountId, folderId, page }),
+      setMessagesInFolderResult
+    )
+
     const [singleThread, setSingleThread] = useState<Result<MessageThread>>()
 
     const loadThread = useRestApi(
@@ -434,6 +485,7 @@ export const MessageContextProvider = React.memo(
       if (!selectedAccount) {
         return
       }
+
       switch (selectedAccount.view) {
         case 'received':
           return void loadReceivedMessages(selectedAccount.account.id, page)
@@ -449,6 +501,12 @@ export const MessageContextProvider = React.memo(
           return void loadArchivedMessages(selectedAccount.account.id, page)
         case 'thread':
           return void loadThread(selectedAccount.account.id, threadId)
+        default:
+          return void loadMessagesInFolder(
+            selectedAccount.account.id,
+            selectedAccount.view.id,
+            page
+          )
       }
     }, [
       loadMessageDrafts,
@@ -456,6 +514,7 @@ export const MessageContextProvider = React.memo(
       loadSentMessages,
       loadMessageCopies,
       loadArchivedMessages,
+      loadMessagesInFolder,
       loadThread,
       threadId,
       page,
@@ -585,6 +644,7 @@ export const MessageContextProvider = React.memo(
           ...sentMessagesAsThreads.getOrElse([]),
           ...messageCopiesAsThreads.getOrElse([]),
           ...archivedMessages.getOrElse([]),
+          ...messagesInFolder.getOrElse([]),
           singleThread?.getOrElse(undefined)
         ].find((t) => t?.id === threadId),
       [
@@ -592,6 +652,7 @@ export const MessageContextProvider = React.memo(
         sentMessagesAsThreads,
         messageCopiesAsThreads,
         archivedMessages,
+        messagesInFolder,
         singleThread,
         threadId
       ]
@@ -654,7 +715,9 @@ export const MessageContextProvider = React.memo(
       (accountView: AccountView) =>
         setParams({
           accountId: accountView.account.id,
-          messageBox: accountView.view,
+          messageBox: isStandardView(accountView.view)
+            ? accountView.view
+            : accountView.view.id,
           unitId: accountView.unitId
         }),
       [setParams]
@@ -723,6 +786,8 @@ export const MessageContextProvider = React.memo(
         messageDrafts,
         messageCopies,
         archivedMessages,
+        messagesInFolder,
+        folders,
         setSelectedThread,
         selectedThread,
         selectThread,
@@ -757,6 +822,8 @@ export const MessageContextProvider = React.memo(
         messageDrafts,
         messageCopies,
         archivedMessages,
+        messagesInFolder,
+        folders,
         setSelectedThread,
         selectedThread,
         selectThread,

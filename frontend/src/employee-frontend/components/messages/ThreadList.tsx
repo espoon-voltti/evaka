@@ -11,14 +11,13 @@ import {
   MessageThreadId
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { AsyncIconOnlyButton } from 'lib-components/atoms/buttons/AsyncIconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
-import { faBoxArchive } from 'lib-icons'
 
 import { archiveThread } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+import EllipsisMenu from '../common/EllipsisMenu'
 
 import {
   Hyphen,
@@ -51,10 +50,16 @@ export type ThreadListItem = {
 interface Props {
   items: Result<ThreadListItem[]>
   accountId: MessageAccountId
-  onArchive?: () => void
+  onChangeFolder?: (item: MessageThreadId) => void
+  onArchived?: () => void
 }
 
-export function ThreadList({ items: messages, accountId, onArchive }: Props) {
+export function ThreadList({
+  items: messages,
+  accountId,
+  onChangeFolder,
+  onArchived
+}: Props) {
   const { i18n } = useTranslation()
 
   return renderResult(messages, (threads) => (
@@ -83,23 +88,38 @@ export function ThreadList({ items: messages, accountId, onArchive }: Props) {
             </Truncated>
           </ParticipantsAndPreview>
           <FixedSpaceRow>
-            {onArchive && (
-              <AsyncIconOnlyButton
-                icon={faBoxArchive}
-                aria-label={i18n.common.archive}
-                data-qa="delete-thread-btn"
-                className="delete-btn"
-                onClick={() =>
-                  archiveThreadResult({ accountId, threadId: item.id })
-                }
-                onSuccess={onArchive}
-                stopPropagation
-              />
-            )}
             <TypeAndDate>
               <MessageCharacteristics type={item.type} urgent={item.urgent} />
               {item.timestamp && <Timestamp date={item.timestamp} />}
             </TypeAndDate>
+            {}
+            <EllipsisMenu
+              data-qa="thread-menu"
+              items={[
+                ...(onChangeFolder
+                  ? [
+                      {
+                        id: 'change-folder',
+                        label: i18n.messages.changeFolder.button,
+                        onClick: () => onChangeFolder(item.id)
+                      }
+                    ]
+                  : []),
+                ...(onArchived
+                  ? [
+                      {
+                        id: 'archive',
+                        label: i18n.common.archive,
+                        onClick: () =>
+                          archiveThreadResult({
+                            accountId,
+                            threadId: item.id
+                          }).then(onArchived)
+                      }
+                    ]
+                  : [])
+              ]}
+            />
           </FixedSpaceRow>
         </MessageRow>
       ))}

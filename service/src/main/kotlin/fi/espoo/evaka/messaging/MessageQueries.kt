@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.Attachment
+import fi.espoo.evaka.messaging.MessageController.MessageThreadFolder
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -30,27 +31,75 @@ sealed class AccountAccessLimit {
     data class AvailableFrom(val date: LocalDate) : AccountAccessLimit()
 }
 
-fun Database.Read.getUnreadMessagesCounts(
-    idFilter: AccessControlFilter<MessageAccountId>
-): Set<UnreadCountByAccount> =
+fun Database.Read.getFolders(filter: AccessControlFilter<MessageAccountId>) =
     createQuery {
             sql(
                 """
-        SELECT
-            acc.id as account_id,
-            count(*) FILTER (WHERE mtp.folder_id IS NULL AND NOT mt.is_copy) AS unread_count,
-            count(*) FILTER (WHERE mtp.folder_id IS NULL AND mt.is_copy) AS unread_copy_count
+            SELECT mtf.id, mtf.name, mtf.owner_id
+            FROM message_thread_folder mtf
+            JOIN message_account acc ON mtf.owner_id = acc.id
+            WHERE ${predicate(filter.forTable("acc"))} AND mtf.name != 'ARCHIVE'
+        """
+            )
+        }
+        .toList<MessageThreadFolder>()
+
+fun Database.Read.getFolder(id: MessageThreadFolderId) =
+    createQuery {
+            sql(
+                """
+            SELECT mtf.id, mtf.name, mtf.owner_id
+            FROM message_thread_folder mtf
+            WHERE mtf.id = ${bind(id)} AND mtf.name != 'ARCHIVE'
+        """
+            )
+        }
+        .exactlyOneOrNull<MessageThreadFolder>()
+
+fun Database.Read.getUnreadMessagesCounts(
+    idFilter: AccessControlFilter<MessageAccountId>
+): Set<UnreadCountByAccount> {
+    data class RawData(
+        val accountId: MessageAccountId,
+        val isCopy: Boolean,
+        val folderId: MessageThreadFolderId?,
+        val count: Int,
+    )
+
+    val data =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            acc.id as account_id, 
+            coalesce(mt.is_copy, false) as is_copy, 
+            mtp.folder_id, 
+            count(mt.id) AS count
         FROM message_account acc
         LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id AND mr.read_at IS NULL
         LEFT JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
         WHERE ${predicate(idFilter.forTable("acc"))}
-        GROUP BY acc.id
+        GROUP BY acc.id, mt.is_copy, mtp.folder_id
         """
+                )
+            }
+            .toList<RawData>()
+
+    return data
+        .groupBy { it.accountId }
+        .map { (accountId, counts) ->
+            UnreadCountByAccount(
+                accountId = accountId,
+                unreadCount = counts.find { !it.isCopy && it.folderId == null }?.count ?: 0,
+                unreadCopyCount = counts.find { it.isCopy && it.folderId == null }?.count ?: 0,
+                unreadCountByFolder =
+                    counts.filter { it.folderId != null }.associate { it.folderId!! to it.count },
             )
         }
         .toSet()
+}
 
 fun Database.Read.getUnreadMessagesCountsByDaycare(
     daycareId: DaycareId
@@ -99,28 +148,43 @@ WHERE rec.message_id = msg.id
         .execute()
 }
 
-fun Database.Transaction.archiveThread(
+fun Database.Transaction.moveThreadToFolder(
     accountId: MessageAccountId,
     threadId: MessageThreadId,
-): Int {
-    var archiveFolderId = getArchiveFolderId(accountId)
-    if (archiveFolderId == null) {
-        archiveFolderId =
-            createUpdate {
+    folderId: MessageThreadFolderId,
+) =
+    createUpdate {
+            sql(
+                """
+            UPDATE message_thread_participant 
+            SET folder_id = ${bind(folderId)} 
+            WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(accountId)}
+                AND EXISTS (
+                    SELECT FROM message_thread_folder mtf 
+                    WHERE mtf.id = ${bind(folderId)} AND mtf.owner_id = ${bind(accountId)}
+                )
+        """
+            )
+        }
+        .updateExactlyOne()
+
+fun Database.Transaction.archiveThread(accountId: MessageAccountId, threadId: MessageThreadId) {
+    val archiveFolderId =
+        getArchiveFolderId(accountId)
+            ?: createUpdate {
                     sql(
-                        "INSERT INTO message_thread_folder (owner_id, name) VALUES (${bind(accountId)}, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
+                        """
+                            INSERT INTO message_thread_folder (owner_id, name) 
+                            VALUES (${bind(accountId)}, 'ARCHIVE') 
+                            ON CONFLICT DO NOTHING 
+                            RETURNING id
+                        """
                     )
                 }
                 .executeAndReturnGeneratedKeys()
                 .exactlyOne<MessageThreadFolderId>()
-    }
 
-    return createUpdate {
-            sql(
-                "UPDATE message_thread_participant SET folder_id = ${bind(archiveFolderId)} WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(accountId)}"
-            )
-        }
-        .execute()
+    return moveThreadToFolder(accountId, threadId, archiveFolderId)
 }
 
 fun Database.Transaction.insertMessage(
@@ -211,12 +275,13 @@ fun Database.Transaction.upsertSenderThreadParticipants(
     senderId: MessageAccountId,
     threadIds: List<MessageThreadId>,
     now: HelsinkiDateTime,
+    initialFolder: MessageThreadFolderId? = null,
 ) {
     executeBatch(threadIds) {
         sql(
             """
-INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
-VALUES (${bind { threadId -> threadId }}, ${bind(senderId)}, ${bind(now)}, ${bind(now)})
+INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp, folder_id)
+VALUES (${bind { threadId -> threadId }}, ${bind(senderId)}, ${bind(now)}, ${bind(now)}, ${bind(initialFolder)})
 ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = ${bind(now)}, last_sent_timestamp = ${bind(now)}
 """
         )
@@ -393,6 +458,7 @@ fun Database.Read.getThreads(
     page: Int,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    folderId: MessageThreadFolderId? = null,
 ): PagedMessageThreads {
     val threads =
         createQuery {
@@ -421,7 +487,7 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 LEFT JOIN application a ON t.application_id = a.id
-WHERE tp.participant_id = ${bind(accountId)} AND tp.folder_id IS NULL
+WHERE tp.participant_id = ${bind(accountId)} AND tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)}
 AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}

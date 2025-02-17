@@ -166,6 +166,8 @@ import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
@@ -724,11 +726,21 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                         "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'MUNICIPAL') ON CONFLICT DO NOTHING"
                     )
                 }
-                tx.execute {
-                    sql(
-                        "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING"
-                    )
-                }
+                tx.createUpdate {
+                        sql(
+                            "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING RETURNING id"
+                        )
+                    }
+                    .executeAndReturnGeneratedKeys()
+                    .exactlyOneOrNull<MessageAccountId>()
+                    ?.also { serviceWorkerAccount ->
+                        tx.insert(
+                            DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Kansio 1")
+                        )
+                        tx.insert(
+                            DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Kansio 2")
+                        )
+                    }
             }
         }
     }
@@ -2265,6 +2277,12 @@ data class DevServiceApplication(
     val decidedBy: EmployeeId? = null,
     val decidedAt: HelsinkiDateTime? = null,
     val rejectedReason: String? = null,
+)
+
+data class DevMessageThreadFolder(
+    val id: MessageThreadFolderId = MessageThreadFolderId(UUID.randomUUID()),
+    val owner: MessageAccountId,
+    val name: String,
 )
 
 data class DevUpsertStaffOccupancyCoefficient(

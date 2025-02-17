@@ -2,29 +2,38 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
+import { Failure, Loading, Result, Success, wrapResult } from 'lib-common/api'
 import {
   MessageAccount,
-  MessageThread
+  MessageThread,
+  MessageThreadFolder
 } from 'lib-common/generated/api-types/messaging'
-import { MessageThreadId } from 'lib-common/generated/api-types/shared'
+import {
+  MessageAccountId,
+  MessageThreadId
+} from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 import { formatPreferredName } from 'lib-common/names'
 import Pagination from 'lib-components/Pagination'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'
 import EmptyMessageFolder from 'lib-components/messages/EmptyMessageFolder'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, H2 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 
+import { moveThreadToFolder } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
 import { SingleThreadView } from './SingleThreadView'
 import { ThreadList, ThreadListItem } from './ThreadList'
-import { View } from './types-view'
+import { isFolderView, isStandardView, View } from './types-view'
+
+const moveThreadToFolderResult = wrapResult(moveThreadToFolder)
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;
@@ -61,11 +70,13 @@ export default React.memo(function ThreadListContainer({
 }: Props) {
   const { i18n } = useTranslation()
   const {
+    folders,
     receivedMessages,
     sentMessages,
     messageDrafts,
     messageCopies,
     archivedMessages,
+    messagesInFolder,
     page,
     setPage,
     pages,
@@ -77,7 +88,10 @@ export default React.memo(function ThreadListContainer({
     messageCopiesAsThreads
   } = useContext(MessageContext)
 
-  const onArchive = useCallback(() => {
+  const [folderChangeTarget, setFolderChangeTarget] =
+    useState<MessageThreadId | null>(null)
+
+  const onMessageMoved = useCallback(() => {
     selectThread(undefined)
     refreshMessages()
   }, [refreshMessages, selectThread])
@@ -93,6 +107,8 @@ export default React.memo(function ThreadListContainer({
       return messageCopies.value.length > 0
     } else if (view === 'archive' && archivedMessages.isSuccess) {
       return archivedMessages.value.length > 0
+    } else if (isFolderView(view) && messagesInFolder.isSuccess) {
+      return messagesInFolder.value.length > 0
     } else {
       return false
     }
@@ -102,7 +118,8 @@ export default React.memo(function ThreadListContainer({
     sentMessages,
     messageDrafts,
     messageCopies,
-    archivedMessages
+    archivedMessages,
+    messagesInFolder
   ])
 
   const threadToListItem = useCallback(
@@ -180,6 +197,13 @@ export default React.memo(function ThreadListContainer({
       ),
     [archivedMessages, threadToListItem]
   )
+  const messageFolderItems = useMemo(
+    () =>
+      messagesInFolder.map((value) =>
+        value.map((t) => threadToListItem(t, true, 'folder-message-row'))
+      ),
+    [messagesInFolder, threadToListItem]
+  )
 
   const threadListItems: Result<ThreadListItem[]> = {
     received: receivedMessageItems,
@@ -187,51 +211,132 @@ export default React.memo(function ThreadListContainer({
     drafts: draftMessageItems,
     copies: messageCopyItems,
     archive: messageArchivedItems,
+    folder: messageFolderItems,
     thread: selectedThread
       ? Success.of([
           threadToListItem(selectedThread, true, 'selected-thread-row')
         ])
       : Loading.of<ThreadListItem[]>()
-  }[view]
+  }[isStandardView(view) ? view : 'folder']
 
-  if (selectedThread) {
-    return (
-      <SingleThreadView
-        goBack={() => selectThread(undefined)}
-        thread={selectedThread}
-        accountId={account.id}
-        view={view}
-        onArchived={view === 'received' ? onArchive : undefined}
-      />
-    )
-  }
+  const hasFolders = folders.isSuccess && folders.value.length > 0
 
-  return hasMessages ? (
-    <MessagesContainer opaque>
-      <H1>{i18n.messages.messageList.titles[view]}</H1>
-      {account.type !== 'PERSONAL' && <H2>{account.name}</H2>}
-      <ThreadList
-        items={threadListItems}
-        accountId={account.id}
-        onArchive={view === 'received' ? onArchive : undefined}
-      />
-      <Pagination
-        pages={pages}
-        currentPage={page}
-        setPage={setPage}
-        label={i18n.common.page}
-      />
-    </MessagesContainer>
-  ) : (
-    <EmptyMessageFolder
-      loading={
-        (view === 'received' && receivedMessages.isLoading) ||
-        (view === 'sent' && sentMessages.isLoading) ||
-        (view === 'drafts' && messageDrafts.isLoading) ||
-        (view === 'copies' && messageCopies.isLoading)
+  return (
+    <>
+      {folderChangeTarget && folders.isSuccess && (
+        <FolderChangeModal
+          accountId={account.id}
+          threadId={folderChangeTarget}
+          folders={folders.value}
+          onSuccess={onMessageMoved}
+          onClose={() => setFolderChangeTarget(null)}
+        />
+      )}
+
+      {selectedThread ? (
+        <SingleThreadView
+          goBack={() => selectThread(undefined)}
+          thread={selectedThread}
+          accountId={account.id}
+          view={view}
+          onArchived={
+            view === 'received' || isFolderView(view)
+              ? onMessageMoved
+              : undefined
+          }
+        />
+      ) : hasMessages ? (
+        <MessagesContainer opaque>
+          <H1>
+            {isStandardView(view)
+              ? i18n.messages.messageList.titles[view]
+              : view.name}
+          </H1>
+          {account.type !== 'PERSONAL' && <H2>{account.name}</H2>}
+          <ThreadList
+            items={threadListItems}
+            accountId={account.id}
+            onArchived={
+              view === 'received' || isFolderView(view)
+                ? onMessageMoved
+                : undefined
+            }
+            onChangeFolder={
+              hasFolders &&
+              (view === 'received' || view === 'sent' || isFolderView(view))
+                ? (id) => setFolderChangeTarget(id)
+                : undefined
+            }
+          />
+          <Pagination
+            pages={pages}
+            currentPage={page}
+            setPage={setPage}
+            label={i18n.common.page}
+          />
+        </MessagesContainer>
+      ) : (
+        <EmptyMessageFolder
+          loading={
+            (view === 'received' && receivedMessages.isLoading) ||
+            (view === 'sent' && sentMessages.isLoading) ||
+            (view === 'drafts' && messageDrafts.isLoading) ||
+            (view === 'copies' && messageCopies.isLoading)
+          }
+          iconColor={colors.grayscale.g35}
+          text={i18n.messages.emptyInbox}
+        />
+      )}
+    </>
+  )
+})
+
+const FolderChangeModal = React.memo(function FolderChangeModal({
+  accountId,
+  threadId,
+  folders,
+  onSuccess,
+  onClose
+}: {
+  accountId: MessageAccountId
+  threadId: MessageThreadId
+  folders: MessageThreadFolder[]
+  onSuccess: () => void
+  onClose: () => void
+}) {
+  const { i18n } = useTranslation()
+  const [folder, setFolder] = useState<MessageThreadFolder | null>(null)
+  return (
+    <AsyncFormModal
+      data-qa="change-folder-modal"
+      title={i18n.messages.changeFolder.modalTitle}
+      resolveAction={() =>
+        folder
+          ? moveThreadToFolderResult({
+              accountId: accountId,
+              threadId: threadId,
+              folderId: folder.id
+            })
+          : Promise.resolve(Failure.of({ message: 'No folder selected' }))
       }
-      iconColor={colors.grayscale.g35}
-      text={i18n.messages.emptyInbox}
-    />
+      resolveLabel={i18n.messages.changeFolder.modalOk}
+      onSuccess={() => {
+        onSuccess()
+        onClose()
+      }}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+      resolveDisabled={!folder}
+    >
+      <Select
+        items={folders}
+        selectedItem={folder}
+        onChange={(value) => setFolder(value)}
+        getItemLabel={(item) => item.name}
+        getItemValue={(item) => item.id}
+        placeholder={i18n.common.select}
+        data-qa="folder-select"
+      />
+    </AsyncFormModal>
   )
 })
