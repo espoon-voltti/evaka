@@ -43,6 +43,12 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
         where("$it.type && '{FAMILY,GROUP_FAMILY}'")
     }
 
+    private val purchasedDaycareUnitPredicate = Predicate {
+        where(
+            "$it.provider_type = ANY ('{PURCHASED,EXTERNAL_PURCHASED}') AND $it.type && '{CENTRE}'"
+        )
+    }
+
     // placement predicates
     private val preschoolDaycarePlacementPredicate = Predicate {
         where("$it.type = ANY ('{PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')")
@@ -147,23 +153,13 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val voucherCounts =
                         tx.getAgeDivisionCounts(
                             statDay = yearlyStatDay,
-                            daycarePred =
-                                Predicate {
-                                    where(
-                                        "$it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}') AND $it.type && '{CENTRE}'"
-                                    )
-                                },
+                            daycarePred = voucherDaycareUnitPredicate,
                         )
 
                     val purchasedCounts =
                         tx.getAgeDivisionCounts(
                             statDay = yearlyStatDay,
-                            daycarePred =
-                                Predicate {
-                                    where(
-                                        "$it.provider_type = ANY ('{PURCHASED,EXTERNAL_PURCHASED}') AND $it.type && '{CENTRE}'"
-                                    )
-                                },
+                            daycarePred = purchasedDaycareUnitPredicate,
                         )
 
                     val clubCounts =
@@ -193,28 +189,13 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val familyCareDayCounts =
                         tx.getEffectiveCareDayCounts(
                             range = yearlyRange,
-                            daycarePred =
-                                Predicate {
-                                    where(
-                                        """
-                                 $it.type && '{FAMILY, GROUP_FAMILY}'
-                            """
-                                    )
-                                },
+                            daycarePred = familyCareDaycarePredicate,
                         )
 
                     val daycareDayCounts =
                         tx.getEffectiveCareDayCounts(
                             range = yearlyRange,
-                            daycarePred =
-                                Predicate {
-                                    where(
-                                        """
-                               $it.provider_type = ANY ('{MUNICIPAL}')
-                                 AND $it.type && '{CENTRE}'
-                            """
-                                    )
-                                },
+                            daycarePred = municipalDaycareUnitPredicate,
                         )
 
                     RegionalSurveyReportAgeStatisticsResult(
@@ -271,24 +252,14 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val purchasedFiveYearOlds =
                         tx.getPlacementCount(
                             statDay = yearlyStatDay,
-                            daycarePred =
-                                Predicate {
-                                    where(
-                                        "$it.provider_type = ANY ('{PURCHASED,EXTERNAL_PURCHASED}') AND $it.type && '{CENTRE}'"
-                                    )
-                                },
+                            daycarePred = purchasedDaycareUnitPredicate,
                             personPred = fiveYearOldPersonPred,
                         )
 
                     val voucher5YearOld =
                         tx.getPlacementCount(
                             statDay = yearlyStatDay,
-                            daycarePred =
-                                Predicate {
-                                    where(
-                                        "$it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}') AND $it.type && '{CENTRE}'"
-                                    )
-                                },
+                            daycarePred = voucherDaycareUnitPredicate,
                             personPred = fiveYearOldPersonPred,
                         )
 
