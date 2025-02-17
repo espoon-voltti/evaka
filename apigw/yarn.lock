@@ -442,13 +442,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-rewriter@npm:2.6.1":
-  version: 2.6.1
-  resolution: "@datadog/native-iast-rewriter@npm:2.6.1"
+"@datadog/native-iast-rewriter@npm:2.8.0":
+  version: 2.8.0
+  resolution: "@datadog/native-iast-rewriter@npm:2.8.0"
   dependencies:
     lru-cache: "npm:^7.14.0"
     node-gyp-build: "npm:^4.5.0"
-  checksum: 10/a854399bf5d4173050d76ce523784238064cb0ec88255441508e95de8275d1bdfa670e98549b386a1e45bd56cc96b2346565ab81273502f4741c5a5bbe528319
+  checksum: 10/5dc62d29e8ef1d8aded1fb8d12a0c7794da7a976d2a75fefecf46f744e0960473a5965beaf0a6e67cdf836cd67b32257c5da068f09530691cf6eacb4c7578a1d
   languageName: node
   linkType: hard
 
@@ -2683,13 +2683,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.35.0":
-  version: 5.35.0
-  resolution: "dd-trace@npm:5.35.0"
+"dd-trace@npm:^5.36.0":
+  version: 5.36.0
+  resolution: "dd-trace@npm:5.36.0"
   dependencies:
     "@datadog/libdatadog": "npm:^0.4.0"
     "@datadog/native-appsec": "npm:8.4.0"
-    "@datadog/native-iast-rewriter": "npm:2.6.1"
+    "@datadog/native-iast-rewriter": "npm:2.8.0"
     "@datadog/native-iast-taint-tracking": "npm:3.2.0"
     "@datadog/native-metrics": "npm:^3.1.0"
     "@datadog/pprof": "npm:5.5.1"
@@ -2719,7 +2719,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/4339fc6a5fe9c8f6114205c97234d79ebaaa897fd4e6505c6d329eb2b03553089286ca7cadccabe90281128829cd7a6707279d069fe2718a55f0143e1185e177
+  checksum: 10/96d8d8ebf675eab6675b82f21d85ebafc54a3d75d61b10b66f24f7d1d66cfe82427cde1f193cad8f901cd30d6b6722d97dac3a34041a26e0fc6487f383d25a62
   languageName: node
   linkType: hard
 
@@ -3375,7 +3375,7 @@ __metadata:
     connect-redis: "npm:^8.0.0"
     cookie-parser: "npm:^1.4.6"
     date-fns: "npm:^4.1.0"
-    dd-trace: "npm:^5.35.0"
+    dd-trace: "npm:^5.36.0"
     eslint: "npm:^9.20.0"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-import: "npm:^2.31.0"
