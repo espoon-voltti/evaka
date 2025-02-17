@@ -14,10 +14,3 @@ export const incomeCoefficients = [
 ] as const
 
 export type IncomeCoefficient = (typeof incomeCoefficients)[number]
-
-// todo: use @ConstList once NOT_AVAILABLE has been removed from backend model
-export const incomeEffects = [
-  'MAX_FEE_ACCEPTED',
-  'INCOMPLETE',
-  'INCOME'
-] as const

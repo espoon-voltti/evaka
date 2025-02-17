@@ -159,7 +159,7 @@ class PdfGenerationTest {
             headOfFamilyIncome =
                 testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
             partnerIncome =
-                testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
+                testDecisionIncome.copy(effect = IncomeEffect.INCOMPLETE, total = 413195),
             childIncome = testDecisionIncome.copy(effect = IncomeEffect.INCOME, total = 123456),
             child =
                 PersonDetailed(

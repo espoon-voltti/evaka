@@ -159,7 +159,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 { it.incomeEffect },
             )
             .containsExactlyInAnyOrder(
-                Tuple(testAdult_1.lastName, testAdult_1.firstName, IncomeEffect.NOT_AVAILABLE),
+                Tuple(testAdult_1.lastName, testAdult_1.firstName, IncomeEffect.INCOMPLETE),
                 Tuple(testAdult_2.lastName, testAdult_2.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
                 Tuple(testAdult_5.lastName, testAdult_5.firstName, IncomeEffect.INCOME),

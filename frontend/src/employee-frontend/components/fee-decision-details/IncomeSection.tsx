@@ -41,9 +41,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
   const personIncome = (income: DecisionIncome | null) => {
     if (!income) {
       return (
-        <span>
-          {i18n.feeDecision.form.summary.income.details.NOT_AVAILABLE}
-        </span>
+        <span>{i18n.feeDecision.form.summary.income.details.INCOMPLETE}</span>
       )
     }
     if (income.effect !== 'INCOME') {

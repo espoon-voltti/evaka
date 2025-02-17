@@ -438,11 +438,13 @@ export type IncomeCoefficient = typeof incomeCoefficients[number]
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.IncomeEffect
 */
-export type IncomeEffect =
-  | 'MAX_FEE_ACCEPTED'
-  | 'INCOMPLETE'
-  | 'INCOME'
-  | 'NOT_AVAILABLE'
+export const incomeEffects = [
+  'MAX_FEE_ACCEPTED',
+  'INCOMPLETE',
+  'INCOME'
+] as const
+
+export type IncomeEffect = typeof incomeEffects[number]
 
 /**
 * Generated from fi.espoo.evaka.invoicing.service.IncomeNotification

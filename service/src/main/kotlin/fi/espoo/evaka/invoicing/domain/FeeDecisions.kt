@@ -335,9 +335,7 @@ fun getTotalIncomeEffect(
             (!hasPartner || partnerIncomeEffect == IncomeEffect.INCOME) -> IncomeEffect.INCOME
         headIncomeEffect == IncomeEffect.MAX_FEE_ACCEPTED ||
             partnerIncomeEffect == IncomeEffect.MAX_FEE_ACCEPTED -> IncomeEffect.MAX_FEE_ACCEPTED
-        headIncomeEffect == IncomeEffect.INCOMPLETE ||
-            partnerIncomeEffect == IncomeEffect.INCOMPLETE -> IncomeEffect.INCOMPLETE
-        else -> IncomeEffect.NOT_AVAILABLE
+        else -> IncomeEffect.INCOMPLETE
     }
 
 fun getTotalIncome(

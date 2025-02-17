@@ -1916,8 +1916,7 @@ export const fi = {
         effectOptions: {
           MAX_FEE_ACCEPTED: 'Huoltaja on suostunut korkeimpaan maksuluokkaan',
           INCOMPLETE: 'Puutteelliset tulotiedot',
-          INCOME: 'Huoltajan toimittamat tulotiedot',
-          NOT_AVAILABLE: 'Puutteelliset tulotiedot'
+          INCOME: 'Huoltajan toimittamat tulotiedot'
         },
         miscTitle: 'Lisätiedot',
         incomeTitle: 'Tulot',
@@ -3235,14 +3234,11 @@ export const fi = {
             MAX_FEE_ACCEPTED:
               'Huoltajan suostumus korkeimpaan varhaiskasvatusmaksuun',
             INCOMPLETE: 'Perheen tulotiedot ovat puutteelliset.',
-            INCOME: 'Maksun perusteena huoltajien tulotiedot',
-            NOT_AVAILABLE:
-              'Maksun perusteena korkein tuloluokka (automaattinen)'
+            INCOME: 'Maksun perusteena huoltajien tulotiedot'
           },
           details: {
             MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan varhaiskasvatusmaksuun',
-            INCOMPLETE: 'Puutteelliset tulotiedot',
-            NOT_AVAILABLE: 'Tulotietoja ei ole toimitettu'
+            INCOMPLETE: 'Puutteelliset tulotiedot'
           },
           income: 'Tulot',
           expenses: 'Menot',
@@ -3350,13 +3346,11 @@ export const fi = {
           MAX_FEE_ACCEPTED:
             'Huoltajan suostumus korkeimpaan varhaiskasvatusmaksuun',
           INCOMPLETE: 'Perheen tulotiedot ovat puutteelliset.',
-          INCOME: 'Maksun perusteena huoltajien tulotiedot',
-          NOT_AVAILABLE: 'Maksun perusteena korkein tuloluokka (automaattinen)'
+          INCOME: 'Maksun perusteena huoltajien tulotiedot'
         },
         details: {
           MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan varhaiskasvatusmaksuun',
-          INCOMPLETE: 'Puutteelliset tulotiedot',
-          NOT_AVAILABLE: 'Tulotietoja ei ole toimitettu'
+          INCOMPLETE: 'Puutteelliset tulotiedot'
         },
         income: 'Tulot',
         expenses: 'Menot',

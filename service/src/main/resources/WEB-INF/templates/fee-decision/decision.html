@@ -64,10 +64,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   th:text="#{text.income.incomplete}"
                 ></span>
                 <span th:case="'INCOME'" th:text="${headIncomeTotal}"></span>
-                <span
-                  th:case="'NOT_AVAILABLE'"
-                  th:text="#{text.income.not_available}"
-                ></span>
               </td>
             </tr>
             <tr th:if="${hasPartner}">
@@ -82,10 +78,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   th:text="#{text.income.incomplete}"
                 ></span>
                 <span th:case="'INCOME'" th:text="${partnerIncomeTotal}"></span>
-                <span
-                  th:case="'NOT_AVAILABLE'"
-                  th:text="#{text.income.not_available}"
-                ></span>
               </td>
             </tr>
             <tr th:if="${showTotalIncome}">

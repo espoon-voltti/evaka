@@ -135,13 +135,13 @@ class PdfGenerator(
                 },
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
             "headIncomeEffect" to
-                (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+                (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.INCOMPLETE.name),
             "hasPartner" to (decision.partner != null),
             "partner" to decision.partner,
             "partnerFullName" to decision.partner?.let { "${it.firstName} ${it.lastName}" },
             "partnerIsCodebtor" to (decision.partner != null && decision.partnerIsCodebtor == true),
             "partnerIncomeEffect" to
-                (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+                (decision.partnerIncome?.effect?.name ?: IncomeEffect.INCOMPLETE.name),
             "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
             "totalIncome" to formatCents(totalIncome),
             "showTotalIncome" to !hideTotalIncome,
@@ -172,7 +172,7 @@ class PdfGenerator(
             "childIncomeTotal" to formatCents(decision.childIncome?.total),
             "childFullName" to with(decision.child) { "$firstName $lastName" },
             "childIncomeEffect" to
-                (decision.childIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+                (decision.childIncome?.effect?.name ?: IncomeEffect.INCOMPLETE.name),
         )
     }
 
@@ -225,11 +225,11 @@ class PdfGenerator(
                     (decision.partner != null && decision.partnerIsCodebtor == true),
                 "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
                 "headIncomeEffect" to
-                    (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+                    (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.INCOMPLETE.name),
                 "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
                 "partnerFullName" to decision.partner?.let { "${it.firstName} ${it.lastName}" },
                 "partnerIncomeEffect" to
-                    (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+                    (decision.partnerIncome?.effect?.name ?: IncomeEffect.INCOMPLETE.name),
                 "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
                 "distinctPlacementTypes" to distinctPlacementTypes,
                 "parts" to

@@ -133,10 +133,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   th:text="#{decision.income.notAvailable}"
                 ></span>
                 <span th:case="'INCOME'" th:text="${headIncomeTotal}"></span>
-                <span
-                  th:case="'NOT_AVAILABLE'"
-                  th:text="#{decision.income.notAvailable}"
-                ></span>
               </td>
             </tr>
             <tr th:if="${hasPartner}">
@@ -151,10 +147,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   th:text="#{decision.income.notAvailable}"
                 ></span>
                 <span th:case="'INCOME'" th:text="${partnerIncomeTotal}"></span>
-                <span
-                  th:case="'NOT_AVAILABLE'"
-                  th:text="#{decision.income.notAvailable}"
-                ></span>
               </td>
             </tr>
 
@@ -170,10 +162,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   th:text="#{decision.income.notAvailable}"
                 ></span>
                 <span th:case="'INCOME'" th:text="${childIncomeTotal}"></span>
-                <span
-                  th:case="'NOT_AVAILABLE'"
-                  th:text="#{decision.income.notAvailable}"
-                ></span>
               </td>
             </tr>
 

@@ -63,7 +63,6 @@ data class DecisionIncome(
 ) {
     fun effectiveComparable(): DecisionIncome? {
         return when (this.effect) {
-            IncomeEffect.NOT_AVAILABLE,
             IncomeEffect.INCOMPLETE -> null
             else -> this
         }
@@ -78,11 +77,11 @@ data class IncomeValue(
     val monthlyAmount: Int,
 )
 
+@ConstList("incomeEffects")
 enum class IncomeEffect : DatabaseEnum {
     MAX_FEE_ACCEPTED,
     INCOMPLETE,
-    INCOME,
-    NOT_AVAILABLE;
+    INCOME;
 
     override val sqlType: String = "income_effect"
 }
