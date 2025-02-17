@@ -137,7 +137,7 @@ export default class CitizenIncomePage {
   }
 
   attachmentInput(type: IncomeStatementAttachmentType) {
-    return new FileUpload(this.page.find(`#attachment-section-${type}`))
+    return new FileUpload(this.page.findByDataQa(`attachment-section-${type}`))
   }
 
   async toggleEntrepreneurStartupGrant(check: boolean) {

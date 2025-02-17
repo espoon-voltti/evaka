@@ -323,23 +323,26 @@ export const fileIcon = (file: Attachment): IconDefinition => {
 
 const inProgress = (file: FileObject): boolean => !file.uploaded
 
-function FileUpload<T>({
-  files,
-  validateHandler,
-  getValidationResult,
-  uploadHandler,
-  onUploaded,
-  onDeleted,
-  onStateChange,
-  getDownloadUrl,
-  slimSingleFile = false,
-  slim = false,
-  disabled = false,
-  'data-qa': dataQa,
-  allowedFileTypes = defaultAllowedFileTypes,
-  buttonText,
-  id
-}: FileUploadProps<T>) {
+function FileUpload<T>(
+  {
+    files,
+    validateHandler,
+    getValidationResult,
+    uploadHandler,
+    onUploaded,
+    onDeleted,
+    onStateChange,
+    getDownloadUrl,
+    slimSingleFile = false,
+    slim = false,
+    disabled = false,
+    'data-qa': dataQa,
+    allowedFileTypes = defaultAllowedFileTypes,
+    buttonText,
+    id
+  }: FileUploadProps<T>,
+  ref: React.ForwardedRef<HTMLSpanElement>
+) {
   const i18n = useTranslations().fileUpload
 
   const ariaId = useUniqueId('file-upload')
@@ -581,7 +584,7 @@ function FileUpload<T>({
           htmlFor={ariaId}
           onKeyDown={onKeyDown}
         >
-          <span role="button" tabIndex={0}>
+          <span role="button" tabIndex={0} ref={ref}>
             {fileInput}
             <H4>{buttonText ?? i18n.input.title}</H4>
             <P>
@@ -669,4 +672,6 @@ function FileUpload<T>({
   )
 }
 
-export default React.memo(FileUpload) as typeof FileUpload
+export default React.memo(React.forwardRef(FileUpload)) as <T>(
+  props: FileUploadProps<T> & { ref?: React.Ref<HTMLSpanElement> }
+) => React.ReactElement

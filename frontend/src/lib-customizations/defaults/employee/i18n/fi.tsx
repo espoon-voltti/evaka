@@ -2083,7 +2083,8 @@ export const fi = {
 
     citizenAttachments: {
       title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
-      noAttachments: 'Ei liitteitä'
+      noAttachments: 'Ei liitteitä',
+      attachmentMissing: 'Liite puuttuu'
     },
 
     employeeAttachments: {

@@ -5,12 +5,12 @@
 import groupBy from 'lodash/groupBy'
 import partition from 'lodash/partition'
 
-import { Attachment } from './generated/api-types/attachment'
+import { Attachment } from '../generated/api-types/attachment'
 import {
   IncomeStatementAttachment,
   IncomeStatementAttachmentType
-} from './generated/api-types/incomestatement'
-import { AttachmentId } from './generated/api-types/shared'
+} from '../generated/api-types/incomestatement'
+import { AttachmentId } from '../generated/api-types/shared'
 
 export type AttachmentsByType = Partial<
   Record<IncomeStatementAttachmentType, Attachment[]>

@@ -51,7 +51,7 @@ export class CitizenChildIncomeStatementEditSentPage {
     this.startDate = page.findByDataQa('start-date')
     this.otherInfoInput = new TextInput(page.findByDataQa('other-info'))
     this.attachment = new FileUpload(
-      page.find('#attachment-section-CHILD_INCOME')
+      page.findByDataQa('attachment-section-CHILD_INCOME')
     )
     this.saveButton = page.findByDataQa('save-btn')
   }
@@ -85,7 +85,7 @@ export class CitizenChildIncomeStatementEditPage {
     this.startDateInput = new TextInput(page.findByDataQa('start-date'))
     this.otherInfoInput = new TextInput(page.findByDataQa('other-info'))
     this.attachments = new FileUpload(
-      page.find('#attachment-section-CHILD_INCOME')
+      page.findByDataQa('attachment-section-CHILD_INCOME')
     )
     this.assure = new Checkbox(page.findByDataQa('assure-checkbox'))
     this.sendButton = page.findByDataQa('save-btn')

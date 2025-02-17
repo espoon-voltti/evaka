@@ -11,7 +11,7 @@ import {
 import {
   IncomeStatementAttachments,
   toIncomeStatementAttachments
-} from 'lib-common/income-statements'
+} from 'lib-common/income-statements/attachments'
 import LocalDate from 'lib-common/local-date'
 
 export interface IncomeStatementForm {

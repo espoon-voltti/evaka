@@ -18,6 +18,7 @@ import {
   otherIncomes
 } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import * as Form from 'lib-common/income-statements/form'
 import LocalDate from 'lib-common/local-date'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
@@ -56,9 +57,9 @@ import { useLang, useTranslation } from '../localization'
 import {
   IncomeStatementUntypedAttachments,
   IncomeStatementMissingAttachments,
-  makeAttachmentHandler,
   AttachmentHandler,
-  AttachmentSection
+  AttachmentSection,
+  useAttachmentHandler
 } from './IncomeStatementAttachments'
 import {
   ActionContainer,
@@ -71,7 +72,6 @@ import {
   useFieldDispatch,
   useFieldSetState
 } from './IncomeStatementComponents'
-import * as Form from './types/form'
 
 interface Props {
   incomeStatementId: IncomeStatementId | undefined
@@ -180,14 +180,10 @@ export default React.memo(
     )
 
     const onAttachmentChange = useFieldSetState(onChange, 'attachments')
-    const attachmentHandler = useMemo(
-      () =>
-        makeAttachmentHandler(
-          incomeStatementId,
-          formData.attachments,
-          onAttachmentChange
-        ),
-      [formData.attachments, incomeStatementId, onAttachmentChange]
+    const attachmentHandler = useAttachmentHandler(
+      incomeStatementId,
+      formData.attachments,
+      onAttachmentChange
     )
 
     const sendButtonEnabled = useMemo(
