@@ -19,6 +19,10 @@ import {
   GetReceiversResponse,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageAccountId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -136,17 +140,24 @@ export default React.memo(function MessageEditor({
   )
 
   const validAccounts = useMemo(() => {
+    const newMessageAuthorized =
+      (accountId: MessageAccountId) =>
+      (childId: PersonId): boolean =>
+        receiverOptions.childrenToMessageAccounts[childId]?.newMessage.includes(
+          accountId
+        ) ?? false
+
+    // Can send to groups which are recipients for at least one of the selected children,
+    // as long as all the children and thus groups are in the same unit.
+    // For other receiver types, they must be valid receivers for ALL selected children.
     const accounts = receiverOptions.messageAccounts
       .filter(
         (account) =>
           selectedChildrenInSameUnit &&
           message.children.length > 0 &&
-          message.children.every(
-            (childId) =>
-              receiverOptions.childrenToMessageAccounts[
-                childId
-              ]?.newMessage.includes(account.account.id) ?? false
-          )
+          (account.account.type === 'GROUP'
+            ? message.children.some(newMessageAuthorized(account.account.id))
+            : message.children.every(newMessageAuthorized(account.account.id)))
       )
       .map((withPresence) => withPresence.account)
     const [primary, secondary] = partition(accounts, isPrimaryRecipient)
