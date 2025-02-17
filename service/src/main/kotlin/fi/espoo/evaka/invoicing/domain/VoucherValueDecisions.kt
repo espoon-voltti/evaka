@@ -163,14 +163,18 @@ enum class VoucherValueDecisionDifference(
         setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
     }),
     INCOME({ d1, d2 ->
+        val logic =
+            if (d2.validFrom < LocalDate.of(2025, 3, 1)) IncomeComparisonVersion.V1
+            else IncomeComparisonVersion.V2
         setOf(
-            d1.headOfFamilyIncome?.effectiveComparable(),
-            d1.partnerIncome?.effectiveComparable(),
+            d1.headOfFamilyIncome?.effectiveComparable(logic),
+            d1.partnerIncome?.effectiveComparable(logic),
         ) ==
             setOf(
-                d2.headOfFamilyIncome?.effectiveComparable(),
-                d2.partnerIncome?.effectiveComparable(),
-            ) && d1.childIncome?.effectiveComparable() == d2.childIncome?.effectiveComparable()
+                d2.headOfFamilyIncome?.effectiveComparable(logic),
+                d2.partnerIncome?.effectiveComparable(logic),
+            ) &&
+            d1.childIncome?.effectiveComparable(logic) == d2.childIncome?.effectiveComparable(logic)
     }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),
