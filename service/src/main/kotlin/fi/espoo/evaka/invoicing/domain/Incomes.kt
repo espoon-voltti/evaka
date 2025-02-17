@@ -52,8 +52,14 @@ data class IncomeRequest(
     val attachments: List<Attachment> = listOf(),
 )
 
+enum class IncomeComparisonVersion {
+    V1,
+    V2,
+}
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DecisionIncome(
+    val id: IncomeId? = null,
     val effect: IncomeEffect,
     val data: Map<String, Int>,
     val totalIncome: Int,
@@ -61,13 +67,16 @@ data class DecisionIncome(
     val total: Int,
     val worksAtECHA: Boolean,
 ) {
-    fun effectiveComparable(): DecisionIncome? {
-        return when (this.effect) {
-            IncomeEffect.NOT_AVAILABLE,
-            IncomeEffect.INCOMPLETE -> null
-            else -> this
+    fun effectiveComparable(version: IncomeComparisonVersion): DecisionIncome? =
+        when (version) {
+            IncomeComparisonVersion.V1 ->
+                when (this.effect) {
+                    IncomeEffect.NOT_AVAILABLE,
+                    IncomeEffect.INCOMPLETE -> null
+                    else -> this.copy(id = null)
+                }
+            IncomeComparisonVersion.V2 -> this
         }
-    }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -41,6 +41,7 @@ fun mapIncomeToDecisionIncome(
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): DecisionIncome =
     DecisionIncome(
+        id = income.id,
         effect = income.effect,
         data =
             income.data.mapValues { (_, value) ->
