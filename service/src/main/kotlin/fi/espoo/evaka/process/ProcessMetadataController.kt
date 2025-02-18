@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.process.ProcessMetadataController.DocumentMetadata
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -334,46 +335,6 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
     }
 
-    private fun Database.Read.getChildDocumentMetadata(
-        documentId: ChildDocumentId
-    ): DocumentMetadata =
-        createQuery {
-                sql(
-                    """
-        SELECT 
-            dt.name,
-            cd.created,
-            e.id AS created_by_id,
-            e.name AS created_by_name,
-            e.type AS created_by_type,
-            dt.confidential,
-            cd.document_key
-        FROM child_document cd
-        JOIN document_template dt ON dt.id = cd.template_id
-        LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
-        WHERE cd.id = ${bind(documentId)}
-    """
-                )
-            }
-            .map {
-                DocumentMetadata(
-                    name = column("name"),
-                    createdAt = column("created"),
-                    createdBy =
-                        column<EvakaUserId?>("created_by_id")?.let {
-                            EvakaUser(
-                                id = it,
-                                name = column("created_by_name"),
-                                type = column("created_by_type"),
-                            )
-                        },
-                    confidential = column("confidential"),
-                    downloadPath =
-                        column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
-                )
-            }
-            .exactlyOne()
-
     private fun Database.Read.getAssistanceNeedDecisionDocumentMetadata(
         decisionId: AssistanceNeedDecisionId
     ): DocumentMetadata =
@@ -644,3 +605,41 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .exactlyOne()
 }
+
+fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): DocumentMetadata =
+    createQuery {
+            sql(
+                """
+        SELECT 
+            dt.name,
+            cd.created,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            dt.confidential,
+            cd.document_key
+        FROM child_document cd
+        JOIN document_template dt ON dt.id = cd.template_id
+        LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
+        WHERE cd.id = ${bind(documentId)}
+    """
+            )
+        }
+        .map {
+            DocumentMetadata(
+                name = column("name"),
+                createdAt = column("created"),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                confidential = column("confidential"),
+                downloadPath =
+                    column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
+            )
+        }
+        .exactlyOne()
