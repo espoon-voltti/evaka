@@ -156,14 +156,15 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
   }
 
-  if (!config.keycloakCitizen)
-    throw new Error('Missing Keycloak SAML configuration (citizen)')
-  const keycloakCitizenIntegration = createKeycloakCitizenIntegration(
-    citizenSessions,
-    config.keycloakCitizen,
-    redisClient
-  )
-  router.use('/citizen/auth/keycloak', keycloakCitizenIntegration.router)
+  let keycloakCitizenIntegration: SamlIntegration | undefined = undefined
+  if (config.keycloakCitizen) {
+    keycloakCitizenIntegration = createKeycloakCitizenIntegration(
+      citizenSessions,
+      config.keycloakCitizen,
+      redisClient
+    )
+    router.use('/citizen/auth/keycloak', keycloakCitizenIntegration.router)
+  }
 
   router.all(
     '/employee/auth/ad/*',
@@ -207,14 +208,15 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     router.use('/employee/auth/sfi', employeeSfiIntegration.router)
   }
 
-  if (!config.keycloakEmployee)
-    throw new Error('Missing Keycloak SAML configuration (employee)')
-  const keycloakEmployeeIntegration = createKeycloakEmployeeIntegration(
-    employeeSessions,
-    config.keycloakEmployee,
-    redisClient
-  )
-  router.use('/employee/auth/keycloak', keycloakEmployeeIntegration.router)
+  let keycloakEmployeeIntegration: SamlIntegration | undefined = undefined
+  if (config.keycloakEmployee) {
+    keycloakEmployeeIntegration = createKeycloakEmployeeIntegration(
+      employeeSessions,
+      config.keycloakEmployee,
+      redisClient
+    )
+    router.use('/employee/auth/keycloak', keycloakEmployeeIntegration.router)
+  }
 
   router.use(
     '/application/auth/saml',
@@ -262,7 +264,9 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
             return citizenSfiIntegration.logout(req, res)
           break
         case 'keycloak-citizen':
-          return keycloakCitizenIntegration.logout(req, res)
+          if (keycloakCitizenIntegration)
+            return keycloakCitizenIntegration.logout(req, res)
+          break
         case 'citizen-weak':
         case 'dev':
         case undefined:
@@ -292,7 +296,9 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
             return employeeSfiIntegration.logout(req, res)
           break
         case 'keycloak-employee':
-          return keycloakEmployeeIntegration.logout(req, res)
+          if (keycloakEmployeeIntegration)
+            return keycloakEmployeeIntegration.logout(req, res)
+          break
         case 'dev':
           // no need for special handling
           break
