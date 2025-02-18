@@ -29,7 +29,9 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
@@ -47,9 +49,11 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import featureFlags from 'lib-customizations/espoo/featureFlags'
 import { faFilePdf } from 'lib-icons'
 import { faExclamationTriangle } from 'lib-icons'
 import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
+import { faBoxArchive } from 'lib-icons'
 
 import { API_URL } from '../../api/client'
 import { useTranslation } from '../../state/i18n'
@@ -63,6 +67,7 @@ import {
   childDocumentQuery,
   childDocumentWriteLockQuery,
   deleteChildDocumentMutation,
+  planArchiveChildDocumentMutation,
   publishChildDocumentMutation,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
@@ -449,6 +454,30 @@ const ChildDocumentReadViewInner = React.memo(
                       </span>
                     </FixedSpaceRow>
                   </a>
+                  {featureFlags.archiveIntegrationEnabled &&
+                    permittedActions.includes('ARCHIVE') && (
+                      <Tooltip
+                        tooltip={
+                          document.archivedAt
+                            ? i18n.childInformation.childDocuments.editor.alreadyArchived(
+                                document.archivedAt
+                              )
+                            : undefined
+                        }
+                        data-qa="archive-tooltip"
+                      >
+                        <MutateButton
+                          icon={faBoxArchive}
+                          text={
+                            i18n.childInformation.childDocuments.editor.archive
+                          }
+                          mutation={planArchiveChildDocumentMutation}
+                          onClick={() => ({ documentId: document.id })}
+                          data-qa="archive-button"
+                          disabled={document.archivedAt !== null}
+                        />
+                      </Tooltip>
+                    )}
                 </FlexRow>
               </Container>
               <Gap size="xs" />

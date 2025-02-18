@@ -29,6 +29,7 @@ data class EvakaEnv(
     val vtjEnabled: Boolean,
     val webPushEnabled: Boolean,
     val jamixEnabled: Boolean,
+    val särmäEnabled: Boolean,
     val forceUnpublishDocumentTemplateEnabled: Boolean,
     val asyncJobRunnerDisabled: Boolean,
     val frontendBaseUrlFi: String,
@@ -51,6 +52,7 @@ data class EvakaEnv(
                 vtjEnabled = env.lookup("evaka.integration.vtj.enabled") ?: false,
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
+                särmäEnabled = env.lookup("evaka.integration.särmä.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
                         ?: false,
@@ -682,3 +684,18 @@ private fun snakeCaseName(job: Enum<*>): String =
             }
         }
         .joinToString(separator = "")
+
+data class ArchiveEnv(
+    /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core */
+    val url: URI,
+    val useMockClient: Boolean,
+) {
+
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            ArchiveEnv(
+                url = URI.create(env.lookup("evaka.integration.särmä.url")),
+                useMockClient = env.lookup("evaka.integration.särmä.use_mock_client") ?: false,
+            )
+    }
+}

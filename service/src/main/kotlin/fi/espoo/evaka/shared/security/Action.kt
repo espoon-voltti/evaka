@@ -2392,7 +2392,8 @@ sealed interface Action {
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfChildOfChildDocument(deletable = true),
-        );
+        ),
+        ARCHIVE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

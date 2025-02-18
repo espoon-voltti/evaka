@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, TextInput, Element } from '../../../utils/page'
+import { Page, TextInput, Element, AsyncButton } from '../../../utils/page'
 
 export class ChildDocumentPage {
   status: Element
@@ -10,12 +10,16 @@ export class ChildDocumentPage {
   previewButton: Element
   editButton: Element
   returnButton: Element
+  archiveButton: AsyncButton
+  archiveTooltip: Element
   constructor(private readonly page: Page) {
     this.status = page.findByDataQa('document-state-chip')
     this.savingIndicator = page.findByDataQa('saving-spinner')
     this.previewButton = page.findByDataQa('preview-button')
     this.editButton = page.findByDataQa('edit-button')
     this.returnButton = page.findByDataQa('return-button')
+    this.archiveButton = new AsyncButton(page.findByDataQa('archive-button'))
+    this.archiveTooltip = page.findByDataQa('archive-tooltip')
   }
 
   getTextQuestion(sectionName: string, questionName: string) {

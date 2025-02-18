@@ -338,6 +338,22 @@ export async function nextDocumentStatus(
 
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.planArchiveChildDocument
+*/
+export async function planArchiveChildDocument(
+  request: {
+    documentId: ChildDocumentId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/child-documents/${request.documentId}/archive`.toString(),
+    method: 'POST'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.prevDocumentStatus
 */
 export async function prevDocumentStatus(

@@ -56,6 +56,7 @@ SELECT
     cd.id,
     cd.status,
     cd.published_at,
+    cd.archived_at,
     cd.document_key IS NOT NULL AS pdf_available,
     cd.content,
     cd.published_content,
@@ -328,4 +329,17 @@ WHERE id = ${bind { it }}
 """
         )
     }
+}
+
+fun Database.Transaction.markDocumentAsArchived(id: ChildDocumentId, now: HelsinkiDateTime) {
+    createUpdate {
+            sql(
+                """
+            UPDATE child_document
+            SET archived_at = ${bind(now)}
+            WHERE id = ${bind(id)}
+            """
+            )
+        }
+        .updateExactlyOne()
 }

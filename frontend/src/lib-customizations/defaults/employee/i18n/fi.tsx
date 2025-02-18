@@ -866,6 +866,9 @@ export const fi = {
         publishConfirmText:
           'Huoltaja saa nähdäkseen tämänhetkisen version. Tämän jälkeen tekemäsi muutokset eivät näy huoltajalle ennen kuin julkaiset uudelleen.',
         downloadPdf: 'Lataa PDF-tiedostona',
+        archive: 'Arkistoi',
+        alreadyArchived: (archivedAt: HelsinkiDateTime) =>
+          `Asiakirja on arkistoitu ${archivedAt.toLocalDate().format()}`,
         goToNextStatus: {
           DRAFT: 'Julkaise luonnos-tilassa',
           PREPARED: 'Julkaise laadittu-tilassa',

@@ -71,7 +71,8 @@ import {
   prevDocumentStatus,
   publishDocument,
   takeDocumentWriteLock,
-  updateDocumentContent
+  updateDocumentContent,
+  planArchiveChildDocument
 } from '../../generated/api-clients/document'
 import {
   createFeeAlteration,
@@ -143,6 +144,10 @@ export const deleteChildDocumentMutation = q.parametricMutation<{
   ({ childId }) => childDocumentsQuery({ childId }),
   ({ documentId }) => childDocumentQuery({ documentId })
 ])
+
+export const planArchiveChildDocumentMutation = q.mutation(
+  planArchiveChildDocument
+)
 
 export const childServiceApplicationsQuery = q.query(
   getChildServiceApplications
