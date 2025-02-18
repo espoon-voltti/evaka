@@ -254,13 +254,30 @@ class MessageControllerCitizen(
 
         return db.connect { dbc ->
                 val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                val validRecipients =
+                val receivers =
                     dbc.read { it.getCitizenReceivers(today, senderId) }
-                        .mapValues { entry -> entry.value.newMessage.map { it.account.id }.toSet() }
+                        .mapValues { entry -> entry.value.newMessage }
+                val validRecipients =
+                    receivers.mapValues { entry -> entry.value.map { it.account.id }.toSet() }
+                val recipientTypes =
+                    receivers.values.flatten().associate { it.account.id to it.account.type }
                 val allRecipientsValid =
                     body.recipients.all { recipient ->
-                        body.children.any { child ->
-                            validRecipients[child]?.contains(recipient) ?: false
+                        val recipientType = recipientTypes[recipient] ?: return@all false
+
+                        // Can send to groups which are recipients for at least one of the selected
+                        // children,
+                        // as long as all the children and thus groups are in the same unit.
+                        // For other receiver types, they must be valid receivers for ALL selected
+                        // children.
+                        if (recipientType == AccountType.GROUP) {
+                            body.children.any { child ->
+                                validRecipients[child]?.contains(recipient) ?: false
+                            }
+                        } else {
+                            body.children.all { child ->
+                                validRecipients[child]?.contains(recipient) ?: false
+                            }
                         }
                     }
                 val selectedChildren =
