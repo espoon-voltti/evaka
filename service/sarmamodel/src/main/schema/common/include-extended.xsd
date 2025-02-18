@@ -1,0 +1,47 @@
+<!--
+SPDX-FileCopyrightText: 2024 City of Espoo
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xa="http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0"
+  elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <!-- ExtendedMetadataType for custom metadata extensions -->
+    <xs:complexType name="ExtendedMetadataType">
+        <xs:sequence>
+            <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- AcceptedMimeTypeType for allowed MIME types -->
+    <xs:simpleType name="AcceptedMimeTypeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="application/pdf"/>
+            <xs:enumeration value="text/plain"/>
+            <xs:enumeration value="text/xml"/>
+            <xs:enumeration value="application/msword"/>
+            <xs:enumeration value="application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+            <xs:enumeration value="image/jpeg"/>
+            <xs:enumeration value="image/png"/>
+            <xs:enumeration value="image/tiff"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- AcceptedFileFormatType for specific file formats -->
+    <xs:simpleType name="AcceptedFileFormatType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="pdf"/>
+            <xs:enumeration value="txt"/>
+            <xs:enumeration value="docx"/>
+            <xs:enumeration value="doc"/>
+            <xs:enumeration value="xml"/>
+            <xs:enumeration value="jpg"/>
+            <xs:enumeration value="png"/>
+            <xs:enumeration value="tiff"/>
+            <xs:enumeration value="cda/level2"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema> 
