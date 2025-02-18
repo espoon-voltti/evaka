@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--+
+    | Standard metadata model for X-Archive. Contains nodes for most commonly
+    | encountered metadata. May be extended through included schema.
+    | NOTE: Changed xs:import to xs:include; change schema transformer
+    | accordingly.
+    | This schema is intended to be extended through extended-metadata.xsd. It
+    | imports definitions from it at predefined points. See that schema for 
+    | details.
+    |
+    +-->
+<xs:schema targetNamespace="http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xa="http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0"
+  xmlns:rs="http://www.avaintec.com/2004/records-schedule-fi/1.0"
+  elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:include schemaLocation="../common/include-extended.xsd"/>
+	<xs:import namespace="http://www.avaintec.com/2004/records-schedule-fi/1.0" schemaLocation="../common/include-policies.xsd"/>
+	<xs:element name="RecordMetadataInstance">
+		<xs:annotation>
+			<xs:appinfo>caption=StandardMetadata;</xs:appinfo>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="StandardMetadata" type="xa:StandardMetadataType"/>
+				<xs:element name="ExtendedMetadata" type="xa:ExtendedMetadataType" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="metadataMasterVersionType">
+		<xs:annotation>
+			<xs:appinfo>internal=true;</xs:appinfo>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="masterName" type="xs:string" fixed="yleinen"/>
+			<xs:element name="versionNumber" type="xs:string" fixed="1.0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="StandardMetadataType">
+		<xs:sequence>
+			<xs:element name="metadataMasterVersion" type="xa:metadataMasterVersionType">
+				<xs:annotation>
+					<xs:appinfo>internal=true;</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="virtualArchiveId" type="xs:string">
+				<xs:annotation>
+					<xs:appinfo>internal=true;prefill=virtual_archive_id;readonly=yes;</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="recordIdentifiers">
+				<xs:complexType>
+					<xs:sequence>
+					    <xs:element name="CaseIdentifier" type="xs:string" minOccurs="0"/>
+						<xs:element name="RecordIdentifier" type="xs:string"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="documentDescription">
+				<xs:annotation>
+					<xs:documentation>Descriptive information about the record.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="title" type="xs:string"/>
+						<xs:element name="otherId" type="xs:string" minOccurs="0"/>
+						<xs:element name="documentType" type="xs:string" minOccurs="0"/>
+						<xs:element name="documentTypeSpecifier" type="xs:string" minOccurs="0"/>
+						<xs:element name="registerName" type="xs:string" minOccurs="0"/>
+						<xs:element name="description" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>uiwidget=textarea;rows=6;cols=60;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="firstName" type="xs:string" minOccurs="0"/>
+						<xs:element name="lastName" type="xs:string" minOccurs="0"/>
+						<xs:element name="socialSecurityNumber" type="xs:string" minOccurs="0"/>
+                        <xs:element name="keywords" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>uiwidget=textarea;rows=6;cols=60;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>						
+						<xs:element name="personalData" type="xa:personalDataType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Does the record contain personal data?</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="personalDataCollectionReason" type="xs:string" minOccurs="0"/>
+						<xs:element name="relatedMaterial" type="xs:string" minOccurs="0"/>
+						<xs:element name="transferMethod" type="xs:string" minOccurs="0"/>
+						<xs:element name="language" type="xs:string" minOccurs="0"/>
+						<xs:element name="dataManagement" type="xs:string" minOccurs="0"/>
+						<xs:element name="dataSource" type="xs:string" minOccurs="0"/>
+						<xs:element name="owner" type="xs:string" minOccurs="0"/>
+						<xs:element name="signed" type="xs:date" minOccurs="0"/>
+						<xs:element name="signer" type="xs:string" minOccurs="0"/>
+						<xs:element name="SignatureDescription" type="xs:string" minOccurs="0"/>						
+						<xs:element name="accessRight" type="xa:accessRightType" minOccurs="0"/>
+						<xs:element name="Agents" minOccurs="0">
+					    <xs:complexType>
+							<xs:sequence>
+								<xs:element name="Agent" type="xa:AgentType" minOccurs="0" maxOccurs="unbounded"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="format">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="recordType" type="xa:resourceTypeType">
+							<xs:annotation>
+								<xs:documentation>Physical/digital</xs:documentation>
+								<xs:appinfo>prefill=record_type;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="mimeType" type="xa:AcceptedMimeTypeType" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>prefill=mime_type;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="characterSet" type="xa:CharacterSetType" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>prefill=character_set;</xs:appinfo>
+								<xs:documentation>Defines the character set, if the document is in text/plain format. </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="fileFormat" type="xa:AcceptedFileFormatType" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>prefill=file_format;</xs:appinfo>
+								<xs:documentation>E.g. if it's a CDA L2 document, the MIME type is text/xml and the Format is cda/level2. Out-pipeline processing can be tied to format and formatVersion.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="formatVersion" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>prefill=format_version;</xs:appinfo>
+								<xs:documentation>Version of the format, e.g. 2.0 if it's CDA/level 2 version 2.0</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="payloadSize" type="xs:integer" minOccurs="0">
+					    	        <xs:annotation>
+								<xs:appinfo>readonly=yes;</xs:appinfo>
+								<xs:documentation>Payload size is automatically calculated upon archival</xs:documentation>
+					                </xs:annotation>
+						</xs:element>
+						<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="status" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>hideRoles=archivist;</xs:appinfo>
+					<xs:documentation>Information about the current policy status of the record. This information is usually written by the PolicyEngine.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="informationSecurityStatus" type="rs:InformationSecurityLevelType" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>readonly=yes;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="accessStatus" type="rs:DisclosureLevelType" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>readonly=yes;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="protectionStatus" type="rs:ProtectionLevelType" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>readonly=yes;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="creation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Information about record creation: when it was compiled, when it was sent to X-Archive, and when it was filed by X-Archive.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="originatingSystem" type="xs:string" minOccurs="0"/>
+						<xs:element name="created" type="xs:date" minOccurs="0"/>
+						<xs:element name="dateReceived" type="xs:date" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>readonly=yes;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="lastModified" type="xs:dateTime" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>readonly=yes;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="disposition" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Information about record disposition: the scheduled disposal date, and after the record has been destroyed, the when, who, and why.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="retentionPeriodEnd" type="xs:date" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>readonly=yes;</xs:appinfo>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="disposalListRef" type="xs:integer" minOccurs="0">
+							<xs:annotation>
+								<xs:appinfo>readonly=yes;</xs:appinfo>
+								<xs:documentation>Disposal list status. 0=not on active disposal list 1=included on active disposal list 2=excluded from active disposal list.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="policies" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Record-level policies, if applicable. If not present, the ones set at the class level are used.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="retentionPolicy" type="rs:RetentionPolicyType" minOccurs="0"/>
+						<xs:element name="disclosurePolicy" type="rs:DisclosurePolicyType" minOccurs="0"/>
+						<xs:element name="informationSecurityPolicy" type="rs:InformationSecurityPolicyType" minOccurs="0"/>
+						<xs:element name="protectionPolicy" type="rs:ProtectionPolicyType" minOccurs="0"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="relations" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The relations the record has to other resources.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="relation" maxOccurs="unbounded" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="relationType" type="xa:relationTypeType"/>
+									<xs:element name="target" type="xs:anyURI"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="history" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>hideRoles=archivist;readonly=yes;uiwidget=section;</xs:appinfo>
+					<xs:documentation>Contains the accumulated history of the record -- reclassifications, changes in Categorization etc.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="event" type="xa:historyEventType" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="CaseFile" type="xa:caseFileType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Case file and all actions.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="historyEventType">
+		<xs:annotation>
+			<xs:appinfo>DataType=xml;indexed=false;orderBy=at0:eventDateTime;orderDirection=descending;</xs:appinfo>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="eventDateTime" type="xs:dateTime"/>
+			<xs:element name="eventType" type="xs:string">
+				<xs:annotation>
+					<xs:appinfo>selectui=hidden;</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="eventTxId" type="xs:string">
+			        <xs:annotation>
+			 	       <xs:appinfo>selectui=hidden;</xs:appinfo>
+			        </xs:annotation>
+		        </xs:element>
+			<xs:element name="eventAgent">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:any namespace="##any"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="precedingState" type="xs:string"/>
+			<xs:element name="eventDetails">
+				<xs:annotation>
+					<xs:appinfo>uiwidget=textarea;rows=5;cols=120;</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:any namespace="##any"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="resourceTypeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="digital"/>
+			<xs:enumeration value="physical"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="relationTypeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="isFormatOf"/>
+			<xs:enumeration value="hasFormat"/>
+			<xs:enumeration value="isPartOf"/>
+			<xs:enumeration value="hasPart"/>
+			<xs:enumeration value="isRedactionOf"/>
+			<xs:enumeration value="hasRedaction"/>
+			<xs:enumeration value="isReferencedBy"/>
+			<xs:enumeration value="references"/>
+			<xs:enumeration value="isReplacedBy"/>
+			<xs:enumeration value="replaces"/>
+			<xs:enumeration value="isRequiredBy"/>
+			<xs:enumeration value="requires"/>
+			<xs:enumeration value="isVersionOf"/>
+			<xs:enumeration value="hasVersion"/>
+			<xs:enumeration value="conformsTo"/>
+			<xs:enumeration value="hasAttachment"/>
+            <xs:enumeration value="isAttachmentOf"/>
+			<xs:enumeration value="hasSignature"/>
+	        <xs:enumeration value="isSignatureOf"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="personalDataType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="noPersonalInformation"/>
+			<xs:enumeration value="containsPersonalInformation"/>
+			<xs:enumeration value="containsSensitivePersonalInformation"/>
+            <xs:enumeration value="containsInformationOnCriminalConvictionsAndOffenses"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="CharacterSetType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="UTF-8" />
+			<xs:enumeration value="ISO-8859-1" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="TimePeriodType">
+    <xs:sequence>
+      <xs:element name="start" type="xs:date" minOccurs="0"/>
+      <xs:element name="end" type="xs:date" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AgentType">
+    <xs:sequence>
+      <xs:element name="Role" type="xs:string" minOccurs="0"/>
+      <xs:element name="Name" type="xs:string" minOccurs="0"/>
+      <xs:element name="CorporateName" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="accessRightType">
+		<xs:sequence>
+			<xs:element name="accessRightName" type="xs:string" minOccurs="0"/>
+			<xs:element name="accessRightRole" type="xs:string" minOccurs="0"/>
+			<xs:element name="accessRightDescription" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- CaseFile -->
+	<xs:complexType name="caseFileType">
+		<xs:sequence>
+			<xs:element name="Case_NativeId" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_Title" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_Created" type="xs:date" minOccurs="0"/>
+			<xs:element name="Case_PersonalData" type="xa:personalDataType" minOccurs="0"/>
+			<xs:element name="Case_PersonalDataCollectionReason" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_RetentionPeriod" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_RetentionReason" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_PublicityClass" type="rs:DisclosureLevelType" minOccurs="0"/>
+			<xs:element name="Case_SecurityPeriod" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_SecurityReason" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_Status" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_Function" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_Language" type="xs:string" minOccurs="0"/>
+			<xs:element name="Case_Finished" type="xs:date" minOccurs="0"/>
+			<xs:element name="Case_Actions" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Action" type="xa:actionType" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	  <!-- Action -->
+	<xs:complexType name="actionType">
+		<xs:sequence>
+			<xs:element name="Action_Title" type="xs:string" minOccurs="0"/>
+			<xs:element name="Action_Type" type="xs:string" minOccurs="0"/>
+			<xs:element name="Action_Created" type="xs:date" minOccurs="0"/>
+			<xs:element name="Action_Accepted" type="xs:date" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
