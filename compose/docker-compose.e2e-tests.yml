@@ -25,7 +25,6 @@ services:
       HEADLESS: ${HEADLESS:-true}
       DEBUG: ${DEBUG:-}
     depends_on:
-      - keycloak
       - evaka-proxy
       - api-gw
       - evaka-srv

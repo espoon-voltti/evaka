@@ -33,7 +33,6 @@ services:
     depends_on:
       - api-gw
       - evaka-srv
-      - keycloak
       - s3-mock
 
   api-gw:
@@ -61,8 +60,6 @@ services:
       REDIS_PORT: ${EVAKA_REDIS_PORT}
       REDIS_DISABLE_SECURITY: "true"
       JWT_PRIVATE_KEY: /home/evaka/test-cert/jwt_private_key.pem
-      EVAKA_CUSTOMER_SAML_PUBLIC_CERT: /home/evaka/test-cert/keycloak-local.pem
-      EVAKA_CUSTOMER_SAML_PRIVATE_CERT: /home/evaka/test-cert/saml-private.pem
       ENABLE_DEV_API: "true"
       PRETTY_LOGS: "false"
 
