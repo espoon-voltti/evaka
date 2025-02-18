@@ -1791,78 +1791,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
-    fun `citizen can override billable planned absence in non contract day placement with sick leave after threshold`() {
-        val area = DevCareArea()
-        val daycare =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
-        val employee = DevEmployee()
-
-        val adult = DevPerson()
-        val child = DevPerson()
-
-        db.transaction { tx ->
-            tx.insert(area)
-            tx.insert(daycare)
-            tx.insert(employee)
-
-            tx.insert(adult, DevPersonType.ADULT)
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insertGuardian(adult.id, child.id)
-
-            tx.insert(
-                DevPlacement(
-                    type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = child.id,
-                    unitId = daycare.id,
-                    startDate = monday,
-                    endDate = tuesday,
-                )
-            )
-
-            tx.insert(
-                DevAbsence(
-                    childId = child.id,
-                    date = monday,
-                    absenceType = AbsenceType.PLANNED_ABSENCE,
-                    modifiedBy = adult.evakaUserId(),
-                    absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
-            )
-            tx.insert(
-                DevAbsence(
-                    childId = child.id,
-                    date = monday,
-                    absenceType = AbsenceType.PLANNED_ABSENCE,
-                    modifiedBy = adult.evakaUserId(),
-                    absenceCategory = AbsenceCategory.BILLABLE,
-                )
-            )
-        }
-
-        postAbsences(
-            adult.user(CitizenAuthLevel.WEAK),
-            AbsenceRequest(
-                childIds = setOf(child.id),
-                dateRange = FiniteDateRange(monday, tuesday),
-                absenceType = AbsenceType.SICKLEAVE,
-            ),
-            mockNow = afterThreshold,
-        )
-
-        assertThat(
-                db.read { tx -> tx.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
-            )
-            .extracting({ it.date }, { it.absenceType }, { it.category })
-            .containsExactlyInAnyOrder(
-                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
-                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
-                Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
-                Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
-            )
-    }
-
-    @Test
-    fun `citizen cannot override billable planned absence in contract day placement with sick leave after threshold`() {
+    fun `citizen cannot override billable planned absence with sick leave after threshold`() {
         val area = DevCareArea()
         val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
