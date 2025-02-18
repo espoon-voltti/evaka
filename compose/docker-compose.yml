@@ -100,18 +100,11 @@ services:
     depends_on:
       - smtp
       - db
-      - dummy-suomifi
 
   smtp:
     image: mailhog/mailhog
     ports:
       - "8025:8025"
-
-  dummy-suomifi:
-    build:
-      context: ../keycloak/dummy-suomifi
-    ports:
-      - "9000:9000"
 
   dummy-idp:
     build:
