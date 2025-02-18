@@ -649,10 +649,13 @@ describe('Sending and receiving messages', () => {
           'Kosmiset vakiot (Henkilökunta)'
         ])
 
-        // Selecting child 2 makes only the supervisor selectable
-        // because of different groups
+        // Selecting child 2 makes both groups selectable since they are in the same unit
         await editor.selectChildren([testChild2.id])
-        await editor.assertRecipients(['Esimies Essi'])
+        await editor.assertRecipients([
+          'Esimies Essi',
+          'Kosmiset vakiot (Henkilökunta)',
+          'Toinen ryhmä (Henkilökunta)'
+        ])
 
         // Selecting child 3 makes no recipients selectable
         // because of different unit, even if the supervisor is the same
