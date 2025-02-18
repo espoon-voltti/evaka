@@ -136,7 +136,7 @@ export default React.memo(function InvoiceRowsSection({
           const sum = rows !== undefined ? totalPrice(rows) : 0
           const previousSum =
             replacedRows !== undefined
-              ? sumBy(replacedRows, (row) => row.amount * row.price)
+              ? sumBy(replacedRows, (row) => row.price)
               : undefined
 
           return (
