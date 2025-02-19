@@ -31,15 +31,13 @@ COPY ./service/gradlew ./service/build.gradle.kts ./service/gradle.properties ./
 COPY ./service/vtjclient/build.gradle.kts ./service/vtjclient/build.gradle.kts
 COPY ./service/service-lib/*.kts ./service/service-lib/
 COPY ./service/evaka-bom/*.kts ./service/evaka-bom/
-COPY ./service/sficlient/*.kts ./service/sficlient/
 
 WORKDIR /evaka/service
 
 RUN ./gradlew --no-daemon resolveDependencies
 
-COPY ./service/sficlient/ ./sficlient/
 COPY ./service/vtjclient/ ./vtjclient/
-RUN ./gradlew --no-daemon :sficlient:wsdl2java :vtjclient:wsdl2java
+RUN ./gradlew --no-daemon :vtjclient:wsdl2java
 
 COPY . /evaka
 
