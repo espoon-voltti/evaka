@@ -8,6 +8,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import { ArchivedProcessId } from './shared'
 import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.process.ArchivedProcess
@@ -49,9 +50,18 @@ export interface DocumentMetadata {
   confidential: boolean | null
   createdAt: HelsinkiDateTime | null
   createdBy: EvakaUser | null
+  documentId: UUID
   downloadPath: string | null
   name: string
+  receivedBy: DocumentOrigin | null
 }
+
+/**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.DocumentOrigin
+*/
+export type DocumentOrigin =
+  | 'ELECTRONIC'
+  | 'PAPER'
 
 /**
 * Generated from fi.espoo.evaka.process.ProcessMetadataController.ProcessMetadata

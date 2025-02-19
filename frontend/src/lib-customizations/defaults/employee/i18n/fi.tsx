@@ -5146,6 +5146,7 @@ export const fi = {
     archiveDurationMonths: 'Arkistointiaika',
     primaryDocument: 'Ensisijainen asiakirja',
     secondaryDocuments: 'Muut asiakirjat',
+    documentId: 'Asiakirjan tunniste',
     name: 'Asiakirjan nimi',
     createdAt: 'Laatimisajankohta',
     createdBy: 'Laatija',
@@ -5154,6 +5155,11 @@ export const fi = {
     confidential: 'Salassapidettävä',
     public: 'Julkinen',
     notSet: 'Asettamatta',
+    receivedBy: {
+      label: 'Saapumistapa',
+      PAPER: 'Paperilla',
+      ELECTRONIC: 'Sähköisesti'
+    },
     history: 'Prosessin historia',
     downloadPdf: 'Lataa PDF',
     states: {

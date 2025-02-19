@@ -6,6 +6,7 @@ package fi.espoo.evaka.process
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.ApplicationId
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
+import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -39,12 +41,19 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val secondaryDocuments: List<DocumentMetadata>,
     )
 
+    enum class DocumentOrigin {
+        ELECTRONIC,
+        PAPER,
+    }
+
     data class DocumentMetadata(
+        val documentId: UUID,
         val name: String,
         val createdAt: HelsinkiDateTime?,
         @Nested("created_by") val createdBy: EvakaUser?,
         val confidential: Boolean?,
         val downloadPath: String?,
+        val receivedBy: DocumentOrigin?,
     )
 
     // wrapper that is needed because currently returning null
@@ -341,6 +350,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            dt.id,
             dt.name,
             cd.created,
             e.id AS created_by_id,
@@ -357,6 +367,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = column("name"),
                     createdAt = column("created"),
                     createdBy =
@@ -369,7 +380,10 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         },
                     confidential = column("confidential"),
                     downloadPath =
-                        column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
+                        column<String?>("document_key")?.let {
+                            "/employee/child-documents/$it/pdf"
+                        },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -381,6 +395,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
@@ -395,6 +410,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = "Päätös tuesta varhaiskasvatuksessa",
                     createdAt = column("created"),
                     createdBy =
@@ -410,6 +426,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         column<String?>("document_key")?.let {
                             "/employee/assistance-need-decision/$decisionId/pdf"
                         },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -421,6 +438,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
@@ -434,6 +452,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = "Päätös tuesta esiopetuksessa",
                     createdAt = column("created"),
                     createdBy =
@@ -449,6 +468,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         column<String?>("document_key")?.let {
                             "/employee/assistance-need-preschool-decisions/$decisionId/pdf"
                         },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -460,12 +480,14 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            a.id,
             a.type,
             a.sentdate,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            a.confidential AS confidential
+            a.confidential AS confidential,
+            a.origin
         FROM application a
         LEFT JOIN evaka_user e ON e.id = a.created_by
         WHERE a.id = ${bind(applicationId)}
@@ -474,6 +496,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name =
                         column<ApplicationType>("type").let { type ->
                             when (type) {
@@ -496,6 +519,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         },
                     confidential = column("confidential"),
                     downloadPath = null,
+                    receivedBy =
+                        column<ApplicationOrigin>("origin").let {
+                            when (it) {
+                                ApplicationOrigin.ELECTRONIC -> DocumentOrigin.ELECTRONIC
+                                ApplicationOrigin.PAPER -> DocumentOrigin.PAPER
+                            }
+                        },
                 )
             }
             .exactlyOne()
@@ -522,6 +552,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            d.id,
             d.type,
             d.sent_date,
             e.id AS created_by_id,
@@ -536,6 +567,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name =
                         column<DecisionType>("type").let {
                             when (it) {
@@ -566,6 +598,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         column<String?>("document_key")?.let {
                             "/employee/decisions/$decisionId/download"
                         },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -577,6 +610,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
@@ -590,6 +624,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = "Maksupäätös",
                     createdAt = column("created"),
                     createdBy =
@@ -603,6 +638,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     confidential = true,
                     downloadPath =
                         column<String?>("document_key")?.let { "/employee/fee-decisions/pdf/$it" },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -614,6 +650,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT
+            d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
@@ -627,6 +664,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = "Arvopäätös",
                     createdAt = column("created"),
                     createdBy =
@@ -639,7 +677,10 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         },
                     confidential = true,
                     downloadPath =
-                        column<String?>("document_key")?.let { "/employee/value-decisions/pdf/$it" },
+                        column<String?>("document_key")?.let {
+                            "/employee/value-decisions/pdf/$it"
+                        },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
