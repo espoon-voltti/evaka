@@ -690,10 +690,7 @@ LEFT JOIN application a ON p.id IS NULL AND a.child_id IN (
     fc_spouse.child_id
 )
 
-LEFT JOIN daycare d ON d.id IN (
-    p.unit_id, 
-    (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid
-)
+LEFT JOIN daycare d ON d.id IN (p.unit_id, a.primary_preferred_unit)
 LEFT JOIN care_area ca ON ca.id = d.care_area_id
 WHERE
     i.status = 'SENT'::income_statement_status AND

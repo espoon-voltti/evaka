@@ -73,7 +73,7 @@ SELECT
     person.date_of_birth AS child_date_of_birth,
     EXISTS (SELECT FROM daycare_assistance WHERE child_id = person.id AND valid_during @> ${bind(today)}) AS is_daycare_assistance_need
 FROM application
-JOIN daycare application_unit ON (application.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid = application_unit.id
+JOIN daycare application_unit ON application.primary_preferred_unit = application_unit.id
 JOIN person on application.child_id = person.id
 LEFT JOIN placement ON person.id = placement.child_id AND ${bind(today)} BETWEEN placement.start_date AND placement.end_date
 LEFT JOIN daycare current_unit ON placement.unit_id = current_unit.id
