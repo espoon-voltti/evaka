@@ -3173,6 +3173,7 @@ export function createDaycarePlacementFixture(
 }
 
 export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
+  id: null,
   data: { MAIN_INCOME: total },
   effect: 'INCOME',
   total: total,
