@@ -87,7 +87,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,
@@ -102,7 +102,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                 partnerIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,
@@ -115,7 +115,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.INCOME,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 200000,
                                         totalExpenses = 0,
                                         total = 200000,
@@ -128,7 +128,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.INCOME,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 200000,
                                         totalExpenses = 0,
                                         total = 200000,
@@ -138,7 +138,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                 partnerIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,
