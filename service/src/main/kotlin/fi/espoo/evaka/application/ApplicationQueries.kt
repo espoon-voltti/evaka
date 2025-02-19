@@ -466,7 +466,7 @@ fun Database.Read.fetchApplicationSummaries(
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
         LEFT JOIN evaka_user e ON e.id = a.status_modified_by
-        JOIN daycare d ON COALESCE(pp.unit_id, (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
+        JOIN daycare d ON COALESCE(pp.unit_id, a.primary_preferred_unit) = d.id
         JOIN care_area ca ON d.care_area_id = ca.id
         JOIN (
             SELECT l.id, EXISTS(
@@ -497,7 +497,7 @@ fun Database.Read.fetchApplicationSummaries(
                 WHERE
                     p.child_id = a.child_id AND
                     ${bind(today)} BETWEEN p.start_date AND p.end_date AND
-                    p.unit_id = (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid
+                    p.unit_id = a.primary_preferred_unit
             ) AS continuation
         ) continuation_status ON true
         LEFT JOIN LATERAL (
@@ -695,11 +695,7 @@ SELECT
     a.type,
     a.child_id,
     (a.document -> 'child' ->> 'lastName') || ' ' || (a.document -> 'child' ->> 'firstName') AS child_name,
-    (
-        SELECT name
-        FROM daycare d
-        WHERE d.id = (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid
-    ) AS preferred_unit_name,
+    (SELECT name FROM daycare d WHERE d.id = a.primary_preferred_unit) AS preferred_unit_name,
     COALESCE((
         SELECT array_agg(d.name)
         FROM jsonb_array_elements_text(a.document -> 'apply' -> 'preferredUnits') pu

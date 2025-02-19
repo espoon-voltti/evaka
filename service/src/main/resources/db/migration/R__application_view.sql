@@ -124,7 +124,7 @@ SELECT
       placement_plan.start_date,
       (appl.document ->> 'preferredStartDate')::DATE
   )                                                                                           AS startDate,
-  appl.document -> 'apply' -> 'preferredUnits' ->> 0                                          AS preferredUnit,
+  appl.primary_preferred_unit                                                                 AS preferredUnit,
   (
       SELECT array_agg(e::UUID)
       FROM jsonb_array_elements_text(appl.document -> 'apply' -> 'preferredUnits') e
