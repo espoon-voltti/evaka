@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
+import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -46,6 +47,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
     }
 
     data class DocumentMetadata(
+        val documentId: UUID,
         val name: String,
         val createdAt: HelsinkiDateTime?,
         @Nested("created_by") val createdBy: EvakaUser?,
@@ -348,6 +350,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            dt.id,
             dt.name,
             cd.created,
             e.id AS created_by_id,
@@ -364,6 +367,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = column("name"),
                     createdAt = column("created"),
                     createdBy =
@@ -391,6 +395,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
@@ -405,6 +410,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = "Päätös tuesta varhaiskasvatuksessa",
                     createdAt = column("created"),
                     createdBy =
@@ -432,6 +438,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
@@ -445,6 +452,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = "Päätös tuesta esiopetuksessa",
                     createdAt = column("created"),
                     createdBy =
@@ -472,6 +480,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            a.id,
             a.type,
             a.sentdate,
             e.id AS created_by_id,
@@ -487,6 +496,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name =
                         column<ApplicationType>("type").let { type ->
                             when (type) {
@@ -542,6 +552,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            d.id,
             d.type,
             d.sent_date,
             e.id AS created_by_id,
@@ -556,6 +567,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name =
                         column<DecisionType>("type").let {
                             when (it) {
@@ -598,6 +610,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT 
+            d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
@@ -611,6 +624,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = "Maksupäätös",
                     createdAt = column("created"),
                     createdBy =
@@ -636,6 +650,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 sql(
                     """
         SELECT
+            d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
@@ -649,6 +664,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .map {
                 DocumentMetadata(
+                    documentId = column("id"),
                     name = "Arvopäätös",
                     createdAt = column("created"),
                     createdBy =

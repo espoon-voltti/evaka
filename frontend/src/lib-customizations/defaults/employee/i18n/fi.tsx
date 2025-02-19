@@ -5146,6 +5146,7 @@ export const fi = {
     archiveDurationMonths: 'Arkistointiaika',
     primaryDocument: 'Ensisijainen asiakirja',
     secondaryDocuments: 'Muut asiakirjat',
+    documentId: 'Asiakirjan tunniste',
     name: 'Asiakirjan nimi',
     createdAt: 'Laatimisajankohta',
     createdBy: 'Laatija',

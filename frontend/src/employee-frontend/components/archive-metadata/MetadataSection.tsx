@@ -60,6 +60,10 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
             )
           },
           {
+            label: i18n.metadata.documentId,
+            value: document.documentId
+          },
+          {
             label: i18n.metadata.createdAt,
             value: document.createdAt?.format() ?? '-'
           },
