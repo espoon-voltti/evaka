@@ -15,9 +15,11 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
@@ -39,9 +41,11 @@ import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.snDaycareContractDays10
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPartDayDaycare
 import fi.espoo.evaka.test.getValidDaycareApplication
 import java.math.BigDecimal
@@ -1994,6 +1998,105 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 today to OccupancyValues(1.0, 0.0, 1, 0.6209, 23.0),
             )
         )
+    }
+
+    @Test
+    fun `children are not present on non-operational days`() {
+        val date1 = LocalDate.of(2020, 1, 5) // Sunday
+        val date2 = LocalDate.of(2020, 1, 6) // Holiday
+        val date3 = LocalDate.of(2020, 1, 7) // Business day
+
+        val fullDay = TimeRange(start = LocalTime.of(0, 0), end = LocalTime.of(23, 59))
+        val daycare247 =
+            DevDaycare(
+                areaId = careArea1.id,
+                operationTimes = listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                shiftCareOperationTimes =
+                    listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
+                shiftCareOpenOnHolidays = true,
+            )
+        val group = DevDaycareGroup(daycareId = daycare247.id)
+        val child1 = DevPerson(dateOfBirth = today.minusYears(4))
+        val child2 = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement1 =
+            DevPlacement(
+                childId = child1.id,
+                unitId = daycare247.id,
+                startDate = date1,
+                endDate = today,
+            )
+        val placement2 =
+            DevPlacement(
+                childId = child2.id,
+                unitId = daycare247.id,
+                startDate = date1,
+                endDate = today,
+            )
+
+        // child2 has shift-care
+        val child1ServiceNeed =
+            DevServiceNeed(
+                placementId = placement1.id,
+                startDate = date1,
+                endDate = today,
+                optionId = snDaycareFullDay35.id,
+                confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                shiftCare = ShiftCareType.NONE,
+            )
+        val child2ServiceNeed =
+            DevServiceNeed(
+                placementId = placement2.id,
+                startDate = date1,
+                endDate = today,
+                optionId = snDaycareFullDay35.id,
+                confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                shiftCare = ShiftCareType.FULL,
+            )
+
+        db.transaction { tx ->
+            tx.insert(daycare247)
+            tx.insert(group)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(placement1)
+            tx.insert(placement2)
+            tx.insert(child1ServiceNeed)
+            tx.insert(child2ServiceNeed)
+        }
+
+        db.read { tx ->
+            tx.calculateDailyUnitOccupancyValues(
+                    today = today,
+                    queryPeriod = FiniteDateRange(date1, date3),
+                    type = OccupancyType.CONFIRMED,
+                    unitFilter = AccessControlFilter.PermitAll,
+                    unitId = daycare247.id,
+                )
+                .let { values ->
+                    val date1Values = values.first().occupancies[date1]!!
+                    assertEquals(1, date1Values.headcount)
+                    val date2Values = values.first().occupancies[date2]!!
+                    assertEquals(1, date2Values.headcount)
+                    val date3Values = values.first().occupancies[date3]!!
+                    assertEquals(2, date3Values.headcount)
+                }
+
+            tx.calculateDailyUnitOccupancyValues(
+                    today = today,
+                    queryPeriod = FiniteDateRange(date1, date3),
+                    type = OccupancyType.REALIZED,
+                    unitFilter = AccessControlFilter.PermitAll,
+                    unitId = daycare247.id,
+                )
+                .let { values ->
+                    val date1Values = values.first().occupancies[date1]!!
+                    assertEquals(1, date1Values.headcount)
+                    val date2Values = values.first().occupancies[date2]!!
+                    assertEquals(1, date2Values.headcount)
+                    val date3Values = values.first().occupancies[date3]!!
+                    assertEquals(2, date3Values.headcount)
+                }
+        }
     }
 
     private fun getAndAssertOccupancyInUnit(
