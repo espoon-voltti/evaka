@@ -178,12 +178,6 @@ git push --delete origin playwright-test
 To dump local database run `./db.sh dump` and restore it with `./db.sh restore`.
 Optional dump name can be given to script, example `./db.sh dump my.dump`.
 
-## Keycloak
-
-Keycloak admin login from <http://localhost:8080/auth/admin/master/console/> with credentials `admin:admin`.
-
-Evaka-customer realm (<http://localhost:9099/api/application/auth/evaka-customer/login?RelayState=%2F>) has pre-configured user with credentials `johannes.karhula@evaka.test:test123`.
-
 ## Troubleshooting
 
 ### Database

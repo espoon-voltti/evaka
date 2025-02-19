@@ -447,24 +447,6 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
         SFI_SAML_PUBLIC_CERT: ['config/test-cert/dummy-idp.pem'],
         SFI_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem',
 
-        EVAKA_SAML_CALLBACK_URL:
-          'http://localhost:9099/api/employee/auth/ad/login/callback',
-        EVAKA_SAML_ENTRYPOINT:
-          'http://localhost:8080/auth/realms/evaka/protocol/saml',
-        EVAKA_SAML_ISSUER: 'evaka',
-        EVAKA_SAML_PUBLIC_CERT: ['config/test-cert/keycloak-local.pem'],
-        EVAKA_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem',
-
-        EVAKA_CUSTOMER_SAML_CALLBACK_URL:
-          'http://localhost:9099/api/citizen/auth/keycloak/login/callback',
-        EVAKA_CUSTOMER_SAML_ENTRYPOINT:
-          'http://localhost:8080/auth/realms/evaka-customer/protocol/saml',
-        EVAKA_CUSTOMER_SAML_ISSUER: 'evaka-customer',
-        EVAKA_CUSTOMER_SAML_PUBLIC_CERT: [
-          'config/test-cert/keycloak-local.pem'
-        ],
-        EVAKA_CUSTOMER_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem',
-
         DIGITRANSIT_API_ENABLED: false
       }
     : {}
