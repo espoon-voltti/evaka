@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.avaintec.com/2004/records-schedule-fi/1.0"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:rs="http://www.avaintec.com/2004/records-schedule-fi/1.0"
+  elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <!-- Information Security Level Type -->
+    <xs:simpleType name="InformationSecurityLevelType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ST I"/>
+            <xs:enumeration value="ST II"/>
+            <xs:enumeration value="ST III"/>
+            <xs:enumeration value="ST IV"/>
+            <xs:enumeration value="Unclassified"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Disclosure Level Type -->
+    <xs:simpleType name="DisclosureLevelType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Public"/>
+            <xs:enumeration value="Internal"/>
+            <xs:enumeration value="Confidential"/>
+            <xs:enumeration value="Secret"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Protection Level Type -->
+    <xs:simpleType name="ProtectionLevelType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Basic"/>
+            <xs:enumeration value="Enhanced"/>
+            <xs:enumeration value="High"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Retention Policy Type -->
+    <xs:complexType name="RetentionPolicyType">
+        <xs:sequence>
+            <xs:element name="retentionPeriod" type="xs:string"/>
+            <xs:element name="retentionTrigger" type="xs:string" minOccurs="0"/>
+            <xs:element name="retentionReason" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Disclosure Policy Type -->
+    <xs:complexType name="DisclosurePolicyType">
+        <xs:sequence>
+            <xs:element name="disclosureLevel" type="rs:DisclosureLevelType"/>
+            <xs:element name="disclosureReason" type="xs:string" minOccurs="0"/>
+            <xs:element name="disclosurePeriod" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Information Security Policy Type -->
+    <xs:complexType name="InformationSecurityPolicyType">
+        <xs:sequence>
+            <xs:element name="securityLevel" type="rs:InformationSecurityLevelType"/>
+            <xs:element name="securityReason" type="xs:string" minOccurs="0"/>
+            <xs:element name="securityPeriod" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Protection Policy Type -->
+    <xs:complexType name="ProtectionPolicyType">
+        <xs:sequence>
+            <xs:element name="protectionLevel" type="rs:ProtectionLevelType"/>
+            <xs:element name="protectionReason" type="xs:string" minOccurs="0"/>
+            <xs:element name="protectionMeasures" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema> 
