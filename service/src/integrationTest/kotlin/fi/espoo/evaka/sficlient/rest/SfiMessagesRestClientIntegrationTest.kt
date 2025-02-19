@@ -5,7 +5,6 @@
 package fi.espoo.evaka.sficlient.rest
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.SfiContactOrganizationEnv
 import fi.espoo.evaka.SfiContactPersonEnv
@@ -47,17 +46,9 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                     postalCode = "02070",
                     postOffice = "Espoo",
                 ),
-            restEnabled = true,
             restAddress = URI.create("http://localhost:$httpPort/public/mock-sfi-messages"),
             restUsername = MockSfiMessagesRestEndpoint.USERNAME,
             restPasswordSsmName = null,
-            // dummy fields only used by the SOAP implementation
-            address = "",
-            trustStore = KeystoreEnv(location = URI.create("")),
-            keyStore = null,
-            signingKeyAlias = "",
-            authorityIdentifier = "",
-            certificateCommonName = "",
         )
 
     private val message =

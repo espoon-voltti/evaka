@@ -380,47 +380,12 @@ data class VtjXroadServiceEnv(
 
 /** Configuration for Suomi.fi Messages API integration */
 data class SfiEnv(
-    /** URI of Messages API */
-    val address: String,
-    /**
-     * URI of a key store containing public certificate(s) for the Messages API server.
-     *
-     * Used to verify server identity at TLS protocol level during API requests.
-     */
-    val trustStore: KeystoreEnv,
-    /**
-     * URI of key store containing private key + public certificate used for WS-Security request
-     * payload signing.
-     *
-     * If not configured, WS-Security signatures are not used. If configured, WS-Security signatures
-     * are included in requests.
-     */
-    val keyStore: KeystoreEnv?,
-    /**
-     * Alias of the signing key used for WS-Security signatures.
-     *
-     * If `keyStore` is set, this property must contain the alias of a valid key inside the key
-     * store.
-     */
-    val signingKeyAlias: String,
-    /**
-     * Identifier of the organization making requests to the Messages API.
-     *
-     * Given by VIA.
-     */
-    val authorityIdentifier: String,
     /**
      * Identifier of the service making requests to the Messages API.
      *
      * Given by VIA.
      */
     val serviceIdentifier: String,
-    /**
-     * Common name of the certificate used to sign Suomi.fi requests.
-     *
-     * Must match the public certificate that has been sent to VIA.
-     */
-    val certificateCommonName: String,
     /** Configuration for sending messages on real paper (vs digital messages). */
     val printing: SfiPrintingEnv,
     /**
@@ -429,15 +394,12 @@ data class SfiEnv(
      * Not mandatory, but used e.g. to communicate about errors
      */
     val contactPerson: SfiContactPersonEnv,
-
     /**
      * Contact details for the organization making API requests.
      *
      * Mandatory for paper posting testing
      */
     val contactOrganization: SfiContactOrganizationEnv,
-    /** Whether to use the REST API pilot instead of the old SOAP API. */
-    val restEnabled: Boolean,
     /** URI of the messages REST API endpoint */
     val restAddress: URI?,
     /** Username for the messages REST API, also known as "systemId" */
@@ -458,34 +420,10 @@ data class SfiEnv(
     companion object {
         fun fromEnvironment(env: Environment) =
             SfiEnv(
-                address = env.lookup("evaka.integration.sfi.address"),
-                trustStore =
-                    KeystoreEnv(
-                        location = env.lookup("evaka.integration.sfi.trust_store.location"),
-                        type = env.lookup("evaka.integration.sfi.trust_store.type") ?: "pkcs12",
-                        password =
-                            env.lookup<String?>("evaka.integration.sfi.trust_store.password")
-                                ?.let(::Sensitive),
-                    ),
-                keyStore =
-                    env.lookup<URI?>("evaka.integration.sfi.key_store.location")?.let { location ->
-                        KeystoreEnv(
-                            location = location,
-                            type = env.lookup("evaka.integration.sfi.key_store.type") ?: "pkcs12",
-                            password =
-                                env.lookup<String?>("evaka.integration.sfi.key_store.password")
-                                    ?.let(::Sensitive),
-                        )
-                    },
-                signingKeyAlias =
-                    env.lookup("evaka.integration.sfi.signing_key_alias") ?: "signing-key",
-                authorityIdentifier = env.lookup("evaka.integration.sfi.authority_identifier"),
                 serviceIdentifier = env.lookup("evaka.integration.sfi.service_identifier"),
-                certificateCommonName = env.lookup("evaka.integration.sfi.certificate_common_name"),
                 printing = SfiPrintingEnv.fromEnvironment(env),
                 contactPerson = SfiContactPersonEnv.fromEnvironment(env),
                 contactOrganization = SfiContactOrganizationEnv.fromEnvironment(env),
-                restEnabled = env.lookup("evaka.integration.sfi.rest_enabled") ?: false,
                 restAddress = env.lookup("evaka.integration.sfi.rest_address"),
                 restUsername = env.lookup("evaka.integration.sfi.rest_username"),
                 restPasswordSsmName = env.lookup("evaka.integration.sfi.rest_password_ssm_name"),
