@@ -5154,6 +5154,11 @@ export const fi = {
     confidential: 'Salassapidettävä',
     public: 'Julkinen',
     notSet: 'Asettamatta',
+    receivedBy: {
+      label: 'Saapumistapa',
+      PAPER: 'Paperilla',
+      ELECTRONIC: 'Sähköisesti'
+    },
     history: 'Prosessin historia',
     downloadPdf: 'Lataa PDF',
     states: {

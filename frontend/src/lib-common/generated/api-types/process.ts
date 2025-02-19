@@ -51,7 +51,15 @@ export interface DocumentMetadata {
   createdBy: EvakaUser | null
   downloadPath: string | null
   name: string
+  receivedBy: DocumentOrigin | null
 }
+
+/**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.DocumentOrigin
+*/
+export type DocumentOrigin =
+  | 'ELECTRONIC'
+  | 'PAPER'
 
 /**
 * Generated from fi.espoo.evaka.process.ProcessMetadataController.ProcessMetadata

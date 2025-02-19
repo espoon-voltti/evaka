@@ -6,6 +6,7 @@ package fi.espoo.evaka.process
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.ApplicationId
@@ -39,12 +40,18 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val secondaryDocuments: List<DocumentMetadata>,
     )
 
+    enum class DocumentOrigin {
+        ELECTRONIC,
+        PAPER,
+    }
+
     data class DocumentMetadata(
         val name: String,
         val createdAt: HelsinkiDateTime?,
         @Nested("created_by") val createdBy: EvakaUser?,
         val confidential: Boolean?,
         val downloadPath: String?,
+        val receivedBy: DocumentOrigin?,
     )
 
     // wrapper that is needed because currently returning null
@@ -369,7 +376,10 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         },
                     confidential = column("confidential"),
                     downloadPath =
-                        column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
+                        column<String?>("document_key")?.let {
+                            "/employee/child-documents/$it/pdf"
+                        },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -410,6 +420,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         column<String?>("document_key")?.let {
                             "/employee/assistance-need-decision/$decisionId/pdf"
                         },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -449,6 +460,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         column<String?>("document_key")?.let {
                             "/employee/assistance-need-preschool-decisions/$decisionId/pdf"
                         },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -465,7 +477,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            a.confidential AS confidential
+            a.confidential AS confidential,
+            a.origin
         FROM application a
         LEFT JOIN evaka_user e ON e.id = a.created_by
         WHERE a.id = ${bind(applicationId)}
@@ -496,6 +509,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         },
                     confidential = column("confidential"),
                     downloadPath = null,
+                    receivedBy =
+                        column<ApplicationOrigin>("origin").let {
+                            when (it) {
+                                ApplicationOrigin.ELECTRONIC -> DocumentOrigin.ELECTRONIC
+                                ApplicationOrigin.PAPER -> DocumentOrigin.PAPER
+                            }
+                        },
                 )
             }
             .exactlyOne()
@@ -566,6 +586,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         column<String?>("document_key")?.let {
                             "/employee/decisions/$decisionId/download"
                         },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -603,6 +624,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     confidential = true,
                     downloadPath =
                         column<String?>("document_key")?.let { "/employee/fee-decisions/pdf/$it" },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()
@@ -639,7 +661,10 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         },
                     confidential = true,
                     downloadPath =
-                        column<String?>("document_key")?.let { "/employee/value-decisions/pdf/$it" },
+                        column<String?>("document_key")?.let {
+                            "/employee/value-decisions/pdf/$it"
+                        },
+                    receivedBy = null,
                 )
             }
             .exactlyOne()

@@ -69,6 +69,14 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
               ? `${document.createdBy.name} (${i18n.common.userTypes[document.createdBy.type]}) `
               : '-'
           },
+          ...(document.receivedBy
+            ? [
+                {
+                  label: i18n.metadata.receivedBy.label,
+                  value: i18n.metadata.receivedBy[document.receivedBy]
+                }
+              ]
+            : []),
           {
             label: i18n.metadata.confidentiality,
             value:
