@@ -741,8 +741,15 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                 .associate { (date, caretakerCount) ->
                     val placementsOnDate =
                         (placementsAndPlans[key.groupingId] ?: listOf())
+                            .filter { it.period.includes(date) }
                             .filter {
-                                it.period.includes(date) &&
+                                val serviceNeedIsKnown =
+                                    serviceNeeds[it.placementId]?.any { sn ->
+                                        sn.period.includes(date)
+                                    } ?: false
+                                val ignoreChildOperationDays =
+                                    !serviceNeedIsKnown && type != OccupancyType.REALIZED
+                                ignoreChildOperationDays ||
                                     childOperationalDates[it.childId]?.contains(date) == true
                             }
                             .filterNot {
