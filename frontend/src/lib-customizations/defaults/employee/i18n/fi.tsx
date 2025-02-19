@@ -2207,6 +2207,7 @@ export const fi = {
     accessControl: {
       aclRoles: 'Luvitukset',
       activeAclRoles: 'Aktiiviset luvitukset',
+      roleChange: 'Roolin vaihto',
       scheduledAclRoles: 'Tulevat luvitukset',
       role: 'Rooli',
       name: 'Nimi',
@@ -2215,10 +2216,13 @@ export const fi = {
       aclEndDate: 'Luvitus päättyy',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
+      removeScheduledConfirmation: 'Haluatko poistaa tulevan luvituksen?',
       addDaycareAclModal: {
         title: 'Lisää luvitus',
         role: 'Valitse rooli',
-        employees: 'Valitse henkilö'
+        employees: 'Valitse henkilö',
+        scheduledAclWarning:
+          'Henkilöllä on tuleva luvitus tässä yksikössä. Tuleva luvitus poistetaan.'
       },
       editDaycareAclModal: {
         title: 'Muokkaa luvitusta'
@@ -4779,7 +4783,16 @@ export const fi = {
         deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?',
         addRoles: 'Lisää luvituksia',
         addRolesModalTitle: 'Uusi luvitus',
-        units: 'Yksiköt'
+        units: 'Yksiköt',
+        warnings: {
+          hasCurrent: 'Henkilöllä on jo luvituksia seuraavissa yksiköissä',
+          hasScheduled:
+            'Henkilöllä on jo tulevia luvituksia seuraavissa yksiköissä',
+          currentEnding: (date: LocalDate) =>
+            `Päällekkäiset luvitukset korvataan ${date.format()} alkaen.`,
+          currentRemoved: 'Nämä luvitukset poistetaan.',
+          scheduledRemoved: 'Nämä tulevat luvitukset poistetaan.'
+        }
       },
       mobile: {
         title: 'Henkilökohtaiset mobiililaitteet',

@@ -528,6 +528,7 @@ enum class Audit(
     TitaniaReportRead,
     UnitAclCreate,
     UnitAclDelete,
+    UnitAclDeleteScheduled,
     UnitAclRead,
     UnitScheduledAclRead,
     UnitApplicationsRead,

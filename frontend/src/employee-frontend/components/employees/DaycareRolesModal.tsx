@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { useMemo } from 'react'
 
 import { scopedRoles } from 'lib-common/api-types/employee-auth'
 import { boolean, localDate, string } from 'lib-common/form/fields'
@@ -18,11 +19,13 @@ import {
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { Form, ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
-import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
+import {
+  EmployeeWithDaycareRoles,
+  UpsertEmployeeDaycareRolesRequest
+} from 'lib-common/generated/api-types/pis'
 import {
   AreaId,
   DaycareId,
-  EmployeeId,
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
@@ -32,6 +35,7 @@ import TreeDropdown, {
   TreeNode
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
@@ -53,6 +57,12 @@ const treeNode = (): Form<DaycareTreeNode, never, DaycareTreeNode, unknown> =>
     children: array(recursive(treeNode))
   })
 
+const unitsFromTree = (tree: DaycareTreeNode[]): DaycareId[] =>
+  tree
+    .flatMap((careArea) => careArea.children)
+    .filter((u) => u.checked)
+    .map((u) => u.key as DaycareId)
+
 const form = transformed(
   object({
     daycareTree: array(treeNode()),
@@ -61,11 +71,7 @@ const form = transformed(
     endDate: localDate()
   }),
   (res) => {
-    const daycareIds = res.daycareTree
-      .flatMap((careArea) => careArea.children)
-      .filter((u) => u.checked)
-      .map((u) => u.key as DaycareId)
-
+    const daycareIds = unitsFromTree(res.daycareTree)
     if (daycareIds.length === 0) return ValidationError.of('required')
 
     if (res.endDate && res.endDate.isBefore(res.startDate))
@@ -81,11 +87,11 @@ const form = transformed(
 )
 
 export default React.memo(function DaycareRolesModal({
-  employeeId,
+  employee: { id: employeeId, daycareRoles, scheduledDaycareRoles },
   units,
   onClose
 }: {
-  employeeId: EmployeeId
+  employee: EmployeeWithDaycareRoles
   units: Daycare[]
   onClose: () => void
 }) {
@@ -136,6 +142,67 @@ export default React.memo(function DaycareRolesModal({
 
   const { daycareTree, role, startDate, endDate } = useFormFields(boundForm)
 
+  const selectedUnits = useMemo(
+    () => (daycareTree.isValid() ? unitsFromTree(daycareTree.value()) : []),
+    [daycareTree]
+  )
+
+  const currentAclWarning = useMemo(() => {
+    if (!startDate.isValid()) return null
+    const isScheduling = startDate
+      .value()
+      .isAfter(LocalDate.todayInHelsinkiTz())
+    const overlapping = sortBy(
+      daycareRoles.filter(
+        (r) =>
+          selectedUnits.includes(r.daycareId) &&
+          (r.endDate === null || r.endDate.isEqualOrAfter(startDate.value()))
+      ),
+      (r) => r.daycareName
+    )
+    if (overlapping.length === 0) return null
+    return (
+      <div>
+        <span>{i18n.employees.editor.unitRoles.warnings.hasCurrent}:</span>
+        <ul>
+          {overlapping.map((r) => (
+            <li key={r.daycareId}>
+              {i18n.roles.adRoles[r.role]}: {r.daycareName}
+            </li>
+          ))}
+        </ul>
+        <span>
+          {isScheduling
+            ? i18n.employees.editor.unitRoles.warnings.currentEnding(
+                startDate.value()
+              )
+            : i18n.employees.editor.unitRoles.warnings.currentRemoved}
+        </span>
+      </div>
+    )
+  }, [i18n, daycareRoles, startDate, selectedUnits])
+
+  const scheduledAclWarning = useMemo(() => {
+    const removed = scheduledDaycareRoles.filter((r) =>
+      selectedUnits.includes(r.daycareId)
+    )
+    if (removed.length === 0) return null
+    return (
+      <div>
+        <span>{i18n.employees.editor.unitRoles.warnings.hasScheduled}:</span>
+        <ul>
+          {removed.map((r) => (
+            <li key={r.daycareId}>
+              {i18n.roles.adRoles[r.role]}: {r.daycareName} (
+              {r.startDate.format()} -)
+            </li>
+          ))}
+        </ul>
+        <span>{i18n.employees.editor.unitRoles.warnings.scheduledRemoved}</span>
+      </div>
+    )
+  }, [i18n, scheduledDaycareRoles, selectedUnits])
+
   return (
     <MutateFormModal
       title={i18n.employees.editor.unitRoles.addRolesModalTitle}
@@ -168,6 +235,8 @@ export default React.memo(function DaycareRolesModal({
           <Label>{i18n.employees.editor.unitRoles.endDate}</Label>
           <DatePickerF bind={endDate} locale={lang} />
         </FixedSpaceColumn>
+        {currentAclWarning && <AlertBox message={currentAclWarning} />}
+        {scheduledAclWarning && <AlertBox message={scheduledAclWarning} />}
       </FixedSpaceColumn>
     </MutateFormModal>
   )

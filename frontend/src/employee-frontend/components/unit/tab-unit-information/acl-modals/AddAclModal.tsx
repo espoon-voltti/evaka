@@ -8,13 +8,18 @@ import { formatName } from 'employee-frontend/utils'
 import { Action } from 'lib-common/generated/action'
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import {
+  DaycareId,
+  EmployeeId,
+  ScheduledDaycareAclRow
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
@@ -31,6 +36,7 @@ type Props = {
   groups: Record<string, DaycareGroupResponse>
   employees: Employee[]
   permittedActions: Action.Unit[]
+  scheduledAclRows: ScheduledDaycareAclRow[]
 }
 
 interface EmployeeOption {
@@ -51,7 +57,8 @@ export default React.memo(function AddAclModal({
   unitId,
   groups,
   employees,
-  permittedActions
+  permittedActions,
+  scheduledAclRows
 }: Props) {
   const { i18n, lang } = useTranslation()
 
@@ -100,6 +107,14 @@ export default React.memo(function AddAclModal({
   )
 
   const groupOptions = useGroupOptions(groups)
+
+  const scheduledAclWarning = useMemo(
+    () =>
+      scheduledAclRows.some(
+        (row) => row.id === formData.selectedEmployee?.value
+      ),
+    [scheduledAclRows, formData.selectedEmployee]
+  )
 
   return (
     <MutateFormModal
@@ -219,6 +234,14 @@ export default React.memo(function AddAclModal({
           />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
+
+      {scheduledAclWarning && (
+        <AlertBox
+          message={
+            i18n.unit.accessControl.addDaycareAclModal.scheduledAclWarning
+          }
+        />
+      )}
     </MutateFormModal>
   )
 })
