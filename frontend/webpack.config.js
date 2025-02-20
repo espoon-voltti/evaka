@@ -229,10 +229,52 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
 }
 
 function citizen(flags) {
-  return baseConfig(flags, {
+  const config = baseConfig(flags, {
     name: 'citizen-frontend',
     publicPath: '/'
   })
+  config.plugins.push(
+    new WebpackPwaManifest({
+      fingerprints: !flags.isDevelopment,
+      ios: true,
+      name: 'eVaka',
+      display: 'standalone',
+      start_url: '/',
+      background_color: '#ffffff',
+      theme_color: '#3273c9',
+      icons: [
+        {
+          ios: true,
+          src: path.resolve(
+            __dirname,
+            'src/employee-mobile-frontend/assets/evaka-180px.png'
+          ),
+          size: 180,
+          type: 'image/png',
+          purpose: 'maskable any'
+        },
+        {
+          src: path.resolve(
+            __dirname,
+            'src/employee-mobile-frontend/assets/evaka-192px.png'
+          ),
+          size: 192,
+          type: 'image/png',
+          purpose: 'maskable any'
+        },
+        {
+          src: path.resolve(
+            __dirname,
+            'src/employee-mobile-frontend/assets/evaka-512px.png'
+          ),
+          size: 512,
+          type: 'image/png',
+          purpose: 'maskable any'
+        }
+      ]
+    })
+  )
+  return config
 }
 
 function employee(flags) {
