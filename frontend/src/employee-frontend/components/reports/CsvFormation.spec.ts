@@ -38,4 +38,33 @@ describe('CSV formation works', () => {
 
     expect(formedCSV).toEqual(expectedCsv)
   })
+  it('can handle mismatched headers', () => {
+    const expectedCsv =
+      '"Pekka";"2";"Isokylä";"""tässä "";lisätietoja "" ";""\n"Teemu";"3";"Isokylä";"""tässä vielä enemmän "" lisätietoja\n"" ";""'
+
+    const testObject: Record<string, unknown> = {
+      firstName: 'Pekka',
+      lastName: 'Isokylä',
+      'additional"Information"': '"tässä ";lisätietoja " ',
+      age: 2,
+      mysteryProperty: 'this is not actually wanted'
+    }
+    const testObject2: Record<string, unknown> = {
+      firstName: 'Teemu',
+      lastName: 'Isokylä',
+      'additional"Information"': '"tässä vielä enemmän " lisätietoja\n" ',
+      age: 3
+    }
+    const testHeaders: (keyof Record<string, unknown>)[] = [
+      'firstName',
+      'age',
+      'lastName',
+      'additional"Information"',
+      'nonExistentHeader'
+    ]
+
+    const formedCSV = toHeaderlessCsv([testObject, testObject2], testHeaders)
+
+    expect(formedCSV).toEqual(expectedCsv)
+  })
 })

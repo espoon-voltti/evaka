@@ -89,7 +89,7 @@ function ReportDownload<T extends object>({
               data,
               headers.map((h) => h.key)
             )}
-            headers={headers.map((h) => `"${h.label}"`)}
+            headers={headers.map((h) => `"${h.label.replace(/"/g, '""')}"`)}
             separator={separatorCharacter}
             enclosingCharacter='"'
             filename={filenameStr}
