@@ -22,12 +22,12 @@ const Profile = z.object({
 
 export const authenticate = authenticateProfile(
   Profile,
-  async (samlSession, profile) => {
+  async (req, samlSession, profile) => {
     const socialSecurityNumber = profile.socialSecurityNumber
     if (!socialSecurityNumber)
       throw Error('No socialSecurityNumber in evaka IDP SAML data')
 
-    const person = await citizenLogin({
+    const person = await citizenLogin(req, {
       socialSecurityNumber,
       firstName: profile.firstName ?? '',
       lastName: profile.lastName ?? '',

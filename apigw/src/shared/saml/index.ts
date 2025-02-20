@@ -57,21 +57,23 @@ export function createSamlConfig(
 }
 
 export type AuthenticateProfile = (
+  req: express.Request,
   profile: Profile
 ) => Promise<EvakaSessionUser>
 
 export function authenticateProfile<T>(
   schema: z.ZodType<T>,
   authenticate: (
+    req: express.Request,
     samlSession: SamlSession,
     profile: T
   ) => Promise<EvakaSessionUser>
 ): AuthenticateProfile {
-  return async (profile) => {
+  return async (req, profile) => {
     const samlSession = SamlSessionSchema.parse(profile)
     const parseResult = schema.safeParse(profile)
     if (parseResult.success) {
-      return await authenticate(samlSession, parseResult.data)
+      return await authenticate(req, samlSession, parseResult.data)
     } else {
       throw new Error(
         `SAML ${profile.issuer} profile parsing failed: ${parseResult.error.message}`

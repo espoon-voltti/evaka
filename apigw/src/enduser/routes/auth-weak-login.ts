@@ -53,7 +53,7 @@ export const authWeakLogin = (
         }
       }
 
-      const { id } = await citizenWeakLogin(body)
+      const { id } = await citizenWeakLogin(req, body)
       const user: EvakaSessionUser = {
         id,
         authType: 'citizen-weak',

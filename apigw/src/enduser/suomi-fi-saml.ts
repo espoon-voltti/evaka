@@ -31,13 +31,13 @@ const ssnRegex = /^[0-9]{6}[-+ABCDEFUVWXY][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/
 
 const authenticateCitizen = authenticateProfile(
   Profile,
-  async (samlSession, profile) => {
+  async (req, samlSession, profile) => {
     const socialSecurityNumber = profile[SUOMI_FI_SSN_KEY]?.trim()
     if (!socialSecurityNumber) throw Error('No SSN in SAML data')
     if (!ssnRegex.test(socialSecurityNumber)) {
       logWarn('Invalid SSN received from Suomi.fi login')
     }
-    const person = await citizenLogin({
+    const person = await citizenLogin(req, {
       socialSecurityNumber,
       firstName: profile[SUOMI_FI_GIVEN_NAME_KEY]?.trim() ?? '',
       lastName: profile[SUOMI_FI_SURNAME_KEY]?.trim() ?? ''
@@ -72,13 +72,13 @@ export function createCitizenSuomiFiIntegration(
 
 const authenticateEmployee = authenticateProfile(
   Profile,
-  async (samlSession, profile) => {
+  async (req, samlSession, profile) => {
     const socialSecurityNumber = profile[SUOMI_FI_SSN_KEY]?.trim()
     if (!socialSecurityNumber) throw Error('No SSN in SAML data')
     if (!ssnRegex.test(socialSecurityNumber)) {
       logWarn('Invalid SSN received from Suomi.fi login')
     }
-    const person = await employeeSuomiFiLogin({
+    const person = await employeeSuomiFiLogin(req, {
       ssn: profile[SUOMI_FI_SSN_KEY],
       firstName: profile[SUOMI_FI_GIVEN_NAME_KEY],
       lastName: profile[SUOMI_FI_SURNAME_KEY]
