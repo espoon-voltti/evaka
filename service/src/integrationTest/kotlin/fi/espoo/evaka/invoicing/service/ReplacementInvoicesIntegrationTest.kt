@@ -14,7 +14,9 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceReplacementReason
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
@@ -376,6 +378,75 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(replacementAfter.status, InvoiceStatus.SENT)
     }
 
+    @Test
+    fun `no replacement drafts are created anymore after placement ends`() {
+        val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+        db.transaction { tx -> tx.insert(employee) }
+
+        val month1 = previousMonth.minusMonths(1)
+        val month2 = previousMonth
+
+        val (placementId, feeDecisionId) =
+            insertPlacementAndFeeDecision(
+                range =
+                    // 2 months
+                    FiniteDateRange(month1.atDay(1), month2.atEndOfMonth())
+            )
+
+        generateAndSendInvoices(month1)
+        generateAndSendInvoices(month2)
+        val original =
+            db.read { it.searchInvoices(period = FiniteDateRange.ofMonth(month2)) }.single()
+
+        // Shorten the placement and fee decision to only cover month1 => a zero replacement is
+        // created for month2
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    """
+                    UPDATE placement
+                    SET end_date = ${bind(month1.atEndOfMonth())}
+                    WHERE id = ${bind(placementId)}
+                    """
+                )
+            }
+            tx.execute {
+                sql(
+                    """
+                    UPDATE fee_decision
+                    SET valid_during = ${bind(FiniteDateRange.ofMonth(month1))}
+                    WHERE id = ${bind(feeDecisionId)}
+                    """
+                )
+            }
+        }
+        val replacement = generateReplacementDrafts().single()
+        assertEquals(month2, YearMonth.from(replacement.periodStart))
+        assertEquals(original.id, replacement.replacedInvoiceId)
+        assertEquals(1, replacement.revisionNumber)
+        assertEquals(0, replacement.totalPrice)
+
+        invoiceController.markReplacementDraftSent(
+            dbInstance(),
+            employee.user,
+            MockEvakaClock(now),
+            replacement.id,
+            InvoiceController.MarkReplacementDraftSentRequest(
+                reason = InvoiceReplacementReason.OTHER,
+                notes = "ended early",
+            ),
+        )
+
+        val originalAfter = db.read { tx -> tx.getInvoice(original.id) }!!
+        assertEquals(InvoiceStatus.REPLACED, originalAfter.status)
+        val replacementAfter = db.read { tx -> tx.getInvoice(replacement.id) }!!
+        assertEquals(InvoiceStatus.SENT, replacementAfter.status)
+
+        // A new replacement draft is not created anymore
+        val replacements = generateReplacementDrafts()
+        assertEquals(emptyList(), replacements)
+    }
+
     private fun generateReplacementDrafts(today: LocalDate = this.today): List<InvoiceDetailed> {
         invoiceGenerator.generateAllReplacementDraftInvoices(db, today)
         return db.read { tx -> tx.searchInvoices(InvoiceStatus.REPLACEMENT_DRAFT) }
@@ -393,38 +464,37 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
         child: DevPerson = this.child,
         fee: Int = 29500,
         range: FiniteDateRange = FiniteDateRange.ofMonth(previousMonth),
-    ) {
+    ): Pair<PlacementId, FeeDecisionId> {
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                startDate = range.start,
+                endDate = range.end,
+            )
+        val feeDecision =
+            DevFeeDecision(
+                status = FeeDecisionStatus.SENT,
+                validDuring = range,
+                headOfFamilyId = headOfFamily.id,
+                totalFee = 29500,
+            )
         db.transaction { tx ->
+            tx.insert(placement)
+            tx.insert(feeDecision)
             tx.insert(
-                DevPlacement(
+                DevFeeDecisionChild(
+                    feeDecisionId = feeDecision.id,
                     childId = child.id,
-                    unitId = daycare.id,
-                    startDate = range.start,
-                    endDate = range.end,
+                    childDateOfBirth = child.dateOfBirth,
+                    placementUnitId = daycare.id,
+                    baseFee = fee,
+                    fee = fee,
+                    finalFee = fee,
                 )
             )
-            tx.insert(
-                    DevFeeDecision(
-                        status = FeeDecisionStatus.SENT,
-                        validDuring = range,
-                        headOfFamilyId = headOfFamily.id,
-                        totalFee = 29500,
-                    )
-                )
-                .also { feeDecisionId ->
-                    tx.insert(
-                        DevFeeDecisionChild(
-                            feeDecisionId = feeDecisionId,
-                            childId = child.id,
-                            childDateOfBirth = child.dateOfBirth,
-                            placementUnitId = daycare.id,
-                            baseFee = fee,
-                            fee = fee,
-                            finalFee = fee,
-                        )
-                    )
-                }
         }
+        return placement.id to feeDecision.id
     }
 
     private fun generateAndSendInvoices(month: YearMonth = previousMonth): List<InvoiceDetailed> =
