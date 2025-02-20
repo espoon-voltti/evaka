@@ -13,6 +13,25 @@ import { faFileSpreadsheet } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
+const separatorCharacter = ';'
+
+export function toHeaderlessCsv<T extends object>(
+  objectData: T[],
+  headerKeys: (keyof T)[]
+): string {
+  const data = objectData.map((object) =>
+    headerKeys.map((header) => String(object[header] ?? ''))
+  )
+  return data
+    .map((row) =>
+      row
+        .map((column) => column.replace(/"/g, '""'))
+        .map((column) => `"${column}"`)
+        .join(separatorCharacter)
+    )
+    .join(`\n`)
+}
+
 const RowRightAligned = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -29,7 +48,7 @@ const LinkText = styled.span`
 
 interface Props<T> {
   data: T[]
-  headers?: { label: string; key: keyof T }[]
+  headers: { label: string; key: keyof T }[]
   filename: string | (() => string)
   'data-qa'?: string
 }
@@ -66,12 +85,13 @@ function ReportDownload<T extends object>({
       <div data-qa={dataQa}>
         {data.length > 0 && !reloadCSV ? (
           <CSVLink
-            data={data}
-            headers={headers?.map(({ label, key }) => ({
-              label,
-              key: String(key)
-            }))}
-            separator=";"
+            data={toHeaderlessCsv(
+              data,
+              headers.map((h) => h.key)
+            )}
+            headers={headers.map((h) => `"${h.label}"`)}
+            separator={separatorCharacter}
+            enclosingCharacter='"'
             filename={filenameStr}
           >
             <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
