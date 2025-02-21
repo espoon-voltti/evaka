@@ -8,7 +8,6 @@ import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessagesClient
-import fi.espoo.evaka.sficlient.SfiMessagesSoapClient
 import fi.espoo.evaka.sficlient.rest.AwsSsmPasswordStore
 import fi.espoo.evaka.sficlient.rest.SfiMessagesRestClient
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -28,17 +27,12 @@ class SfiConfig {
         documentClient: DocumentService,
     ): SfiMessagesClient =
         env.ifAvailable?.let {
-            if (it.restEnabled) {
-                logger.info { "Using real REST Suomi.fi Messages API client. Configuration: $it" }
-                SfiMessagesRestClient(
-                    it,
-                    documentClient::get,
-                    AwsSsmPasswordStore(ssmClient.getObject(), it),
-                )
-            } else {
-                logger.info { "Using real SOAP Suomi.fi Messages API client. Configuration: $it" }
-                SfiMessagesSoapClient(it, documentClient::get)
-            }
+            logger.info { "Using real REST Suomi.fi Messages API client. Configuration: $it" }
+            SfiMessagesRestClient(
+                it,
+                documentClient::get,
+                AwsSsmPasswordStore(ssmClient.getObject(), it),
+            )
         }
             ?: MockSfiMessagesClient().also {
                 logger.info { "Using mock Suomi.fi Messages API client" }

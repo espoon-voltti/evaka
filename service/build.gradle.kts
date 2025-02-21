@@ -154,7 +154,6 @@ dependencies {
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
     integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") { exclude("org.opensaml") }
 
-    implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
 
     ktlint(project(":custom-ktlint-rules"))
