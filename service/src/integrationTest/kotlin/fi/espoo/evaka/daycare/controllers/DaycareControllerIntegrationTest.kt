@@ -727,7 +727,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             supervisor.user,
             RealEvakaClock(),
             daycareId,
-            DaycareController.CreateGroupRequest(name, startDate, initialCaretakers),
+            DaycareController.CreateGroupRequest(name, startDate, initialCaretakers, null),
         )
     }
 
