@@ -1,0 +1,1 @@
+ALTER TABLE daycare_group ADD COLUMN aromi_customer_id TEXT;

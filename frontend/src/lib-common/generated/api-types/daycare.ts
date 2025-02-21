@@ -175,6 +175,7 @@ export interface CreateDaycareResponse {
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.CreateGroupRequest
 */
 export interface CreateGroupRequest {
+  aromiCustomerId: string | null
   initialCaretakers: number
   name: string
   startDate: LocalDate
@@ -301,6 +302,7 @@ export interface DaycareFields {
 * Generated from fi.espoo.evaka.daycare.service.DaycareGroup
 */
 export interface DaycareGroup {
+  aromiCustomerId: string | null
   daycareId: DaycareId
   deletable: boolean
   endDate: LocalDate | null
@@ -380,6 +382,7 @@ export interface GroupStaffAttendance {
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.GroupUpdateRequest
 */
 export interface GroupUpdateRequest {
+  aromiCustomerId: string | null
   endDate: LocalDate | null
   jamixCustomerNumber: number | null
   name: string

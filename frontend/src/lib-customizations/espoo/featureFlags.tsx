@@ -45,7 +45,8 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    archiveIntegrationEnabled: true
+    archiveIntegrationEnabled: true,
+    aromiIntegration: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -116,7 +117,8 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
     multiSelectDeparture: false,
-    archiveIntegrationEnabled: false
+    archiveIntegrationEnabled: false,
+    aromiIntegration: false
   }
 }
 

@@ -496,3 +496,4 @@ V497__application_primary_preferred_unit.sql
 V498__child_document_archived_at.sql
 V499__drop_unused_tables.sql
 V500__create_trigger.sql
+V501__aromi_customer_id.sql

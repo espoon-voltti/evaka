@@ -12,6 +12,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
@@ -27,6 +28,7 @@ interface FormValidationResult {
   valid: boolean
   fields: {
     name: boolean
+    aromiCustomerId: boolean
   }
 }
 
@@ -34,6 +36,7 @@ interface CreateGroupForm {
   name: string
   startDate: LocalDate
   initialCaretakers: number
+  aromiCustomerId: string | null
 }
 
 export default React.memo(function GroupModal({ unitId }: Props) {
@@ -43,20 +46,24 @@ export default React.memo(function GroupModal({ unitId }: Props) {
   const initialForm: CreateGroupForm = {
     name: '',
     startDate: EVAKA_START,
-    initialCaretakers: 3
+    initialCaretakers: 3,
+    aromiCustomerId: null
   }
   const [form, setForm] = useState<CreateGroupForm>(initialForm)
   const [validationResult, setValidationResult] =
     useState<FormValidationResult>({
       valid: true,
       fields: {
-        name: true
+        name: true,
+        aromiCustomerId: true
       }
     })
 
   useEffect(() => {
     const fields = {
-      name: form.name.length > 0
+      name: form.name.length > 0,
+      aromiCustomerId:
+        form.aromiCustomerId !== null && form.aromiCustomerId.length > 0
     }
     setValidationResult({
       valid: allPropertiesTrue(fields),
@@ -77,7 +84,11 @@ export default React.memo(function GroupModal({ unitId }: Props) {
         body: {
           name: form.name,
           startDate: form.startDate,
-          initialCaretakers: form.initialCaretakers
+          initialCaretakers: form.initialCaretakers,
+          aromiCustomerId:
+            form.aromiCustomerId !== null && form.aromiCustomerId.length > 0
+              ? form.aromiCustomerId
+              : null
         }
       })}
       onSuccess={clearUiMode}
@@ -123,6 +134,24 @@ export default React.memo(function GroupModal({ unitId }: Props) {
             data-qa="new-group-name-input"
           />
         </div>
+        {featureFlags.aromiIntegration && (
+          <div>
+            <Label>{i18n.unit.groups.createModal.aromiCustomerId}</Label>
+            <InputField
+              value={form.aromiCustomerId ?? ''}
+              onChange={(value) => assignForm({ aromiCustomerId: value })}
+              data-qa="new-group-aromi-id-input"
+              info={
+                !validationResult.fields.aromiCustomerId
+                  ? {
+                      text: i18n.unit.groups.createModal.errors.aromiWarning,
+                      status: 'warning'
+                    }
+                  : undefined
+              }
+            />
+          </div>
+        )}
       </FixedSpaceColumn>
     </MutateFormModal>
   )

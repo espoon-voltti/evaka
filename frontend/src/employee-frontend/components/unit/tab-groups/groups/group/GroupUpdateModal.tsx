@@ -35,11 +35,13 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
     startDate: LocalDate
     endDate: LocalDate | null
     jamixCustomerNumber: number | null
+    aromiCustomerId: string | null
   }>({
     name: group.name,
     startDate: group.startDate,
     endDate: group.endDate,
-    jamixCustomerNumber: group.jamixCustomerNumber
+    jamixCustomerNumber: group.jamixCustomerNumber,
+    aromiCustomerId: group.aromiCustomerId
   })
 
   return (
@@ -113,6 +115,35 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
                 }}
                 data-qa="jamix-customer-id-input"
                 placeholder={i18n.unit.groups.updateModal.jamixPlaceholder}
+              />
+            </>
+          )}
+          {featureFlags.aromiIntegration && (
+            <>
+              <Gap size="s" />
+              <div className="bold">
+                {i18n.unit.groups.updateModal.aromiTitle}
+              </div>
+              <InputField
+                value={data.aromiCustomerId ?? ''}
+                onChange={(value) => {
+                  const checkedValue =
+                    value !== null && value.length > 0 ? value : null
+                  setData((state) => ({
+                    ...state,
+                    aromiCustomerId: checkedValue
+                  }))
+                }}
+                info={
+                  data.aromiCustomerId === null
+                    ? {
+                        text: i18n.unit.groups.createModal.errors.aromiWarning,
+                        status: 'warning'
+                      }
+                    : undefined
+                }
+                data-qa="aromi-customer-id-input"
+                placeholder={i18n.unit.groups.updateModal.aromiPlaceholder}
               />
             </>
           )}
