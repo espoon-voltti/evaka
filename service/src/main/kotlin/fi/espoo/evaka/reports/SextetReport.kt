@@ -9,6 +9,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.getHolidays
@@ -61,6 +62,25 @@ fun Database.Read.sextetReport(
     placementType: PlacementType,
 ): List<SextetReportRow> {
     val holidays = getHolidays(FiniteDateRange(from, to))
+
+    val absencePredicate =
+        if (placementType.absenceCategories().size == 1) {
+            Predicate {
+                where(
+                    "NOT EXISTS (SELECT FROM absence WHERE child_id = $it.child_id AND date = $it.date)"
+                )
+            }
+        } else {
+            Predicate {
+                where(
+                    """
+            NOT EXISTS (SELECT FROM absence WHERE child_id = $it.child_id AND date = $it.date AND category = 'BILLABLE') OR 
+            NOT EXISTS (SELECT FROM absence WHERE child_id = $it.child_id AND date = $it.date AND category = 'NONBILLABLE')
+        """
+                )
+            }
+        }
+
     return createQuery {
             sql(
                 """
@@ -100,22 +120,17 @@ WITH operational_days AS (
 SELECT
     ep.unit_id,
     d.name AS unit_name,
-    ep.placement_type,
+    ${bind(placementType)} AS placement_type,
     count(ep.date) AS attendance_days
 FROM effective_placements ep
 JOIN daycare d ON d.id = ep.unit_id
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM absence
-    WHERE child_id = ep.child_id AND date = ep.date
-    HAVING count(category) >= cardinality(absence_categories(ep.placement_type))
-) AND (
+WHERE ${predicate(absencePredicate.forTable("ep"))} AND (
     ep.has_shift_care OR extract(isodow FROM ep.date) = ANY(d.operation_days)
 ) AND (
     (ep.has_shift_care AND d.shift_care_open_on_holidays) OR ep.date != ALL (${bind(holidays)})
 )
 AND ep.placement_type = ${bind(placementType)}
-GROUP BY ep.unit_id, d.name, ep.placement_type
+GROUP BY ep.unit_id, d.name
 ORDER BY d.name
     """
             )
