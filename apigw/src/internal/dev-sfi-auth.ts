@@ -58,7 +58,7 @@ export function createDevEmployeeSfiRouter(
       const persons = await getVtjPersons()
       const person = persons.find((c) => c.ssn === ssn)
       if (!person) throw new Error(`No VTJ person found with SSN ${ssn}`)
-      const employee = await employeeSuomiFiLogin({
+      const employee = await employeeSuomiFiLogin(req, {
         ssn,
         firstName: person.firstName,
         lastName: person.lastName

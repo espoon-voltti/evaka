@@ -22,10 +22,10 @@ const Profile = z.object({
 
 const authenticate = authenticateProfile(
   Profile,
-  async (samlSession, profile) => {
+  async (req, samlSession, profile) => {
     const id = profile.id
     if (!id) throw Error('No user ID in evaka IDP SAML data')
-    const person = await employeeLogin({
+    const person = await employeeLogin(req, {
       externalId: `evaka:${id}`,
       firstName: profile.firstName ?? '',
       lastName: profile.lastName ?? '',

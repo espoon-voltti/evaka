@@ -39,7 +39,7 @@ export type ServiceRequestHeaders = Partial<
 >
 
 export function createServiceRequestHeaders(
-  req: express.Request | undefined,
+  req: express.Request,
   userHeader: string | undefined
 ) {
   const headers: ServiceRequestHeaders = {
@@ -48,10 +48,10 @@ export function createServiceRequestHeaders(
   if (userHeader) {
     headers['X-User'] = userHeader
   }
-  if (req?.traceId) {
+  if (req.traceId) {
     headers['X-Request-ID'] = req.traceId
   }
-  const mockedTime = req?.get('EvakaMockedTime')
+  const mockedTime = req.get('EvakaMockedTime')
   if (mockedTime) {
     headers['EvakaMockedTime'] = mockedTime
   }
@@ -102,27 +102,25 @@ export interface CitizenUserResponse {
 }
 
 export async function employeeLogin(
+  req: express.Request,
   employee: EmployeeLoginRequest
 ): Promise<EmployeeUser> {
   const { data } = await client.post<EmployeeUser>(
     `/system/employee-login`,
     employee,
-    {
-      headers: createServiceRequestHeaders(undefined, systemUserHeader)
-    }
+    { headers: createServiceRequestHeaders(req, systemUserHeader) }
   )
   return data
 }
 
 export async function employeeSuomiFiLogin(
+  req: express.Request,
   employee: EmployeeSuomiFiLoginRequest
 ): Promise<EmployeeUser> {
   const { data } = await client.post<EmployeeUser>(
     `/system/employee-sfi-login`,
     employee,
-    {
-      headers: createServiceRequestHeaders(undefined, systemUserHeader)
-    }
+    { headers: createServiceRequestHeaders(req, systemUserHeader) }
   )
   return data
 }
@@ -134,9 +132,7 @@ export async function getEmployeeDetails(
   try {
     const { data } = await client.get<EmployeeUserResponse>(
       `/system/employee/${employeeId}`,
-      {
-        headers: createServiceRequestHeaders(req, systemUserHeader)
-      }
+      { headers: createServiceRequestHeaders(req, systemUserHeader) }
     )
     return data
   } catch (e: unknown) {
@@ -149,14 +145,13 @@ export async function getEmployeeDetails(
 }
 
 export async function citizenLogin(
+  req: express.Request,
   person: CitizenLoginRequest
 ): Promise<CitizenUser> {
   const { data } = await client.post<CitizenUser>(
     `/system/citizen-login`,
     person,
-    {
-      headers: createServiceRequestHeaders(undefined, systemUserHeader)
-    }
+    { headers: createServiceRequestHeaders(req, systemUserHeader) }
   )
   return data
 }
@@ -167,14 +162,13 @@ interface CitizenWeakLoginRequest {
 }
 
 export async function citizenWeakLogin(
+  req: express.Request,
   request: CitizenWeakLoginRequest
 ): Promise<CitizenUser> {
   const { data } = await client.post<CitizenUser>(
     `/system/citizen-weak-login`,
     request,
-    {
-      headers: createServiceRequestHeaders(undefined, systemUserHeader)
-    }
+    { headers: createServiceRequestHeaders(req, systemUserHeader) }
   )
   return data
 }
@@ -210,9 +204,7 @@ export async function validatePairing(
   const { data } = await client.post<MobileDeviceIdentity>(
     `/system/pairings/${encodeURIComponent(id)}/validation`,
     request,
-    {
-      headers: createServiceRequestHeaders(req, systemUserHeader)
-    }
+    { headers: createServiceRequestHeaders(req, systemUserHeader) }
   )
   return data
 }
@@ -233,9 +225,7 @@ export async function identifyMobileDevice(
   try {
     const { data } = await client.get<MobileDeviceIdentity | undefined>(
       `/system/mobile-identity/${encodeURIComponent(token)}`,
-      {
-        headers: createServiceRequestHeaders(req, systemUserHeader)
-      }
+      { headers: createServiceRequestHeaders(req, systemUserHeader) }
     )
     return data
   } catch (e: unknown) {
@@ -254,12 +244,8 @@ export async function authenticateMobileDevice(
   try {
     const { data } = await client.post<MobileDevice | undefined>(
       `/system/mobile-devices/${encodeURIComponent(id)}`,
-      {
-        userAgent: req.headers['user-agent'] ?? ''
-      },
-      {
-        headers: createServiceRequestHeaders(req, systemUserHeader)
-      }
+      { userAgent: req.headers['user-agent'] ?? '' },
+      { headers: createServiceRequestHeaders(req, systemUserHeader) }
     )
     return data
   } catch (e: unknown) {
@@ -282,9 +268,7 @@ export async function employeePinLogin(
   const { data } = await client.post<EmployeePinLoginResponse>(
     `/system/mobile-pin-login`,
     req.body,
-    {
-      headers: createServiceRequestHeaders(req, systemUserHeader)
-    }
+    { headers: createServiceRequestHeaders(req, systemUserHeader) }
   )
   return data
 }

@@ -86,6 +86,7 @@ export function createDevAdRouter(sessions: Sessions<'employee'>): Router {
     verifyUser: async (req) => {
       const preset = assertStringProp(req.body, 'preset')
       const person = await employeeLogin(
+        req,
         Employee.parse(preset === 'new' ? req.body : JSON.parse(preset))
       )
       return {

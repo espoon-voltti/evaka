@@ -57,7 +57,7 @@ export function createDevSfiRouter(sessions: Sessions<'citizen'>): Router {
     },
     verifyUser: async (req) => {
       const socialSecurityNumber = assertStringProp(req.body, 'preset')
-      const person = await citizenLogin({
+      const person = await citizenLogin(req, {
         socialSecurityNumber,
         firstName: '',
         lastName: ''

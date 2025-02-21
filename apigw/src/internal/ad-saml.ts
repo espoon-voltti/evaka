@@ -42,11 +42,11 @@ export function createSamlAdIntegration(
 ) {
   const authenticate = authenticateProfile(
     Profile,
-    async (samlSession, profile) => {
+    async (req, samlSession, profile) => {
       const aad = profile[config.userIdKey]
       if (!aad || typeof aad !== 'string')
         throw Error('No user ID in SAML data')
-      const person = await employeeLogin({
+      const person = await employeeLogin(req, {
         externalId: `${config.externalIdPrefix}:${aad}`,
         firstName: profile[AD_GIVEN_NAME_KEY] ?? '',
         lastName: profile[AD_FAMILY_NAME_KEY] ?? '',

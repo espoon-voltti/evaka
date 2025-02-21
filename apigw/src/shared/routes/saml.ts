@@ -196,7 +196,7 @@ export function createSamlIntegration<T extends SessionType>(
       }
     }
     try {
-      const user = await authenticate(profile)
+      const user = await authenticate(req, profile)
       await sessions.login(req, user)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
 
