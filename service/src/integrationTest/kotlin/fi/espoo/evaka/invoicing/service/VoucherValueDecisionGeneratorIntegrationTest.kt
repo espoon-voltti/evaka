@@ -805,6 +805,47 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `partner income difference - identical incomes before 03-25`() {
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
+        insertIncome(testAdult_2.id, 10000, subPeriod1.asDateRange())
+        insertIncome(testAdult_2.id, 10000, subPeriod2.asDateRange())
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(Tuple(period, emptySet<VoucherValueDecisionDifference>()))
+    }
+
+    @Test
+    fun `partner income difference - identical incomes after 03-25`() {
+        val period = FiniteDateRange(LocalDate.of(2025, 4, 1), LocalDate.of(2026, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2025, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2025, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
+        insertIncome(testAdult_2.id, 10000, subPeriod1.asDateRange())
+        insertIncome(testAdult_2.id, 10000, subPeriod2.asDateRange())
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
+            )
+    }
+
+    @Test
     fun `child income difference`() {
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
