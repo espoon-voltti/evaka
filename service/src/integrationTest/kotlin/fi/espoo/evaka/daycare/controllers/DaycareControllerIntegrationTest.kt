@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare.controllers
 
-import fi.espoo.evaka.*
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
@@ -28,7 +28,19 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.*
+import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.TestDecision
+import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -36,6 +48,17 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
+import fi.espoo.evaka.testChild_5
+import fi.espoo.evaka.testChild_6
+import fi.espoo.evaka.testChild_7
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
@@ -687,6 +710,59 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         updateDaycare(admin.user, fields.copy(closingDate = today))
     }
 
+    @Test
+    fun `can add and modify group aromi customer id`() {
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        val testArea = DevCareArea(name = "Testarea 111", shortName = "ta111")
+        val testDaycare = DevDaycare(name = "Testunit 1110", areaId = testArea.id)
+        db.transaction { tx ->
+            tx.insert(admin)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+        }
+        val aromiDaycareCustomerId = "TU1110_PK"
+        val aromiPreschoolCustomerId = "TU1110_EO"
+        val group =
+            createDaycareGroup(
+                daycareId = testDaycare.id,
+                name = "Aromi test group",
+                aromiCustomerId = "TU1110_PK",
+                initialCaretakers = 7.0,
+                startDate = today,
+                user = admin.user,
+            )
+
+        assertEquals(aromiDaycareCustomerId, group.aromiCustomerId)
+
+        val editedGroup =
+            updateAndGetDaycareGroup(
+                groupId = group.id,
+                daycareId = testDaycare.id,
+                name = group.name,
+                startDate = group.startDate,
+                endDate = group.endDate,
+                jamixCustomerNumber = group.jamixCustomerNumber,
+                aromiCustomerId = null,
+                user = admin.user,
+            )
+
+        assertNull(editedGroup.aromiCustomerId)
+
+        val editedGroup2 =
+            updateAndGetDaycareGroup(
+                groupId = group.id,
+                daycareId = testDaycare.id,
+                name = group.name,
+                startDate = group.startDate,
+                endDate = group.endDate,
+                jamixCustomerNumber = group.jamixCustomerNumber,
+                aromiCustomerId = aromiPreschoolCustomerId,
+                user = admin.user,
+            )
+
+        assertEquals(aromiPreschoolCustomerId, editedGroup2.aromiCustomerId)
+    }
+
     private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
         return daycareController.getDaycare(
             dbInstance(),
@@ -721,14 +797,51 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         name: String,
         startDate: LocalDate,
         initialCaretakers: Double,
+        user: AuthenticatedUser.Employee = supervisor.user,
+        aromiCustomerId: String? = null,
     ): DaycareGroup {
         return daycareController.createGroup(
             dbInstance(),
-            supervisor.user,
+            user,
             RealEvakaClock(),
             daycareId,
-            DaycareController.CreateGroupRequest(name, startDate, initialCaretakers),
+            DaycareController.CreateGroupRequest(
+                name,
+                startDate,
+                initialCaretakers,
+                aromiCustomerId,
+            ),
         )
+    }
+
+    private fun updateAndGetDaycareGroup(
+        daycareId: DaycareId,
+        groupId: GroupId,
+        name: String,
+        startDate: LocalDate,
+        user: AuthenticatedUser.Employee,
+        endDate: LocalDate? = null,
+        aromiCustomerId: String? = null,
+        jamixCustomerNumber: Int? = null,
+    ): DaycareGroup {
+        daycareController.updateGroup(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            daycareId,
+            groupId,
+            DaycareController.GroupUpdateRequest(
+                name = name,
+                startDate = startDate,
+                aromiCustomerId = aromiCustomerId,
+                jamixCustomerNumber = jamixCustomerNumber,
+                endDate = endDate,
+            ),
+        )
+        return daycareController.getGroups(dbInstance(), user, RealEvakaClock(), daycareId).first {
+            g ->
+            g.id == groupId
+        }
     }
 
     private fun deleteDaycareGroup(daycareId: DaycareId, groupId: GroupId) {
