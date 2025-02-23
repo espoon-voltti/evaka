@@ -805,7 +805,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `partner income difference - identical incomes before 03-25`() {
+    fun `partner income difference - identical incomes before 2025-03`() {
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
@@ -824,7 +824,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `partner income difference - identical incomes after 03-25`() {
+    fun `partner income difference - identical incomes after 2025-03`() {
         val period = FiniteDateRange(LocalDate.of(2025, 4, 1), LocalDate.of(2026, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2025, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2025, 7, 1))

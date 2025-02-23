@@ -3182,7 +3182,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `before 03-25 a new fee decision is not generated if income changes from NOT_AVAILABLE to INCOMPLETE`() {
+    fun `before 2025-03 a new fee decision is not generated if income changes from NOT_AVAILABLE to INCOMPLETE`() {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -3214,7 +3214,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `before 03-25 a new fee decision is not generated if income changes to identical income`() {
+    fun `before 2025-03 a new fee decision is not generated if income changes to identical income`() {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val incomePeriod1 = DateRange(period.start, null)
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
@@ -3252,7 +3252,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `after 03-25 a new fee decision is generated even if income changes from NOT_AVAILABLE to INCOMPLETE`() {
+    fun `after 2025-03 a new fee decision is generated even if income changes from NOT_AVAILABLE to INCOMPLETE`() {
         val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -3282,7 +3282,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `after 03-25 a new fee decision is generated even if income changes to identical income`() {
+    fun `after 2025-03 a new fee decision is generated even if income changes to identical income`() {
         val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
         val incomePeriod1 = DateRange(period.start, null)
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
