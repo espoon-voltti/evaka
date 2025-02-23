@@ -419,7 +419,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,
@@ -434,7 +434,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 partnerIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,
@@ -447,7 +447,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.INCOME,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 200000,
                                         totalExpenses = 0,
                                         total = 200000,
@@ -460,7 +460,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.INCOME,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 200000,
                                         totalExpenses = 0,
                                         total = 200000,
@@ -470,7 +470,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 partnerIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        emptyMap(),
+                                        data = emptyMap(),
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,

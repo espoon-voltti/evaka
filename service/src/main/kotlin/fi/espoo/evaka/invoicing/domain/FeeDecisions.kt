@@ -144,14 +144,17 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
         d1.children.map { it.child.id }.toSet() == d2.children.map { it.child.id }.toSet()
     }),
     INCOME({ d1, d2 ->
+        val logic =
+            if (d2.validFrom < LocalDate.of(2025, 3, 1)) IncomeComparisonVersion.V1
+            else IncomeComparisonVersion.V2
         setOf(
-            d1.headOfFamilyIncome?.effectiveComparable(),
-            d1.partnerIncome?.effectiveComparable(),
+            d1.headOfFamilyIncome?.effectiveComparable(logic),
+            d1.partnerIncome?.effectiveComparable(logic),
         ) ==
             setOf(
-                d2.headOfFamilyIncome?.effectiveComparable(),
-                d2.partnerIncome?.effectiveComparable(),
-            ) && decisionChildrenEquals(d1, d2) { it.childIncome?.effectiveComparable() }
+                d2.headOfFamilyIncome?.effectiveComparable(logic),
+                d2.partnerIncome?.effectiveComparable(logic),
+            ) && decisionChildrenEquals(d1, d2) { it.childIncome?.effectiveComparable(logic) }
     }),
     PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.placement } }),
     SERVICE_NEED({ d1, d2 ->

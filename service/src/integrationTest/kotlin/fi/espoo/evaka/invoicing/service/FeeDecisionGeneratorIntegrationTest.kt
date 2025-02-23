@@ -3182,14 +3182,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `a new fee decision is not generated if incomes change from NOT_AVAILABLE to INCOMPLETE`() {
+    fun `before 2025-03 a new fee decision is not generated if income changes from NOT_AVAILABLE to INCOMPLETE`() {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        val incomePeriod = DateRange(period.start, null)
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertIncome(testAdult_1.id, 310200, incomePeriod, IncomeEffect.NOT_AVAILABLE)
-        insertIncome(testChild_1.id, 310200, incomePeriod, IncomeEffect.NOT_AVAILABLE)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -3206,13 +3203,119 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         asyncJobRunner.runPendingJobsSync(clock)
 
-        db.transaction { it.execute { sql("UPDATE income SET effect = 'INCOMPLETE'") } }
+        val incomePeriod = DateRange(period.start, null)
+        insertIncome(testAdult_1.id, 0, incomePeriod, IncomeEffect.INCOMPLETE)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
         // No new DRAFT is generated because the only diff was head of family income type change
         // NOT_AVAILABLE -> INCOMPLETE
         assertEquals(1, getAllFeeDecisions().size)
+    }
+
+    @Test
+    fun `before 2025-03 a new fee decision is not generated if income changes to identical income`() {
+        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val incomePeriod1 = DateRange(period.start, null)
+        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(testAdult_1.id, 310200, incomePeriod1, IncomeEffect.INCOME)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+
+        feeDecisionController.confirmFeeDecisionDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            clock,
+            listOf(decisions.get(0).id),
+            null,
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val incomePeriod2 = DateRange(period.start.plusMonths(3), null)
+        db.transaction {
+            it.execute {
+                sql("UPDATE income SET valid_to = ${bind(incomePeriod2.start.minusDays(1))}")
+            }
+        }
+        insertIncome(testAdult_1.id, 310200, incomePeriod2, IncomeEffect.INCOME)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        // No new DRAFT is generated because the incomes are identical
+        assertEquals(1, getAllFeeDecisions().size)
+    }
+
+    @Test
+    fun `after 2025-03 a new fee decision is generated even if income changes from NOT_AVAILABLE to INCOMPLETE`() {
+        val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
+        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+
+        feeDecisionController.confirmFeeDecisionDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            clock,
+            listOf(decisions.get(0).id),
+            null,
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val incomePeriod = DateRange(period.start, null)
+        insertIncome(testAdult_1.id, 0, incomePeriod, IncomeEffect.INCOMPLETE)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        assertEquals(2, getAllFeeDecisions().size)
+    }
+
+    @Test
+    fun `after 2025-03 a new fee decision is generated even if income changes to identical income`() {
+        val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
+        val incomePeriod1 = DateRange(period.start, null)
+        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(testAdult_1.id, 310200, incomePeriod1, IncomeEffect.INCOME)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+
+        feeDecisionController.confirmFeeDecisionDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            clock,
+            listOf(decisions.get(0).id),
+            null,
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val incomePeriod2 = DateRange(period.start.plusMonths(3), null)
+        db.transaction {
+            it.execute {
+                sql("UPDATE income SET valid_to = ${bind(incomePeriod2.start.minusDays(1))}")
+            }
+        }
+        insertIncome(testAdult_1.id, 310200, incomePeriod2, IncomeEffect.INCOME)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        assertEquals(2, getAllFeeDecisions().size)
     }
 
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {

@@ -55,6 +55,7 @@ export interface CreateRetroactiveFeeDecisionsBody {
 export interface DecisionIncome {
   data: Partial<Record<string, number>>
   effect: IncomeEffect
+  id: IncomeId | null
   total: number
   totalExpenses: number
   totalIncome: number
