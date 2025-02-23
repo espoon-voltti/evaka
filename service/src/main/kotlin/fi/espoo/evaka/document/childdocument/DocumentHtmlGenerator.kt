@@ -136,7 +136,8 @@ private fun generateHeader(template: DocumentTemplate): HtmlElement {
                     template.legalBasis
                         .takeIf { it.isNotBlank() }
                         ?.let { div(text = it, className = "legal-basis") },
-                    if (template.confidential) div(getTranslations(template.language).confidential)
+                    if (template.confidentiality != null)
+                        div(getTranslations(template.language).confidential)
                     else null,
                 )
             },

@@ -15,6 +15,7 @@ import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.process.getProcess
 import fi.espoo.evaka.shared.AreaId
@@ -154,6 +155,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             content = templateContent,
             processDefinitionNumber = "123.456.789",
             archiveDurationMonths = 120,
+            confidentiality = DocumentConfidentiality(100, "JulkL 24.1 § 25 ja 30 kohdat"),
         )
 
     @BeforeEach
@@ -228,7 +230,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                 type = devTemplatePed.type,
                                 placementTypes = devTemplatePed.placementTypes,
                                 language = devTemplatePed.language,
-                                confidential = devTemplatePed.confidential,
+                                confidentiality = devTemplatePed.confidentiality,
                                 legalBasis = devTemplatePed.legalBasis,
                                 validity = devTemplatePed.validity,
                                 published = devTemplatePed.published,
@@ -334,7 +336,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", it.process.organization)
             assertEquals(120, it.process.archiveDurationMonths)
             assertEquals("HOJKS", it.primaryDocument.name)
-            assertEquals(true, it.primaryDocument.confidential)
+            assertEquals(
+                devTemplateHojks.confidentiality?.durationYears,
+                it.primaryDocument.confidentiality?.durationYears,
+            )
+            assertEquals(
+                devTemplateHojks.confidentiality?.basis,
+                it.primaryDocument.confidentiality?.basis,
+            )
             assertNotNull(it.primaryDocument.createdAt)
             assertEquals(employeeUser.evakaUserId, it.primaryDocument.createdBy?.id)
             it.process.history.also { history ->
