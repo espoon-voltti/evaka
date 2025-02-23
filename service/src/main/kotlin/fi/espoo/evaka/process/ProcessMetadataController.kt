@@ -31,36 +31,40 @@ import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+enum class DocumentOrigin {
+    ELECTRONIC,
+    PAPER,
+}
+
+data class DocumentConfidentiality(val durationYears: Int, @PropagateNull val basis: String)
+
+data class DocumentMetadata(
+    val documentId: UUID,
+    val name: String,
+    val createdAt: HelsinkiDateTime?,
+    @Nested("created_by") val createdBy: EvakaUser?,
+    val confidential: Boolean?,
+    @Nested("confidentiality") val confidentiality: DocumentConfidentiality?,
+    val downloadPath: String?,
+    val receivedBy: DocumentOrigin?,
+)
+
+data class ProcessMetadata(
+    val process: ArchivedProcess,
+    val processName: String?,
+    val primaryDocument: DocumentMetadata,
+    val secondaryDocuments: List<DocumentMetadata>,
+)
+
 @RestController
 @RequestMapping("/employee/process-metadata")
 class ProcessMetadataController(private val accessControl: AccessControl) {
-    data class ProcessMetadata(
-        val process: ArchivedProcess,
-        val processName: String?,
-        val primaryDocument: DocumentMetadata,
-        val secondaryDocuments: List<DocumentMetadata>,
-    )
-
-    enum class DocumentOrigin {
-        ELECTRONIC,
-        PAPER,
-    }
-
-    data class DocumentMetadata(
-        val documentId: UUID,
-        val name: String,
-        val createdAt: HelsinkiDateTime?,
-        @Nested("created_by") val createdBy: EvakaUser?,
-        val confidential: Boolean?,
-        val downloadPath: String?,
-        val receivedBy: DocumentOrigin?,
-    )
-
     // wrapper that is needed because currently returning null
     // from an endpoint is not serialized correctly
     data class ProcessMetadataResponse(val data: ProcessMetadata?)
@@ -413,6 +417,11 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             )
                         },
                     confidential = true,
+                    confidentiality =
+                        DocumentConfidentiality(
+                            durationYears = 100,
+                            basis = "Varhaiskasvatuslaki 40 § 2 mom.",
+                        ),
                     downloadPath =
                         column<String?>("document_key")?.let {
                             "/employee/assistance-need-decision/$decisionId/pdf"
@@ -455,6 +464,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             )
                         },
                     confidential = true,
+                    confidentiality =
+                        DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 §"),
                     downloadPath =
                         column<String?>("document_key")?.let {
                             "/employee/assistance-need-preschool-decisions/$decisionId/pdf"
@@ -509,6 +520,10 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             )
                         },
                     confidential = column("confidential"),
+                    confidentiality =
+                        if (column<Boolean?>("confidential") == true) {
+                            DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 §")
+                        } else null,
                     downloadPath = null,
                     receivedBy =
                         column<ApplicationOrigin>("origin").let {
@@ -585,6 +600,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             )
                         },
                     confidential = true,
+                    confidentiality = null,
                     downloadPath =
                         column<String?>("document_key")?.let {
                             "/employee/decisions/$decisionId/download"
@@ -627,6 +643,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             )
                         },
                     confidential = true,
+                    confidentiality =
+                        DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
                     downloadPath =
                         column<String?>("document_key")?.let { "/employee/fee-decisions/pdf/$it" },
                     receivedBy = null,
@@ -667,6 +685,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             )
                         },
                     confidential = true,
+                    confidentiality =
+                        DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
                     downloadPath =
                         column<String?>("document_key")?.let {
                             "/employee/value-decisions/pdf/$it"

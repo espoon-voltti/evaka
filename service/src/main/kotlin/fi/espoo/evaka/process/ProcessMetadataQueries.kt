@@ -8,9 +8,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.user.EvakaUser
 
-fun Database.Read.getChildDocumentMetadata(
-    documentId: ChildDocumentId
-): ProcessMetadataController.DocumentMetadata =
+fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): DocumentMetadata =
     createQuery {
             sql(
                 """
@@ -22,6 +20,8 @@ fun Database.Read.getChildDocumentMetadata(
             e.name AS created_by_name,
             e.type AS created_by_type,
             dt.confidential,
+            dt.confidentiality_duration_years,
+            dt.confidentiality_basis,
             cd.document_key
         FROM child_document cd
         JOIN document_template dt ON dt.id = cd.template_id
@@ -31,7 +31,7 @@ fun Database.Read.getChildDocumentMetadata(
             )
         }
         .map {
-            ProcessMetadataController.DocumentMetadata(
+            DocumentMetadata(
                 documentId = column("id"),
                 name = column("name"),
                 createdAt = column("created"),
@@ -44,6 +44,13 @@ fun Database.Read.getChildDocumentMetadata(
                         )
                     },
                 confidential = column("confidential"),
+                confidentiality =
+                    if (column<Boolean>("confidential")) {
+                        DocumentConfidentiality(
+                            durationYears = column("confidentiality_duration_years"),
+                            basis = column("confidentiality_basis"),
+                        )
+                    } else null,
                 downloadPath =
                     column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
                 receivedBy = null,

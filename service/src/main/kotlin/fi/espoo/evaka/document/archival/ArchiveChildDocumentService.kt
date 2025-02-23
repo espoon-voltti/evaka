@@ -73,7 +73,7 @@ class ArchiveChildDocumentService(
 
         internal fun createDocumentMetadata(
             document: ChildDocumentDetails,
-            documentMetadata: ProcessMetadataController.DocumentMetadata,
+            documentMetadata: DocumentMetadata,
             archivedProcess: ArchivedProcess?,
             filename: String,
             childIdentifier: ExternalIdentifier,

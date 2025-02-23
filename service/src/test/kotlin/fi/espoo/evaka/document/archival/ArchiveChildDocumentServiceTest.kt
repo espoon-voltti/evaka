@@ -13,8 +13,9 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.process.ArchivedProcess
 import fi.espoo.evaka.process.ArchivedProcessHistoryRow
 import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.ProcessMetadataController
-import fi.espoo.evaka.process.ProcessMetadataController.DocumentMetadata
+import fi.espoo.evaka.process.DocumentConfidentiality
+import fi.espoo.evaka.process.DocumentMetadata
+import fi.espoo.evaka.process.DocumentOrigin
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -131,7 +132,10 @@ class ArchiveChildDocumentServiceTest {
                         type = DocumentType.VASU,
                         placementTypes = setOf(PlacementType.PRESCHOOL),
                         language = OfficialLanguage.FI,
-                        confidential = true,
+                        confidentiality = DocumentConfidentiality(
+                            durationYears = 10,
+                            basis = "Laki § 123",
+                        ),
                         legalBasis = "",
                         validity = DateRange(start = LocalDate.parse("2022-08-01"), end = null),
                         published = true,
@@ -172,9 +176,13 @@ class ArchiveChildDocumentServiceTest {
                         type = EvakaUserType.EMPLOYEE,
                     ),
                 confidential = true,
+                confidentiality = DocumentConfidentiality(
+                    durationYears = 10,
+                    basis = "Laki § 123",
+                ),
                 downloadPath =
                     "/employee/child-documents/child-documents/child_document_c3cc95f8-f045-11ef-9114-87ea771c5c89.pdf/pdf",
-                receivedBy = ProcessMetadataController.DocumentOrigin.ELECTRONIC,
+                receivedBy = DocumentOrigin.ELECTRONIC,
             )
 
         val archivedProcess =

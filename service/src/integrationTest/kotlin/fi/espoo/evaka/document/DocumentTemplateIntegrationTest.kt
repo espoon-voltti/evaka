@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.childdocument.ChildDocumentController
 import fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -65,7 +66,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             type = DocumentType.PEDAGOGICAL_ASSESSMENT,
             placementTypes = PlacementType.entries.toSet(),
             language = OfficialLanguage.FI,
-            confidential = true,
+            confidentiality = DocumentConfidentiality(100, "Laki § 100"),
             legalBasis = "§42",
             validity = DateRange(LocalDate.of(2022, 7, 1), null),
             processDefinitionNumber = "123.456.789",
@@ -101,7 +102,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(testCreationRequest.name, created.name)
         assertEquals(testCreationRequest.type, created.type)
         assertEquals(testCreationRequest.language, created.language)
-        assertEquals(testCreationRequest.confidential, created.confidential)
+        assertEquals(testCreationRequest.confidentiality, created.confidentiality)
         assertEquals(testCreationRequest.legalBasis, created.legalBasis)
         assertEquals(testCreationRequest.validity, created.validity)
         assertEquals(testCreationRequest.processDefinitionNumber, created.processDefinitionNumber)
@@ -134,7 +135,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 name = "name2",
                 language = OfficialLanguage.SV,
                 type = DocumentType.PEDAGOGICAL_REPORT,
-                confidential = false,
+                confidentiality = null,
                 legalBasis = "$42b",
                 processDefinitionNumber = "123.456.789b",
                 archiveDurationMonths = 132,
@@ -157,7 +158,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 name = "name2",
                 language = OfficialLanguage.SV,
                 type = DocumentType.PEDAGOGICAL_REPORT,
-                confidential = false,
+                confidentiality = null,
                 legalBasis = "$42b",
                 content = testContent,
                 validity = newValidity,
@@ -282,7 +283,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     type = DocumentType.PEDAGOGICAL_REPORT,
                     placementTypes = PlacementType.entries.toSet(),
                     language = OfficialLanguage.SV,
-                    confidential = false,
+                    DocumentConfidentiality(100, "Laki § 100"),
                     legalBasis = "",
                     validity = newValidity,
                     processDefinitionNumber = "123.456.789b",
@@ -294,7 +295,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals("another", copy.name)
         assertEquals(DocumentType.PEDAGOGICAL_REPORT, copy.type)
         assertEquals(OfficialLanguage.SV, copy.language)
-        assertEquals(false, copy.confidential)
+        assertEquals(DocumentConfidentiality(100, "Laki § 100"), copy.confidentiality)
         assertEquals("", copy.legalBasis)
         assertEquals(newValidity, copy.validity)
         assertEquals("123.456.789b", copy.processDefinitionNumber)
