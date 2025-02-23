@@ -1117,7 +1117,7 @@ export class Fixture {
       ],
       language: 'FI',
       name: 'Pedagoginen selvitys',
-      confidential: true,
+      confidentiality: null,
       legalBasis: '§1',
       published: false,
       validity: new DateRange(LocalDate.of(2000, 1, 1), null),

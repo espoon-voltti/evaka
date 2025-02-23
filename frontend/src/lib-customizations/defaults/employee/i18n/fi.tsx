@@ -4950,6 +4950,8 @@ export const fi = {
       placementTypes: 'Käytössä sijoituksilla',
       language: 'Lomakkeen kieli',
       confidential: 'Lomake on salassapidettävä',
+      confidentialityDuration: 'Salassapitoaika (vuotta)',
+      confidentialityBasis: 'Salassapitoperuste (lakiviittaus)',
       legalBasis: 'Lait joihin lomake perustuu (vapaaehtoinen)',
       validity: 'Voimassa ajalla',
       processDefinitionNumber: 'Tehtäväluokka',
@@ -5156,6 +5158,9 @@ export const fi = {
     confidential: 'Salassapidettävä',
     public: 'Julkinen',
     notSet: 'Asettamatta',
+    confidentialityDuration: 'Salassapitoaika',
+    confidentialityBasis: 'Salassapitoperuste',
+    years: 'vuotta',
     receivedBy: {
       label: 'Saapumistapa',
       PAPER: 'Paperilla',

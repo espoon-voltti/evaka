@@ -12,8 +12,8 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateBasicsRequest)
     return createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, placement_types,  language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content) 
-VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
+INSERT INTO document_template (name, type, placement_types,  language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, content) 
+VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
 RETURNING *
 """
             )
@@ -25,8 +25,8 @@ fun Database.Transaction.importTemplate(template: ExportedDocumentTemplate): Doc
     createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, placement_types, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content)
-VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.content)})
+INSERT INTO document_template (name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, content)
+VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.content)})
 RETURNING *
 """
             )
@@ -40,8 +40,8 @@ fun Database.Transaction.duplicateTemplate(
     return createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, placement_types, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content) 
-SELECT ${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, content FROM document_template WHERE id = ${bind(id)}
+INSERT INTO document_template (name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, content) 
+SELECT ${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, content FROM document_template WHERE id = ${bind(id)}
 RETURNING *
 """
             )
@@ -92,7 +92,9 @@ fun Database.Transaction.updateDraftTemplateBasics(
                     type = ${bind(basics.type)},
                     placement_types = ${bind(basics.placementTypes)},
                     language = ${bind(basics.language)},
-                    confidential = ${bind(basics.confidential)},
+                    confidential = ${bind(basics.confidentiality != null)},
+                    confidentiality_duration_years = ${bind(basics.confidentiality?.durationYears)},
+                    confidentiality_basis = ${bind(basics.confidentiality?.basis)},
                     legal_basis = ${bind(basics.legalBasis)},
                     validity = ${bind(basics.validity)},
                     process_definition_number = ${bind(basics.processDefinitionNumber)},
