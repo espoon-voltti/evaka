@@ -43,11 +43,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "assistance_need_voucher_coefficient",
                 "attachment",
                 "backup_care",
-                "backup_curriculum_content",
-                "backup_curriculum_document",
-                "backup_curriculum_document_event",
-                "backup_curriculum_template",
-                "backup_messaging_blocklist",
                 "care_area",
                 "child_daily_note",
                 "child_document",
@@ -108,8 +103,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "staff_attendance_realtime",
                 "staff_occupancy_coefficient",
                 "vapid_jwt",
-                "varda_reset_child",
-                "varda_service_need",
                 "voucher_value_decision",
                 "voucher_value_report_snapshot",
             )
@@ -133,11 +126,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "assistance_need_voucher_coefficient",
                 "attachment",
                 "backup_care",
-                "backup_curriculum_content",
-                "backup_curriculum_document",
-                "backup_curriculum_document_event",
-                "backup_curriculum_template",
-                "backup_messaging_blocklist",
                 "care_area",
                 "child_daily_note",
                 "child_document",
@@ -198,13 +186,49 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "staff_attendance_realtime",
                 "staff_occupancy_coefficient",
                 "vapid_jwt",
-                "varda_reset_child",
-                "varda_service_need",
                 "voucher_value_decision",
             )
         val violations =
             columns.filter { it.ref.columnName == "updated" }.map { it.ref.tableName }.toSet()
         assertEquals(permittedViolations, violations)
+    }
+
+    @Test
+    fun `if a table has 'updated_at' column, it should have a trigger that calls 'trigger_refresh_updated_at'`() {
+        val tablesWithTrigger =
+            triggers
+                .filter {
+                    it.action.condition == null &&
+                        it.action.orientation == "ROW" &&
+                        it.action.timing == "BEFORE" &&
+                        it.action.statement == "EXECUTE FUNCTION trigger_refresh_updated_at()"
+                }
+                .map { it.tableName }
+                .toSet()
+        val tablesWithUpdatedAt =
+            columns.filter { it.ref.columnName == "updated_at" }.map { it.ref.tableName }.toSet()
+
+        val violations = tablesWithUpdatedAt - tablesWithTrigger
+        assertEquals(setOf(), violations)
+    }
+
+    @Test
+    fun `if a table has 'updated' column, it should have a trigger that calls 'trigger_refresh_updated'`() {
+        val tablesWithTrigger =
+            triggers
+                .filter {
+                    it.action.condition == null &&
+                        it.action.orientation == "ROW" &&
+                        it.action.timing == "BEFORE" &&
+                        it.action.statement == "EXECUTE FUNCTION trigger_refresh_updated()"
+                }
+                .map { it.tableName }
+                .toSet()
+        val tablesWithUpdated =
+            columns.filter { it.ref.columnName == "updated" }.map { it.ref.tableName }.toSet()
+
+        val violations = tablesWithUpdated - tablesWithTrigger
+        assertEquals(setOf(), violations)
     }
 
     @Test
@@ -227,11 +251,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 Column(
                     ColumnRef("backup_care", "created"),
-                    "timestamp with time zone",
-                    nullable = true,
-                ),
-                Column(
-                    ColumnRef("backup_messaging_blocklist", "created"),
                     "timestamp with time zone",
                     nullable = true,
                 ),
@@ -305,11 +324,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 Column(
                     ColumnRef("backup_care", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true,
-                ),
-                Column(
-                    ColumnRef("backup_messaging_blocklist", "updated"),
                     dataType = "timestamp with time zone",
                     nullable = true,
                 ),
@@ -539,7 +553,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 ColumnRef("assistance_need_decision", "validity_period"),
                 ColumnRef("assistance_need_voucher_coefficient", "validity_period"),
-                ColumnRef("backup_curriculum_template", "valid"),
                 ColumnRef("calendar_event", "period"),
                 ColumnRef("daily_service_time", "validity_period"),
                 ColumnRef("daycare", "club_apply_period"),
@@ -635,6 +648,15 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val checkClause: String,
     )
 
+    data class TriggerAction(
+        val condition: String?,
+        val statement: String,
+        val orientation: String,
+        val timing: String,
+    )
+
+    data class Trigger(val tableName: String, @Nested("action_") val action: TriggerAction)
+
     private lateinit var columns: List<Column>
 
     private lateinit var foreignKeys: List<ForeignKey>
@@ -642,6 +664,8 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var indices: List<Index>
 
     private lateinit var checkConstraints: List<CheckConstraint>
+
+    private lateinit var triggers: List<Trigger>
 
     @BeforeAll
     override fun beforeAll() {
@@ -750,6 +774,17 @@ WHERE con.contype = 'c'
                         )
                     }
                     .toList<CheckConstraint>()
+            triggers =
+                tx.createQuery {
+                        sql(
+                            """
+SELECT event_object_table AS table_name, action_condition, action_statement, action_orientation, action_timing
+FROM information_schema.triggers
+WHERE event_object_schema = 'public'
+"""
+                        )
+                    }
+                    .toList<Trigger>()
         }
     }
 }
