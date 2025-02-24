@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
@@ -603,6 +604,7 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
         }
 
     val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet()
+    val childOperationalDates = this.getOperationalDatesForChildren(range, childIds)
 
     val childBirthdays =
         this.createQuery {
@@ -740,6 +742,16 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                     val placementsOnDate =
                         (placementsAndPlans[key.groupingId] ?: listOf())
                             .filter { it.period.includes(date) }
+                            .filter {
+                                val serviceNeedIsKnown =
+                                    serviceNeeds[it.placementId]?.any { sn ->
+                                        sn.period.includes(date)
+                                    } ?: false
+                                val ignoreChildOperationDays =
+                                    !serviceNeedIsKnown && type != OccupancyType.REALIZED
+                                ignoreChildOperationDays ||
+                                    childOperationalDates[it.childId]?.contains(date) == true
+                            }
                             .filterNot {
                                 childWasAbsentWholeDay(
                                     date,
