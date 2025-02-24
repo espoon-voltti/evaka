@@ -18,6 +18,7 @@ import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.reflect.full.memberProperties
 import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getStaffAttendances(
@@ -160,14 +161,10 @@ data class StaffAttendanceRealtimeAudit(
     companion object {
         val fields =
             StaffAttendanceRealtimeAudit::id to
-                mapOf(
-                    "employeeId" to StaffAttendanceRealtimeAudit::employeeId,
-                    "groupId" to StaffAttendanceRealtimeAudit::groupId,
-                    "arrived" to StaffAttendanceRealtimeAudit::arrived,
-                    "departed" to StaffAttendanceRealtimeAudit::departed,
-                    "occupancyCoefficient" to StaffAttendanceRealtimeAudit::occupancyCoefficient,
-                    "type" to StaffAttendanceRealtimeAudit::type,
-                )
+                StaffAttendanceRealtimeAudit::class
+                    .memberProperties
+                    .filter { it.name != "id" }
+                    .associateBy { it.name }
 
         fun empty() =
             StaffAttendanceRealtimeAudit(
