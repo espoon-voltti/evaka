@@ -125,24 +125,29 @@ const Report = React.memo(function Report({
           rows ? (
             <>
               <ReportDownload
-                data={[
-                  [
-                    i18n.reports.common.childName,
-                    i18n.reports.exceededServiceNeed.serviceNeedHours,
-                    i18n.reports.exceededServiceNeed.usedServiceHours,
-                    i18n.reports.exceededServiceNeed.excessHours
-                  ],
-                  ...rows.map((row) => [
-                    formatName(
-                      row.childFirstName,
-                      row.childLastName,
-                      i18n,
-                      true
-                    ),
-                    row.serviceNeedHoursPerMonth,
-                    row.usedServiceHours,
-                    row.excessHours
-                  ])
+                data={rows.map((row) => ({
+                  childName: formatName(
+                    row.childFirstName,
+                    row.childLastName,
+                    i18n,
+                    true
+                  ),
+                  ...row
+                }))}
+                headers={[
+                  { key: 'childName', label: i18n.reports.common.childName },
+                  {
+                    key: 'serviceNeedHoursPerMonth',
+                    label: i18n.reports.exceededServiceNeed.serviceNeedHours
+                  },
+                  {
+                    key: 'usedServiceHours',
+                    label: i18n.reports.exceededServiceNeed.usedServiceHours
+                  },
+                  {
+                    key: 'excessHours',
+                    label: i18n.reports.exceededServiceNeed.excessHours
+                  }
                 ]}
                 filename={() => {
                   if (!params || !unitName)
