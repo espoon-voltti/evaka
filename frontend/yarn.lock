@@ -3307,10 +3307,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/babel-plugin-component-annotate@npm:3.1.0":
-  version: 3.1.0
-  resolution: "@sentry/babel-plugin-component-annotate@npm:3.1.0"
-  checksum: 10/a5950a99aeb45a3f586fbd4fb4c5ccb5825129a6e5677535c6b7682f3c14764732665a4b9f115d17b3a3d3c9d0668014948dca27ccdca79011a81019c40fca7f
+"@sentry/babel-plugin-component-annotate@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@sentry/babel-plugin-component-annotate@npm:3.2.0"
+  checksum: 10/30aa291dd0699c24fb7753332517b0d6985b061bf079349f04166af94115598fcf9f20038b5e8511d860bea048b5154c5cbaed301e22bf037fd0a3a0e7def83e
   languageName: node
   linkType: hard
 
@@ -3327,82 +3327,82 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/bundler-plugin-core@npm:3.1.0":
-  version: 3.1.0
-  resolution: "@sentry/bundler-plugin-core@npm:3.1.0"
+"@sentry/bundler-plugin-core@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@sentry/bundler-plugin-core@npm:3.2.0"
   dependencies:
     "@babel/core": "npm:^7.18.5"
-    "@sentry/babel-plugin-component-annotate": "npm:3.1.0"
-    "@sentry/cli": "npm:2.39.1"
+    "@sentry/babel-plugin-component-annotate": "npm:3.2.0"
+    "@sentry/cli": "npm:2.41.1"
     dotenv: "npm:^16.3.1"
     find-up: "npm:^5.0.0"
     glob: "npm:^9.3.2"
     magic-string: "npm:0.30.8"
     unplugin: "npm:1.0.1"
-  checksum: 10/4dc9744d9b2230ee4e429b230ec4d59a88b14993c0372d4117e38f733f3d4d23c58d4dc74fe138a74293fcc0143eaebd26bb024ab9e322677b2c9ad381965091
+  checksum: 10/8bc2190de0902f7323d08e1876e11c51200eec9c0cd766a248890ff58b2227c12e0548f2686d8f381d09cb909cf6d307ca975d0170e7c5c4a9445617023fcbbd
   languageName: node
   linkType: hard
 
-"@sentry/cli-darwin@npm:2.39.1":
-  version: 2.39.1
-  resolution: "@sentry/cli-darwin@npm:2.39.1"
+"@sentry/cli-darwin@npm:2.41.1":
+  version: 2.41.1
+  resolution: "@sentry/cli-darwin@npm:2.41.1"
   conditions: os=darwin
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-arm64@npm:2.39.1":
-  version: 2.39.1
-  resolution: "@sentry/cli-linux-arm64@npm:2.39.1"
+"@sentry/cli-linux-arm64@npm:2.41.1":
+  version: 2.41.1
+  resolution: "@sentry/cli-linux-arm64@npm:2.41.1"
   conditions: (os=linux | os=freebsd) & cpu=arm64
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-arm@npm:2.39.1":
-  version: 2.39.1
-  resolution: "@sentry/cli-linux-arm@npm:2.39.1"
+"@sentry/cli-linux-arm@npm:2.41.1":
+  version: 2.41.1
+  resolution: "@sentry/cli-linux-arm@npm:2.41.1"
   conditions: (os=linux | os=freebsd) & cpu=arm
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-i686@npm:2.39.1":
-  version: 2.39.1
-  resolution: "@sentry/cli-linux-i686@npm:2.39.1"
+"@sentry/cli-linux-i686@npm:2.41.1":
+  version: 2.41.1
+  resolution: "@sentry/cli-linux-i686@npm:2.41.1"
   conditions: (os=linux | os=freebsd) & (cpu=x86 | cpu=ia32)
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-x64@npm:2.39.1":
-  version: 2.39.1
-  resolution: "@sentry/cli-linux-x64@npm:2.39.1"
+"@sentry/cli-linux-x64@npm:2.41.1":
+  version: 2.41.1
+  resolution: "@sentry/cli-linux-x64@npm:2.41.1"
   conditions: (os=linux | os=freebsd) & cpu=x64
   languageName: node
   linkType: hard
 
-"@sentry/cli-win32-i686@npm:2.39.1":
-  version: 2.39.1
-  resolution: "@sentry/cli-win32-i686@npm:2.39.1"
+"@sentry/cli-win32-i686@npm:2.41.1":
+  version: 2.41.1
+  resolution: "@sentry/cli-win32-i686@npm:2.41.1"
   conditions: os=win32 & (cpu=x86 | cpu=ia32)
   languageName: node
   linkType: hard
 
-"@sentry/cli-win32-x64@npm:2.39.1":
-  version: 2.39.1
-  resolution: "@sentry/cli-win32-x64@npm:2.39.1"
+"@sentry/cli-win32-x64@npm:2.41.1":
+  version: 2.41.1
+  resolution: "@sentry/cli-win32-x64@npm:2.41.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@sentry/cli@npm:2.39.1":
-  version: 2.39.1
-  resolution: "@sentry/cli@npm:2.39.1"
+"@sentry/cli@npm:2.41.1":
+  version: 2.41.1
+  resolution: "@sentry/cli@npm:2.41.1"
   dependencies:
-    "@sentry/cli-darwin": "npm:2.39.1"
-    "@sentry/cli-linux-arm": "npm:2.39.1"
-    "@sentry/cli-linux-arm64": "npm:2.39.1"
-    "@sentry/cli-linux-i686": "npm:2.39.1"
-    "@sentry/cli-linux-x64": "npm:2.39.1"
-    "@sentry/cli-win32-i686": "npm:2.39.1"
-    "@sentry/cli-win32-x64": "npm:2.39.1"
+    "@sentry/cli-darwin": "npm:2.41.1"
+    "@sentry/cli-linux-arm": "npm:2.41.1"
+    "@sentry/cli-linux-arm64": "npm:2.41.1"
+    "@sentry/cli-linux-i686": "npm:2.41.1"
+    "@sentry/cli-linux-x64": "npm:2.41.1"
+    "@sentry/cli-win32-i686": "npm:2.41.1"
+    "@sentry/cli-win32-x64": "npm:2.41.1"
     https-proxy-agent: "npm:^5.0.0"
     node-fetch: "npm:^2.6.7"
     progress: "npm:^2.0.3"
@@ -3425,7 +3425,7 @@ __metadata:
       optional: true
   bin:
     sentry-cli: bin/sentry-cli
-  checksum: 10/b3d85acfbe6814df5d660ead9415558901eb005bbad3c42c74c9b444114a4fd7757d30d88b41e1e8546de4b76761dab56628328eec5ea5176caef4305381c74a
+  checksum: 10/acfec8a360293f06bd0e5f2f3d066b16dda517df7feffd161351bc1797f6e68f0ffe89849ed59f30d2df18654f5b0d9950031ec5c2cde2b4dcc72d0dd618e19f
   languageName: node
   linkType: hard
 
@@ -3449,16 +3449,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/webpack-plugin@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "@sentry/webpack-plugin@npm:3.1.0"
+"@sentry/webpack-plugin@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@sentry/webpack-plugin@npm:3.2.0"
   dependencies:
-    "@sentry/bundler-plugin-core": "npm:3.1.0"
+    "@sentry/bundler-plugin-core": "npm:3.2.0"
     unplugin: "npm:1.0.1"
     uuid: "npm:^9.0.0"
   peerDependencies:
     webpack: ">=4.40.0"
-  checksum: 10/c6860dc01491e17be4cf7b3ab2220ff16644c12aced1a456cca1ec0cfabecd8decc72e3212fce9268ba5432297f44d7380ffdcbb4ddec11f16ac90a858dfadbd
+  checksum: 10/06f8f96b92c92071c37788ec94dc40b29de37b3d250e521eab3ff21ce593fddf225e5cedbae032df7f394d310b7cd53a627b19234ddff89315b892a12a262497
   languageName: node
   linkType: hard
 
@@ -6801,7 +6801,7 @@ __metadata:
     "@react-spring/web": "npm:^9.7.3"
     "@sentry/browser": "npm:^9.1.0"
     "@sentry/react": "npm:^9.1.0"
-    "@sentry/webpack-plugin": "npm:^3.1.0"
+    "@sentry/webpack-plugin": "npm:^3.2.0"
     "@tanstack/react-query": "npm:^5.62.0"
     "@testing-library/dom": "npm:^10.4.0"
     "@testing-library/jest-dom": "npm:^6.6.3"
