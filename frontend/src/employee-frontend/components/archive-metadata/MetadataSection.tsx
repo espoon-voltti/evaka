@@ -122,6 +122,14 @@ export default React.memo(function MetadataSection({
                   label: i18n.metadata.processNumber,
                   value: metadata.process.processNumber
                 },
+                ...(metadata.processName
+                  ? [
+                      {
+                        label: i18n.metadata.processName,
+                        value: metadata.processName
+                      }
+                    ]
+                  : []),
                 {
                   label: i18n.metadata.organization,
                   value: metadata.process.organization

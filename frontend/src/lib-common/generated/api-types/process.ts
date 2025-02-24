@@ -69,6 +69,7 @@ export type DocumentOrigin =
 export interface ProcessMetadata {
   primaryDocument: DocumentMetadata
   process: ArchivedProcess
+  processName: string | null
   secondaryDocuments: DocumentMetadata[]
 }
 

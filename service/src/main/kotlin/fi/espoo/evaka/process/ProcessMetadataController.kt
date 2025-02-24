@@ -8,7 +8,10 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.childdocument.getChildDocument
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -21,6 +24,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.user.EvakaUser
@@ -37,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController
 class ProcessMetadataController(private val accessControl: AccessControl) {
     data class ProcessMetadata(
         val process: ArchivedProcess,
+        val processName: String?,
         val primaryDocument: DocumentMetadata,
         val secondaryDocuments: List<DocumentMetadata>,
     )
@@ -79,10 +84,28 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     val process =
                         tx.getArchiveProcessByChildDocumentId(childDocumentId)
                             ?: return@read ProcessMetadataResponse(null)
+                    val type =
+                        tx.getChildDocument(childDocumentId)?.template?.type ?: throw NotFound()
                     val document = tx.getChildDocumentMetadata(childDocumentId)
                     ProcessMetadataResponse(
                         ProcessMetadata(
                             process = process,
+                            processName =
+                                when (type) {
+                                    DocumentType.VASU,
+                                    DocumentType.MIGRATED_VASU ->
+                                        "Lapsen varhaiskasvatussuunnitelma"
+                                    DocumentType.LEOPS,
+                                    DocumentType.MIGRATED_LEOPS ->
+                                        "Lapsen esiopetuksen oppimissuunnitelma"
+                                    DocumentType.HOJKS ->
+                                        "Henkilökohtainen opetuksen järjestämistä koskeva suunnitelma"
+                                    DocumentType.PEDAGOGICAL_ASSESSMENT ->
+                                        "Esiopetuksen pedagoginen arvio"
+                                    DocumentType.PEDAGOGICAL_REPORT ->
+                                        "Esiopetuksen pedagoginen selvitys"
+                                    else -> null
+                                },
                             primaryDocument =
                                 document.copy(
                                     downloadPath =
@@ -133,6 +156,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     ProcessMetadataResponse(
                         ProcessMetadata(
                             process = process,
+                            processName = "Varhaiskasvatuksen tuen päätös",
                             primaryDocument =
                                 decisionDocument.copy(
                                     downloadPath =
@@ -184,6 +208,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     ProcessMetadataResponse(
                         ProcessMetadata(
                             process = process,
+                            processName = "Esiopetuksen tuen päätös",
                             primaryDocument =
                                 decisionDocument.copy(
                                     downloadPath =
@@ -229,6 +254,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     val process =
                         tx.getArchiveProcessByApplicationId(applicationId)
                             ?: return@read ProcessMetadataResponse(null)
+                    val application = tx.fetchApplicationDetails(applicationId) ?: throw NotFound()
                     val applicationDocument = tx.getApplicationDocumentMetadata(applicationId)
                     val decisionDocuments =
                         tx.getSentDecisionIdsByApplication(applicationId).map {
@@ -238,6 +264,14 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     ProcessMetadataResponse(
                         ProcessMetadata(
                             process = process,
+                            processName =
+                                when (application.type) {
+                                    ApplicationType.CLUB -> "Kerhohakemus"
+                                    ApplicationType.DAYCARE ->
+                                        "Varhaiskasvatushakemus / palvelusetelihakemus varhaiskasvatukseen"
+                                    ApplicationType.PRESCHOOL ->
+                                        "Esiopetushakemus / hakemus esiopetuksessa järjestettävään perusopetukseen valmistavaan opetukseen"
+                                },
                             primaryDocument = applicationDocument,
                             secondaryDocuments =
                                 decisionDocuments.map { (decisionId, doc) ->
@@ -290,6 +324,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     ProcessMetadataResponse(
                         ProcessMetadata(
                             process = process,
+                            processName = "Varhaiskasvatuksen maksupäätös",
                             primaryDocument = decisionDocument,
                             secondaryDocuments = emptyList(),
                         )
@@ -329,6 +364,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     ProcessMetadataResponse(
                         ProcessMetadata(
                             process = process,
+                            processName = "Varhaiskasvatuksen palvelusetelin arvopäätös",
                             primaryDocument = decisionDocument,
                             secondaryDocuments = emptyList(),
                         )

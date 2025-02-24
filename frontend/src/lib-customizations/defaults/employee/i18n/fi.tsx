@@ -5142,6 +5142,7 @@ export const fi = {
     title: 'Arkistoitava metadata',
     notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
     processNumber: 'Asianumero',
+    processName: 'Asiaprosessi',
     organization: 'Organisaatio',
     archiveDurationMonths: 'Arkistointiaika',
     primaryDocument: 'Ensisijainen asiakirja',
