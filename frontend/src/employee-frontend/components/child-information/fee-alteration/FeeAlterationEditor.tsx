@@ -196,7 +196,7 @@ function FeeAlterationAttachments({
   onUploaded,
   onDeleted
 }: {
-  feeAlterationId: UUID | null
+  feeAlterationId: FeeAlterationId | null
   attachments: Attachment[]
   onUploaded: (attachment: Attachment) => void
   onDeleted: (id: UUID) => void

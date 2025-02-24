@@ -508,7 +508,7 @@ function EmployeeAttachments({
   onUploaded,
   onDeleted
 }: {
-  incomeStatementId: UUID
+  incomeStatementId: IncomeStatementId
   attachments: Attachment[]
   onUploaded: (attachment: Attachment) => void
   onDeleted: (id: UUID) => void

@@ -5,16 +5,20 @@
 import * as fs from 'fs/promises'
 
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
 import { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import {
+  ApplicationId,
+  EmployeeId,
+  PedagogicalDocumentId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../config'
 import {
   createDefaultPlacementPlan,
+  createPedagogicalDocumentAttachment,
   runJobs,
   simpleAction
 } from '../generated/api-clients'
@@ -111,24 +115,15 @@ export const vtjDependants = (
 }
 
 export async function insertPedagogicalDocumentAttachment(
-  pedagogicalDocumentId: string,
-  employeeId: string,
+  pedagogicalDocumentId: PedagogicalDocumentId,
+  employeeId: EmployeeId,
   fileName: string,
   filePath: string
 ): Promise<string> {
   const file = await fs.readFile(`${filePath}/${fileName}`)
-  const form = new FormData()
-  form.append('file', file, fileName)
-  form.append('employeeId', employeeId)
-  try {
-    return await devClient
-      .post<string>(
-        `/pedagogical-document-attachment/${pedagogicalDocumentId}`,
-        form,
-        { headers: form.getHeaders() }
-      )
-      .then((res) => res.data)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
+  return await createPedagogicalDocumentAttachment({
+    pedagogicalDocumentId,
+    file: new File([file], fileName),
+    employeeId
+  })
 }

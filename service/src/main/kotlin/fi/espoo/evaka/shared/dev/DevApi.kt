@@ -1451,8 +1451,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
 
-    @Suppress("EmailMessageType", "ktlint:standard:enum-entry-name-case")
-    enum class EmailMessageType {
+    @Suppress("EmailMessageFilter", "ktlint:standard:enum-entry-name-case")
+    enum class EmailMessageFilter {
         pendingDecisionNotification,
         clubApplicationReceived,
         daycareApplicationReceived,
@@ -1475,29 +1475,29 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
 
     @GetMapping("/email-content", produces = [MediaType.TEXT_HTML_VALUE])
     fun getEmails(
-        @RequestParam message: EmailMessageType = EmailMessageType.pendingDecisionNotification,
+        @RequestParam message: EmailMessageFilter = EmailMessageFilter.pendingDecisionNotification,
         @RequestParam format: String = "html",
     ): ByteArray {
         val emailContent =
             when (message) {
-                EmailMessageType.pendingDecisionNotification ->
+                EmailMessageFilter.pendingDecisionNotification ->
                     emailMessageProvider.pendingDecisionNotification(Language.fi)
-                EmailMessageType.clubApplicationReceived ->
+                EmailMessageFilter.clubApplicationReceived ->
                     emailMessageProvider.clubApplicationReceived(Language.fi)
-                EmailMessageType.daycareApplicationReceived ->
+                EmailMessageFilter.daycareApplicationReceived ->
                     emailMessageProvider.daycareApplicationReceived(Language.fi)
-                EmailMessageType.preschoolApplicationReceived ->
+                EmailMessageFilter.preschoolApplicationReceived ->
                     emailMessageProvider.preschoolApplicationReceived(Language.fi, true)
-                EmailMessageType.assistanceNeedDecisionNotification ->
+                EmailMessageFilter.assistanceNeedDecisionNotification ->
                     emailMessageProvider.assistanceNeedDecisionNotification(Language.fi)
-                EmailMessageType.assistanceNeedPreschoolDecisionNotification ->
+                EmailMessageFilter.assistanceNeedPreschoolDecisionNotification ->
                     emailMessageProvider.assistanceNeedPreschoolDecisionNotification(Language.fi)
-                EmailMessageType.missingReservationsNotification ->
+                EmailMessageFilter.missingReservationsNotification ->
                     emailMessageProvider.missingReservationsNotification(
                         Language.fi,
                         FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now()),
                     )
-                EmailMessageType.messageNotification ->
+                EmailMessageFilter.messageNotification ->
                     emailMessageProvider.messageNotification(
                         Language.fi,
                         MessageThreadData(
@@ -1511,17 +1511,17 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             isCopy = false,
                         ),
                     )
-                EmailMessageType.pedagogicalDocumentNotification ->
+                EmailMessageFilter.pedagogicalDocumentNotification ->
                     emailMessageProvider.pedagogicalDocumentNotification(
                         Language.fi,
                         ChildId(UUID.randomUUID()),
                     )
-                EmailMessageType.outdatedIncomeNotification ->
+                EmailMessageFilter.outdatedIncomeNotification ->
                     emailMessageProvider.incomeNotification(
                         IncomeNotificationType.INITIAL_EMAIL,
                         Language.fi,
                     )
-                EmailMessageType.calendarEventNotification ->
+                EmailMessageFilter.calendarEventNotification ->
                     emailMessageProvider.calendarEventNotification(
                         Language.fi,
                         listOf(
@@ -1538,11 +1538,11 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             ),
                         ),
                     )
-                EmailMessageType.financeDecisionNotification ->
+                EmailMessageFilter.financeDecisionNotification ->
                     emailMessageProvider.financeDecisionNotification(
                         FinanceDecisionType.FEE_DECISION
                     )
-                EmailMessageType.discussionTimeReservation ->
+                EmailMessageFilter.discussionTimeReservation ->
                     emailMessageProvider.discussionSurveyReservationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
@@ -1556,7 +1556,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 )
                         ),
                     )
-                EmailMessageType.discussionTimeCancellation ->
+                EmailMessageFilter.discussionTimeCancellation ->
                     emailMessageProvider.discussionSurveyReservationCancellationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
@@ -1570,7 +1570,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 )
                         ),
                     )
-                EmailMessageType.discussionTimeReservationReminder ->
+                EmailMessageFilter.discussionTimeReservationReminder ->
                     emailMessageProvider.discussionTimeReservationReminder(
                         Language.fi,
                         DiscussionTimeReminderData(
@@ -1579,7 +1579,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             endTime = LocalTime.of(12, 50),
                         ),
                     )
-                EmailMessageType.discussionSurveyCreation ->
+                EmailMessageFilter.discussionSurveyCreation ->
                     emailMessageProvider.discussionSurveyCreationNotification(
                         Language.fi,
                         DiscussionSurveyCreationNotificationData(
@@ -1591,12 +1591,12 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 ),
                         ),
                     )
-                EmailMessageType.serviceApplicationAcceptedNotification ->
+                EmailMessageFilter.serviceApplicationAcceptedNotification ->
                     emailMessageProvider.serviceApplicationDecidedNotification(
                         accepted = true,
                         startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
                     )
-                EmailMessageType.serviceApplicationRejectedNotification ->
+                EmailMessageFilter.serviceApplicationRejectedNotification ->
                     emailMessageProvider.serviceApplicationDecidedNotification(
                         accepted = false,
                         startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
@@ -1608,7 +1608,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                 "<div style=\"font-family: monospace; white-space: pre-wrap\">${emailContent.text}</div>"
 
         val options =
-            EmailMessageType.values().joinToString("") {
+            EmailMessageFilter.values().joinToString("") {
                 "<option value=\"$it\" ${if (it == message) "selected" else ""}>$it</option>"
             }
         val form =

@@ -1055,11 +1055,10 @@ WHERE id = ${bind(id)}
         user: AuthenticatedUser.Citizen = citizen,
         attachmentType: IncomeStatementAttachmentType? = IncomeStatementAttachmentType.OTHER,
     ): AttachmentId {
-        return attachmentsController.uploadIncomeStatementAttachmentCitizen(
+        return attachmentsController.uploadOrphanIncomeStatementAttachmentCitizen(
             dbInstance(),
             user,
             clock,
-            incomeStatementId = null,
             attachmentType = attachmentType,
             file = MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )

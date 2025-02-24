@@ -444,7 +444,7 @@ const ChildDocumentReadViewInner = React.memo(
                 <FlexRow justifyContent="flex-end">
                   <a
                     href={downloadChildDocument({
-                      id: document.id
+                      documentId: document.id
                     }).url.toString()}
                     target="_blank"
                     rel="noreferrer"
