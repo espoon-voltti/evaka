@@ -2,14 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
-
-import { API_URL } from '../client'
+import { getAttachment } from 'employee-mobile-frontend/generated/api-clients/attachment'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
 
 export function getAttachmentUrl(
-  attachmentId: UUID,
+  attachmentId: AttachmentId,
   requestedFilename: string
 ): string {
-  const encodedFilename = encodeURIComponent(requestedFilename)
-  return `${API_URL}/employee-mobile/attachments/${attachmentId}/download/${encodedFilename}`
+  return getAttachment({ attachmentId, requestedFilename }).url.toString()
 }

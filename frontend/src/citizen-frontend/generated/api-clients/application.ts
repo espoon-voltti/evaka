@@ -14,12 +14,16 @@ import { ApplicationsOfChild } from 'lib-common/generated/api-types/application'
 import { CitizenApplicationUpdate } from 'lib-common/generated/api-types/application'
 import { CitizenChildren } from 'lib-common/generated/api-types/application'
 import { CreateApplicationBody } from 'lib-common/generated/api-types/application'
+import { DecisionId } from 'lib-common/generated/api-types/shared'
 import { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { RejectDecisionRequest } from 'lib-common/generated/api-types/application'
+import { Uri } from 'lib-common/uri'
+import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { deserializeJsonApplicationDecisions } from 'lib-common/generated/api-types/application'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
@@ -78,6 +82,48 @@ export async function deleteOrCancelUnprocessedApplication(
     method: 'DELETE'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.downloadDecisionPdf
+*/
+export function downloadDecisionPdf(
+  request: {
+    id: DecisionId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/citizen/decisions/${request.id}/download`
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.downloadFeeDecisionPdf
+*/
+export function downloadFeeDecisionPdf(
+  request: {
+    id: FeeDecisionId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/citizen/fee-decisions/${request.id}/download`
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.downloadVoucherValueDecisionPdf
+*/
+export function downloadVoucherValueDecisionPdf(
+  request: {
+    id: VoucherValueDecisionId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/citizen/voucher-value-decisions/${request.id}/download`
+  }
 }
 
 

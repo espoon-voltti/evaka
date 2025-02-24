@@ -5,7 +5,6 @@
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 
-import { client } from '../client'
 import { getChildren } from '../generated/api-clients/attendance'
 
 export async function getUnitChildren(
@@ -28,23 +27,4 @@ function compareByProperty(
     return 1
   }
   return 0
-}
-
-export async function uploadChildImage({
-  childId,
-  file
-}: {
-  childId: string
-  file: File
-}): Promise<void> {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  return client
-    .put(`/employee-mobile/children/${childId}/image`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-    .then(() => undefined)
 }
