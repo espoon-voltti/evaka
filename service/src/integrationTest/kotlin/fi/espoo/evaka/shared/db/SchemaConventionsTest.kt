@@ -194,6 +194,44 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     }
 
     @Test
+    fun `if a table has 'updated_at' column, it should have a trigger that calls 'trigger_refresh_updated_at'`() {
+        val tablesWithTrigger =
+            triggers
+                .filter {
+                    it.action.condition == null &&
+                        it.action.orientation == "ROW" &&
+                        it.action.timing == "BEFORE" &&
+                        it.action.statement == "EXECUTE FUNCTION trigger_refresh_updated_at()"
+                }
+                .map { it.tableName }
+                .toSet()
+        val tablesWithUpdatedAt =
+            columns.filter { it.ref.columnName == "updated_at" }.map { it.ref.tableName }.toSet()
+
+        val violations = tablesWithUpdatedAt - tablesWithTrigger
+        assertEquals(setOf(), violations)
+    }
+
+    @Test
+    fun `if a table has 'updated' column, it should have a trigger that calls 'trigger_refresh_updated'`() {
+        val tablesWithTrigger =
+            triggers
+                .filter {
+                    it.action.condition == null &&
+                        it.action.orientation == "ROW" &&
+                        it.action.timing == "BEFORE" &&
+                        it.action.statement == "EXECUTE FUNCTION trigger_refresh_updated()"
+                }
+                .map { it.tableName }
+                .toSet()
+        val tablesWithUpdated =
+            columns.filter { it.ref.columnName == "updated" }.map { it.ref.tableName }.toSet()
+
+        val violations = tablesWithUpdated - tablesWithTrigger
+        assertEquals(setOf(), violations)
+    }
+
+    @Test
     fun `modification timestamp should be called 'modified_at' instead of 'modified'`() {
         val permittedViolations =
             setOf(
@@ -610,6 +648,15 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val checkClause: String,
     )
 
+    data class TriggerAction(
+        val condition: String?,
+        val statement: String,
+        val orientation: String,
+        val timing: String,
+    )
+
+    data class Trigger(val tableName: String, @Nested("action_") val action: TriggerAction)
+
     private lateinit var columns: List<Column>
 
     private lateinit var foreignKeys: List<ForeignKey>
@@ -617,6 +664,8 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var indices: List<Index>
 
     private lateinit var checkConstraints: List<CheckConstraint>
+
+    private lateinit var triggers: List<Trigger>
 
     @BeforeAll
     override fun beforeAll() {
@@ -725,6 +774,17 @@ WHERE con.contype = 'c'
                         )
                     }
                     .toList<CheckConstraint>()
+            triggers =
+                tx.createQuery {
+                        sql(
+                            """
+SELECT event_object_table AS table_name, action_condition, action_statement, action_orientation, action_timing
+FROM information_schema.triggers
+WHERE event_object_schema = 'public'
+"""
+                        )
+                    }
+                    .toList<Trigger>()
         }
     }
 }
