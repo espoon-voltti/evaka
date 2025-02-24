@@ -80,7 +80,8 @@ fun Database.Read.getUnreadMessagesCounts(
         LEFT JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
-        WHERE ${predicate(idFilter.forTable("acc"))}
+        LEFT JOIN message_thread_folder mtf ON mtp.folder_id = mtf.id
+        WHERE ${predicate(idFilter.forTable("acc"))} AND (mtf.id IS NULL OR mtf.name != 'ARCHIVE')
         GROUP BY acc.id, mt.is_copy, mtp.folder_id
         """
                 )
