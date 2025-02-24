@@ -14,16 +14,12 @@ import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { API_URL } from '../../api/client'
 import LabelValueList from '../../components/common/LabelValueList'
 import WarningLabel from '../../components/common/WarningLabel'
+import { getVoucherValueDecisionPdf } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { TypeSelect } from '../fee-decision-details/TypeSelect'
-
-function getVoucherValueDecisionPdfUrl(decisionId: string): string {
-  return `${API_URL}/employee/value-decisions/pdf/${decisionId}`
-}
 
 type Props = {
   decision: VoucherValueDecisionDetailed
@@ -53,7 +49,10 @@ export default React.memo(function VoucherValueDecisionHeading({
   const { i18n } = useTranslation()
 
   const pdfLink = documentKey ? (
-    <a href={getVoucherValueDecisionPdfUrl(id)} download>
+    <a
+      href={getVoucherValueDecisionPdf({ decisionId: id }).url.toString()}
+      download
+    >
       {i18n.valueDecision.downloadPdf}
     </a>
   ) : (

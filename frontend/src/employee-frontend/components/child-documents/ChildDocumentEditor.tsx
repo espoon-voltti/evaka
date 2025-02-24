@@ -50,12 +50,15 @@ import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
-import { faFilePdf } from 'lib-icons'
-import { faExclamationTriangle } from 'lib-icons'
-import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
-import { faBoxArchive } from 'lib-icons'
+import {
+  faBoxArchive,
+  faExclamationTriangle,
+  faFilePdf,
+  fasCheckCircle,
+  fasExclamationTriangle
+} from 'lib-icons'
 
-import { API_URL } from '../../api/client'
+import { downloadChildDocument } from '../../generated/api-clients/document'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import MetadataSection from '../archive-metadata/MetadataSection'
@@ -440,7 +443,9 @@ const ChildDocumentReadViewInner = React.memo(
               <Container>
                 <FlexRow justifyContent="flex-end">
                   <a
-                    href={`${API_URL}/employee/child-documents/${document.id}/pdf`}
+                    href={downloadChildDocument({
+                      id: document.id
+                    }).url.toString()}
                     target="_blank"
                     rel="noreferrer"
                   >

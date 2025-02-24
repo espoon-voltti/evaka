@@ -9,9 +9,12 @@ import { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
 
-import { deleteAttachment } from '../generated/api-clients/attachment'
+import {
+  deleteAttachment,
+  getAttachment
+} from '../generated/api-clients/attachment'
 
-import { API_URL, client } from './client'
+import { client } from './client'
 
 function uploadHandler(config: {
   path: string
@@ -101,9 +104,8 @@ export function pedagogicalDocumentAttachment(documentId: UUID): UploadHandler {
 }
 
 export function getAttachmentUrl(
-  attachmentId: UUID,
+  attachmentId: AttachmentId,
   requestedFilename: string
 ): string {
-  const encodedFilename = encodeURIComponent(requestedFilename)
-  return `${API_URL}/employee/attachments/${attachmentId}/download/${encodedFilename}`
+  return getAttachment({ attachmentId, requestedFilename }).url.toString()
 }
