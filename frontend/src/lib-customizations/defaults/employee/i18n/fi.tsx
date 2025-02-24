@@ -4772,6 +4772,7 @@ export const fi = {
     editor: {
       globalRoles: 'Järjestelmäroolit',
       unitRoles: {
+        name: 'Yksikköroolit',
         title: 'Luvitukset',
         scheduledRolesTitle: 'Tulevat luvitukset',
         unit: 'Yksikkö',

@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.deactivatePersonalMessageAccountIfNeeded
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.EmployeeWithDaycareRoles
@@ -402,6 +403,13 @@ class EmployeeController(private val accessControl: AccessControl) {
                                 ?.takeIf { it.isNotEmpty() }
                                 ?.filter { it.isGlobalRole() }
                                 ?.toSet(),
+                        unitRoles =
+                            body.unitRoles
+                                ?.takeIf { it.isNotEmpty() }
+                                ?.filter { it.isUnitScopedRole() }
+                                ?.toSet(),
+                        unitProviderTypes =
+                            body.unitProviderTypes?.takeIf { it.isNotEmpty() }?.toSet(),
                     )
                 }
             }
@@ -499,4 +507,6 @@ data class SearchEmployeeRequest(
     val searchTerm: String?,
     val hideDeactivated: Boolean?,
     val globalRoles: Set<UserRole>?,
+    val unitRoles: Set<UserRole>?,
+    val unitProviderTypes: Set<ProviderType>?,
 )

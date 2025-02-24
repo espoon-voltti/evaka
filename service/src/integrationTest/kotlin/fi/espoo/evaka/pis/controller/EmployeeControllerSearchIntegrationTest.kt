@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
@@ -59,6 +60,8 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = emptySet(),
+                    unitRoles = emptySet(),
+                    unitProviderTypes = emptySet(),
                 ),
             )
 
@@ -100,6 +103,8 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     searchTerm = "super",
                     hideDeactivated = false,
                     globalRoles = emptySet(),
+                    unitRoles = emptySet(),
+                    unitProviderTypes = emptySet(),
                 ),
             )
         assertEquals(1, body.data.size)
@@ -108,7 +113,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `admin searches employees with roles`() {
+    fun `admin searches employees with global roles`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body =
             controller.searchEmployees(
@@ -120,9 +125,76 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = setOf(UserRole.SERVICE_WORKER),
+                    unitRoles = emptySet(),
+                    unitProviderTypes = emptySet(),
                 ),
             )
         assertEquals(1, body.data.size)
         assertTrue { body.data.all { it.globalRoles.toSet().contains(UserRole.SERVICE_WORKER) } }
+    }
+
+    @Test
+    fun `admin searches employees with unit roles`() {
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val body =
+            controller.searchEmployees(
+                dbInstance(),
+                user,
+                RealEvakaClock(),
+                SearchEmployeeRequest(
+                    page = 1,
+                    searchTerm = null,
+                    hideDeactivated = false,
+                    globalRoles = emptySet(),
+                    unitRoles = setOf(UserRole.UNIT_SUPERVISOR),
+                    unitProviderTypes = emptySet(),
+                ),
+            )
+        assertEquals(1, body.data.size)
+        assertTrue {
+            body.data.all {
+                it.daycareRoles.map { role -> role.role }.toSet().contains(UserRole.UNIT_SUPERVISOR)
+            }
+        }
+    }
+
+    @Test
+    fun `admin searches employees with unit roles and provider types`() {
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val body1 =
+            controller.searchEmployees(
+                dbInstance(),
+                user,
+                RealEvakaClock(),
+                SearchEmployeeRequest(
+                    page = 1,
+                    searchTerm = null,
+                    hideDeactivated = false,
+                    globalRoles = emptySet(),
+                    unitRoles = setOf(UserRole.UNIT_SUPERVISOR),
+                    unitProviderTypes = setOf(ProviderType.MUNICIPAL),
+                ),
+            )
+        assertEquals(1, body1.data.size)
+        assertTrue {
+            body1.data.all {
+                it.daycareRoles.map { role -> role.role }.toSet().contains(UserRole.UNIT_SUPERVISOR)
+            }
+        }
+        val body2 =
+            controller.searchEmployees(
+                dbInstance(),
+                user,
+                RealEvakaClock(),
+                SearchEmployeeRequest(
+                    page = 1,
+                    searchTerm = null,
+                    hideDeactivated = false,
+                    globalRoles = emptySet(),
+                    unitRoles = setOf(UserRole.UNIT_SUPERVISOR),
+                    unitProviderTypes = setOf(ProviderType.PURCHASED),
+                ),
+            )
+        assertEquals(0, body2.data.size)
     }
 }

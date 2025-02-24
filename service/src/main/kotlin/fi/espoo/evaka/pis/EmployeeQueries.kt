@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pairing.MobileDevice
@@ -401,6 +402,8 @@ fun getEmployeesPaged(
     searchTerm: String = "",
     hideDeactivated: Boolean = false,
     globalRoles: Set<UserRole>?,
+    unitRoles: Set<UserRole>?,
+    unitProviderTypes: Set<ProviderType>?,
 ): PagedEmployeesWithDaycareRoles {
     val offset = (page - 1) * pageSize
     val conditions =
@@ -408,6 +411,22 @@ fun getEmployeesPaged(
             if (searchTerm.isNotBlank()) employeeFreeTextSearchPredicate(searchTerm) else null,
             if (hideDeactivated) Predicate { where("$it.active = TRUE") } else null,
             if (globalRoles != null) Predicate { where("$it.roles && ${bind(globalRoles)}") }
+            else null,
+            if (unitRoles != null)
+                Predicate {
+                    where(
+                        """
+                            EXISTS (SELECT FROM daycare_acl
+                                    WHERE daycare_acl.employee_id = $it.id
+                                      AND daycare_acl.role = ANY (${bind(unitRoles)})
+                            ${if (unitProviderTypes != null) """
+                                AND EXISTS (SELECT FROM daycare
+                                            WHERE daycare.id = daycare_acl.daycare_id
+                                              AND daycare.provider_type = ANY (${bind(unitProviderTypes)}))"""
+                        else ""})"""
+                            .trimIndent()
+                    )
+                }
             else null,
         )
 

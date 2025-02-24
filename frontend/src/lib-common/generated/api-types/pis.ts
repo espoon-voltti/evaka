@@ -28,6 +28,7 @@ import { ParentshipId } from './shared'
 import { PartnershipId } from './shared'
 import { PersonEmailVerificationId } from './shared'
 import { PersonId } from './shared'
+import { ProviderType } from './daycare'
 import { UserRole } from './shared'
 
 /**
@@ -712,6 +713,8 @@ export interface SearchEmployeeRequest {
   hideDeactivated: boolean | null
   page: number | null
   searchTerm: string | null
+  unitProviderTypes: ProviderType[] | null
+  unitRoles: UserRole[] | null
 }
 
 /**
