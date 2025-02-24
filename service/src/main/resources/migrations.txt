@@ -494,3 +494,4 @@ V495__draft_message_recipients.sql
 V496__staff_attendance_integration_feature.sql
 V497__application_primary_preferred_unit.sql
 V498__child_document_archived_at.sql
+V499__drop_unused_tables.sql
