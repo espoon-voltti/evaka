@@ -43,11 +43,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "assistance_need_voucher_coefficient",
                 "attachment",
                 "backup_care",
-                "backup_curriculum_content",
-                "backup_curriculum_document",
-                "backup_curriculum_document_event",
-                "backup_curriculum_template",
-                "backup_messaging_blocklist",
                 "care_area",
                 "child_daily_note",
                 "child_document",
@@ -108,8 +103,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "staff_attendance_realtime",
                 "staff_occupancy_coefficient",
                 "vapid_jwt",
-                "varda_reset_child",
-                "varda_service_need",
                 "voucher_value_decision",
                 "voucher_value_report_snapshot",
             )
@@ -133,11 +126,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "assistance_need_voucher_coefficient",
                 "attachment",
                 "backup_care",
-                "backup_curriculum_content",
-                "backup_curriculum_document",
-                "backup_curriculum_document_event",
-                "backup_curriculum_template",
-                "backup_messaging_blocklist",
                 "care_area",
                 "child_daily_note",
                 "child_document",
@@ -198,8 +186,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "staff_attendance_realtime",
                 "staff_occupancy_coefficient",
                 "vapid_jwt",
-                "varda_reset_child",
-                "varda_service_need",
                 "voucher_value_decision",
             )
         val violations =
@@ -227,11 +213,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 Column(
                     ColumnRef("backup_care", "created"),
-                    "timestamp with time zone",
-                    nullable = true,
-                ),
-                Column(
-                    ColumnRef("backup_messaging_blocklist", "created"),
                     "timestamp with time zone",
                     nullable = true,
                 ),
@@ -305,11 +286,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 Column(
                     ColumnRef("backup_care", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true,
-                ),
-                Column(
-                    ColumnRef("backup_messaging_blocklist", "updated"),
                     dataType = "timestamp with time zone",
                     nullable = true,
                 ),
@@ -539,7 +515,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             setOf(
                 ColumnRef("assistance_need_decision", "validity_period"),
                 ColumnRef("assistance_need_voucher_coefficient", "validity_period"),
-                ColumnRef("backup_curriculum_template", "valid"),
                 ColumnRef("calendar_event", "period"),
                 ColumnRef("daily_service_time", "validity_period"),
                 ColumnRef("daycare", "club_apply_period"),
