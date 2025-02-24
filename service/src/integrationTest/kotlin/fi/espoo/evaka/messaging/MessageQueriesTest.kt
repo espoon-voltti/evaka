@@ -957,8 +957,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         Action.MessageAccount.ACCESS,
                     )
                 )
-                .first()
-                .unreadCount
+                .firstOrNull()
+                ?.unreadCount ?: 0
         }
 
     private fun Database.Transaction.getAccount(person: DevPerson) =
