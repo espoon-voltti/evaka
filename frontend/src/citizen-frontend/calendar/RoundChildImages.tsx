@@ -12,7 +12,7 @@ import { formatFirstName } from 'lib-common/names'
 import { fontWeights } from 'lib-components/typography'
 import { theme } from 'lib-customizations/common'
 
-import { API_URL } from '../api-client'
+import { getImageCitizen } from '../generated/api-clients/childimages'
 
 export interface ChildImageData {
   childId: ChildId
@@ -97,7 +97,7 @@ export const RoundChildImage = React.memo(function RoundChildImage({
 }: RoundChildImageProps) {
   return imageId !== null ? (
     <ChildImage
-      src={`${API_URL}/citizen/child-images/${imageId}`}
+      src={getImageCitizen({ imageId }).url.toString()}
       size={size}
       border={border}
     />

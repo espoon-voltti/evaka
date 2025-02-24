@@ -12,8 +12,11 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
 
-import { API_URL, client } from './api-client'
-import { deleteAttachment } from './generated/api-clients/attachment'
+import { client } from './api-client'
+import {
+  deleteAttachment,
+  getAttachment
+} from './generated/api-clients/attachment'
 
 function uploadHandler(config: {
   path: string
@@ -79,6 +82,5 @@ export function getAttachmentUrl(
   attachmentId: AttachmentId,
   requestedFilename: string
 ): string {
-  const encodedFilename = encodeURIComponent(requestedFilename)
-  return `${API_URL}/citizen/attachments/${attachmentId}/download/${encodedFilename}`
+  return getAttachment({ attachmentId, requestedFilename }).url.toString()
 }

@@ -5,22 +5,23 @@
 import noop from 'lodash/noop'
 import React from 'react'
 
+import { DecisionId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faFileAlt } from 'lib-icons'
 
-import { API_URL } from '../api-client'
+import { downloadDecisionPdf } from '../generated/api-clients/application'
 import { useTranslation } from '../localization'
 
 export const PdfLink = React.memo(function PdfLink({
   decisionId
 }: {
-  decisionId: string
+  decisionId: DecisionId
 }) {
   const t = useTranslation()
 
   return (
     <a
-      href={`${API_URL}/citizen/decisions/${decisionId}/download`}
+      href={downloadDecisionPdf({ id: decisionId }).url.toString()}
       target="_blank"
       rel="noreferrer"
     >

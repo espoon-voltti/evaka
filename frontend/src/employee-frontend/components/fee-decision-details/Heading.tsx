@@ -8,29 +8,26 @@ import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  PersonDetailed,
-  FeeDecisionStatus
+  FeeDecisionStatus,
+  FeeDecisionType,
+  PersonDetailed
 } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { API_URL } from '../../api/client'
 import LabelValueList from '../../components/common/LabelValueList'
 import WarningLabel from '../../components/common/WarningLabel'
+import { getFeeDecisionPdf } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 
 import { TypeSelect } from './TypeSelect'
 
-function getFeeDecisionPdfUrl(decisionId: string): string {
-  return `${API_URL}/employee/fee-decisions/pdf/${decisionId}`
-}
-
 interface Props {
-  id: string
+  id: FeeDecisionId
   status: FeeDecisionStatus
   headOfFamily: PersonDetailed
   partner: PersonDetailed | null
@@ -81,7 +78,7 @@ export default React.memo(function Heading({
     )
 
   const pdfValue = documentKey ? (
-    <a href={getFeeDecisionPdfUrl(id)} download>
+    <a href={getFeeDecisionPdf({ decisionId: id }).url.toString()} download>
       {i18n.feeDecision.downloadPdf}
     </a>
   ) : (
