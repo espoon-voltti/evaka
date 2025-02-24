@@ -296,7 +296,7 @@ fun Database.Transaction.setVardaUpdateError(
     createUpdate {
             sql(
                 """
-                UPDATE varda_state SET errored_at = ${bind(now)}, error = ${bind(error)}
+                UPDATE varda_state SET state = null, errored_at = ${bind(now)}, error = ${bind(error)}
                 WHERE child_id = ${bind(childId)}
                 """
             )

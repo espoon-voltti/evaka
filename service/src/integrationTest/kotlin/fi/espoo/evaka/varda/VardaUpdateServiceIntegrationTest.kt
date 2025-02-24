@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.varda.new
+package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.OphEnv
@@ -21,9 +21,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
-import fi.espoo.evaka.varda.VardaUpdateService
-import fi.espoo.evaka.varda.VardaUpdater
-import fi.espoo.evaka.varda.getVardaUpdateChildIds
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
