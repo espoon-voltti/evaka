@@ -1791,7 +1791,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
-    fun `citizen cannot override billable planned absence with sick leave after threshold`() {
+    fun `citizen cannot override planned absence with sick leave after threshold`() {
         val area = DevCareArea()
         val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
@@ -1867,7 +1867,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             )
             .extracting({ it.date }, { it.absenceType }, { it.category })
             .containsExactlyInAnyOrder(
-                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
+                Tuple(monday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.NONBILLABLE),
                 Tuple(monday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.BILLABLE),
                 Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
                 Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),

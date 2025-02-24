@@ -255,7 +255,7 @@ WHERE child_id = ${bind { (childId, _) -> childId }}
 AND date = ${bind { (_, date) -> date }}
 AND absence_type <> 'FREE_ABSENCE'::absence_type
 -- Planned absences cannot be deleted from confirmed range
-AND (${bind(reservableRange)} @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type OR category = 'NONBILLABLE')
+AND (${bind(reservableRange)} @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type)
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 RETURNING id
 """
