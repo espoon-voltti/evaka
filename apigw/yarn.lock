@@ -3400,7 +3400,7 @@ __metadata:
     ts-node: "npm:^10.9.1"
     typescript: "npm:^5.7.2"
     typescript-eslint: "npm:^8.24.0"
-    uuid: "npm:^11.0.1"
+    uuid: "npm:^11.1.0"
     xml-crypto: "npm:^6.0.0"
     xml2js: "npm:^0.6.0"
     zod: "npm:^3.24.1"
@@ -7438,12 +7438,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^11.0.1":
-  version: 11.0.1
-  resolution: "uuid@npm:11.0.1"
+"uuid@npm:^11.1.0":
+  version: 11.1.0
+  resolution: "uuid@npm:11.1.0"
   bin:
     uuid: dist/esm/bin/uuid
-  checksum: 10/8f2a93ce747613ab63531796fdd383123ad85bd6592808e7035b6975688ef7f01d9279ef66903fcfba6649b1583d77b88f9512b339c93f9a515964f79203a493
+  checksum: 10/d2da43b49b154d154574891ced66d0c83fc70caaad87e043400cf644423b067542d6f3eb641b7c819224a7cd3b4c2f21906acbedd6ec9c6a05887aa9115a9cf5
   languageName: node
   linkType: hard
 
