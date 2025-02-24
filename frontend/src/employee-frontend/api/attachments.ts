@@ -2,43 +2,51 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { AxiosProgressEvent } from 'axios'
+
 import { Failure, Success, wrapResult } from 'lib-common/api'
 import { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
 import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import {
+  ApplicationId,
+  AttachmentId,
+  FeeAlterationId,
+  IncomeId,
+  IncomeStatementId,
+  InvoiceId,
+  MessageDraftId,
+  PedagogicalDocumentId
+} from 'lib-common/generated/api-types/shared'
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
 
 import {
   deleteAttachment,
-  getAttachment
+  getAttachment,
+  uploadApplicationAttachmentEmployee,
+  uploadFeeAlterationAttachment,
+  uploadIncomeAttachment,
+  uploadIncomeStatementAttachmentEmployee,
+  uploadInvoiceAttachmentEmployee,
+  uploadMessageAttachment,
+  uploadOrphanIncomeAttachment,
+  uploadPedagogicalDocumentAttachment
 } from '../generated/api-clients/attachment'
 
-import { client } from './client'
-
-function uploadHandler(config: {
-  path: string
-  params?: unknown
-}): UploadHandler {
+function uploadHandler(
+  upload: (
+    file: File,
+    onUploadProgress: (event: AxiosProgressEvent) => void
+  ) => Promise<AttachmentId>
+): UploadHandler {
   return {
     upload: async (file, onUploadProgress) => {
-      const formData = new FormData()
-      formData.append('file', file)
-
       try {
-        const { data } = await client.post<AttachmentId>(
-          config.path,
-          formData,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            params: config.params,
-            onUploadProgress: ({ loaded, total }) =>
-              onUploadProgress(
-                total !== undefined && total !== 0
-                  ? Math.round((loaded * 100) / total)
-                  : 0
-              )
-          }
+        const data = await upload(file, ({ loaded, total }) =>
+          onUploadProgress(
+            total !== undefined && total !== 0
+              ? Math.round((loaded * 100) / total)
+              : 0
+          )
         )
         return Success.of(data)
       } catch (e) {
@@ -52,55 +60,71 @@ function uploadHandler(config: {
 const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export function applicationAttachment(
-  applicationId: UUID,
+  applicationId: ApplicationId,
   type: ApplicationAttachmentType
 ): UploadHandler {
-  return uploadHandler({
-    path: `/employee/attachments/applications/${applicationId}`,
-    params: { type }
-  })
+  return uploadHandler((file, onUploadProgress) =>
+    uploadApplicationAttachmentEmployee(
+      { file, applicationId, type },
+      { onUploadProgress }
+    )
+  )
 }
 
 export function incomeStatementAttachment(
-  incomeStatementId: UUID,
+  incomeStatementId: IncomeStatementId,
   attachmentType: IncomeStatementAttachmentType
 ): UploadHandler {
-  return uploadHandler({
-    path: `/employee/attachments/income-statements/${incomeStatementId}`,
-    params: { attachmentType }
-  })
+  return uploadHandler((file, onUploadProgress) =>
+    uploadIncomeStatementAttachmentEmployee(
+      { file, incomeStatementId, attachmentType },
+      { onUploadProgress }
+    )
+  )
 }
 
-export function incomeAttachment(incomeId: UUID | null): UploadHandler {
-  return uploadHandler({
-    path: incomeId
-      ? `/employee/attachments/income/${incomeId}`
-      : `/employee/attachments/income`
-  })
+export function incomeAttachment(incomeId: IncomeId | null): UploadHandler {
+  return uploadHandler((file, onUploadProgress) =>
+    incomeId
+      ? uploadIncomeAttachment({ file, incomeId }, { onUploadProgress })
+      : uploadOrphanIncomeAttachment({ file }, { onUploadProgress })
+  )
 }
 
-export function invoiceAttachment(invoiceId: UUID): UploadHandler {
-  return uploadHandler({ path: `/employee/attachments/invoices/${invoiceId}` })
+export function invoiceAttachment(invoiceId: InvoiceId): UploadHandler {
+  return uploadHandler((file, onUploadProgress) =>
+    uploadInvoiceAttachmentEmployee({ file, invoiceId }, { onUploadProgress })
+  )
 }
 
 export function feeAlterationAttachment(
-  feeAlterationId: UUID | null
+  feeAlterationId: FeeAlterationId | null
 ): UploadHandler {
-  return uploadHandler({
-    path: feeAlterationId
-      ? `/employee/attachments/fee-alteration/${feeAlterationId}`
-      : `/employee/attachments/fee-alteration`
-  })
+  return uploadHandler((file, onUploadProgress) =>
+    feeAlterationId
+      ? uploadFeeAlterationAttachment(
+          { file, feeAlterationId },
+          { onUploadProgress }
+        )
+      : uploadOrphanIncomeAttachment({ file }, { onUploadProgress })
+  )
 }
 
-export function messageAttachment(draftId: UUID): UploadHandler {
-  return uploadHandler({ path: `/employee/attachments/messages/${draftId}` })
+export function messageAttachment(draftId: MessageDraftId): UploadHandler {
+  return uploadHandler((file, onUploadProgress) =>
+    uploadMessageAttachment({ file, draftId }, { onUploadProgress })
+  )
 }
 
-export function pedagogicalDocumentAttachment(documentId: UUID): UploadHandler {
-  return uploadHandler({
-    path: `/employee/attachments/pedagogical-documents/${documentId}`
-  })
+export function pedagogicalDocumentAttachment(
+  documentId: PedagogicalDocumentId
+): UploadHandler {
+  return uploadHandler((file, onUploadProgress) =>
+    uploadPedagogicalDocumentAttachment(
+      { file, documentId },
+      { onUploadProgress }
+    )
+  )
 }
 
 export function getAttachmentUrl(

@@ -88,30 +88,41 @@ data class EndpointMetadata(
             fail("It must not have a nullable response body")
         }
 
-        if (type == EndpointType.PlainGet && httpMethod != RequestMethod.GET) {
-            fail("It should use HTTP GET")
-        }
-
-        when (httpMethod) {
-            RequestMethod.GET,
-            RequestMethod.HEAD,
-            RequestMethod.DELETE -> {
-                if (
-                    type !is EndpointType.PlainGet &&
-                        httpMethod == RequestMethod.GET &&
-                        responseBodyType == null
-                ) {
-                    fail("It should have a response body")
+        when (type) {
+            is EndpointType.Json -> {
+                when (httpMethod) {
+                    RequestMethod.GET,
+                    RequestMethod.HEAD,
+                    RequestMethod.DELETE -> {
+                        if (httpMethod == RequestMethod.GET && responseBodyType == null) {
+                            fail("It should have a response body")
+                        }
+                        if (requestBodyType != null) {
+                            fail("It should not use a request body")
+                        }
+                    }
+                    RequestMethod.POST,
+                    RequestMethod.PUT,
+                    RequestMethod.PATCH -> {}
+                    RequestMethod.TRACE,
+                    RequestMethod.OPTIONS -> fail("Method not supported")
+                }
+            }
+            is EndpointType.PlainGet -> {
+                if (httpMethod != RequestMethod.GET) {
+                    fail("It should use HTTP GET")
                 }
                 if (requestBodyType != null) {
                     fail("It should not use a request body")
                 }
             }
-            RequestMethod.POST,
-            RequestMethod.PUT,
-            RequestMethod.PATCH -> {}
-            RequestMethod.TRACE,
-            RequestMethod.OPTIONS -> fail("Method not supported")
+            is EndpointType.Multipart -> {
+                when (httpMethod) {
+                    RequestMethod.POST,
+                    RequestMethod.PUT -> {}
+                    else -> fail("Method not supported")
+                }
+            }
         }
 
         when {

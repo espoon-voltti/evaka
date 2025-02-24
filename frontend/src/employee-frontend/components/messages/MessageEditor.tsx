@@ -21,6 +21,7 @@ import {
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import {
+  AttachmentId,
   MessageAccountId,
   MessageDraftId,
   MessageThreadFolderId
@@ -187,7 +188,7 @@ interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption<MessageAccountId>
   draftContent?: DraftContent
-  getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
+  getAttachmentUrl: (attachmentId: AttachmentId, fileName: string) => string
   initDraftRaw: (accountId: MessageAccountId) => Promise<Result<MessageDraftId>>
   accounts: AuthorizedMessageAccount[]
   folders: MessageThreadFolder[]
@@ -199,7 +200,7 @@ interface Props {
     initialFolder: MessageThreadFolderId | null
   ) => void
   saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
-  saveMessageAttachment: (draftId: UUID) => UploadHandler
+  saveMessageAttachment: (draftId: MessageDraftId) => UploadHandler
   sending: boolean
   defaultTitle?: string
 }

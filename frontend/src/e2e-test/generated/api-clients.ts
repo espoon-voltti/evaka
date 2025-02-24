@@ -11,6 +11,7 @@ import { AbsenceId } from './api-types'
 import { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { Autocomplete } from './api-types'
+import { AxiosProgressEvent } from 'axios'
 import { CalendarEventAttendeeId } from './api-types'
 import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
@@ -87,6 +88,7 @@ import { DevTerminatePlacementRequest } from './api-types'
 import { DevUpsertStaffOccupancyCoefficient } from './api-types'
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { Email } from './api-types'
+import { EmailMessageFilter } from './api-types'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
@@ -105,6 +107,7 @@ import { MockVtjDataset } from './api-types'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
 import { PairingId } from 'lib-common/generated/api-types/shared'
 import { PaymentId } from 'lib-common/generated/api-types/shared'
+import { PedagogicalDocumentId } from 'lib-common/generated/api-types/shared'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PlacementId } from 'lib-common/generated/api-types/shared'
 import { PlacementPlan } from './api-types'
@@ -122,8 +125,10 @@ import { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { UpdateIncomeStatementHandledBody } from './api-types'
 import { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
+import { Uri } from 'lib-common/uri'
 import { VoucherValueDecision } from './api-types'
 import { VtjPersonSummary } from './api-types'
+import { createFormData } from 'lib-common/api'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
@@ -1292,6 +1297,44 @@ export async function createParentships(
 
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createPedagogicalDocumentAttachment
+*/
+export async function createPedagogicalDocumentAttachment(
+  request: {
+    pedagogicalDocumentId: PedagogicalDocumentId,
+    employeeId: EmployeeId,
+    file: File
+  },
+  options?: {
+    onUploadProgress?: (event: AxiosProgressEvent) => void,
+    mockedTime?: HelsinkiDateTime
+  }
+): Promise<string> {
+  try {
+    const data = createFormData(
+      ['file', request.file]
+    )
+    const params = createUrlSearchParams(
+      ['employeeId', request.employeeId]
+    )
+    const { data: json } = await devClient.request<JsonOf<string>>({
+      url: uri`/pedagogical-document-attachment/${request.pedagogicalDocumentId}`.toString(),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'EvakaMockedTime': options?.mockedTime?.formatIso()
+      },
+      params,
+      data
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.createPedagogicalDocuments
 */
 export async function createPedagogicalDocuments(
@@ -1695,6 +1738,25 @@ export async function getCitizens(): Promise<Citizen[]> {
     return json
   } catch (e) {
     throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.getEmails
+*/
+export function getEmails(
+  request: {
+    message?: EmailMessageFilter | null,
+    format?: string | null
+  }
+): { url: Uri } {
+  const params = createUrlSearchParams(
+    ['message', request.message?.toString()],
+    ['format', request.format?.toString()]
+  )
+  return {
+    url: uri`${devClient.defaults.baseURL ?? ''}/email-content`.appendQuery(params)
   }
 }
 

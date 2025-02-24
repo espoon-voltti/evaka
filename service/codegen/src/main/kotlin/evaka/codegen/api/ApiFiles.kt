@@ -19,14 +19,12 @@ fun generateApiFiles(): Map<TsFile, String> {
     allEndpoints.forEach { it.validate() }
 
     val endpoints =
-        allEndpoints
-            .filter { it.type == EndpointType.Json || it.type == EndpointType.PlainGet }
-            .filterNot {
-                it.isDeprecated ||
-                    it.path.startsWith("/integration/") ||
-                    it.path.startsWith("/system/") ||
-                    endpointExcludes.contains(it.path)
-            }
+        allEndpoints.filterNot {
+            it.isDeprecated ||
+                it.path.startsWith("/integration/") ||
+                it.path.startsWith("/system/") ||
+                endpointExcludes.contains(it.path)
+        }
 
     val metadata =
         discoverMetadata(
@@ -36,7 +34,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val devEndpoints =
         scanEndpoints("fi.espoo.evaka", profiles = listOf("enable_dev_api")).filter {
-            it.type == EndpointType.Json && it.path.startsWith("/dev-api/")
+            it.path.startsWith("/dev-api/")
         }
     val devMetadata =
         discoverMetadata(
@@ -186,10 +184,15 @@ ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
 
 fun generateImports(currentFile: TsFile, imports: Iterable<TsImport>): String =
     imports
-        .filterNot { it.file == currentFile }
+        .filterNot {
+            when (val source = it.source) {
+                is TsImportSource.File -> source.file == currentFile
+                else -> false
+            }
+        }
         .sortedWith(compareBy({ it is TsImport.Named }, { it.name }))
         .joinToString("\n") { import ->
-            val path = import.file.importFrom(currentFile)
+            val path = import.source.importFrom(currentFile)
             when (import) {
                 is TsImport.Default -> "import ${import.name} from '$path'"
                 is TsImport.NamedAs ->
@@ -209,6 +212,7 @@ fun generateApiClients(
     wrapBody: (body: TsCode) -> TsCode = { it },
 ): String {
     val mockedTimeSupport = config.mockedTimeSupport && endpoints.any { it.hasClockParameter }
+    val apiPrefix = TsCode { "${ref(axiosClient)}.defaults.baseURL ?? ''" }
     val clients =
         endpoints
             .groupBy { Pair(it.controllerClass, it.controllerMethod) }
@@ -220,17 +224,23 @@ fun generateApiClients(
                 duplicates.single()
             }
             .sortedWith(compareBy({ it.controllerClass.jvmName }, { it.controllerMethod.name }))
-            .mapNotNull {
+            .map {
                 try {
-                    if (it.type == EndpointType.Json)
-                        generateJsonApiClient(config, generator, axiosClient, it, wrapBody)
-                    else if (it.type == EndpointType.PlainGet)
-                        generatePlainGetApiFunction(
-                            generator,
-                            TsCode { "${ref(axiosClient)}.defaults.baseURL ?? ''" },
-                            it,
-                        )
-                    else null
+                    when (it.type) {
+                        is EndpointType.Json ->
+                            generateJsonApiClient(config, generator, axiosClient, it, wrapBody)
+                        is EndpointType.PlainGet ->
+                            generatePlainGetApiFunction(generator, apiPrefix, it)
+                        is EndpointType.Multipart ->
+                            generateMultipartUploadApiFunction(
+                                config,
+                                generator,
+                                axiosClient,
+                                it,
+                                it.type.requestParts,
+                                wrapBody,
+                            )
+                    }
                 } catch (e: Exception) {
                     throw RuntimeException(
                         "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod.name}",
@@ -309,6 +319,29 @@ ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
     )
 }
 
+/** Generates TS code that returns a FormData object built from all request parameter values */
+private fun TsCodeGenerator.tsBuildFormData(
+    parameters: Collection<NamedParameter>,
+    // Function must return a TS expression that evaluates to the value of the given query parameter
+    tsParamValue: (queryParam: String) -> TsCode,
+): TsTypedExpression {
+    val nameValuePairs =
+        parameters.map { param ->
+            toRequestParamPairs(param.toOptionalType(), param.name, tsParamValue(param.name))
+        }
+    return TsTypedExpression(
+        type = TsCode("FormData"),
+        value =
+            TsCode {
+                """
+${ref(Imports.createFormData)}(
+${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
+)"""
+                    .removePrefix("\n")
+            },
+    )
+}
+
 fun generateJsonApiClient(
     config: ApiClientConfig,
     generator: TsCodeGenerator,
@@ -326,20 +359,20 @@ fun generateJsonApiClient(
             .takeIf { it.properties.isNotEmpty() }
             ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }
 
-    val tsArgument = TsCode {
+    val tsArguments =
         listOfNotNull(
                 if (argumentType != null)
-                    "request: ${inline(generator.tsType(argumentType, compact = false))}"
-                        .prependIndent("  ")
+                    "request" to generator.tsType(argumentType, compact = false)
                 else null,
-                if (mockedTimeSupport) "  options?: { mockedTime?: HelsinkiDateTime }" else null,
+                if (mockedTimeSupport)
+                    "options?" to TsCode { "{ mockedTime?: ${ref(Imports.helsinkiDateTime)} }" }
+                else null,
             )
-            .let { params ->
-                if (params.isNotEmpty())
-                    params.joinToString(separator = ",\n", prefix = "\n", postfix = "\n")
-                else ""
+            .map { (name, value) -> TsCode { "$name: ${inline(value)}" }.prependIndent("  ") }
+            .let { args ->
+                if (args.isEmpty()) TsCode("")
+                else TsCode { join(args, separator = ",\n", prefix = "\n", postfix = "\n") }
             }
-    }
 
     val getRequestProperty = { name: String -> TsCode { "request.$name" } }
     val url = generator.tsBuildUri(pathPrefix = null, endpoint, getRequestProperty)
@@ -395,7 +428,7 @@ ${join(axiosArguments, ",\n").prependIndent("  ")}
 /**
 * Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
 */
-export async function ${endpoint.controllerMethod.name}(${inline(tsArgument)}): Promise<${inline(tsResponseType)}> {
+export async function ${endpoint.controllerMethod.name}(${inline(tsArguments)}): Promise<${inline(tsResponseType)}> {
 ${inline(wrapBody(functionBody).prependIndent("  "))}
 }"""
     }
@@ -415,19 +448,17 @@ fun generatePlainGetApiFunction(
             .takeIf { it.properties.isNotEmpty() }
             ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }
 
-    val tsArgument = TsCode {
+    val tsArguments =
         listOfNotNull(
                 if (argumentType != null)
-                    "request: ${inline(generator.tsType(argumentType, compact = false))}"
-                        .prependIndent("  ")
+                    "request" to generator.tsType(argumentType, compact = false)
                 else null
             )
-            .let { params ->
-                if (params.isNotEmpty())
-                    params.joinToString(separator = ",\n", prefix = "\n", postfix = "\n")
-                else ""
+            .map { (name, value) -> TsCode { "$name: ${inline(value)}" }.prependIndent("  ") }
+            .let { args ->
+                if (args.isEmpty()) TsCode("")
+                else TsCode { join(args, separator = ",\n", prefix = "\n", postfix = "\n") }
             }
-    }
 
     val getRequestProperty = { name: String -> TsCode { "request.$name" } }
     val url = generator.tsBuildUri(pathPrefix, endpoint, getRequestProperty)
@@ -457,8 +488,115 @@ return {
 /**
 * Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
 */
-export function ${endpoint.controllerMethod.name}(${inline(tsArgument)}): { url: ${inline(url.type)} } {
+export function ${endpoint.controllerMethod.name}(${inline(tsArguments)}): { url: ${inline(url.type)} } {
 ${inline(functionBody.prependIndent("  "))}
+}"""
+    }
+}
+
+fun generateMultipartUploadApiFunction(
+    config: ApiClientConfig,
+    generator: TsCodeGenerator,
+    axiosClient: TsImport,
+    endpoint: EndpointMetadata,
+    requestParts: List<NamedParameter>,
+    wrapBody: ((functionBody: TsCode) -> TsCode),
+): TsCode {
+    val mockedTimeSupport = config.mockedTimeSupport && endpoint.hasClockParameter
+    val argumentType =
+        TsObjectLiteral(
+                (endpoint.pathVariables + endpoint.requestParameters + requestParts).associate {
+                    it.name to TsProperty(it.toOptionalType())
+                }
+            )
+            .let { TsType(it, isNullable = false, typeArguments = emptyList()) }
+
+    val tsOptions =
+        listOfNotNull(
+                "onUploadProgress?" to
+                    TsCode {
+                        "(event: ${ref(TsImport.Named(TsImportSource.Library("axios"), "AxiosProgressEvent"))}) => void"
+                    },
+                if (mockedTimeSupport) "mockedTime?" to TsCode { ref(Imports.helsinkiDateTime) }
+                else null,
+            )
+            .map { (name, value) -> TsCode { "$name: ${inline(value)}" }.prependIndent("  ") }
+            .let { args ->
+                if (args.isEmpty()) TsCode("")
+                else TsCode { join(args, separator = ",\n", prefix = "{\n", postfix = "\n}") }
+            }
+
+    val tsArguments =
+        listOf(
+                "request" to generator.tsType(argumentType, compact = false),
+                "options?" to tsOptions,
+            )
+            .map { (name, value) -> TsCode { "$name: ${inline(value)}" }.prependIndent("  ") }
+            .let { args ->
+                if (args.isEmpty()) TsCode("")
+                else TsCode { join(args, separator = ",\n", prefix = "\n", postfix = "\n") }
+            }
+
+    val getRequestProperty = { name: String -> TsCode { "request.$name" } }
+    val url = generator.tsBuildUri(pathPrefix = null, endpoint, getRequestProperty)
+    val createQueryParameters =
+        if (endpoint.requestParameters.isNotEmpty())
+            TsCode {
+                "const params = ${inline(generator.tsBuildQueryParams(endpoint.requestParameters, getRequestProperty).value)}"
+            }
+        else null
+    val createFormData = TsCode {
+        "const data = ${inline(generator.tsBuildFormData(requestParts, getRequestProperty).value)}"
+    }
+
+    val headers =
+        listOfNotNull(
+                "Content-Type" to TsCode("'multipart/form-data'"),
+                if (mockedTimeSupport)
+                    "EvakaMockedTime" to TsCode { "options?.mockedTime?.formatIso()" }
+                else null,
+            )
+            .map { (name, value) -> TsCode { "'$name': ${inline(value)}" }.prependIndent("  ") }
+
+    val axiosArguments =
+        listOfNotNull(
+            TsCode { "url: ${inline(url.value)}.toString()" },
+            TsCode { "method: '${endpoint.httpMethod}'" },
+            TsCode { "headers: ${join(headers, ",\n", prefix = "{\n", postfix = "\n}")}" },
+            createQueryParameters?.let { TsCode { "params" } },
+            TsCode("data"),
+        )
+
+    val tsResponseType =
+        endpoint.responseBodyType?.let { generator.tsType(it, compact = true) } ?: TsCode("void")
+
+    val responseDeserializer =
+        endpoint.responseBodyType?.let { generator.jsonDeserializerExpression(it, TsCode("json")) }
+
+    val functionBody =
+        TsCode.join(
+            listOfNotNull(
+                createFormData,
+                createQueryParameters,
+                TsCode {
+                    """
+const { data: json } = await ${ref(axiosClient)}.request<${ref(Imports.jsonOf)}<${inline(tsResponseType)}>>({
+${join(axiosArguments, ",\n").prependIndent("  ")}
+})"""
+                        .removePrefix("\n")
+                },
+                TsCode { "return ${inline(responseDeserializer ?: TsCode("json"))}" },
+            ),
+            separator = "\n",
+        )
+
+    return TsCode {
+        """
+/**
+* Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
+*/
+export async function ${endpoint.controllerMethod.name}(${inline(tsArguments)}): Promise<${inline(tsResponseType)}> {
+${inline(wrapBody(functionBody).prependIndent("  "))}
 }"""
     }
 }
