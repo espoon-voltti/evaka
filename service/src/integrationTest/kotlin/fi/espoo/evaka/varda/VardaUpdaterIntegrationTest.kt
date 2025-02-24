@@ -44,6 +44,8 @@ import java.net.URI
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import org.jdbi.v3.json.Json
 import org.junit.jupiter.api.Test
 
 class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
@@ -2962,10 +2964,23 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val child = DevPerson(ssn = "030320A904N", ophPersonOid = null)
         val now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0))
 
+        val state =
+            VardaUpdater.EvakaHenkiloNode(
+                henkilo =
+                    Henkilo(
+                        etunimet = child.firstName,
+                        sukunimi = child.lastName,
+                        henkilo_oid = null,
+                        henkilotunnus = child.ssn,
+                    ),
+                lapset = emptyList(),
+            )
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
             tx.execute {
-                sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, null)")
+                sql(
+                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, ${bindJson(state)})"
+                )
             }
         }
 
@@ -2987,22 +3002,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             saveState = true,
         )
 
-        val (lastSuccessAt, erroredAt, error) =
+        data class Result(
+            @Json val state: VardaUpdater.EvakaHenkiloNode?,
+            val lastSuccessAt: HelsinkiDateTime?,
+            val erroredAt: HelsinkiDateTime?,
+            val error: String?,
+        )
+        val result =
             db.read { tx ->
-                tx.createQuery { sql("SELECT last_success_at, errored_at, error FROM varda_state") }
-                    .map {
-                        Triple<HelsinkiDateTime?, HelsinkiDateTime?, String?>(
-                            column("last_success_at"),
-                            column("errored_at"),
-                            column("error"),
-                        )
+                tx.createQuery {
+                        sql("SELECT state, last_success_at, errored_at, error FROM varda_state")
                     }
-                    .exactlyOne()
+                    .exactlyOne<Result>()
             }
 
-        assertEquals(null, lastSuccessAt)
-        assertEquals(now, erroredAt)
-        assertEquals("this is an error message", error)
+        assertNull(result.state)
+        assertNull(result.lastSuccessAt)
+        assertEquals(now, result.erroredAt)
+        assertEquals("this is an error message", result.error)
     }
 
     @Test
