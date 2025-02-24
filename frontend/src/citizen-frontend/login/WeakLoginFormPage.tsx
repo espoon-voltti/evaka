@@ -8,7 +8,7 @@ import { Navigate, useSearchParams } from 'react-router'
 import { authWeakLogin } from 'citizen-frontend/auth/api'
 import { wrapResult } from 'lib-common/api'
 import { string } from 'lib-common/form/fields'
-import { object, required, validated } from 'lib-common/form/form'
+import { object, required, validated, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
@@ -67,7 +67,8 @@ export default React.memo(function WeakLoginFormPage() {
 
 const weakLoginForm = object({
   username: validated(required(string()), nonBlank),
-  password: validated(required(string()), nonBlank)
+  // value<string> is used to avoid trimming
+  password: validated(required(value<string>()), nonBlank)
 })
 
 const authWeakLoginResult = wrapResult(authWeakLogin)
@@ -134,9 +135,10 @@ const WeakLoginForm = React.memo(function WeakLogin({
           type="submit"
           text={t.link}
           disabled={!form.isValid()}
-          onClick={() =>
-            authWeakLoginResult(form.state.username, form.state.password)
-          }
+          onClick={() => {
+            const { username, password } = form.value()
+            return authWeakLoginResult(username, password)
+          }}
           onSuccess={() => window.location.replace(nextUrl ?? '/')}
           onFailure={(error) => {
             if (error.statusCode === 429) {

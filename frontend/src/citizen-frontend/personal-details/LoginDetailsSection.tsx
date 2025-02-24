@@ -7,8 +7,7 @@ import styled from 'styled-components'
 
 import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
 import { Failure } from 'lib-common/api'
-import { string } from 'lib-common/form/fields'
-import { object, required, validated } from 'lib-common/form/form'
+import { object, required, validated, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import { PasswordConstraints } from 'lib-common/generated/api-types/shared'
@@ -233,12 +232,13 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
     () =>
       validated(
         object({
-          password: validated(required(string()), (password) =>
+          // value<string> is used to avoid trimming
+          password: validated(required(value<string>()), (password) =>
             isPasswordStructureValid(passwordConstraints, password)
               ? undefined
               : 'passwordFormat'
           ),
-          confirmPassword: required(string())
+          confirmPassword: required(value<string>())
         }),
         (form) =>
           form.password !== form.confirmPassword
