@@ -134,9 +134,10 @@ const WeakLoginForm = React.memo(function WeakLogin({
           type="submit"
           text={t.link}
           disabled={!form.isValid()}
-          onClick={() =>
-            authWeakLoginResult(form.state.username, form.state.password)
-          }
+          onClick={() => {
+            const { username, password } = form.value()
+            return authWeakLoginResult(username, password)
+          }}
           onSuccess={() => window.location.replace(nextUrl ?? '/')}
           onFailure={(error) => {
             if (error.statusCode === 429) {
