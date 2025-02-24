@@ -254,14 +254,8 @@ DELETE FROM absence a
 WHERE child_id = ${bind { (childId, _) -> childId }}
 AND date = ${bind { (_, date) -> date }}
 AND absence_type <> 'FREE_ABSENCE'::absence_type
--- Planned absences cannot be deleted from confirmed range if the child has a contract days service need
-AND (${bind(reservableRange)} @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type OR category = 'NONBILLABLE' OR NOT EXISTS (
-    SELECT
-    FROM service_need_option sno
-    JOIN service_need sn ON sn.option_id = sno.id AND a.date BETWEEN sn.start_date AND sn.end_date
-    JOIN placement p ON p.id = sn.placement_id AND p.child_id = a.child_id AND a.date BETWEEN p.start_date AND p.end_date
-    WHERE sno.contract_days_per_month IS NOT NULL
-))
+-- Planned absences cannot be deleted from confirmed range
+AND (${bind(reservableRange)} @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type)
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 RETURNING id
 """
