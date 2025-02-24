@@ -7,12 +7,16 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { Failure } from 'lib-common/api'
-import { globalRoles } from 'lib-common/api-types/employee-auth'
+import {
+  globalRoles,
+  scopedRoles as unitRoles
+} from 'lib-common/api-types/employee-auth'
 import { string } from 'lib-common/form/fields'
 import { object, required, validated } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
 import { nonBlank, optionalEmail } from 'lib-common/form/validators'
 import { ssn } from 'lib-common/form-validation'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { EmployeeId, UserRole } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { uri } from 'lib-common/uri'
@@ -31,6 +35,7 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
+import { unitProviderTypes } from 'lib-customizations/employee'
 import { faPlus, faSearch } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -51,6 +56,10 @@ export default React.memo(function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [hideDeactivated, setHideDeactivated] = useState<boolean>(false)
   const [selectedGlobalRoles, setSelectedGlobalRoles] = useState<UserRole[]>([])
+  const [selectedUnitRoles, setSelectedUnitRoles] = useState<UserRole[]>([])
+  const [selectedUnitProviderTypes, setSelectedUnitProviderTypes] = useState<
+    ProviderType[]
+  >([])
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
@@ -63,7 +72,9 @@ export default React.memo(function EmployeesPage() {
         page,
         searchTerm: debouncedSearchTerm,
         hideDeactivated,
-        globalRoles: selectedGlobalRoles
+        globalRoles: selectedGlobalRoles,
+        unitRoles: selectedUnitRoles,
+        unitProviderTypes: selectedUnitProviderTypes
       }
     })
   )
@@ -74,15 +85,7 @@ export default React.memo(function EmployeesPage() {
     <Container>
       <ContentArea opaque>
         <Title>{i18n.titles.employees}</Title>
-        <RequirePermittedGlobalAction oneOf={['CREATE_EMPLOYEE']}>
-          <CreateButton
-            primary
-            data-qa="create-new-ssn-employee"
-            text={i18n.employees.createNewSsnEmployee}
-            onClick={showCreateWizard}
-          />
-        </RequirePermittedGlobalAction>
-        <FixedSpaceColumn spacing="m">
+        <FixedSpaceRow justifyContent="space-between">
           <InputField
             data-qa="employee-name-filter"
             value={searchTerm}
@@ -94,6 +97,16 @@ export default React.memo(function EmployeesPage() {
             icon={faSearch}
             width="L"
           />
+          <RequirePermittedGlobalAction oneOf={['CREATE_EMPLOYEE']}>
+            <Button
+              primary
+              data-qa="create-new-ssn-employee"
+              text={i18n.employees.createNewSsnEmployee}
+              onClick={showCreateWizard}
+            />
+          </RequirePermittedGlobalAction>
+        </FixedSpaceRow>
+        <FixedSpaceColumn spacing="m">
           <Checkbox
             label={i18n.employees.hideDeactivated}
             checked={hideDeactivated}
@@ -105,7 +118,7 @@ export default React.memo(function EmployeesPage() {
           />
           <FixedSpaceRow
             justifyContent="space-between"
-            alignItems="center"
+            alignItems="flex-start"
             spacing="XL"
           >
             <FixedSpaceColumn spacing="xs">
@@ -127,6 +140,51 @@ export default React.memo(function EmployeesPage() {
                 ))}
               </FixedSpaceFlexWrap>
             </FixedSpaceColumn>
+            <FixedSpaceColumn spacing="xs">
+              <Label>{i18n.employees.editor.unitRoles.name}</Label>
+              <FixedSpaceFlexWrap horizontalSpacing="m">
+                {unitRoles.map((role) => (
+                  <Checkbox
+                    key={role}
+                    label={i18n.roles.adRoles[role]}
+                    checked={selectedUnitRoles.includes(role)}
+                    onChange={(checked) =>
+                      setSelectedUnitRoles(
+                        checked
+                          ? [...selectedUnitRoles, role]
+                          : selectedUnitRoles.filter((r) => r !== role)
+                      )
+                    }
+                  />
+                ))}
+              </FixedSpaceFlexWrap>
+            </FixedSpaceColumn>
+            <FixedSpaceColumn spacing="xs">
+              <Label>{i18n.unitFeatures.page.providerType}</Label>
+              <FixedSpaceFlexWrap horizontalSpacing="m">
+                {unitProviderTypes.map((type) => (
+                  <Checkbox
+                    key={type}
+                    label={i18n.common.providerType[type]}
+                    checked={selectedUnitProviderTypes.includes(type)}
+                    onChange={(checked) =>
+                      setSelectedUnitProviderTypes(
+                        checked
+                          ? [...selectedUnitProviderTypes, type]
+                          : selectedUnitProviderTypes.filter((t) => t !== type)
+                      )
+                    }
+                    disabled={selectedUnitRoles.length === 0}
+                  />
+                ))}
+              </FixedSpaceFlexWrap>
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+          <FixedSpaceRow
+            alignItems="flex-end"
+            justifyContent="flex-end"
+            spacing="xxs"
+          >
             <FixedSpaceColumn spacing="xxs" alignItems="flex-end">
               <Pagination
                 pages={employees.map((res) => res.pages).getOrElse(1)}
@@ -271,8 +329,3 @@ const CreateModal = React.memo(function CreateModal({
     </MutateFormModal>
   )
 })
-
-const CreateButton = styled(Button)`
-  display: block;
-  float: right;
-`
