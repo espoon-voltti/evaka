@@ -530,6 +530,7 @@ export interface DevDaycareAssistance {
 * Generated from fi.espoo.evaka.shared.dev.DevDaycareGroup
 */
 export interface DevDaycareGroup {
+  aromiCustomerId: string | null
   daycareId: DaycareId
   endDate: LocalDate | null
   id: GroupId

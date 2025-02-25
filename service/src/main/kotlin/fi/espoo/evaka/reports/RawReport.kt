@@ -120,7 +120,7 @@ SELECT
     coalesce(sn.part_week, false) AS part_week,
     coalesce(sn.shift_care, 'NONE') = 'FULL' AS shift_care,
     coalesce(sno.daycare_hours_per_week, 0.0) AS hours_per_week,
-
+    dg.aromi_customer_id,
     (
         an IS NOT NULL
         OR EXISTS(SELECT FROM assistance_action aa WHERE aa.child_id = pl.child_id AND t::date BETWEEN aa.start_date AND aa.end_date)
@@ -220,4 +220,5 @@ data class RawReportRow(
     val isWeekday: Boolean,
     val isHoliday: Boolean,
     val municipalityOfResidence: String,
+    val aromiCustomerId: String?,
 )
