@@ -794,6 +794,7 @@ export interface RawReportRow {
   absenceFree: AbsenceType | null
   absencePaid: AbsenceType | null
   age: number
+  aromiCustomerId: string | null
   assistanceNeedVoucherCoefficient: number | null
   backupGroupId: GroupId | null
   backupUnitId: DaycareId | null

@@ -1972,7 +1972,7 @@ data class DevDaycareGroup(
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate? = null,
     val jamixCustomerNumber: Int? = null,
-    val aromiCustomerNumber: String? = null,
+    val aromiCustomerId: String? = null,
 )
 
 data class DevDaycareGroupPlacement(
