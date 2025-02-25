@@ -86,7 +86,8 @@ const features: Features = {
     multiSelectDeparture: true,
     weakLogin: true,
     employeeSfiLogin: true,
-    archiveIntegrationEnabled: true
+    archiveIntegrationEnabled: true,
+    aromiIntegration: false
   },
   prod: {
     environmentLabel: null,
