@@ -113,7 +113,7 @@ data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
         if (answers.any { it == null }) error("Document content must not contain null answers")
     }
 
-    override fun toString(): String = "**REDACTED**"
+    // override fun toString(): String = "**REDACTED**"
 }
 
 enum class DocumentStatus(val editable: Boolean) : DatabaseEnum {
@@ -141,6 +141,17 @@ data class ChildBasics(
     val dateOfBirth: LocalDate?,
 )
 
+data class ChildBasicsWithSsn(
+    val id: PersonId,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate?,
+    val socialSecurityNumber: String?,
+) {
+    fun toChildBasics() =
+        ChildBasics(id = id, firstName = firstName, lastName = lastName, dateOfBirth = dateOfBirth)
+}
+
 data class ChildDocumentDetails(
     val id: ChildDocumentId,
     val status: DocumentStatus,
@@ -152,6 +163,31 @@ data class ChildDocumentDetails(
     @Nested("child") val child: ChildBasics,
     @Nested("template") val template: DocumentTemplate,
 )
+
+data class ChildDocumentDetailsWithSsn(
+    val id: ChildDocumentId,
+    val status: DocumentStatus,
+    val publishedAt: HelsinkiDateTime?,
+    val archivedAt: HelsinkiDateTime?,
+    val pdfAvailable: Boolean,
+    @Json val content: DocumentContent,
+    @Json val publishedContent: DocumentContent?,
+    @Nested("child") val child: ChildBasicsWithSsn,
+    @Nested("template") val template: DocumentTemplate,
+) {
+    fun toChildDocumentDetails() =
+        ChildDocumentDetails(
+            id = id,
+            status = status,
+            publishedAt = publishedAt,
+            archivedAt = archivedAt,
+            pdfAvailable = pdfAvailable,
+            content = content,
+            publishedContent = publishedContent,
+            child = child.toChildBasics(),
+            template = template,
+        )
+}
 
 data class ChildDocumentWithPermittedActions(
     val data: ChildDocumentDetails,
