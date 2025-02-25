@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
@@ -18,10 +19,10 @@ import { nonBlank, optionalEmail } from 'lib-common/form/validators'
 import { ssn } from 'lib-common/form-validation'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { EmployeeId, UserRole } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useQueryResult } from 'lib-common/query'
 import { uri } from 'lib-common/uri'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import Pagination from 'lib-components/Pagination'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -41,7 +42,7 @@ import { faPlus, faSearch } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { RequirePermittedGlobalAction } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
-import { FlexRow } from '../common/styled/containers'
+import ReportDownload from '../reports/ReportDownload'
 
 import { EmployeeList } from './EmployeeList'
 import { createSsnEmployeeMutation, searchEmployeesQuery } from './queries'
@@ -52,9 +53,8 @@ const ResultCount = styled.div`
 
 export default React.memo(function EmployeesPage() {
   const { i18n } = useTranslation()
-  const [page, setPage] = useState<number>(1)
   const [searchTerm, setSearchTerm] = useState<string>('')
-  const [hideDeactivated, setHideDeactivated] = useState<boolean>(false)
+  const [hideDeactivated, setHideDeactivated] = useState<boolean>(true)
   const [selectedGlobalRoles, setSelectedGlobalRoles] = useState<UserRole[]>([])
   const [selectedUnitRoles, setSelectedUnitRoles] = useState<UserRole[]>([])
   const [selectedUnitProviderTypes, setSelectedUnitProviderTypes] = useState<
@@ -69,7 +69,6 @@ export default React.memo(function EmployeesPage() {
   const employees = useQueryResult(
     searchEmployeesQuery({
       body: {
-        page,
         searchTerm: debouncedSearchTerm,
         hideDeactivated,
         globalRoles: selectedGlobalRoles,
@@ -92,7 +91,6 @@ export default React.memo(function EmployeesPage() {
             placeholder={i18n.employees.findByName}
             onChange={(s) => {
               setSearchTerm(s)
-              setPage(1)
             }}
             icon={faSearch}
             width="L"
@@ -112,7 +110,6 @@ export default React.memo(function EmployeesPage() {
             checked={hideDeactivated}
             onChange={(enabled) => {
               setHideDeactivated(enabled)
-              setPage(1)
             }}
             data-qa="hide-deactivated-checkbox"
           />
@@ -186,34 +183,45 @@ export default React.memo(function EmployeesPage() {
             spacing="xxs"
           >
             <FixedSpaceColumn spacing="xxs" alignItems="flex-end">
-              <Pagination
-                pages={employees.map((res) => res.pages).getOrElse(1)}
-                currentPage={page}
-                setPage={setPage}
-                label={i18n.common.page}
-              />
               <ResultCount>
                 {employees.isSuccess
-                  ? i18n.common.resultCount(employees.value.total)
+                  ? i18n.common.resultCount(employees.value.length)
                   : null}
               </ResultCount>
+              {employees.isSuccess && (
+                <ReportDownload
+                  data={employees.value.map((employee) => ({
+                    ...employee,
+                    name: `${employee.lastName} ${employee.firstName}`,
+                    rights: [
+                      ...sortBy(
+                        employee.globalRoles.map(
+                          (role) => i18n.roles.adRoles[role]
+                        )
+                      ),
+                      ...sortBy(
+                        employee.daycareRoles.map(
+                          (role) =>
+                            `${role.daycareName} (${i18n.roles.adRoles[role.role].toLowerCase()})`
+                        )
+                      )
+                    ].join(', ')
+                  }))}
+                  headers={[
+                    { label: i18n.employees.name, key: 'name' },
+                    { label: i18n.employees.email, key: 'email' },
+                    { label: i18n.employees.rights, key: 'rights' }
+                  ]}
+                  filename={`Käyttäjät-${HelsinkiDateTime.now().format()}.csv`}
+                />
+              )}
             </FixedSpaceColumn>
           </FixedSpaceRow>
         </FixedSpaceColumn>
 
         {renderResult(employees, (employees) => (
-          <EmployeeList employees={employees.data} />
+          <EmployeeList employees={employees} />
         ))}
-        {employees?.isSuccess && (
-          <FlexRow justifyContent="flex-end">
-            <Pagination
-              pages={employees.value.pages}
-              currentPage={page}
-              setPage={setPage}
-              label={i18n.common.page}
-            />
-          </FlexRow>
-        )}
         {createWizardOpen && (
           <CreateModal
             onSuccess={(id) => navigate(uri`/employees/${id}`.value)}

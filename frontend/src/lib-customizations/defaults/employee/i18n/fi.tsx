@@ -4759,6 +4759,7 @@ export const fi = {
   },
   employees: {
     name: 'Nimi',
+    email: 'Sähköposti',
     rights: 'Oikeudet',
     lastLogin: 'Kirjautunut viimeksi',
     employeeNumber: 'Henkilönumero',

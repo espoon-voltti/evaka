@@ -56,7 +56,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = emptySet(),
@@ -65,17 +64,15 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 ),
             )
 
-        assertEquals(4, body.total)
-        assertEquals(1, body.pages)
+        assertEquals(4, body.size)
 
         val decisionMaker =
-            body.data.find { it.id == testDecisionMaker_1.id } ?: fail("decisionMaker not found")
+            body.find { it.id == testDecisionMaker_1.id } ?: fail("decisionMaker not found")
         assertEquals(listOf(UserRole.SERVICE_WORKER), decisionMaker.globalRoles)
         assertEquals(0, decisionMaker.daycareRoles.size)
 
         val supervisor =
-            body.data.find { it.id == unitSupervisorOfTestDaycare.id }
-                ?: fail("supervisor not found")
+            body.find { it.id == unitSupervisorOfTestDaycare.id } ?: fail("supervisor not found")
         assertEquals(0, supervisor.globalRoles.size)
         assertEquals(
             listOf(
@@ -99,7 +96,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = "super",
                     hideDeactivated = false,
                     globalRoles = emptySet(),
@@ -107,9 +103,9 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     unitProviderTypes = emptySet(),
                 ),
             )
-        assertEquals(1, body.data.size)
-        assertEquals("Sammy", body.data[0].firstName)
-        assertEquals("Supervisor", body.data[0].lastName)
+        assertEquals(1, body.size)
+        assertEquals("Sammy", body[0].firstName)
+        assertEquals("Supervisor", body[0].lastName)
     }
 
     @Test
@@ -121,7 +117,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = setOf(UserRole.SERVICE_WORKER),
@@ -129,8 +124,8 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     unitProviderTypes = emptySet(),
                 ),
             )
-        assertEquals(1, body.data.size)
-        assertTrue { body.data.all { it.globalRoles.toSet().contains(UserRole.SERVICE_WORKER) } }
+        assertEquals(1, body.size)
+        assertTrue { body.all { it.globalRoles.toSet().contains(UserRole.SERVICE_WORKER) } }
     }
 
     @Test
@@ -142,7 +137,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = emptySet(),
@@ -150,9 +144,9 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     unitProviderTypes = emptySet(),
                 ),
             )
-        assertEquals(1, body.data.size)
+        assertEquals(1, body.size)
         assertTrue {
-            body.data.all {
+            body.all {
                 it.daycareRoles.map { role -> role.role }.toSet().contains(UserRole.UNIT_SUPERVISOR)
             }
         }
@@ -167,7 +161,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = emptySet(),
@@ -175,9 +168,9 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     unitProviderTypes = setOf(ProviderType.MUNICIPAL),
                 ),
             )
-        assertEquals(1, body1.data.size)
+        assertEquals(1, body1.size)
         assertTrue {
-            body1.data.all {
+            body1.all {
                 it.daycareRoles.map { role -> role.role }.toSet().contains(UserRole.UNIT_SUPERVISOR)
             }
         }
@@ -187,7 +180,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = emptySet(),
@@ -195,6 +187,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                     unitProviderTypes = setOf(ProviderType.PURCHASED),
                 ),
             )
-        assertEquals(0, body2.data.size)
+        assertEquals(0, body2.size)
     }
 }

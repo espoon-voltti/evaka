@@ -252,7 +252,7 @@ export interface EmployeeWithDaycareRoles {
   globalRoles: UserRole[]
   hasSsn: boolean
   id: EmployeeId
-  lastLogin: HelsinkiDateTime | null
+  lastLogin: HelsinkiDateTime
   lastName: string
   personalMobileDevices: MobileDevice[]
   scheduledDaycareRoles: ScheduledDaycareRole[]
@@ -424,15 +424,6 @@ export type Origin =
   | 'VTJ'
   | 'MUNICIPAL'
   | 'EVAKA'
-
-/**
-* Generated from fi.espoo.evaka.pis.PagedEmployeesWithDaycareRoles
-*/
-export interface PagedEmployeesWithDaycareRoles {
-  data: EmployeeWithDaycareRoles[]
-  pages: number
-  total: number
-}
 
 /**
 * Generated from fi.espoo.evaka.pis.service.Parentship
@@ -711,7 +702,6 @@ export interface ScheduledDaycareRole {
 export interface SearchEmployeeRequest {
   globalRoles: UserRole[] | null
   hideDeactivated: boolean | null
-  page: number | null
   searchTerm: string | null
   unitProviderTypes: ProviderType[] | null
   unitRoles: UserRole[] | null
@@ -821,7 +811,7 @@ export function deserializeJsonEmployeeWithDaycareRoles(json: JsonOf<EmployeeWit
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
     daycareRoles: json.daycareRoles.map(e => deserializeJsonDaycareRole(e)),
-    lastLogin: (json.lastLogin != null) ? HelsinkiDateTime.parseIso(json.lastLogin) : null,
+    lastLogin: HelsinkiDateTime.parseIso(json.lastLogin),
     scheduledDaycareRoles: json.scheduledDaycareRoles.map(e => deserializeJsonScheduledDaycareRole(e)),
     updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
   }
@@ -862,14 +852,6 @@ export function deserializeJsonGuardiansResponse(json: JsonOf<GuardiansResponse>
     ...json,
     blockedGuardians: (json.blockedGuardians != null) ? json.blockedGuardians.map(e => deserializeJsonPersonJSON(e)) : null,
     guardians: json.guardians.map(e => deserializeJsonPersonJSON(e))
-  }
-}
-
-
-export function deserializeJsonPagedEmployeesWithDaycareRoles(json: JsonOf<PagedEmployeesWithDaycareRoles>): PagedEmployeesWithDaycareRoles {
-  return {
-    ...json,
-    data: json.data.map(e => deserializeJsonEmployeeWithDaycareRoles(e))
   }
 }
 

@@ -51,6 +51,7 @@ describe('Employees page', () => {
       ['Sorsa Seppo', 'Testaaja Teppo']
     )
 
+    await employeesPage.clickDeactivatedEmployees()
     await employeesPage.deactivateEmployee(0)
     await waitUntilEqual(
       () => employeesPage.visibleUsers,

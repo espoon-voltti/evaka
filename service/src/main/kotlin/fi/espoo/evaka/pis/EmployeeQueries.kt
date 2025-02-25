@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
@@ -79,7 +78,7 @@ data class EmployeeWithDaycareRoles(
     val employeeNumber: String?,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime?,
-    val lastLogin: HelsinkiDateTime?,
+    val lastLogin: HelsinkiDateTime,
     val firstName: String,
     val lastName: String,
     val email: String?,
@@ -389,23 +388,14 @@ fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: D
         .execute()
 }
 
-data class PagedEmployeesWithDaycareRoles(
-    val data: List<EmployeeWithDaycareRoles>,
-    val total: Int,
-    val pages: Int,
-)
-
-fun getEmployeesPaged(
+fun getEmployees(
     tx: Database.Read,
-    page: Int,
-    pageSize: Int,
     searchTerm: String = "",
     hideDeactivated: Boolean = false,
     globalRoles: Set<UserRole>?,
     unitRoles: Set<UserRole>?,
     unitProviderTypes: Set<ProviderType>?,
-): PagedEmployeesWithDaycareRoles {
-    val offset = (page - 1) * pageSize
+): List<EmployeeWithDaycareRoles> {
     val conditions =
         Predicate.allNotNull(
             if (searchTerm.isNotBlank()) employeeFreeTextSearchPredicate(searchTerm) else null,
@@ -465,17 +455,15 @@ SELECT
         SELECT jsonb_agg(jsonb_build_object('id', md.id, 'name', md.name))
         FROM mobile_device md
         WHERE md.employee_id = employee.id
-    ) AS personal_mobile_devices,
-    count(*) OVER () AS count
+    ) AS personal_mobile_devices
 FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
 WHERE ${predicate(conditions.forTable("employee"))}
 ORDER BY last_name, first_name DESC
-LIMIT ${bind(pageSize)} OFFSET ${bind(offset)}
 """
             )
         }
-        .mapToPaged(::PagedEmployeesWithDaycareRoles, pageSize)
+        .toList<EmployeeWithDaycareRoles>()
 }
 
 fun Database.Transaction.deleteEmployee(employeeId: EmployeeId) =

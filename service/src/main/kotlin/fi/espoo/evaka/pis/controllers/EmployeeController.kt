@@ -13,7 +13,6 @@ import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.NewSsnEmployee
-import fi.espoo.evaka.pis.PagedEmployeesWithDaycareRoles
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.createEmployeeWithSsn
 import fi.espoo.evaka.pis.deactivateEmployeeRemoveRolesAndPin
@@ -22,7 +21,6 @@ import fi.espoo.evaka.pis.deleteEmployeeDaycareRoles
 import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.pis.getEmployeeWithRoles
 import fi.espoo.evaka.pis.getEmployees
-import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
 import fi.espoo.evaka.pis.setEmployeePreferredFirstName
@@ -383,7 +381,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: SearchEmployeeRequest,
-    ): PagedEmployeesWithDaycareRoles {
+    ): List<EmployeeWithDaycareRoles> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -392,10 +390,8 @@ class EmployeeController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.SEARCH_EMPLOYEES,
                     )
-                    getEmployeesPaged(
+                    getEmployees(
                         tx = tx,
-                        page = body.page ?: 1,
-                        pageSize = 50,
                         searchTerm = body.searchTerm ?: "",
                         hideDeactivated = body.hideDeactivated ?: false,
                         globalRoles =
@@ -503,7 +499,6 @@ class EmployeeController(private val accessControl: AccessControl) {
 data class PinCode(val pin: String)
 
 data class SearchEmployeeRequest(
-    val page: Int?,
     val searchTerm: String?,
     val hideDeactivated: Boolean?,
     val globalRoles: Set<UserRole>?,
