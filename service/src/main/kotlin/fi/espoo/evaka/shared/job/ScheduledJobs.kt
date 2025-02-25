@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.jamix.JamixService
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.nekku.NekkuService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.deactivateInactiveEmployees
@@ -135,6 +136,11 @@ enum class ScheduledJob(
     SyncJamixDiets(
         ScheduledJobs::syncJamixDiets,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 */10 7-17 * * *")),
+    ),
+    SyncNekkuCustomers(
+        ScheduledJobs::syncNekkuCustomers,
+        // change to better schedule
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.cron("0 */5 7-17 * * *")),
     ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
@@ -260,6 +266,7 @@ class ScheduledJobs(
     private val childDocumentService: ChildDocumentService,
     private val attachmentService: AttachmentService,
     private val jamixService: JamixService,
+    private val nekkuService: NekkuService,
     private val sfiMessagesClient: SfiMessagesClient?,
     private val passwordBlacklist: PasswordBlacklist,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -393,6 +400,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun syncJamixDiets(db: Database.Connection, clock: EvakaClock) {
         jamixService.planDietSync(db, clock)
+    }
+
+    fun syncNekkuCustomers(db: Database.Connection, clock: EvakaClock) {
+        nekkuService.planNekkuCustomersSync(db, clock)
     }
 
     fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {
