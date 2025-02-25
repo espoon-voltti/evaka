@@ -278,6 +278,11 @@ FROM children c
 JOIN assistance_need_decision ad ON ad.child_id = c.child_id
 LEFT JOIN daycare unit ON unit.id = selected_unit
 WHERE status IN ('REJECTED', 'ACCEPTED', 'ANNULLED') AND decision_made IS NOT NULL
+-- decisions are hidden if child has no recent or upcoming placements
+AND EXISTS (
+    SELECT FROM placement pl
+    WHERE pl.child_id = ad.child_id AND daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today.minusMonths(1))}, null)
+)
 """
             )
         }
@@ -343,6 +348,11 @@ SELECT ad.child_id, COUNT(ad.child_id) as count
 FROM assistance_need_decision ad
 JOIN children c ON c.child_id = ad.child_id
 WHERE (${bind(userId)} = ANY(ad.unread_guardian_ids)) AND status IN ('REJECTED', 'ACCEPTED')
+-- decisions are hidden if child has no recent or upcoming placements
+AND EXISTS (
+    SELECT FROM placement pl
+    WHERE pl.child_id = ad.child_id AND daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today.minusMonths(1))}, null)
+)
 GROUP BY ad.child_id
 """
             )
