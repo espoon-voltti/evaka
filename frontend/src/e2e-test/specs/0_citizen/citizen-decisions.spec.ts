@@ -255,6 +255,17 @@ describe('Citizen application decisions', () => {
 })
 
 describe('Citizen assistance decisions', () => {
+  beforeEach(async () => {
+    for (const child of [testChild, testChild2, testChildRestricted]) {
+      await Fixture.placement({
+        childId: child.id,
+        unitId: testDaycare.id,
+        startDate: now.toLocalDate(),
+        endDate: now.toLocalDate().addMonths(6)
+      }).save()
+    }
+  })
+
   test('Accepted decision', async () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision({
       childId: testChild2.id,
@@ -485,6 +496,17 @@ describe('Citizen assistance decisions', () => {
 })
 
 describe('Citizen assistance preschool decisions', () => {
+  beforeEach(async () => {
+    for (const child of [testChild, testChild2, testChildRestricted]) {
+      await Fixture.placement({
+        childId: child.id,
+        unitId: testDaycare.id,
+        startDate: now.toLocalDate(),
+        endDate: now.toLocalDate().addMonths(6)
+      }).save()
+    }
+  })
+
   test('Decisions are properly listed', async () => {
     const decision = await Fixture.assistanceNeedPreschoolDecision({
       childId: testChild2.id
