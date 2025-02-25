@@ -160,7 +160,7 @@ export default React.memo(function EmployeesPage() {
               </FixedSpaceFlexWrap>
             </FixedSpaceColumn>
             <FixedSpaceColumn spacing="xs">
-              <Label>{i18n.unitFeatures.page.providerType}</Label>
+              <Label>{i18n.filters.providerType}</Label>
               <FixedSpaceFlexWrap horizontalSpacing="m">
                 {unitProviderTypes.map((type) => (
                   <Checkbox
