@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
+import fi.espoo.evaka.changes
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -131,7 +132,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffArrivalRequest,
     ) {
-        val staffAttendanceIds =
+        val updates =
             try {
                 db.connect { dbc ->
                     dbc.transaction { tx ->
@@ -190,7 +191,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
         Audit.StaffAttendanceArrivalCreate.log(
             targetId = AuditId(listOf(body.groupId, body.employeeId)),
-            objectId = AuditId(staffAttendanceIds),
+            objectId = AuditId(updates.mapNotNull { it.new.id }),
+            meta =
+                mapOf(
+                    "changes" to
+                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
+                ),
         )
     }
 
@@ -209,7 +215,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffDepartureRequest,
     ) {
-        val staffAttendanceIds =
+        val updates =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
@@ -254,7 +260,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
         Audit.StaffAttendanceDepartureCreate.log(
             targetId = AuditId(listOf(body.groupId, body.employeeId)),
-            objectId = AuditId(staffAttendanceIds),
+            objectId = AuditId(updates.mapNotNull { it.new.id }),
+            meta =
+                mapOf(
+                    "changes" to
+                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
+                ),
         )
     }
 
@@ -312,9 +323,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
 
                     val deletedIds = existing.map { it.id }
-                    deletedIds.forEach { tx.deleteStaffAttendance(it) }
+                    val deleted = deletedIds.map { tx.deleteStaffAttendance(it) }
 
-                    val updatedIds =
+                    val updated =
                         body.rows.map { attendance ->
                             tx.upsertStaffAttendance(
                                 attendanceId = null,
@@ -333,19 +344,37 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             )
                         }
 
-                    StaffAttendanceUpdateResponse(deleted = deletedIds, inserted = updatedIds)
+                    updated + deleted.map { StaffAttendanceRealtimeChange(old = it) }
                 }
             }
-            .also {
+            .also { updates ->
                 Audit.StaffAttendanceUpdate.log(
                     targetId = AuditId(body.employeeId),
-                    objectId = AuditId(it.inserted + it.deleted),
+                    objectId =
+                        AuditId(
+                            (updates.mapNotNull { it.new.id } + updates.mapNotNull { it.old.id })
+                                .distinct()
+                        ),
                     meta =
                         mapOf(
                             "date" to body.date,
-                            "inserted" to it.inserted,
-                            "deleted" to it.deleted,
+                            "changes" to
+                                updates.map {
+                                    changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields)
+                                },
                         ),
+                )
+            }
+            .let { updates ->
+                StaffAttendanceUpdateResponse(
+                    deleted =
+                        updates.mapNotNull {
+                            if (it.old.id != null && it.new.id == null) it.old.id else null
+                        },
+                    inserted =
+                        updates.mapNotNull {
+                            if (it.old.id != null && it.new.id == null) null else it.new.id
+                        },
                 )
             }
     }
