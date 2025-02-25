@@ -367,6 +367,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    class SyncNekkuCustomers : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendServiceApplicationDecidedEmail(val serviceApplicationId: ServiceApplicationId) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -440,6 +444,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendDecision::class,
                     SendJamixOrder::class,
                     SyncJamixDiets::class,
+                    SyncNekkuCustomers::class,
                     SendPatuReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,
