@@ -10,9 +10,13 @@ import LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { MessageBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
+import { fasExclamation } from 'lib-icons'
 
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
@@ -28,7 +32,6 @@ interface FormValidationResult {
   valid: boolean
   fields: {
     name: boolean
-    aromiCustomerId: boolean
   }
 }
 
@@ -54,16 +57,13 @@ export default React.memo(function GroupModal({ unitId }: Props) {
     useState<FormValidationResult>({
       valid: true,
       fields: {
-        name: true,
-        aromiCustomerId: true
+        name: true
       }
     })
 
   useEffect(() => {
     const fields = {
-      name: form.name.length > 0,
-      aromiCustomerId:
-        form.aromiCustomerId !== null && form.aromiCustomerId.length > 0
+      name: form.name.length > 0
     }
     setValidationResult({
       valid: allPropertiesTrue(fields),
@@ -95,6 +95,7 @@ export default React.memo(function GroupModal({ unitId }: Props) {
       resolveLabel={i18n.unit.groups.createModal.confirmButton}
       rejectAction={clearUiMode}
       rejectLabel={i18n.unit.groups.createModal.cancelButton}
+      resolveDisabled={!validationResult.valid}
     >
       <FixedSpaceColumn spacing="m">
         <div>
@@ -139,17 +140,22 @@ export default React.memo(function GroupModal({ unitId }: Props) {
             <Label>{i18n.unit.groups.createModal.aromiCustomerId}</Label>
             <InputField
               value={form.aromiCustomerId ?? ''}
-              onChange={(value) => assignForm({ aromiCustomerId: value })}
-              data-qa="new-group-aromi-id-input"
-              info={
-                !validationResult.fields.aromiCustomerId
-                  ? {
-                      text: i18n.unit.groups.createModal.errors.aromiWarning,
-                      status: 'warning'
-                    }
-                  : undefined
+              onChange={(value) =>
+                assignForm({ aromiCustomerId: value.length > 0 ? value : null })
               }
+              data-qa="new-group-aromi-id-input"
             />
+            {form.aromiCustomerId === null && (
+              <>
+                <Gap size="s" />
+                <MessageBox
+                  color={theme.colors.status.warning}
+                  icon={fasExclamation}
+                  message={i18n.unit.groups.createModal.errors.aromiWarning}
+                  thin
+                />
+              </>
+            )}
           </div>
         )}
       </FixedSpaceColumn>

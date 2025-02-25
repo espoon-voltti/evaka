@@ -82,7 +82,8 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    archiveIntegrationEnabled: true
+    archiveIntegrationEnabled: true,
+    aromiIntegration: false
   },
   prod: {
     environmentLabel: null,
