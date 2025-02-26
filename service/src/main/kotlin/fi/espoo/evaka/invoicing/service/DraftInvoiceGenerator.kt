@@ -599,14 +599,13 @@ class DraftInvoiceGenerator(
         val headOfFamily: PersonId,
         val codebtor: PersonId?,
         val decisions: List<FeeDecision>,
+        /** Relevant placements only (placements from fee decisions and temporary placements) */
         val placements: List<Pair<FiniteDateRange, PlacementStub>>,
     ) {
-        val feeDecisionRangesByChild: Map<ChildId, DateSet> by lazy {
-            decisions
+        val placementRangesByChild: Map<ChildId, DateSet> by lazy {
+            placements
                 .asSequence()
-                .flatMap { decision ->
-                    decision.children.asSequence().map { it.child.id to decision.validDuring }
-                }
+                .map { (period, placement) -> placement.child.id to period }
                 .groupBy({ it.first }, { it.second })
                 .mapValues { DateSet.of(it.value) }
         }
@@ -729,7 +728,9 @@ class DraftInvoiceGenerator(
         val child: ChildWithDateOfBirth,
     ) {
         private val operationalDays: DateSet =
-            invoiceInput.operationalDaysByChild[child.id] ?: DateSet.empty()
+            (invoiceInput.operationalDaysByChild[child.id] ?: DateSet.empty()).intersection(
+                headInput.placementRangesByChild[child.id] ?: DateSet.empty()
+            )
         private val absences: DateMap<AbsenceType> =
             (invoiceInput.absences[child.id] ?: emptyList()).fold(DateMap.empty()) {
                 acc,
@@ -738,10 +739,10 @@ class DraftInvoiceGenerator(
             }
 
         private val isPartialMonthChild: Boolean by lazy {
-            val businessDaysWithoutDecision =
+            val businessDaysWithoutPlacement =
                 invoiceInput.businessDays -
-                    (headInput.feeDecisionRangesByChild[child.id] ?: DateSet.empty())
-            businessDaysWithoutDecision.isNotEmpty()
+                    (headInput.placementRangesByChild[child.id] ?: DateSet.empty())
+            businessDaysWithoutPlacement.isNotEmpty()
         }
 
         val contractDaysPerMonth = headInput.contractDaysPerMonthByChild[child.id]

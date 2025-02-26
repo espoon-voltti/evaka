@@ -2686,6 +2686,79 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `preceding CLUB placement does not interfere with contract day surplus day calculation`() {
+        val month = YearMonth.of(2025, 1)
+        val period = FiniteDateRange.ofMonth(month)
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        // Non-invoiced CLUB placement until 2025-01-12
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.CLUB,
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = LocalDate.of(2025, 1, 1),
+                    endDate = LocalDate.of(2025, 1, 12),
+                )
+            )
+        }
+
+        // Invoiced DAYCARE placement with 10 contract days from 2025-01-13
+        insertDecisionsAndPlacementsAndServiceNeeds(
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    FiniteDateRange(LocalDate.of(2025, 1, 13), LocalDate.of(2025, 12, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareContractDays10.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf(),
+                        )
+                    ),
+                )
+            )
+        )
+
+        // 15 operational days, 7 planned absences -> 8 attendance days
+        insertAbsences(
+            testChild_1.id,
+            listOf(
+                LocalDate.of(2025, 1, 14) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2025, 1, 15) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2025, 1, 17) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2025, 1, 21) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2025, 1, 22) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2025, 1, 24) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2025, 1, 30) to AbsenceType.PLANNED_ABSENCE,
+            ),
+        )
+
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
+
+        val result = db.read { it.getAllInvoices() }
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(23120, invoice.totalPrice)
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(8, invoiceRow.amount)
+                assertEquals(2890, invoiceRow.unitPrice) // 28900 / 10
+                assertEquals(23120, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation when fee decision is valid only during weekend`() {
         val month = YearMonth.of(2020, 5)
         val period = FiniteDateRange.ofMonth(month)
