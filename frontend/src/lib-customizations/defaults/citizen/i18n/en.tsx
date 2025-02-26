@@ -2672,7 +2672,6 @@ const en: Translations = {
         accessibility of which we cannot be responsible for.
       </P>
       <ul>
-        <li>Keycloak user identification service</li>
         <li>Suomi.fi identification</li>
         <li>Leaflet map service</li>
       </ul>

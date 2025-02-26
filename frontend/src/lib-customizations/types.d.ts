@@ -286,15 +286,6 @@ interface BaseFeatureFlags {
   requireAttachments?: boolean
 
   /**
-   * Enable support for citizen weak login
-   */
-  weakLogin?: boolean
-  /**
-   * Enable support for employee Suomi.fi login
-   */
-  employeeSfiLogin?: boolean
-
-  /**
    * Enable support for document archival integration
    */
   archiveIntegrationEnabled?: boolean

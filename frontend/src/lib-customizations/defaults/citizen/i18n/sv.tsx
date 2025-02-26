@@ -2912,7 +2912,6 @@ const sv: Translations = {
         vi inte är ansvariga för.
       </P>
       <ul>
-        <li>Användarautentiseringstjänsten Keycloak</li>
         <li>Tjänsten suomi.fi</li>
         <li>Karttjänsten Leaflet</li>
       </ul>
