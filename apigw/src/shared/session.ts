@@ -199,10 +199,7 @@ export function sessionSupport<T extends SessionType>(
     await saveUser(req, {
       ...user,
       // spread saml session fields for backwards compatibility
-      ...(user.authType === 'sfi' ||
-      user.authType === 'ad' ||
-      user.authType === 'keycloak-employee' ||
-      user.authType === 'keycloak-citizen'
+      ...(user.authType === 'sfi' || user.authType === 'ad'
         ? user.samlSession
         : undefined)
     })

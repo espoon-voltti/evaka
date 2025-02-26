@@ -307,70 +307,6 @@ const envVariables = {
    */
   SFI_SAML_PRIVATE_CERT: unset<string>(),
 
-  // ----- eVaka employee Keycloak SAML authentication -----
-  /**
-   * SAML service provider callback URL for citizen Keycloak authentication.
-   *
-   * This is the URL for our SAML authentication response endpoint
-   * (e.g. https://evaka.example.com/api/employee/auth/ad/login/callback)
-   */
-  EVAKA_SAML_CALLBACK_URL: unset<string>(),
-  /**
-   * SAML identity provider entrypoint URL for citizen Keycloak authentication.
-   *
-   * This is the URL for the Keycloak-side SAML authentication request endpoint.
-   * (e.g. https://evaka.example.com/auth/realms/evaka/protocol/saml)
-   */
-  EVAKA_SAML_ENTRYPOINT: unset<string>(),
-  /**
-   * SAML issuer for employee Keycloak authentication.
-   *
-   * This value should match the "Service provider entity ID" field in Keycloak configuration.
-   */
-  EVAKA_SAML_ISSUER: unset<string>(),
-  /**
-   * Comma-separated paths to SAML IDP public certificates in PEM format.
-   *
-   * If multiple certificates are provided, SAML messages signed by any of them are accepted.
-   */
-  EVAKA_SAML_PUBLIC_CERT: unset<string[]>(),
-  /**
-   * Path to SAML SP private certificate in PEM format
-   */
-  EVAKA_SAML_PRIVATE_CERT: unset<string>(),
-
-  // ----- eVaka citizen Keycloak SAML authentication -----
-  /**
-   * SAML service provider callback URL for citizen Keycloak authentication.
-   *
-   * This is the URL for our SAML authentication response endpoint
-   * (e.g. https://evaka.example.com/api/citizen/auth/keycloak/login/callback)
-   */
-  EVAKA_CUSTOMER_SAML_CALLBACK_URL: unset<string>(),
-  /**
-   * SAML identity provider entrypoint URL for citizen Keycloak authentication.
-   *
-   * This is the URL for the Keycloak-side SAML authentication request endpoint.
-   * (e.g. https://evaka.example.com/auth/realms/evaka-customer/protocol/saml)
-   */
-  EVAKA_CUSTOMER_SAML_ENTRYPOINT: unset<string>(),
-  /**
-   * SAML issuer for citizen Keycloak authentication.
-   *
-   * This value should match the "Service provider entity ID" field in Keycloak configuration.
-   */
-  EVAKA_CUSTOMER_SAML_ISSUER: unset<string>(),
-  /**
-   * Comma-separated paths to SAML IDP public certificates in PEM format.
-   *
-   * If multiple certificates are provided, SAML messages signed by any of them are accepted.
-   */
-  EVAKA_CUSTOMER_SAML_PUBLIC_CERT: unset<string[]>(),
-  /**
-   * Path to SAML SP private certificate in PEM format
-   */
-  EVAKA_CUSTOMER_SAML_PRIVATE_CERT: unset<string>(),
-
   // ----- Titania integration -----
   /**
    * The username Titania uses to authenticate with eVaka using Basic Auth
@@ -464,8 +400,6 @@ export interface Config {
         saml: EvakaSamlConfig
       }
   sfi: { type: 'mock' | 'disabled' } | { type: 'saml'; saml: EvakaSamlConfig }
-  keycloakEmployee: EvakaSamlConfig | undefined
-  keycloakCitizen: EvakaSamlConfig | undefined
   redis: {
     host: string | undefined
     port: number | undefined
@@ -678,48 +612,6 @@ export function configFromEnv(): Config {
           }
         }
 
-  const keycloakEmployeeCallbackUrl = optional(
-    'EVAKA_SAML_CALLBACK_URL',
-    unchanged
-  )
-
-  const keycloakEmployee: EvakaSamlConfig | undefined =
-    keycloakEmployeeCallbackUrl
-      ? {
-          callbackUrl: keycloakEmployeeCallbackUrl,
-          entryPoint: required('EVAKA_SAML_ENTRYPOINT', unchanged),
-          // NOTE: Same as entrypoint, on purpose
-          logoutUrl: required('EVAKA_SAML_ENTRYPOINT', unchanged),
-          issuer: required('EVAKA_SAML_ISSUER', unchanged),
-          publicCert: required('EVAKA_SAML_PUBLIC_CERT', parseArray(unchanged)),
-          privateCert: required('EVAKA_SAML_PRIVATE_CERT', unchanged),
-          validateInResponseTo: ValidateInResponseTo.always,
-          decryptAssertions: true
-        }
-      : undefined
-
-  const keycloakCitizenCallbackUrl = optional(
-    'EVAKA_CUSTOMER_SAML_CALLBACK_URL',
-    unchanged
-  )
-
-  const keycloakCitizen: EvakaSamlConfig | undefined =
-    keycloakCitizenCallbackUrl
-      ? {
-          callbackUrl: keycloakCitizenCallbackUrl,
-          entryPoint: required('EVAKA_CUSTOMER_SAML_ENTRYPOINT', unchanged),
-          logoutUrl: required('EVAKA_CUSTOMER_SAML_ENTRYPOINT', unchanged),
-          issuer: required('EVAKA_CUSTOMER_SAML_ISSUER', unchanged),
-          publicCert: required(
-            'EVAKA_CUSTOMER_SAML_PUBLIC_CERT',
-            parseArray(unchanged)
-          ),
-          privateCert: required('EVAKA_CUSTOMER_SAML_PRIVATE_CERT', unchanged),
-          validateInResponseTo: ValidateInResponseTo.always,
-          decryptAssertions: true
-        }
-      : undefined
-
   const legacyCookieSecret = optional('COOKIE_SECRET', unchanged)
   const useSecureCookies = required('USE_SECURE_COOKIES', parseBoolean)
   const defaultSessionTimeoutMinutes = required(
@@ -760,9 +652,7 @@ export function configFromEnv(): Config {
       password: optional('REDIS_PASSWORD', unchanged),
       disableSecurity: required('REDIS_DISABLE_SECURITY', parseBoolean),
       tlsServerName: optional('REDIS_TLS_SERVER_NAME', unchanged)
-    },
-    keycloakEmployee,
-    keycloakCitizen
+    }
   }
 }
 
