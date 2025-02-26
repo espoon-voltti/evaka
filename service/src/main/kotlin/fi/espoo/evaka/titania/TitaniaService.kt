@@ -4,8 +4,9 @@
 
 package fi.espoo.evaka.titania
 
-import fi.espoo.evaka.attendance.RawAttendance
-import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.attendance.*
+import fi.espoo.evaka.pis.getEmployeeIdsByNumbers
+import fi.espoo.evaka.pis.getEmployeeIdsByNumbersMapById
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
