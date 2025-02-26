@@ -6,4 +6,3 @@
 *.sh text eol=lf
 gradlew eol=lf
 compose-e2e eol=lf
-compose-keycloak eol=lf
