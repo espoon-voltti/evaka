@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.data.DateMap
@@ -79,12 +80,16 @@ fun Database.Read.getOperationalDatesForChildren(
 
     val holidays = getHolidays(range)
 
-    data class ShiftCareRange(val childId: ChildId, val range: FiniteDateRange)
-    val shiftCareRanges: Map<ChildId, DateSet> =
+    data class ShiftCareRange(
+        val childId: ChildId,
+        val range: FiniteDateRange,
+        val shiftCare: ShiftCareType,
+    )
+    val shiftCareRanges =
         createQuery {
                 sql(
                     """
-        SELECT pl.child_id, daterange(sn.start_date, sn.end_date, '[]') AS range
+        SELECT pl.child_id, daterange(sn.start_date, sn.end_date, '[]') AS range, sn.shift_care
         FROM placement pl
         JOIN service_need sn ON sn.placement_id = pl.id AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
         WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
@@ -93,13 +98,26 @@ fun Database.Read.getOperationalDatesForChildren(
             }
             .toList<ShiftCareRange>()
             .groupBy { it.childId }
-            .mapValues { entry -> DateSet.of(entry.value.map { it.range }) }
+
+    val fullShiftCareRanges: Map<ChildId, DateSet> =
+        shiftCareRanges.mapValues { entry ->
+            DateSet.of(entry.value.filter { it.shiftCare == ShiftCareType.FULL }.map { it.range })
+        }
+    val intermittentShiftCareRanges: Map<ChildId, DateSet> =
+        shiftCareRanges.mapValues { entry ->
+            DateSet.of(
+                entry.value.filter { it.shiftCare == ShiftCareType.INTERMITTENT }.map { it.range }
+            )
+        }
 
     return children.associate { childId ->
         val operationalDays =
             range.dates().filter { date ->
                 val unitId = realizedPlacements[childId]?.getValue(date) ?: return@filter false
-                val hasShiftCare = shiftCareRanges[childId]?.includes(date) ?: false
+                if (intermittentShiftCareRanges[childId]?.includes(date) == true) {
+                    return@filter true
+                }
+                val hasShiftCare = fullShiftCareRanges[childId]?.includes(date) ?: false
                 val daycareOperationDays =
                     operationDaysByDaycareId[unitId]?.let {
                         it.shiftCareOperationDays?.takeIf { hasShiftCare } ?: it.operationDays
