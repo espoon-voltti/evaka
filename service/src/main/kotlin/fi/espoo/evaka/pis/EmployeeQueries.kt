@@ -643,3 +643,29 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
+
+private fun Database.Read.employeeNumbersQuery(
+    employeeNumbers: Collection<String>
+): Database.Query {
+    return createQuery {
+        sql(
+            """
+            SELECT id, employee_number
+            FROM employee
+            WHERE employee_number = ANY (${bind(employeeNumbers)})
+            """
+        )
+    }
+}
+
+fun Database.Read.getEmployeeIdsByNumbers(
+    employeeNumbers: Collection<String>
+): Map<String, EmployeeId> {
+    return employeeNumbersQuery(employeeNumbers).toMap { columnPair("employee_number", "id") }
+}
+
+fun Database.Read.getEmployeeIdsByNumbersMapById(
+    employeeNumbers: Collection<String>
+): Map<EmployeeId, String> {
+    return employeeNumbersQuery(employeeNumbers).toMap { columnPair("id", "employee_number") }
+}
