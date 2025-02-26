@@ -286,6 +286,12 @@ test('Foster parent can receive and reply to messages', async () => {
 
 test('Foster parent can read an accepted assistance decision', async () => {
   const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
+  await Fixture.placement({
+    childId: fosterChild.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addMonths(6)
+  }).save()
   const decision = await Fixture.preFilledAssistanceNeedDecision({
     childId: fosterChild.id,
     selectedUnit: testDaycare.id,

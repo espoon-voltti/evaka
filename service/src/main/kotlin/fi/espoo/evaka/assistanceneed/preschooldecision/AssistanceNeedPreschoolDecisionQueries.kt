@@ -434,9 +434,18 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsForCitizen(
         createQuery {
                 sql(
                     """
-SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
-UNION ALL 
-SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
+    UNION ALL 
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
+)
+SELECT ch.child_id 
+FROM children ch
+-- decisions are hidden if child has no recent or upcoming placements
+WHERE EXISTS (
+    SELECT FROM placement pl
+    WHERE pl.child_id = ch.child_id AND daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today.minusMonths(1))}, null)
+)
 """
                 )
             }
@@ -501,6 +510,11 @@ WHERE (${bind(userId)} = ANY(ad.unread_guardian_ids))
         UNION ALL 
         SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
     )
+-- decisions are hidden if child has no recent or upcoming placements
+AND EXISTS (
+    SELECT FROM placement pl
+    WHERE pl.child_id = ad.child_id AND daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today.minusMonths(1))}, null)
+)
 GROUP BY ad.child_id
 """
             )
