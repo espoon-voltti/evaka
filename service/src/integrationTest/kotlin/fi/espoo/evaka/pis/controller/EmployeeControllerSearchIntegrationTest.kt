@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
@@ -55,24 +56,23 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = emptySet(),
+                    unitRoles = emptySet(),
+                    unitProviderTypes = emptySet(),
                 ),
             )
 
-        assertEquals(4, body.total)
-        assertEquals(1, body.pages)
+        assertEquals(4, body.size)
 
         val decisionMaker =
-            body.data.find { it.id == testDecisionMaker_1.id } ?: fail("decisionMaker not found")
+            body.find { it.id == testDecisionMaker_1.id } ?: fail("decisionMaker not found")
         assertEquals(listOf(UserRole.SERVICE_WORKER), decisionMaker.globalRoles)
         assertEquals(0, decisionMaker.daycareRoles.size)
 
         val supervisor =
-            body.data.find { it.id == unitSupervisorOfTestDaycare.id }
-                ?: fail("supervisor not found")
+            body.find { it.id == unitSupervisorOfTestDaycare.id } ?: fail("supervisor not found")
         assertEquals(0, supervisor.globalRoles.size)
         assertEquals(
             listOf(
@@ -96,19 +96,20 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = "super",
                     hideDeactivated = false,
                     globalRoles = emptySet(),
+                    unitRoles = emptySet(),
+                    unitProviderTypes = emptySet(),
                 ),
             )
-        assertEquals(1, body.data.size)
-        assertEquals("Sammy", body.data[0].firstName)
-        assertEquals("Supervisor", body.data[0].lastName)
+        assertEquals(1, body.size)
+        assertEquals("Sammy", body[0].firstName)
+        assertEquals("Supervisor", body[0].lastName)
     }
 
     @Test
-    fun `admin searches employees with roles`() {
+    fun `admin searches employees with global roles`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body =
             controller.searchEmployees(
@@ -116,13 +117,76 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(
-                    page = 1,
                     searchTerm = null,
                     hideDeactivated = false,
                     globalRoles = setOf(UserRole.SERVICE_WORKER),
+                    unitRoles = emptySet(),
+                    unitProviderTypes = emptySet(),
                 ),
             )
-        assertEquals(1, body.data.size)
-        assertTrue { body.data.all { it.globalRoles.toSet().contains(UserRole.SERVICE_WORKER) } }
+        assertEquals(1, body.size)
+        assertTrue { body.all { it.globalRoles.toSet().contains(UserRole.SERVICE_WORKER) } }
+    }
+
+    @Test
+    fun `admin searches employees with unit roles`() {
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val body =
+            controller.searchEmployees(
+                dbInstance(),
+                user,
+                RealEvakaClock(),
+                SearchEmployeeRequest(
+                    searchTerm = null,
+                    hideDeactivated = false,
+                    globalRoles = emptySet(),
+                    unitRoles = setOf(UserRole.UNIT_SUPERVISOR),
+                    unitProviderTypes = emptySet(),
+                ),
+            )
+        assertEquals(1, body.size)
+        assertTrue {
+            body.all {
+                it.daycareRoles.map { role -> role.role }.toSet().contains(UserRole.UNIT_SUPERVISOR)
+            }
+        }
+    }
+
+    @Test
+    fun `admin searches employees with unit roles and provider types`() {
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val body1 =
+            controller.searchEmployees(
+                dbInstance(),
+                user,
+                RealEvakaClock(),
+                SearchEmployeeRequest(
+                    searchTerm = null,
+                    hideDeactivated = false,
+                    globalRoles = emptySet(),
+                    unitRoles = setOf(UserRole.UNIT_SUPERVISOR),
+                    unitProviderTypes = setOf(ProviderType.MUNICIPAL),
+                ),
+            )
+        assertEquals(1, body1.size)
+        assertTrue {
+            body1.all {
+                it.daycareRoles.map { role -> role.role }.toSet().contains(UserRole.UNIT_SUPERVISOR)
+            }
+        }
+        val body2 =
+            controller.searchEmployees(
+                dbInstance(),
+                user,
+                RealEvakaClock(),
+                SearchEmployeeRequest(
+                    searchTerm = null,
+                    hideDeactivated = false,
+                    globalRoles = emptySet(),
+                    unitRoles = setOf(UserRole.UNIT_SUPERVISOR),
+                    unitProviderTypes = setOf(ProviderType.PURCHASED),
+                ),
+            )
+        assertEquals(0, body2.size)
     }
 }
