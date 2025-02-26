@@ -2896,7 +2896,6 @@ export default {
         joiden saavutettavuudesta emme voi vastata.
       </P>
       <ul>
-        <li>Keycloak käyttäjän tunnistautumispalvelu</li>
         <li>Suomi.fi-tunnistautuminen</li>
         <li>Leaflet-karttapalvelu</li>
       </ul>

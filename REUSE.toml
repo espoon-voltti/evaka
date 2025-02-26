@@ -129,18 +129,6 @@ SPDX-FileCopyrightText = "2007-2020 The original author or authors <info@gradle.
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "keycloak/evaka-review-profile/src/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2016-2022 The original author or authors"
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "keycloak/theme/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = ["2020 City of Helsinki", "2021-2022 City of Espoo"]
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
 path = "dummy-idp/test-cert/**"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2017-2025 City of Espoo"

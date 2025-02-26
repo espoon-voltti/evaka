@@ -9,7 +9,6 @@ import Title from 'lib-components/atoms/Title'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { getLoginUrl } from '../../api/auth'
 import { useTranslation } from '../../state/i18n'
@@ -44,14 +43,7 @@ function Login({ error }: Props) {
             <span>{i18n.login.loginAD}</span>
           </LinkButton>
           <Gap horizontal />
-          <LinkButton
-            data-qa="login-btn"
-            href={
-              featureFlags.employeeSfiLogin
-                ? getLoginUrl('sfi')
-                : getLoginUrl('keycloak')
-            }
-          >
+          <LinkButton data-qa="login-btn" href={getLoginUrl('sfi')}>
             <span>{i18n.login.loginEvaka}</span>
           </LinkButton>
         </Center>
