@@ -239,6 +239,10 @@ SELECT EXISTS (
     SELECT 1 FROM guardian
     WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(personId)}
 ) OR EXISTS (
+    -- is a foster parent
+    SELECT 1 FROM foster_parent
+    WHERE child_id = ${bind(childId)} AND parent_id = ${bind(personId)} AND valid_during @> ${bind(today)} 
+) OR EXISTS (
     -- is either a head of child or their partner
     SELECT 1 FROM fridge_child fc
     WHERE 
