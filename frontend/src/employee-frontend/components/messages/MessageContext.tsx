@@ -70,6 +70,7 @@ import { UserContext } from '../../state/user'
 import {
   AccountView,
   groupMessageBoxes,
+  isFolderView,
   isStandardView,
   municipalMessageBoxes,
   personalMessageBoxes,
@@ -669,10 +670,26 @@ export const MessageContextProvider = React.memo(
       [setSingleThread]
     )
 
+    const appendMessageToThreadInFolder = useCallback(
+      (message: Message) =>
+        setMessagesInFolder((prevState: Result<MessageThread[]>) =>
+          prevState.map((threads) =>
+            threads.map((thread) =>
+              thread.id === message.threadId
+                ? { ...thread, messages: [...thread.messages, message] }
+                : thread
+            )
+          )
+        ),
+      [setMessagesInFolder]
+    )
+
     const onReplySent = useCallback(
       ({ message, threadId }: ThreadReply) => {
         if (selectedAccount?.view === 'thread') {
           appendMessageToSingleThread(message)
+        } else if (selectedAccount && isFolderView(selectedAccount.view)) {
+          appendMessageToThreadInFolder(message)
         } else {
           setReceivedMessages(
             appendMessageAndMoveThreadToTopOfList(threadId, message)
@@ -680,7 +697,12 @@ export const MessageContextProvider = React.memo(
         }
         setSelectedThread(threadId)
       },
-      [appendMessageToSingleThread, selectedAccount, setSelectedThread]
+      [
+        appendMessageToSingleThread,
+        appendMessageToThreadInFolder,
+        selectedAccount,
+        setSelectedThread
+      ]
     )
 
     const [replyContents, setReplyContents] = useState<RepliesByThread>({})

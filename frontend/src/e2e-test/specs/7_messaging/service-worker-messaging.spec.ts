@@ -203,6 +203,8 @@ describe('Service Worker Messaging', () => {
       await folderMessagesPage.messages.assertCount(0)
       await messagesPage.openFolder('Kansio 2')
       await folderMessagesPage.messages.assertCount(1)
+
+      await folderMessagesPage.openFirstThreadReplyEditor()
     })
 
     it('should prefill the receiver and title fields when sending a new message', async () => {

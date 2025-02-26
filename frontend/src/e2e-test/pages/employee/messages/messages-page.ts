@@ -194,6 +194,11 @@ export class FolderMessagesPage {
     await select.selectOption({ label: folderName })
     await modal.findByDataQa('modal-okBtn').click()
   }
+
+  async openFirstThreadReplyEditor() {
+    await this.messages.first().click()
+    await this.page.findByDataQa('message-reply-editor-btn').click()
+  }
 }
 
 export class SentMessagePage {
