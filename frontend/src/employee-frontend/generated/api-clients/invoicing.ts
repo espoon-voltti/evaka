@@ -52,6 +52,7 @@ import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionVoucherValueId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
+import { Uri } from 'lib-common/uri'
 import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { VoucherValueDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
@@ -202,6 +203,20 @@ export async function getFeeDecision(
     method: 'GET'
   })
   return deserializeJsonFeeDecisionResponse(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.getFeeDecisionPdf
+*/
+export function getFeeDecisionPdf(
+  request: {
+    decisionId: FeeDecisionId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/employee/fee-decisions/pdf/${request.decisionId}`
+  }
 }
 
 
@@ -956,6 +971,20 @@ export async function getVoucherValueDecision(
     method: 'GET'
   })
   return deserializeJsonVoucherValueDecisionResponse(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.getVoucherValueDecisionPdf
+*/
+export function getVoucherValueDecisionPdf(
+  request: {
+    decisionId: VoucherValueDecisionId
+  }
+): { url: Uri } {
+  return {
+    url: uri`${client.defaults.baseURL ?? ''}/employee/value-decisions/pdf/${request.decisionId}`
+  }
 }
 
 

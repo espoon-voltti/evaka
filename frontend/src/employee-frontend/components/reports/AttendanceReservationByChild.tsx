@@ -34,6 +34,7 @@ import { Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
+import { getMealOrders } from '../../generated/api-clients/aromi'
 import { Translations, useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { formatName } from '../../utils'
@@ -254,11 +255,11 @@ export default React.memo(function AttendanceReservationByChild() {
 
         {featureFlags.aromiIntegration && roles.includes('ADMIN') && (
           <BackendReportDownload
-            href={`/api/employee/aromi?${new URLSearchParams({
-              start: range.start.formatIso(),
-              end: range.end.formatIso(),
-              groupIds: groupIds.join(',')
-            }).toString()}`}
+            href={getMealOrders({
+              start: range.start,
+              end: range.end,
+              groupIds
+            }).url.toString()}
             text="Lataa Aromi-raportti"
             enabled={groupIds.length > 0}
           />

@@ -365,6 +365,16 @@ export function createUrlSearchParams(
   return params
 }
 
+export function createFormData(
+  ...nameValuePairs: [string, string | Blob | null | undefined][]
+): FormData {
+  const formData = new FormData()
+  for (const [name, value] of nameValuePairs) {
+    if (value != null) formData.append(name, value)
+  }
+  return formData
+}
+
 export const wrapResult =
   <Args extends any[], R>( // eslint-disable-line @typescript-eslint/no-explicit-any
     apiCall: (...args: Args) => Promise<R>
