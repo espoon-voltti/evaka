@@ -177,7 +177,11 @@ export default React.memo(function Raw() {
                 { label: 'Poissa maksullisesta', key: 'absencePaid' },
                 { label: 'Poissa maksuttomasta', key: 'absenceFree' },
                 { label: 'Henkilöstömitoitus', key: 'staffDimensioning' },
-                { label: 'Kotikunta', key: 'municipalityOfResidence' }
+                { label: 'Kotikunta', key: 'municipalityOfResidence' },
+                {
+                  label: 'Ryhmäkohtainen Aromin asiakastunniste',
+                  key: 'aromiCustomerId'
+                }
               ]}
               filename={`${
                 i18n.reports.raw.title

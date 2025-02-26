@@ -47,7 +47,8 @@ const features: Features = {
     multiSelectDeparture: true,
     weakLogin: true,
     employeeSfiLogin: true,
-    archiveIntegrationEnabled: true
+    archiveIntegrationEnabled: true,
+    aromiIntegration: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -85,7 +86,8 @@ const features: Features = {
     multiSelectDeparture: true,
     weakLogin: true,
     employeeSfiLogin: true,
-    archiveIntegrationEnabled: true
+    archiveIntegrationEnabled: true,
+    aromiIntegration: false
   },
   prod: {
     environmentLabel: null,
@@ -122,7 +124,8 @@ const features: Features = {
     multiSelectDeparture: false,
     weakLogin: true,
     employeeSfiLogin: true,
-    archiveIntegrationEnabled: false
+    archiveIntegrationEnabled: false,
+    aromiIntegration: false
   }
 }
 

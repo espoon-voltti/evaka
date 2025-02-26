@@ -307,6 +307,7 @@ class DaycareController(
                         body.name,
                         body.startDate,
                         body.initialCaretakers,
+                        body.aromiCustomerId,
                     )
                 }
             }
@@ -323,6 +324,7 @@ class DaycareController(
         val startDate: LocalDate,
         val endDate: LocalDate?,
         val jamixCustomerNumber: Int?,
+        val aromiCustomerId: String?,
     )
 
     @PutMapping("/{daycareId}/groups/{groupId}")
@@ -343,6 +345,7 @@ class DaycareController(
                     body.startDate,
                     body.endDate,
                     body.jamixCustomerNumber,
+                    body.aromiCustomerId,
                 )
             }
         }
@@ -764,6 +767,7 @@ class DaycareController(
         val name: String,
         val startDate: LocalDate,
         val initialCaretakers: Double,
+        val aromiCustomerId: String?,
     )
 
     data class CaretakerRequest(
