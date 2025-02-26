@@ -37,6 +37,7 @@ import {
   getStartingPlacementsReport,
   getTampereRegionalSurveyAgeStatistics,
   getTampereRegionalSurveyMonthlyStatistics,
+  getTampereRegionalSurveyYearlyStatistics,
   getTitaniaErrorsReport,
   getUnitsReport,
   getVardaChildErrorsReport,
@@ -151,4 +152,8 @@ export const tampereRegionalSurveyMonthlyReport = q.query(
 
 export const tampereRegionalSurveyAgeReport = q.query(
   getTampereRegionalSurveyAgeStatistics
+)
+
+export const tampereRegionalSurveyYearlyReport = q.query(
+  getTampereRegionalSurveyYearlyStatistics
 )

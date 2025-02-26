@@ -66,6 +66,7 @@ import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { RawReportRow } from 'lib-common/generated/api-types/reports'
 import { RegionalSurveyReportAgeStatisticsResult } from 'lib-common/generated/api-types/reports'
 import { RegionalSurveyReportResult } from 'lib-common/generated/api-types/reports'
+import { RegionalSurveyReportYearlyStatisticsResult } from 'lib-common/generated/api-types/reports'
 import { Report } from 'lib-common/generated/api-types/reports'
 import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
@@ -1096,6 +1097,26 @@ export async function getTampereRegionalSurveyMonthlyStatistics(
   )
   const { data: json } = await client.request<JsonOf<RegionalSurveyReportResult>>({
     url: uri`/employee/reports/tampere-regional-survey/monthly-statistics`.toString(),
+    method: 'GET',
+    params
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics
+*/
+export async function getTampereRegionalSurveyYearlyStatistics(
+  request: {
+    year: number
+  }
+): Promise<RegionalSurveyReportYearlyStatisticsResult> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<RegionalSurveyReportYearlyStatisticsResult>>({
+    url: uri`/employee/reports/tampere-regional-survey/yearly-statistics`.toString(),
     method: 'GET',
     params
   })

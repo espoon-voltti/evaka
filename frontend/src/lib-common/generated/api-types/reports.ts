@@ -874,6 +874,14 @@ export interface RegionalSurveyReportResult {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportYearlyStatisticsResult
+*/
+export interface RegionalSurveyReportYearlyStatisticsResult {
+  year: number
+  yearlyStatistics: YearlyStatisticsResult[]
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.Report
 */
 export type Report =
@@ -1154,6 +1162,30 @@ export type VoucherReportRowType =
   | 'REFUND'
   | 'CORRECTION'
   | 'ORIGINAL'
+
+/**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.YearlyStatisticsResult
+*/
+export interface YearlyStatisticsResult {
+  club5YearOldCount: number
+  familyCare5YearOldCount: number
+  municipal5YearOldCount: number
+  municipalEnhancedAssistanceCount: number
+  municipalGeneralAssistanceCount: number
+  municipalSpecialAssistanceCount: number
+  preschoolDaycareFamilyCareCount: number
+  preschoolDaycareSchoolCareCount: number
+  preschoolDaycareSchoolShiftCareCount: number
+  preschoolDaycareUnitCareCount: number
+  preschoolDaycareUnitShiftCareCount: number
+  purchased5YearOldCount: number
+  voucher5YearOldCount: number
+  voucherAssistanceCount: number
+  voucherEnhancedAssistanceCount: number
+  voucherGeneralAssistanceCount: number
+  voucherSpecialAssistanceCount: number
+  voucherTotalCount: number
+}
 
 
 export function deserializeJsonAssistanceNeedDecisionsReportRow(json: JsonOf<AssistanceNeedDecisionsReportRow>): AssistanceNeedDecisionsReportRow {

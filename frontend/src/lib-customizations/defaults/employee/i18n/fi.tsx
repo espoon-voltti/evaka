@@ -4401,6 +4401,7 @@ export const fi = {
         'Raportti kerää kunnan vuosittaiseen seutuselvitykseen tarvittavat tiedot ladattaviksi CSV-tiedostoiksi',
       monthlyReport: 'Seutuselvityksen kuukausittaiset määrät',
       ageStatisticsReport: 'Seutuselvityksen ikäjakaumat',
+      yearlyStatisticsReport: 'Seutuselvityksen vuosittaiset määrät',
       reportLabel: 'Seutuselvitys',
       monthlyColumns: {
         month: 'Kuukausi',
@@ -4433,6 +4434,37 @@ export const fi = {
           'Alle 3v perhepäivähoidon hoitopäivät',
         effectiveFamilyDaycareDaysOver3Count:
           '3v ja yli perhepäivähoidon hoitopäivät'
+      },
+      yearlyStatisticsColumns: {
+        voucherTotalCount: 'Palvelusetelien määrä',
+        voucherAssistanceCount: 'Tuen lasten määrä palveluseteliyksiköissä',
+        voucher5YearOldCount: '5-vuotiaat palveluseteliyksiköissä',
+        purchased5YearlOldCount: '5-vuotiaat ostopalveluyksiköissä',
+        municipal5YearOldCount: '5-vuotiaat kunnallisissa yksiköissä',
+        familyCare5YearOldCount: '5-vuotiaat perhepäivähoidossa',
+        club5YearOldCount: '5-vuotiaat kerhossa',
+        preschoolDaycareUnitCareCount:
+          'Täydentävän varhaiskasvatuksen lapset vaka-yksiköissä',
+        preschoolDaycareSchoolCareCount:
+          'Täydentävän varhaiskasvatuksen lapset kouluissa',
+        preschoolDaycareFamilyCareCount:
+          'Täydentävän varhaiskasvatuksen lapset perhepäivähoidossa',
+        preschoolDaycareUnitShiftCareCount:
+          'Täydentävän varhaiskasvatuksen vuorohoidon lapset vaka-yksiköissä',
+        preschoolDaycareSchoolShiftCareCount:
+          'Täydentävän varhaiskasvatuksen vuorohoidon lapset kouluissa',
+        voucherGeneralAssistanceCount:
+          'Yleisen tuen lapsimäärä (palveluseteli)',
+        voucherSpecialAssistanceCount:
+          'Erityisen tuen lapsimäärä (palveluseteli)',
+        voucherEnhancedAssistanceCount:
+          'Tehostetun tuen lapsimäärä (palveluseteli)',
+        municipalGeneralAssistanceCount:
+          'Yleisen tuen lapsimäärä (kunnallinen)',
+        municipalSpecialAssistanceCount:
+          'Erityisen tuen lapsimäärä (kunnallinen)',
+        municipalEnhancedAssistanceCount:
+          'Tehostetun tuen lapsimäärä (kunnallinen)'
       }
     }
   },
