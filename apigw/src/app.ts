@@ -7,7 +7,6 @@ import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
 import { createDevSfiRouter } from './enduser/dev-sfi-auth.js'
-import { createKeycloakCitizenIntegration } from './enduser/keycloak-citizen-saml.js'
 import mapRoutes from './enduser/mapRoutes.js'
 import { citizenAuthStatus } from './enduser/routes/auth-status.js'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.js'
@@ -18,7 +17,6 @@ import {
 import { createSamlAdIntegration } from './internal/ad-saml.js'
 import { createDevAdRouter } from './internal/dev-ad-auth.js'
 import { createDevEmployeeSfiRouter } from './internal/dev-sfi-auth.js'
-import { createKeycloakEmployeeIntegration } from './internal/keycloak-employee-saml.js'
 import {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -60,11 +58,6 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
         '/application/map-api/',
         '/citizen/public/map-api/'
       )
-    } else if (req.url.startsWith('/application/auth/evaka-customer/')) {
-      req.url = req.url.replace(
-        '/application/auth/evaka-customer/',
-        '/citizen/auth/keycloak/'
-      )
     } else if (req.url === '/application/auth/status') {
       req.url = '/citizen/auth/status'
     } else if (req.url === '/application/auth/weak-login') {
@@ -78,11 +71,6 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       )
     } else if (req.url.startsWith('/internal/auth/saml/')) {
       req.url = req.url.replace('/internal/auth/saml/', '/employee/auth/ad/')
-    } else if (req.url.startsWith('/internal/auth/evaka/')) {
-      req.url = req.url.replace(
-        '/internal/auth/evaka/',
-        '/employee/auth/keycloak/'
-      )
     } else if (req.url === '/internal/auth/mobile') {
       req.url = '/employee-mobile/auth/finish-pairing'
     } else if (req.url === '/internal/auth/pin-login') {
@@ -156,31 +144,6 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
   }
 
-  let keycloakCitizenIntegration: SamlIntegration | undefined = undefined
-  if (config.keycloakCitizen) {
-    keycloakCitizenIntegration = createKeycloakCitizenIntegration(
-      citizenSessions,
-      config.keycloakCitizen,
-      redisClient
-    )
-    router.use('/citizen/auth/keycloak', keycloakCitizenIntegration.router)
-  }
-
-  router.all(
-    '/employee/auth/ad/*',
-    employeeSessions.middleware,
-    (req: express.Request, _, next) => {
-      // horrible hack to fix logout URL
-      if (req.session?.idpProvider === 'evaka') {
-        req.url = req.url.replace(
-          '/employee/auth/ad/',
-          '/employee/auth/keycloak/'
-        )
-      }
-      next()
-    }
-  )
-
   let adIntegration: SamlIntegration | undefined
   if (config.ad.type === 'mock') {
     router.use('/employee/auth/ad', createDevAdRouter(employeeSessions))
@@ -206,16 +169,6 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       redisClient
     )
     router.use('/employee/auth/sfi', employeeSfiIntegration.router)
-  }
-
-  let keycloakEmployeeIntegration: SamlIntegration | undefined = undefined
-  if (config.keycloakEmployee) {
-    keycloakEmployeeIntegration = createKeycloakEmployeeIntegration(
-      employeeSessions,
-      config.keycloakEmployee,
-      redisClient
-    )
-    router.use('/employee/auth/keycloak', keycloakEmployeeIntegration.router)
   }
 
   router.use(
@@ -263,17 +216,12 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
           if (citizenSfiIntegration)
             return citizenSfiIntegration.logout(req, res)
           break
-        case 'keycloak-citizen':
-          if (keycloakCitizenIntegration)
-            return keycloakCitizenIntegration.logout(req, res)
-          break
         case 'citizen-weak':
         case 'dev':
         case undefined:
           // no need for special handling
           break
         case 'ad':
-        case 'keycloak-employee':
         case 'employee-mobile':
           // should not happen, but we'll still destroy the session normally
           break
@@ -295,16 +243,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
           if (employeeSfiIntegration)
             return employeeSfiIntegration.logout(req, res)
           break
-        case 'keycloak-employee':
-          if (keycloakEmployeeIntegration)
-            return keycloakEmployeeIntegration.logout(req, res)
-          break
         case 'dev':
           // no need for special handling
           break
         case 'citizen-weak':
         case 'employee-mobile':
-        case 'keycloak-citizen':
           // should not happen, but we'll still destroy the session normally
           break
       }
