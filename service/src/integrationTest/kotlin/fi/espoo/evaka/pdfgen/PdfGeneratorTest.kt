@@ -30,6 +30,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.createAddressPagePdf
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildDocumentId
@@ -281,7 +282,7 @@ class PdfGeneratorTest {
                         placementTypes = PlacementType.entries.toSet(),
                         name = "Varhaiskasvatussuunnitelma 2023-2024",
                         language = OfficialLanguage.FI,
-                        confidential = true,
+                        confidentiality = DocumentConfidentiality(100, "§ 999"),
                         legalBasis =
                             "§3.2b varhaiskasvatuslaki, varhaiskasvatuslautakunnan päätös ja määräys 11.3.2017",
                         validity =
