@@ -27,7 +27,6 @@ import BaseModal, {
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import { faCheck, faLockAlt } from 'lib-icons'
 
 import { User } from '../auth/state'
@@ -81,15 +80,7 @@ export default React.memo(function LoginDetailsSection({
       <Grid>
         <H2 noMargin>{t.title}</H2>
         <div />
-        {!featureFlags.weakLogin && (
-          <>
-            <Label>{t.weakLoginUsername}</Label>
-            <div data-qa="keycloak-email" translate="no">
-              {user.keycloakEmail}
-            </div>
-          </>
-        )}
-        {featureFlags.weakLogin && (user.email || user.weakLoginUsername) && (
+        {(!!user.email || !!user.weakLoginUsername) && (
           <>
             <Label>{t.weakLoginCredentials}</Label>
             <div>
