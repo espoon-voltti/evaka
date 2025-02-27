@@ -19,7 +19,7 @@ import {
   IncomeTypeOptions,
   IncomeValue
 } from 'lib-common/generated/api-types/invoicing'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -435,7 +435,7 @@ function IncomeAttachments({
   onUploaded,
   onDeleted
 }: {
-  incomeId: UUID | null
+  incomeId: IncomeId | null
   attachments: Attachment[]
   onUploaded: (attachment: Attachment) => void
   onDeleted: (id: UUID) => void

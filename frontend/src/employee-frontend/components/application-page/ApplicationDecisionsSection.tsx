@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import { Link } from 'react-router'
 
+import { downloadDecisionPdf } from 'employee-frontend/generated/api-clients/decision'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
@@ -18,7 +19,6 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Label } from 'lib-components/typography'
 import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
 
-import { API_URL } from '../../api/client'
 import DecisionResponse from '../../components/application-page/DecisionResponse'
 import { useTranslation } from '../../state/i18n'
 
@@ -73,7 +73,9 @@ export default React.memo(function ApplicationDecisionsSection({
                 <span>{i18n.application.decisions.types[decision.type]}</span>
                 {isDownloadAvailable(decision) ? (
                   <a
-                    href={`${API_URL}/employee/decisions/${decision.id}/download`}
+                    href={downloadDecisionPdf({
+                      id: decision.id
+                    }).url.toString()}
                     target="_blank"
                     rel="noreferrer"
                     data-qa="application-decision-download-available"

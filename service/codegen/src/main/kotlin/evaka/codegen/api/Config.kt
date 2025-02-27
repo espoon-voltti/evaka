@@ -28,6 +28,7 @@ import java.time.YearMonth
 import java.util.UUID
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
+import org.springframework.web.multipart.MultipartFile
 
 const val basePackage = "fi.espoo.evaka"
 
@@ -58,8 +59,6 @@ object Imports {
     val timeInterval = TsImport.Default(LibCommon / "time-interval.ts", "TimeInterval")
     val timeRange = TsImport.Default(LibCommon / "time-range.ts", "TimeRange")
     val yearMonth = TsImport.Default(LibCommon / "year-month.ts", "YearMonth")
-    val vasuQuestion = TsImport.Named(LibCommon / "api-types/vasu.ts", "VasuQuestion")
-    val mapVasuQuestion = TsImport.Named(LibCommon / "api-types/vasu.ts", "mapVasuQuestion")
     val messageReceiver = TsImport.Named(LibCommon / "api-types/messaging.ts", "MessageReceiver")
     val deserializeMessageReceiver =
         TsImport.Named(LibCommon / "api-types/messaging.ts", "deserializeMessageReceiver")
@@ -68,7 +67,9 @@ object Imports {
     val jsonOf = TsImport.Named(LibCommon / "json.d.ts", "JsonOf")
     val jsonCompatible = TsImport.Named(LibCommon / "json.d.ts", "JsonCompatible")
     val uri = TsImport.Named(LibCommon / "uri.ts", "uri")
+    val uriType = TsImport.Named(LibCommon / "uri.ts", "Uri")
     val createUrlSearchParams = TsImport.Named(LibCommon / "api.ts", "createUrlSearchParams")
+    val createFormData = TsImport.Named(LibCommon / "api.ts", "createFormData")
     val devApiError = TsImport.Named(E2ETest / "dev-api", "DevApiError")
 }
 
@@ -86,6 +87,14 @@ val defaultMetadata =
         ProductKey::class to TsPlain(type = "string"),
         URI::class to TsPlain(type = "string"),
         Any::class to TsPlain(type = "unknown"),
+        MultipartFile::class to
+            TsExternalTypeRef(
+                type = "File",
+                keyRepresentation = null,
+                deserializeJson = null,
+                serializePathVariable = null,
+                serializeRequestParam = { value, _ -> value },
+            ),
         LocalDate::class to
             TsExternalTypeRef(
                 "LocalDate",
